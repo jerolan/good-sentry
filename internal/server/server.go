@@ -61,6 +61,19 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("GET /api/v1/organizations/{org}/transactions", s.auth(http.HandlerFunc(s.transactions)))
 	mux.Handle("GET /api/v1/organizations/{org}/spans", s.auth(http.HandlerFunc(s.spans)))
 	mux.Handle("GET /api/v1/organizations/{org}/logs", s.auth(http.HandlerFunc(s.logs)))
+	if cfg.Uptime {
+		mux.Handle("GET /api/v1/organizations/{org}/monitors", s.auth(http.HandlerFunc(s.monitors)))
+		mux.Handle("POST /api/v1/organizations/{org}/monitors", s.auth(http.HandlerFunc(s.saveMonitor)))
+		mux.Handle("GET /api/v1/organizations/{org}/monitors/{monitor}", s.auth(http.HandlerFunc(s.monitor)))
+		mux.Handle("PUT /api/v1/organizations/{org}/monitors/{monitor}", s.auth(http.HandlerFunc(s.saveMonitor)))
+		mux.Handle("DELETE /api/v1/organizations/{org}/monitors/{monitor}", s.auth(http.HandlerFunc(s.deleteMonitor)))
+		mux.Handle("GET /api/v1/organizations/{org}/monitors/{monitor}/checks", s.auth(http.HandlerFunc(s.monitorChecks)))
+		mux.HandleFunc("POST /api/v1/heartbeat/{key}", s.heartbeat)
+		mux.HandleFunc("/api/v1/heartbeat/{key}", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Allow", "POST")
+			failure(w, 405, "Heartbeat requires POST")
+		})
+	}
 	mux.HandleFunc("POST /api/{project}/envelope/", s.ingest)
 	mux.HandleFunc("POST /api/{project}/store/", s.ingest)
 	mux.HandleFunc("OPTIONS /api/{project}/envelope/", s.preflight)

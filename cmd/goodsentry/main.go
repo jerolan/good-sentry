@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"goodsentry/internal/config"
+	"goodsentry/internal/jobs"
 	"goodsentry/internal/server"
 	"goodsentry/internal/store"
 )
@@ -26,8 +27,8 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if cfg.MCP || cfg.DuckDB || cfg.Admin || cfg.OpenAPI || cfg.ValkeyURL != "" || cfg.Uptime {
-		return errors.New("this increment does not yet provide uptime, MCP, DuckDB, admin, OpenAPI or Valkey; disable those options")
+	if cfg.MCP || cfg.DuckDB || cfg.Admin || cfg.OpenAPI || cfg.ValkeyURL != "" {
+		return errors.New("this increment does not yet provide MCP, DuckDB, admin, OpenAPI or Valkey; disable those options")
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -38,6 +39,10 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	if cfg.Uptime {
+		stopWorkers := jobs.StartMonitors(ctx, db, cfg.MonitorWorkers, cfg.UptimeAllowPrivate)
+		defer stopWorkers()
+	}
 	srv := &http.Server{Addr: cfg.Addr, Handler: server.New(cfg, db), ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxHeaderBytes: 1 << 20}
 	done := make(chan error, 1)
 	go func() {

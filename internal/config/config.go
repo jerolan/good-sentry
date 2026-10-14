@@ -14,10 +14,12 @@ type Config struct {
 	Logs, Uptime, MCP, DuckDB, OpenAPI, Admin bool
 	MaxBodyBytes                              int64
 	RetentionDays                             int
+	MonitorWorkers                            int
+	UptimeAllowPrivate                        bool
 }
 
 func Load() (Config, error) {
-	c := Config{DatabaseURL: os.Getenv("DATABASE_URL"), Secret: os.Getenv("SECRET_KEY"), EmailURL: value("EMAIL_URL", "consolemail://"), FromEmail: value("DEFAULT_FROM_EMAIL", "goodsentry@localhost"), ValkeyURL: os.Getenv("VALKEY_URL"), UploadDir: value("UPLOAD_DIR", "uploads"), MaxBodyBytes: 32 << 20, RetentionDays: 90}
+	c := Config{DatabaseURL: os.Getenv("DATABASE_URL"), Secret: os.Getenv("SECRET_KEY"), EmailURL: value("EMAIL_URL", "consolemail://"), FromEmail: value("DEFAULT_FROM_EMAIL", "goodsentry@localhost"), ValkeyURL: os.Getenv("VALKEY_URL"), UploadDir: value("UPLOAD_DIR", "uploads"), MaxBodyBytes: 32 << 20, RetentionDays: 90, MonitorWorkers: 2}
 	port, err := strconv.Atoi(value("PORT", "8000"))
 	if err != nil || port < 1 || port > 65535 {
 		return c, fmt.Errorf("PORT must be an integer from 1 to 65535")
@@ -46,6 +48,7 @@ func Load() (Config, error) {
 	}{
 		{"GOODSENTRY_ENABLE_LOGS", "GLITCHTIP_ENABLE_LOGS", true, &c.Logs},
 		{"GOODSENTRY_ENABLE_UPTIME", "GLITCHTIP_ENABLE_UPTIME", true, &c.Uptime},
+		{"GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS", "GLITCHTIP_UPTIME_ALLOW_PRIVATE_IPS", false, &c.UptimeAllowPrivate},
 		{"GOODSENTRY_ENABLE_MCP", "GLITCHTIP_ENABLE_MCP", false, &c.MCP},
 		{"GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB", false, &c.DuckDB},
 		{"ENABLE_OPENAPI", "", false, &c.OpenAPI}, {"ENABLE_ADMIN", "", false, &c.Admin},
@@ -55,6 +58,12 @@ func Load() (Config, error) {
 			return c, fmt.Errorf("%s must be true or false", flag.name)
 		}
 		*flag.dest = v
+	}
+	if raw := os.Getenv("MONITOR_WORKERS"); raw != "" {
+		c.MonitorWorkers, err = strconv.Atoi(raw)
+		if err != nil || c.MonitorWorkers < 1 || c.MonitorWorkers > 16 {
+			return c, fmt.Errorf("MONITOR_WORKERS must be between 1 and 16")
+		}
 	}
 	if raw := os.Getenv("MAX_BODY_BYTES"); raw != "" {
 		c.MaxBodyBytes, err = strconv.ParseInt(raw, 10, 64)

@@ -50,7 +50,7 @@ func TestAccountDSNCaptureAndTriage(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	cfg := config.Config{Domain: "http://example.test", Secret: strings.Repeat("a", 64), MaxBodyBytes: 1 << 20}
+	cfg := config.Config{Domain: "http://example.test", Secret: strings.Repeat("a", 64), MaxBodyBytes: 1 << 20, Uptime: true}
 	srv := httptest.NewServer(New(cfg, db))
 	defer srv.Close()
 	jar, _ := cookiejar.New(nil)
@@ -184,6 +184,17 @@ func TestAccountDSNCaptureAndTriage(t *testing.T) {
 		}
 	}
 	verifySourceMapWorkflow(t, client, srv.URL, org, project, csrf, endpoint)
+	verifyUptimeWorkflow(t, request, srv.URL, org, p["slug"].(string), csrf)
+	disabled := httptest.NewServer(New(config.Config{Secret: cfg.Secret}, db))
+	defer disabled.Close()
+	res, err := client.Get(disabled.URL + "/api/v1/organizations/" + org + "/monitors")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != 404 {
+		t.Fatalf("disabled uptime route=%d", res.StatusCode)
+	}
 	if code, _ = request("POST", "/api/v1/logout", "{}", csrf); code != 204 {
 		t.Fatalf("logout=%d", code)
 	}
