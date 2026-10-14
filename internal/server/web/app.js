@@ -70,15 +70,16 @@
 
   async function request(path, options = {}) {
     let response;
+    const multipart = options.body instanceof FormData;
     const headers = { Accept: 'application/json', ...options.headers };
-    if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+    if (options.body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
     if (options.method && options.method !== 'GET' && state.me?.csrfToken) {
       headers['X-CSRF-Token'] = state.me.csrfToken;
     }
     try {
       response = await fetch(base + path, {
         ...options, credentials: 'same-origin', headers,
-        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        body: options.body === undefined ? undefined : multipart ? options.body : JSON.stringify(options.body),
       });
     } catch (_) {
       throw new Error('Cannot reach GoodSentry. Check your connection and try again.');
@@ -463,9 +464,86 @@
         node('td', {}, routeLink('View issues', { view: 'issues', project: project.id, query: null, status: null, environment: null, page: null }, { class: 'button small' }))));
       const columns = ['Project', 'Platform', 'DSN', ''].map((name, index) => node('th', { scope: 'col', ...(index === 3 ? { 'aria-label': 'Actions' } : {}) }, name));
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns)), node('tbody', {}, rows))));
+      panel.append(...state.projects.map(sourceMapDisclosure));
       main.append(node('p', { class: 'muted small connection-help' }, 'Use the DSN with your existing Sentry SDK. Keep the SDK configuration in your application; GoodSentry receives events at the project address.'));
     }
     main.append(panel);
+  }
+
+  function sourceMapDisclosure(project) {
+    const disclosure = node('details', { class: 'source-map-disclosure', 'aria-label': `Source maps for ${project.name}` }, node('summary', {}, `Source maps · ${project.name}`));
+    let initialized = false;
+    disclosure.addEventListener('toggle', () => {
+      if (!disclosure.open || initialized) return;
+      initialized = true;
+      const path = `/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/projects/${encodeURIComponent(project.id)}/sourcemaps`;
+      const metadata = node('div');
+      const refresh = button('Refresh source maps', () => loadMetadata(), 'small');
+      const body = node('div', { class: 'source-map-body' }, node('div', { class: 'panel-title source-map-header' }, node('h2', {}, 'Uploaded source maps'), refresh), metadata);
+      async function loadMetadata() {
+        refresh.disabled = true;
+        metadata.replaceChildren(node('p', { class: 'muted source-map-loading', role: 'status', 'aria-busy': 'true' }, 'Loading source maps…'));
+        try {
+          const result = await request(path);
+          const maps = result.data || [];
+          if (!maps.length) metadata.replaceChildren(node('p', { class: 'muted source-map-empty' }, 'No source maps uploaded.'));
+          else {
+            const columns = ['Artifact', 'Release', 'Distribution', 'Debug ID', 'Size', 'Uploaded', 'Checksum'];
+            const rows = maps.map(map => node('tr', {},
+              node('td', { class: 'artifact-name' }, node('strong', {}, map.name), node('div', { class: 'small muted mono' }, `Artifact ${map.id}`)),
+              node('td', {}, text(map.release, 'Not set')), node('td', {}, text(map.dist, 'Not set')), node('td', {}, node('code', { class: 'artifact-identity' }, text(map.debugId, 'Not set'))),
+              node('td', { class: 'nowrap' }, `${number(map.size)} B`), node('td', { class: 'nowrap' }, node('time', { datetime: map.dateCreated }, date(map.dateCreated, true))),
+              node('td', {}, node('code', { class: 'artifact-identity' }, map.checksum))));
+            metadata.replaceChildren(node('div', { class: 'table-scroll', 'aria-label': 'Source map metadata' }, node('table', {},
+              node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
+          }
+        } catch (error) { errorState(metadata, error, loadMetadata); }
+        finally { refresh.disabled = false; }
+      }
+      if (['owner', 'admin'].includes(state.organization.role)) body.append(sourceMapForm(project, path, loadMetadata));
+      else body.append(node('p', { class: 'muted source-map-permission' }, 'Organization owners and admins can upload source maps.'));
+      disclosure.append(body);
+      loadMetadata();
+    });
+    return disclosure;
+  }
+
+  function sourceMapForm(project, path, refresh) {
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const status = node('p', { class: 'source-map-status', role: 'status' });
+    const name = field('Artifact name or URL', 'text', { name: 'name', required: true, maxlength: 2048, autocomplete: 'off' });
+    const release = field('Release', 'text', { name: 'release', maxlength: 200, autocomplete: 'off' });
+    const dist = field('Distribution', 'text', { name: 'dist', maxlength: 200, autocomplete: 'off' });
+    const debug = field('Debug ID', 'text', { name: 'debugId', maxlength: 64, autocomplete: 'off', spellcheck: 'false' });
+    const file = field('Source map file', 'file', { name: 'file', required: true, accept: '.map,.json,application/json' });
+    const helpID = `source-map-help-${++fieldNumber}`;
+    release.input.setAttribute('aria-describedby', helpID);
+    debug.input.setAttribute('aria-describedby', helpID);
+    const submit = node('button', { type: 'submit', class: 'button primary' }, 'Upload source map');
+    const form = node('form', { class: 'source-map-form form-stack', 'aria-label': `Upload source map for ${project.name}` }, node('h2', {}, 'Upload source map'),
+      node('p', { class: 'muted small', id: helpID }, 'Provide a release or debug ID to match the correct build. The artifact name identifies the generated file URL. Distribution is optional.'),
+      error, node('div', { class: 'source-map-fields' }, name.wrap, release.wrap, dist.wrap, debug.wrap, file.wrap),
+      node('div', { class: 'actions' }, submit), status);
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      status.textContent = '';
+      if (!release.input.value.trim() && !debug.input.value.trim()) {
+        formError(error, new Error('Provide a release or debug ID before uploading this source map.'));
+        return;
+      }
+      const payload = new FormData(form);
+      for (const fieldName of ['name', 'release', 'dist', 'debugId']) payload.set(fieldName, String(payload.get(fieldName) || '').trim());
+      submit.disabled = true;
+      submit.textContent = 'Uploading…';
+      try {
+        const result = await request(path, { method: 'POST', body: payload });
+        status.textContent = result.created ? 'Source map uploaded.' : 'Identical source map already exists. No duplicate was created.';
+        await refresh();
+      } catch (failure) { formError(error, failure); }
+      finally { submit.disabled = false; submit.textContent = 'Upload source map'; }
+    });
+    return form;
   }
 
   function openProjectDialog() {

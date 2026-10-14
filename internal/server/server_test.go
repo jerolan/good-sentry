@@ -183,6 +183,7 @@ func TestAccountDSNCaptureAndTriage(t *testing.T) {
 			t.Fatalf("invalid span header=%d want=%d", res.StatusCode, invalid.status)
 		}
 	}
+	verifySourceMapWorkflow(t, client, srv.URL, org, project, csrf, endpoint)
 	if code, _ = request("POST", "/api/v1/logout", "{}", csrf); code != 204 {
 		t.Fatalf("logout=%d", code)
 	}

@@ -35,12 +35,15 @@ docker compose down
 - Interfaz Tailwind de proyectos, errores, transacciones y logs, probada en Chromium a 320, 768 y 1440 píxeles.
 - SDK oficiales Go `v0.50.0`, Python `2.72.0`, Node `11.7.0` y navegador `11.7.0`: excepciones, transacciones y logs verificados recuperando los datos guardados. El SDK de navegador se ejecutó en Chromium desde otro origen para comprobar CORS.
 - Spans v2 de JavaScript con relaciones padre/hijo y deduplicación; solo los segmentos cuentan como transacciones en los agregados.
+- Source maps de JavaScript: carga autenticada desde Projects, selección por release/distribution o Debug ID, archivo/línea/columna/contexto originales y conservación del stack minificado. Los datos y mapas persisten en PostgreSQL.
 
 El compose actual desactiva uptime porque su implementación está pendiente. El proceso rechaza MCP, DuckDB, admin, OpenAPI, Valkey o uptime activados mientras no estén disponibles. Los tipos de envelope aún no soportados se conservan y se indican en `unsupportedItems`; eso no equivale a implementar su funcionalidad. Los logs desactivados se excluyen deliberadamente y producen un aviso de rate limit para sus categorías.
 
 Esta matriz cubre errores, transacciones y logs de esas versiones concretas. Adjuntos, otros formatos y versiones requieren sus propias verificaciones.
 
-Siguen pendientes, entre otras funciones, alertas y scheduler, releases y cargas de source maps, simbolicación nativa, merge/unmerge, invitaciones, recuperación de contraseñas, integraciones y varias pantallas. El consumidor puro de source maps tiene pruebas de ubicación y contexto, pero aún requiere conectar su almacenamiento y API. No se ha medido el objetivo de memoria de 256-512 MB bajo carga.
+Siguen pendientes, entre otras funciones, alertas y scheduler, ciclo de releases y cargas mediante sentry-cli, OTLP nativo, simbolicación nativa, merge/unmerge, invitaciones, recuperación de contraseñas, integraciones y varias pantallas. El decoder de bundles del CLI está probado, pero sus endpoints de carga todavía no están conectados. No se ha medido el objetivo de memoria de 256-512 MB bajo carga. La imagen actual se ha verificado en Linux amd64.
+
+Para un source map, abre su proyecto en Projects y despliega Source maps. Indica el nombre o URL del artefacto, selecciona el archivo y proporciona el release usado por el SDK o su Debug ID. La distribución debe coincidir con la del evento. Owners y admins pueden cargar mapas; los miembros pueden consultar sus metadatos. Un reintento idéntico no duplica el archivo; contenido distinto para la misma identidad devuelve conflicto. La carga nativa está limitada por `MAX_BODY_BYTES`; cada conjunto seleccionado admite hasta 100 mapas y un millón de segmentos. Los mapas indexados admiten hasta 32 niveles. El servidor utiliza solo fuentes incluidas en los mapas subidos.
 
 ## Configuración
 
@@ -69,7 +72,7 @@ GOODSENTRY_URL=http://localhost:8000 COMPAT_EMAIL=tu-correo COMPAT_PASSWORD=tu-p
 
 Usa una instancia desechable para las pruebas de onboarding y compatibilidad. El cliente crea proyectos y eventos. El harness `tests/compat/browser.mjs` usa Playwright externo y guarda su evidencia en `test-results/`, excluido de Git.
 
-Los clientes Python y Node tienen dependencias fijadas en `python-requirements.txt` y `package-lock.json`, dentro de `tests/compat`. Ejecútalos con las mismas variables `GOODSENTRY_URL`, `COMPAT_EMAIL` y `COMPAT_PASSWORD`. `browser_sdk.mjs` requiere Playwright y Chromium externos; carga el bundle oficial de navegador 11.7.0 con SRI fijado, desde un origen de prueba separado. El harness de la UI permite `COMPAT_PLAYWRIGHT` para seleccionar una instalación temporal del runner. Estas dependencias no forman parte del servidor ni de su imagen.
+Los clientes Python y Node tienen dependencias fijadas en `python-requirements.txt` y `package-lock.json`, dentro de `tests/compat`. Ejecútalos con las mismas variables `GOODSENTRY_URL`, `COMPAT_EMAIL` y `COMPAT_PASSWORD`. `browser_sdk.mjs` requiere Playwright y Chromium externos; carga el bundle oficial de navegador 11.7.0 con SRI fijado, desde un origen de prueba separado, y permite seleccionar Playwright con `COMPAT_PLAYWRIGHT`. El harness de la UI usa `GOODSENTRY_TEST_URL`, `GOODSENTRY_TEST_EMAIL`, `GOODSENTRY_TEST_PASSWORD` y `PLAYWRIGHT_MODULE`. Estas dependencias no forman parte del servidor ni de su imagen.
 
 ## Procedencia
 

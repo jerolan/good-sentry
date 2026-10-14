@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"goodsentry/internal/artifact"
 	"goodsentry/internal/event"
 	"goodsentry/internal/protocol"
 	"goodsentry/internal/store"
@@ -75,6 +76,15 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 			}
 			value["type"] = json.RawMessage(`"transaction"`)
 			raw, _ = json.Marshal(value)
+		}
+		raw, err = s.mapEvent(r.Context(), project, raw)
+		if err != nil {
+			if errors.Is(err, store.ErrArtifactLimit) || errors.Is(err, artifact.ErrSourceMapLimit) {
+				failure(w, 413, "Selected source maps exceed the configured processing limit")
+			} else {
+				report(w, err)
+			}
+			return
 		}
 		ev, err := event.Normalize(raw, envelopeID, time.Now())
 		if err != nil {

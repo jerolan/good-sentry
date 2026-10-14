@@ -24,6 +24,7 @@ const requestFailures = [];
 const checks = [];
 const screenshots = [];
 let expectedAuthProbe = false;
+let expectedSourceMapRejection = '';
 page.on('console', message => {
   if (['warning', 'error'].includes(message.type())) consoleProblems.push({ type: message.type(), text: message.text(), location: message.location().url });
 });
@@ -37,6 +38,8 @@ async function visible(locator) {
 
 async function capture(name, width) {
   await page.setViewportSize({ width, height: 1000 });
+  await page.getByRole('heading', { level: 1 }).focus();
+  await page.keyboard.press('Control+Home');
   const measurements = await page.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
   assert.ok(measurements.documentWidth <= measurements.width, `${name}: document overflows at ${width}px (${measurements.documentWidth}px)`);
   const path = resolve(output, `${name}-${width}.png`);
@@ -44,10 +47,10 @@ async function capture(name, width) {
   screenshots.push(path);
 }
 
-async function signIn() {
+async function signIn(loginEmail = email, loginPassword = password) {
   await visible(page.getByRole('heading', { name: 'Sign in to GoodSentry', exact: true }));
-  await page.getByLabel('Email', { exact: true }).fill(email);
-  await page.getByLabel('Password', { exact: true }).fill(password);
+  await page.getByLabel('Email', { exact: true }).fill(loginEmail);
+  await page.getByLabel('Password', { exact: true }).fill(loginPassword);
   const response = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/v1/login'));
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   assert.equal((await response).status(), 200, 'Password login succeeds');
@@ -248,19 +251,115 @@ try {
   checks.push('Trace correlation, trace copy, 25-row log pagination, typed attributes and URL filters work');
   checks.push('Transaction and expanded-log views remain bounded at 320, 768 and 1440 pixels');
 
-  // Keyboard navigation uses native controls; evaluation below only inspects focus.
+  // The map and minified capture are our own synthetic fixtures. Browser
+  // upload plus visible mapped source exercises the complete native artifact flow.
+  await page.getByRole('link', { name: 'Projects', exact: true }).click();
+  await visible(page.getByRole('heading', { level: 1, name: 'Projects', exact: true }));
+  const sourceMaps = page.getByLabel(`Source maps for Browser project ${runID}`, { exact: true });
+  await sourceMaps.locator('summary').click();
+  const upload = await visible(sourceMaps.getByRole('form', { name: `Upload source map for Browser project ${runID}`, exact: true }));
+  const artifactName = 'https://cdn.example/assets/browser-order.min.js.map';
+  const sourceRelease = `browser-source-map-${runID}`;
+  const sourceLine = "  throw new Error('browser map proof');";
+  const map = {
+    version: 3, file: 'browser-order.min.js', sources: ['../src/browser-order.js'], names: ['confirmOrder'], mappings: 'AAEIA',
+    sourcesContent: [`export function confirmOrder() {\n  const order = 42;\n${sourceLine}\n  return order;\n}`],
+  };
+  await upload.getByLabel('Artifact name or URL', { exact: true }).fill(artifactName);
+  await upload.getByLabel('Source map file', { exact: true }).setInputFiles({ name: 'browser-order.min.js.map', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(map)) });
+  await upload.getByRole('button', { name: 'Upload source map', exact: true }).click();
+  await visible(upload.getByText('Provide a release or debug ID before uploading this source map.', { exact: true }));
+  assert.equal(await upload.getByLabel('Artifact name or URL', { exact: true }).inputValue(), artifactName, 'Artifact name survives an upload validation error');
+  assert.match(await upload.getByLabel('Source map file', { exact: true }).inputValue(), /browser-order\.min\.js\.map$/, 'Selected map file survives an upload validation error');
+  await upload.getByLabel('Release', { exact: true }).fill(sourceRelease);
+  await upload.getByLabel('Source map file', { exact: true }).setInputFiles({ name: 'invalid.map', mimeType: 'application/json', buffer: Buffer.from('invalid source map') });
+  expectedSourceMapRejection = `/projects/${project.id}/sourcemaps`;
+  const rejectedResponse = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(expectedSourceMapRejection));
+  await upload.getByRole('button', { name: 'Upload source map', exact: true }).click();
+  assert.equal((await rejectedResponse).status(), 400, 'Invalid map is rejected by the real server');
+  await visible(upload.getByRole('alert').filter({ hasText: 'Invalid source map:' }));
+  assert.equal(await upload.getByLabel('Artifact name or URL', { exact: true }).inputValue(), artifactName, 'Artifact name survives a server rejection');
+  assert.equal(await upload.getByLabel('Release', { exact: true }).inputValue(), sourceRelease, 'Release survives a server rejection');
+  assert.match(await upload.getByLabel('Source map file', { exact: true }).inputValue(), /invalid\.map$/, 'Selected file survives a server rejection');
+  await upload.getByLabel('Source map file', { exact: true }).setInputFiles({ name: 'browser-order.min.js.map', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(map)) });
+  for (const width of [320, 768, 1440]) await capture('source-map-form', width);
+  const uploadedResponse = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(`/projects/${project.id}/sourcemaps`));
+  await upload.getByRole('button', { name: 'Upload source map', exact: true }).click();
+  const uploaded = await uploadedResponse;
+  assert.equal(uploaded.status(), 201, 'Source map upload succeeds');
+  assert.equal((await uploaded.json()).created, true, 'First map upload creates an artifact');
+  await visible(upload.getByText('Source map uploaded.', { exact: true }));
+  await visible(sourceMaps.getByRole('row').filter({ hasText: artifactName }));
+  const retriedResponse = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(`/projects/${project.id}/sourcemaps`));
+  await upload.getByRole('button', { name: 'Upload source map', exact: true }).click();
+  const retried = await retriedResponse;
+  assert.equal(retried.status(), 200, 'Identical source map retry succeeds');
+  assert.equal((await retried.json()).created, false, 'Identical map retry does not create an artifact');
+  await visible(upload.getByText('Identical source map already exists. No duplicate was created.', { exact: true }));
+  assert.equal(await sourceMaps.getByRole('row').filter({ hasText: artifactName }).count(), 1, 'Metadata contains one artifact after retry');
+  await page.reload({ waitUntil: 'networkidle' });
+  await sourceMaps.locator('summary').click();
+  const artifactRow = await visible(sourceMaps.getByRole('row').filter({ hasText: artifactName }));
+  await visible(artifactRow.getByText(sourceRelease, { exact: true }));
+  for (const width of [320, 768, 1440]) await capture('source-map-metadata', width);
+  const mappedMessage = `Source mapped browser failure ${runID}`;
+  await sendItem('event', {
+    event_id: randomBytes(16).toString('hex'), timestamp: Date.now() / 1000, platform: 'javascript', level: 'error', release: sourceRelease,
+    message: mappedMessage, fingerprint: [`source-map-browser-${runID}`], exception: [{ type: 'Error', value: mappedMessage,
+      stacktrace: { frames: [{ abs_path: 'https://cdn.example/assets/browser-order.min.js', filename: 'browser-order.min.js', lineno: 1, colno: 1, function: 'a', in_app: true }] },
+    }],
+  });
+  await projectRow.getByRole('link', { name: 'View issues', exact: true }).click();
+  await visible(page.getByRole('link').filter({ hasText: mappedMessage }));
+  await page.getByRole('link').filter({ hasText: mappedMessage }).click();
+  await visible(page.getByText('confirmOrder', { exact: true }));
+  await visible(page.getByText('https://cdn.example/src/browser-order.js:3:5', { exact: true }));
+  await visible(page.getByText(sourceLine.trim(), { exact: true }));
+  const originalDisclosure = page.locator('details').filter({ has: page.getByText('Original event JSON', { exact: true }) });
+  await originalDisclosure.locator('summary').click();
+  const original = JSON.parse(await originalDisclosure.locator('pre').innerText());
+  const exception = Array.isArray(original.exception) ? original.exception[0] : original.exception.values[0];
+  const rawFrame = exception.raw_stacktrace.frames[0];
+  assert.deepEqual({ filename: rawFrame.filename, function: rawFrame.function, lineno: rawFrame.lineno, colno: rawFrame.colno },
+    { filename: 'browser-order.min.js', function: 'a', lineno: 1, colno: 1 }, 'Original minified stack remains available in event JSON');
+  await originalDisclosure.locator('summary').click();
+  for (const width of [320, 768, 1440]) await capture('source-mapped-issue', width);
+  checks.push('Browser multipart source-map upload, retained validation inputs, metadata reload and identical retry work');
+  checks.push('Matching minified capture shows original source location/context while preserving its raw stack');
+
+  // Start from a named navigation control; the previous action may leave focus
+  // on the page's final disclosure. Evaluation below only inspects focus.
+  await page.getByRole('link', { name: 'Issues', exact: true }).focus();
   await page.keyboard.press('Tab');
   const focused = await page.evaluate(() => ({ tag: document.activeElement?.tagName, name: document.activeElement?.textContent?.trim() }));
   assert.ok(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(focused.tag), `Tab reaches a native control, received ${focused.tag}`);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await signIn();
   checks.push('Sign out and subsequent password login work');
+  const memberEmail = process.env.COMPAT_MEMBER_EMAIL;
+  const memberPassword = process.env.COMPAT_MEMBER_PASSWORD;
+  assert.equal(Boolean(memberEmail), Boolean(memberPassword), 'Provide both optional member credentials');
+  if (memberEmail && memberPassword) {
+    await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+    await signIn(memberEmail, memberPassword);
+    await page.getByRole('link', { name: 'Projects', exact: true }).click();
+    await visible(page.getByRole('heading', { level: 1, name: 'Projects', exact: true }));
+    await sourceMaps.locator('summary').click();
+    await visible(sourceMaps.getByRole('row').filter({ hasText: artifactName }));
+    await visible(sourceMaps.getByText('Organization owners and admins can upload source maps.', { exact: true }));
+    assert.equal(await sourceMaps.getByRole('button', { name: 'Upload source map', exact: true }).count(), 0, 'Member is not offered source-map upload controls');
+    assert.equal(await sourceMaps.locator('input[type=file]').count(), 0, 'Member is not offered a source-map file input');
+    for (const width of [320, 768, 1440]) await capture('source-map-member', width);
+    checks.push('Real organization member can inspect artifact metadata without upload controls');
+  }
   checks.push('No document overflow at 320, 768 or 1440 pixels');
   assert.deepEqual(pageErrors, [], 'No uncaught browser JavaScript errors');
   assert.deepEqual(requestFailures, [], 'No failed transport requests');
-  const unexpected = consoleProblems.filter(problem => !(expectedAuthProbe && problem.location.endsWith('/api/v1/me') && /401/.test(problem.text)));
+  const expectedAuthMessage = problem => expectedAuthProbe && problem.location.endsWith('/api/v1/me') && /401/.test(problem.text);
+  const expectedInvalidMapMessage = problem => expectedSourceMapRejection && problem.location.endsWith(expectedSourceMapRejection) && /400/.test(problem.text);
+  const unexpected = consoleProblems.filter(problem => !expectedAuthMessage(problem) && !expectedInvalidMapMessage(problem));
   assert.deepEqual(unexpected, [], 'No unexpected console errors or warnings');
-  console.log(JSON.stringify({ passed: checks, screenshots, expectedAuthenticationProbeMessages: consoleProblems.length - unexpected.length }, null, 2));
+  console.log(JSON.stringify({ passed: checks, screenshots, expectedAuthenticationProbeMessages: consoleProblems.filter(expectedAuthMessage).length, expectedInvalidMapMessages: consoleProblems.filter(expectedInvalidMapMessage).length }, null, 2));
 } catch (error) {
   failure = error;
   await page.screenshot({ path: resolve(output, 'failure.png'), fullPage: true }).catch(() => {});
