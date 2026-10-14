@@ -17,4 +17,6 @@ Every implementation increment leaves Go build/tests passing and gets an intenti
 
 The pinned Node SDK matrix found a concrete gap in step 5: current JavaScript sends span v2 batches rather than transaction envelopes. Implement the specified atomic span storage and segment aggregation next, integrate the envelope handler, then rerun that unchanged SDK acceptance. The telemetry UI can consume the existing aggregate/log APIs in parallel. Artifact upload parsing may proceed independently after its observed bundle contract is recorded.
 
+After that compatibility check, connect the already verified source-map consumer to scoped durable uploads and error ingestion. Prove mapped frames through the native authenticated API before adding compatible releases and the modern CLI chunk/assembly flow. Keep the parser-only proof distinct from that full workflow.
+
 Risks to resolve early are malformed/binary envelope handling, event retry/concurrency accounting, per-organization isolation, authenticated browser mutations, modern CLI artifact negotiation, native symbolication and WSL container tooling. Start external-contract research early, while the first vertical slice is built.
