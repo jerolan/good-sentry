@@ -185,6 +185,8 @@ func TestAccountDSNCaptureAndTriage(t *testing.T) {
 	}
 	verifySourceMapWorkflow(t, client, srv.URL, org, project, csrf, endpoint)
 	verifyUptimeWorkflow(t, request, srv.URL, org, p["slug"].(string), csrf)
+	verifyAlertWorkflow(t, request, org, project, csrf, endpoint)
+	verifyLocalAlertDelivery(t, request, db, srv.URL, org, project, p["slug"].(string), csrf, endpoint)
 	disabled := httptest.NewServer(New(config.Config{Secret: cfg.Secret}, db))
 	defer disabled.Close()
 	res, err := client.Get(disabled.URL + "/api/v1/organizations/" + org + "/monitors")

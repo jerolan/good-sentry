@@ -17,7 +17,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-//go:embed web/index.html web/app.css web/app.js
+//go:embed web/index.html web/app.css web/*.js
 var web embed.FS
 
 type Server struct {
@@ -54,6 +54,14 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("POST /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.createProject)))
 	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/sourcemaps", s.auth(http.HandlerFunc(s.sourceMaps)))
 	mux.Handle("POST /api/v1/organizations/{org}/projects/{project}/sourcemaps", s.auth(http.HandlerFunc(s.uploadSourceMap)))
+	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/alerts", s.auth(http.HandlerFunc(s.alerts)))
+	mux.Handle("POST /api/v1/organizations/{org}/projects/{project}/alerts", s.auth(http.HandlerFunc(s.saveAlert)))
+	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/alerts/{rule}", s.auth(http.HandlerFunc(s.alert)))
+	mux.Handle("PUT /api/v1/organizations/{org}/projects/{project}/alerts/{rule}", s.auth(http.HandlerFunc(s.saveAlert)))
+	mux.Handle("DELETE /api/v1/organizations/{org}/projects/{project}/alerts/{rule}", s.auth(http.HandlerFunc(s.deleteAlert)))
+	mux.Handle("POST /api/v1/organizations/{org}/projects/{project}/alerts/{rule}/test", s.auth(http.HandlerFunc(s.testAlert)))
+	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/alert-deliveries", s.auth(http.HandlerFunc(s.alertDeliveries)))
+	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/alert-deliveries/{delivery}", s.auth(http.HandlerFunc(s.alertDelivery)))
 	mux.Handle("GET /api/v1/organizations/{org}/issues", s.auth(http.HandlerFunc(s.issues)))
 	mux.Handle("GET /api/v1/issues/{issue}", s.auth(http.HandlerFunc(s.issue)))
 	mux.Handle("PATCH /api/v1/issues/{issue}", s.auth(http.HandlerFunc(s.triage)))
@@ -124,7 +132,7 @@ func (s *Server) assets(w http.ResponseWriter, r *http.Request) {
 		_, _ = io.WriteString(w, strings.ReplaceAll(string(body), "__GOODSENTRY_BASE__", html.EscapeString(s.cfg.Prefix)))
 		return
 	}
-	if r.URL.Path != "/app.css" && r.URL.Path != "/app.js" {
+	if r.URL.Path != "/app.css" && r.URL.Path != "/app.js" && r.URL.Path != "/alerts.js" {
 		failure(w, 404, "Not found")
 		return
 	}
