@@ -261,6 +261,23 @@
   .loading-row:last-child { @apply border-0; }
   .no-org { @apply max-w-[620px] mx-auto my-8; }
   .noscript { @apply p-4 bg-danger-soft; }
+  .filters.transaction-filters {
+    @apply max-w-[520px];
+    grid-template-columns: minmax(0,1fr) auto;
+  }
+  .log-filters { grid-template-columns: minmax(160px,2fr) minmax(120px,1fr) minmax(100px,.75fr) minmax(120px,1fr) minmax(180px,1.5fr) auto; }
+  .transaction-name { @apply min-w-[200px] wrap-anywhere; }
+  .trace-reference { @apply flex items-center gap-2 min-w-[260px]; }
+  .trace-reference a { @apply wrap-anywhere text-[.8rem]; }
+  .log-message-column { @apply min-w-[280px] max-w-[560px]; }
+  .log-entry > summary { @apply p-0 font-medium; }
+  .log-entry[open] > summary { @apply border-b-0; }
+  .log-message { @apply whitespace-pre-wrap wrap-anywhere; }
+  .log-detail { @apply mt-4 pt-4 border-t border-outline; }
+  .log-detail h2 { @apply text-sm mb-3; }
+  .log-attributes dd { @apply flex flex-col items-start gap-1 min-w-0; }
+  .log-attributes pre { @apply max-w-full; }
+  .log-identifiers { @apply mt-4 pt-3 border-t border-outline; }
   @media(min-width:1500px) {
     .main { @apply px-12 py-10; }
   }

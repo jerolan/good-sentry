@@ -6,6 +6,7 @@
   const configuredBase = document.querySelector('meta[name="goodsentry-base"]')?.content || '';
   const base = configuredBase === '__GOODSENTRY_BASE__' ? '' : configuredBase.replace(/\/$/, '');
   const pageSize = 25;
+  const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs' };
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
   let fieldNumber = 0;
@@ -56,6 +57,17 @@
     notificationTimer = setTimeout(() => { notifications.textContent = ''; }, 5000);
   }
 
+  function parseLogJSON(source) {
+    const parsed = JSON.parse(source);
+    // Keep large integer digits as display text; their declared attribute type
+    // remains integer. Validate first, and leave quoted strings untouched.
+    const precise = source.replace(/"(?:\\.|[^"\\])*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g, token => {
+      if (!/^-?\d+$/.test(token) || Number.isSafeInteger(Number(token))) return token;
+      return JSON.stringify(token);
+    });
+    return precise === source ? parsed : JSON.parse(precise);
+  }
+
   async function request(path, options = {}) {
     let response;
     const headers = { Accept: 'application/json', ...options.headers };
@@ -72,7 +84,8 @@
       throw new Error('Cannot reach GoodSentry. Check your connection and try again.');
     }
     if (response.status === 204) return null;
-    const data = await response.json().catch(() => null);
+    const data = await response.text().then(source => path.split('?')[0].endsWith('/logs')
+      ? parseLogJSON(source) : JSON.parse(source)).catch(() => null);
     if (!response.ok) {
       if (response.status === 401 && state.me) {
         state.me = null;
@@ -188,8 +201,10 @@
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
-      routeLink([node('span', { class: 'nav-icon', 'aria-hidden': true }, '◉'), 'Issues'], { view: 'issues', issue: null, page: null }, { 'aria-current': view === 'issues' ? 'page' : null }),
-      routeLink([node('span', { class: 'nav-icon', 'aria-hidden': true }, '▦'), 'Projects'], { view: 'projects', issue: null, page: null }, { 'aria-current': view === 'projects' ? 'page' : null }));
+      [['issues', '◉'], ['transactions', '↗'], ['logs', '≡'], ['projects', '▦']].map(([section, icon]) =>
+        routeLink([node('span', { class: 'nav-icon', 'aria-hidden': true }, icon), viewNames[section]],
+          { view: section, issue: null, page: null, query: null, status: null, sort: null, environment: null, level: null, trace: null },
+          { 'aria-current': view === section ? 'page' : null })));
     const logout = node('button', { type: 'button', onclick: async () => {
       logout.disabled = true;
       try {
@@ -204,7 +219,7 @@
       node('div', { class: 'account' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'small' }, state.me.user.email), logout));
     const main = node('main', { id: 'main', class: 'main', tabindex: '-1' });
     app.replaceChildren(node('div', { class: 'app-shell' }, sidebar, node('div', { class: 'content' },
-      node('header', { class: 'topbar' }, node('span', {}, node('strong', {}, org?.name || 'Workspace'), ' / ', view === 'projects' ? 'Projects' : 'Issues'), node('span', { class: 'server-label' }, 'Application monitoring')), main)));
+      node('header', { class: 'topbar' }, node('span', {}, node('strong', {}, org?.name || 'Workspace'), ' / ', viewNames[view]), node('span', { class: 'server-label' }, 'Application monitoring')), main)));
     app.setAttribute('aria-busy', 'false');
     return main;
   }
@@ -227,13 +242,14 @@
     const version = ++state.requestVersion;
     const params = new URLSearchParams(location.search);
     state.organization = state.me.organizations?.find(item => item.slug === params.get('org')) || state.me.organizations?.[0] || null;
-    const view = params.get('view') === 'projects' ? 'projects' : 'issues';
+    const requestedView = params.get('view');
+    const view = Object.prototype.hasOwnProperty.call(viewNames, requestedView) ? requestedView : 'issues';
     const main = renderShell(view);
     if (!state.organization) {
       main.append(node('div', { class: 'panel no-org' }, empty('No organization access', 'Your account does not belong to an organization. Contact your workspace owner to request access.')));
       return;
     }
-    loading(main, params.get('issue') ? 'Loading issue…' : view === 'projects' ? 'Loading projects…' : 'Loading issues…');
+    loading(main, view === 'issues' && params.get('issue') ? 'Loading issue…' : `Loading ${viewNames[view].toLowerCase()}…`);
     try {
       const projects = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/projects`);
       if (version !== state.requestVersion) return;
@@ -244,6 +260,16 @@
         renderIssue(main, detail);
       } else if (view === 'projects') {
         renderProjects(main);
+      } else if (view === 'transactions' || view === 'logs') {
+        const query = new URLSearchParams();
+        const filters = view === 'transactions' ? ['project'] : ['project', 'query', 'level', 'environment', 'trace', 'page'];
+        for (const name of filters) {
+          if (params.get(name)) query.set(name, params.get(name));
+        }
+        const result = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/${view}?${query}`);
+        if (version !== state.requestVersion) return;
+        if (view === 'transactions') renderTransactions(main, result, params);
+        else renderLogs(main, result, params);
       } else {
         const query = new URLSearchParams();
         for (const name of ['project', 'query', 'environment', 'status', 'sort', 'page']) {
@@ -267,7 +293,8 @@
 
   function badge(value) {
     const known = ['unresolved', 'resolved', 'ignored', 'error', 'fatal', 'warning', 'info', 'debug'];
-    return node('span', { class: `badge ${known.includes(value) ? value : ''}` }, text(value, 'Unknown'));
+    const variant = value === 'warn' ? 'warning' : value;
+    return node('span', { class: `badge ${known.includes(variant) ? variant : ''}` }, text(value, 'Unknown'));
   }
 
   function renderIssues(main, result, params) {
@@ -311,19 +338,115 @@
     main.append(panel);
   }
 
-  async function copyDSN(value) {
+  function projectFilter(params) {
+    return selectField('Project', [['', 'All projects'], ...state.projects.map(project => [String(project.id), project.name])], params.get('project') || '');
+  }
+
+  function traceReference(traceID, projectID) {
+    if (!traceID) return node('span', { class: 'muted small' }, 'No trace ID');
+    const copy = button('Copy', () => copyValue(traceID, 'Trace ID'), 'small');
+    copy.setAttribute('aria-label', 'Copy trace ID');
+    return node('div', { class: 'trace-reference' },
+      routeLink(traceID, { view: 'logs', issue: null, project: projectID || null, trace: traceID, query: null, environment: null, level: null, status: null, sort: null, page: null }, { class: 'mono', title: 'View logs with this trace ID' }), copy);
+  }
+
+  function milliseconds(value) {
+    const duration = Number(value);
+    return Number.isFinite(duration) ? `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(duration)} ms` : 'Not available';
+  }
+
+  function renderTransactions(main, result, params) {
+    document.title = 'Transactions · GoodSentry';
+    main.replaceChildren(pageHeader('Transactions', 'Transaction counts and latency over the last 24 hours.',
+      node('div', { class: 'actions' }, node('span', { class: 'badge' }, 'Last 24 hours'), button('Refresh', () => loadRoute()))));
+    const project = projectFilter(params);
+    const form = node('form', { class: 'filters transaction-filters', 'aria-label': 'Filter transactions' }, project.wrap,
+      node('button', { class: 'button', type: 'submit' }, 'Apply filter'));
+    form.addEventListener('submit', event => { event.preventDefault(); navigate({ project: project.input.value, page: null }); });
+    main.append(form);
+    const panel = node('section', { class: 'panel', 'aria-label': 'Transaction aggregates' });
+    const transactions = result.data || [];
+    if (!transactions.length) {
+      panel.append(empty('No transactions in the last 24 hours', 'Transactions appear when your SDK sends performance data. Check the selected project and your SDK sampling configuration.'));
+    } else {
+      const rows = transactions.map(transaction => node('tr', {},
+        node('td', { class: 'transaction-name' }, node('strong', {}, text(transaction.transaction, 'Unnamed transaction'))),
+        node('td', {}, node('span', { class: 'mono' }, text(transaction.op, 'Not provided'))),
+        node('td', { class: 'nowrap' }, number(transaction.count)), node('td', { class: 'nowrap' }, number(transaction.errorCount)),
+        node('td', { class: 'nowrap' }, milliseconds(transaction.avgDuration)), node('td', { class: 'nowrap' }, milliseconds(transaction.p50)),
+        node('td', { class: 'nowrap' }, milliseconds(transaction.p95)),
+        node('td', { class: 'nowrap' }, node('time', { datetime: transaction.lastSeen }, date(transaction.lastSeen, true))),
+        node('td', {}, traceReference(transaction.latestTraceId, params.get('project')))));
+      const columns = ['Transaction', 'Operation', 'Events', 'Errors', 'Average', 'p50', 'p95', 'Last seen', 'Latest trace'];
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
+    }
+    main.append(panel);
+  }
+
+  function logAttributes(attributes) {
+    const entries = pairs(attributes);
+    if (!entries.length) return node('p', { class: 'muted small' }, 'No attributes recorded.');
+    return node('dl', { class: 'key-values log-attributes', 'aria-label': 'Log attributes' }, entries.map(([name, attribute]) => [
+      node('dt', {}, name), node('dd', {}, node('span', { class: 'badge' }, text(attribute?.type, 'Unknown type')), node('pre', {}, text(attribute?.value))),
+    ]));
+  }
+
+  function renderLogs(main, result, params) {
+    document.title = 'Logs · GoodSentry';
+    main.replaceChildren(pageHeader('Logs', 'Search recorded logs and inspect their typed attributes.', button('Refresh', () => loadRoute())));
+    const search = field('Search logs', 'search', { name: 'query', value: params.get('query') || '', placeholder: 'Message text' });
+    search.wrap.classList.add('search-field');
+    const project = projectFilter(params);
+    const level = selectField('Level', [['', 'All levels'], ...['trace', 'debug', 'info', 'warn', 'warning', 'error', 'fatal'].map(value => [value, value])], params.get('level') || '');
+    const environment = field('Environment', 'text', { name: 'environment', value: params.get('environment') || '', placeholder: 'All environments' });
+    const trace = field('Trace ID', 'text', { name: 'trace', value: params.get('trace') || '', placeholder: 'All traces', spellcheck: 'false', autocomplete: 'off' });
+    const form = node('form', { class: 'filters log-filters', role: 'search', 'aria-label': 'Filter logs' }, search.wrap, project.wrap, level.wrap, environment.wrap, trace.wrap,
+      node('button', { class: 'button', type: 'submit' }, 'Apply filters'));
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      navigate({ project: project.input.value, query: search.input.value.trim(), level: level.input.value, environment: environment.input.value.trim(), trace: trace.input.value.trim(), page: null });
+    });
+    main.append(form);
+    const logs = result.data || [];
+    const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
+    const panel = node('section', { class: 'panel', 'aria-label': 'Logs' });
+    if (!logs.length) {
+      panel.append(empty(page > 1 ? 'No more logs on this page' : 'No matching logs', 'Check your filters, or send logs from your application SDK.',
+        button('Clear filters', () => navigate({ project: null, query: null, level: null, environment: null, trace: null, page: null }))));
+    } else {
+      const rows = logs.map(log => {
+        const projectName = state.projects.find(project => String(project.id) === String(log.projectId))?.name || log.projectId;
+        const disclosure = node('details', { class: 'log-entry' }, node('summary', {}, node('span', { class: 'log-message' }, text(log.body, '(empty message)'))),
+          node('div', { class: 'log-detail' }, node('h2', {}, 'Log attributes'), logAttributes(log.attributes),
+            node('div', { class: 'log-identifiers' }, keyValues([['Log ID', log.id], ['Span ID', log.spanId]]))));
+        return node('tr', {}, node('td', { class: 'nowrap' }, node('time', { datetime: log.timestamp }, date(log.timestamp, true))),
+          node('td', {}, badge(log.level)), node('td', { class: 'log-message-column' }, disclosure), node('td', {}, text(projectName)),
+          node('td', {}, text(log.service)), node('td', {}, text(log.environment)), node('td', {}, traceReference(log.traceId, log.projectId)));
+      });
+      const columns = ['Time', 'Level', 'Message and attributes', 'Project', 'Service', 'Environment', 'Trace'];
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
+    }
+    const previous = button('Previous', () => navigate({ page: page - 1 }));
+    const next = button('Next', () => navigate({ page: page + 1 }));
+    previous.disabled = page <= 1;
+    next.disabled = logs.length < pageSize;
+    panel.append(node('div', { class: 'pagination' }, node('span', {}, `${number(logs.length)} ${logs.length === 1 ? 'log' : 'logs'} on this page · Page ${page}`), node('div', { class: 'actions' }, previous, next)));
+    main.append(panel);
+  }
+
+  async function copyValue(value, label = 'DSN') {
     try {
       if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(value);
       else {
-        const copy = node('textarea', { class: 'copy-buffer', 'aria-label': 'DSN to copy', readonly: true }, value);
+        const copy = node('textarea', { class: 'copy-buffer', 'aria-label': `${label} to copy`, readonly: true }, value);
         document.body.append(copy);
         copy.select();
         const succeeded = document.execCommand('copy');
         copy.remove();
         if (!succeeded) throw new Error('Copy unavailable');
       }
-      notify('DSN copied.');
-    } catch (_) { notify('Copy unavailable. Select the DSN text and copy it manually.'); }
+      notify(`${label} copied.`);
+    } catch (_) { notify(`Copy unavailable. Select the ${label} text and copy it manually.`); }
   }
 
   function renderProjects(main) {
@@ -336,7 +459,7 @@
       const rows = state.projects.map(project => node('tr', {},
         node('td', {}, node('div', { class: 'project-name' }, project.name), node('div', { class: 'muted small mono' }, project.slug)),
         node('td', {}, badge(project.platform)),
-        node('td', {}, node('div', { class: 'dsn' }, node('code', {}, project.dsn), button('Copy', () => copyDSN(project.dsn), 'small'))),
+        node('td', {}, node('div', { class: 'dsn' }, node('code', {}, project.dsn), button('Copy', () => copyValue(project.dsn), 'small'))),
         node('td', {}, routeLink('View issues', { view: 'issues', project: project.id, query: null, status: null, environment: null, page: null }, { class: 'button small' }))));
       const columns = ['Project', 'Platform', 'DSN', ''].map((name, index) => node('th', { scope: 'col', ...(index === 3 ? { 'aria-label': 'Actions' } : {}) }, name));
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns)), node('tbody', {}, rows))));

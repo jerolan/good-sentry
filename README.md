@@ -30,9 +30,9 @@ docker compose down
 - Primera cuenta, login/logout, sesiones, organización y proyectos con DSN.
 - Ingesta `store` y `envelope`, autenticación SDK y cuerpos gzip, zlib, Brotli y Zstandard.
 - Errores agrupados con contexto original, búsqueda, filtros, resolución, reapertura y comentarios.
-- Transacciones con promedio, p50/p95 y trace ID consultables por API.
-- Logs con atributos tipados, filtros, deduplicación y correlación por trace ID consultables por API.
-- Interfaz responsive de proyectos y errores, probada en Chromium a 320, 768 y 1440 píxeles.
+- Transacciones con promedio, p50/p95 y trace ID en API y UI; la ventana actual es de 24 horas.
+- Logs con atributos tipados, filtros, deduplicación y correlación por trace ID en API y UI. Los enteros de 64 bits se muestran sin redondear.
+- Interfaz Tailwind de proyectos, errores, transacciones y logs, probada en Chromium a 320, 768 y 1440 píxeles.
 - SDK oficiales Go `v0.50.0`, Python `2.72.0`, Node `11.7.0` y navegador `11.7.0`: excepciones, transacciones y logs verificados recuperando los datos guardados. El SDK de navegador se ejecutó en Chromium desde otro origen para comprobar CORS.
 - Spans v2 de JavaScript con relaciones padre/hijo y deduplicación; solo los segmentos cuentan como transacciones en los agregados.
 
@@ -68,6 +68,8 @@ GOODSENTRY_URL=http://localhost:8000 COMPAT_EMAIL=tu-correo COMPAT_PASSWORD=tu-p
 ```
 
 Usa una instancia desechable para las pruebas de onboarding y compatibilidad. El cliente crea proyectos y eventos. El harness `tests/compat/browser.mjs` usa Playwright externo y guarda su evidencia en `test-results/`, excluido de Git.
+
+Los clientes Python y Node tienen dependencias fijadas en `python-requirements.txt` y `package-lock.json`, dentro de `tests/compat`. Ejecútalos con las mismas variables `GOODSENTRY_URL`, `COMPAT_EMAIL` y `COMPAT_PASSWORD`. `browser_sdk.mjs` requiere Playwright y Chromium externos; carga el bundle oficial de navegador 11.7.0 con SRI fijado, desde un origen de prueba separado. El harness de la UI permite `COMPAT_PLAYWRIGHT` para seleccionar una instalación temporal del runner. Estas dependencias no forman parte del servidor ni de su imagen.
 
 ## Procedencia
 
