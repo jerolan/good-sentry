@@ -44,9 +44,35 @@ func TestDurableCaptureAndTenantScope(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	user, org, err := db.Bootstrap(ctx, "owner@example.test", []byte("already-hashed"), "Owner", "Example")
-	if err != nil {
-		t.Fatal(err)
+	var user User
+	var org Organization
+	type setupResult struct {
+		user User
+		org  Organization
+		err  error
+	}
+	setups := make(chan setupResult, 8)
+	var setupGroup sync.WaitGroup
+	for range 8 {
+		setupGroup.Go(func() {
+			u, o, e := db.Bootstrap(ctx, "owner@example.test", []byte("already-hashed"), "Owner", "Example")
+			setups <- setupResult{u, o, e}
+		})
+	}
+	setupGroup.Wait()
+	close(setups)
+	winners := 0
+	for result := range setups {
+		if result.err == nil {
+			winners++
+			user = result.user
+			org = result.org
+		} else if result.err != ErrConflict {
+			t.Fatal(result.err)
+		}
+	}
+	if winners != 1 {
+		t.Fatalf("concurrent first-owner winners=%d", winners)
 	}
 	_, _, err = db.Bootstrap(ctx, "other@example.test", []byte("hash"), "Other", "Other")
 	if err != ErrConflict {
