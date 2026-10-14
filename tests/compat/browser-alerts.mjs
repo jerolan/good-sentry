@@ -1,7 +1,7 @@
 // Browser owner: module loading, retained rule inputs, truthful queue/attempt
 // presentation, URL filters and role restrictions. All API/worker data is real.
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -92,6 +92,34 @@ async function waitDelivery(rule, predicate) {
   }
   throw new Error('Expected real delivery record did not appear');
 }
+async function sentDelivery(rule, predicate) {
+  const delivery = await waitDelivery(rule, item => predicate(item) && item.status === 'sent');
+  const response = await context.request.get(url(`alert-deliveries/${encodeURIComponent(delivery.id)}`));
+  assert.equal(response.status(), 200);
+  const detail = await response.json();
+  assert.equal(detail.delivery.status, 'sent');
+  assert.equal(detail.delivery.lastStatusCode, 204, 'Actual local receiver success is persisted');
+  assert.ok(detail.delivery.sentAt && detail.delivery.attempts >= 1);
+  assert.ok(detail.attempts.some(attempt => attempt.status === 'delivered' && attempt.statusCode === 204 && attempt.completedAt && attempt.elapsedMs >= 0), 'A completed successful worker attempt is persisted');
+  if (process.env.GOODSENTRY_ALERT_RECEIPTS) {
+    const receipts = (await readFile(process.env.GOODSENTRY_ALERT_RECEIPTS, 'utf8')).trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+    const receipt = receipts.find(item => item.deliveryID === delivery.id);
+    assert.ok(receipt, 'Test-owned HTTP receiver actually received this delivery');
+    assert.equal(receipt.payload.id, delivery.id);
+    assert.equal(receipt.event, delivery.payload.kind);
+  }
+  return delivery;
+}
+async function showSentDelivery(rule, delivery) {
+  await open({ rule: rule.id, delivery: delivery.id });
+  const selected = await visible(page.getByRole('region', { name: 'Selected delivery' }));
+  await visible(selected.getByText('sent', { exact: true }));
+  await visible(selected.getByText('204', { exact: true }).first());
+  const attempts = selected.getByRole('region', { name: 'Delivery attempts', exact: true });
+  await visible(attempts.getByRole('row').filter({ hasText: 'delivered' }).filter({ hasText: '204' }).first());
+  assert.equal(await attempts.getByText('No worker attempt has started.', { exact: true }).count(), 0);
+  return selected;
+}
 async function sendEvent(environment) {
   const dsn = new URL(project.dsn);
   const eventID = randomBytes(16).toString('hex');
@@ -124,6 +152,7 @@ try {
   assert.equal(response.status(), 201); project = await response.json();
   await open();
   if (me.features.alertDelivery !== true) await visible(page.getByRole('heading', { name: 'Automatic delivery is not running', exact: true }));
+  else assert.equal(await page.getByRole('heading', { name: 'Automatic delivery is not running', exact: true }).count(), 0, 'Active dispatcher has no disabled banner');
   const name = `Frequency ${runID}`;
   const form = await createRule('error_frequency', name);
   for (const [label, expected] of [['Event threshold', '1'], ['Window (minutes)', '5'], ['Cooldown (seconds)', '900']]) assert.equal(await form.getByLabel(label, { exact: true }).inputValue(), expected);
@@ -157,13 +186,18 @@ try {
 
   await queueTest();
   await visible(page.getByRole('status').filter({ hasText: '1 test deliveries queued' }));
-  const testDelivery = await waitDelivery(frequency, () => true);
+  const activeDelivery = me.features.alertDelivery === true;
+  const testDelivery = activeDelivery ? await sentDelivery(frequency, () => true) : await waitDelivery(frequency, () => true);
   if (me.features.alertDelivery !== true) {
     assert.equal(testDelivery.status, 'pending', 'No dispatcher means queued, not sent');
     assert.equal(testDelivery.attempts, 0, 'No invented worker attempt');
   }
-  await open({ rule: frequency.id, delivery: testDelivery.id });
-  const selectedDelivery = await visible(page.getByRole('region', { name: 'Selected delivery' }));
+  let selectedDelivery;
+  if (activeDelivery) selectedDelivery = await showSentDelivery(frequency, testDelivery);
+  else {
+    await open({ rule: frequency.id, delivery: testDelivery.id });
+    selectedDelivery = await visible(page.getByRole('region', { name: 'Selected delivery' }));
+  }
   await visible(selectedDelivery.getByText(testDelivery.status, { exact: true }));
   await selectedDelivery.getByText('Compact delivery payload', { exact: true }).click();
   await visible(selectedDelivery.locator('pre'));
@@ -173,15 +207,16 @@ try {
   const link = selectedDelivery.getByRole('link').filter({ hasText: testDelivery.payload.url });
   assert.equal(await link.getAttribute('href'), testDelivery.payload.url, 'Related resource uses API absolute URL');
   await capture('alert-delivery');
-  checks.push('Test action reports durable queue count; delivery/payload view shows actual state without invented success');
+  checks.push(activeDelivery ? 'Test action queues normally; real204 delivery, completed attempt and sent status are visible' : 'Test action reports durable queue count; delivery/payload view shows actual pending state without invented success');
 
   const before = (await deliveries(frequency)).length;
   await sendEvent('other-environment');
   assert.equal((await deliveries(frequency)).length, before, 'Environment filter excludes unrelated captures');
   const eventID = await sendEvent('browser-alerts');
-  const eventDelivery = await waitDelivery(frequency, item => item.payload.eventId === eventID);
+  const eventDelivery = activeDelivery ? await sentDelivery(frequency, item => item.payload.eventId === eventID) : await waitDelivery(frequency, item => item.payload.eventId === eventID);
   assert.ok(eventDelivery.payload.issue?.id, 'Real capture queues an issue-linked alert');
   assert.ok(eventDelivery.payload.url.startsWith(baseURL.origin), 'HTTP API resolves its public resource URL');
+  if (activeDelivery) { await showSentDelivery(frequency, eventDelivery); await capture('alert-capture-sent'); }
   await open({ rule: frequency.id });
   for (let index = 0; index < 25; index++) await queueTest();
   await visible(page.getByText('25 deliveries on this page · Page 1', { exact: true }));
@@ -239,17 +274,23 @@ try {
     assert.equal((await (await resumedResponse).json()).environment, 'browser-alerts', 'Monitor pause/resume preserves its environment');
     await confirmed('up');
     await probeControl(503); await confirmed('down');
-    const down = await waitDelivery(uptimeRule, item => item.payload.monitor?.status === 'down');
+    const down = activeDelivery ? await sentDelivery(uptimeRule, item => item.payload.monitor?.status === 'down') : await waitDelivery(uptimeRule, item => item.payload.monitor?.status === 'down');
     assert.equal(down.payload.monitor.id, monitor.id); assert.equal(down.payload.environment, 'browser-alerts');
     await probeControl(200); await confirmed('up');
-    await waitDelivery(uptimeRule, item => item.payload.monitor?.status === 'up' && item.payload.monitor?.previousStatus === 'down');
+    const recoveryPredicate = item => item.payload.monitor?.status === 'up' && item.payload.monitor?.previousStatus === 'down';
+    const recovery = activeDelivery ? await sentDelivery(uptimeRule, recoveryPredicate) : await waitDelivery(uptimeRule, recoveryPredicate);
     await page.getByRole('button', { name: 'Delete monitor', exact: true }).click();
     const removed = page.waitForResponse(response => response.request().method() === 'DELETE' && response.url().endsWith(`/monitors/${monitor.id}`));
     await page.getByRole('button', { name: 'Delete permanently', exact: true }).click(); assert.equal((await removed).status(), 204);
-    await open({ rule: uptimeRule.id, delivery: down.id });
-    await visible(page.getByRole('region', { name: 'Selected delivery' })); await capture('alert-uptime');
+    if (activeDelivery) {
+      await showSentDelivery(uptimeRule, down); await capture('alert-uptime-down-sent');
+      await showSentDelivery(uptimeRule, recovery); await capture('alert-uptime-recovery-sent');
+    } else {
+      await open({ rule: uptimeRule.id, delivery: down.id });
+      await visible(page.getByRole('region', { name: 'Selected delivery' })); await capture('alert-uptime');
+    }
     await removeRule(uptimeRule); await open({ rule: frequency.id });
-    checks.push('Monitor environment survives pause/resume and real down/recovery transitions queue matching project alert payloads');
+    checks.push(activeDelivery ? 'Real monitor down/recovery sends both matching environment alerts with visible completed204 attempt rows' : 'Monitor environment survives pause/resume and real down/recovery transitions queue matching project alert payloads');
   }
 
   await page.getByRole('button', { name: 'Pause alert rule', exact: true }).click();

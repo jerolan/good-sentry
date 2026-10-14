@@ -12,6 +12,7 @@ import (
 
 	"goodsentry/internal/config"
 	"goodsentry/internal/jobs"
+	"goodsentry/internal/notify"
 	"goodsentry/internal/server"
 	"goodsentry/internal/store"
 )
@@ -39,6 +40,20 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	alertTimeout := time.Duration(cfg.AlertTimeoutSeconds) * time.Second
+	sender, err := notify.NewSender(notify.Options{
+		Domain: cfg.Domain, EmailURL: cfg.EmailURL, FromEmail: cfg.FromEmail,
+		Timeout: alertTimeout, AllowPrivate: cfg.WebhookAllowPrivate, Console: os.Stdout,
+	})
+	if err != nil {
+		return err
+	}
+	defer sender.Close()
+	stopAlerts := jobs.StartAlerts(ctx, db, sender, jobs.AlertOptions{
+		Workers: cfg.AlertWorkers, MaxAttempts: cfg.AlertMaxAttempts, Timeout: alertTimeout,
+	})
+	defer stopAlerts()
+	cfg.AlertDelivery = true
 	if cfg.Uptime {
 		stopWorkers := jobs.StartMonitors(ctx, db, cfg.MonitorWorkers, cfg.UptimeAllowPrivate)
 		defer stopWorkers()

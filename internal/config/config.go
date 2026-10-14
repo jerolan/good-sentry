@@ -21,6 +21,7 @@ type Config struct {
 	AlertWorkers, AlertMaxAttempts            int
 	AlertTimeoutSeconds                       int
 	WebhookAllowPrivate                       bool
+	AlertDelivery                             bool
 }
 
 func Load() (Config, error) {
