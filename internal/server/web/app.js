@@ -6,11 +6,12 @@
   const configuredBase = document.querySelector('meta[name="goodsentry-base"]')?.content || '';
   const base = configuredBase === '__GOODSENTRY_BASE__' ? '' : configuredBase.replace(/\/$/, '');
   const pageSize = 25;
-  const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime' };
+  const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts' };
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
   let fieldNumber = 0;
   let notificationTimer;
+  let alertsUI;
 
   function node(tag, attributes = {}, ...children) {
     const element = document.createElement(tag);
@@ -198,16 +199,17 @@
     const organizations = state.me.organizations || [];
     const org = state.organization;
     const selector = node('select', { class: 'org-select', 'aria-label': 'Organization', onchange: event => {
-      navigate({ org: event.target.value, issue: null, monitor: null, project: null, page: null, changes: null });
+      navigate({ org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, page: null, changes: null });
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
-      [['issues', '◉'], ['transactions', '↗'], ['logs', '≡'], ['monitors', '◷'], ['projects', '▦']]
+      [['issues', '◉'], ['transactions', '↗'], ['logs', '≡'], ['monitors', '◷'], ['alerts', '♧'], ['projects', '▦']]
         .filter(([section]) => section !== 'monitors' || state.me.features?.uptime === true)
         .filter(([section]) => section !== 'logs' || state.me.features?.logs !== false)
+        .filter(([section]) => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .map(([section, icon]) =>
         routeLink([node('span', { class: 'nav-icon', 'aria-hidden': true }, icon), viewNames[section]],
-          { view: section, issue: null, monitor: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null },
+          { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null },
           { 'aria-current': view === section ? 'page' : null })));
     const logout = node('button', { type: 'button', onclick: async () => {
       logout.disabled = true;
@@ -268,6 +270,11 @@
         renderIssue(main, detail);
       } else if (view === 'projects') {
         renderProjects(main);
+      } else if (view === 'alerts') {
+        const { createAlertsUI } = await import('./alerts.js');
+        if (version !== state.requestVersion) return;
+        alertsUI ||= createAlertsUI({ state, node, request, navigate, routeLink, button, field, selectField, pageHeader, empty, keyValues, formError, notify, date, number, text, reload: () => loadRoute() });
+        await alertsUI.render(main, params, () => version === state.requestVersion);
       } else if (view === 'monitors') {
         const path = monitorPath(params.get('monitor'));
         if (!params.get('monitor')) {
@@ -525,7 +532,7 @@
   }
 
   function monitorConfiguration(monitor) {
-    return Object.fromEntries(['name', 'type', 'url', 'project', 'intervalSeconds', 'timeoutSeconds', 'expectedStatus', 'expectedBody', 'confirmationThreshold', 'enabled'].map(key => [key, monitor[key]]));
+    return Object.fromEntries(['name', 'type', 'url', 'project', 'environment', 'intervalSeconds', 'timeoutSeconds', 'expectedStatus', 'expectedBody', 'confirmationThreshold', 'enabled'].map(key => [key, monitor[key]]));
   }
 
   function renderMonitor(main, monitor, history, latest, params) {
@@ -567,7 +574,7 @@
     summary.setAttribute('aria-label', 'Current monitor state');
     const panels = node('div', { class: 'monitor-summary' }, summary,
       detailPanel('Configuration', node('div', { class: 'panel-body' }, keyValues([
-        ['Type', monitor.type], ['Project', monitor.project || 'None'], ['Failure threshold', monitor.confirmationThreshold],
+        ['Type', monitor.type], ['Project', monitor.project || 'None'], ['Environment', monitor.environment || 'Not set'], ['Failure threshold', monitor.confirmationThreshold],
         ['Timeout', monitor.type === 'heartbeat' ? 'Not applicable' : `${monitor.timeoutSeconds} seconds`],
         ['Expected HTTP status', ['HEAD', 'GET', 'POST'].includes(monitor.type) ? monitor.expectedStatus : 'Not applicable'],
         ['Expected body', monitor.expectedBody || 'Not set'],
@@ -607,13 +614,14 @@
   }
 
   function openMonitorDialog(monitor) {
-    const config = monitor || { name: '', type: 'HEAD', url: '', project: '', intervalSeconds: 60, timeoutSeconds: 20, expectedStatus: 200, expectedBody: '', confirmationThreshold: 1, enabled: true };
+    const config = monitor || { name: '', type: 'HEAD', url: '', project: '', environment: '', intervalSeconds: 60, timeoutSeconds: 20, expectedStatus: 200, expectedBody: '', confirmationThreshold: 1, enabled: true };
     const dialog = node('dialog', { class: 'monitor-dialog', 'aria-labelledby': 'monitor-dialog-title' });
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const name = field('Monitor name', 'text', { name: 'name', value: config.name, required: true, maxlength: 400 });
     const type = selectField('Monitor type', [['HEAD', 'HTTP HEAD'], ['GET', 'HTTP GET'], ['POST', 'HTTP POST'], ['TCP', 'TCP'], ['heartbeat', 'Incoming heartbeat']], config.type, monitor ? { disabled: true } : {});
     const target = field('Target URL', 'text', { name: 'url', value: config.url, maxlength: 2000, autocomplete: 'off', spellcheck: 'false' });
     const project = selectField('Project', [['', 'No project'], ...state.projects.map(item => [item.slug, item.name])], config.project || '');
+    const environment = field('Monitor environment', 'text', { name: 'environment', value: config.environment || '', maxlength: 256, autocomplete: 'off' });
     const interval = field('Interval (seconds)', 'number', { name: 'intervalSeconds', required: true, min: 1, max: 86400, step: 1, value: config.intervalSeconds });
     const timeout = field('Timeout (seconds)', 'number', { name: 'timeoutSeconds', required: true, min: 1, max: 60, step: 1, value: config.timeoutSeconds });
     const expectedStatus = field('Expected HTTP status', 'number', { name: 'expectedStatus', required: true, min: 100, max: 599, step: 1, value: config.expectedStatus });
@@ -642,18 +650,18 @@
     type.input.addEventListener('change', updateFields);
     updateFields();
     const form = node('form', { class: 'form-stack', 'aria-label': monitor ? 'Edit monitor configuration' : 'Create monitor configuration' }, error,
-      node('div', { class: 'monitor-fields' }, name.wrap, type.wrap, target.wrap, project.wrap, interval.wrap, timeout.wrap, expectedStatus.wrap, threshold.wrap, expectedBody.wrap), note,
+      node('div', { class: 'monitor-fields' }, name.wrap, type.wrap, target.wrap, project.wrap, environment.wrap, interval.wrap, timeout.wrap, expectedStatus.wrap, threshold.wrap, expectedBody.wrap), note,
       node('label', { class: 'checkbox-field' }, enabled, 'Enabled'), node('div', { class: 'dialog-actions' }, button('Cancel', close), submit));
     form.addEventListener('submit', async event => {
       event.preventDefault();
       error.textContent = '';
-      if (Array.from(name.input.value.trim()).length > 200 || (['GET', 'POST'].includes(type.input.value) && Array.from(expectedBody.input.value).length > 2000)) {
-        formError(error, new Error('Monitor name must be at most 200 characters and expected body at most 2000 characters.'));
+      if (Array.from(name.input.value.trim()).length > 200 || Array.from(environment.input.value.trim()).length > 128 || (['GET', 'POST'].includes(type.input.value) && Array.from(expectedBody.input.value).length > 2000)) {
+        formError(error, new Error('Use at most 200 characters for the monitor name, 128 for its environment and 2000 for the expected body.'));
         return;
       }
       const kind = type.input.value;
       const heartbeat = kind === 'heartbeat';
-      const payload = { name: name.input.value.trim(), type: kind, url: heartbeat ? '' : target.input.value.trim(), project: project.input.value,
+      const payload = { name: name.input.value.trim(), type: kind, url: heartbeat ? '' : target.input.value.trim(), project: project.input.value, environment: environment.input.value.trim(),
         intervalSeconds: Number(interval.input.value), timeoutSeconds: heartbeat ? config.timeoutSeconds : Number(timeout.input.value),
         expectedStatus: ['HEAD', 'GET', 'POST'].includes(kind) ? Number(expectedStatus.input.value) : config.expectedStatus,
         expectedBody: ['GET', 'POST'].includes(kind) ? expectedBody.input.value : '', confirmationThreshold: Number(threshold.input.value), enabled: enabled.checked };

@@ -3,6 +3,7 @@
 @import "tailwindcss/utilities.css" layer(utilities) source(none);
 @source "./index.html";
 @source "./app.js";
+@source "./alerts.js";
 
 @theme inline {
   --color-canvas: var(--bg);
@@ -291,6 +292,22 @@
   .source-map-status:empty { @apply hidden; }
   .artifact-name { @apply min-w-[220px] wrap-anywhere; }
   .artifact-identity { @apply block min-w-[100px] max-w-[170px] break-all; }
+  .alert-section { @apply mt-4; }
+  .alert-filters { grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; }
+  .alert-section + .alert-filters { @apply mt-4; }
+  .alert-panel-heading { @apply flex-wrap; }
+  .alert-name { @apply min-w-[160px] max-w-[320px] wrap-anywhere; }
+  .alert-value,.alert-resource { @apply wrap-anywhere; }
+  .alert-destination { @apply min-w-[180px] max-w-[320px] wrap-anywhere; }
+  .alert-destination p { @apply mt-1; }
+  .alert-dialog { @apply max-w-[760px]; }
+  .alert-fields { @apply grid grid-cols-2 gap-4; }
+  .alert-fields > .field:last-child { @apply col-span-full; }
+  .alert-fields [hidden],.alert-recipients [hidden] { @apply hidden; }
+  .alert-recipient-set { @apply m-0 p-4 border border-outline rounded-md min-w-0; }
+  .alert-recipient-set legend { @apply px-1 font-semibold; }
+  .alert-recipients { @apply grid gap-3 mb-3; }
+  .alert-recipient { @apply grid gap-3 items-end; grid-template-columns: minmax(0,1fr) minmax(0,2fr) auto; }
   .monitor-heading > div:first-child { @apply min-w-0 flex-1; }
   .monitor-heading h1,.monitor-heading p { @apply wrap-anywhere; }
   .monitor-name { @apply min-w-[180px] max-w-[300px] wrap-anywhere; }
@@ -376,7 +393,7 @@
     .panel-title,.panel-body,.stack-frame,.breadcrumb { @apply p-4; }
   }
   @media(max-width:700px) {
-    .source-map-fields,.monitor-fields,.monitor-summary { @apply grid-cols-1; }
+    .source-map-fields,.monitor-fields,.monitor-summary,.alert-fields,.alert-filters,.alert-recipient { @apply grid-cols-1; }
   }
   @media(prefers-reduced-motion:no-preference) {
     .skeleton {
