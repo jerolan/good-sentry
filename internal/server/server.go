@@ -17,7 +17,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-//go:embed web/*
+//go:embed web/index.html web/app.css web/app.js
 var web embed.FS
 
 type Server struct {

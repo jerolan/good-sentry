@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: goodsentry
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-goodsentry-local}
+      POSTGRES_DB: goodsentry
+    volumes:
+      - pg-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goodsentry -d goodsentry"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  goodsentry:
+    image: goodsentry:local
+    build: .
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      DATABASE_URL: postgres://goodsentry:${POSTGRES_PASSWORD:-goodsentry-local}@postgres:5432/goodsentry
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY to a random value of at least 32 characters}
+      GOODSENTRY_DOMAIN: ${GOODSENTRY_DOMAIN:-http://localhost:8000}
+      EMAIL_URL: ${EMAIL_URL:-consolemail://}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-goodsentry@localhost}
+      VALKEY_URL: ""
+      GOODSENTRY_ENABLE_UPTIME: "false"
+      GOODSENTRY_ENABLE_LOGS: "true"
+      SERVER_ROLE: all_in_one
+    volumes:
+      - uploads:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  pg-data:
+  uploads:
