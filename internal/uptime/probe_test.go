@@ -38,6 +38,8 @@ func TestConfigValidate(t *testing.T) {
 		{"invalid utf8", func(c *Config) { c.Name = string([]byte{255}) }},
 		{"name nul", func(c *Config) { c.Name = "a\x00b" }},
 		{"project nul", func(c *Config) { c.Project = "a\x00b" }},
+		{"environment nul", func(c *Config) { c.Environment = "a\x00b" }},
+		{"long environment", func(c *Config) { c.Environment = strings.Repeat("🙂", 129) }},
 		{"body nul", func(c *Config) { c.ExpectedBody = "\x00" }},
 		{"url nul", func(c *Config) { c.URL = "https://example.invalid/\x00" }},
 		{"kind", func(c *Config) { c.Type = "get" }},

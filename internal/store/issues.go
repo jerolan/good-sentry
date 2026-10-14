@@ -87,6 +87,11 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 	if err != nil {
 		return "", false, err
 	}
+	if issueID != nil {
+		if err = queueErrorAlerts(ctx, tx, projectID, ev.ID, issueID.(string)); err != nil {
+			return "", false, err
+		}
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return "", false, err
 	}

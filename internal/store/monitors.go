@@ -12,14 +12,14 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-const monitorColumns = `m.id::text,m.name,m.kind,m.url,COALESCE(p.slug,''),m.interval_seconds,m.timeout_seconds,
+const monitorColumns = `m.id::text,m.name,m.kind,m.url,COALESCE(p.slug,''),m.environment,m.interval_seconds,m.timeout_seconds,
 	m.expected_status,m.expected_body,m.confirmation_threshold,m.enabled,m.status,m.consecutive_failures,
 	m.last_check,m.last_change,m.next_check,m.created_at,m.heartbeat_key`
 const monitorJoin = ` FROM monitors m LEFT JOIN projects p ON p.id=m.project_id `
 const monitorCheckColumns = `id::text,started_at,completed_at,up,status,previous_status,is_change,response_time_ms,status_code,reason`
 
 func monitorFields(m *uptime.Monitor) []any {
-	return []any{&m.ID, &m.Name, &m.Type, &m.URL, &m.Project, &m.IntervalSeconds, &m.TimeoutSeconds,
+	return []any{&m.ID, &m.Name, &m.Type, &m.URL, &m.Project, &m.Environment, &m.IntervalSeconds, &m.TimeoutSeconds,
 		&m.ExpectedStatus, &m.ExpectedBody, &m.ConfirmationThreshold, &m.Enabled, &m.Status, &m.ConsecutiveFailures,
 		&m.LastCheck, &m.LastChange, &m.NextCheck, &m.CreatedAt, &m.HeartbeatKey}
 }
@@ -122,10 +122,10 @@ func (s *Store) CreateMonitor(ctx context.Context, userID, orgSlug string, c upt
 	}
 	var id string
 	err = tx.QueryRow(ctx, `INSERT INTO monitors(organization_id,project_id,name,kind,url,interval_seconds,timeout_seconds,
-		expected_status,expected_body,confirmation_threshold,enabled,next_check,created_at,heartbeat_key)
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id::text`, org.ID, project,
+		expected_status,expected_body,confirmation_threshold,enabled,next_check,created_at,heartbeat_key,environment)
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING id::text`, org.ID, project,
 		c.Name, c.Type, c.URL, c.IntervalSeconds, c.TimeoutSeconds, c.ExpectedStatus, c.ExpectedBody,
-		c.ConfirmationThreshold, c.Enabled, next, now, key).Scan(&id)
+		c.ConfirmationThreshold, c.Enabled, next, now, key, c.Environment).Scan(&id)
 	if err != nil {
 		return uptime.Monitor{}, dbError(err)
 	}
@@ -167,9 +167,9 @@ func (s *Store) UpdateMonitor(ctx context.Context, userID, orgSlug, id string, c
 	}
 	_, err = tx.Exec(ctx, `UPDATE monitors SET project_id=$2,name=$3,url=$4,interval_seconds=$5,timeout_seconds=$6,
 		expected_status=$7,expected_body=$8,confirmation_threshold=$9,enabled=$10,next_check=$11,
-		consecutive_failures=0,lease_token='',lease_started_at=NULL,lease_expires_at=NULL WHERE id::text=$1`,
+		consecutive_failures=0,lease_token='',lease_started_at=NULL,lease_expires_at=NULL,environment=$12 WHERE id::text=$1`,
 		id, project, c.Name, c.URL, c.IntervalSeconds, c.TimeoutSeconds, c.ExpectedStatus, c.ExpectedBody,
-		c.ConfirmationThreshold, c.Enabled, next)
+		c.ConfirmationThreshold, c.Enabled, next, c.Environment)
 	if err != nil {
 		return uptime.Monitor{}, err
 	}
@@ -341,5 +341,8 @@ func completeMonitorCheck(ctx context.Context, tx pgx.Tx, m uptime.Monitor, star
 		last_change=CASE WHEN $5 THEN $4 ELSE last_change END,next_check=$6,
 		lease_token='',lease_started_at=NULL,lease_expires_at=NULL WHERE id::text=$1`,
 		m.ID, status, failures, completed, changed, completed.Add(time.Duration(m.IntervalSeconds)*time.Second))
+	if err == nil {
+		err = queueMonitorAlerts(ctx, tx, m.ID, check)
+	}
 	return check, err
 }
