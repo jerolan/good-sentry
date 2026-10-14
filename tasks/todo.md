@@ -4,29 +4,33 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
 
 ## Foundation and first durable SDK event
 
-- [ ] Prepare native Go and a working PostgreSQL/container verification environment in WSL.
-  - Verify official compiler checksum/version and actual database connectivity. Record tooling paths; do not alter system shell profiles.
-- [ ] Initialize Git and commit the approved specification package.
-  - Verify exact file contents, local links, git diff --check and clean working tree.
-- [ ] Validate runtime configuration and build the executable with health endpoints.
+- [x] Prepare native Go and a working PostgreSQL/container verification environment in WSL.
+  - Go 1.27.2 is installed at /tmp/sentrygo-toolchain/go; official archive SHA-256 `ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5`. PostgreSQL 18 accepts real integration traffic; Docker 29.8.1 works through WSL. No shell profiles changed.
+- [x] Initialize Git and commit the approved specification package.
+  - Commit ca40c22 owns the initial package; subsequent changes are intention-focused local commits. No remote publication.
+- [x] Validate runtime configuration and build the executable with health endpoints.
   - Files: go.mod, cmd/goodsentry/main.go, internal/config/config.go and its tests.
   - Verify invalid environment rejection, go test and go build.
-- [ ] Add PostgreSQL migrations and lifecycle.
-  - Files: internal/store/store.go, schema.sql, store_test.go and command integration.
+- [x] Add PostgreSQL migrations and lifecycle.
+  - Files: internal/store/store.go, migrations/*.sql, store_test.go and command integration.
   - Verify clean database migration, repeated startup, database readiness and real persistence.
 - [ ] Implement account setup/login/session and organization/project bootstrap.
   - Files: internal/server/server.go, auth.go, workspace.go, auth_test.go and store additions.
   - Verify first-owner race/closure, login/logout/expiry, CSRF and cross-organization access denial against PostgreSQL.
-- [ ] Implement SDK envelope/store framing and authentication.
+  - Setup/login/logout, CSRF, project DSN and eight concurrent first-owner attempts pass. Complete membership/expiry coverage remains pending.
+- [x] Implement SDK envelope/store framing and authentication.
   - Files: internal/protocol/envelope.go, transport.go, protocol_test.go and go.mod dependencies owned by primary.
   - Verify public wire grammar, binary payloads, unknown types, four compression formats, legacy store and invalid request limits.
-- [ ] Implement pure event normalization and stable fingerprinting.
+- [x] Implement pure event normalization and stable fingerprinting.
   - Files: internal/event/event.go, event_test.go.
   - Verify exception/message grouping, custom/default fingerprints, missing IDs and timestamp variants.
 - [ ] Integrate durable ingestion, issue list/event detail and original responsive UI.
   - Verify real Go/Python/Node/browser SDK errors through authenticated reads, idempotent duplicate events, grouping and restart persistence.
-- [ ] Add the non-root Dockerfile and PostgreSQL compose deployment with embedded assets.
+  - Durable errors and UI are implemented. Real Go/Python/Node exceptions pass; official browser SDK matrix remains pending. Eight concurrent duplicate events count once. Compose restart preserves an acknowledged event and session.
+- [x] Add the non-root Dockerfile and PostgreSQL compose deployment with embedded assets.
   - Verify docker compose up --build from a clean database, readiness, SDK capture and persisted data after restart.
+- [x] Compile the user-authorized Tailwind CSS into the embedded UI.
+  - Verify a pinned reproducible stylesheet build, browser workflow and responsive widths; retain a single Go runtime image.
 
 ## Issue workflow and artifacts
 
@@ -42,6 +46,8 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 
 ## Observability and operations
 
+- [ ] Accept current SDK span v2 batches atomically, deduplicate retries and aggregate only segments.
+  - Preserve child relationships and typed attributes; verify real Node 11.7.0 error, trace and logs after the initially failing trace check.
 - [ ] Deliver transaction/span storage, time-window aggregates, average/p50/p95, errors and detail UI.
 - [ ] Deliver SDK logs with typed attributes, filters, trace correlation and detail UI.
 - [ ] Deliver native OTLP /v1/logs and verify an actual exporter.
@@ -72,3 +78,7 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 
 - 2026-10-14: Workspace verified empty. WSL2 runs approved /bin/sh commands. Normal sandbox process creation fails before execution. Initial Docker wrapper reports missing WSL integration. Go installation preparation has started in /tmp/sentrygo-toolchain. No application behavior is implemented yet.
 - 2026-10-14: Public-documentation research established the GlitchTip baseline and Sentry ingestion contracts. No upstream server implementation source was inspected. Source links and known compatibility gaps are recorded in SPEC.md.
+- 2026-10-14: `go test -tags=integration ./...`, `go vet ./...` and `git diff --check` pass against PostgreSQL 18 through commit ad5b209. Full race tests passed before the final source-map parser fixes; rerun after the next integrated increment. Envelope fuzzing completed 31,840 executions without a failure. These checks do not establish unfinished feature parity.
+- 2026-10-14: Official sentry-go 0.50.0 passes exception/transaction/typed-log retrieval against native WSL and Compose. Python sentry-sdk 2.72.0 passes the same matrix against Compose. Node 11.7.0 exceptions and typed logs pass; its real streamed-span aggregate initially fails. The new HTTP regression reproduces `unsupportedItems:[span]`; keep the trace check failing until the specified fix lands. SDK packages are isolated external test clients. Node's installation used an explicitly authorized exception to npq's publication-age gate, confined to temporary test tooling.
+- 2026-10-14: Tailwind CLI 4.3.3 SHA-256 `dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a` produces a repeatable stylesheet. Browser onboarding/project/DSN/errors/filters/resolve/reopen/comments/login pass at 320/768/1440 px with no document overflow, JS errors or transport failures. Expected anonymous /me 401 is recorded separately. Local ignored evidence: test-results/browser/report.json and responsive screenshots. Compose serves exactly that compiled stylesheet; image/runtime verification currently covers Linux amd64.
+- 2026-10-14: Independent pure source-map tests prove original file/line/column/context, debug-ID precedence and preserved original stacks. Upload/storage/API wiring remains incomplete. Official sentry-cli 3.8.0 SHA-256 `13f8cb34ae01a6a272d7d7c22e277a105286615b4020de900ea95a8de47cdbb6` exercised against our recorder establishes request negotiation, SHA-1 chunks, multipart gzip and SYSB-v2 bundle layout. Synthetic server responses are not real Sentry server evidence. The bundle decoder is the next bounded artifact increment.

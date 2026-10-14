@@ -1,6 +1,6 @@
 # GoodSentry
 
-Status: design authorized by the user on 2026-10-14. Implementation and verification remain pending.
+Status: design authorized by the user on 2026-10-14. Implementation is in progress; tasks/todo.md records verified increments and remaining acceptance work.
 
 ## Objective and acceptance boundary
 
@@ -38,7 +38,7 @@ Ingest events durably before returning success. A request may normalize synchron
 
 HTTP, workers and scheduler stop on termination signals and close database connections. Startup applies forward-only, versioned migrations under a PostgreSQL advisory lock. Readiness checks the database. Deployment rollback requires a compatible binary or database backup restoration; destructive rollback migrations are not automatic.
 
-Serve an original, responsive application UI with a compact sidebar, neutral surfaces, a teal accent, readable tables and accessible forms. Show loading, empty, error and permission states. Preserve filters in URLs. Escape telemetry as text, including stack traces, tags and log bodies. Never render event content as trusted HTML.
+Serve an original, responsive application UI with a compact sidebar, neutral surfaces, a teal accent, readable tables and accessible forms. The user authorized Tailwind/Tailwind UI on 2026-10-14; use Tailwind CSS compiled into the embedded static stylesheet. Build tooling is excluded from the runtime image. Show loading, empty, error and permission states. Preserve filters in URLs. Escape telemetry as text, including stack traces, tags and log bodies. Never render event content as trusted HTML.
 
 ## Deployment and configuration
 
@@ -72,9 +72,15 @@ Default grouping is an independently designed stable hash of exception type and 
 
 Merge groups without losing events or their original grouping keys; subsequent events follow the merged association. Unmerge restores the original partition. Retain activity history. Release operations support create/finalize/list/delete, commit metadata and deploys. Traditional source maps and debug-ID artifacts must turn a known minified JavaScript frame into its original file, line, column and source context. Upload acceptance alone is insufficient. Native minidumps and debug symbol formats require explicit upload and symbolication proof. Modern sentry-cli artifact bundles need their own verified compatibility contract.
 
+The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at `/api/0/organizations/{org}/chunk-upload/`, submits SHA-1 checksum/chunk order/projects and optional version/dist to `/artifactbundle/assemble/`, uploads missing chunks as multipart `file` (or negotiated `file_gzip`) and repeats assembly. Our decoder accepts the observed `SYSB` little-endian version 2 prefix and ZIP archive with `manifest.json`. Manifest file entries own their URL, type and debug-id headers; the bundle-level debug_id is not the source-file debug ID. Parse in memory without extracting client paths, reject duplicate/absolute/traversal member names and missing referenced members, and bound compressed input, individual members, total expanded bytes and entry counts. Unknown manifest metadata is tolerated. This decoder alone does not establish upload API or symbolication completion.
+
 ## Telemetry, uptime and alerts
 
 Transactions persist trace/span relationships, operation, endpoint, duration, status, release and environment. Provide counts, error counts, average, p50 and p95 for a selected time window, plus transaction detail and span breakdown. Logs support Sentry log envelopes and native OTLP /v1/logs, preserving typed attributes, severity and trace links. Filter by time, level, service, environment, text and trace. Retention is configurable by data class.
+
+Current JavaScript SDKs use standalone span v2 envelopes by default. Accept item type `span` with `application/vnd.sentry.items.span.v2+json`, an `item_count` matching a nonempty `items` array of at most 1000 spans, and preserve the original typed attributes and raw span JSON. Validate lowercase hexadecimal trace/span/parent identifiers, numeric start/end timestamps and nonnegative duration before an atomic batch write. All spans in a batch share a trace. Deduplicate by project/trace/span identity. Segment spans (`is_segment=true`) contribute transaction counts and latency aggregates; child spans remain queryable without inflating those counts. Read operation, release and environment from their `sentry.*` attributes. Preserve traditional transaction ingestion and its aggregates. Verify both transports using actual pinned SDK clients.
+
+The initial telemetry UI exposes the existing last-24-hour transaction aggregates and paginated log filters, with trace IDs and typed attributes displayed safely. Time-window selection and complete trace/transaction detail remain acceptance work until their API and UI have been verified.
 
 Uptime monitors support HEAD, GET, POST with expected status, TCP and heartbeat intervals. Store checks, response times and up/down transitions. Scheduler coordination prevents duplicate checks across application replicas; missed heartbeats become down and a subsequent heartbeat recovers. Configured monitor targets are the approved network boundary; bound timeouts, response reads and redirect behavior.
 
@@ -128,7 +134,7 @@ Always preserve clean-room provenance, user scope, existing controls and data. A
 
 ## Current evidence and unresolved proofs
 
-At initialization the workspace is empty and has no Git repository. Native Go is being prepared in a temporary WSL directory. Docker Desktop exists but WSL integration was not available in the initial probe. No product behavior has been implemented or verified. The local sandbox launcher fails before process creation; approved individual WSL commands run successfully.
+The initial empty workspace now contains a Go implementation and local Git history. WSL Go 1.27.2, PostgreSQL 18 and Docker work. Real Go and Python SDK errors, transactions and typed logs have been retrieved through authenticated APIs; the Node 11.7.0 SDK exposed the standalone span v2 gap tracked above. The account/project/error browser workflow passes at 320, 768 and 1440 pixels with the compiled Tailwind stylesheet. The compose image starts as a non-root user and acknowledged events survive an application restart. Full GlitchTip parity remains incomplete. The local sandbox launcher fails before process creation; individually approved WSL commands run successfully.
 
 Modern artifact-bundle negotiation and native symbolication need focused contract research and runtime proof. The June 2026 GlitchTip release adds /v1/logs and optional email despite older guides saying otherwise. Advanced span storage and optional DuckDB behavior must be verified separately. These are open work, not scope reductions.
 
@@ -139,4 +145,5 @@ Modern artifact-bundle negotiation and native symbolication need focused contrac
 - [GlitchTip 6.2 release](https://glitchtip.com/blog/2026-06-22-glitchtip-6-2-released/), [6.1 release](https://glitchtip.com/blog/2026-03-23-glitchtip-6-1-released/), [merge behavior](https://glitchtip.com/blog/2025-05-19-glitchtip-5-0-released/).
 - [Sentry authentication specification](https://raw.githubusercontent.com/getsentry/sentry-docs/master/develop-docs/sdk/foundations/transport/authentication.mdx), [envelope grammar](https://raw.githubusercontent.com/getsentry/sentry-docs/master/develop-docs/sdk/foundations/envelopes/index.mdx), [item types](https://raw.githubusercontent.com/getsentry/sentry-docs/master/develop-docs/sdk/foundations/envelopes/envelope-items.mdx).
 - [Transport](https://raw.githubusercontent.com/getsentry/sentry-docs/master/develop-docs/sdk/foundations/transport/index.mdx), [compression](https://raw.githubusercontent.com/getsentry/sentry-docs/master/develop-docs/sdk/foundations/transport/compression.mdx), [rate limiting](https://raw.githubusercontent.com/getsentry/sentry-docs/master/develop-docs/sdk/foundations/transport/rate-limiting.mdx), [logs](https://raw.githubusercontent.com/getsentry/sentry-docs/master/develop-docs/sdk/telemetry/logs.mdx).
+- [Standalone span v2 wire format](https://develop.sentry.dev/sdk/telemetry/spans/#wire-format), independently checked against the public output and transport of `@sentry/node` 11.7.0. [Official sentry-cli 3.8.0](https://github.com/getsentry/sentry-cli/releases/tag/3.8.0) was exercised against our own recording server to observe artifact-bundle requests; synthetic recorder responses do not establish real Sentry server behavior.
 - [Traditional release file upload API](https://docs.sentry.io/api/releases/upload-a-new-organization-release-file/). Legacy store/session/check-in documentation is in the archived getsentry/develop documentation repository and must not override current contracts.

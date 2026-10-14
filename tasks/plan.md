@@ -13,6 +13,8 @@ Authority: ../SPEC.md. The user approved the capability map and authorized speci
 
 Parallel execution is limited to disjoint files with defined contracts. Protocol decoding, pure event normalization and static frontend assets can be delegated after contracts are fixed. The primary owns PostgreSQL integration, auth, routes, consequential decisions, spec changes, diff review and final verification. Workers do not expand scope, delegate or commit shared work.
 
-Every implementation increment leaves Go build/tests passing and gets an intention-focused commit. Tasks track exact evidence. Keep implementation and documentation truthful when later capabilities are still pending.
+Every implementation increment leaves Go build/tests passing and gets an intention-focused commit. Tasks track exact evidence. Keep implementation and documentation truthful when later capabilities are still pending. Compile the user-authorized Tailwind CSS into embedded assets and verify the existing browser workflow after that stylesheet change.
+
+The pinned Node SDK matrix found a concrete gap in step 5: current JavaScript sends span v2 batches rather than transaction envelopes. Implement the specified atomic span storage and segment aggregation next, integrate the envelope handler, then rerun that unchanged SDK acceptance. The telemetry UI can consume the existing aggregate/log APIs in parallel. Artifact upload parsing may proceed independently after its observed bundle contract is recorded.
 
 Risks to resolve early are malformed/binary envelope handling, event retry/concurrency accounting, per-organization isolation, authenticated browser mutations, modern CLI artifact negotiation, native symbolication and WSL container tooling. Start external-contract research early, while the first vertical slice is built.
