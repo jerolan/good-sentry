@@ -68,7 +68,9 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - [x] Implement the specified uptime network policy, transition history and owner/member UI.
   - Default private-target rejection and explicit opt-in pass in the built image. Actual member reads, hidden write controls, disabled-feature API/UI and transition/all-check pagination pass in Chromium. Scheduling and expected-body semantics are explicit GoodSentry decisions in SPEC.md.
 - [ ] Deliver frequency alert rules, cooldown and durable delivery intents.
+  - In progress: project-scoped native rules, exact receipt-time threshold crossings and transactional event/check outbox. Detailed contracts are in SPEC.md.
 - [ ] Deliver SMTP/consolemail and webhook retries, plus uptime down/recovery alerts.
+- [ ] Deliver provider-specific Slack/Discord/Teams/Feishu/Google Chat/ntfy/Zulip alert payloads and verified destination workflows.
 
 ## Remaining parity and release verification
 

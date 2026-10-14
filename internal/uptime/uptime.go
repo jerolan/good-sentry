@@ -27,6 +27,7 @@ type Config struct {
 	Type                  Kind   `json:"type"`
 	URL                   string `json:"url"`
 	Project               string `json:"project"`
+	Environment           string `json:"environment"`
 	IntervalSeconds       int    `json:"intervalSeconds"`
 	TimeoutSeconds        int    `json:"timeoutSeconds"`
 	ExpectedStatus        int    `json:"expectedStatus"`

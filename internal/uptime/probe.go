@@ -47,10 +47,13 @@ func (c *Config) Validate() error {
 		return errors.New("monitor configuration is required")
 	}
 	c.Name, c.URL, c.Project = strings.TrimSpace(c.Name), strings.TrimSpace(c.URL), strings.TrimSpace(c.Project)
-	for _, value := range []string{c.Name, c.URL, c.Project, c.ExpectedBody, string(c.Type)} {
+	for _, value := range []string{c.Name, c.URL, c.Project, c.Environment, c.ExpectedBody, string(c.Type)} {
 		if !utf8.ValidString(value) || strings.ContainsRune(value, 0) {
 			return errors.New("monitor text must be valid Unicode without NUL")
 		}
+	}
+	if utf8.RuneCountInString(c.Environment) > 128 {
+		return errors.New("environment must contain at most 128 characters")
 	}
 	if n := utf8.RuneCountInString(c.Name); n < 1 || n > 200 {
 		return errors.New("name must contain 1 to 200 characters")
