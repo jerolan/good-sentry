@@ -10,6 +10,19 @@ import (
 	"goodsentry/internal/event"
 )
 
+// Official sentry-go 0.50.0 emits a bare exception array. Historical SDKs use
+// an object with values. Both are the same event contract at the wire boundary.
+func TestOfficialGoSDKExceptionArray(t *testing.T) {
+	raw := json.RawMessage(`{"event_id":"0123456789abcdef0123456789abcdef","exception":[{"type":"*errors.errorString","value":"SDK array exception","stacktrace":{"frames":[{"filename":"main.go","function":"main"}]}}]}`)
+	ev, err := event.Normalize(raw, "", time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ev.Title != "*errors.errorString: SDK array exception" {
+		t.Fatalf("title=%q", ev.Title)
+	}
+}
+
 func TestNormalizePreservesSDKContextAndEnvelopeIdentity(t *testing.T) {
 	now := time.Date(2026, 10, 14, 12, 0, 0, 0, time.UTC)
 	raw := json.RawMessage(`{"event_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","timestamp":"2026-10-14T09:10:11.123456-06:00","platform":"python","level":"warning","environment":"production","release":"shop@2.0","exception":{"values":[{"type":"ValueError","value":"bad\n input","stacktrace":{"frames":[{"module":"checkout","function":"charge","filename":"/app/checkout.py","lineno":20}]}}]},"contexts":{"trace":{"trace_id":"0123456789abcdef0123456789abcdef"}},"tags":{"region":"mx"},"extra":{"cart":{"ids":[1,2]},"html":"<script>not executable</script>"}}`)

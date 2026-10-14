@@ -46,28 +46,40 @@ type exception struct {
 	Stacktrace stacktrace `json:"stacktrace"`
 }
 
+type exceptionCollection struct {
+	Values []exception `json:"values"`
+}
+
+func (c *exceptionCollection) UnmarshalJSON(raw []byte) error {
+	var values []exception
+	if err := json.Unmarshal(raw, &values); err == nil {
+		c.Values = values
+		return nil
+	}
+	type collection exceptionCollection
+	return json.Unmarshal(raw, (*collection)(c))
+}
+
 type logentry struct {
 	Formatted string `json:"formatted"`
 	Message   string `json:"message"`
 }
 
 type payload struct {
-	Type           string          `json:"type"`
-	Level          string          `json:"level"`
-	Platform       string          `json:"platform"`
-	Environment    string          `json:"environment"`
-	Release        string          `json:"release"`
-	Transaction    string          `json:"transaction"`
-	Timestamp      json.RawMessage `json:"timestamp"`
-	StartTimestamp json.RawMessage `json:"start_timestamp"`
-	Message        json.RawMessage `json:"message"`
-	Logentry       logentry        `json:"logentry"`
-	Fingerprint    []string        `json:"fingerprint"`
-	Stacktrace     stacktrace      `json:"stacktrace"`
-	Exception      struct {
-		Values []exception `json:"values"`
-	} `json:"exception"`
-	Contexts struct {
+	Type           string              `json:"type"`
+	Level          string              `json:"level"`
+	Platform       string              `json:"platform"`
+	Environment    string              `json:"environment"`
+	Release        string              `json:"release"`
+	Transaction    string              `json:"transaction"`
+	Timestamp      json.RawMessage     `json:"timestamp"`
+	StartTimestamp json.RawMessage     `json:"start_timestamp"`
+	Message        json.RawMessage     `json:"message"`
+	Logentry       logentry            `json:"logentry"`
+	Fingerprint    []string            `json:"fingerprint"`
+	Stacktrace     stacktrace          `json:"stacktrace"`
+	Exception      exceptionCollection `json:"exception"`
+	Contexts       struct {
 		Trace struct {
 			ID string `json:"trace_id"`
 		} `json:"trace"`
