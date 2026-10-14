@@ -291,6 +291,23 @@
   .source-map-status:empty { @apply hidden; }
   .artifact-name { @apply min-w-[220px] wrap-anywhere; }
   .artifact-identity { @apply block min-w-[100px] max-w-[170px] break-all; }
+  .monitor-heading > div:first-child { @apply min-w-0 flex-1; }
+  .monitor-heading h1,.monitor-heading p { @apply wrap-anywhere; }
+  .monitor-name { @apply min-w-[180px] max-w-[300px] wrap-anywhere; }
+  .monitor-target { @apply min-w-[220px] max-w-[440px] wrap-anywhere text-sm; }
+  .monitor-summary { @apply grid grid-cols-2 gap-4 mb-5; }
+  .monitor-summary > .panel + .panel { @apply mt-0; }
+  .monitor-summary .actions { @apply mb-4; }
+  .monitor-history { @apply mt-5; }
+  .monitor-reason { @apply min-w-[160px] wrap-anywhere; }
+  .monitor-dialog { @apply max-w-[680px]; }
+  .monitor-fields { @apply grid grid-cols-2 gap-4; }
+  .monitor-fields [hidden] { @apply hidden; }
+  .monitor-fields > .field:nth-child(3),.monitor-fields > .field:last-child { @apply col-span-full; }
+  .checkbox-field { @apply flex items-center gap-2 font-medium; }
+  .checkbox-field input { @apply w-4 h-4; }
+  .monitor-confirmation { @apply p-4 mb-5 rounded-md border border-[#edc9c8] bg-danger-soft flex flex-col gap-3 wrap-anywhere; }
+  .button.danger { @apply text-white bg-danger border-danger; }
   @media(min-width:1500px) {
     .main { @apply px-12 py-10; }
   }
@@ -359,7 +376,7 @@
     .panel-title,.panel-body,.stack-frame,.breadcrumb { @apply p-4; }
   }
   @media(max-width:700px) {
-    .source-map-fields { @apply grid-cols-1; }
+    .source-map-fields,.monitor-fields,.monitor-summary { @apply grid-cols-1; }
   }
   @media(prefers-reduced-motion:no-preference) {
     .skeleton {

@@ -25,8 +25,10 @@ services:
       EMAIL_URL: ${EMAIL_URL:-consolemail://}
       DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-goodsentry@localhost}
       VALKEY_URL: ""
-      GOODSENTRY_ENABLE_UPTIME: "false"
-      GOODSENTRY_ENABLE_LOGS: "true"
+      GOODSENTRY_ENABLE_UPTIME: ${GOODSENTRY_ENABLE_UPTIME:-true}
+      GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS: ${GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS:-false}
+      MONITOR_WORKERS: ${MONITOR_WORKERS:-2}
+      GOODSENTRY_ENABLE_LOGS: ${GOODSENTRY_ENABLE_LOGS:-true}
       SERVER_ROLE: all_in_one
     volumes:
       - uploads:/data
