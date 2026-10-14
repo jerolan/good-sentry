@@ -67,9 +67,10 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
   - Current public OpenAPI includes SSL; the initial HTTP/TCP/heartbeat slice does not establish certificate-monitor parity.
 - [x] Implement the specified uptime network policy, transition history and owner/member UI.
   - Default private-target rejection and explicit opt-in pass in the built image. Actual member reads, hidden write controls, disabled-feature API/UI and transition/all-check pagination pass in Chromium. Scheduling and expected-body semantics are explicit GoodSentry decisions in SPEC.md.
-- [ ] Deliver frequency alert rules, cooldown and durable delivery intents.
-  - In progress: project-scoped native rules, exact receipt-time threshold crossings and transactional event/check outbox. Detailed contracts are in SPEC.md.
+- [x] Deliver frequency alert rules, cooldown and durable delivery intents.
+  - Project-scoped native rules, receipt-time threshold crossings, environment filtering and transactional event/check outbox pass real PostgreSQL, HTTP capture, browser and restart checks. Automatic delivery remains a separate incomplete item below.
 - [ ] Deliver SMTP/consolemail and webhook retries, plus uptime down/recovery alerts.
+  - Runtime sender composition is pending explicit authorization after automatic approval review rejected startup sending to configured recipients. Continue transport/outbox/UI and local-receiver verification; expose delivery as unavailable until composition is authorized. No goal completion claim.
 - [ ] Deliver provider-specific Slack/Discord/Teams/Feishu/Google Chat/ntfy/Zulip alert payloads and verified destination workflows.
 
 ## Remaining parity and release verification
@@ -90,6 +91,8 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 
 ## Evidence log
 
+- 2026-10-14: Alert rule and deployment validation pass bounds, recipient/environment deduplication, safe mail URL parsing, header injection rejection and configuration errors without credential disclosure. Official SMTP/Go and public GlitchTip API contracts were checked independently; unspecified retry/cooldown/payload behavior is documented as GoodSentry design.
+- 2026-10-14: Local-only delivery library passes actual HTTP status/identity/private-network/redirect/timeout checks, SMTP MAIL/RCPT/DATA, transient/permanent replies and QUIT failure after acceptance. Fresh test subprocesses trust a test-owned CA through SSL_CERT_FILE and prove authenticated SMTPS and required STARTTLS, including stable Message-ID. Full integration, race detection and vet pass. Production startup remains disconnected following the automatic approval rejection recorded above.
 - 2026-10-14: Independently authored uptime probes pass actual HTTP/TCP tests for HEAD/GET/POST, expected status and bounded literal body matching, TLS verification, redirect limits, private/mapped-IP blocking, timeout and caller cancellation. Network validation resolves and pins checked addresses at dial time and uses no environment proxy. Initial missing-API and invalid TCP-host cases failed before implementation/fixes. Probe code adds no dependencies or database access.
 - 2026-10-14: PostgreSQL uptime state/history and random fenced leases pass eight-contender one-winner claims, consecutive-failure threshold/reset/recovery, pause/configuration/heartbeat invalidation, expired-lease recovery after reopen, real member/foreign-organization/project isolation and 25-row pagination. An isolated mutation removing the token comparison accepts an old lease under a newer active lease and fails the regression; the real implementation passes. Database time after row locking owns receipts/completions, with UTC microsecond persistence.
 - 2026-10-14: Native uptime routes and in-process workers pass authenticated HTTP setup/CRUD/history/capability heartbeat, CSRF, feature gating, validation and oversized heartbeat rejection. Real HTTP plus two independent PostgreSQL pools produce one down/recovery history, survive reopen and cancel active probes without recording shutdown as an outage. Full PostgreSQL integration, race detector and vet pass. MONITOR_WORKERS bounds and private-network alias precedence are validated before startup.

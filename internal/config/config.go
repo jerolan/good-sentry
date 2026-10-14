@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"goodsentry/internal/notify"
 )
 
 type Config struct {
@@ -16,10 +18,13 @@ type Config struct {
 	RetentionDays                             int
 	MonitorWorkers                            int
 	UptimeAllowPrivate                        bool
+	AlertWorkers, AlertMaxAttempts            int
+	AlertTimeoutSeconds                       int
+	WebhookAllowPrivate                       bool
 }
 
 func Load() (Config, error) {
-	c := Config{DatabaseURL: os.Getenv("DATABASE_URL"), Secret: os.Getenv("SECRET_KEY"), EmailURL: value("EMAIL_URL", "consolemail://"), FromEmail: value("DEFAULT_FROM_EMAIL", "goodsentry@localhost"), ValkeyURL: os.Getenv("VALKEY_URL"), UploadDir: value("UPLOAD_DIR", "uploads"), MaxBodyBytes: 32 << 20, RetentionDays: 90, MonitorWorkers: 2}
+	c := Config{DatabaseURL: os.Getenv("DATABASE_URL"), Secret: os.Getenv("SECRET_KEY"), EmailURL: value("EMAIL_URL", "consolemail://"), FromEmail: value("DEFAULT_FROM_EMAIL", "goodsentry@localhost"), ValkeyURL: os.Getenv("VALKEY_URL"), UploadDir: value("UPLOAD_DIR", "uploads"), MaxBodyBytes: 32 << 20, RetentionDays: 90, MonitorWorkers: 2, AlertWorkers: 2, AlertMaxAttempts: 5, AlertTimeoutSeconds: 10}
 	port, err := strconv.Atoi(value("PORT", "8000"))
 	if err != nil || port < 1 || port > 65535 {
 		return c, fmt.Errorf("PORT must be an integer from 1 to 65535")
@@ -49,6 +54,7 @@ func Load() (Config, error) {
 		{"GOODSENTRY_ENABLE_LOGS", "GLITCHTIP_ENABLE_LOGS", true, &c.Logs},
 		{"GOODSENTRY_ENABLE_UPTIME", "GLITCHTIP_ENABLE_UPTIME", true, &c.Uptime},
 		{"GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS", "GLITCHTIP_UPTIME_ALLOW_PRIVATE_IPS", false, &c.UptimeAllowPrivate},
+		{"GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS", "", false, &c.WebhookAllowPrivate},
 		{"GOODSENTRY_ENABLE_MCP", "GLITCHTIP_ENABLE_MCP", false, &c.MCP},
 		{"GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB", false, &c.DuckDB},
 		{"ENABLE_OPENAPI", "", false, &c.OpenAPI}, {"ENABLE_ADMIN", "", false, &c.Admin},
@@ -58,6 +64,25 @@ func Load() (Config, error) {
 			return c, fmt.Errorf("%s must be true or false", flag.name)
 		}
 		*flag.dest = v
+	}
+	for _, option := range []struct {
+		name string
+		max  int
+		dest *int
+	}{
+		{"ALERT_WORKERS", 16, &c.AlertWorkers},
+		{"ALERT_MAX_ATTEMPTS", 20, &c.AlertMaxAttempts},
+		{"ALERT_DELIVERY_TIMEOUT_SECONDS", 60, &c.AlertTimeoutSeconds},
+	} {
+		if raw := os.Getenv(option.name); raw != "" {
+			*option.dest, err = strconv.Atoi(raw)
+			if err != nil || *option.dest < 1 || *option.dest > option.max {
+				return c, fmt.Errorf("%s must be between 1 and %d", option.name, option.max)
+			}
+		}
+	}
+	if err := notify.ValidateMail(c.EmailURL, c.FromEmail); err != nil {
+		return c, fmt.Errorf("EMAIL_URL or DEFAULT_FROM_EMAIL: %w", err)
 	}
 	if raw := os.Getenv("MONITOR_WORKERS"); raw != "" {
 		c.MonitorWorkers, err = strconv.Atoi(raw)
