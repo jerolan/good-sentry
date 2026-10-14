@@ -1,0 +1,58 @@
+package main
+
+import (
+	"context"
+	"errors"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"goodsentry/internal/config"
+	"goodsentry/internal/server"
+	"goodsentry/internal/store"
+)
+
+func main() {
+	if err := run(); err != nil {
+		slog.Error("GoodSentry stopped", "error", err)
+		os.Exit(1)
+	}
+}
+func run() error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	if cfg.MCP || cfg.DuckDB || cfg.Admin || cfg.OpenAPI || cfg.ValkeyURL != "" || cfg.Uptime {
+		return errors.New("this increment does not yet provide uptime, MCP, DuckDB, admin, OpenAPI or Valkey; disable those options")
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	startup, cancel := context.WithTimeout(ctx, 30*time.Second)
+	db, err := store.Open(startup, cfg.DatabaseURL)
+	cancel()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	srv := &http.Server{Addr: cfg.Addr, Handler: server.New(cfg, db), ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxHeaderBytes: 1 << 20}
+	done := make(chan error, 1)
+	go func() {
+		slog.Info("GoodSentry listening", "address", cfg.Addr, "domain", cfg.Domain)
+		done <- srv.ListenAndServe()
+	}()
+	select {
+	case err := <-done:
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		return err
+	case <-ctx.Done():
+	}
+	shutdown, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	return srv.Shutdown(shutdown)
+}
