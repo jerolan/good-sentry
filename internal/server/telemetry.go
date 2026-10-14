@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"goodsentry/internal/store"
 )
@@ -25,7 +26,12 @@ func (s *Server) spans(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) transactions(w http.ResponseWriter, r *http.Request) {
-	items, err := s.db.Transactions(r.Context(), current(r).User.ID, r.PathValue("org"), r.URL.Query().Get("project"))
+	window, err := queryTimeWindow(r.URL.Query())
+	if err != nil {
+		failure(w, 400, err.Error())
+		return
+	}
+	items, err := s.db.Transactions(r.Context(), current(r).User.ID, r.PathValue("org"), r.URL.Query().Get("project"), window)
 	if err != nil {
 		report(w, err)
 		return
@@ -38,12 +44,22 @@ func (s *Server) logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q := r.URL.Query()
+	window, err := queryTimeWindow(q)
+	if err != nil {
+		failure(w, 400, err.Error())
+		return
+	}
+	service := q.Get("service")
+	if !utf8.ValidString(service) || strings.ContainsRune(service, 0) || utf8.RuneCountInString(service) > 2000 {
+		failure(w, 400, "Service must be valid UTF-8, contain no NUL and have at most 2000 characters")
+		return
+	}
 	page, _ := strconv.Atoi(q.Get("page"))
 	if page > 1000000 {
 		failure(w, 400, "Page is too large")
 		return
 	}
-	items, err := s.db.Logs(r.Context(), current(r).User.ID, r.PathValue("org"), store.LogFilter{Project: q.Get("project"), Query: q.Get("query"), Level: q.Get("level"), Environment: q.Get("environment"), TraceID: q.Get("trace"), Page: page})
+	items, err := s.db.Logs(r.Context(), current(r).User.ID, r.PathValue("org"), store.LogFilter{Project: q.Get("project"), Query: q.Get("query"), Level: q.Get("level"), Environment: q.Get("environment"), TraceID: q.Get("trace"), Page: page, Service: service, Window: window})
 	if err != nil {
 		report(w, err)
 		return

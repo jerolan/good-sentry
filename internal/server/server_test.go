@@ -50,7 +50,7 @@ func TestAccountDSNCaptureAndTriage(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	cfg := config.Config{Domain: "http://example.test", Secret: strings.Repeat("a", 64), MaxBodyBytes: 1 << 20, Uptime: true}
+	cfg := config.Config{Domain: "http://example.test", Secret: strings.Repeat("a", 64), MaxBodyBytes: 1 << 20, Uptime: true, Logs: true}
 	srv := httptest.NewServer(New(cfg, db))
 	defer srv.Close()
 	jar, _ := cookiejar.New(nil)
@@ -183,6 +183,7 @@ func TestAccountDSNCaptureAndTriage(t *testing.T) {
 			t.Fatalf("invalid span header=%d want=%d", res.StatusCode, invalid.status)
 		}
 	}
+	verifyTelemetryWindows(t, request, org, project, endpoint)
 	verifySourceMapWorkflow(t, client, srv.URL, org, project, csrf, endpoint)
 	verifyUptimeWorkflow(t, request, srv.URL, org, p["slug"].(string), csrf)
 	verifyAlertWorkflow(t, request, org, project, csrf, endpoint)

@@ -101,6 +101,13 @@ func TestTransactionsAggregateStoredDurationsAndScope(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	var foreignOrg, foreignProject string
+	if err := db.pool.QueryRow(ctx, `INSERT INTO organizations(slug,name) VALUES('foreign','Foreign') RETURNING id::text`).Scan(&foreignOrg); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.pool.QueryRow(ctx, `INSERT INTO projects(organization_id,slug,name,platform) VALUES($1,'foreign','Foreign','go') RETURNING id::text`, foreignOrg).Scan(&foreignProject); err != nil {
+		t.Fatal(err)
+	}
 	for _, fixture := range []struct {
 		id, project, op, kind string
 		at                    time.Time
@@ -109,6 +116,9 @@ func TestTransactionsAggregateStoredDurationsAndScope(t *testing.T) {
 		{"00000000000000000000000000000011", other.ID, "http.server", "transaction", stamp},
 		{"00000000000000000000000000000012", project.ID, "db", "transaction", stamp},
 		{"00000000000000000000000000000013", project.ID, "http.server", "error", stamp},
+		{"00000000000000000000000000000014", project.ID, "http.server", "transaction", stamp.Add(time.Hour)},
+		{"00000000000000000000000000000015", other.ID, "http.server", "transaction", stamp.Add(-25 * time.Hour)},
+		{"00000000000000000000000000000016", foreignProject, "http.server", "transaction", stamp.Add(-25 * time.Hour)},
 	} {
 		data := json.RawMessage(fmt.Sprintf(`{"contexts":{"trace":{"op":%q}}}`, fixture.op))
 		ev := event.Event{ID: fixture.id, Type: fixture.kind, Transaction: "GET /checkout", Title: "GET /checkout", Level: "info", Timestamp: fixture.at, Duration: 9000, Fingerprint: "separate", Data: data}
@@ -116,7 +126,7 @@ func TestTransactionsAggregateStoredDurationsAndScope(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	groups, err := db.Transactions(ctx, user.ID, org.Slug, project.ID)
+	groups, err := db.Transactions(ctx, user.ID, org.Slug, project.ID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,8 +142,97 @@ func TestTransactionsAggregateStoredDurationsAndScope(t *testing.T) {
 	if main == nil || main.Transaction != "GET /checkout" || main.Count != 5 || main.ErrorCount != 1 || math.Abs(main.AvgDuration-400) > 0.001 || math.Abs(main.P50-300) > 0.001 || math.Abs(main.P95-880) > 0.001 || main.LatestTraceID != "00000000000000000000000000000005" {
 		t.Fatalf("wrong persisted aggregate: %+v", main)
 	}
-	if _, err := db.Transactions(ctx, "999999999", org.Slug, project.ID); !errors.Is(err, ErrNotFound) {
+	if _, err := db.Transactions(ctx, "999999999", org.Slug, project.ID, nil); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("unauthorized transaction read: %v", err)
+	}
+	historical := &TimeWindow{Start: stamp.Add(-25 * time.Hour), End: stamp.Add(-25*time.Hour + time.Second)}
+	groups, err = db.Transactions(ctx, user.ID, org.Slug, project.ID, historical)
+	if err != nil || len(groups) != 1 || groups[0].Count != 1 || groups[0].AvgDuration != 9000 {
+		t.Fatalf("explicit historical window retained the default 24-hour restriction: %+v, %v", groups, err)
+	}
+	groups, err = db.Transactions(ctx, user.ID, org.Slug, "", historical)
+	if err != nil || len(groups) != 1 || groups[0].Count != 2 {
+		t.Fatalf("organization-wide window leaked another tenant or omitted sibling project: %+v, %v", groups, err)
+	}
+	if groups, err := db.Transactions(ctx, user.ID, org.Slug, foreignProject, historical); err != nil || len(groups) != 0 {
+		t.Fatalf("foreign project escaped transaction scope: %+v, %v", groups, err)
+	}
+	if _, err := db.Transactions(ctx, user.ID, "foreign", foreignProject, historical); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("foreign organization transaction read: %v", err)
+	}
+}
+
+func TestLogsFilterHalfOpenTimeWindowExactServiceAndScope(t *testing.T) {
+	ctx, db, user, org, project := telemetryStore(t)
+	other, err := db.CreateProject(ctx, user.ID, org.Slug, "Other project", "go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var foreignOrg, foreignProject string
+	if err := db.pool.QueryRow(ctx, `INSERT INTO organizations(slug,name) VALUES('foreign','Foreign') RETURNING id::text`).Scan(&foreignOrg); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.pool.QueryRow(ctx, `INSERT INTO projects(organization_id,slug,name,platform) VALUES($1,'foreign','Foreign','go') RETURNING id::text`, foreignOrg).Scan(&foreignProject); err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2025, 1, 2, 3, 4, 5, 123456000, time.UTC)
+	window := &TimeWindow{Start: start, End: start.Add(time.Hour)}
+	const trace = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	for _, fixture := range []struct {
+		body, project, service, environment, level, trace string
+		at                                                time.Time
+	}{
+		{"checkout before", project.ID, "payments", "production", "error", trace, start.Add(-time.Microsecond)},
+		{"checkout start", project.ID, "payments", "production", "error", trace, start},
+		{"checkout inside", project.ID, "payments", "production", "error", trace, start.Add(time.Minute)},
+		{"checkout end", project.ID, "payments", "production", "error", trace, window.End},
+		{"checkout service", project.ID, "payments-api", "production", "error", trace, start.Add(time.Minute)},
+		{"checkout environment", project.ID, "payments", "staging", "error", trace, start.Add(time.Minute)},
+		{"checkout level", project.ID, "payments", "production", "info", trace, start.Add(time.Minute)},
+		{"checkout trace", project.ID, "payments", "production", "error", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", start.Add(time.Minute)},
+		{"unrelated body", project.ID, "payments", "production", "error", trace, start.Add(time.Minute)},
+		{"checkout other project", other.ID, "payments", "production", "error", trace, start.Add(time.Minute)},
+		{"checkout foreign tenant", foreignProject, "payments", "production", "error", trace, start.Add(time.Minute)},
+	} {
+		raw, err := json.Marshal(map[string]any{"items": []any{map[string]any{
+			"timestamp": fixture.at.Format(time.RFC3339Nano), "level": fixture.level, "body": fixture.body, "trace_id": fixture.trace,
+			"attributes": map[string]any{
+				"service.name":       map[string]any{"type": "string", "value": fixture.service},
+				"sentry.environment": map[string]any{"type": "string", "value": fixture.environment},
+				"exact":              map[string]any{"type": "integer", "value": int64(9223372036854775807)},
+			},
+		}}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if n, err := db.IngestLogs(ctx, fixture.project, raw); err != nil || n != 1 {
+			t.Fatalf("ingest %s: n=%d, %v", fixture.body, n, err)
+		}
+	}
+	filter := LogFilter{Project: project.ID, Query: "checkout", Level: "error", Environment: "production", TraceID: trace, Service: "payments", Window: window}
+	logs, err := db.Logs(ctx, user.ID, org.Slug, filter)
+	if err != nil || len(logs) != 2 || logs[0].Body != "checkout inside" || logs[1].Body != "checkout start" || !logs[1].Timestamp.Equal(start) {
+		t.Fatalf("combined filters or half-open boundaries: %+v, %v", logs, err)
+	}
+	if !strings.Contains(string(logs[0].Attributes), "9223372036854775807") {
+		t.Fatalf("filtered log lost exact typed integer: %s", logs[0].Attributes)
+	}
+	filter.Window = nil
+	logs, err = db.Logs(ctx, user.ID, org.Slug, filter)
+	if err != nil || len(logs) != 4 || logs[0].Body != "checkout end" || logs[3].Body != "checkout before" {
+		t.Fatalf("nil window changed all-time log default: %+v, %v", logs, err)
+	}
+	filter.Window, filter.Project = window, ""
+	logs, err = db.Logs(ctx, user.ID, org.Slug, filter)
+	if err != nil || len(logs) != 3 {
+		t.Fatalf("organization-wide window leaked another tenant or omitted sibling project: %+v, %v", logs, err)
+	}
+	filter.Project = foreignProject
+	if logs, err := db.Logs(ctx, user.ID, org.Slug, filter); err != nil || len(logs) != 0 {
+		t.Fatalf("foreign project escaped organization scope: %+v, %v", logs, err)
+	}
+	if _, err := db.Logs(ctx, user.ID, "foreign", filter); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("foreign organization read: %v", err)
 	}
 }
 

@@ -185,12 +185,38 @@ func TestTransactionsCombineSegmentsWithLegacyWithoutCountingChildren(t *testing
 	if _, _, err := db.Ingest(ctx, project.ID, legacy); err != nil {
 		t.Fatal(err)
 	}
-	groups, err := db.Transactions(ctx, user.ID, org.Slug, project.ID)
+	groups, err := db.Transactions(ctx, user.ID, org.Slug, project.ID, nil)
 	if err != nil || len(groups) != 1 {
 		t.Fatalf("combined groups: %+v, %v", groups, err)
 	}
 	g := groups[0]
 	if g.Count != 4 || g.ErrorCount != 1 || math.Abs(g.AvgDuration-375) > 0.001 || math.Abs(g.P50-375) > 0.001 || math.Abs(g.P95-606.25) > 0.001 || g.LatestTraceID != legacy.TraceID {
 		t.Fatalf("child spans inflated aggregate or transport omitted: %+v", g)
+	}
+	for _, fixture := range []struct {
+		name              string
+		start, end        time.Duration
+		count, errors     int64
+		average, p50, p95 float64
+		last              time.Duration
+		trace             string
+	}{
+		{"segment at start, legacy at excluded end", 125 * time.Millisecond, 4 * time.Second, 3, 1, 875.0 / 3, 250, 475, 2500 * time.Millisecond, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+		{"segment at excluded end", 125 * time.Millisecond, 2500 * time.Millisecond, 2, 1, 187.5, 187.5, 243.75, 1250 * time.Millisecond, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+		{"mixed transports and segment at start", 1250 * time.Millisecond, 4*time.Second + time.Microsecond, 3, 1, 1375.0 / 3, 500, 612.5, 4 * time.Second, legacy.TraceID},
+		{"last segment at start", 2500 * time.Millisecond, 4 * time.Second, 1, 0, 500, 500, 500, 2500 * time.Millisecond, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+		{"legacy at start", 4 * time.Second, 5 * time.Second, 1, 0, 625, 625, 625, 4 * time.Second, legacy.TraceID},
+	} {
+		t.Run(fixture.name, func(t *testing.T) {
+			window := &TimeWindow{Start: base.Add(fixture.start), End: base.Add(fixture.end)}
+			groups, err := db.Transactions(ctx, user.ID, org.Slug, project.ID, window)
+			if err != nil || len(groups) != 1 {
+				t.Fatalf("window groups: %+v, %v", groups, err)
+			}
+			g := groups[0]
+			if g.Count != fixture.count || g.ErrorCount != fixture.errors || math.Abs(g.AvgDuration-fixture.average) > 0.001 || math.Abs(g.P50-fixture.p50) > 0.001 || math.Abs(g.P95-fixture.p95) > 0.001 || !g.LastSeen.Equal(base.Add(fixture.last)) || g.LatestTraceID != fixture.trace {
+				t.Fatalf("window failed end-timestamp selection or changed mixed aggregates: %+v", g)
+			}
+		})
 	}
 }

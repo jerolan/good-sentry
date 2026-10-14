@@ -28,9 +28,15 @@ type TransactionGroup struct {
 	LatestTraceID string    `json:"latestTraceId"`
 }
 
+type TimeWindow struct {
+	Start time.Time `json:"start"`
+	End   time.Time `json:"end"`
+}
+
 type LogFilter struct {
-	Project, Query, Level, Environment, TraceID string
-	Page                                        int
+	Project, Query, Level, Environment, TraceID, Service string
+	Window                                               *TimeWindow
+	Page                                                 int
 }
 
 type Log struct {
@@ -46,27 +52,35 @@ type Log struct {
 	Attributes  json.RawMessage `json:"attributes"`
 }
 
-func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID string) ([]TransactionGroup, error) {
+func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID string, window *TimeWindow) ([]TransactionGroup, error) {
 	org, err := s.Organization(ctx, userID, orgSlug)
 	if err != nil {
 		return nil, err
+	}
+	args := []any{org.ID, projectID}
+	eventRange := "e.timestamp>=now()-interval '24 hours' AND e.timestamp<=now()"
+	spanRange := "s.end_timestamp>=now()-interval '24 hours' AND s.end_timestamp<=now()"
+	if window != nil {
+		args = append(args, window.Start, window.End)
+		eventRange = "e.timestamp>=$3::timestamptz AND e.timestamp<$4::timestamptz"
+		spanRange = "s.end_timestamp>=$3::timestamptz AND s.end_timestamp<$4::timestamptz"
 	}
 	rows, err := s.pool.Query(ctx, `WITH telemetry AS (
 		SELECT e.transaction_name AS name,COALESCE(e.data#>>'{contexts,trace,op}','') AS op,e.duration,
 		(e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed,
 		e.timestamp AS timestamp,e.trace_id,e.id,0 AS source
 		FROM events e JOIN projects p ON p.id=e.project_id
-		WHERE p.organization_id::text=$1 AND ($2='' OR e.project_id::text=$2) AND e.kind='transaction'
+		WHERE p.organization_id::text=$1 AND ($2='' OR e.project_id::text=$2) AND e.kind='transaction' AND `+eventRange+`
 		UNION ALL
 		SELECT s.name,s.op,s.duration,s.status='error',s.end_timestamp,s.trace_id,s.id,1
 		FROM spans s JOIN projects p ON p.id=s.project_id
-		WHERE p.organization_id::text=$1 AND ($2='' OR s.project_id::text=$2) AND s.is_segment
+		WHERE p.organization_id::text=$1 AND ($2='' OR s.project_id::text=$2) AND s.is_segment AND `+spanRange+`
 	)
 		SELECT name,op,count(*),count(*) FILTER(WHERE failed),avg(duration),
 		percentile_cont(0.5) WITHIN GROUP(ORDER BY duration),percentile_cont(0.95) WITHIN GROUP(ORDER BY duration),
 		max(timestamp),(array_agg(trace_id ORDER BY timestamp DESC,source DESC,id DESC))[1]
-		FROM telemetry WHERE timestamp>=now()-interval '24 hours' AND timestamp<=now()
-		GROUP BY name,op ORDER BY count(*) DESC,max(timestamp) DESC,name,op`, org.ID, projectID)
+		FROM telemetry
+		GROUP BY name,op ORDER BY count(*) DESC,max(timestamp) DESC,name,op`, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,6 +106,7 @@ func (s *Store) Logs(ctx context.Context, userID, orgSlug string, f LogFilter) (
 	for _, filter := range []struct{ value, column string }{
 		{f.Project, "l.project_id::text"}, {f.Level, "l.level"},
 		{f.Environment, "l.environment"}, {f.TraceID, "l.trace_id"},
+		{f.Service, "l.service"},
 	} {
 		if filter.value != "" {
 			args = append(args, filter.value)
@@ -101,6 +116,10 @@ func (s *Store) Logs(ctx context.Context, userID, orgSlug string, f LogFilter) (
 	if f.Query != "" {
 		args = append(args, "%"+f.Query+"%")
 		where += fmt.Sprintf("AND l.body ILIKE $%d ", len(args))
+	}
+	if f.Window != nil {
+		args = append(args, f.Window.Start, f.Window.End)
+		where += fmt.Sprintf("AND l.timestamp>=$%d::timestamptz AND l.timestamp<$%d::timestamptz ", len(args)-1, len(args))
 	}
 	page := int64(f.Page)
 	if page < 1 {

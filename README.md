@@ -30,8 +30,8 @@ docker compose down
 - Primera cuenta, login/logout, sesiones, organización y proyectos con DSN.
 - Ingesta `store` y `envelope`, autenticación SDK y cuerpos gzip, zlib, Brotli y Zstandard.
 - Errores agrupados con contexto original, búsqueda, filtros, resolución, reapertura y comentarios.
-- Transacciones con promedio, p50/p95 y trace ID en API y UI; la ventana actual es de 24 horas.
-- Logs con atributos tipados, filtros, deduplicación y correlación por trace ID en API y UI. Los enteros de 64 bits se muestran sin redondear.
+- Transacciones con promedio, p50/p95, trace ID y ventanas de tiempo seleccionables en API y UI.
+- Logs con atributos tipados, filtros por servicio y tiempo, deduplicación y correlación por trace ID en API y UI. Los enteros de 64 bits se muestran sin redondear.
 - Interfaz Tailwind de proyectos, errores, transacciones, logs, uptime y reglas de alerta, probada en Chromium a 320, 768 y 1440 píxeles.
 - SDK oficiales Go `v0.50.0`, Python `2.72.0`, Node `11.7.0` y navegador `11.7.0`: excepciones, transacciones y logs verificados recuperando los datos guardados. El SDK de navegador se ejecutó en Chromium desde otro origen para comprobar CORS.
 - Spans v2 de JavaScript con relaciones padre/hijo y deduplicación; solo los segmentos cuentan como transacciones en los agregados.
@@ -42,6 +42,10 @@ docker compose down
 El proceso rechaza MCP, DuckDB, admin, OpenAPI o Valkey activados mientras no estén disponibles. Los tipos de envelope aún no soportados se conservan y se indican en `unsupportedItems`; eso no equivale a implementar su funcionalidad. Los logs desactivados se excluyen deliberadamente y producen un aviso de rate limit para sus categorías.
 
 Esta matriz cubre errores, transacciones y logs de esas versiones concretas. Adjuntos, otros formatos y versiones requieren sus propias verificaciones.
+
+En Transactions y Logs puedes elegir la última hora, 24 horas, siete días o 30 días. La URL guarda los límites absolutos; cambiar de página, aplicar otros filtros o recargar conserva el mismo intervalo. La pantalla muestra sus límites UTC. El valor predeterminado de Transactions sigue siendo 24 horas; Logs permite todo el historial. Service compara el nombre exacto, incluidas mayúsculas y espacios.
+
+Las consultas nativas de transacciones y logs también aceptan `start` y `end` como instantes RFC3339 con zona horaria. Deben enviarse juntos, con inicio anterior al fin y un máximo de 366 días. Se normalizan a microsegundos UTC: el inicio se incluye y el final se excluye. Logs acepta además `service`. Los rangos inválidos devuelven 400.
 
 Siguen pendientes, entre otras funciones, los formatos de alerta de cada proveedor, monitores de certificados SSL, ciclo de releases y cargas mediante sentry-cli, OTLP nativo, simbolicación nativa, merge/unmerge, invitaciones, recuperación de contraseñas, integraciones y varias pantallas. El decoder de bundles del CLI está probado, pero sus endpoints de carga todavía no están conectados. No se ha medido el objetivo de memoria de 256-512 MB bajo carga. La imagen actual se ha verificado en Linux amd64.
 

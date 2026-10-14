@@ -209,7 +209,7 @@
         .filter(([section]) => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .map(([section, icon]) =>
         routeLink([node('span', { class: 'nav-icon', 'aria-hidden': true }, icon), viewNames[section]],
-          { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null },
+          { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
           { 'aria-current': view === section ? 'page' : null })));
     const logout = node('button', { type: 'button', onclick: async () => {
       logout.disabled = true;
@@ -290,9 +290,9 @@
         }
       } else if (view === 'transactions' || view === 'logs') {
         const query = new URLSearchParams();
-        const filters = view === 'transactions' ? ['project'] : ['project', 'query', 'level', 'environment', 'trace', 'page'];
+        const filters = view === 'transactions' ? ['project', 'start', 'end'] : ['project', 'query', 'level', 'environment', 'trace', 'service', 'start', 'end', 'page'];
         for (const name of filters) {
-          if (params.get(name)) query.set(name, params.get(name));
+          if (params.has(name)) query.set(name, params.get(name));
         }
         const result = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/${view}?${query}`);
         if (version !== state.requestVersion) return;
@@ -370,12 +370,12 @@
     return selectField('Project', [['', 'All projects'], ...state.projects.map(project => [String(project.id), project.name])], params.get('project') || '');
   }
 
-  function traceReference(traceID, projectID) {
+  function traceReference(traceID, projectID, params) {
     if (!traceID) return node('span', { class: 'muted small' }, 'No trace ID');
     const copy = button('Copy', () => copyValue(traceID, 'Trace ID'), 'small');
     copy.setAttribute('aria-label', 'Copy trace ID');
     return node('div', { class: 'trace-reference' },
-      state.me.features?.logs === false ? node('code', {}, traceID) : routeLink(traceID, { view: 'logs', issue: null, project: projectID || null, trace: traceID, query: null, environment: null, level: null, status: null, sort: null, page: null }, { class: 'mono', title: 'View logs with this trace ID' }), copy);
+      state.me.features?.logs === false ? node('code', {}, traceID) : routeLink(traceID, { view: 'logs', issue: null, project: projectID || null, trace: traceID, query: null, environment: null, level: null, service: null, status: null, sort: null, page: null, start: params?.get('start') || null, end: params?.get('end') || null, window: params?.get('window') || null }, { class: 'mono', title: 'View logs with this trace ID' }), copy);
   }
 
   function milliseconds(value) {
@@ -383,19 +383,51 @@
     return Number.isFinite(duration) ? `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(duration)} ms` : 'Not available';
   }
 
+  function telemetryWindow(params, endpoint) {
+    const presets = [['1h', 'Past hour', 3600000], ['24h', 'Past 24 hours', 86400000], ['7d', 'Past 7 days', 604800000], ['30d', 'Past 30 days', 2592000000]];
+    const hasRange = params.has('start') || params.has('end');
+    const elapsed = Date.parse(params.get('end')) - Date.parse(params.get('start'));
+    const preset = presets.find(([key, , duration]) => key === params.get('window') && Math.abs(elapsed - duration) <= 1);
+    const selected = hasRange ? preset?.[0] || 'custom' : '';
+    const options = [['', endpoint === 'transactions' ? 'Default (last 24 hours)' : 'Default (all time)'], ...presets.map(([key, label]) => [key, label])];
+    if (hasRange) options.push(['custom', 'Custom']);
+    const control = selectField('Time window', options, selected);
+    let changed = false;
+    control.input.addEventListener('change', () => { changed = true; });
+    function changes() {
+      const value = control.input.value;
+      if (hasRange && (!changed || value === 'custom')) return { start: params.get('start'), end: params.get('end'), window: preset?.[0] || null };
+      if (!value) return { start: null, end: null, window: null };
+      const duration = presets.find(([key]) => key === value)[2];
+      const end = new Date();
+      return { start: new Date(end.getTime() - duration).toISOString(), end: end.toISOString(), window: value };
+    }
+    function utc(value) {
+      const parsed = new Date(value);
+      if (!Number.isFinite(parsed.getTime())) return value;
+      const fraction = /\.(\d+)(?:Z|[+-]\d{2}:\d{2})$/i.exec(value)?.[1] || '';
+      return `${parsed.toISOString().slice(0, 19)}.${fraction.padEnd(6, '0').slice(0, 6)}Z`;
+    }
+    const summary = node('section', { class: 'time-window-summary', 'aria-label': 'Active time window' },
+      node('span', { class: 'badge' }, hasRange ? preset?.[1] || 'Custom interval' : endpoint === 'transactions' ? 'Last 24 hours' : 'All time'),
+      hasRange ? node('span', { class: 'mono' }, `UTC: ${utc(params.get('start'))} ≤ timestamp < ${utc(params.get('end'))}`)
+        : node('span', {}, endpoint === 'transactions' ? 'Default rolling window.' : 'No time restriction.'));
+    return { ...control, changes, summary };
+  }
+
   function renderTransactions(main, result, params) {
     document.title = 'Transactions · GoodSentry';
-    main.replaceChildren(pageHeader('Transactions', 'Transaction counts and latency over the last 24 hours.',
-      node('div', { class: 'actions' }, node('span', { class: 'badge' }, 'Last 24 hours'), button('Refresh', () => loadRoute()))));
+    main.replaceChildren(pageHeader('Transactions', 'Transaction counts and latency in the active time window.', button('Refresh', () => loadRoute())));
     const project = projectFilter(params);
-    const form = node('form', { class: 'filters transaction-filters', 'aria-label': 'Filter transactions' }, project.wrap,
+    const window = telemetryWindow(params, 'transactions');
+    const form = node('form', { class: 'filters transaction-filters telemetry-filters', 'aria-label': 'Filter transactions' }, project.wrap, window.wrap,
       node('button', { class: 'button', type: 'submit' }, 'Apply filter'));
-    form.addEventListener('submit', event => { event.preventDefault(); navigate({ project: project.input.value, page: null }); });
-    main.append(form);
+    form.addEventListener('submit', event => { event.preventDefault(); navigate({ project: project.input.value, ...window.changes(), page: null }); });
+    main.append(form, window.summary);
     const panel = node('section', { class: 'panel', 'aria-label': 'Transaction aggregates' });
     const transactions = result.data || [];
     if (!transactions.length) {
-      panel.append(empty('No transactions in the last 24 hours', 'Transactions appear when your SDK sends performance data. Check the selected project and your SDK sampling configuration.'));
+      panel.append(empty('No transactions in this time window', 'Transactions appear when your SDK sends performance data. Check the selected project and your SDK sampling configuration.'));
     } else {
       const rows = transactions.map(transaction => node('tr', {},
         node('td', { class: 'transaction-name' }, node('strong', {}, text(transaction.transaction, 'Unnamed transaction'))),
@@ -404,7 +436,7 @@
         node('td', { class: 'nowrap' }, milliseconds(transaction.avgDuration)), node('td', { class: 'nowrap' }, milliseconds(transaction.p50)),
         node('td', { class: 'nowrap' }, milliseconds(transaction.p95)),
         node('td', { class: 'nowrap' }, node('time', { datetime: transaction.lastSeen }, date(transaction.lastSeen, true))),
-        node('td', {}, traceReference(transaction.latestTraceId, params.get('project')))));
+        node('td', {}, traceReference(transaction.latestTraceId, params.get('project'), params))));
       const columns = ['Transaction', 'Operation', 'Events', 'Errors', 'Average', 'p50', 'p95', 'Last seen', 'Latest trace'];
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
     }
@@ -428,19 +460,21 @@
     const level = selectField('Level', [['', 'All levels'], ...['trace', 'debug', 'info', 'warn', 'warning', 'error', 'fatal'].map(value => [value, value])], params.get('level') || '');
     const environment = field('Environment', 'text', { name: 'environment', value: params.get('environment') || '', placeholder: 'All environments' });
     const trace = field('Trace ID', 'text', { name: 'trace', value: params.get('trace') || '', placeholder: 'All traces', spellcheck: 'false', autocomplete: 'off' });
-    const form = node('form', { class: 'filters log-filters', role: 'search', 'aria-label': 'Filter logs' }, search.wrap, project.wrap, level.wrap, environment.wrap, trace.wrap,
+    const service = field('Service', 'text', { name: 'service', value: params.get('service') || '', maxlength: 4000, placeholder: 'Exact service name', autocomplete: 'off' });
+    const window = telemetryWindow(params, 'logs');
+    const form = node('form', { class: 'filters log-filters', role: 'search', 'aria-label': 'Filter logs' }, search.wrap, project.wrap, level.wrap, environment.wrap, trace.wrap, service.wrap, window.wrap,
       node('button', { class: 'button', type: 'submit' }, 'Apply filters'));
     form.addEventListener('submit', event => {
       event.preventDefault();
-      navigate({ project: project.input.value, query: search.input.value.trim(), level: level.input.value, environment: environment.input.value.trim(), trace: trace.input.value.trim(), page: null });
+      navigate({ project: project.input.value, query: search.input.value.trim(), level: level.input.value, environment: environment.input.value.trim(), trace: trace.input.value.trim(), service: service.input.value, ...window.changes(), page: null });
     });
-    main.append(form);
+    main.append(form, window.summary);
     const logs = result.data || [];
     const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
     const panel = node('section', { class: 'panel', 'aria-label': 'Logs' });
     if (!logs.length) {
       panel.append(empty(page > 1 ? 'No more logs on this page' : 'No matching logs', 'Check your filters, or send logs from your application SDK.',
-        button('Clear filters', () => navigate({ project: null, query: null, level: null, environment: null, trace: null, page: null }))));
+        button('Clear filters', () => navigate({ project: null, query: null, level: null, environment: null, trace: null, service: null, start: null, end: null, window: null, page: null }))));
     } else {
       const rows = logs.map(log => {
         const projectName = state.projects.find(project => String(project.id) === String(log.projectId))?.name || log.projectId;
@@ -449,7 +483,7 @@
             node('div', { class: 'log-identifiers' }, keyValues([['Log ID', log.id], ['Span ID', log.spanId]]))));
         return node('tr', {}, node('td', { class: 'nowrap' }, node('time', { datetime: log.timestamp }, date(log.timestamp, true))),
           node('td', {}, badge(log.level)), node('td', { class: 'log-message-column' }, disclosure), node('td', {}, text(projectName)),
-          node('td', {}, text(log.service)), node('td', {}, text(log.environment)), node('td', {}, traceReference(log.traceId, log.projectId)));
+          node('td', {}, text(log.service)), node('td', {}, text(log.environment)), node('td', {}, traceReference(log.traceId, log.projectId, params)));
       });
       const columns = ['Time', 'Level', 'Message and attributes', 'Project', 'Service', 'Environment', 'Trace'];
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));

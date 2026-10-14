@@ -266,7 +266,10 @@
     @apply max-w-[520px];
     grid-template-columns: minmax(0,1fr) auto;
   }
-  .log-filters { grid-template-columns: minmax(160px,2fr) minmax(120px,1fr) minmax(100px,.75fr) minmax(120px,1fr) minmax(180px,1.5fr) auto; }
+  .filters.telemetry-filters { @apply max-w-[780px]; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; }
+  .log-filters { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .time-window-summary { @apply flex flex-wrap items-center gap-3 mb-4 text-muted text-sm; }
+  .time-window-summary .mono { @apply wrap-anywhere min-w-0; }
   .transaction-name { @apply min-w-[200px] wrap-anywhere; }
   .trace-reference { @apply flex items-center gap-2 min-w-[260px]; }
   .trace-reference a { @apply wrap-anywhere text-[.8rem]; }
@@ -373,6 +376,7 @@
     .page-header { @apply flex-wrap; }
     .page-header h1 { @apply text-[1.5rem]; }
     .filters { @apply grid-cols-2 gap-[.65rem]; }
+    .filters.telemetry-filters { @apply grid-cols-2; }
     .filters .search-field { @apply col-span-full; }
     th,td { @apply px-4 py-3; }
     .detail-aside { @apply block; }
