@@ -85,6 +85,7 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 
 ## Evidence log
 
+- 2026-10-14: Independently authored uptime probes pass actual HTTP/TCP tests for HEAD/GET/POST, expected status and bounded literal body matching, TLS verification, redirect limits, private/mapped-IP blocking, timeout and caller cancellation. Network validation resolves and pins checked addresses at dial time and uses no environment proxy. Initial missing-API and invalid TCP-host cases failed before implementation/fixes. Probe code adds no dependencies or database access.
 - 2026-10-14: Workspace verified empty. WSL2 runs approved /bin/sh commands. Normal sandbox process creation fails before execution. Initial Docker wrapper reports missing WSL integration. Go installation preparation has started in /tmp/sentrygo-toolchain. No application behavior is implemented yet.
 - 2026-10-14: Public-documentation research established the GlitchTip baseline and Sentry ingestion contracts. No upstream server implementation source was inspected. Source links and known compatibility gaps are recorded in SPEC.md.
 - 2026-10-14: `go test -tags=integration ./...`, `go vet ./...` and `git diff --check` pass against PostgreSQL 18 through commit ad5b209. Full race tests passed before the final source-map parser fixes; rerun after the next integrated increment. Envelope fuzzing completed 31,840 executions without a failure. These checks do not establish unfinished feature parity.
