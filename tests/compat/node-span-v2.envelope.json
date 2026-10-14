@@ -1,0 +1,51 @@
+[
+  {
+    "sent_at": "2026-01-01T00:00:01Z",
+    "sdk": {"name": "sentry.javascript.node", "version": "11.7.0"}
+  },
+  [
+    [
+      {
+        "type": "span",
+        "item_count": 2,
+        "content_type": "application/vnd.sentry.items.span.v2+json"
+      },
+      {
+        "version": 2,
+        "items": [
+          {
+            "name": "synthetic.child",
+            "span_id": "3333333333333333",
+            "trace_id": "11111111111111111111111111111111",
+            "parent_span_id": "2222222222222222",
+            "start_timestamp": 1767225600.001,
+            "end_timestamp": 1767225600.003,
+            "is_segment": false,
+            "status": "ok",
+            "attributes": {
+              "sentry.op": {"value": "compat.child", "type": "string"},
+              "sentry.segment.name": {"value": "synthetic.node.transaction", "type": "string"},
+              "sentry.segment.id": {"value": "2222222222222222", "type": "string"}
+            }
+          },
+          {
+            "name": "synthetic.node.transaction",
+            "span_id": "2222222222222222",
+            "trace_id": "11111111111111111111111111111111",
+            "start_timestamp": 1767225600,
+            "end_timestamp": 1767225600.005,
+            "is_segment": true,
+            "status": "ok",
+            "attributes": {
+              "sentry.op": {"value": "compat.node", "type": "string"},
+              "sentry.segment.name": {"value": "synthetic.node.transaction", "type": "string"},
+              "sentry.segment.id": {"value": "2222222222222222", "type": "string"},
+              "sentry.release": {"value": "synthetic@1", "type": "string"},
+              "sentry.environment": {"value": "test", "type": "string"}
+            }
+          }
+        ]
+      }
+    ]
+  ]
+]
