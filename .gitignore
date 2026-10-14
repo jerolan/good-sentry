@@ -1,0 +1,10 @@
+/bin/
+/.tools/
+/.tmp/
+/uploads/
+/test-results/
+/node_modules/
+/.env
+/.env.*
+*.test
+coverage.out
