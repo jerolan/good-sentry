@@ -33,11 +33,12 @@ docker compose down
 - Transacciones con promedio, p50/p95 y trace ID consultables por API.
 - Logs con atributos tipados, filtros, deduplicación y correlación por trace ID consultables por API.
 - Interfaz responsive de proyectos y errores, probada en Chromium a 320, 768 y 1440 píxeles.
-- SDK oficial de Go `v0.50.0` contra el servidor nativo y contra la imagen de Compose, y Python `2.72.0` contra Compose. Se verificaron excepciones, transacciones y logs recuperando los datos guardados.
+- SDK oficiales Go `v0.50.0`, Python `2.72.0`, Node `11.7.0` y navegador `11.7.0`: excepciones, transacciones y logs verificados recuperando los datos guardados. El SDK de navegador se ejecutó en Chromium desde otro origen para comprobar CORS.
+- Spans v2 de JavaScript con relaciones padre/hijo y deduplicación; solo los segmentos cuentan como transacciones en los agregados.
 
 El compose actual desactiva uptime porque su implementación está pendiente. El proceso rechaza MCP, DuckDB, admin, OpenAPI, Valkey o uptime activados mientras no estén disponibles. Los tipos de envelope aún no soportados se conservan y se indican en `unsupportedItems`; eso no equivale a implementar su funcionalidad. Los logs desactivados se excluyen deliberadamente y producen un aviso de rate limit para sus categorías.
 
-Node `11.7.0` ya pasa errores y logs. Su prueba de trazas detectó el nuevo transporte de spans v2 y está pendiente de la integración documentada en la especificación. La matriz del SDK oficial de navegador también sigue pendiente.
+Esta matriz cubre errores, transacciones y logs de esas versiones concretas. Adjuntos, otros formatos y versiones requieren sus propias verificaciones.
 
 Siguen pendientes, entre otras funciones, alertas y scheduler, releases y cargas de source maps, simbolicación nativa, merge/unmerge, invitaciones, recuperación de contraseñas, integraciones y varias pantallas. El consumidor puro de source maps tiene pruebas de ubicación y contexto, pero aún requiere conectar su almacenamiento y API. No se ha medido el objetivo de memoria de 256-512 MB bajo carga.
 

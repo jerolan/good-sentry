@@ -95,6 +95,26 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		switch item.Type {
 		case "event", "transaction":
 			continue
+		case "span":
+			var contentType string
+			_ = json.Unmarshal(item.Header["content_type"], &contentType)
+			if contentType != "application/vnd.sentry.items.span.v2+json" {
+				failure(w, 415, "Unsupported span content type")
+				return
+			}
+			var count int
+			if json.Unmarshal(item.Header["item_count"], &count) != nil || count < 1 || count > 1000 {
+				failure(w, 400, "Invalid span item count")
+				return
+			}
+			if _, err = s.db.IngestSpans(r.Context(), project, item.Payload, count); err != nil {
+				if errors.Is(err, store.ErrInvalidSpan) {
+					failure(w, 400, err.Error())
+				} else {
+					report(w, err)
+				}
+				return
+			}
 		case "log":
 			if !s.cfg.Logs {
 				w.Header().Set("X-Sentry-Rate-Limits", "60:log_item;log_byte:organization:feature_disabled")

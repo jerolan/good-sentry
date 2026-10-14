@@ -131,6 +131,58 @@ func TestAccountDSNCaptureAndTriage(t *testing.T) {
 	if code, _ = request("POST", "/api/v1/issues/"+id+"/comments", `{"text":"Investigating deployment"}`, csrf); code != 201 {
 		t.Fatalf("comment=%d", code)
 	}
+	// Current Node SDKs stream spans instead of transaction events. Only a
+	// capture-to-query HTTP check can detect a handler that stores them as
+	// unsupported items while falsely acknowledging successful tracing.
+	trace := "11111111111111111111111111111111"
+	stamp := time.Now().Add(-time.Minute).Unix()
+	spanPayload := fmt.Sprintf(`{"version":2,"items":[{"trace_id":%q,"span_id":"2222222222222222","name":"SDK streamed transaction","status":"ok","is_segment":true,"start_timestamp":%d,"end_timestamp":%d,"attributes":{"sentry.op":{"type":"string","value":"compat.node"}}},{"trace_id":%q,"span_id":"3333333333333333","parent_span_id":"2222222222222222","name":"Child work","status":"ok","is_segment":false,"start_timestamp":%d,"end_timestamp":%d}]}`, trace, stamp, stamp+1, trace, stamp, stamp+1)
+	spanEnvelope := "{}\n{\"type\":\"span\",\"item_count\":2,\"content_type\":\"application/vnd.sentry.items.span.v2+json\"}\n" + spanPayload
+	for range 2 {
+		req, _ := http.NewRequest("POST", endpoint, strings.NewReader(spanEnvelope))
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var receipt struct {
+			Unsupported []string `json:"unsupportedItems"`
+		}
+		decodeErr := json.NewDecoder(res.Body).Decode(&receipt)
+		res.Body.Close()
+		if res.StatusCode != 200 || decodeErr != nil || len(receipt.Unsupported) != 0 {
+			t.Fatalf("span receipt status=%d unsupported=%v error=%v", res.StatusCode, receipt.Unsupported, decodeErr)
+		}
+	}
+	code, aggregates := request("GET", "/api/v1/organizations/"+org+"/transactions?project="+project, "", "")
+	if code != 200 || len(aggregates["data"].([]any)) != 1 {
+		t.Fatalf("streamed transaction=%d %+v", code, aggregates)
+	}
+	group := aggregates["data"].([]any)[0].(map[string]any)
+	if group["count"] != float64(1) || group["avgDuration"] != float64(1000) || group["latestTraceId"] != trace {
+		t.Fatalf("streamed aggregate=%+v", group)
+	}
+	code, spans := request("GET", "/api/v1/organizations/"+org+"/spans?project="+project+"&trace="+trace, "", "")
+	if code != 200 || len(spans["data"].([]any)) != 2 {
+		t.Fatalf("trace spans=%d %+v", code, spans)
+	}
+	for _, invalid := range []struct {
+		old, replacement string
+		status           int
+	}{
+		{`"item_count":2`, `"item_count":3`, 400},
+		{`"item_count":2`, `"item_count":null`, 400},
+		{"application/vnd.sentry.items.span.v2+json", "application/x-unknown", 415},
+	} {
+		req, _ := http.NewRequest("POST", endpoint, strings.NewReader(strings.Replace(spanEnvelope, invalid.old, invalid.replacement, 1)))
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if res.StatusCode != invalid.status {
+			t.Fatalf("invalid span header=%d want=%d", res.StatusCode, invalid.status)
+		}
+	}
 	if code, _ = request("POST", "/api/v1/logout", "{}", csrf); code != 204 {
 		t.Fatalf("logout=%d", code)
 	}

@@ -51,15 +51,22 @@ func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID str
 	if err != nil {
 		return nil, err
 	}
-	rows, err := s.pool.Query(ctx, `SELECT e.transaction_name,COALESCE(e.data#>>'{contexts,trace,op}','') AS op,
-		count(*),count(*) FILTER(WHERE e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')),
-		avg(e.duration),percentile_cont(0.5) WITHIN GROUP(ORDER BY e.duration),
-		percentile_cont(0.95) WITHIN GROUP(ORDER BY e.duration),max(e.timestamp),
-		(array_agg(e.trace_id ORDER BY e.timestamp DESC,e.id DESC))[1]
+	rows, err := s.pool.Query(ctx, `WITH telemetry AS (
+		SELECT e.transaction_name AS name,COALESCE(e.data#>>'{contexts,trace,op}','') AS op,e.duration,
+		(e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed,
+		e.timestamp AS timestamp,e.trace_id,e.id,0 AS source
 		FROM events e JOIN projects p ON p.id=e.project_id
-		WHERE p.organization_id::text=$1 AND ($2='' OR e.project_id::text=$2)
-		AND e.kind='transaction' AND e.timestamp>=now()-interval '24 hours' AND e.timestamp<=now()
-		GROUP BY e.transaction_name,op ORDER BY count(*) DESC,max(e.timestamp) DESC,e.transaction_name,op`, org.ID, projectID)
+		WHERE p.organization_id::text=$1 AND ($2='' OR e.project_id::text=$2) AND e.kind='transaction'
+		UNION ALL
+		SELECT s.name,s.op,s.duration,s.status='error',s.end_timestamp,s.trace_id,s.id,1
+		FROM spans s JOIN projects p ON p.id=s.project_id
+		WHERE p.organization_id::text=$1 AND ($2='' OR s.project_id::text=$2) AND s.is_segment
+	)
+		SELECT name,op,count(*),count(*) FILTER(WHERE failed),avg(duration),
+		percentile_cont(0.5) WITHIN GROUP(ORDER BY duration),percentile_cont(0.95) WITHIN GROUP(ORDER BY duration),
+		max(timestamp),(array_agg(trace_id ORDER BY timestamp DESC,source DESC,id DESC))[1]
+		FROM telemetry WHERE timestamp>=now()-interval '24 hours' AND timestamp<=now()
+		GROUP BY name,op ORDER BY count(*) DESC,max(timestamp) DESC,name,op`, org.ID, projectID)
 	if err != nil {
 		return nil, err
 	}

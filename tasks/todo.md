@@ -24,9 +24,9 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
 - [x] Implement pure event normalization and stable fingerprinting.
   - Files: internal/event/event.go, event_test.go.
   - Verify exception/message grouping, custom/default fingerprints, missing IDs and timestamp variants.
-- [ ] Integrate durable ingestion, issue list/event detail and original responsive UI.
+- [x] Integrate durable ingestion, issue list/event detail and original responsive UI.
   - Verify real Go/Python/Node/browser SDK errors through authenticated reads, idempotent duplicate events, grouping and restart persistence.
-  - Durable errors and UI are implemented. Real Go/Python/Node exceptions pass; official browser SDK matrix remains pending. Eight concurrent duplicate events count once. Compose restart preserves an acknowledged event and session.
+  - Durable errors and UI are implemented. Real Go/Python/Node/browser exceptions pass through authenticated reads. Eight concurrent duplicate events count once. Compose restart preserves an acknowledged event and session.
 - [x] Add the non-root Dockerfile and PostgreSQL compose deployment with embedded assets.
   - Verify docker compose up --build from a clean database, readiness, SDK capture and persisted data after restart.
 - [x] Compile the user-authorized Tailwind CSS into the embedded UI.
@@ -46,7 +46,7 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 
 ## Observability and operations
 
-- [ ] Accept current SDK span v2 batches atomically, deduplicate retries and aggregate only segments.
+- [x] Accept current SDK span v2 batches atomically, deduplicate retries and aggregate only segments.
   - Preserve child relationships and typed attributes; verify real Node 11.7.0 error, trace and logs after the initially failing trace check.
 - [ ] Deliver transaction/span storage, time-window aggregates, average/p50/p95, errors and detail UI.
 - [ ] Deliver SDK logs with typed attributes, filters, trace correlation and detail UI.
@@ -82,3 +82,5 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - 2026-10-14: Official sentry-go 0.50.0 passes exception/transaction/typed-log retrieval against native WSL and Compose. Python sentry-sdk 2.72.0 passes the same matrix against Compose. Node 11.7.0 exceptions and typed logs pass; its real streamed-span aggregate initially fails. The new HTTP regression reproduces `unsupportedItems:[span]`; keep the trace check failing until the specified fix lands. SDK packages are isolated external test clients. Node's installation used an explicitly authorized exception to npq's publication-age gate, confined to temporary test tooling.
 - 2026-10-14: Tailwind CLI 4.3.3 SHA-256 `dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a` produces a repeatable stylesheet. Browser onboarding/project/DSN/errors/filters/resolve/reopen/comments/login pass at 320/768/1440 px with no document overflow, JS errors or transport failures. Expected anonymous /me 401 is recorded separately. Local ignored evidence: test-results/browser/report.json and responsive screenshots. Compose serves exactly that compiled stylesheet; image/runtime verification currently covers Linux amd64.
 - 2026-10-14: Independent pure source-map tests prove original file/line/column/context, debug-ID precedence and preserved original stacks. Upload/storage/API wiring remains incomplete. Official sentry-cli 3.8.0 SHA-256 `13f8cb34ae01a6a272d7d7c22e277a105286615b4020de900ea95a8de47cdbb6` exercised against our recorder establishes request negotiation, SHA-1 chunks, multipart gzip and SYSB-v2 bundle layout. Synthetic server responses are not real Sentry server evidence. The bundle decoder is the next bounded artifact increment.
+- 2026-10-14: Span v2 regression now passes at HTTP and real PostgreSQL boundaries. Atomic rejection, eight concurrent retries including reversed batch order, preserved typed attributes/parent relationships and segment-only aggregation pass. Combined legacy/segment fixture: count 4, average 375 ms, p50 375 ms, p95 606.25 ms. Full `go test -tags=integration ./...`, `go vet ./...` and Docker `go test -race -tags=integration ./...` pass against PostgreSQL 18. The unchanged Node 11.7.0 matrix passes through Compose; primary independently retrieved its two related spans and single aggregate.
+- 2026-10-14: Browser Sentry SDK 11.7.0 runs in Chromium 156.0.8078.4 using the official CDN tracing/logs bundle with fixed SRI. Exception, transaction and typed log retrieval pass from a separate HTTP origin; actual POST Origin and Access-Control-Allow-Origin are checked. No browser runtime errors or failed ingestion requests. This establishes the current error/transaction/log SDK matrix, not attachments, artifacts, all SDK versions or complete feature parity.
