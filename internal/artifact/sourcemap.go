@@ -7,19 +7,26 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-
-	"github.com/go-sourcemap/sourcemap"
 )
 
+const maxSourceMapMappings = 1_000_000
+
 type SourceMap struct {
-	Name    string
-	DebugID string
-	Data    []byte
+	Name        string
+	DebugID     string
+	Data        []byte
+	DebugIDOnly bool // Only the matching debug image may select this artifact.
 }
 
 type parsedMap struct {
 	SourceMap
-	consumer *sourcemap.Consumer
+	consumer *sourceMapConsumer
+}
+
+// ValidateSourceMap checks the upload before its bytes become durable artifacts.
+func ValidateSourceMap(name string, data []byte) error {
+	_, err := parseSourceMap(name, data)
+	return err
 }
 
 // Symbolicate retains original stacks in raw_stacktrace and modifies only
@@ -30,13 +37,15 @@ func Symbolicate(raw json.RawMessage, maps []SourceMap) (json.RawMessage, error)
 		return nil, errors.New("event must be a JSON object")
 	}
 	parsed := make([]parsedMap, 0, len(maps))
+	mappingCount := 0
 	for _, m := range maps {
-		if err := validateMap(m.Data); err != nil {
-			return nil, fmt.Errorf("source map %q: %w", m.Name, err)
-		}
-		consumer, err := sourcemap.Parse(m.Name, m.Data)
+		consumer, err := parseSourceMap(m.Name, m.Data)
 		if err != nil {
 			return nil, fmt.Errorf("parse source map %q: %w", m.Name, err)
+		}
+		mappingCount += consumer.MappingCount()
+		if mappingCount > maxSourceMapMappings {
+			return nil, fmt.Errorf("%w: selected source maps exceed the mapping limit", ErrSourceMapLimit)
 		}
 		parsed = append(parsed, parsedMap{SourceMap: m, consumer: consumer})
 	}
@@ -142,7 +151,7 @@ func symbolicateStack(owner map[string]json.RawMessage, maps []parsedMap, images
 		if name != "" {
 			frame["function"], _ = json.Marshal(name)
 		}
-		applyContext(frame, m.consumer.SourceContent(source), originalLine)
+		applyContext(frame, m.consumer.SourceContent(line, column), originalLine)
 		frames[i], _ = json.Marshal(frame)
 		changed = true
 	}
@@ -188,6 +197,9 @@ func matchingMap(absPath string, maps []parsedMap, images []debugImage) *parsedM
 	var found *parsedMap
 	frameName := cleanURL(absPath)
 	for i := range maps {
+		if maps[i].DebugIDOnly {
+			continue
+		}
 		name := strings.TrimSuffix(cleanURL(maps[i].Name), ".map")
 		matches := name == frameName
 		if strings.HasPrefix(name, "~/") {
@@ -232,53 +244,7 @@ func applyContext(frame map[string]json.RawMessage, source string, line int) {
 	frame["post_context"], _ = json.Marshal(lines[index+1 : end])
 }
 
-// The consumer accepts some invalid VLQ strings without reporting an error.
-// Check their syntax here; leave mapping semantics to the source-map consumer.
 func validateMap(raw json.RawMessage) error {
-	var header struct {
-		Version  int     `json:"version"`
-		Mappings *string `json:"mappings"`
-		Sections []struct {
-			Map json.RawMessage `json:"map"`
-		} `json:"sections"`
-	}
-	if err := json.Unmarshal(raw, &header); err != nil || header.Version != 3 {
-		return errors.New("expected a version 3 source-map object")
-	}
-	if header.Mappings == nil {
-		if header.Sections == nil {
-			return errors.New("source map requires mappings or sections")
-		}
-		for _, section := range header.Sections {
-			if err := validateMap(section.Map); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-	const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-	fields, continuation, afterComma := 0, false, false
-	validSegment := func() bool { return !continuation && (fields == 1 || fields == 4 || fields == 5) }
-	for _, c := range *header.Mappings {
-		if c == ',' || c == ';' {
-			if !validSegment() && !(c == ';' && fields == 0 && !continuation && !afterComma) {
-				return errors.New("source-map segment must contain 1, 4 or 5 complete VLQ fields")
-			}
-			fields, continuation, afterComma = 0, false, c == ','
-			continue
-		}
-		value := strings.IndexRune(alphabet, c)
-		if value < 0 {
-			return errors.New("source-map mappings contain invalid base64-VLQ characters")
-		}
-		continuation = value&32 != 0
-		if !continuation {
-			fields++
-		}
-		afterComma = false
-	}
-	if !validSegment() && !(fields == 0 && !continuation && !afterComma) {
-		return errors.New("source-map segment must contain 1, 4 or 5 complete VLQ fields")
-	}
-	return nil
+	_, err := parseSourceMap("", raw)
+	return err
 }
