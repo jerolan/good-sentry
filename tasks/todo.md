@@ -60,6 +60,10 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - [ ] Deliver HTTP HEAD/GET/POST monitors and stored checks with UI.
 - [ ] Deliver TCP checks and heartbeat expiry/recovery with UI.
 - [ ] Verify scheduler leases and recovery across simultaneous replicas/restarts.
+- [ ] Deliver SSL certificate monitors after verifying their public behavior.
+  - Current public OpenAPI includes SSL; the initial HTTP/TCP/heartbeat slice does not establish certificate-monitor parity.
+- [ ] Implement the specified uptime network policy, transition history and owner/member UI.
+  - In progress: pure network probe, durable PostgreSQL lease/state boundaries, scheduler lifecycle, native routes and responsive browser acceptance. Scheduling and expected-body semantics are explicit GoodSentry decisions in SPEC.md.
 - [ ] Deliver frequency alert rules, cooldown and durable delivery intents.
 - [ ] Deliver SMTP/consolemail and webhook retries, plus uptime down/recovery alerts.
 

@@ -19,4 +19,6 @@ The pinned Node SDK matrix found a concrete gap in step 5: current JavaScript se
 
 After that compatibility check, connect the already verified source-map consumer to scoped durable uploads and error ingestion. Prove mapped frames through the native authenticated API before adding compatible releases and the modern CLI chunk/assembly flow. Keep the parser-only proof distinct from that full workflow.
 
+Native source-map upload and mapped capture are verified. Next execute step 6's independent uptime slice while CLI/release and OTLP acceptance remain open. First implement the bounded network probe and PostgreSQL monitor/check/lease contracts in disjoint files; integrate scheduler lifecycle and authenticated routes in the primary. Then connect the Tailwind UI, enable the compose feature and verify actual probes, replica/restart recovery and browser flows. Alert delivery follows its own durable increment.
+
 Risks to resolve early are malformed/binary envelope handling, event retry/concurrency accounting, per-organization isolation, authenticated browser mutations, modern CLI artifact negotiation, native symbolication and WSL container tooling. Start external-contract research early, while the first vertical slice is built.
