@@ -15,6 +15,8 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"goodsentry/internal/nettarget"
 )
 
 const (
@@ -35,10 +37,8 @@ const (
 )
 
 var (
-	errDestinationBlocked = errors.New(ReasonDestinationBlocked)
-	errDNS                = errors.New(ReasonDNS)
-	errRedirectLimit      = errors.New(ReasonRedirectLimit)
-	errRedirectTarget     = errors.New(ReasonInvalidConfig)
+	errRedirectLimit  = errors.New(ReasonRedirectLimit)
+	errRedirectTarget = errors.New(ReasonInvalidConfig)
 )
 
 // Validate normalizes public configuration without resolving or contacting targets.
@@ -133,15 +133,15 @@ func validHTTPURL(u *url.URL) bool {
 // Prober can be shared by scheduler workers. The transport never uses proxy
 // environment variables; each new connection resolves and pins its destination.
 type Prober struct {
-	allowPrivate bool
-	transport    *http.Transport
-	client       *http.Client
+	dialer    nettarget.Dialer
+	transport *http.Transport
+	client    *http.Client
 }
 
 func NewProber(allowPrivate bool) *Prober {
-	p := &Prober{allowPrivate: allowPrivate}
+	p := &Prober{dialer: nettarget.Dialer{AllowPrivate: allowPrivate}}
 	p.transport = &http.Transport{
-		DialContext: p.dialContext, MaxResponseHeaderBytes: maxHeaderBytes,
+		DialContext: p.dialer.DialContext, MaxResponseHeaderBytes: maxHeaderBytes,
 		MaxIdleConns: 16, MaxIdleConnsPerHost: 2, IdleConnTimeout: 30 * time.Second,
 	}
 	p.client = &http.Client{Transport: p.transport, CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -177,7 +177,7 @@ func (p *Prober) Check(ctx context.Context, c Config) (result Result, err error)
 	probeCtx, cancel := context.WithTimeout(ctx, time.Duration(c.TimeoutSeconds)*time.Second)
 	defer cancel()
 	if c.Type == TCP {
-		conn, dialErr := p.dialContext(probeCtx, "tcp", c.URL)
+		conn, dialErr := p.dialer.DialContext(probeCtx, "tcp", c.URL)
 		if dialErr != nil {
 			return Result{Reason: failureReason(dialErr, probeCtx, ReasonConnection)}, nil
 		}
@@ -216,35 +216,6 @@ func (p *Prober) Check(ctx context.Context, c Config) (result Result, err error)
 	return result, nil
 }
 
-func (p *Prober) dialContext(ctx context.Context, network, address string) (net.Conn, error) {
-	host, port, err := net.SplitHostPort(address)
-	if err != nil {
-		return nil, err
-	}
-	addresses, err := net.DefaultResolver.LookupNetIP(ctx, "ip", host)
-	if err != nil || len(addresses) == 0 {
-		return nil, errDNS
-	}
-	for _, address := range addresses {
-		ip := address.Unmap()
-		if !p.allowPrivate && (!ip.IsGlobalUnicast() || ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast()) {
-			return nil, errDestinationBlocked
-		}
-	}
-	var dialer net.Dialer
-	for _, address := range addresses {
-		conn, dialErr := dialer.DialContext(ctx, network, net.JoinHostPort(address.String(), port))
-		if dialErr == nil {
-			return conn, nil
-		}
-		err = dialErr
-		if ctx.Err() != nil {
-			break
-		}
-	}
-	return nil, err
-}
-
 func failureReason(err error, ctx context.Context, fallback string) string {
 	var networkErr net.Error
 	var certificateErr *tls.CertificateVerificationError
@@ -252,9 +223,9 @@ func failureReason(err error, ctx context.Context, fallback string) string {
 	switch {
 	case errors.Is(ctx.Err(), context.DeadlineExceeded), errors.Is(err, context.DeadlineExceeded):
 		return ReasonTimeout
-	case errors.Is(err, errDestinationBlocked):
+	case errors.Is(err, nettarget.ErrBlocked):
 		return ReasonDestinationBlocked
-	case errors.Is(err, errDNS):
+	case errors.Is(err, nettarget.ErrDNS):
 		return ReasonDNS
 	case errors.Is(err, errRedirectLimit):
 		return ReasonRedirectLimit
