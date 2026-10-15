@@ -1058,7 +1058,7 @@
     const scopes = ['org:read', 'project:read', 'project:releases', 'event:read'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
     const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Permissions'),
       scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
-      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issue events. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issues and issue events. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
     const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
     const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
     const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
@@ -1450,6 +1450,44 @@
       item.message ? node('p', {}, item.message) : null, item.data ? node('pre', { class: 'muted small' }, text(item.data)) : null))) : node('div', { class: 'panel-body muted' }, 'No breadcrumbs were recorded.'));
   }
 
+  function issueAnalytics(analytics) {
+    const content = node('div', { class: 'panel-body form-stack' });
+    const panel = detailPanel('Events in the last 24 hours', content);
+    panel.setAttribute('aria-label', 'Issue event analytics');
+    const series = analytics?.stats?.['24h'];
+    if (!Array.isArray(series) || series.length !== 24) {
+      content.append(node('p', { class: 'muted' }, 'Event analytics are unavailable. Refresh this issue to load them.'));
+      return panel;
+    }
+    const total = series.reduce((sum, [, count]) => sum + count, 0);
+    const peak = Math.max(1, ...series.map(([, count]) => count));
+    const timestamp = epoch => new Date(epoch * 1000).toISOString();
+    const time = epoch => node('time', { datetime: timestamp(epoch) }, timestamp(epoch).replace('T', ' ').replace('.000Z', ' UTC'));
+    content.append(node('p', { class: 'issue-chart-total' }, `${number(total)} ${total === 1 ? 'event' : 'events'}`),
+      node('p', { class: 'muted small' }, 'All environments. Each bar is one hour; times are UTC.'));
+    if (total === 0) content.append(node('p', { class: 'muted' }, 'No events in the last 24 hours.'));
+    const svg = (tag, attributes = {}, text) => {
+      const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, String(value));
+      if (text !== undefined) element.textContent = text;
+      return element;
+    };
+    const plot = svg('svg', { class: 'issue-chart-bars', viewBox: '0 0 240 100', preserveAspectRatio: 'none', role: 'img', 'aria-label': `${number(total)} events across 24 hourly buckets. Exact counts and UTC times are available in Hourly event data.` });
+    series.forEach(([start, count], index) => {
+      const height = count / peak * 100;
+      const bar = svg('rect', { class: 'issue-chart-bar', x: index * 10 + 1, y: 100 - height, width: 8, height, rx: 1, 'aria-hidden': 'true' });
+      bar.append(svg('title', {}, `${timestamp(start)} · ${number(count)} ${count === 1 ? 'event' : 'events'}`));
+      plot.append(bar);
+    });
+    content.append(node('figure', { class: 'issue-chart' }, plot,
+      node('figcaption', { class: 'issue-chart-range muted small' }, node('span', {}, time(series[0][0])), node('span', {}, time(series.at(-1)[0] + 3600)))));
+    const table = node('table', { class: 'issue-chart-table' }, node('caption', {}, 'Hourly event counts (UTC)'),
+      node('thead', {}, node('tr', {}, ['From (UTC)', 'To (UTC)', 'Events'].map(label => node('th', { scope: 'col' }, label)))),
+      node('tbody', {}, series.map(([start, count]) => node('tr', {}, node('td', {}, time(start)), node('td', {}, time(start + 3600)), node('td', {}, number(count))))));
+    content.append(node('details', { class: 'issue-chart-data' }, node('summary', {}, 'Hourly event data'), node('div', { class: 'table-scroll' }, table)));
+    return panel;
+  }
+
   function renderIssue(main, detail, previousView) {
     const issue = detail.issue;
     const event = detail.event || {};
@@ -1509,8 +1547,9 @@
     const heading = node('div', { class: 'page-header' }, node('div', {},
       node('div', { class: 'eyebrow' }, issue.shortId || issue.id), node('h1', { class: 'detail-title', tabindex: '-1' }, issue.title),
       node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), issue.regressedAt ? node('span', { class: 'badge badge-sm error' }, 'Regressed') : null, issue.groupSize != null ? node('span', { class: 'badge badge-sm' }, `${number(issue.groupSize)} original ${issue.groupSize === 1 ? 'group' : 'groups'}`) : null, node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge badge-sm' }, issue.environment) : null)), statusActions);
-    const stats = node('dl', { class: 'stat-list' }, [['Events', number(issue.count)], ['First seen', date(issue.firstSeen, true)], ['Last seen', date(issue.lastSeen, true)]].map(([name, value]) => node('div', { class: 'stat' }, node('dt', {}, name), node('dd', {}, value))));
-    const summary = node('section', { class: 'card panel' }, stats, node('div', { class: 'panel-body' },
+    const affectedUsers = detail.analytics?.userCount;
+    const stats = node('dl', { class: 'stat-list issue-stat-list' }, [['Events', number(issue.count)], ['Affected users', affectedUsers == null ? 'Unavailable' : number(affectedUsers)], ['First seen', date(issue.firstSeen, true)], ['Last seen', date(issue.lastSeen, true)]].map(([name, value]) => node('div', { class: 'stat' }, node('dt', {}, name), node('dd', {}, value), name === 'Affected users' ? node('p', { class: 'stat-note' }, 'Identified retained users') : null)));
+    const summary = node('section', { class: 'card panel', 'aria-label': 'Issue summary' }, stats, node('div', { class: 'panel-body' },
       node('p', { class: 'muted small' }, 'Latest event'), node('p', { class: 'mono' }, text(event.event_id || event.eventID)),
       event.message || event.logentry?.formatted ? node('pre', { class: 'event-message' }, text(event.message || event.logentry.formatted)) : null));
     const selectedTrace = traceEntry(event.contexts?.trace?.trace_id);
@@ -1533,7 +1572,7 @@
     const mute = issueMute(issue, view, triage);
     const resolution = issueResolution(issue, path, view, triage);
     const origins = issueOrigins(issue, path, view, triage);
-    const left = node('div', {}, summary, origins.panel, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
+    const left = node('div', {}, summary, issueAnalytics(detail.analytics), origins.panel, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
     left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': 'Event details' },

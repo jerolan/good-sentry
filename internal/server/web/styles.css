@@ -236,6 +236,17 @@
   .stat:last-child { @apply border-0; }
   .stat dt { @apply text-xs text-muted mb-[.35rem]; }
   .stat dd { @apply text-base m-0 font-semibold; }
+  .issue-stat-list { @apply grid-cols-4; }
+  .stat-note { @apply text-xs text-muted mt-1 mb-0; }
+  .issue-chart-total { @apply text-lg font-semibold m-0; }
+  .panel figure.issue-chart { @apply m-0 block; }
+  .issue-chart-bars { @apply block w-full h-32 border-b border-outline; }
+  .issue-chart-bar { fill: var(--color-primary); }
+  .issue-chart-range { @apply flex justify-between gap-4 mt-2 flex-wrap; }
+  .issue-chart-data { @apply border border-outline rounded-sm; }
+  .issue-chart-data summary { @apply px-4 py-3 cursor-pointer text-sm font-medium; }
+  .issue-chart-table caption { @apply text-left px-4 py-3 text-sm text-muted; }
+  .issue-chart-table td:last-child { @apply text-right; }
   .stack-list { @apply m-0 p-0 list-none; }
   .stack-frame { @apply px-5 py-4 border-b border-outline; }
   .stack-frame:last-child { @apply border-b-0; }
@@ -487,6 +498,9 @@
     .detail-aside>.panel+.panel { @apply mt-4; }
     .stat { @apply p-[.85rem]; }
     .stat-list { @apply grid-cols-3; }
+    .issue-stat-list { @apply grid-cols-2; }
+    .issue-stat-list .stat:nth-child(2) { @apply border-r-0; }
+    .issue-stat-list .stat:nth-child(-n+2) { @apply border-b border-outline; }
     .stat dd { @apply text-sm; }
     .auth-layout { @apply block; }
     .auth-intro { @apply p-6 gap-6; }

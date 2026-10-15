@@ -69,7 +69,7 @@ try {
   assert.equal(await form.getByLabel('project:read', { exact: true }).isChecked(), true);
   assert.equal(await form.getByLabel('project:releases', { exact: true }).isChecked(), false);
   assert.equal(await form.getByLabel('event:read', { exact: true }).isChecked(), false);
-  const copy = await form.innerText(); assert.match(copy, /project:read reads project metadata and project-scoped event data/); assert.match(copy, /event:read reads issue events/);
+  const copy = await form.innerText(); assert.match(copy, /project:read reads project metadata and project-scoped event data/); assert.match(copy, /event:read reads issues and issue events/);
   await capture('scope-defaults'); checks.push('Existing org/project defaults remain checked; release/event scopes are opt-in with visible distinct purposes at320/768/1440');
   await form.getByLabel('Token name', { exact: true }).fill(`UI issue events ${run}`);
   await form.getByLabel('Lifetime (days)', { exact: true }).fill('1');

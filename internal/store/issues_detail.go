@@ -11,6 +11,7 @@ type IssueDetail struct {
 	Events       []EventSummary  `json:"events"`
 	Comments     []Comment       `json:"comments"`
 	CommentTotal int             `json:"commentTotal"`
+	Analytics    IssueAnalytics  `json:"analytics"`
 }
 
 // IssueDetail reads authorization, issue state, events and comments from the
@@ -46,5 +47,14 @@ func (s *Store) IssueDetail(ctx context.Context, userID, id string) (IssueDetail
 	if err != nil {
 		return detail, err
 	}
+	_, end, chart, err := prepareIssueMetrics(ctx, tx, CompatibleIssueFilter{StatsPeriod: "24h"}, IssueSearch{})
+	if err != nil {
+		return detail, err
+	}
+	metrics, err := readIssueMetrics(ctx, tx, []string{issue.ID}, issueOccurrenceFilter{}, end, chart)
+	if err != nil {
+		return detail, err
+	}
+	detail.Analytics = IssueAnalytics{UserCount: metrics[issue.ID].lifetime.UserCount, Stats: metrics[issue.ID].lifetime.Stats}
 	return detail, tx.Commit(ctx)
 }

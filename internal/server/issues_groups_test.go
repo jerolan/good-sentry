@@ -3,12 +3,12 @@
 package server
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -81,6 +81,14 @@ func TestIssueGroupsHTTPContract(t *testing.T) {
 			t.Fatalf("HTTP JSON: %v body=%s", err, raw)
 		}
 	}
+	// Analytics advances with the transaction clock; compare every prior field.
+	mutationState := func(raw []byte) map[string]json.RawMessage {
+		t.Helper()
+		var fields map[string]json.RawMessage
+		decode(raw, &fields)
+		delete(fields, "analytics")
+		return fields
+	}
 	type wireIssue struct {
 		ID        string
 		GroupSize int
@@ -131,7 +139,7 @@ func TestIssueGroupsHTTPContract(t *testing.T) {
 				f.request(t, member, "POST", op.path, input, memberCSRF, 400)
 			}
 		}
-		if after := f.request(t, f.client, "GET", rootPath, "", nil, 200); !bytes.Equal(before, after) {
+		if after := f.request(t, f.client, "GET", rootPath, "", nil, 200); !reflect.DeepEqual(mutationState(before), mutationState(after)) {
 			t.Fatalf("malformed transport mutated issue: before=%s after=%s", before, after)
 		}
 	})
@@ -186,7 +194,7 @@ func TestIssueGroupsHTTPContract(t *testing.T) {
 			t.Fatalf("stale mutation lost current group: %+v", conflict)
 		}
 	}
-	if after := f.request(t, member, "GET", rootPath, "", nil, 200); !bytes.Equal(before, after) {
+	if after := f.request(t, member, "GET", rootPath, "", nil, 200); !reflect.DeepEqual(mutationState(before), mutationState(after)) {
 		t.Fatalf("stale mutation changed canonical issue: before=%s after=%s", before, after)
 	}
 	var split struct {

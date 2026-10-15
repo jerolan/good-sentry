@@ -155,10 +155,11 @@ const issueJoins = ` FROM issues i JOIN projects p ON p.id=i.project_id JOIN org
 
 type scanner interface{ Scan(...any) error }
 
-func scanIssue(row scanner) (Issue, error) {
+func scanIssue(row scanner, additional ...any) (Issue, error) {
 	var i Issue
 	var assigned, ignored, resolution json.RawMessage
-	err := row.Scan(&i.ID, &i.ProjectID, &i.Project.Slug, &i.Project.Name, &i.Title, &i.Level, &i.Platform, &i.Status, &i.Count, &i.FirstSeen, &i.LastSeen, &i.Environment, &i.Release, &i.ResolvedAt, &i.RegressedAt, &assigned, &ignored, &resolution, &i.GroupSize)
+	destinations := []any{&i.ID, &i.ProjectID, &i.Project.Slug, &i.Project.Name, &i.Title, &i.Level, &i.Platform, &i.Status, &i.Count, &i.FirstSeen, &i.LastSeen, &i.Environment, &i.Release, &i.ResolvedAt, &i.RegressedAt, &assigned, &ignored, &resolution, &i.GroupSize}
+	err := row.Scan(append(destinations, additional...)...)
 	if err == nil && len(assigned) > 0 {
 		err = json.Unmarshal(assigned, &i.AssignedTo)
 	}

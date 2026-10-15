@@ -56,6 +56,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("GET /api/0/organizations/{org}/projects/{$}", s.compatible("org:read", s.compatibleProjects))
 	mux.Handle("GET /api/0/projects/{org}/{project}/{$}", s.compatible("project:read", s.compatibleProject))
 	s.registerCompatibleEventRoutes(mux)
+	s.registerCompatibleIssueRoutes(mux)
 	s.registerReleaseRoutes(mux)
 	s.registerArtifactRoutes(mux)
 	mux.Handle("GET /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.projects)))

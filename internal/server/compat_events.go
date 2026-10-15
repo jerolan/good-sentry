@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -78,7 +79,7 @@ func (s *Server) compatibleEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		result = append(result, item)
 	}
-	s.compatibleEventLinks(w, r, paging, next)
+	s.compatibleOffsetLinks(w, r, paging.query, paging.filter.Offset, paging.filter.Limit, next)
 	writeJSON(w, 200, result)
 }
 
@@ -121,8 +122,7 @@ func (s *Server) readCompatibleEvent(w http.ResponseWriter, r *http.Request, leg
 	writeJSON(w, 200, result)
 }
 
-func (s *Server) compatibleEventLinks(w http.ResponseWriter, r *http.Request, paging compatibleEventPaging, next bool) {
-	offset, limit := paging.filter.Offset, paging.filter.Limit
+func (s *Server) compatibleOffsetLinks(w http.ResponseWriter, r *http.Request, query url.Values, offset, limit int, next bool) {
 	links := make([]string, 0, 2)
 	for _, link := range []struct {
 		relation  string
@@ -135,8 +135,8 @@ func (s *Server) compatibleEventLinks(w http.ResponseWriter, r *http.Request, pa
 			direction = "1"
 		}
 		cursor := "0:" + strconv.Itoa(link.offset) + ":" + direction
-		paging.query.Set("cursor", cursor)
-		public := strings.TrimRight(s.cfg.Domain, "/") + r.URL.EscapedPath() + "?" + paging.query.Encode()
+		query.Set("cursor", cursor)
+		public := strings.TrimRight(s.cfg.Domain, "/") + r.URL.EscapedPath() + "?" + query.Encode()
 		links = append(links, fmt.Sprintf(`<%s>; rel="%s"; results="%t"; cursor="%s"`, public, link.relation, link.hasResult, cursor))
 	}
 	w.Header().Set("Link", strings.Join(links, ", "))

@@ -60,6 +60,7 @@ type Event struct {
 	Platform     *string           `json:"platform,omitempty"`
 	Dist         *string           `json:"dist,omitempty"`
 	Culprit      *string           `json:"culprit,omitempty"`
+	Logger       *string           `json:"logger,omitempty"`
 	Metadata     map[string]string `json:"metadata"`
 	Tags         []Tag             `json:"tags"`
 	User         json.RawMessage   `json:"user,omitempty"`
@@ -114,7 +115,7 @@ func project(record Record, fields map[string]json.RawMessage, full bool) Event 
 		ID: record.ID, EventID: record.ID, ProjectID: record.ProjectID, GroupID: record.GroupID,
 		DateCreated: record.Timestamp.UTC(), DateReceived: record.Received.UTC(), Type: typ,
 		Title: responseTitle(record.Title), Message: message, Level: level,
-		Platform: stringPointer(fields["platform"]), Dist: stringPointer(fields["dist"]), Culprit: stringPointer(fields["culprit"]),
+		Platform: stringPointer(fields["platform"]), Dist: stringPointer(fields["dist"]), Culprit: stringPointer(fields["culprit"]), Logger: stringPointer(fields["logger"]),
 		Metadata: metadata, Tags: tags(fields["tags"]), User: objectRaw(fields["user"]),
 	}
 	if record.SiblingsKnown {

@@ -138,7 +138,15 @@ Terms intersect; list values are alternatives. Bare `*` is a wildcard, while quo
 
 Environment, release, tags and text must match the same stored event, including historical events. The displayed count, dates and sorting describe the issue's whole history. Choose Last seen, First seen or Event count; each page contains 25 issues. Filters persist through reload, paging and detail/back navigation. Clicking an event tag opens an exact search, including literal stars and punctuation.
 
-Invalid queries keep the filter form editable. This is the native GoodSentry search contract; compatible API0 listing and broader query syntax remain separate work.
+Invalid queries keep the filter form editable. Broader query syntax remains separate work.
+
+### Issue analytics and compatible reads
+
+Issue detail shows identified users from retained events and a real 24-hour event chart, including an accessible table of hourly counts in UTC. Anonymous events add to event counts without creating an identified user. Historical counts remain visible even when recent activity is empty.
+
+An explicit `event:read` token can read organization/project issue lists, organization/global issue detail and organization `issues-stats` under `/api/0/`. Reads honor its project grants. Omitted `query` selects unresolved issues; `query=` includes every status. Environment and occurrence filters return matching metrics alongside historical totals. Organization `statsPeriod` selects a relative time window; on the deprecated project list it selects the chart (`24h`, `14d` or empty to disable). `groupStatsPeriod` controls list charts separately.
+
+Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Unsupported query options return 400. Compatible issue mutations, merge/hash APIs, sliding-window conditions and feedback remain pending.
 
 ### Compatible event reads
 
@@ -146,7 +154,7 @@ Issue event routes accept an explicit `event:read` token restricted to the selec
 
 Read errors from `/api/0/projects/{org}/{project}/events/`, `/api/0/issues/{issue}/events/` or `/api/0/organizations/{org}/issues/{issue}/events/`. Append the SDK event ID for full detail; issue routes also accept `latest`, `oldest` and `recommended` (latest). Project detail can retrieve a stored transaction by ID. The organization issue route additionally exposes `{event}/json/` as a legacy JSON projection.
 
-Lists support environment, occurrence dates, `statsPeriod`, bounded search, `limit`/`per_page` and cursor Links. Dates without an offset use UTC. Omitted time filters retain all history; `full=true` limits each page to10 events. Reads retain the stored SDK payload, current group ownership and original receipt time. Compatible issue listing, mutation, merge and hash APIs remain pending.
+Lists support environment, occurrence dates, `statsPeriod`, bounded search, `limit`/`per_page` and cursor Links. Dates without an offset use UTC. Omitted time filters retain all history; `full=true` limits each page to10 events. Reads retain the stored SDK payload, current group ownership and original receipt time.
 
 ### Release automation
 
