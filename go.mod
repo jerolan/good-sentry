@@ -6,7 +6,9 @@ require (
 	github.com/andybalholm/brotli v1.2.6
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/klauspost/compress v1.20.3
+	go.opentelemetry.io/proto/otlp v1.11.0
 	golang.org/x/crypto v0.58.0
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
