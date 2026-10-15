@@ -57,6 +57,10 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
   - Legacy transactions and standalone spans persist; selectable-window counts/average/p50/p95/error aggregates and project-filtered UI pass. Complete trace/transaction detail remains pending.
 - [x] Open exact stored legacy/segment occurrences from aggregates with authorized detail, honest span scope, raw context and 50-row pagination through API/UI.
 - [ ] Add aggregate child-operation statistics and complete trace reconstruction/waterfall without assuming the per-envelope batch limit bounds a trace.
+  - [ ] Add atomic normalized legacy-span projections, typed standalone attribution index and resumable concurrent historical processing inside the application.
+  - [ ] Add snapshot-based operation statistics and native authenticated routing with exact counts, continuous p95, nullable timing, canonical filters and explicit pending-history responses.
+  - [ ] Add the responsive operation breakdown with preserved filter/identity navigation and real browser pagination/empty/indexing acceptance.
+  - [ ] Verify actual pinned Go/Node child metrics, final PostgreSQL/race checks, image migration/restart persistence and remote CI before recording this statistics increment as complete. Full trace waterfall remains separate.
 - [x] Deliver SDK logs with typed attributes, filters, trace correlation and detail UI.
   - SDK ingestion, deduplication, project/text/level/environment/trace/service/time filters, 25-row pagination and typed-attribute UI pass. Exact max-int64 decimal display has a real browser RED/GREEN regression. Native OTLP remains independently pending below.
 - [x] Add the specified transaction/log absolute time windows and exact log-service filter, preserving defaults and URL/pagination behavior.
