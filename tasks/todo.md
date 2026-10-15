@@ -80,8 +80,8 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 ## Remaining parity and release verification
 
 - [ ] Publish reviewed code to the user-provided jerolan/good-sentry repository without overwriting remote work.
-- [ ] Replace the public README with a polished English introduction, original visual assets, actual quickstart and honest compatibility/status.
-- [ ] Build and browser-verify an original responsive static landing under site/ with project-base-path-safe assets and real product/demo context.
+- [x] Replace the public README with a polished English introduction, original visual assets, actual quickstart and honest compatibility/status.
+- [x] Build and browser-verify an original responsive static landing under site/ with project-base-path-safe assets and real product/demo context.
 - [ ] Add verified/pinned GitHub Actions CI and Pages workflows, push, fix actual workflow failures and verify the deployed public site URL.
 
 - [ ] Complete scoped API tokens, team memberships, invitations and email password recovery.
@@ -99,6 +99,9 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - [ ] Audit every specification requirement against current artifact/runtime evidence; only then complete the goal.
 
 ## Evidence log
+
+- 2026-10-14: The original static landing and matching README use an actual 1440x810 GoodSentry screenshot from an isolated fictional Northstar Demo workspace, SHA-256 f54f196d204ca716a611dc8362130136e0817bc89c47b60b786198bccacda38e. Local Chromium acceptance passes relative assets at /good-sentry/, exact clipboard commands, keyboard skip/navigation, named links and responsive widths 320/768/1440 with zero page/console/network/HTTP errors. Primary inspected the actual screenshot and desktop/mobile landing viewports. Evidence: ignored test-results/landing-final/report.json. Copy explicitly distinguishes verified capabilities from incomplete GlitchTip parity and unmeasured memory/registry status.
+- 2026-10-14: Reviewed official CI/Pages workflows pin checkout v7.0.1, setup-go v7.0.0, configure-pages v6.0.0, upload-pages-artifact v5.0.0 and deploy-pages v5.0.1 to immutable commits independently checked through GitHub's ref API. CI uses disposable PostgreSQL 18 for formatting/vet/integration/race and builds the actual image. Pages publishes only site/ from main with separated read/package and pages-write/OIDC deploy permissions. Local YAML/shell checks pass; public deployment and actual workflow results are still pending below.
 
 - 2026-10-14: Actual daisyUI 5.7.50 components/theme compile with Tailwind 4.3.3 from vendored official standalone modules. Primary review caught a variable collision and then a cascade-layer conflict; GoodSentry owns its color variable and final app layer after plugin utilities. Computed primary contrast is 5.115:1, with white text, distinct error/resolved/warning badges, visible keyboard focus, disabled controls, native dialogs and conditional hidden fields verified. Four unchanged browser harnesses pass 30 groups and 87 captures at 320/768/1440; three focused state groups add three login captures. Zero page errors or failed transport requests; intentional anonymous 401/validation 400 are recorded separately. Reports: ignored test-results/dashboard-daisyui-{browser,windows,uptime,alerts,finish}. Primary inspected desktop/mobile issues and alert dialogs.
 - 2026-10-14: Final dashboard image sha256:c86e3ab4c93ee1bc7438ac81c2f7e8ab9c6329095088c4f56d2b9c3efc20812d is ready, runs as 65532:65532 and reports 24,454,389 image bytes, not RSS. Primary inspected test-results/container-dashboard-daisyui/report.json: CSS aecce572389dd301f9f15430272761f86985fca55382d1353286991e6afba0fd and JS 896391d1354f74b8ed7ab9e10e67c0d54bf51050f0c2a2dcf4fe1284e1463139 match served bytes; both build-input checksums pass. Runtime MIT notice matches the official dependency bytes, with no Node or plugin modules in the exported image. Session and acceptance-owned canceled delivery history survive app replacement; automatic-delivery features are active, consolemail is configured and private-network opt-ins remain false.

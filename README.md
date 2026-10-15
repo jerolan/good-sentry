@@ -1,103 +1,178 @@
-# GoodSentry
+<p align="center">
+  <img src="site/assets/favicon.svg" width="64" height="64" alt="GoodSentry">
+</p>
 
-Servidor de errores y observabilidad escrito en Go, desarrollado de forma independiente a partir de contratos públicos. El objetivo es reemplazar el destino de los SDK de Sentry cambiando el DSN, con una imagen de aplicación y PostgreSQL.
+<h1 align="center">GoodSentry</h1>
+<p align="center"><strong>Sentry SDKs. One Go service.</strong></p>
+<p align="center">Self-hosted error tracking, logs and uptime.<br>One application container, backed by PostgreSQL.</p>
 
-**En desarrollo. Todavía no alcanza la paridad funcional mínima solicitada con GlitchTip.** El alcance completo, las decisiones y las pruebas pendientes están en [SPEC.md](SPEC.md), [el plan](tasks/plan.md) y [las tareas](tasks/todo.md).
+<p align="center">
+  <a href="https://github.com/jerolan/good-sentry/actions/workflows/ci.yml"><img src="https://github.com/jerolan/good-sentry/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/Go-1.27-00ADD8?logo=go&amp;logoColor=white" alt="Go 1.27">
+  <img src="https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&amp;logoColor=white" alt="PostgreSQL 18">
+  <img src="https://img.shields.io/badge/status-in%20development-e9b949" alt="In development">
+</p>
 
-## Arranque local
+<p align="center">
+  <a href="https://jerolan.github.io/good-sentry/">Website</a> ·
+  <a href="#quickstart">Get started</a> ·
+  <a href="#sdk-compatibility">SDK compatibility</a> ·
+  <a href="tasks/todo.md">Roadmap and evidence</a>
+</p>
 
-Requiere Docker con Compose. En Windows, habilita la integración de Docker Desktop con tu distribución WSL2.
+<p align="center">
+  <img src="site/assets/app-preview.png" width="1200" alt="GoodSentry dashboard with fictional demo errors">
+</p>
+<p align="center"><sub>Actual GoodSentry interface. Fictional demo data.</sub></p>
+
+GoodSentry is an independent Go implementation of Sentry-compatible error tracking. Point your existing SDK at a GoodSentry project DSN, capture an event and inspect it in the embedded Tailwind interface. The same Go process handles ingestion, the UI, uptime checks and alert delivery. PostgreSQL stores the data and coordinates background work.
+
+> GoodSentry is in active development. It has **not reached the requested full GlitchTip feature parity**. The verified workflows and remaining gaps are listed below.
+
+## Quickstart
+
+You need Docker with Compose and OpenSSL. On Windows, enable Docker Desktop's integration with your WSL2 distribution.
 
 ```sh
+git clone https://github.com/jerolan/good-sentry.git
+cd good-sentry
 test -f .env || printf 'SECRET_KEY=%s\n' "$(openssl rand -hex 32)" > .env
 docker compose up --build -d
 ```
 
-Abre http://localhost:8000, crea la primera cuenta y organización, crea un proyecto y copia su DSN. No hay contraseña inicial compartida. Conserva `.env` entre reinicios. Para un dominio propio, configura `GOODSENTRY_DOMAIN` con el esquema, host y prefijo de ruta públicos. Ajusta las credenciales PostgreSQL antes de usar la instalación fuera del entorno local.
+Open **http://localhost:8000**. Create the first account and organization, create a project and copy its DSN into your SDK configuration. There is no shared initial password.
 
-La imagen contiene el binario Go y la interfaz. Se ejecuta como usuario `65532:65532`, sin runtime de Node ni servicios web adicionales. PostgreSQL persiste en `pg-data`. La carpeta `/data` queda disponible para artefactos. Las migraciones se aplican al arrancar bajo un bloqueo y se comprueban sus checksums.
+The first start builds the application image from this repository. No registry image is required. The runtime image contains the Go binary and embedded frontend, runs as `65532:65532` and needs one PostgreSQL container. PostgreSQL also coordinates the scheduler and delivery retries.
+
+Keep `.env` between restarts so sessions retain the same secret. Set your public `GOODSENTRY_DOMAIN` and PostgreSQL credentials before exposing the installation. For HTTPS, terminate TLS at your reverse proxy and use an `https://` public domain.
 
 ```sh
-docker compose logs goodsentry
+docker compose logs -f goodsentry
 docker compose restart goodsentry
 docker compose down
 ```
 
-`down` conserva los volúmenes. No uses `down -v` si quieres conservar los datos.
+`down` preserves the named volumes. Adding `-v` deletes them. Migrations apply automatically at startup under a database lock and verify their checksums.
 
-## Funciones verificadas hasta ahora
+## What works today
 
-- Primera cuenta, login/logout, sesiones, organización y proyectos con DSN.
-- Ingesta `store` y `envelope`, autenticación SDK y cuerpos gzip, zlib, Brotli y Zstandard.
-- Errores agrupados con contexto original, búsqueda, filtros, resolución, reapertura y comentarios.
-- Transacciones con promedio, p50/p95, trace ID y ventanas de tiempo seleccionables en API y UI.
-- Logs con atributos tipados, filtros por servicio y tiempo, deduplicación y correlación por trace ID en API y UI. Los enteros de 64 bits se muestran sin redondear.
-- Interfaz Tailwind de proyectos, errores, transacciones, logs, uptime y reglas de alerta, probada en Chromium a 320, 768 y 1440 píxeles.
-- SDK oficiales Go `v0.50.0`, Python `2.72.0`, Node `11.7.0` y navegador `11.7.0`: excepciones, transacciones y logs verificados recuperando los datos guardados. El SDK de navegador se ejecutó en Chromium desde otro origen para comprobar CORS.
-- Spans v2 de JavaScript con relaciones padre/hijo y deduplicación; solo los segmentos cuentan como transacciones en los agregados.
-- Source maps de JavaScript: carga autenticada desde Projects, selección por release/distribution o Debug ID, archivo/línea/columna/contexto originales y conservación del stack minificado. Los datos y mapas persisten en PostgreSQL.
-- Monitores HTTP HEAD/GET/POST, TCP y heartbeats con scheduler dentro del proceso Go, umbral de fallos, historial, pausa y recuperación. Dos réplicas coordinan las comprobaciones mediante PostgreSQL; sesiones e historial sobreviven reinicios.
-- Reglas de alerta por frecuencia y transiciones de uptime, filtros por entorno, cooldown y cola persistente. Entregas SMTP/consolemail y webhooks genéricos con reintentos, historial y recuperación tras reinicio. Owners y admins administran reglas y consultan entregas e intentos.
+| Capability | Verified behavior |
+| --- | --- |
+| Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, context, search, filters, resolve/reopen and comments. |
+| JavaScript source maps | Authenticated native uploads, release/distribution or Debug ID selection, original file/line/column/context and preserved minified stacks. |
+| Performance | Legacy transactions and span v2 segments, parent/child storage, counts, errors, average, p50/p95 and selected time windows. |
+| Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. |
+| Uptime | HTTP HEAD/GET/POST, TCP and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
+| Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |
+| Deployment | One non-root application image, PostgreSQL-only coordination, embedded Tailwind CSS and persistence across application restarts. |
 
-El proceso rechaza MCP, DuckDB, admin, OpenAPI o Valkey activados mientras no estén disponibles. Los tipos de envelope aún no soportados se conservan y se indican en `unsupportedItems`; eso no equivale a implementar su funcionalidad. Los logs desactivados se excluyen deliberadamente y producen un aviso de rate limit para sus categorías.
+The browser workflows run at 320, 768 and 1440 pixels. PostgreSQL integration and race tests cover concurrent ingestion, duplicate retries, tenant boundaries, fenced worker leases and restart recovery. Alert acceptance uses actual local HTTP/SMTP receivers, including retries across two application replicas.
 
-Esta matriz cubre errores, transacciones y logs de esas versiones concretas. Adjuntos, otros formatos y versiones requieren sus propias verificaciones.
+### SDK compatibility
 
-En Transactions y Logs puedes elegir la última hora, 24 horas, siete días o 30 días. La URL guarda los límites absolutos; cambiar de página, aplicar otros filtros o recargar conserva el mismo intervalo. La pantalla muestra sus límites UTC. El valor predeterminado de Transactions sigue siendo 24 horas; Logs permite todo el historial. Service compara el nombre exacto, incluidas mayúsculas y espacios.
+The following pinned official clients have passed error, transaction and typed-log capture followed by authenticated retrieval:
 
-Las consultas nativas de transacciones y logs también aceptan `start` y `end` como instantes RFC3339 con zona horaria. Deben enviarse juntos, con inicio anterior al fin y un máximo de 366 días. Se normalizan a microsegundos UTC: el inicio se incluye y el final se excluye. Logs acepta además `service`. Los rangos inválidos devuelven 400.
+| SDK | Verified version |
+| --- | --- |
+| Go | `v0.50.0` |
+| Python | `2.72.0` |
+| Node.js | `11.7.0` |
+| Browser JavaScript | `11.7.0` |
 
-Siguen pendientes, entre otras funciones, los formatos de alerta de cada proveedor, monitores de certificados SSL, ciclo de releases y cargas mediante sentry-cli, OTLP nativo, simbolicación nativa, merge/unmerge, invitaciones, recuperación de contraseñas, integraciones y varias pantallas. El decoder de bundles del CLI está probado, pero sus endpoints de carga todavía no están conectados. No se ha medido el objetivo de memoria de 256-512 MB bajo carga. La imagen actual se ha verificado en Linux amd64.
+For an existing integration, start by changing its DSN. Keep the SDK's usual sampling and log settings. For example, with the verified Node SDK:
 
-Para un source map, abre su proyecto en Projects y despliega Source maps. Indica el nombre o URL del artefacto, selecciona el archivo y proporciona el release usado por el SDK o su Debug ID. La distribución debe coincidir con la del evento. Owners y admins pueden cargar mapas; los miembros pueden consultar sus metadatos. Un reintento idéntico no duplica el archivo; contenido distinto para la misma identidad devuelve conflicto. La carga nativa está limitada por `MAX_BODY_BYTES`; cada conjunto seleccionado admite hasta 100 mapas y un millón de segmentos. Los mapas indexados admiten hasta 32 niveles. El servidor utiliza solo fuentes incluidas en los mapas subidos.
+```js
+import * as Sentry from "@sentry/node";
 
-## Configuración
+Sentry.init({
+  dsn: process.env.SENTRY_DSN, // Copy the DSN from your GoodSentry project.
+  tracesSampleRate: 1.0,
+  enableLogs: true,
+});
 
-`DATABASE_URL`, `SECRET_KEY` y `GOODSENTRY_DOMAIN` controlan almacenamiento, sesiones y DSN. También se aceptan `GLITCHTIP_DOMAIN` y los alias `GLITCHTIP_ENABLE_*`. Los nombres `GOODSENTRY_*` tienen prioridad. `PORT` vale 8000 en el proceso; el compose permite cambiar el puerto publicado mediante `PORT`. Si cambias ese puerto, ajusta también el dominio público.
+Sentry.captureException(new Error("Hello from GoodSentry"));
+```
 
-`MAX_BODY_BYTES` limita el cuerpo comprimido y descomprimido, por defecto 32 MiB. `GOODSENTRY_ENABLE_LOGS=false` desactiva su ingesta. `VALKEY_URL` debe quedar vacío en este incremento. `SECRET_KEY` debe tener al menos 32 caracteres y no ser el valor de ejemplo. El compose usa credenciales PostgreSQL locales; `POSTGRES_PASSWORD` permite sustituirlas.
+These checks establish the listed workflows for those versions. Attachments, additional envelope types and other SDK versions need their own verification. Unknown envelope items are retained and reported through `unsupportedItems`; retention alone does not implement their functionality.
 
-Uptime está habilitado por defecto. `GOODSENTRY_ENABLE_UPTIME=false` elimina sus rutas, navegación y workers. `MONITOR_WORKERS` permite entre 1 y 16 comprobaciones simultáneas por proceso, con 2 por defecto. Varias réplicas coordinan su trabajo mediante leases en PostgreSQL. Una comprobación cancelada por apagado se recupera al vencer su lease y no registra una caída falsa.
+### Current gaps
 
-En Uptime, crea un monitor HTTP HEAD/GET/POST, TCP o un heartbeat. Los intervalos van de 1 a 86400 segundos y los timeouts de 1 a 60. El umbral exige fallos consecutivos antes de confirmar una caída; un resultado correcto recupera inmediatamente. POST envía un cuerpo vacío. En GET/POST, el contenido esperado es una subcadena literal dentro del primer MiB. Para TCP, usa `host:puerto` o `[IPv6]:puerto`. Los heartbeats reciben POST en su URL privada antes de cada intervalo, sin tiempo de gracia adicional. Pausar conserva el historial y rechaza heartbeats hasta reanudar. Owners y admins administran; los miembros consultan estado e historial.
+Remaining work includes complete trace/transaction drill-down, release and deploy management, `sentry-cli` upload endpoints, native symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
-Las comprobaciones bloquean destinos privados, loopback, link-local y multicast por defecto, también tras redirecciones. Para servicios de tu red interna configura `GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS=true`. Se acepta el alias `GLITCHTIP_UPTIME_ALLOW_PRIVATE_IPS`; el nombre de GoodSentry tiene prioridad. HTTPS verifica certificados. El historial distingue cada resultado del estado confirmado y muestra transiciones o todas las comprobaciones en páginas de 25.
+The modern CLI bundle decoder is tested; its upload endpoints remain unconnected. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
-En Alerts, selecciona un proyecto y configura una regla de frecuencia o uptime. La frecuencia cuenta eventos de error y mensajes recibidos dentro de la ventana; transacciones, logs y reintentos duplicados no cuentan. Se encola al cruzar el umbral si ha terminado el cooldown. Para uptime, asigna el monitor al proyecto y, si procede, a su entorno. Se encolan la caída confirmada y su recuperación. Editar o eliminar una regla cancela su trabajo pendiente y conserva el historial.
+See the [complete specification](SPEC.md), [implementation order](tasks/plan.md) and [task evidence](tasks/todo.md) before relying on an unlisted capability.
 
-Los workers de alertas arrancan dentro del mismo proceso Go y recuperan su trabajo desde PostgreSQL. El botón de prueba encola una entrega normal. Cada correo o webhook recibe contexto compacto y un enlace al recurso; no se envía el evento completo. `consolemail://`, el valor predeterminado, escribe el mensaje en la consola. Configura un servidor SMTP para enviar correos. Un webhook genérico recibe JSON con un identificador estable; los formatos específicos de Slack, Discord y otros proveedores siguen pendientes.
+## Configuration
 
-La configuración valida `EMAIL_URL` (`consolemail://`, `smtp://`, `smtp+starttls://` o `smtps://`) y `DEFAULT_FROM_EMAIL`. Las credenciales SMTP exigen TLS y los certificados se verifican. `ALERT_WORKERS` admite 1..16 (por defecto 2), `ALERT_MAX_ATTEMPTS` 1..20 (5) y `ALERT_DELIVERY_TIMEOUT_SECONDS` 1..60 (10). `GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS` vale `false`; actívalo para webhooks de tu red interna. Los webhooks no siguen redirecciones ni usan proxies de entorno.
+Compose supplies the local database connection. Environment values override the defaults below.
 
-Los fallos transitorios se reintentan a los 15, 30, 60 segundos y así sucesivamente, hasta 900 segundos entre intentos. El historial conserva estado, respuesta remota y resultado de cada intento. Un reinicio después de que el receptor acepte el mensaje puede repetirlo: `X-GoodSentry-Delivery-ID`, el ID del JSON y el Message-ID del correo conservan la identidad para deduplicarlo.
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `SECRET_KEY` | Required | At least 32 characters. Generate it once and keep it across restarts. |
+| `DATABASE_URL` | Supplied by Compose | PostgreSQL connection URL. |
+| `GOODSENTRY_DOMAIN` | `http://localhost:8000` | Public origin and optional path prefix used for DSNs and resource links. |
+| `POSTGRES_PASSWORD` | `goodsentry-local` | Local Compose database password; replace it for your deployment. |
+| `PORT` | `8000` | Published Compose port. Update the public domain when changing it. |
+| `EMAIL_URL` | `consolemail://` | Console output or `smtp://`, `smtp+starttls://`, `smtps://`. |
+| `DEFAULT_FROM_EMAIL` | `goodsentry@localhost` | Sender address for alert emails. |
+| `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
+| `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
+| `MONITOR_WORKERS` | `2` | Concurrent checks per process, from 1 to 16. |
+| `ALERT_WORKERS` | `2` | Concurrent deliveries per process, from 1 to 16. |
+| `ALERT_MAX_ATTEMPTS` | `5` | Maximum delivery attempts, from 1 to 20. |
+| `ALERT_DELIVERY_TIMEOUT_SECONDS` | `10` | Delivery timeout, from 1 to 60 seconds. |
+| `GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS` | `false` | Allow monitors to reach your private network. |
+| `GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS` | `false` | Allow webhooks to reach your private network. |
 
-## Desarrollo y verificación
+The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Enabling currently unavailable MCP, DuckDB, admin, OpenAPI or Valkey options fails startup rather than reporting them as available.
 
-Requiere Go 1.27. La interfaz se incorpora con `go:embed`. Tailwind CSS 4.3.3 compila `internal/server/web/styles.css` a `app.css`. El Dockerfile descarga el CLI oficial con checksum fijado, compila los estilos y excluye ese compilador de la imagen final. El CSS generado se guarda para permitir compilación local de Go sin herramientas frontend. Los SDK de prueba son clientes externos, no dependencias del servidor.
+<details>
+<summary><strong>Time windows and service filters</strong></summary>
+
+Transactions and Logs offer past-hour, 24-hour, seven-day and 30-day presets. Applying one writes absolute UTC bounds into the URL. Pagination, other filters and reload reuse those bounds. Transactions default to the last 24 hours; Logs default to all stored history. Service matching is exact, including case and spaces.
+
+The native query APIs accept paired RFC3339 `start` and `end` instants with time zones and a maximum interval of 366 days. They normalize to UTC microseconds, include the start and exclude the end. Logs also accepts `service`. Invalid or incomplete ranges return 400.
+
+</details>
+
+<details>
+<summary><strong>Monitor and alert behavior</strong></summary>
+
+Monitor intervals range from 1 to 86400 seconds and timeouts from 1 to 60. Consecutive failures confirm a down state; one successful result recovers it. GET/POST expected-body matching uses a literal substring within the first MiB. POST sends an empty request body. Heartbeats accept POST before each deadline; pausing retains history and stops checks. Owners/admins manage monitors; members read their state and history.
+
+Network checks and webhooks reject private, loopback, link-local and multicast targets by default. Explicitly enable their separate private-IP settings for internal services. HTTPS verifies certificates. Webhooks do not follow redirects or use environment proxies.
+
+Frequency alerts count received errors and message events, excluding duplicate retries, transactions and logs. Uptime alerts use the monitor's associated project and optional environment. Editing or deleting a rule cancels pending work while retaining completed history.
+
+`consolemail://` writes MIME messages to the console. SMTP credentials require verified TLS. Generic webhooks receive compact JSON and a resource link. Transient failures retry after 15, 30, 60 seconds and so on, capped at 900 seconds. A crash after remote acceptance can cause a repeat with the same `X-GoodSentry-Delivery-ID`, JSON ID and email Message-ID.
+
+</details>
+
+## Development
+
+Use Go 1.27.2. The server uses `go:embed`; Node is not part of its runtime. Tailwind CSS 4.3.3 and daisyUI 5.7.50 compile `internal/server/web/styles.css` into `app.css`. The dashboard uses original styling inspired by the [Nexus dashboard examples](https://nexus.daisyui.com/). Docker verifies the official CLI and vendored plugin checksums. The generated CSS is committed so local Go builds do not require frontend tools. The daisyUI dependency and its MIT notice live in [third_party/daisyui](third_party/daisyui); the runtime image includes that notice.
 
 ```sh
 go test ./...
 go vet ./...
 go build -trimpath -o bin/goodsentry ./cmd/goodsentry
-DATABASE_URL=postgres://goodsentry:goodsentry@localhost:5432/goodsentry go test -tags=integration ./...
-CGO_ENABLED=1 go test -race ./...
 ```
 
-Las pruebas de integración exigen PostgreSQL y crean esquemas aislados. El detector de carreras requiere compilador C. El cliente externo Go vive en un módulo separado:
+For integration tests, set `DATABASE_URL` to a disposable PostgreSQL instance. Tests create isolated schemas. Race detection requires a C compiler.
 
 ```sh
-cd tests/compat
-GOODSENTRY_URL=http://localhost:8000 COMPAT_EMAIL=tu-correo COMPAT_PASSWORD=tu-password go run .
+go test -race -tags=integration ./...
 ```
 
-Usa una instancia desechable para las pruebas de onboarding y compatibilidad. El cliente crea proyectos y eventos. El harness `tests/compat/browser.mjs` usa Playwright externo y guarda su evidencia en `test-results/`, excluido de Git.
+Pinned external SDK clients and browser workflows live in [tests/compat](tests/compat). They are test tooling, separate from the server module and image. The CI workflow runs formatting, vet, the integration/race suite and the actual Docker build.
 
-Los clientes Python y Node tienen dependencias fijadas en `python-requirements.txt` y `package-lock.json`, dentro de `tests/compat`. Ejecútalos con las mismas variables `GOODSENTRY_URL`, `COMPAT_EMAIL` y `COMPAT_PASSWORD`. `browser_sdk.mjs` requiere Playwright y Chromium externos; carga el bundle oficial de navegador 11.7.0 con SRI fijado, desde un origen de prueba separado, y permite seleccionar Playwright con `COMPAT_PLAYWRIGHT`. El harness de la UI usa `GOODSENTRY_TEST_URL`, `GOODSENTRY_TEST_EMAIL`, `GOODSENTRY_TEST_PASSWORD` y `PLAYWRIGHT_MODULE`. Estas dependencias no forman parte del servidor ni de su imagen.
+The product landing lives in [site](site). [GitHub Pages Actions](.github/workflows/pages.yml) publishes that directory from `main` or a manual dispatch. Preview it locally with:
 
-`tests/compat/browser-uptime.mjs` añade aceptación de monitores. Necesita `GOODSENTRY_MONITOR_TARGET` con un servidor HTTP real y `GOODSENTRY_MONITOR_CONTROL_URL` que reciba POST JSON `{ "status": 200, "body": "uptime browser proof" }` para cambiar ese destino entre 200 y 503. Para cubrir TCP, miembros y funciones desactivadas, añade `GOODSENTRY_MONITOR_TCP_TARGET`, `COMPAT_MEMBER_EMAIL`, `COMPAT_MEMBER_PASSWORD` y `GOODSENTRY_DISABLED_URL`. La instancia de aceptación permite destinos privados explícitamente; el harness elimina solo los monitores que crea.
+```sh
+python3 -m http.server 8001 --directory site
+```
 
-`tests/compat/browser-alerts.mjs` comprueba reglas, filtros, validación, permisos e historial con las variables de la UI, `GOODSENTRY_ALERT_WEBHOOK_TARGET` apuntando a un receptor local que responda 204 y una cuenta de miembro. Con entrega activa verifica estados enviados e intentos visibles; `GOODSENTRY_ALERT_RECEIPTS` permite comprobar también los recibos JSONL del receptor. Las pruebas de integración Go ejercitan el dispatcher con receptores HTTP/SMTP locales y esquemas PostgreSQL aislados.
+## Independent implementation
 
-## Procedencia
-
-El desarrollo usa documentación pública de formatos, APIs y funciones, además de tráfico de clientes oficiales ejecutados como cajas negras. No se ha consultado ni traducido implementación de los servidores Sentry, Relay o GlitchTip. Las fuentes y los límites de compatibilidad se registran en la especificación.
+GoodSentry is developed from public protocol specifications, official documentation and black-box tests with official SDKs and the CLI. Design decisions, source references and verification limits are recorded in [SPEC.md](SPEC.md).
