@@ -3,6 +3,7 @@
 @import "tailwindcss/utilities.css" layer(utilities) source(none);
 @source "./index.html";
 @source "./app.js";
+@source "./hashes.js";
 @source "./alerts.js";
 @source "./releases.js";
 

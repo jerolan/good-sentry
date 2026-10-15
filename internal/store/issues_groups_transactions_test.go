@@ -314,7 +314,12 @@ func TestIssueGroupsMigration016PreservesLegacyAndReopens(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(upgraded.Close)
-	if after := groupDatabaseSnapshot(t, ctx, upgraded, 15); !reflect.DeepEqual(before, after) {
+	after := groupDatabaseSnapshot(t, ctx, upgraded, 15)
+	//019 adds routes to the reopened database; its backfill has a separate
+	// migration owner. Compare every pre-existing table here without weakening
+	// the all-table snapshots used by rejected/no-op operations elsewhere.
+	delete(after, "issue_hash_routes")
+	if !reflect.DeepEqual(before, after) {
 		t.Fatal("016 changed historical columns/raw/policies/receipt001..015")
 	}
 	root := triageIssue(t, ctx, upgraded, owner.ID, a)

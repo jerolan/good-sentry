@@ -9,6 +9,7 @@ import (
 
 func (s *Server) registerCompatibleIssueWriteRoutes(mux *http.ServeMux) {
 	s.registerCompatibleIssueBulkRoutes(mux)
+	s.registerCompatibleIssueHashRoutes(mux)
 	for _, path := range []string{"/api/0/issues/{issue}/", "/api/0/organizations/{org}/issues/{issue}/"} {
 		mux.Handle("PUT "+path+"{$}", s.compatible("event:write", s.compatibleIssueUpdate))
 	}

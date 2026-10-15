@@ -78,13 +78,7 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 		if err = lockProjectIssues(ctx, tx, projectID, false); err != nil {
 			return "", false, err
 		}
-		_, err = tx.Exec(ctx, `INSERT INTO issues(project_id,fingerprint,title,level,platform,first_seen,last_seen,environment,release) VALUES($1,$2,$3,$4,$5,$6,$6,$7,$8) ON CONFLICT(project_id,fingerprint) DO NOTHING`, projectID, ev.Fingerprint, ev.Title, ev.Level, ev.Platform, ev.Timestamp, ev.Environment, ev.Release)
-		if err != nil {
-			return "", false, err
-		}
-		var own string
-		var target *string
-		err = tx.QueryRow(ctx, "SELECT id::text,merged_into::text FROM issues WHERE project_id::text=$1 AND fingerprint=$2 FOR UPDATE", projectID, ev.Fingerprint).Scan(&own, &target)
+		own, target, err := activeIssueHashOrigin(ctx, tx, projectID, ev)
 		if err != nil {
 			return "", false, err
 		}

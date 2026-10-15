@@ -34,13 +34,13 @@ func (s *Store) IssueOrigins(ctx context.Context, userID, id, query string, page
 	if err = tx.QueryRow(ctx, "SELECT count(*)"+from, issue.ID, pattern).Scan(&result.Total); err != nil {
 		return result, err
 	}
-	rows, err := tx.Query(ctx, `SELECT origin.id::text,origin.fingerprint,COALESCE(latest.title,origin.title),totals.n,totals.first_seen,totals.last_seen,origin.id=$1::bigint`+from+` ORDER BY origin.id LIMIT 25 OFFSET $3`, issue.ID, pattern, offset)
+	rows, err := tx.Query(ctx, `SELECT origin.id::text,origin.fingerprint,COALESCE(latest.title,origin.title),totals.n,totals.first_seen,totals.last_seen,origin.id=$1::bigint,EXISTS(SELECT 1 FROM issue_hash_routes h WHERE h.project_id=origin.project_id AND h.origin_issue_id=origin.id)`+from+` ORDER BY origin.id LIMIT 25 OFFSET $3`, issue.ID, pattern, offset)
 	if err != nil {
 		return result, err
 	}
 	for rows.Next() {
 		var item IssueOrigin
-		if err = rows.Scan(&item.ID, &item.Fingerprint, &item.Title, &item.Count, &item.FirstSeen, &item.LastSeen, &item.IsRoot); err != nil {
+		if err = rows.Scan(&item.ID, &item.Fingerprint, &item.Title, &item.Count, &item.FirstSeen, &item.LastSeen, &item.IsRoot, &item.ReceivesNewEvents); err != nil {
 			rows.Close()
 			return result, err
 		}

@@ -102,9 +102,14 @@ func groupRequireUnchanged(t *testing.T, ctx context.Context, db *Store, before 
 
 func groupLegacy015(t *testing.T, ctx context.Context, db *Store) {
 	t.Helper()
-	// Restore only016's catalog changes in this owned schema. Every existing
-	// column, application row and receipt001..015 remains untouched.
-	_, err := db.pool.Exec(ctx, `ALTER TABLE issues DROP CONSTRAINT issues_group_root_fkey;
+	// Retire019's dependent routing catalog before restoring016's catalog in
+	// this owned schema. Every015 column, application row and receipt remains
+	// untouched; Open will apply both migrations again.
+	_, err := db.pool.Exec(ctx, `DROP TABLE issue_hash_routes;
+DROP INDEX issues_project_fingerprint;
+ALTER TABLE issues ADD CONSTRAINT issues_project_id_fingerprint_key UNIQUE(project_id,fingerprint);
+DELETE FROM schema_migrations WHERE version=19;
+ALTER TABLE issues DROP CONSTRAINT issues_group_root_fkey;
 ALTER TABLE issues DROP CONSTRAINT issues_group_older_root;
 ALTER TABLE issues DROP CONSTRAINT issues_project_id_id_key;
 ALTER TABLE issues ADD CONSTRAINT issues_merged_into_fkey FOREIGN KEY(merged_into) REFERENCES issues ON DELETE SET NULL;

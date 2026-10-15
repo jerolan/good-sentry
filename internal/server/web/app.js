@@ -18,6 +18,7 @@
   let notificationTimer;
   let alertsUI;
   let releasesUI;
+  let hashesUI;
   let issuedAPIToken;
 
   function node(tag, attributes = {}, ...children) {
@@ -79,7 +80,7 @@
 
   async function request(path, options = {}) {
     let response;
-    const { jsonText, ...fetchOptions } = options;
+    const { jsonText, withLinks = false, ...fetchOptions } = options;
     const multipart = options.body instanceof FormData;
     const headers = { Accept: 'application/json', ...options.headers };
     if (jsonText !== undefined || (options.body !== undefined && !multipart)) headers['Content-Type'] = 'application/json';
@@ -110,7 +111,7 @@
       if (response.status === 409 && typeof data?.mergedInto === 'string' && /^[1-9][0-9]*$/.test(data.mergedInto)) error.mergedInto = data.mergedInto;
       throw error;
     }
-    return data;
+    return withLinks ? { data, link: response.headers.get('Link') } : data;
   }
 
   function button(label, click, kind = '') {
@@ -1058,7 +1059,7 @@
     const scopes = ['org:read', 'project:read', 'project:releases', 'event:read', 'event:write'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
     const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Permissions'),
       scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
-      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, and merges issue groups. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
     const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
     const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
     const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
@@ -1572,7 +1573,8 @@
     const mute = issueMute(issue, view, triage);
     const resolution = issueResolution(issue, path, view, triage);
     const origins = issueOrigins(issue, path, view, triage);
-    const left = node('div', {}, summary, issueAnalytics(detail.analytics), origins.panel, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
+    const grouping = detailPanel('Future grouping', node('p', { class: 'panel-body muted', role: 'status' }, 'Loading active signatures…'));
+    const left = node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
     left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': 'Event details' },
@@ -1591,6 +1593,24 @@
     assignment.load(view.assigneePage);
     resolution.start();
     origins.load(view.origins.page);
+    loadIssueHashes(grouping, issue, view, triage);
+  }
+
+  async function loadIssueHashes(placeholder, issue, view, triage) {
+    try {
+      const { createHashesUI } = await import('./hashes.js');
+      if (!triage.alive() || !placeholder.isConnected) return;
+      hashesUI ||= createHashesUI({ node, request, button, detailPanel, formError, notify, date, number });
+      const grouping = hashesUI.issue(issue, state.organization.slug, view, triage);
+      placeholder.replaceWith(grouping.panel);
+      grouping.start();
+    } catch (failure) {
+      if (!triage.alive() || !placeholder.isConnected) return;
+      const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+      error.textContent = failure.message;
+      placeholder.replaceChildren(node('div', { class: 'panel-title' }, node('h2', {}, 'Future grouping')),
+        node('div', { class: 'panel-body form-stack' }, error, button('Retry future grouping', () => loadIssueHashes(placeholder, issue, view, triage), 'small')));
+    }
   }
 
   function issueOrigins(issue, path, view, triage) {
@@ -1611,7 +1631,7 @@
     const separate = button('Separate selected', () => { confirming = true; sync(); }, 'small');
     const all = button('Select all original groups', selectAll, 'small');
     const panel = detailPanel('Original groups', node('div', {}, node('div', { class: 'panel-body form-stack' },
-      node('p', { class: 'muted small' }, 'Each row is an original group. Separate selected groups without copying or losing events. Comments and activity stay with their original groups.'), searchForm,
+      node('p', { class: 'muted small' }, 'Each row is an original group. Separation moves its recorded history; comments and activity stay with their original groups. Historical only groups do not redirect captures assigned to a newer issue.'), searchForm,
       status, node('div', { class: 'actions' }, separate, clear, all), confirmation, error, outcome), content));
     panel.setAttribute('aria-label', 'Original groups');
     const alive = () => triage.alive() && panel.isConnected;
@@ -1717,7 +1737,7 @@
           } });
           boxes.push({ input, origin });
           return node('tr', {}, node('td', {}, input), node('td', { class: 'issue-column' }, node('strong', { class: 'wrap-anywhere' }, origin.title),
-            node('div', { class: 'issue-subtitle' }, node('span', { class: 'mono' }, `Issue ${origin.id}`), origin.isRoot ? node('span', { class: 'badge badge-sm' }, 'Current root') : null),
+            node('div', { class: 'issue-subtitle' }, node('span', { class: 'mono' }, `Issue ${origin.id}`), origin.isRoot ? node('span', { class: 'badge badge-sm' }, 'Current root') : null, origin.receivesNewEvents === false ? node('span', { class: 'badge badge-sm' }, 'Historical only') : null),
             node('p', { class: 'mono small wrap-anywhere' }, origin.fingerprint)), node('td', {}, number(origin.count)), node('td', {}, dates(origin.firstSeen)), node('td', {}, dates(origin.lastSeen)));
         });
         content.replaceChildren(rows.length ? node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, node('th', { scope: 'col' }, pageCheckbox), ['Original group', 'Events', 'First seen', 'Last seen'].map(label => node('th', { scope: 'col' }, label)))), node('tbody', {}, body))) : node('p', { class: 'panel-body muted' }, result.total ? 'No original groups on this page. Choose an earlier page.' : 'No matching original groups.'), issueHistoryPager('origins', result, load));
@@ -1937,7 +1957,7 @@
     const panel = detailPanel('Activity', node('div', {}, node('div', { class: 'panel-body actions' }, button('Refresh activity', () => load(view.activityPage), 'small')), content));
     panel.setAttribute('aria-label', 'Activity');
     let sequence = 0;
-    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', resolution_bound: 'Next release selected', unresolved: 'Reopened issue', ignored: 'Marked ignored', unignored: 'Mute ended', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment', merged: 'Merged issues', unmerged: 'Separated original groups' };
+    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', resolution_bound: 'Next release selected', unresolved: 'Reopened issue', ignored: 'Marked ignored', unignored: 'Mute ended', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment', merged: 'Merged issues', unmerged: 'Separated original groups', grouping_reset: 'Reset future grouping' };
     function entry(item) {
       const actor = item.user?.name || item.user?.email || (['first_seen', 'regressed', 'unignored', 'resolution_bound'].includes(item.type) ? 'System' : 'Actor not recorded');
       const data = item.data || {};
@@ -1971,6 +1991,8 @@
             if (previous.status === 'resolved') description += ` · ${issueResolutionDescription(previous.resolution)}`;
           }
         }
+      } else if (item.type === 'grouping_reset') {
+        if (Array.isArray(data.hashIds)) description = `Future grouping reset for ${number(data.hashIds.length)} ${data.hashIds.length === 1 ? 'signature' : 'signatures'}. Existing events stay in their recorded groups.`;
       } else if (item.type === 'unmerged') {
         description = [data.sourceIssueId ? `Separated from issue ${data.sourceIssueId}` : '', Array.isArray(data.originIds) ? `Selected original groups: ${data.originIds.join(', ')}` : '',
           data.remainingIssueId ? `Remaining group: ${data.remainingIssueId}` : 'No remaining group', `Recorded events: ${number(data.count)}`].filter(Boolean).join(' · ');

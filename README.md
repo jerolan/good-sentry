@@ -119,9 +119,17 @@ The maintenance worker runs inside the application, including when uptime and lo
 
 Select 2 to 100 issues from one project and confirm **Merge selected**. Selections stay across pages with the same filters. The lowest issue ID retains its assignment, status and active mute or release policy. Absorbed roots clear their active policies and record the previous state in activity. Merging history does not consume mute progress, reopen a resolution or queue notifications.
 
-In **Original groups**, search or page through the original fingerprints and separate selected groups, including the current root. Each selected group becomes standalone; unselected groups stay together. SDK captures continue to follow their original fingerprint. Counts and dates describe the resulting stored events. Comments and activity stay with their original group, including after separation.
+In **Original groups**, search or page through the original fingerprints and separate selected groups, including the current root. Each selected group becomes standalone; unselected groups stay together. Active signatures follow their separated origin. **Historical only** origins retain their recorded events; separating them does not reclaim a signature already assigned to a newer issue. Counts and dates describe the resulting stored events. Comments and activity stay with their original group, including after separation.
 
-Old issue links open the current group. If another user merges an issue while you edit it, the application preserves your drafts and provides an **Open current group** link. These controls implement native GoodSentry grouping. Compatible API0 bulk merging uses the same rules. Hash listing and future-only hash detachment remain pending.
+Old issue links open the current group. If another user merges an issue while you edit it, the application preserves your drafts and provides an **Open current group** link. These controls implement native GoodSentry grouping. Compatible API0 bulk merging uses the same rules.
+
+### Reset future grouping
+
+In **Future grouping**, select active signatures across pages and confirm **Reset selected signatures**. Existing events, assignment, mute and resolution policies stay on their recorded issue. The next new matching SDK event starts another issue. Retrying an already stored event preserves its original receipt and does not reactivate a reset signature.
+
+Compatible clients can use `GET /api/0/organizations/{org}/issues/{issue}/hashes/` with `event:read` or `event:write`. Each signature has a stable public UUID and its own latest retained event sample, or null when no sample remains. Responses include cursor Links; full samples are enabled by default with at most10 per page. Use `full=false` for summaries with up to100 per page.
+
+Send `DELETE` to the same URL with repeated `id` query values and an empty body to reset selected signatures. This requires `event:write`, or a session with CSRF. A successful response is202 with no body after the reset commits. Foreign or inactive signatures are ignored. Writes to a merged alias return409 with `mergedInto`; reads open its current group. The signature UUID remains stable when its next capture creates a new generation.
 
 ### Issue search
 
@@ -146,7 +154,7 @@ Issue detail shows identified users from retained events and a real 24-hour even
 
 An explicit `event:read` or `event:write` token can read organization/project issue lists, organization/global issue detail and organization `issues-stats` under `/api/0/`. Reads honor its project grants. Omitted `query` selects unresolved issues; `query=` includes every status. Environment and occurrence filters return matching metrics alongside historical totals. Organization `statsPeriod` selects a relative time window; on the deprecated project list it selects the chart (`24h`, `14d` or empty to disable). `groupStatsPeriod` controls list charts separately.
 
-Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Unsupported query options return 400. Compatible hash/delete APIs, sliding-window conditions and feedback remain pending.
+Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Unsupported query options return 400. Compatible issue deletion, sliding-window conditions and feedback remain pending.
 
 ### Compatible individual issue changes
 
@@ -165,7 +173,7 @@ The response contains the saved compatible issue detail and real analytics. `lat
 
 An explicit `statusDetails:null` or `{}` clears the current condition while keeping the effective status. An empty `inRelease` or `inNextRelease:false` clears only a resolved condition and is rejected for other statuses. Invalid targets or incompatible policies roll back the whole request. A merged alias returns409 with `mergedInto`; open the current group before retrying. An empty request object reads the authorized issue without expiring or changing its policies.
 
-Writer tokens inherit issue and issue-event reads. Project event routes still need `project:read`, release routes need `project:releases`, and native mutation routes require a session. Compatible hash/deletion, username handles and user/window/commit conditions remain pending; unsupported fields return400.
+Writer tokens inherit issue and issue-event reads and can reset future grouping. Project event routes still need `project:read`, release routes need `project:releases`, and native mutation routes require a session. Compatible issue deletion, username handles and user/window/commit conditions remain pending; unsupported fields return400.
 
 ### Compatible bulk changes
 
@@ -180,7 +188,7 @@ curl --request PUT 'http://localhost:8000/api/0/projects/my-workspace/my-project
 
 Merging requires explicit IDs from one project and retains the lowest current root. `merge:1` is also accepted; false, zero and null do not separate groups. Assignment and policy-only changes require IDs too. A status change can select by current `status`, project, environment, search and occurrence time. Without IDs or a query, the project route includes all statuses; the organization route selects unresolved issues. Explicit `query=` includes every status. Operations select at most1000 roots by default; an explicit `limit` accepts1–100. Release selectors require one project. The response acknowledges supplied changes and the actual merge parent/children; issue GETs show each saved state.
 
-The real official sentry-cli3.8.0 has passed resolve, mute, unresolve, next-release and selection by IDs, status or `--all`, followed by authenticated state checks. Bulk `snoozeDuration:null` is accepted, and a nonnull value aliases ignoreDuration in minutes. SDK capture, retries and future routing remain intact. Compatible hash detachment and deletion remain required follow-ups.
+The real official sentry-cli3.8.0 has passed resolve, mute, unresolve, next-release and selection by IDs, status or `--all`, followed by authenticated state checks. Bulk `snoozeDuration:null` is accepted, and a nonnull value aliases ignoreDuration in minutes. SDK capture, retries and future routing remain intact. Compatible issue deletion remains a required follow-up.
 
 ### Compatible event reads
 
@@ -229,7 +237,7 @@ Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. 
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, compatible release-resolution, mute, merge and hash APIs, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, compatible issue deletion and further conditional policies, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 

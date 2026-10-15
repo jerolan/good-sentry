@@ -27,13 +27,14 @@ type IssueUnmergeResult struct {
 }
 
 type IssueOrigin struct {
-	ID          string     `json:"id"`
-	Fingerprint string     `json:"fingerprint"`
-	Title       string     `json:"title"`
-	Count       int64      `json:"count"`
-	FirstSeen   *time.Time `json:"firstSeen"`
-	LastSeen    *time.Time `json:"lastSeen"`
-	IsRoot      bool       `json:"isRoot"`
+	ID                string     `json:"id"`
+	Fingerprint       string     `json:"fingerprint"`
+	Title             string     `json:"title"`
+	Count             int64      `json:"count"`
+	FirstSeen         *time.Time `json:"firstSeen"`
+	LastSeen          *time.Time `json:"lastSeen"`
+	IsRoot            bool       `json:"isRoot"`
+	ReceivesNewEvents bool       `json:"receivesNewEvents"`
 }
 
 type IssueOriginPage struct {
