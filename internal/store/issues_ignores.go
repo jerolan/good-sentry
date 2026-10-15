@@ -23,7 +23,7 @@ type IssueIgnore struct {
 }
 
 const issueIgnoreJSON = `(SELECT jsonb_build_object('minutes',g.minutes,'count',g.count,'until',g.until,
- 'remaining',CASE WHEN g.count IS NULL THEN NULL ELSE GREATEST(0,g.count::bigint-GREATEST(0,i.count-g.baseline)) END)
+ 'remaining',CASE WHEN g.count IS NULL THEN NULL ELSE GREATEST(0,g.count::bigint-GREATEST(0,i.receipt_count-g.baseline)) END)
  FROM issue_ignores g WHERE g.issue_id=i.id AND i.status='ignored')`
 
 func validIssueIgnore(change *IssueIgnoreChange, status string) bool {
@@ -65,8 +65,9 @@ func replaceIssueIgnore(ctx context.Context, tx pgx.Tx, i *Issue, condition *Iss
 		stamp := time.Unix(now.Unix()+int64(*condition.Minutes)*60, int64(now.Nanosecond())).UTC()
 		until = &stamp
 	}
-	_, err := tx.Exec(ctx, `INSERT INTO issue_ignores(issue_id,minutes,count,until,baseline) VALUES($1::bigint,$2,$3,$4,$5)
-  ON CONFLICT(issue_id) DO UPDATE SET minutes=EXCLUDED.minutes,count=EXCLUDED.count,until=EXCLUDED.until,baseline=EXCLUDED.baseline`, i.ID, condition.Minutes, condition.Count, until, i.Count)
+	_, err := tx.Exec(ctx, `INSERT INTO issue_ignores(issue_id,minutes,count,until,baseline)
+  SELECT id,$2,$3,$4,receipt_count FROM issues WHERE id=$1::bigint
+  ON CONFLICT(issue_id) DO UPDATE SET minutes=EXCLUDED.minutes,count=EXCLUDED.count,until=EXCLUDED.until,baseline=EXCLUDED.baseline`, i.ID, condition.Minutes, condition.Count, until)
 	if err != nil {
 		return err
 	}
@@ -82,13 +83,13 @@ func replaceIssueIgnore(ctx context.Context, tx pgx.Tx, i *Issue, condition *Iss
 // statement: a preceding writer may have replaced it while that lock was awaited.
 func expireLockedIssueIgnore(ctx context.Context, tx pgx.Tx, id string, additional int64, eventID string) (bool, error) {
 	var status string
-	var occurrences int64
+	var receipts int64
 	var minutes, count *int32
 	var until *time.Time
 	var baseline *int64
 	var now time.Time
-	err := tx.QueryRow(ctx, `SELECT i.status,i.count,g.minutes,g.count,g.until,g.baseline,clock_timestamp()
-  FROM issues i LEFT JOIN issue_ignores g ON g.issue_id=i.id WHERE i.id=$1::bigint`, id).Scan(&status, &occurrences, &minutes, &count, &until, &baseline, &now)
+	err := tx.QueryRow(ctx, `SELECT i.status,i.receipt_count,g.minutes,g.count,g.until,g.baseline,clock_timestamp()
+  FROM issues i LEFT JOIN issue_ignores g ON g.issue_id=i.id WHERE i.id=$1::bigint`, id).Scan(&status, &receipts, &minutes, &count, &until, &baseline, &now)
 	if err != nil {
 		return false, err
 	}
@@ -103,7 +104,7 @@ func expireLockedIssueIgnore(ctx context.Context, tx pgx.Tx, id string, addition
 	if count != nil {
 		// A capture is admitted exactly once before this check. Include it in the
 		// previous-policy snapshot, so the Nth fresh capture records remaining=0.
-		remaining := max(int64(0), int64(*count)-max(int64(0), occurrences-*baseline)-additional)
+		remaining := max(int64(0), int64(*count)-max(int64(0), receipts-*baseline)-additional)
 		previous.Remaining = &remaining
 	}
 	reason := ""

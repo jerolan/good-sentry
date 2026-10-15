@@ -90,8 +90,8 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 			issueID = *target
 		}
 		var status string
-		var count int64
-		if err = tx.QueryRow(ctx, `SELECT status,count FROM issues WHERE id=$1 FOR UPDATE`, issueID).Scan(&status, &count); err != nil {
+		var receipts int64
+		if err = tx.QueryRow(ctx, `SELECT status,receipt_count FROM issues WHERE id=$1 FOR UPDATE`, issueID).Scan(&status, &receipts); err != nil {
 			return "", false, err
 		}
 		if status == "ignored" {
@@ -99,12 +99,12 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 				return "", false, err
 			}
 		}
-		if count == 0 {
+		if receipts == 0 {
 			if _, err = recordIssueActivity(ctx, tx, issueID.(string), nil, "first_seen", map[string]string{"eventID": ev.ID}); err != nil {
 				return "", false, err
 			}
 		}
-		_, err = tx.Exec(ctx, `UPDATE issues SET count=count+1,first_seen=LEAST(first_seen,$2),last_seen=GREATEST(last_seen,$2),title=CASE WHEN $2>=last_seen THEN $3 ELSE title END,environment=CASE WHEN $2>=last_seen THEN $4 ELSE environment END,release=CASE WHEN $2>=last_seen THEN $5 ELSE release END WHERE id=$1`, issueID, ev.Timestamp, ev.Title, ev.Environment, ev.Release)
+		_, err = tx.Exec(ctx, `UPDATE issues SET count=count+1,receipt_count=receipt_count+1,first_seen=LEAST(first_seen,$2),last_seen=GREATEST(last_seen,$2),title=CASE WHEN $2>=last_seen THEN $3 ELSE title END,environment=CASE WHEN $2>=last_seen THEN $4 ELSE environment END,release=CASE WHEN $2>=last_seen THEN $5 ELSE release END WHERE id=$1`, issueID, ev.Timestamp, ev.Title, ev.Environment, ev.Release)
 		if err != nil {
 			return "", false, err
 		}
