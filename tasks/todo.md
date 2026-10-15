@@ -45,7 +45,8 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
   - [x] Native increment: transactional user/team assignment, simple-resolution regression and recorded activity; preserve unique captures and historical rows.
   - [x] Native comment edit/delete/moderation and bounded independent histories, strict authenticated routes and responsive UI.
   - [x] Verify real PostgreSQL concurrency/reopen, transport boundaries, actual SDK/browser workflows, final image preservation and exact-source CI.
-  - [ ] Complete release-anchored/next-release resolution and timed/count-based mute as separately specified increments; native simple-resolution acceptance alone is insufficient.
+  - [ ] Native conditional mute: timed/additional-count conditions, new-notification suppression and always-on expiry, with provider/HTTP/worker/browser/SDK/image/publication acceptance.
+  - [ ] Complete release-anchored/next-release resolution as a separately specified increment; native simple-resolution acceptance alone is insufficient.
 - [ ] Deliver merge/unmerge with preserved event partitions and correct future grouping.
 - [x] Deliver releases, commit metadata and deploy records through compatible API.
   - [x] Define typed release contracts, shared organization/version storage and historical observed associations without changing original telemetry/maps.
