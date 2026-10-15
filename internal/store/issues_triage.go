@@ -103,14 +103,21 @@ func canonicalIssueID(id string) bool {
 	return err == nil && n > 0 && strconv.FormatInt(n, 10) == id
 }
 
-func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change IssueUpdate) (Issue, error) {
+func validateIssueUpdate(change IssueUpdate) bool {
 	if change.Status == "" && change.Assignment == nil || !validIssueIgnore(change.Ignore, change.Status) || !validIssueResolution(change.Resolution, change.Status) {
-		return Issue{}, ErrInvalidIssueChange
+		return false
 	}
 	if change.Status != "" && change.Status != "unresolved" && change.Status != "resolved" && change.Status != "ignored" {
-		return Issue{}, ErrInvalidIssueChange
+		return false
 	}
 	if a := change.Assignment; a != nil && a.Target != nil && (!canonicalIssueID(a.Target.ID) || a.Target.Type != "user" && a.Target.Type != "team") {
+		return false
+	}
+	return true
+}
+
+func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change IssueUpdate) (Issue, error) {
+	if !validateIssueUpdate(change) {
 		return Issue{}, ErrInvalidIssueChange
 	}
 	tx, i, org, _, err := s.issueTransaction(ctx, userID, id, true)
@@ -118,6 +125,19 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 		return i, err
 	}
 	defer tx.Rollback(ctx)
+	i, err = applyIssueUpdate(ctx, tx, userID, org, i, change)
+	if err != nil {
+		return i, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return i, err
+	}
+	return i, nil
+}
+
+func applyIssueUpdate(ctx context.Context, tx pgx.Tx, userID, org string, i Issue, change IssueUpdate) (Issue, error) {
+	id := i.ID
+	var err error
 	var target *IssueActor
 	if a := change.Assignment; a != nil && a.Target != nil {
 		target = &IssueActor{Type: a.Target.Type, ID: a.Target.ID}
@@ -206,9 +226,6 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 			}
 		}
 		i.AssignedTo = target
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return i, err
 	}
 	return i, nil
 }
