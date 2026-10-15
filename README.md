@@ -140,6 +140,14 @@ Environment, release, tags and text must match the same stored event, including 
 
 Invalid queries keep the filter form editable. This is the native GoodSentry search contract; compatible API0 listing and broader query syntax remain separate work.
 
+### Compatible event reads
+
+Issue event routes accept an explicit `event:read` token restricted to the selected projects. Project event routes use `project:read`. These are separate permissions; the token form keeps `org:read` and `project:read` as defaults, with `event:read` unchecked.
+
+Read errors from `/api/0/projects/{org}/{project}/events/`, `/api/0/issues/{issue}/events/` or `/api/0/organizations/{org}/issues/{issue}/events/`. Append the SDK event ID for full detail; issue routes also accept `latest`, `oldest` and `recommended` (latest). Project detail can retrieve a stored transaction by ID. The organization issue route additionally exposes `{event}/json/` as a legacy JSON projection.
+
+Lists support environment, occurrence dates, `statsPeriod`, bounded search, `limit`/`per_page` and cursor Links. Dates without an offset use UTC. Omitted time filters retain all history; `full=true` limits each page to10 events. Reads retain the stored SDK payload, current group ownership and original receipt time. Compatible issue listing, mutation, merge and hash APIs remain pending.
+
 ### Release automation
 
 In **API tokens**, create a token with `org:read`, `project:read` and the optional `project:releases` permission. Choose the projects it may access. A shared release can be changed only when the token covers every associated project.

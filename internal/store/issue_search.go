@@ -29,10 +29,19 @@ type IssueSearchValue struct {
 }
 
 func ParseIssueSearch(query string) (IssueSearch, error) {
+	return parseIssueSearch(query, false)
+}
+
+// ParseEventSearch adds the retained transaction name without changing native issue tag syntax.
+func ParseEventSearch(query string) (IssueSearch, error) {
+	return parseIssueSearch(query, true)
+}
+
+func parseIssueSearch(query string, events bool) (IssueSearch, error) {
 	if len(query) > 4096 || !utf8.ValidString(query) || strings.ContainsRune(query, 0) {
 		return IssueSearch{}, fmt.Errorf("%w: query must be valid UTF-8 without NUL and at most 4096 bytes", ErrInvalidIssueFilter)
 	}
-	p := issueSearchParser{query: query}
+	p := issueSearchParser{query: query, events: events}
 	var result IssueSearch
 	var text []string
 	for p.skipSpace(); p.pos < len(query); p.skipSpace() {
@@ -67,8 +76,9 @@ func ParseIssueSearch(query string) (IssueSearch, error) {
 }
 
 type issueSearchParser struct {
-	query string
-	pos   int
+	query  string
+	pos    int
+	events bool
 }
 
 func (p *issueSearchParser) invalid(message string) error {
@@ -145,6 +155,10 @@ func (p *issueSearchParser) termOrText() (*IssueSearchTerm, string, error) {
 			term.Field, term.Key = "status", ""
 		case "environment", "release", "level":
 			term.Field, term.Key = key, ""
+		case "transaction":
+			if p.events {
+				term.Field, term.Key = key, ""
+			}
 		}
 	}
 	if p.query[p.pos] == '[' {
