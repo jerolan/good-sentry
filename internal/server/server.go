@@ -58,6 +58,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	s.registerCompatibleEventRoutes(mux)
 	s.registerCompatibleIssueRoutes(mux)
 	s.registerCompatibleIssueWriteRoutes(mux)
+	s.registerCompatibleIssueDeleteRoutes(mux)
 	s.registerReleaseRoutes(mux)
 	s.registerArtifactRoutes(mux)
 	mux.Handle("GET /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.projects)))

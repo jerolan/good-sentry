@@ -74,6 +74,17 @@ func (s bulkIssueSelection) contains(ctx context.Context, tx pgx.Tx, ids []int64
 	return n == len(ids), err
 }
 
+// Freezing roots must not lose the caller's selected identities. A native split
+// can detach the only selected alias before the project gate becomes available.
+func (s *bulkIssueSelection) retainExplicitIDs(ids []int64) {
+	if len(ids) == 0 {
+		return
+	}
+	s.args = append(s.args, ids)
+	s.terms = append(s.terms, fmt.Sprintf(`i.id IN(SELECT COALESCE(selected.merged_into,selected.id) FROM issues selected
+ WHERE selected.project_id=i.project_id AND selected.id=ANY($%d::bigint[]))`, len(s.args)))
+}
+
 func (s bulkIssueSelection) roots(ctx context.Context, tx pgx.Tx, ids []int64) ([]bulkIssueCandidate, error) {
 	args := append([]any(nil), s.args...)
 	where := s.scope + ` AND i.merged_into IS NULL`

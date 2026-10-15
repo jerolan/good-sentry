@@ -130,8 +130,18 @@ func (s *Store) UpdateCompatibleIssues(ctx context.Context, access ManagementAcc
 		cohort = append(cohort, item.id)
 		projects = append(projects, item.project)
 	}
+	selection.retainExplicitIDs(ids)
 	if err = lockBulkIssueProjects(ctx, tx, projects); err != nil {
 		return result, err
+	}
+	if len(ids) > 0 {
+		visible, err := selection.contains(ctx, tx, ids)
+		if err != nil {
+			return result, err
+		}
+		if !visible {
+			return result, tx.Commit(ctx)
+		}
 	}
 	candidates, err = selection.roots(ctx, tx, cohort)
 	if err != nil {
