@@ -131,6 +131,14 @@ Compatible clients can use `GET /api/0/organizations/{org}/issues/{issue}/hashes
 
 Send `DELETE` to the same URL with repeated `id` query values and an empty body to reset selected signatures. This requires `event:write`, or a session with CSRF. A successful response is202 with no body after the reset commits. Foreign or inactive signatures are ignored. Writes to a merged alias return409 with `mergedInto`; reads open its current group. The signature UUID remains stable when its next capture creates a new generation.
 
+### Delete issues
+
+Use **Delete issue** in detail or select up to 1,000 issues across list pages and confirm **Delete selected**. Deletion removes each whole current group, its recorded errors, attachments, comments, assignment and active triage policies. Future matching captures can create a new issue. Already queued notifications and shared release metadata remain available. Merge remains limited to 2–100 issues from one project.
+
+Compatible clients use `DELETE /api/0/organizations/{org}/issues/{issue}/` with an empty body and the optional `event:admin` scope. Individual deletion returns204 after commit; a merged alias returns409 with `mergedInto`. Organization bulk deletion uses the same collection URL with repeated `id` values and returns200 with an empty JSON object. If any supplied ID is missing or outside the credential's access, the whole bulk request makes no changes. The UI reports completion without inventing a deleted count and offers a read retry if refreshing the list fails.
+
+`event:admin` grants deletion only and stays unchecked by default. It does not grant issue reads or other writes. Deletion is not permanent discard: retrying an actually deleted event ID can create a new receipt; retries of retained events remain idempotent. The official CLI 3.8.0 has no issue deletion command.
+
 ### Issue search
 
 The Issues view combines project, status, environment and release filters with text and tag queries:
@@ -237,7 +245,7 @@ Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. 
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, compatible issue deletion and further conditional policies, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
@@ -293,7 +301,7 @@ On upgrade, GoodSentry indexes historical legacy spans inside the application, o
 
 Owners and admins can open **API tokens** to create a credential, select projects and set its lifetime. The secret appears once; copy it before dismissing or leaving the view. Tokens expire after 90 days by default, with a selectable lifetime of 1–366 days. Revocation takes effect on subsequent requests. An all-project credential also includes projects created later; a restricted credential keeps only its selected projects.
 
-Choose `org:read` to list authorized projects, `project:read` for project metadata/events, `event:read` for issues and issue events, `event:write` for those reads, individual/bulk issue changes and merging, or `project:releases` for release management. Compatible project responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
+Choose `org:read` to list authorized projects, `project:read` for project metadata/events, `event:read` for issues and issue events, `event:write` for those reads, individual/bulk issue changes and merging, `event:admin` for issue deletion only, or `project:releases` for release management. Compatible project responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
 
 ```sh
 SENTRY_URL=http://localhost:8000/ SENTRY_ORG=my-workspace sentry-cli projects list

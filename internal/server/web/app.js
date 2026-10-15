@@ -11,7 +11,12 @@
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
   const commentEditDrafts = new Map();
+  const commentEditIssueIDs = new Map();
+  // Group observations select verification candidates; they do not prove ownership or deletion.
+  const issueDraftOwners = new Map();
   const mergeSelection = { scope: null, issues: new Map() };
+  const issueDeletionWarning = 'This removes each whole current group, its recorded events, attachments, comments, assignment, mute and resolution policies. Future matching captures can create a new issue.';
+  let issueDeletion;
   let issueViewContext;
   let issueRenderVersion = 0;
   let fieldNumber = 0;
@@ -155,6 +160,55 @@
     return [...ids].sort((left, right) => BigInt(left) < BigInt(right) ? -1 : BigInt(left) > BigInt(right) ? 1 : 0);
   }
 
+  function rememberIssueCommentOwners(detail, view) {
+    view.knownCommentOwners ??= new Map();
+    if (detail.issue.groupSize !== 1) return;
+    for (const record of detail.comments || []) {
+      view.knownCommentOwners.set(record.id, detail.issue.id);
+      if (commentEditDrafts.has(record.id)) commentEditIssueIDs.set(record.id, detail.issue.id);
+    }
+  }
+
+  function issueDraftCandidates(ids) {
+    const selected = new Set(ids);
+    const comments = [...commentDrafts].filter(([, draft]) => draft !== '').map(([id]) => id);
+    return [...new Set([...comments, ...commentEditIssueIDs.values()])]
+      .filter(id => selected.has(id) || selected.has(issueDraftOwners.get(id)));
+  }
+
+  function clearDeletedIssueDrafts(ids) {
+    for (const id of ids) { commentDrafts.delete(id); issueDraftOwners.delete(id); }
+    for (const [commentID, issueID] of commentEditIssueIDs) {
+      if (ids.has(issueID)) { commentEditDrafts.delete(commentID); commentEditIssueIDs.delete(commentID); }
+    }
+  }
+
+  async function confirmDeletedIssueDrafts(organization, ids) {
+    const remaining = [...ids];
+    const account = state.me;
+    await Promise.all(Array.from({ length: Math.min(4, remaining.length) }, async () => {
+      while (remaining.length && account && state.me === account) {
+        const id = remaining.shift();
+        try { await request(`/api/0/organizations/${encodeURIComponent(organization)}/issues/${encodeURIComponent(id)}/`); }
+        catch (failure) {
+          if (failure.status === 404 && state.me === account) clearDeletedIssueDrafts(new Set([id]));
+        }
+      }
+    }));
+  }
+
+  function finishIssueDeletion(organization, ids, view) {
+    const candidates = new Set([...ids, ...(view?.knownOriginIDs || [])]);
+    const draftIDs = issueDraftCandidates(candidates).filter(id => !view || id !== ids[0]);
+    if (view) clearDeletedIssueDrafts(new Set([ids[0]]));
+    for (const id of ids) mergeSelection.issues.delete(id);
+    const message = view ? 'Issue deleted.' : 'Deletion request completed.';
+    issueDeletion = { organization, scope: issueScope(new URLSearchParams(location.search)), message, bulk: !view };
+    notify(message);
+    navigate({ view: 'issues', issue: null });
+    if (draftIDs.length) void confirmDeletedIssueDrafts(organization, draftIDs);
+  }
+
   function routeURL(changes = {}) {
     const url = new URL(location.href);
     for (const [key, value] of Object.entries(changes)) {
@@ -211,6 +265,9 @@
     state.projects = [];
     commentDrafts.clear();
     commentEditDrafts.clear();
+    commentEditIssueIDs.clear();
+    issueDraftOwners.clear();
+    issueDeletion = undefined;
     mergeSelection.issues.clear();
     mergeSelection.scope = null;
     issueViewContext = undefined;
@@ -309,6 +366,7 @@
     const requestedView = params.get('view');
     const view = Object.prototype.hasOwnProperty.call(viewNames, requestedView) ? requestedView : 'issues';
     const scope = issueScope(params);
+    if (issueDeletion && (view !== 'issues' || issueDeletion.organization !== state.organization?.slug || issueDeletion.scope !== scope)) issueDeletion = undefined;
     if (view !== 'issues' || mergeSelection.scope !== scope) {
       mergeSelection.issues.clear();
       mergeSelection.scope = scope;
@@ -340,6 +398,7 @@
         if (version !== state.requestVersion) return;
         const detailView = issueViewContext?.view || { draftIssueId: requestedID };
         delete detailView.commentsResult;
+        rememberIssueCommentOwners(detail, detailView);
         if (detail.issue.id !== requestedID) history.replaceState(null, '', routeURL({ issue: detail.issue.id }));
         renderIssue(main, detail, detailView);
       } else if (view === 'projects') {
@@ -420,6 +479,12 @@
         if (!query.has('sort')) query.set('sort', 'date');
         const issues = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/issues?${query}`);
         if (version !== state.requestVersion) return;
+        const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
+        const lastPage = Math.max(1, Math.ceil((Number(issues.total) || 0) / pageSize));
+        if (issueDeletion && !issues.data?.length && page > lastPage) {
+          history.replaceState(null, '', routeURL({ page: lastPage === 1 ? null : lastPage }));
+          return loadRoute(focus);
+        }
         renderIssues(main, issues, params);
       }
       if (focus) main.querySelector('h1')?.focus();
@@ -445,6 +510,9 @@
   function renderIssues(main, result, params, failure) {
     document.title = 'Issues · GoodSentry';
     main.replaceChildren(pageHeader('Issues', 'Find, investigate and triage application errors.', node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), button('Create project', openProjectDialog, 'primary'))));
+    const outcome = issueDeletion?.scope === issueScope(params) ? node('div', { class: 'card panel panel-body form-stack', role: 'status', tabindex: '-1' },
+      node('p', {}, issueDeletion.message), issueDeletion.bulk ? node('p', { class: 'small muted' }, 'If any selected issue was already missing, the whole request made no changes. Remaining issues can be selected again after refresh.') : null) : null;
+    if (outcome) main.append(outcome);
     if (!state.projects.length) {
       main.append(node('section', { class: 'card panel' }, empty('Connect your first application', 'Create a project to get a DSN. Set it in your existing Sentry SDK to start receiving errors.', button('Create project', openProjectDialog, 'primary'))));
       return;
@@ -475,6 +543,10 @@
     if (failure) {
       errorState(panel, failure, () => loadRoute(true));
       main.append(panel);
+      if (outcome) {
+        outcome.append(node('p', {}, 'The issues list could not be refreshed. Retry the list to see its current state; the deletion request will not be sent again.'));
+        outcome.focus();
+      }
       return;
     }
     const issues = result.data || [];
@@ -509,25 +581,26 @@
     const selected = mergeSelection.issues;
     for (const issue of issues) if (selected.has(issue.id)) selected.set(issue.id, issue);
     const boxes = [];
-    let pending = false, confirming = false;
+    let pending = false, confirming = null;
     const status = node('p', { class: 'small', role: 'status' });
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const confirmation = node('div', { class: 'form-stack', hidden: true });
     const clear = button('Clear selection', () => { selected.clear(); changed(); }, 'small');
-    const merge = button('Merge selected', () => { confirming = true; sync(); }, 'small');
+    const merge = button('Merge selected', () => { confirming = 'merge'; sync(); confirmation.querySelector('button')?.focus(); }, 'small');
+    const remove = button('Delete selected', () => { confirming = 'delete'; sync(); confirmation.querySelector('button')?.focus(); }, 'danger small');
     const pageCheckbox = node('input', { type: 'checkbox', class: 'size-4 shrink-0 cursor-pointer accent-primary', 'aria-label': 'Select all issues on this page', onchange: () => {
       const add = pageCheckbox.checked;
-      if (add && selected.size + issues.filter(issue => !selected.has(issue.id)).length > 100) {
-        formError(error, new Error('Select at most 100 issues. Clear some selections before adding this page.'));
+      if (add && selected.size + issues.filter(issue => !selected.has(issue.id)).length > 1000) {
+        formError(error, new Error('Select at most 1,000 issues. Clear some selections before adding this page.'));
         sync();
         return;
       }
       for (const issue of issues) { if (add) selected.set(issue.id, issue); else selected.delete(issue.id); }
       changed();
     } });
-    function changed() { confirming = false; error.textContent = ''; sync(); }
+    function changed() { confirming = null; error.textContent = ''; sync(); }
     async function submit() {
-      if (!alive() || pending || selected.size < 2 || new Set([...selected.values()].map(issue => issue.projectId)).size !== 1) return;
+      if (!alive() || pending || selected.size < 2 || selected.size > 100 || new Set([...selected.values()].map(issue => issue.projectId)).size !== 1) return;
       const ids = sortedIssueIDs(selected.keys());
       pending = true;
       error.textContent = '';
@@ -545,36 +618,61 @@
         if (alive()) sync();
       }
     }
+    async function submitDelete() {
+      if (!alive() || pending || selected.size < 1 || selected.size > 1000) return;
+      const ids = sortedIssueIDs(selected.keys());
+      pending = true;
+      error.textContent = '';
+      sync();
+      try {
+        const query = new URLSearchParams(ids.map(id => ['id', id]));
+        await request(`/api/0/organizations/${encodeURIComponent(organization)}/issues/?${query}`, { method: 'DELETE' });
+        if (alive()) finishIssueDeletion(organization, ids);
+      } catch (failure) {
+        if (alive()) formError(error, failure);
+      } finally {
+        pending = false;
+        if (alive()) sync();
+      }
+    }
     function sync() {
       const count = selected.size;
       const mixed = new Set([...selected.values()].map(issue => issue.projectId)).size > 1;
       const root = count ? sortedIssueIDs(selected.keys())[0] : null;
-      status.textContent = `${count} selected · Up to 100. Selections stay across pages with the same filters.`;
+      status.textContent = `${count} selected · Up to 1,000. Selections stay across pages with the same filters.`;
       clear.disabled = pending || count === 0;
-      merge.disabled = pending || count < 2 || mixed;
-      merge.textContent = pending ? 'Merging…' : 'Merge selected';
+      merge.disabled = pending || count < 2 || count > 100 || mixed;
+      merge.textContent = pending && confirming === 'merge' ? 'Merging…' : 'Merge selected';
+      remove.disabled = pending || count === 0;
+      remove.textContent = pending && confirming === 'delete' ? 'Deleting…' : 'Delete selected';
       const selectedHere = issues.filter(issue => selected.has(issue.id)).length;
       pageCheckbox.checked = issues.length > 0 && selectedHere === issues.length;
       pageCheckbox.indeterminate = selectedHere > 0 && selectedHere < issues.length;
       pageCheckbox.disabled = pending || issues.length === 0;
       for (const { input, issue } of boxes) {
         input.checked = selected.has(issue.id);
-        input.disabled = pending || (!input.checked && count >= 100);
+        input.disabled = pending || (!input.checked && count >= 1000);
       }
-      explanation.textContent = mixed ? 'Selected issues belong to different projects. Select issues from one project to merge.' : 'The issue with the lowest ID keeps its status, assignment and active policies. Events and original groups are retained.';
-      confirmation.hidden = !confirming || count < 2 || mixed;
-      if (confirming) {
-        const confirm = button('Confirm merge', submit, 'primary small');
-        const cancel = button('Cancel merge', () => { confirming = false; sync(); }, 'small');
+      explanation.textContent = mixed ? 'Deleting supports selected groups across projects. Merging requires 2–100 issues from one project.' : count > 100 ? 'More than 100 issues are selected. Delete the selected groups, or reduce the selection to 2–100 issues to merge.' : 'Merging requires 2–100 issues from one project. The lowest ID keeps its state; recorded events and original groups are retained.';
+      confirmation.hidden = !confirming || count === 0 || confirming === 'merge' && (count < 2 || count > 100 || mixed);
+      if (confirming && !confirmation.hidden) {
+        const deleting = confirming === 'delete';
+        const confirm = button(deleting ? 'Confirm deletion' : 'Confirm merge', deleting ? submitDelete : submit, deleting ? 'danger small' : 'primary small');
+        const cancel = button(deleting ? 'Cancel deletion' : 'Cancel merge', () => { confirming = null; sync(); (deleting ? remove : merge).focus(); }, 'small');
         confirm.disabled = pending;
         cancel.disabled = pending;
-        confirmation.replaceChildren(node('p', {}, `Merge ${count} selected issues into issue ${root}?`), node('div', { class: 'actions' }, confirm, cancel));
+        confirmation.replaceChildren(node('p', {}, deleting ? `Delete the whole groups for ${count} selected ${count === 1 ? 'issue' : 'issues'}?` : `Merge ${count} selected issues into issue ${root}?`),
+          deleting ? node('p', { class: 'muted small' }, issueDeletionWarning) : null, node('div', { class: 'actions' }, confirm, cancel));
       }
     }
     const explanation = node('p', { class: 'muted small' });
-    const panel = node('div', { class: 'panel-body form-stack', role: 'group', 'aria-label': 'Merge issues' }, status, node('div', { class: 'actions' }, merge, clear), explanation, confirmation, error);
+    const panel = node('div', { class: 'panel-body form-stack', role: 'group', 'aria-label': 'Selected issues' }, status, node('div', { class: 'actions' }, merge, remove, clear), explanation, confirmation, error);
     return { panel, pageCheckbox, sync, checkbox: issue => {
       const input = node('input', { type: 'checkbox', class: 'size-4 shrink-0 cursor-pointer accent-primary', 'aria-label': `Select issue ${issue.shortId || issue.id}`, onchange: () => {
+        if (input.checked && !selected.has(issue.id) && selected.size >= 1000) {
+          formError(error, new Error('Select at most 1,000 issues. Clear some selections before adding another issue.'));
+          sync(); return;
+        }
         if (input.checked) selected.set(issue.id, issue); else selected.delete(issue.id);
         changed();
       } });
@@ -1056,10 +1154,10 @@
     const name = field('Token name', 'text', { name: 'name', required: true, autocomplete: 'off', placeholder: 'Project automation' });
     name.wrap.append(node('p', { class: 'help' }, '1–100 characters. Names may be reused.'));
     const lifetime = field('Lifetime (days)', 'number', { name: 'expiresInDays', value: 90, required: true, min: 1, max: 366, step: 1 });
-    const scopes = ['org:read', 'project:read', 'project:releases', 'event:read', 'event:write'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
+    const scopes = ['org:read', 'project:read', 'project:releases', 'event:read', 'event:write', 'event:admin'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
     const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Permissions'),
       scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
-      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. event:admin deletes whole issue groups and their recorded history; it does not grant read or other write permissions. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
     const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
     const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
     const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
@@ -1494,6 +1592,9 @@
     const event = detail.event || {};
     const view = previousView || {};
     view.draftIssueId ??= issue.id;
+    view.knownOriginIDs = new Set([issue.id]);
+    issueDraftOwners.set(issue.id, issue.id);
+    if (view.draftIssueId !== issue.id) issueDraftOwners.set(view.draftIssueId, issue.id);
     view.commentPage ??= 1;
     view.activityPage ??= 1;
     view.assigneePage ??= 1;
@@ -1544,7 +1645,7 @@
       if (issue.status === status) continue;
       statusActions.append(register(button(label, () => patchIssue({ status }, `Issue ${status === 'unresolved' ? 'reopened' : status}.`), status === 'resolved' ? 'primary' : '')));
     }
-    statusActions.append(button('Refresh issue', () => loadRoute(true)));
+    statusActions.append(register(button('Refresh issue', () => loadRoute(true))));
     const heading = node('div', { class: 'page-header' }, node('div', {},
       node('div', { class: 'eyebrow' }, issue.shortId || issue.id), node('h1', { class: 'detail-title', tabindex: '-1' }, issue.title),
       node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), issue.regressedAt ? node('span', { class: 'badge badge-sm error' }, 'Regressed') : null, issue.groupSize != null ? node('span', { class: 'badge badge-sm' }, `${number(issue.groupSize)} original ${issue.groupSize === 1 ? 'group' : 'groups'}`) : null, node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge badge-sm' }, issue.environment) : null)), statusActions);
@@ -1562,11 +1663,24 @@
       const updated = await request(path);
       if (!alive()) return false;
       delete view.commentsResult;
+      rememberIssueCommentOwners(updated, view);
       if (updated.issue.id !== issue.id) history.replaceState(null, '', routeURL({ issue: updated.issue.id }));
       renderIssue(main, updated, view);
       return true;
     };
     const triage = { alive, register, mutate, patchIssue, refresh };
+    const deleteError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const deleteConfirmation = node('section', { class: 'card panel panel-body form-stack', hidden: true, 'aria-label': 'Confirm issue deletion' });
+    const deleteIssue = register(button('Delete issue', () => { deleteConfirmation.hidden = false; confirmDelete.focus(); }, 'danger'));
+    const confirmDelete = register(button('Confirm deletion', async () => {
+      confirmDelete.textContent = 'Deleting…';
+      await triage.mutate(() => request(`/api/0/organizations/${encodeURIComponent(state.organization.slug)}/issues/${encodeURIComponent(issue.id)}/`, { method: 'DELETE' }),
+        () => finishIssueDeletion(state.organization.slug, [issue.id], view), deleteError, () => !deleteConfirmation.hidden);
+      if (alive()) confirmDelete.textContent = 'Confirm deletion';
+    }, 'danger'));
+    const cancelDelete = register(button('Cancel deletion', () => { deleteConfirmation.hidden = true; deleteError.textContent = ''; deleteIssue.focus(); }));
+    deleteConfirmation.append(node('h2', {}, 'Delete this issue?'), node('p', {}, issueDeletionWarning), deleteError, node('div', { class: 'actions' }, confirmDelete, cancelDelete));
+    statusActions.append(deleteIssue);
     const activity = issueActivity(path, view, triage);
     const comments = issueComments(issue, path, view, triage, () => activity.load(view.activityPage));
     const assignment = issueAssignment(issue, path, view, triage);
@@ -1587,7 +1701,7 @@
     if (event.contexts && Object.keys(event.contexts).length) right.append(detailPanel('Contexts', node('div', { class: 'panel-body' }, Object.entries(event.contexts).map(([name, context]) => node('section', { class: 'context-block' }, node('h3', {}, name), typeof context === 'object' && context ? keyValues(context) : node('p', {}, text(context)))))));
     if (event.request) right.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
     if (event.extra && Object.keys(event.extra).length) right.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
-    main.replaceChildren(routeLink('← All issues', { issue: null }, { class: 'back-link' }), heading, actionError, node('div', { class: 'detail-grid' }, left, right));
+    main.replaceChildren(routeLink('← All issues', { issue: null }, { class: 'back-link' }), heading, actionError, deleteConfirmation, node('div', { class: 'detail-grid' }, left, right));
     comments.start();
     activity.load(view.activityPage);
     assignment.load(view.assigneePage);
@@ -1703,7 +1817,7 @@
         const origins = [first, ...pages].flatMap(result => result.data);
         if (new Set(origins.map(origin => origin.id)).size !== first.total) throw new Error('Group membership changed while selecting. Refresh the original groups and try again.');
         selected.clear();
-        for (const origin of origins) selected.set(origin.id, origin);
+        for (const origin of origins) { selected.set(origin.id, origin); view.knownOriginIDs.add(origin.id); issueDraftOwners.set(origin.id, issue.id); }
         confirming = false;
       } catch (failure) { if (alive()) formError(error, failure, view); }
       finally { selectingAll = false; if (alive()) sync(); }
@@ -1719,6 +1833,7 @@
         if (!alive() || current !== sequence) return;
         if (result.issueId !== issue.id) throw moved(result.issueId);
         rows = result.data;
+        for (const origin of rows) { view.knownOriginIDs.add(origin.id); issueDraftOwners.set(origin.id, issue.id); }
         pageCheckbox = node('input', { type: 'checkbox', class: 'size-4 shrink-0 cursor-pointer accent-primary', 'aria-label': 'Select all original groups on this page', onchange: () => {
           const add = pageCheckbox.checked;
           if (add && selected.size + rows.filter(origin => !selected.has(origin.id)).length > 100) {
@@ -2039,9 +2154,11 @@
         const input = field('Edit comment text', 'textarea', { required: true, maxlength: 10000, rows: 3 });
         input.input.value = commentEditDrafts.get(draftKey) ?? record.text;
         commentEditDrafts.set(draftKey, input.input.value);
+        const knownOwner = commentEditIssueIDs.get(draftKey) || view.knownCommentOwners?.get(draftKey);
+        if (knownOwner) commentEditIssueIDs.set(draftKey, knownOwner);
         input.input.addEventListener('input', () => commentEditDrafts.set(draftKey, input.input.value));
         const editError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
-        const cancel = button('Cancel edit', () => { commentEditDrafts.delete(draftKey); show(); }, 'small');
+        const cancel = button('Cancel edit', () => { commentEditDrafts.delete(draftKey); commentEditIssueIDs.delete(draftKey); show(); }, 'small');
         const editor = node('form', { class: 'form-stack', 'aria-label': 'Edit comment' }, input.wrap, editError,
           node('div', { class: 'actions' }, triage.register(node('button', { class: 'btn button primary small', type: 'submit' }, 'Save comment')), triage.register(cancel)));
         editor.addEventListener('submit', event => {
@@ -2050,7 +2167,7 @@
           const value = draft.trim();
           if (!value) { formError(editError, new Error('Enter a comment before saving.')); return; }
           triage.mutate(() => request(`${path}/comments/${encodeURIComponent(record.id)}`, { method: 'PATCH', body: { text: value } }), async () => {
-            if (commentEditDrafts.get(draftKey) === draft) commentEditDrafts.delete(draftKey);
+            if (commentEditDrafts.get(draftKey) === draft) { commentEditDrafts.delete(draftKey); commentEditIssueIDs.delete(draftKey); }
             await load(view.commentPage);
             if (triage.alive()) { refreshActivity(); notify('Comment updated.'); }
           }, editError, () => editor.isConnected);
@@ -2066,6 +2183,7 @@
           () => request(`${path}/comments/${encodeURIComponent(record.id)}`, { method: 'DELETE' }),
           async () => {
             commentEditDrafts.delete(draftKey);
+            commentEditIssueIDs.delete(draftKey);
             await load(view.commentPage);
             if (triage.alive()) { refreshActivity(); notify('Comment deleted.'); }
           }, deleteError, () => confirmation.isConnected), 'danger small')), triage.register(button('Cancel deletion', show, 'small'))));
