@@ -90,6 +90,9 @@ DELETE FROM schema_migrations WHERE version=20`); err != nil {
 		t.Fatal(err)
 	}
 	before := groupDatabaseSnapshot(t, f.ctx, f.db, 19)
+	// A rejected operation must preserve every currently applied receipt,
+	// including migrations newer than020 in this forward-compatible fixture.
+	beforeRejected := groupDatabaseSnapshot(t, f.ctx, f.db, 0)
 	checkRejectedScope := func(db *Store, tokenID, scope string) {
 		t.Helper()
 		tx, err := db.pool.Begin(f.ctx)
@@ -106,7 +109,7 @@ DELETE FROM schema_migrations WHERE version=20`); err != nil {
 		}
 	}
 	checkRejectedScope(f.db, restricted.ID, "event:admin")
-	groupRequireUnchanged(t, f.ctx, f.db, before)
+	groupRequireUnchanged(t, f.ctx, f.db, beforeRejected)
 	url := f.db.pool.Config().ConnString()
 	f.db.Close()
 	upgraded, err := Open(f.ctx, url)
