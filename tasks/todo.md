@@ -37,6 +37,10 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
 ## Issue workflow and artifacts
 
 - [ ] Deliver search, tag/environment/release filters, sorting and pagination with UI.
+  - [ ] Specify and implement bounded native search parsing with tag/quoted/list/negation/wildcard semantics and useful invalid-query errors.
+  - [ ] Select historical same-event matches with authorized snapshot totals/pages and deterministic lifetime-summary orders, preserving raw data.
+  - [ ] Connect strict native HTTP queries, release/All status/first-seen controls and safe clickable event tags with complete URL/history navigation.
+  - [ ] Verify PostgreSQL concurrency/reopen, HTTP grammar boundaries, actual SDK/browser25+1 workflows, final image restart and remote CI before closing search.
 - [ ] Deliver resolved/ignored/regression workflow, assignment, comments and activity history.
 - [ ] Deliver merge/unmerge with preserved event partitions and correct future grouping.
 - [x] Deliver releases, commit metadata and deploy records through compatible API.
