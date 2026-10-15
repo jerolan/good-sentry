@@ -40,6 +40,12 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
 - [ ] Deliver resolved/ignored/regression workflow, assignment, comments and activity history.
 - [ ] Deliver merge/unmerge with preserved event partitions and correct future grouping.
 - [ ] Deliver releases, commit metadata and deploy records through compatible API.
+  - [ ] Define typed release contracts, shared organization/version storage and historical observed associations without changing original telemetry/maps.
+  - [ ] Implement scoped snapshot reads and transactional create/update/project-remove/delete, ordered complete commit sets/manual repositories and completed deploy records.
+  - [ ] Integrate fresh-only SDK/map observation and serialized artifact deletion, preserving duplicate suppression, existing mapped/raw stacks and255-character exact versions.
+  - [ ] Add compatible organization/project routes, native UI pagination and actual scoped project:releases credentials with existing cookie/CSRF protections.
+  - [ ] Deliver the responsive member/owner Releases workflow and unchanged read-credential regression.
+  - [ ] Verify real PostgreSQL/HTTP boundaries, official CLI lifecycle/local commits/previous-head/deploys, final image upgrade/restart, existing SDK/history and remote CI. Automatic repository refs/integrations remain separate acceptance.
 - [ ] Deliver release/debug-ID JavaScript artifact uploads and verified source mapping.
   - Native upload/list, mapped ingestion and their UI pass. Compatible release lifecycle and CLI endpoints remain required for full acceptance.
 - [x] Deliver authenticated native source-map upload/list and mapped capture through API and UI.
