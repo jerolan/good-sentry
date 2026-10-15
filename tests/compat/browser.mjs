@@ -296,6 +296,7 @@ try {
   assert.equal(retried.status(), 200, 'Identical source map retry succeeds');
   assert.equal((await retried.json()).created, false, 'Identical map retry does not create an artifact');
   await visible(upload.getByText('Identical source map already exists. No duplicate was created.', { exact: true }));
+  await visible(sourceMaps.getByRole('row').filter({ hasText: artifactName }));
   assert.equal(await sourceMaps.getByRole('row').filter({ hasText: artifactName }).count(), 1, 'Metadata contains one artifact after retry');
   await page.reload({ waitUntil: 'networkidle' });
   await sourceMaps.locator('summary').click();

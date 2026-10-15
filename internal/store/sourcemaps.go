@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -25,9 +26,10 @@ type SourceMapFile struct {
 	Checksum    string    `json:"checksum"`
 	Size        int64     `json:"size"`
 	DateCreated time.Time `json:"dateCreated"`
+	CodeFiles   []string  `json:"codeFiles,omitempty"`
 }
 
-const sourceMapColumns = "id::text,name,release,dist,debug_id,checksum,size,created_at"
+const sourceMapColumns = "id::text,name,release,dist,debug_id,checksum,size,created_at,code_files"
 
 func (s *Store) SaveSourceMap(ctx context.Context, userID, orgSlug, projectID, name, release, dist, debugID string, data []byte) (SourceMapFile, bool, error) {
 	tx, err := s.pool.Begin(ctx)
@@ -57,35 +59,64 @@ func (s *Store) SaveSourceMap(ctx context.Context, userID, orgSlug, projectID, n
 			return SourceMapFile{}, false, err
 		}
 	}
+	meta, created, err := saveSourceMapTx(ctx, tx, projectID, name, release, dist, debugID, data, nil)
+	if err != nil {
+		return meta, false, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return SourceMapFile{}, false, err
+	}
+	return meta, created, nil
+}
+
+func saveSourceMapTx(ctx context.Context, tx pgx.Tx, projectID, name, release, dist, debugID string, data []byte, aliases []string) (SourceMapFile, bool, error) {
 	debugID = normalizeSourceMapDebugID(debugID)
 	digest := sha256.Sum256(data)
 	checksum := hex.EncodeToString(digest[:])
-	meta, err := scanSourceMap(tx.QueryRow(ctx, `INSERT INTO source_maps(project_id,name,release,dist,debug_id,checksum,size,data)
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(project_id,name,release,dist,debug_id) DO NOTHING
-		RETURNING `+sourceMapColumns, projectID, name, release, dist, debugID, checksum, int64(len(data)), data))
+	aliases = sourceMapAliases(nil, aliases)
+	meta, err := scanSourceMap(tx.QueryRow(ctx, `INSERT INTO source_maps(project_id,name,release,dist,debug_id,checksum,size,data,code_files)
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(project_id,name,release,dist,debug_id) DO NOTHING
+		RETURNING `+sourceMapColumns, projectID, name, release, dist, debugID, checksum, int64(len(data)), data, aliases))
 	if err == nil {
-		if err := tx.Commit(ctx); err != nil {
-			return SourceMapFile{}, false, err
-		}
 		return meta, true, nil
 	}
 	if !errors.Is(err, ErrNotFound) {
 		return SourceMapFile{}, false, err
 	}
-	// This is a separate statement so a competing upload that won the unique
-	// key is visible after INSERT waited for that upload's commit.
+	// A new statement sees a competing upload after INSERT waits for commit.
+	// The row lock also serializes alias union with concurrent native uploads.
 	meta, err = scanSourceMap(tx.QueryRow(ctx, "SELECT "+sourceMapColumns+
-		" FROM source_maps WHERE project_id::text=$1 AND name=$2 AND release=$3 AND dist=$4 AND debug_id=$5", projectID, name, release, dist, debugID))
+		" FROM source_maps WHERE project_id::text=$1 AND name=$2 AND release=$3 AND dist=$4 AND debug_id=$5 FOR UPDATE", projectID, name, release, dist, debugID))
 	if err != nil {
 		return SourceMapFile{}, false, err
 	}
 	if meta.Checksum != checksum {
 		return meta, false, ErrConflict
 	}
-	if err := tx.Commit(ctx); err != nil {
-		return SourceMapFile{}, false, err
+	merged := sourceMapAliases(meta.CodeFiles, aliases)
+	if len(merged) != len(meta.CodeFiles) {
+		if _, err := tx.Exec(ctx, "UPDATE source_maps SET code_files=$2 WHERE id=$1::bigint", meta.ID, merged); err != nil {
+			return SourceMapFile{}, false, err
+		}
+		meta.CodeFiles = merged
 	}
 	return meta, false, nil
+}
+
+func sourceMapAliases(existing, incoming []string) []string {
+	seen := make(map[string]bool, len(existing)+len(incoming))
+	for _, name := range existing {
+		seen[name] = true
+	}
+	for _, name := range incoming {
+		seen[name] = true
+	}
+	merged := make([]string, 0, len(seen))
+	for name := range seen {
+		merged = append(merged, name)
+	}
+	sort.Strings(merged)
+	return merged
 }
 
 func (s *Store) ListSourceMaps(ctx context.Context, userID, orgSlug, projectID string) ([]SourceMapFile, error) {
@@ -126,7 +157,7 @@ func (s *Store) sourceMapProject(ctx context.Context, userID, orgSlug, projectID
 
 func scanSourceMap(row scanner) (SourceMapFile, error) {
 	var meta SourceMapFile
-	err := row.Scan(&meta.ID, &meta.Name, &meta.Release, &meta.Dist, &meta.DebugID, &meta.Checksum, &meta.Size, &meta.DateCreated)
+	err := row.Scan(&meta.ID, &meta.Name, &meta.Release, &meta.Dist, &meta.DebugID, &meta.Checksum, &meta.Size, &meta.DateCreated, &meta.CodeFiles)
 	return meta, dbError(err)
 }
 
@@ -149,24 +180,40 @@ func (s *Store) SourceMaps(ctx context.Context, projectID, release, dist string,
 		return nil, err
 	}
 	defer tx.Rollback(ctx)
-	const where = ` FROM source_maps WHERE project_id::text=$1 AND
-		((debug_id<>'' AND debug_id=ANY($2::text[])) OR ($3<>'' AND release=$3 AND dist=$4))`
+	// Equivalent immutable payloads can have several release/dist selector rows.
+	// Group metadata before the budget check, then fetch one representative's
+	// bytes and the selected rows' complete alias union from the same snapshot.
+	const selected = `WITH matching AS (
+		SELECT id,name,lower(replace(debug_id,'-','')) AS debug_id,checksum,size,
+			NOT($3<>'' AND release=$3 AND dist=$4) AS debug_id_only
+		FROM source_maps WHERE project_id::text=$1 AND
+			((debug_id<>'' AND debug_id=ANY($2::text[])) OR ($3<>'' AND release=$3 AND dist=$4))
+	), logical AS (
+		SELECT name,debug_id,checksum,min(id) AS id,max(size) AS size,
+			bool_and(debug_id_only) AS debug_id_only,array_agg(id) AS ids
+		FROM matching GROUP BY name,debug_id,checksum
+	) `
 	args := []any{projectID, ids, release, dist}
 	var count, total int64
-	if err := tx.QueryRow(ctx, "SELECT count(*),COALESCE(sum(size),0)::bigint"+where, args...).Scan(&count, &total); err != nil {
+	if err := tx.QueryRow(ctx, selected+"SELECT count(*),COALESCE(sum(size),0)::bigint FROM logical", args...).Scan(&count, &total); err != nil {
 		return nil, err
 	}
 	if count > 100 || total > maxBytes {
 		return nil, fmt.Errorf("%w: %d maps, %d bytes", ErrArtifactLimit, count, total)
 	}
-	rows, err := tx.Query(ctx, "SELECT name,debug_id,data,NOT($3<>'' AND release=$3 AND dist=$4)"+where+" ORDER BY name,release,dist,debug_id,id", args...)
+	rows, err := tx.Query(ctx, selected+`SELECT l.name,l.debug_id,m.data,
+		ARRAY(SELECT DISTINCT aliases.code_file FROM source_maps a
+			CROSS JOIN LATERAL unnest(a.code_files) AS aliases(code_file)
+			WHERE a.id=ANY(l.ids) ORDER BY aliases.code_file),l.debug_id_only
+		FROM logical l JOIN source_maps m ON m.id=l.id
+		ORDER BY l.name,l.debug_id,l.checksum,l.id`, args...)
 	if err != nil {
 		return nil, err
 	}
 	items := make([]artifact.SourceMap, 0, count)
 	for rows.Next() {
 		var sourceMap artifact.SourceMap
-		if err := rows.Scan(&sourceMap.Name, &sourceMap.DebugID, &sourceMap.Data, &sourceMap.DebugIDOnly); err != nil {
+		if err := rows.Scan(&sourceMap.Name, &sourceMap.DebugID, &sourceMap.Data, &sourceMap.CodeFiles, &sourceMap.DebugIDOnly); err != nil {
 			rows.Close()
 			return nil, err
 		}

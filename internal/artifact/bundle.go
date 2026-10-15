@@ -12,12 +12,16 @@ import (
 	"math"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 const (
 	maxBundleEntries       = 1000
 	maxBundleManifestBytes = 1 << 20
 )
+
+// ErrBundleLimit identifies resource budgets separately from invalid content.
+var ErrBundleLimit = errors.New("artifact bundle processing limit exceeded")
 
 type BundleFile struct {
 	Name    string
@@ -30,6 +34,8 @@ type BundleFile struct {
 
 type Bundle struct {
 	DebugID string
+	Release string
+	Dist    string
 	Files   []BundleFile
 }
 
@@ -37,7 +43,7 @@ type Bundle struct {
 // File debug IDs come from their manifest headers, independently of the bundle ID.
 func ParseBundle(data []byte, maxExpandedBytes int64) (Bundle, error) {
 	if maxExpandedBytes <= 0 || int64(len(data)) > maxExpandedBytes {
-		return Bundle{}, errors.New("artifact bundle input exceeds size limit")
+		return Bundle{}, fmt.Errorf("%w: input exceeds size limit", ErrBundleLimit)
 	}
 	if len(data) < 8 || string(data[:4]) != "SYSB" {
 		return Bundle{}, errors.New("artifact bundle requires a SYSB header")
@@ -50,7 +56,7 @@ func ParseBundle(data []byte, maxExpandedBytes int64) (Bundle, error) {
 		return Bundle{}, fmt.Errorf("read artifact bundle ZIP: %w", err)
 	}
 	if len(archive.File) > maxBundleEntries {
-		return Bundle{}, errors.New("artifact bundle exceeds entry limit")
+		return Bundle{}, fmt.Errorf("%w: entry limit exceeded", ErrBundleLimit)
 	}
 	members := make(map[string][]byte, len(archive.File))
 	var expanded int64
@@ -91,6 +97,20 @@ func ParseBundle(data []byte, maxExpandedBytes int64) (Bundle, error) {
 			return Bundle{}, fmt.Errorf("artifact bundle manifest debug_id: %w", err)
 		}
 	}
+	for _, field := range []struct {
+		name  string
+		value *string
+	}{{"release", &result.Release}, {"dist", &result.Dist}} {
+		if raw, exists := metadata[field.name]; exists {
+			var value *string
+			if err := json.Unmarshal(raw, &value); err != nil {
+				return Bundle{}, fmt.Errorf("artifact bundle manifest %s: expected a JSON string or null", field.name)
+			}
+			if value != nil {
+				*field.value = *value
+			}
+		}
+	}
 	for name, raw := range files {
 		if !safeBundlePath(name) {
 			return Bundle{}, fmt.Errorf("unsafe artifact bundle manifest member %q", name)
@@ -117,8 +137,8 @@ func safeBundlePath(name string) bool {
 }
 
 func readBundleMember(member *zip.File, limit int64) ([]byte, error) {
-	if member.UncompressedSize64 > uint64(limit) {
-		return nil, fmt.Errorf("artifact bundle member %q exceeds expanded size limit", member.Name)
+	if limit < 0 || member.UncompressedSize64 > uint64(limit) {
+		return nil, fmt.Errorf("%w: member %q exceeds expanded size limit", ErrBundleLimit, member.Name)
 	}
 	reader, err := member.Open()
 	if err != nil {
@@ -137,7 +157,7 @@ func readBundleMember(member *zip.File, limit int64) ([]byte, error) {
 		return nil, fmt.Errorf("close artifact bundle member %q: %w", member.Name, closeErr)
 	}
 	if int64(len(payload)) > limit {
-		return nil, fmt.Errorf("artifact bundle member %q exceeds expanded size limit", member.Name)
+		return nil, fmt.Errorf("%w: member %q exceeds expanded size limit", ErrBundleLimit, member.Name)
 	}
 	return payload, nil
 }
@@ -152,6 +172,9 @@ func parseBundleFile(name string, raw json.RawMessage, data []byte) (BundleFile,
 	file.Type, err = bundleString(metadata["type"])
 	if err != nil || file.Type == "" {
 		return BundleFile{}, errors.New("file type must be a nonempty string")
+	}
+	if !utf8.Valid(metadata["url"]) {
+		return BundleFile{}, errors.New("file URL must be valid UTF-8")
 	}
 	file.URL, err = bundleString(metadata["url"])
 	if err != nil || file.URL == "" {

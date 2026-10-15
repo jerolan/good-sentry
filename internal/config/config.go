@@ -22,10 +22,14 @@ type Config struct {
 	AlertTimeoutSeconds                       int
 	WebhookAllowPrivate                       bool
 	AlertDelivery                             bool
+	ArtifactChunkTTLHours                     int
+	ArtifactStagingMaxBytes                   int64
+	ArtifactMaxMapRecords                     int
 }
 
 func Load() (Config, error) {
 	c := Config{DatabaseURL: os.Getenv("DATABASE_URL"), Secret: os.Getenv("SECRET_KEY"), EmailURL: value("EMAIL_URL", "consolemail://"), FromEmail: value("DEFAULT_FROM_EMAIL", "goodsentry@localhost"), ValkeyURL: os.Getenv("VALKEY_URL"), UploadDir: value("UPLOAD_DIR", "uploads"), MaxBodyBytes: 32 << 20, RetentionDays: 90, MonitorWorkers: 2, AlertWorkers: 2, AlertMaxAttempts: 5, AlertTimeoutSeconds: 10}
+	c.ArtifactChunkTTLHours, c.ArtifactStagingMaxBytes, c.ArtifactMaxMapRecords = 24, 256<<20, 1000
 	port, err := strconv.Atoi(value("PORT", "8000"))
 	if err != nil || port < 1 || port > 65535 {
 		return c, fmt.Errorf("PORT must be an integer from 1 to 65535")
@@ -74,6 +78,8 @@ func Load() (Config, error) {
 		{"ALERT_WORKERS", 16, &c.AlertWorkers},
 		{"ALERT_MAX_ATTEMPTS", 20, &c.AlertMaxAttempts},
 		{"ALERT_DELIVERY_TIMEOUT_SECONDS", 60, &c.AlertTimeoutSeconds},
+		{"ARTIFACT_CHUNK_TTL_HOURS", 168, &c.ArtifactChunkTTLHours},
+		{"ARTIFACT_MAX_MAP_RECORDS", 100000, &c.ArtifactMaxMapRecords},
 	} {
 		if raw := os.Getenv(option.name); raw != "" {
 			*option.dest, err = strconv.Atoi(raw)
@@ -102,6 +108,15 @@ func Load() (Config, error) {
 		if err != nil || c.RetentionDays < 1 || c.RetentionDays > 3650 {
 			return c, fmt.Errorf("RETENTION_DAYS must be between 1 and 3650")
 		}
+	}
+	if raw := os.Getenv("ARTIFACT_STAGING_MAX_BYTES"); raw != "" {
+		c.ArtifactStagingMaxBytes, err = strconv.ParseInt(raw, 10, 64)
+		if err != nil {
+			return c, fmt.Errorf("ARTIFACT_STAGING_MAX_BYTES must be an integer byte count")
+		}
+	}
+	if c.ArtifactStagingMaxBytes < 1<<20 || c.ArtifactStagingMaxBytes > 1<<40 || c.ArtifactStagingMaxBytes < c.MaxBodyBytes {
+		return c, fmt.Errorf("ARTIFACT_STAGING_MAX_BYTES must be between 1048576 and 1099511627776 and at least MAX_BODY_BYTES")
 	}
 	return c, nil
 }

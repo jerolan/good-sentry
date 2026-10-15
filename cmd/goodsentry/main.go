@@ -40,6 +40,8 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	stopArtifactChunks := jobs.StartArtifactChunks(ctx, db, time.Duration(cfg.ArtifactChunkTTLHours)*time.Hour)
+	defer stopArtifactChunks()
 	stopTransactionSpans := jobs.StartTransactionSpans(ctx, db)
 	defer stopTransactionSpans()
 	alertTimeout := time.Duration(cfg.AlertTimeoutSeconds) * time.Second

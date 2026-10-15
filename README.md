@@ -59,7 +59,7 @@ docker compose down
 | Capability | Verified behavior |
 | --- | --- |
 | Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, context, search, filters, resolve/reopen and comments. |
-| JavaScript source maps | Authenticated native uploads, release/distribution or Debug ID selection, original file/line/column/context and preserved minified stacks. |
+| JavaScript source maps | Official CLI injection/bundle uploads and native uploads, Debug ID or release/distribution selection, original source context and preserved minified stacks. |
 | Releases | Shared project versions, observed SDK releases, local commit metadata, completed deploys and compatible CLI lifecycle operations, with a responsive management UI. |
 | Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail and a cross-project trace waterfall. |
 | Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. |
@@ -119,13 +119,28 @@ sentry-cli deploys new --release "$version" --env production
 sentry-cli deploys list --release "$version"
 ```
 
-Create, finalize, list, info, archive, restore and delete also pass with the issued credential. Revocation disables subsequent requests. Release deletion removes its metadata and release-specific source maps while preserving captured events and stacks. Repository integration with `--auto` and CLI artifact uploads remain pending.
+Create, finalize, list, info, archive, restore and delete also pass with the issued credential. Revocation disables subsequent requests. Release deletion removes its metadata and release-specific source maps while preserving captured events and stacks. Repository integration with `--auto` remains pending.
+
+### JavaScript source maps
+
+With the same CLI configuration and `project:releases` permission, inject your built files and upload their artifact bundle:
+
+```sh
+sentry-cli sourcemaps inject ./dist
+sentry-cli sourcemaps upload --wait ./dist
+```
+
+Deploy those injected files so the SDK can attach their Debug IDs to captured exceptions. The official CLI `3.8.0` and Node SDK `11.7.0` have passed this complete workflow, including the original file, line and source context, preserved minified stack, duplicate uploads and project isolation. Uploading the same build under additional release/dist selectors preserves its usable identity.
+
+Optional `--release` and `--dist` values must match your SDK configuration. An upload with `--release` does not create release metadata; a separate release command or fresh SDK capture does. The release/dist workflow without injection also passes when the artifact URL prefix matches the emitted filename. Incorrect version/distribution selectors remain unmapped.
+
+Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. Temporary staging has a configurable quota and expiry, with automatic cleanup in the Go process. Native debug-file and minidump uploads remain pending.
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, `sentry-cli` upload endpoints, native symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
-The modern CLI bundle decoder is tested; its upload endpoints remain unconnected. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
+The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
 See the [complete specification](SPEC.md), [implementation order](tasks/plan.md) and [task evidence](tasks/todo.md) before relying on an unlisted capability.
 
@@ -142,6 +157,9 @@ Compose supplies the local database connection. Environment values override the 
 | `PORT` | `8000` | Published Compose port. Update the public domain when changing it. |
 | `EMAIL_URL` | `consolemail://` | Console output or `smtp://`, `smtp+starttls://`, `smtps://`. |
 | `DEFAULT_FROM_EMAIL` | `goodsentry@localhost` | Sender address for alert emails. |
+| `ARTIFACT_CHUNK_TTL_HOURS` | `24` | Temporary upload chunk availability, from 1 to 168 hours. |
+| `ARTIFACT_STAGING_MAX_BYTES` | `268435456` | Per-organization temporary chunk quota; at least `MAX_BODY_BYTES`, from 1 MiB to 1 TiB. |
+| `ARTIFACT_MAX_MAP_RECORDS` | `1000` | Maximum maps × selected projects in one atomic assembly, from 1 to 100000. |
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
 | `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
 | `MONITOR_WORKERS` | `2` | Concurrent checks per process, from 1 to 16. |

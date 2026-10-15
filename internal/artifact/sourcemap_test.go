@@ -12,6 +12,114 @@ import (
 // generated line 1/column 0 to source line 3/column 4 and the name charge.
 const checkoutMap = `{"version":3,"file":"app.js","sources":["../src/checkout.js"],"names":["charge","other"],"mappings":"AAEIA,UACFC","sourcesContent":["export function charge() {\n  const total = 42;\n  throw new Error('declined');\n  return total;\n}"]}`
 
+func TestSymbolicateCodeFileAliasesKeepMapSourceBase(t *testing.T) {
+	const data = `{"version":3,"sources":["../src/order.js"],"names":["confirm"],"mappings":"AAAAA","sourcesContent":["throw Error('alias fixture');"]}`
+	m := artifact.SourceMap{Name: "https://maps.example/build/special.mapping", CodeFiles: []string{"https://cdn.example/assets/chunk.js", "~/assets/other.js", "relative.js"}, Data: []byte(data)}
+	for _, absPath := range []string{"https://cdn.example/assets/chunk.js?v=1#frame", "https://other.example/assets/other.js", "relative.js"} {
+		t.Run(absPath, func(t *testing.T) {
+			raw, _ := json.Marshal(map[string]any{"stacktrace": map[string]any{"frames": []any{map[string]any{"abs_path": absPath, "lineno": 1, "colno": 1}}}})
+			result, err := artifact.Symbolicate(raw, []artifact.SourceMap{m})
+			if err != nil {
+				t.Fatal(err)
+			}
+			var event struct {
+				Stacktrace struct {
+					Frames []struct {
+						Filename, Function string
+						Lineno, Colno      int
+						ContextLine        string `json:"context_line"`
+					}
+				}
+				RawStacktrace json.RawMessage `json:"raw_stacktrace"`
+			}
+			if err := json.Unmarshal(result, &event); err != nil {
+				t.Fatal(err)
+			}
+			f := event.Stacktrace.Frames[0]
+			if f.Filename != "https://maps.example/src/order.js" || f.Function != "confirm" || f.Lineno != 1 || f.Colno != 1 || f.ContextLine != "throw Error('alias fixture');" || len(event.RawStacktrace) == 0 {
+				t.Fatalf("alias failed to map using the map URL as its source base: %s", result)
+			}
+		})
+	}
+	const raw = `{"stacktrace":{"frames":[{"abs_path":"https://cdn.example/assets/chunk.js","lineno":1,"colno":1}]}}`
+	for name, maps := range map[string][]artifact.SourceMap{
+		"ambiguous alias": {m, {Name: "~/another.map", CodeFiles: m.CodeFiles, Data: []byte(data)}},
+		"debug ID only":   {{Name: m.Name, CodeFiles: m.CodeFiles, Data: m.Data, DebugIDOnly: true}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			result, err := artifact.Symbolicate(json.RawMessage(raw), maps)
+			if err != nil || string(result) != raw {
+				t.Fatalf("unsafe alias selected a map: %s, %v", result, err)
+			}
+		})
+	}
+	const explicit = `{"debug_meta":{"images":[{"type":"sourcemap","code_file":"https://cdn.example/assets/chunk.js","debug_id":"ffffffffffffffffffffffffffffffff"}]},"stacktrace":{"frames":[{"abs_path":"https://cdn.example/assets/chunk.js","lineno":1,"colno":1}]}}`
+	if result, err := artifact.Symbolicate(json.RawMessage(explicit), []artifact.SourceMap{m}); err != nil || string(result) != explicit {
+		t.Fatalf("alias overrode the unavailable explicit build identity: %s, %v", result, err)
+	}
+}
+
+func TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority(t *testing.T) {
+	const filename = "/opt/app/dist/app.js"
+	const id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	for _, tc := range []struct {
+		name   string
+		abs    json.RawMessage
+		mapped bool
+	}{
+		{"absent abs_path", nil, true},
+		{"null abs_path", json.RawMessage(`null`), true},
+		{"empty abs_path", json.RawMessage(`""`), true},
+		{"authoritative abs_path", json.RawMessage(`"/opt/app/dist/different.js"`), false},
+		{"malformed abs_path", json.RawMessage(`42`), false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			frame := map[string]any{"filename": filename, "lineno": 1, "colno": 1, "function": "minified"}
+			if tc.abs != nil {
+				frame["abs_path"] = tc.abs
+			}
+			raw, _ := json.Marshal(map[string]any{
+				"debug_meta": map[string]any{"images": []any{map[string]string{"type": "sourcemap", "code_file": filename, "debug_id": id}}},
+				"exception":  map[string]any{"values": []any{map[string]any{"stacktrace": map[string]any{"frames": []any{frame}}}}},
+			})
+			result, err := artifact.Symbolicate(raw, []artifact.SourceMap{{Name: "https://maps.example/maps/app.js.map", DebugID: id, Data: []byte(checkoutMap)}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !tc.mapped {
+				if string(result) != string(raw) {
+					t.Fatalf("filename overrode the authoritative abs_path: %s", result)
+				}
+				return
+			}
+			type capturedFrame struct {
+				Filename, Function string
+				Lineno, Colno      int
+				ContextLine        string `json:"context_line"`
+			}
+			var event struct {
+				Exception struct {
+					Values []struct {
+						Stacktrace    struct{ Frames []capturedFrame }
+						RawStacktrace struct{ Frames []capturedFrame } `json:"raw_stacktrace"`
+					}
+				}
+			}
+			if err := json.Unmarshal(result, &event); err != nil {
+				t.Fatal(err)
+			}
+			exc := event.Exception.Values[0]
+			if len(exc.RawStacktrace.Frames) != 1 {
+				t.Fatalf("Node filename frame was not mapped and retained: %s", result)
+			}
+			mapped, original := exc.Stacktrace.Frames[0], exc.RawStacktrace.Frames[0]
+			if mapped.Filename != "https://maps.example/src/checkout.js" || mapped.Function != "charge" || mapped.Lineno != 3 || mapped.Colno != 5 || mapped.ContextLine != "  throw new Error('declined');" || original.Filename != filename || original.Function != "minified" || original.Lineno != 1 || original.Colno != 1 {
+				t.Fatalf("Node mapping lost original filename, source base or context: %s", result)
+			}
+		})
+	}
+}
+
 func TestSymbolicateTraditionalMapKeepsOriginalsAndSDKMetadata(t *testing.T) {
 	const raw = `{"event_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","future":{"number":9007199254740993},"exception":{"values":[{"type":"Error","value":"declined","mechanism":{"type":"custom"},"stacktrace":{"frames":[{"abs_path":"https://cdn.example/assets/app.js?v=2","filename":"app.js","lineno":1,"colno":1,"function":"a","in_app":true,"vars":{"cart":7}}],"frames_omitted":[10,20]}}]},"stacktrace":{"frames":[{"abs_path":"https://cdn.example/assets/app.js","lineno":1,"colno":11}]}}`
 	result, err := artifact.Symbolicate(json.RawMessage(raw), []artifact.SourceMap{{Name: "~/assets/app.js.map", Data: []byte(checkoutMap)}})

@@ -15,6 +15,7 @@ type SourceMap struct {
 	Name        string
 	DebugID     string
 	Data        []byte
+	CodeFiles   []string
 	DebugIDOnly bool // Only the matching debug image may select this artifact.
 }
 
@@ -122,7 +123,13 @@ func symbolicateStack(owner map[string]json.RawMessage, maps []parsedMap, images
 		}
 		var absPath string
 		var line, column int
-		if json.Unmarshal(frame["abs_path"], &absPath) != nil || absPath == "" || json.Unmarshal(frame["lineno"], &line) != nil || line < 1 {
+		if value, exists := frame["abs_path"]; exists && json.Unmarshal(value, &absPath) != nil {
+			continue
+		}
+		if absPath == "" && (json.Unmarshal(frame["filename"], &absPath) != nil || absPath == "") {
+			continue
+		}
+		if json.Unmarshal(frame["lineno"], &line) != nil || line < 1 {
 			continue
 		}
 		if rawColumn, ok := frame["colno"]; ok && json.Unmarshal(rawColumn, &column) != nil {
@@ -201,10 +208,11 @@ func matchingMap(absPath string, maps []parsedMap, images []debugImage) *parsedM
 			continue
 		}
 		name := strings.TrimSuffix(cleanURL(maps[i].Name), ".map")
-		matches := name == frameName
-		if strings.HasPrefix(name, "~/") {
-			if frameURL, err := url.Parse(frameName); err == nil {
-				matches = strings.TrimPrefix(name, "~") == frameURL.Path
+		matches := matchesCodeFile(name, frameName)
+		for _, alias := range maps[i].CodeFiles {
+			if matchesCodeFile(cleanURL(alias), frameName) {
+				matches = true
+				break
 			}
 		}
 		if matches {
@@ -215,6 +223,15 @@ func matchingMap(absPath string, maps []parsedMap, images []debugImage) *parsedM
 		}
 	}
 	return found
+}
+
+func matchesCodeFile(name, frameName string) bool {
+	if strings.HasPrefix(name, "~/") {
+		if frameURL, err := url.Parse(frameName); err == nil {
+			return strings.TrimPrefix(name, "~") == frameURL.Path
+		}
+	}
+	return name == frameName
 }
 
 func normalizeDebugID(id string) string {

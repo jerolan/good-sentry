@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io/fs"
 	"reflect"
@@ -16,7 +17,7 @@ import (
 const bundleMap = `{"version":3,"sources":["src/app.js"],"names":[],"mappings":"AAAA","sourcesContent":["throw Error('fixture');"]}`
 
 func TestParseBundlePreservesFilesAndSeparatesTheirDebugIDs(t *testing.T) {
-	manifest := `{"debug_id":"bundle-id","future":{"kept":true},"files":{"files/z.js":{"type":"minified_source","url":"~/app.js","headers":{"debug-id":"file-id","sourcemap":"app.js.map"},"future":42},"files/a.js.map":{"type":"source_map","url":"~/app.js.map","headers":{}},"files/future.bin":{"type":"future_blob","url":"~/payload.bin"}}}`
+	manifest := `{"debug_id":"bundle-id","release":" Release / 1 ","dist":"web","future":{"kept":true},"files":{"files/z.js":{"type":"minified_source","url":"~/app.js","headers":{"debug-id":"file-id","sourcemap":"app.js.map"},"future":42},"files/a.js.map":{"type":"source_map","url":"~/app.js.map","headers":{}},"files/future.bin":{"type":"future_blob","url":"~/payload.bin"}}}`
 	data := makeBundle(t, manifest, []bundleMember{
 		{name: "files/z.js", data: "throw Error('fixture');"},
 		{name: "files/future.bin", data: "\x00\n\xff"},
@@ -26,7 +27,7 @@ func TestParseBundlePreservesFilesAndSeparatesTheirDebugIDs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := artifact.Bundle{DebugID: "bundle-id", Files: []artifact.BundleFile{
+	want := artifact.Bundle{DebugID: "bundle-id", Release: " Release / 1 ", Dist: "web", Files: []artifact.BundleFile{
 		{Name: "files/a.js.map", Type: "source_map", URL: "~/app.js.map", Headers: map[string]string{}, Data: []byte(bundleMap)},
 		{Name: "files/future.bin", Type: "future_blob", URL: "~/payload.bin", Data: []byte("\x00\n\xff")},
 		{Name: "files/z.js", Type: "minified_source", URL: "~/app.js", DebugID: "file-id", Headers: map[string]string{"debug-id": "file-id", "sourcemap": "app.js.map"}, Data: []byte("throw Error('fixture');")},
@@ -110,8 +111,8 @@ func TestParseBundleEnforcesInputAndExpansionLimits(t *testing.T) {
 	t.Run("input", func(t *testing.T) {
 		data := makeBundle(t, `{"files":{}}`, nil)
 		for _, limit := range []int64{-1, 0, int64(len(data) - 1)} {
-			if _, err := artifact.ParseBundle(data, limit); err == nil {
-				t.Fatalf("accepted %d input bytes with limit %d", len(data), limit)
+			if _, err := artifact.ParseBundle(data, limit); !errors.Is(err, artifact.ErrBundleLimit) {
+				t.Fatalf("input budget must return ErrBundleLimit: %v", err)
 			}
 		}
 	})
@@ -124,16 +125,16 @@ func TestParseBundleEnforcesInputAndExpansionLimits(t *testing.T) {
 			if len(data) >= 5000 {
 				t.Fatal("fixture must pass the compressed input limit")
 			}
-			if _, err := artifact.ParseBundle(data, 5000); err == nil {
-				t.Fatal("accepted expansion beyond caller limit")
+			if _, err := artifact.ParseBundle(data, 5000); !errors.Is(err, artifact.ErrBundleLimit) {
+				t.Fatalf("expanded budget must return ErrBundleLimit: %v", err)
 			}
 		})
 	}
 	t.Run("manifest expansion", func(t *testing.T) {
 		manifest := `{"files":{},"future":"` + strings.Repeat("a", 1<<20) + `"}`
 		data := makeBundle(t, manifest, nil)
-		if _, err := artifact.ParseBundle(data, 2<<20); err == nil {
-			t.Fatal("accepted oversized manifest within larger archive budget")
+		if _, err := artifact.ParseBundle(data, 2<<20); !errors.Is(err, artifact.ErrBundleLimit) {
+			t.Fatalf("manifest budget must return ErrBundleLimit: %v", err)
 		}
 	})
 	t.Run("entry count", func(t *testing.T) {
@@ -141,8 +142,8 @@ func TestParseBundleEnforcesInputAndExpansionLimits(t *testing.T) {
 		for i := range members {
 			members[i] = bundleMember{name: fmt.Sprintf("files/%04d", i)}
 		}
-		if _, err := artifact.ParseBundle(makeBundle(t, `{"files":{}}`, members), 1<<20); err == nil {
-			t.Fatal("accepted more than 1000 entries including the manifest")
+		if _, err := artifact.ParseBundle(makeBundle(t, `{"files":{}}`, members), 1<<20); !errors.Is(err, artifact.ErrBundleLimit) {
+			t.Fatalf("entry budget must return ErrBundleLimit: %v", err)
 		}
 	})
 }

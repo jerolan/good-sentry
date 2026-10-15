@@ -29,6 +29,12 @@ func TestDeploymentConfiguration(t *testing.T) {
 		{"bad webhook policy", map[string]string{"GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS": "perhaps"}, "ALLOW_PRIVATE_IPS"},
 		{"unsupported mail", map[string]string{"EMAIL_URL": "http://mail.example.test"}, "EMAIL_URL"},
 		{"mail header injection", map[string]string{"DEFAULT_FROM_EMAIL": "sender@example.test\r\nBcc: victim@example.test"}, "DEFAULT_FROM_EMAIL"},
+		{"expired upload lifetime", map[string]string{"ARTIFACT_CHUNK_TTL_HOURS": "0"}, "ARTIFACT_CHUNK_TTL_HOURS"},
+		{"unbounded upload lifetime", map[string]string{"ARTIFACT_CHUNK_TTL_HOURS": "169"}, "ARTIFACT_CHUNK_TTL_HOURS"},
+		{"invalid staging bytes", map[string]string{"ARTIFACT_STAGING_MAX_BYTES": "large"}, "ARTIFACT_STAGING_MAX_BYTES"},
+		{"staging smaller than a bundle", map[string]string{"ARTIFACT_STAGING_MAX_BYTES": "1048576"}, "ARTIFACT_STAGING_MAX_BYTES"},
+		{"no materialized records", map[string]string{"ARTIFACT_MAX_MAP_RECORDS": "0"}, "ARTIFACT_MAX_MAP_RECORDS"},
+		{"unbounded materialized records", map[string]string{"ARTIFACT_MAX_MAP_RECORDS": "100001"}, "ARTIFACT_MAX_MAP_RECORDS"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
@@ -100,5 +106,29 @@ func TestAlertDeploymentOptions(t *testing.T) {
 	c, err := Load()
 	if err != nil || c.AlertWorkers != 16 || c.AlertMaxAttempts != 20 || c.AlertTimeoutSeconds != 60 || !c.WebhookAllowPrivate {
 		t.Fatalf("alert deployment options were not applied: %v", err)
+	}
+}
+
+func TestArtifactDeploymentOptions(t *testing.T) {
+	for _, tc := range []struct {
+		name, ttl, staging, records, body string
+		wantTTL, wantRecords              int
+		wantStaging                       int64
+	}{
+		{"defaults", "", "", "", "", 24, 1000, 256 << 20},
+		{"minimum policy", "1", "1048576", "1", "1024", 1, 1, 1 << 20},
+		{"large deployment", "168", "1099511627776", "100000", "209715200", 168, 100000, 1 << 40},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+			t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
+			for key, value := range map[string]string{"ARTIFACT_CHUNK_TTL_HOURS": tc.ttl, "ARTIFACT_STAGING_MAX_BYTES": tc.staging, "ARTIFACT_MAX_MAP_RECORDS": tc.records, "MAX_BODY_BYTES": tc.body} {
+				t.Setenv(key, value)
+			}
+			c, err := Load()
+			if err != nil || c.ArtifactChunkTTLHours != tc.wantTTL || c.ArtifactStagingMaxBytes != tc.wantStaging || c.ArtifactMaxMapRecords != tc.wantRecords {
+				t.Fatalf("artifact deployment policy: TTL=%d staging=%d records=%d err=%v", c.ArtifactChunkTTLHours, c.ArtifactStagingMaxBytes, c.ArtifactMaxMapRecords, err)
+			}
+		})
 	}
 }
