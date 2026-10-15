@@ -10,6 +10,8 @@
   const traceReset = { traceView: null, traceProject: null, tracePage: null, traceNode: null, traceErrorsPage: null, returnView: null };
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
+  const commentEditDrafts = new Map();
+  let issueRenderVersion = 0;
   let fieldNumber = 0;
   let notificationTimer;
   let alertsUI;
@@ -185,6 +187,7 @@
     document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
     state.projects = [];
     commentDrafts.clear();
+    commentEditDrafts.clear();
     document.title = setup ? 'Set up GoodSentry' : 'Sign in · GoodSentry';
     app.setAttribute('aria-busy', 'false');
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
@@ -1327,45 +1330,76 @@
       item.message ? node('p', {}, item.message) : null, item.data ? node('pre', { class: 'muted small' }, text(item.data)) : null))) : node('div', { class: 'panel-body muted' }, 'No breadcrumbs were recorded.'));
   }
 
-  function renderIssue(main, detail) {
+  function renderIssue(main, detail, previousView) {
     const issue = detail.issue;
     const event = detail.event || {};
+    const view = previousView || { commentPage: 1, activityPage: 1, assigneePage: 1, assigneeQuery: '', commentsResult: { data: detail.comments || [], total: detail.commentTotal ?? detail.comments?.length ?? 0, page: 1, pageSize } };
+    const renderVersion = ++issueRenderVersion;
+    const routeVersion = state.requestVersion;
+    const alive = () => renderVersion === issueRenderVersion && routeVersion === state.requestVersion && main.isConnected && !!state.me;
+    const path = `/api/v1/issues/${encodeURIComponent(issue.id)}`;
+    let mutationPending = false;
+    const mutationControls = new Map();
+    const register = control => {
+      mutationControls.set(control, control.disabled);
+      if (mutationPending) control.disabled = true;
+      return control;
+    };
+    const mutate = async (operation, success, target, current = () => true) => {
+      if (mutationPending || !alive() || !current()) return;
+      mutationPending = true;
+      mutationControls.forEach((_, control) => { if (control.isConnected) control.disabled = true; });
+      target.textContent = '';
+      try {
+        const result = await operation();
+        if (alive() && current()) await success(result);
+      } catch (failure) {
+        if (alive() && current()) formError(target, failure);
+      } finally {
+        mutationPending = false;
+        if (alive()) mutationControls.forEach((disabled, control) => {
+          if (control.isConnected) control.disabled = disabled;
+          else mutationControls.delete(control);
+        });
+      }
+    };
     document.title = `${issue.title} · GoodSentry`;
     const statusLabel = badge(issue.status);
     const actionError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const statusActions = node('div', { class: 'actions', 'aria-label': 'Issue status' });
-    const statusButtons = [];
+    const patchIssue = (changes, message) => mutate(
+      () => request(path, { method: 'PATCH', body: changes }),
+      updated => {
+        renderIssue(main, { ...detail, issue: updated }, view);
+        main.querySelector('h1')?.focus();
+        notify(message);
+      }, actionError);
     for (const [status, label] of [['unresolved', 'Reopen'], ['resolved', 'Resolve'], ['ignored', 'Ignore']]) {
       if (issue.status === status) continue;
-      const control = button(label, async () => {
-        statusButtons.forEach(item => { item.disabled = true; });
-        actionError.textContent = '';
-        try {
-          const updated = await request(`/api/v1/issues/${encodeURIComponent(issue.id)}`, { method: 'PATCH', body: { status } });
-          renderIssue(main, { ...detail, issue: updated });
-          main.querySelector('h1')?.focus();
-          notify(`Issue ${status === 'unresolved' ? 'reopened' : status}.`);
-        } catch (failure) {
-          formError(actionError, failure);
-          statusButtons.forEach(item => { item.disabled = false; });
-        }
-      }, status === 'resolved' ? 'primary' : '');
-      statusButtons.push(control);
-      statusActions.append(control);
+      statusActions.append(register(button(label, () => patchIssue({ status }, `Issue ${status === 'unresolved' ? 'reopened' : status}.`), status === 'resolved' ? 'primary' : '')));
     }
+    statusActions.append(button('Refresh issue', () => loadRoute(true)));
     const heading = node('div', { class: 'page-header' }, node('div', {},
       node('div', { class: 'eyebrow' }, issue.shortId || issue.id), node('h1', { class: 'detail-title', tabindex: '-1' }, issue.title),
-      node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge badge-sm' }, issue.environment) : null)), statusActions);
+      node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), issue.regressedAt ? node('span', { class: 'badge badge-sm error' }, 'Regressed') : null, node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge badge-sm' }, issue.environment) : null)), statusActions);
     const stats = node('dl', { class: 'stat-list' }, [['Events', number(issue.count)], ['First seen', date(issue.firstSeen, true)], ['Last seen', date(issue.lastSeen, true)]].map(([name, value]) => node('div', { class: 'stat' }, node('dt', {}, name), node('dd', {}, value))));
     const summary = node('section', { class: 'card panel' }, stats, node('div', { class: 'panel-body' },
       node('p', { class: 'muted small' }, 'Latest event'), node('p', { class: 'mono' }, text(event.event_id || event.eventID)),
       event.message || event.logentry?.formatted ? node('pre', { class: 'event-message' }, text(event.message || event.logentry.formatted)) : null));
     const selectedTrace = traceEntry(event.contexts?.trace?.trace_id);
     if (selectedTrace) summary.lastElementChild.append(node('div', { class: 'event-message actions' }, selectedTrace));
-    const left = node('div', {}, summary, stackTrace(event), breadcrumbs(event), commentsPanel(issue, detail.comments || []));
+    for (const [label, timestamp] of [['Last resolved', issue.resolvedAt], ['Regressed', issue.regressedAt]]) {
+      if (timestamp) summary.lastElementChild.append(node('p', { class: 'event-message small' }, `${label}: `, node('time', { datetime: timestamp, title: timestamp }, date(timestamp))));
+    }
+    const triage = { alive, register, mutate, patchIssue };
+    const activity = issueActivity(path, view, triage);
+    const comments = issueComments(issue, path, view, triage, () => activity.load(view.activityPage));
+    const assignment = issueAssignment(issue, path, view, triage);
+    const left = node('div', {}, summary, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
     left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': 'Event details' },
+      assignment.panel,
       detailPanel('Event details', node('div', { class: 'panel-body' }, keyValues(meta))),
       detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))),
       detailPanel('User', node('div', { class: 'panel-body' }, keyValues(event.user))));
@@ -1373,39 +1407,186 @@
     if (event.request) right.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
     if (event.extra && Object.keys(event.extra).length) right.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
     main.replaceChildren(routeLink('← All issues', { issue: null }, { class: 'back-link' }), heading, actionError, node('div', { class: 'detail-grid' }, left, right));
+    comments.start();
+    activity.load(view.activityPage);
+    assignment.load(view.assigneePage);
   }
 
-  function commentsPanel(issue, comments) {
-    const list = node('ol', { class: 'comment-list', 'aria-label': 'Comments' });
-    const renderComment = comment => node('li', { class: 'comment' }, node('div', { class: 'comment-top' }, node('strong', {}, comment.user?.name || comment.user?.email || 'Member'), node('time', { datetime: comment.dateCreated }, date(comment.dateCreated))), node('p', {}, comment.text));
-    list.append(...comments.map(renderComment));
-    const emptyMessage = node('p', { class: 'panel-body muted' }, 'No comments yet. Share what you found with your team.');
+  function issueHistoryPager(kind, result, load) {
+    const singular = { comments: 'comment', activity: 'activity entry', assignees: 'assignee' }[kind];
+    const plural = kind === 'activity' ? 'activity entries' : kind;
+    const previous = button(`Previous ${kind}`, () => load(result.page - 1));
+    const next = button(`Next ${kind}`, () => load(result.page + 1));
+    previous.disabled = result.page <= 1;
+    next.disabled = result.page * result.pageSize >= result.total;
+    return node('div', { class: 'pagination' }, node('span', {}, `${number(result.total)} ${result.total === 1 ? singular : plural} · Page ${number(result.page)}`), node('div', { class: 'actions' }, previous, next));
+  }
+
+  function issueActor(actor) {
+    if (!actor) return 'Unassigned';
+    return actor.name || actor.email || actor.slug || (actor.type === 'team' ? 'Unnamed team' : 'Member');
+  }
+
+  function issueAssignment(issue, path, view, triage) {
+    const search = field('Search people and teams', 'search', { value: view.assigneeQuery, maxlength: 200, autocomplete: 'off' });
+    search.input.addEventListener('input', () => {
+      view.assigneeQuery = search.input.value;
+      search.input.setCustomValidity(new TextEncoder().encode(search.input.value).length > 200 ? 'Use at most 200 bytes for this search.' : '');
+    });
+    const clear = button('Clear assignment', () => triage.patchIssue({ assignedTo: null }, 'Assignment cleared.'), 'small');
+    clear.disabled = !issue.assignedTo;
+    triage.register(clear);
+    const results = node('div');
+    const form = node('form', { class: 'panel-body form-stack', 'aria-label': 'Find an assignee' },
+      node('div', { class: 'form-stack' }, node('div', {}, node('p', { class: 'muted small' }, 'Assigned to'), node('strong', { class: 'wrap-anywhere' }, issueActor(issue.assignedTo))), clear),
+      search.wrap, node('button', { class: 'btn button', type: 'submit' }, 'Search assignees'));
+    const panel = detailPanel('Assignment', node('div', {}, form, results));
+    panel.setAttribute('aria-label', 'Assignment');
+    let sequence = 0;
+    async function load(page) {
+      const current = ++sequence;
+      view.assigneePage = page;
+      view.assigneeQuery = search.input.value;
+      results.replaceChildren(node('p', { class: 'panel-body muted', role: 'status' }, 'Loading assignees…'));
+      try {
+        const query = new URLSearchParams({ page: String(page), query: view.assigneeQuery });
+        const result = await request(`${path}/assignees?${query}`);
+        if (!triage.alive() || current !== sequence || !panel.isConnected) return;
+        const list = node('ul', { class: 'comment-list', 'aria-label': 'Assignable people and teams' }, result.data.map(actor => {
+          const type = actor.type === 'team' ? 'Team' : 'Person';
+          const control = button('Assign', () => triage.patchIssue({ assignedTo: { type: actor.type, id: actor.id } }, 'Assignment updated.'), 'small');
+          control.setAttribute('aria-label', `Assign to ${type.toLowerCase()} ${issueActor(actor)}${actor.email ? ` (${actor.email})` : actor.slug ? ` (${actor.slug})` : ''}`);
+          control.disabled = issue.assignedTo?.type === actor.type && issue.assignedTo?.id === actor.id;
+          return node('li', { class: 'comment' }, node('div', { class: 'comment-top' }, node('div', { class: 'min-w-0 wrap-anywhere' }, node('strong', {}, issueActor(actor)), node('p', { class: 'small muted' }, [type, actor.email || actor.slug].filter(Boolean).join(' · '))), triage.register(control)));
+        }));
+        results.replaceChildren(result.data.length ? list : node('p', { class: 'panel-body muted' }, 'No matching people or teams on this page.'), issueHistoryPager('assignees', result, load));
+      } catch (failure) {
+        if (triage.alive() && current === sequence && panel.isConnected) results.replaceChildren(node('div', { class: 'panel-body form-stack', role: 'alert' }, node('p', {}, failure.message), button('Retry assignees', () => load(page))));
+      }
+    }
+    form.addEventListener('submit', event => { event.preventDefault(); load(1); });
+    return { panel, load };
+  }
+
+  function issueActivity(path, view, triage) {
+    const content = node('div');
+    const panel = detailPanel('Activity', node('div', {}, node('div', { class: 'panel-body actions' }, button('Refresh activity', () => load(view.activityPage), 'small')), content));
+    panel.setAttribute('aria-label', 'Activity');
+    let sequence = 0;
+    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', unresolved: 'Reopened issue', ignored: 'Marked ignored', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment' };
+    function entry(item) {
+      const actor = item.user?.name || item.user?.email || (['first_seen', 'regressed'].includes(item.type) ? 'System' : 'Actor not recorded');
+      const data = item.data || {};
+      let description = '';
+      if (item.type === 'assigned') description = `${issueActor(data.from)} → ${issueActor(data.to)}`;
+      else if (item.type === 'unassigned' && data.from) description = `Previously assigned to ${issueActor(data.from)}`;
+      else if (['resolved', 'unresolved', 'ignored'].includes(item.type) && data.from && data.to) description = `${data.from} → ${data.to}`;
+      else if (item.type === 'regressed') description = [data.eventID ? `New event ${data.eventID}` : '', data.resolvedAt ? `Previously resolved ${date(data.resolvedAt)}` : ''].filter(Boolean).join(' · ');
+      else if (item.type.startsWith('comment_') && data.commentID) description = `Comment ${data.commentID}`;
+      return node('li', { class: 'comment' }, node('div', { class: 'comment-top' }, node('strong', {}, labels[item.type] || 'Recorded activity'), node('time', { datetime: item.dateCreated, title: item.dateCreated }, date(item.dateCreated))), node('p', { class: 'muted small' }, actor), description ? node('p', {}, description) : null);
+    }
+    async function load(page) {
+      const current = ++sequence;
+      view.activityPage = page;
+      content.replaceChildren(node('p', { class: 'panel-body muted', role: 'status' }, 'Loading activity…'));
+      try {
+        const result = await request(`${path}/activity?page=${page}`);
+        if (!triage.alive() || current !== sequence || !panel.isConnected) return;
+        content.replaceChildren(result.data.length ? node('ol', { class: 'comment-list', 'aria-label': 'Recorded activity' }, result.data.map(entry)) : node('p', { class: 'panel-body muted' }, 'No recorded activity on this page.'), issueHistoryPager('activity', result, load));
+      } catch (failure) {
+        if (triage.alive() && current === sequence && panel.isConnected) content.replaceChildren(node('div', { class: 'panel-body form-stack', role: 'alert' }, node('p', {}, failure.message), button('Retry activity', () => load(page))));
+      }
+    }
+    return { panel, load };
+  }
+
+  function issueComments(issue, path, view, triage, refreshActivity) {
+    const history = node('div');
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const comment = field('Add a comment', 'textarea', { name: 'text', required: true, maxlength: 10000, rows: 3, placeholder: 'What should the team know?' });
     comment.input.value = commentDrafts.get(issue.id) || '';
     comment.input.addEventListener('input', () => commentDrafts.set(issue.id, comment.input.value));
-    const submit = node('button', { class: 'btn button primary', type: 'submit' }, 'Post comment');
+    const submit = triage.register(node('button', { class: 'btn button primary', type: 'submit' }, 'Post comment'));
     const form = node('form', { class: 'comment-form form-stack' }, error, comment.wrap, node('div', { class: 'actions' }, submit));
-    form.addEventListener('submit', async event => {
+    const panel = detailPanel('Comments', node('div', {}, node('div', { class: 'panel-body actions' }, button('Refresh comments', () => load(view.commentPage), 'small')), history, form));
+    panel.setAttribute('aria-label', 'Comments');
+    let sequence = 0;
+    function renderComment(record) {
+      const row = node('li', { class: 'comment' });
+      const draftKey = `${issue.id}:${record.id}`;
+      function show() {
+        const heading = node('div', { class: 'comment-top' }, node('strong', {}, record.user?.name || record.user?.email || 'Member'), node('time', { datetime: record.dateCreated, title: record.dateCreated }, date(record.dateCreated)));
+        row.replaceChildren(heading, ...(record.updatedAt ? [node('p', { class: 'small muted' }, 'Edited ', node('time', { datetime: record.updatedAt, title: record.updatedAt }, date(record.updatedAt)))] : []), node('p', {}, record.text));
+        if (record.canEdit) row.append(node('div', { class: 'actions' }, triage.register(button('Edit comment', edit, 'small')), triage.register(button('Delete comment', remove, 'small'))));
+      }
+      function edit() {
+        if (!triage.alive() || !row.isConnected) return;
+        const input = field('Edit comment text', 'textarea', { required: true, maxlength: 10000, rows: 3 });
+        input.input.value = commentEditDrafts.get(draftKey) ?? record.text;
+        commentEditDrafts.set(draftKey, input.input.value);
+        input.input.addEventListener('input', () => commentEditDrafts.set(draftKey, input.input.value));
+        const editError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+        const cancel = button('Cancel edit', () => { commentEditDrafts.delete(draftKey); show(); }, 'small');
+        const editor = node('form', { class: 'form-stack', 'aria-label': 'Edit comment' }, input.wrap, editError,
+          node('div', { class: 'actions' }, triage.register(node('button', { class: 'btn button primary small', type: 'submit' }, 'Save comment')), triage.register(cancel)));
+        editor.addEventListener('submit', event => {
+          event.preventDefault();
+          const draft = input.input.value;
+          const value = draft.trim();
+          if (!value) { formError(editError, new Error('Enter a comment before saving.')); return; }
+          triage.mutate(() => request(`${path}/comments/${encodeURIComponent(record.id)}`, { method: 'PATCH', body: { text: value } }), async () => {
+            if (commentEditDrafts.get(draftKey) === draft) commentEditDrafts.delete(draftKey);
+            await load(view.commentPage);
+            if (triage.alive()) { refreshActivity(); notify('Comment updated.'); }
+          }, editError, () => editor.isConnected);
+        });
+        row.replaceChildren(editor);
+        input.input.focus();
+      }
+      function remove() {
+        if (!triage.alive() || !row.isConnected) return;
+        const deleteError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+        const confirmation = node('div', { class: 'form-stack' }, node('p', {}, 'Delete this comment? Its text will be removed.'), deleteError);
+        confirmation.append(node('div', { class: 'actions' }, triage.register(button('Confirm deletion', () => triage.mutate(
+          () => request(`${path}/comments/${encodeURIComponent(record.id)}`, { method: 'DELETE' }),
+          async () => {
+            commentEditDrafts.delete(draftKey);
+            await load(view.commentPage);
+            if (triage.alive()) { refreshActivity(); notify('Comment deleted.'); }
+          }, deleteError, () => confirmation.isConnected), 'danger small')), triage.register(button('Cancel deletion', show, 'small'))));
+        row.replaceChildren(node('p', {}, record.text), confirmation);
+      }
+      show();
+      if (record.canEdit && commentEditDrafts.has(draftKey)) queueMicrotask(() => { if (row.isConnected && triage.alive()) edit(); });
+      return row;
+    }
+    function render(result) {
+      view.commentsResult = result;
+      history.replaceChildren(result.data.length ? node('ol', { class: 'comment-list', 'aria-label': 'Comments' }, result.data.map(renderComment)) : node('p', { class: 'panel-body muted' }, result.total ? 'No comments on this page. Choose an earlier page.' : 'No comments yet. Share what you found with your team.'), issueHistoryPager('comments', result, load));
+    }
+    async function load(page) {
+      const current = ++sequence;
+      view.commentPage = page;
+      history.replaceChildren(node('p', { class: 'panel-body muted', role: 'status' }, 'Loading comments…'));
+      try {
+        const result = await request(`${path}/comments?page=${page}`);
+        if (triage.alive() && current === sequence && panel.isConnected) render(result);
+      } catch (failure) {
+        if (triage.alive() && current === sequence && panel.isConnected) history.replaceChildren(node('div', { class: 'panel-body form-stack', role: 'alert' }, node('p', {}, failure.message), button('Retry comments', () => load(page))));
+      }
+    }
+    form.addEventListener('submit', event => {
       event.preventDefault();
       const value = comment.input.value.trim();
       if (!value) { formError(error, new Error('Enter a comment before posting.')); return; }
-      submit.disabled = true;
-      submit.textContent = 'Posting…';
-      error.textContent = '';
-      try {
-        const created = await request(`/api/v1/issues/${encodeURIComponent(issue.id)}/comments`, { method: 'POST', body: { text: value } });
-        list.append(renderComment(created));
-        comments.push(created);
-        emptyMessage.remove();
-        comment.input.value = '';
-        commentDrafts.delete(issue.id);
-        notify('Comment posted.');
-        comment.input.focus();
-      } catch (failure) { formError(error, failure); }
-      finally { submit.disabled = false; submit.textContent = 'Post comment'; }
+      const draft = comment.input.value;
+      triage.mutate(() => request(`${path}/comments`, { method: 'POST', body: { text: value } }), async () => {
+        if (comment.input.value === draft) { comment.input.value = ''; commentDrafts.delete(issue.id); }
+        await load(1);
+        if (triage.alive()) { refreshActivity(); notify('Comment posted.'); comment.input.focus(); }
+      }, error, () => form.isConnected);
     });
-    return detailPanel('Comments', node('div', {}, list, comments.length ? null : emptyMessage, form));
+    return { panel, start: () => view.commentsResult?.page === view.commentPage ? render(view.commentsResult) : load(view.commentPage) };
   }
 
   async function initialize() {

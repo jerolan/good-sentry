@@ -15,19 +15,22 @@ import (
 )
 
 type Issue struct {
-	ID          string    `json:"id"`
-	ProjectID   string    `json:"projectId"`
-	Project     Project   `json:"project"`
-	Title       string    `json:"title"`
-	Level       string    `json:"level"`
-	Platform    string    `json:"platform"`
-	Status      string    `json:"status"`
-	Count       int64     `json:"count"`
-	FirstSeen   time.Time `json:"firstSeen"`
-	LastSeen    time.Time `json:"lastSeen"`
-	Environment string    `json:"environment"`
-	Release     string    `json:"release"`
-	ShortID     string    `json:"shortId"`
+	ID          string      `json:"id"`
+	ProjectID   string      `json:"projectId"`
+	Project     Project     `json:"project"`
+	Title       string      `json:"title"`
+	Level       string      `json:"level"`
+	Platform    string      `json:"platform"`
+	Status      string      `json:"status"`
+	Count       int64       `json:"count"`
+	FirstSeen   time.Time   `json:"firstSeen"`
+	LastSeen    time.Time   `json:"lastSeen"`
+	Environment string      `json:"environment"`
+	Release     string      `json:"release"`
+	ShortID     string      `json:"shortId"`
+	AssignedTo  *IssueActor `json:"assignedTo"`
+	ResolvedAt  *time.Time  `json:"resolvedAt"`
+	RegressedAt *time.Time  `json:"regressedAt"`
 }
 type IssueFilter struct {
 	Project, Query, Status, Environment, Release, Sort string
@@ -39,10 +42,12 @@ type EventSummary struct {
 	Data        json.RawMessage `json:"-"`
 }
 type Comment struct {
-	ID          string    `json:"id"`
-	Text        string    `json:"text"`
-	DateCreated time.Time `json:"dateCreated"`
-	User        User      `json:"user"`
+	ID          string     `json:"id"`
+	Text        string     `json:"text"`
+	DateCreated time.Time  `json:"dateCreated"`
+	User        User       `json:"user"`
+	UpdatedAt   *time.Time `json:"updatedAt"`
+	CanEdit     bool       `json:"canEdit"`
 }
 
 func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (string, bool, error) {
@@ -82,7 +87,29 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 		if target != nil {
 			issueID = *target
 		}
-		_, err = tx.Exec(ctx, `UPDATE issues SET count=count+1,first_seen=LEAST(first_seen,$2),last_seen=GREATEST(last_seen,$2),status=CASE WHEN status='resolved' THEN 'unresolved' ELSE status END,resolved_at=CASE WHEN status='resolved' THEN NULL ELSE resolved_at END,title=CASE WHEN $2>=last_seen THEN $3 ELSE title END,environment=CASE WHEN $2>=last_seen THEN $4 ELSE environment END,release=CASE WHEN $2>=last_seen THEN $5 ELSE release END WHERE id=$1`, issueID, ev.Timestamp, ev.Title, ev.Environment, ev.Release)
+		var status string
+		var count int64
+		var resolvedAt *time.Time
+		if err = tx.QueryRow(ctx, `SELECT status,count,resolved_at FROM issues WHERE id=$1 FOR UPDATE`, issueID).Scan(&status, &count, &resolvedAt); err != nil {
+			return "", false, err
+		}
+		var regressedAt *time.Time
+		if status == "resolved" {
+			if resolvedAt != nil {
+				stamp := resolvedAt.UTC()
+				resolvedAt = &stamp
+			}
+			stamp, e := recordIssueActivity(ctx, tx, issueID.(string), nil, "regressed", map[string]any{"eventID": ev.ID, "resolvedAt": resolvedAt})
+			if e != nil {
+				return "", false, e
+			}
+			regressedAt = &stamp
+		} else if count == 0 {
+			if _, err = recordIssueActivity(ctx, tx, issueID.(string), nil, "first_seen", map[string]string{"eventID": ev.ID}); err != nil {
+				return "", false, err
+			}
+		}
+		_, err = tx.Exec(ctx, `UPDATE issues SET count=count+1,first_seen=LEAST(first_seen,$2),last_seen=GREATEST(last_seen,$2),status=CASE WHEN status='resolved' THEN 'unresolved' ELSE status END,resolved_at=CASE WHEN status='resolved' THEN NULL ELSE resolved_at END,regressed_at=COALESCE($6,regressed_at),title=CASE WHEN $2>=last_seen THEN $3 ELSE title END,environment=CASE WHEN $2>=last_seen THEN $4 ELSE environment END,release=CASE WHEN $2>=last_seen THEN $5 ELSE release END WHERE id=$1`, issueID, ev.Timestamp, ev.Title, ev.Environment, ev.Release, regressedAt)
 		if err != nil {
 			return "", false, err
 		}
@@ -114,14 +141,26 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 	return issueID.(string), true, nil
 }
 
-const issueColumns = `i.id::text,p.id::text,p.slug,p.name,i.title,i.level,i.platform,i.status,i.count,i.first_seen,i.last_seen,i.environment,i.release`
+const issueColumns = `i.id::text,p.id::text,p.slug,p.name,i.title,i.level,i.platform,i.status,i.count,i.first_seen,i.last_seen,i.environment,i.release,i.resolved_at,i.regressed_at,` + issueAssignmentJSON
 const issueJoins = ` FROM issues i JOIN projects p ON p.id=i.project_id JOIN organizations o ON o.id=p.organization_id JOIN memberships m ON m.organization_id=o.id `
 
 type scanner interface{ Scan(...any) error }
 
 func scanIssue(row scanner) (Issue, error) {
 	var i Issue
-	err := row.Scan(&i.ID, &i.ProjectID, &i.Project.Slug, &i.Project.Name, &i.Title, &i.Level, &i.Platform, &i.Status, &i.Count, &i.FirstSeen, &i.LastSeen, &i.Environment, &i.Release)
+	var assigned json.RawMessage
+	err := row.Scan(&i.ID, &i.ProjectID, &i.Project.Slug, &i.Project.Name, &i.Title, &i.Level, &i.Platform, &i.Status, &i.Count, &i.FirstSeen, &i.LastSeen, &i.Environment, &i.Release, &i.ResolvedAt, &i.RegressedAt, &assigned)
+	if err == nil && len(assigned) > 0 {
+		err = json.Unmarshal(assigned, &i.AssignedTo)
+	}
+	if i.ResolvedAt != nil {
+		stamp := i.ResolvedAt.UTC()
+		i.ResolvedAt = &stamp
+	}
+	if i.RegressedAt != nil {
+		stamp := i.RegressedAt.UTC()
+		i.RegressedAt = &stamp
+	}
 	i.Project.ID = i.ProjectID
 	i.ShortID = strings.ToUpper(i.Project.Slug) + "-" + i.ID
 	return i, dbError(err)
@@ -330,55 +369,4 @@ func (s *Store) Events(ctx context.Context, userID, issueID string) ([]EventSumm
 		items = append(items, e)
 	}
 	return items, rows.Err()
-}
-
-func (s *Store) SetIssueStatus(ctx context.Context, userID, id, status string) (Issue, error) {
-	i, err := s.Issue(ctx, userID, id)
-	if err != nil {
-		return i, err
-	}
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return i, err
-	}
-	defer tx.Rollback(ctx)
-	if _, err = tx.Exec(ctx, "UPDATE issues SET status=$2,resolved_at=CASE WHEN $2='resolved' THEN now() ELSE NULL END WHERE id::text=$1", id, status); err != nil {
-		return i, err
-	}
-	if _, err = tx.Exec(ctx, "INSERT INTO issue_activity(issue_id,user_id,action) VALUES($1,$2,$3)", id, userID, status); err != nil {
-		return i, err
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return i, err
-	}
-	i.Status = status
-	return i, nil
-}
-
-func (s *Store) Comments(ctx context.Context, userID, issueID string) ([]Comment, error) {
-	if _, err := s.Issue(ctx, userID, issueID); err != nil {
-		return nil, err
-	}
-	rows, err := s.pool.Query(ctx, "SELECT c.id::text,c.text,c.created_at,u.id::text,u.name,u.email FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id::text=$1 ORDER BY c.id", issueID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Comment{}
-	for rows.Next() {
-		var c Comment
-		if err = rows.Scan(&c.ID, &c.Text, &c.DateCreated, &c.User.ID, &c.User.Name, &c.User.Email); err != nil {
-			return nil, err
-		}
-		items = append(items, c)
-	}
-	return items, rows.Err()
-}
-func (s *Store) AddComment(ctx context.Context, userID, issueID, text string) (Comment, error) {
-	var c Comment
-	if _, err := s.Issue(ctx, userID, issueID); err != nil {
-		return c, err
-	}
-	err := s.pool.QueryRow(ctx, "WITH added AS (INSERT INTO comments(issue_id,user_id,text) VALUES($1,$2,$3) RETURNING *) SELECT c.id::text,c.text,c.created_at,u.id::text,u.name,u.email FROM added c JOIN users u ON u.id=c.user_id", issueID, userID, text).Scan(&c.ID, &c.Text, &c.DateCreated, &c.User.ID, &c.User.Name, &c.User.Email)
-	return c, err
 }

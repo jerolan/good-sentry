@@ -58,7 +58,7 @@ docker compose down
 
 | Capability | Verified behavior |
 | --- | --- |
-| Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, context, historical tag/environment/release search, stable sorting/pages, resolve/reopen and comments. |
+| Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, historical tag/environment/release search, sorting/pages, user/team assignment, editable comments and recorded triage activity with regressions. |
 | JavaScript source maps | Official CLI injection/bundle uploads and native uploads, Debug ID or release/distribution selection, original source context and preserved minified stacks. |
 | Releases | Shared project versions, observed SDK releases, local commit metadata, completed deploys and compatible CLI lifecycle operations, with a responsive management UI. |
 | Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail and a cross-project trace waterfall. |
@@ -98,6 +98,12 @@ Sentry.captureException(new Error("Hello from GoodSentry"));
 ```
 
 These checks establish the listed workflows for those versions. Attachments, additional envelope types and other SDK versions need their own verification. Unknown envelope items are retained and reported through `unsupportedItems`; retention alone does not implement their functionality.
+
+### Issue triage
+
+Assign an issue to a workspace member or team, or clear its assignment. Search people and teams from issue detail. Comments and activity have independent pages of 25 entries. Authors and workspace owners/admins can edit or delete comments; editing preserves their original creation time.
+
+Resolve records the current receipt time. A new error received afterward reopens the issue and records a regression, even when that error occurred earlier. Retrying an already accepted event ID leaves its count and resolution unchanged. Ignore keeps collecting events while retaining the ignored state. Release-based resolution and conditional mute remain pending.
 
 ### Issue search
 
@@ -155,7 +161,7 @@ Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. 
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, release-based resolution and conditional mute, merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 

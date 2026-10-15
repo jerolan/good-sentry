@@ -123,7 +123,7 @@ func TestDurableCaptureAndTenantScope(t *testing.T) {
 	if _, err = db.Issue(ctx, "99999999", id); err != ErrNotFound {
 		t.Fatalf("tenant boundary failed: %v", err)
 	}
-	if _, err = db.SetIssueStatus(ctx, user.ID, id, "resolved"); err != nil {
+	if _, err = db.UpdateIssue(ctx, user.ID, id, IssueUpdate{Status: "resolved"}); err != nil {
 		t.Fatal(err)
 	}
 	ev.ID = "1123456789abcdef0123456789abcdef"

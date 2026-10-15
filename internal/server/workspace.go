@@ -103,7 +103,7 @@ func (s *Server) issue(w http.ResponseWriter, r *http.Request) {
 		report(w, err)
 		return
 	}
-	comments, err := s.db.Comments(r.Context(), uid, id)
+	comments, commentTotal, err := s.db.IssueComments(r.Context(), uid, id, 1)
 	if err != nil {
 		report(w, err)
 		return
@@ -112,38 +112,5 @@ func (s *Server) issue(w http.ResponseWriter, r *http.Request) {
 	if len(events) > 0 {
 		raw = events[0].Data
 	}
-	writeJSON(w, 200, map[string]any{"issue": issue, "event": raw, "events": events, "comments": comments})
-}
-func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
-	var in struct{ Status string }
-	if !bodyJSON(w, r, &in) {
-		return
-	}
-	if in.Status != "unresolved" && in.Status != "resolved" && in.Status != "ignored" {
-		failure(w, 400, "Status must be unresolved, resolved or ignored")
-		return
-	}
-	item, err := s.db.SetIssueStatus(r.Context(), current(r).User.ID, r.PathValue("issue"), in.Status)
-	if err != nil {
-		report(w, err)
-		return
-	}
-	writeJSON(w, 200, item)
-}
-func (s *Server) addComment(w http.ResponseWriter, r *http.Request) {
-	var in struct{ Text string }
-	if !bodyJSON(w, r, &in) {
-		return
-	}
-	in.Text = strings.TrimSpace(in.Text)
-	if in.Text == "" || len(in.Text) > 10000 {
-		failure(w, 400, "Comment must contain 1 to 10000 bytes")
-		return
-	}
-	comment, err := s.db.AddComment(r.Context(), current(r).User.ID, r.PathValue("issue"), in.Text)
-	if err != nil {
-		report(w, err)
-		return
-	}
-	writeJSON(w, 201, comment)
+	writeJSON(w, 200, map[string]any{"issue": issue, "event": raw, "events": events, "comments": comments, "commentTotal": commentTotal})
 }

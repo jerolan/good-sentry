@@ -67,10 +67,10 @@ func TestIssueSearchStructuredEventPredicates(t *testing.T) {
 	g := issueSearchCapture(t, ctx, db, p.ID, 9, stamp, "empty", "empty string", "production", "v1", "info", map[string]any{"region": ""})
 	h := issueSearchCapture(t, ctx, db, p.ID, 10, stamp, "wildcard", "wildcard region", "production", "v1", "info", map[string]any{"region": "eu-West"})
 	star := issueSearchCapture(t, ctx, db, p.ID, 11, stamp, "star", "literal star", "production", "v1", "info", map[string]any{"region": "*"})
-	if _, err := db.SetIssueStatus(ctx, user.ID, a, "resolved"); err != nil {
+	if _, err := db.UpdateIssue(ctx, user.ID, a, IssueUpdate{Status: "resolved"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.SetIssueStatus(ctx, user.ID, h, "ignored"); err != nil {
+	if _, err := db.UpdateIssue(ctx, user.ID, h, IssueUpdate{Status: "ignored"}); err != nil {
 		t.Fatal(err)
 	}
 	quotedKey, _ := json.Marshal(`odd'"]`)
@@ -262,7 +262,7 @@ func TestIssueSearchSnapshotDuringRealTriage(t *testing.T) {
 			if i%2 != 0 {
 				status = "unresolved"
 			}
-			if _, err := db.SetIssueStatus(ctx, user.ID, id, status); err != nil {
+			if _, err := db.UpdateIssue(ctx, user.ID, id, IssueUpdate{Status: status}); err != nil {
 				results <- err
 				return
 			}
