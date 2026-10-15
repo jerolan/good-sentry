@@ -103,7 +103,11 @@ These checks establish the listed workflows for those versions. Attachments, add
 
 Assign an issue to a workspace member or team, or clear its assignment. Search people and teams from issue detail. Comments and activity have independent pages of 25 entries. Authors and workspace owners/admins can edit or delete comments; editing preserves their original creation time.
 
-Resolve records the current receipt time. A new error received afterward reopens the issue and records a regression, even when that error occurred earlier. Retrying an already accepted event ID leaves its count and resolution unchanged. Ignore keeps collecting events while retaining the ignored state. Release-based resolution and conditional mute remain pending.
+Resolve records the current receipt time. A new error received afterward reopens the issue and records a regression, even when that error occurred earlier. Retrying an already accepted event ID leaves its count and resolution unchanged. Release-based resolution remains pending.
+
+Ignore pauses new issue notifications while collecting every error. In issue detail, mute indefinitely, for a number of minutes, until a number of additional unique errors, or until either condition is met. The last additional error reopens the issue before normal alert eligibility runs. Retries never consume the count, and applying the same active condition preserves its deadline and progress. New captures and the maintenance worker evaluate elapsed time using the database receipt clock; SDK timestamps and timezone changes do not move the deadline. Activity records why a mute ended.
+
+The maintenance worker runs inside the application, including when uptime and log ingestion are disabled. It catches up after restart. Lists may show an expired mute until its next maintenance pass. Captures still contribute to project-wide alert windows, so a threshold crossed during mute is not replayed afterward. Deliveries already queued or in progress retain their status. Native conditional mute does not yet implement the compatible API's affected-user or sliding-window conditions.
 
 ### Issue search
 
@@ -186,6 +190,7 @@ Compose supplies the local database connection. Environment values override the 
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
 | `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
 | `MONITOR_WORKERS` | `2` | Concurrent checks per process, from 1 to 16. |
+| `ISSUE_MAINTENANCE_INTERVAL_SECONDS` | `1` | Idle polling for expired issue mutes, from 1 to 3600 seconds. Longer intervals delay status display; fresh captures check expiry immediately. |
 | `ALERT_WORKERS` | `2` | Concurrent deliveries per process, from 1 to 16. |
 | `ALERT_MAX_ATTEMPTS` | `5` | Maximum delivery attempts, from 1 to 20. |
 | `ALERT_DELIVERY_TIMEOUT_SECONDS` | `10` | Delivery timeout, from 1 to 60 seconds. |

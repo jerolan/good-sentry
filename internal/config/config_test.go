@@ -35,6 +35,9 @@ func TestDeploymentConfiguration(t *testing.T) {
 		{"staging smaller than a bundle", map[string]string{"ARTIFACT_STAGING_MAX_BYTES": "1048576"}, "ARTIFACT_STAGING_MAX_BYTES"},
 		{"no materialized records", map[string]string{"ARTIFACT_MAX_MAP_RECORDS": "0"}, "ARTIFACT_MAX_MAP_RECORDS"},
 		{"unbounded materialized records", map[string]string{"ARTIFACT_MAX_MAP_RECORDS": "100001"}, "ARTIFACT_MAX_MAP_RECORDS"},
+		{"no issue maintenance", map[string]string{"ISSUE_MAINTENANCE_INTERVAL_SECONDS": "0"}, "ISSUE_MAINTENANCE_INTERVAL_SECONDS"},
+		{"unbounded issue maintenance delay", map[string]string{"ISSUE_MAINTENANCE_INTERVAL_SECONDS": "3601"}, "ISSUE_MAINTENANCE_INTERVAL_SECONDS"},
+		{"fractional issue maintenance delay", map[string]string{"ISSUE_MAINTENANCE_INTERVAL_SECONDS": "1.5"}, "ISSUE_MAINTENANCE_INTERVAL_SECONDS"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
@@ -106,6 +109,26 @@ func TestAlertDeploymentOptions(t *testing.T) {
 	c, err := Load()
 	if err != nil || c.AlertWorkers != 16 || c.AlertMaxAttempts != 20 || c.AlertTimeoutSeconds != 60 || !c.WebhookAllowPrivate {
 		t.Fatalf("alert deployment options were not applied: %v", err)
+	}
+}
+
+// Deployment parsing owns default/override/range admission. The worker consumes
+// typed durations and cannot detect a silently ignored environment variable.
+// The cases use the production Load boundary without clock or scheduler seams.
+func TestIssueMaintenanceDeploymentOptions(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+	t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
+	for _, tc := range []struct {
+		raw  string
+		want int
+	}{{"", 1}, {"1", 1}, {"30", 30}, {"3600", 3600}} {
+		t.Run(tc.raw, func(t *testing.T) {
+			t.Setenv("ISSUE_MAINTENANCE_INTERVAL_SECONDS", tc.raw)
+			c, err := Load()
+			if err != nil || c.IssueMaintenanceIntervalSeconds != tc.want {
+				t.Fatalf("issue maintenance interval=%d want=%d err=%v", c.IssueMaintenanceIntervalSeconds, tc.want, err)
+			}
+		})
 	}
 }
 

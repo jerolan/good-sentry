@@ -44,6 +44,8 @@ func run() error {
 	defer stopArtifactChunks()
 	stopTransactionSpans := jobs.StartTransactionSpans(ctx, db)
 	defer stopTransactionSpans()
+	stopIssueMaintenance := jobs.StartIssueMaintenance(ctx, db, time.Duration(cfg.IssueMaintenanceIntervalSeconds)*time.Second)
+	defer stopIssueMaintenance()
 	alertTimeout := time.Duration(cfg.AlertTimeoutSeconds) * time.Second
 	sender, err := notify.NewSender(notify.Options{
 		Domain: cfg.Domain, EmailURL: cfg.EmailURL, FromEmail: cfg.FromEmail,

@@ -51,6 +51,13 @@ func queueErrorAlerts(ctx context.Context, tx pgx.Tx, projectID, eventID, issueI
 	if kind == "transaction" || issueID == "" {
 		return nil
 	}
+	var status string
+	if err := tx.QueryRow(ctx, "SELECT status FROM issues WHERE id=$1::bigint", issueID).Scan(&status); err != nil {
+		return err
+	}
+	if status == "ignored" {
+		return nil
+	}
 	rules, err := lockedAlertRules(ctx, tx, projectID, notify.Frequency, environment)
 	if err != nil {
 		return err

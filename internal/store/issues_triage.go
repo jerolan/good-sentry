@@ -20,6 +20,7 @@ type IssueAssignmentChange struct{ Target *IssueActorRef }
 type IssueUpdate struct {
 	Status     string
 	Assignment *IssueAssignmentChange
+	Ignore     *IssueIgnoreChange
 }
 type IssueActor struct {
 	Type  string `json:"type"`
@@ -92,7 +93,7 @@ func canonicalIssueID(id string) bool {
 }
 
 func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change IssueUpdate) (Issue, error) {
-	if change.Status == "" && change.Assignment == nil {
+	if change.Status == "" && change.Assignment == nil || !validIssueIgnore(change.Ignore, change.Status) {
 		return Issue{}, ErrInvalidIssueChange
 	}
 	if change.Status != "" && change.Status != "unresolved" && change.Status != "resolved" && change.Status != "ignored" {
@@ -118,8 +119,33 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 			return i, dbError(err)
 		}
 	}
-	if change.Status != "" && change.Status != i.Status {
-		stamp, e := recordIssueActivity(ctx, tx, id, &userID, change.Status, map[string]string{"from": i.Status, "to": change.Status})
+	if i.Status == "ignored" {
+		expired, err := expireLockedIssueIgnore(ctx, tx, id, 0, "")
+		if err != nil {
+			return i, err
+		}
+		if expired {
+			i.Status, i.Ignore, i.ResolvedAt, i.RegressedAt = "unresolved", nil, nil, nil
+		}
+	}
+	var wantedIgnore *IssueIgnoreCondition
+	if change.Status == "ignored" {
+		if change.Ignore != nil {
+			wantedIgnore = change.Ignore.Condition
+		} else if i.Status == "ignored" && i.Ignore != nil {
+			wantedIgnore = &IssueIgnoreCondition{Minutes: i.Ignore.Minutes, Count: i.Ignore.Count}
+		}
+	}
+	ignoreChanged := change.Status == "ignored" && !sameIssueIgnore(i.Ignore, wantedIgnore)
+	if change.Status != "" && (change.Status != i.Status || ignoreChanged) {
+		var data any = map[string]string{"from": i.Status, "to": change.Status}
+		if err := replaceIssueIgnore(ctx, tx, &i, wantedIgnore); err != nil {
+			return i, err
+		}
+		if change.Status == "ignored" {
+			data = map[string]any{"from": i.Status, "to": change.Status, "ignore": i.Ignore}
+		}
+		stamp, e := recordIssueActivity(ctx, tx, id, &userID, change.Status, data)
 		if e != nil {
 			return i, e
 		}

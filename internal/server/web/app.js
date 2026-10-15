@@ -1367,13 +1367,13 @@
     const statusLabel = badge(issue.status);
     const actionError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const statusActions = node('div', { class: 'actions', 'aria-label': 'Issue status' });
-    const patchIssue = (changes, message) => mutate(
+    const patchIssue = (changes, message, errorTarget = actionError, current = () => true) => mutate(
       () => request(path, { method: 'PATCH', body: changes }),
       updated => {
         renderIssue(main, { ...detail, issue: updated }, view);
         main.querySelector('h1')?.focus();
         notify(message);
-      }, actionError);
+      }, errorTarget, current);
     for (const [status, label] of [['unresolved', 'Reopen'], ['resolved', 'Resolve'], ['ignored', 'Ignore']]) {
       if (issue.status === status) continue;
       statusActions.append(register(button(label, () => patchIssue({ status }, `Issue ${status === 'unresolved' ? 'reopened' : status}.`), status === 'resolved' ? 'primary' : '')));
@@ -1395,10 +1395,12 @@
     const activity = issueActivity(path, view, triage);
     const comments = issueComments(issue, path, view, triage, () => activity.load(view.activityPage));
     const assignment = issueAssignment(issue, path, view, triage);
+    const mute = issueMute(issue, view, triage);
     const left = node('div', {}, summary, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
     left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': 'Event details' },
+      mute,
       assignment.panel,
       detailPanel('Event details', node('div', { class: 'panel-body' }, keyValues(meta))),
       detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))),
@@ -1425,6 +1427,57 @@
   function issueActor(actor) {
     if (!actor) return 'Unassigned';
     return actor.name || actor.email || actor.slug || (actor.type === 'team' ? 'Unnamed team' : 'Member');
+  }
+
+  function issueMuteDescription(ignore) {
+    if (!ignore) return 'Indefinitely';
+    const conditions = [];
+    if (ignore.minutes != null) conditions.push(`${number(ignore.minutes)} ${ignore.minutes === 1 ? 'minute' : 'minutes'}`);
+    if (ignore.count != null) conditions.push(`${number(ignore.count)} additional ${ignore.count === 1 ? 'error' : 'errors'}`);
+    return conditions.join(' or ');
+  }
+
+  function issueMute(issue, view, triage) {
+    view.muteDraft ??= { minutes: issue.ignore?.minutes == null ? '' : String(issue.ignore.minutes), count: issue.ignore?.count == null ? '' : String(issue.ignore.count) };
+    const helpID = `mute-help-${++fieldNumber}`;
+    const minutes = field('Minutes (optional)', 'text', { value: view.muteDraft.minutes, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 10, autocomplete: 'off', 'aria-describedby': helpID });
+    const count = field('Additional errors (optional)', 'text', { value: view.muteDraft.count, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 10, autocomplete: 'off', 'aria-describedby': helpID });
+    for (const [key, control] of [['minutes', minutes], ['count', count]]) control.input.addEventListener('input', () => { view.muteDraft[key] = control.input.value; });
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const current = node('div', { class: 'form-stack' });
+    if (issue.status !== 'ignored') current.append(node('p', {}, 'No notification mute is active.'));
+    else if (!issue.ignore) current.append(node('p', {}, 'Muted indefinitely.'));
+    else {
+      current.append(node('p', {}, `Muted for ${issueMuteDescription(issue.ignore)}.`));
+      if (issue.ignore.until) current.append(node('p', { class: 'small' }, 'Ends: ', node('time', { datetime: issue.ignore.until, title: issue.ignore.until }, date(issue.ignore.until)), ' (your local time)'), node('p', { class: 'mono small wrap-anywhere' }, `UTC: ${issue.ignore.until}`));
+      if (issue.ignore.remaining != null) current.append(node('p', {}, `${number(issue.ignore.remaining)} additional ${issue.ignore.remaining === 1 ? 'error' : 'errors'} remaining.`));
+    }
+    const clear = button('Mute indefinitely', () => triage.patchIssue({ status: 'ignored', ignore: null }, 'Mute is now indefinite.', error, () => form.isConnected), 'small');
+    clear.disabled = issue.status !== 'ignored' || !issue.ignore;
+    triage.register(clear);
+    const submit = triage.register(node('button', { class: 'btn button primary', type: 'submit' }, 'Apply mute'));
+    const form = node('form', { class: 'panel-body form-stack', 'aria-label': 'Mute notifications' }, current,
+      node('p', { class: 'muted small' }, 'New issue notifications pause while error capture continues. If both conditions are set, either condition ends the mute.'),
+      node('p', { class: 'muted small', id: helpID }, 'Set minutes, additional errors, or both. Use whole numbers from 1 to 2,147,483,647.'),
+      minutes.wrap, count.wrap, error, node('div', { class: 'actions' }, submit, clear));
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const ignore = {};
+      for (const [key, control] of [['minutes', minutes], ['count', count]]) {
+        const value = control.input.value;
+        if (!value) continue;
+        if (!/^[0-9]+$/.test(value) || Number(value) < 1 || Number(value) > 2147483647) {
+          formError(error, new Error('Use whole numbers from 1 to 2,147,483,647 for mute conditions.'));
+          return;
+        }
+        ignore[key] = Number(value);
+      }
+      if (!Object.keys(ignore).length) { formError(error, new Error('Enter minutes, an additional error count, or both.')); return; }
+      triage.patchIssue({ status: 'ignored', ignore }, 'Mute updated.', error, () => form.isConnected);
+    });
+    const panel = detailPanel('Mute notifications', form);
+    panel.setAttribute('aria-label', 'Mute notifications');
+    return panel;
   }
 
   function issueAssignment(issue, path, view, triage) {
@@ -1473,14 +1526,16 @@
     const panel = detailPanel('Activity', node('div', {}, node('div', { class: 'panel-body actions' }, button('Refresh activity', () => load(view.activityPage), 'small')), content));
     panel.setAttribute('aria-label', 'Activity');
     let sequence = 0;
-    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', unresolved: 'Reopened issue', ignored: 'Marked ignored', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment' };
+    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', unresolved: 'Reopened issue', ignored: 'Marked ignored', unignored: 'Mute ended', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment' };
     function entry(item) {
-      const actor = item.user?.name || item.user?.email || (['first_seen', 'regressed'].includes(item.type) ? 'System' : 'Actor not recorded');
+      const actor = item.user?.name || item.user?.email || (['first_seen', 'regressed', 'unignored'].includes(item.type) ? 'System' : 'Actor not recorded');
       const data = item.data || {};
       let description = '';
       if (item.type === 'assigned') description = `${issueActor(data.from)} → ${issueActor(data.to)}`;
       else if (item.type === 'unassigned' && data.from) description = `Previously assigned to ${issueActor(data.from)}`;
       else if (['resolved', 'unresolved', 'ignored'].includes(item.type) && data.from && data.to) description = `${data.from} → ${data.to}`;
+      if (item.type === 'ignored' && Object.hasOwn(data, 'ignore')) description = [description, `Mute: ${issueMuteDescription(data.ignore)}`].filter(Boolean).join(' · ');
+      else if (item.type === 'unignored') description = [data.reason === 'duration' ? 'Duration reached' : data.reason === 'count' ? 'Additional error count reached' : 'Mute condition ended', data.ignore ? `Previous condition: ${issueMuteDescription(data.ignore)}` : '', data.eventID ? `New event ${data.eventID}` : ''].filter(Boolean).join(' · ');
       else if (item.type === 'regressed') description = [data.eventID ? `New event ${data.eventID}` : '', data.resolvedAt ? `Previously resolved ${date(data.resolvedAt)}` : ''].filter(Boolean).join(' · ');
       else if (item.type.startsWith('comment_') && data.commentID) description = `Comment ${data.commentID}`;
       return node('li', { class: 'comment' }, node('div', { class: 'comment-top' }, node('strong', {}, labels[item.type] || 'Recorded activity'), node('time', { datetime: item.dateCreated, title: item.dateCreated }, date(item.dateCreated))), node('p', { class: 'muted small' }, actor), description ? node('p', {}, description) : null);

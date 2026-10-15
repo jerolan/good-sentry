@@ -75,12 +75,12 @@ func issueBody(w http.ResponseWriter, r *http.Request, allowed ...string) (map[s
 }
 
 func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
-	fields, ok := issueBody(w, r, "status", "assignedTo")
+	fields, ok := issueBody(w, r, "status", "assignedTo", "ignore")
 	if !ok {
 		return
 	}
 	if len(fields) == 0 {
-		failure(w, 400, "Provide status or assignedTo")
+		failure(w, 400, "Provide status, assignedTo or ignore")
 		return
 	}
 	var change store.IssueUpdate
@@ -88,6 +88,34 @@ func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
 		if err := json.Unmarshal(raw, &change.Status); err != nil || change.Status != "unresolved" && change.Status != "resolved" && change.Status != "ignored" {
 			failure(w, 400, "Status must be unresolved, resolved or ignored")
 			return
+		}
+	}
+	if raw, present := fields["ignore"]; present {
+		if change.Status != "ignored" {
+			failure(w, 400, "Ignore requires explicit ignored status")
+			return
+		}
+		change.Ignore = &store.IssueIgnoreChange{}
+		if !bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+			condition, err := issueObject(raw, "minutes", "count")
+			if err != nil || len(condition) == 0 {
+				failure(w, 400, "Ignore must contain minutes or count")
+				return
+			}
+			change.Ignore.Condition = &store.IssueIgnoreCondition{}
+			for name, value := range condition {
+				number, err := strconv.ParseInt(string(bytes.TrimSpace(value)), 10, 32)
+				if err != nil || number <= 0 {
+					failure(w, 400, "Ignore minutes and count must be positive 32-bit JSON integers")
+					return
+				}
+				n := int32(number)
+				if name == "minutes" {
+					change.Ignore.Condition.Minutes = &n
+				} else {
+					change.Ignore.Condition.Count = &n
+				}
+			}
 		}
 	}
 	if raw, present := fields["assignedTo"]; present {
