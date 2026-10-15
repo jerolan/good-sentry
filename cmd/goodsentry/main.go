@@ -40,6 +40,8 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	stopTransactionSpans := jobs.StartTransactionSpans(ctx, db)
+	defer stopTransactionSpans()
 	alertTimeout := time.Duration(cfg.AlertTimeoutSeconds) * time.Second
 	sender, err := notify.NewSender(notify.Options{
 		Domain: cfg.Domain, EmailURL: cfg.EmailURL, FromEmail: cfg.FromEmail,

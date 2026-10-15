@@ -202,9 +202,24 @@ async function main() {
       assert.ok(value.startTimestamp?.endsWith("Z") && value.endTimestamp?.endsWith("Z"), "normalized SDK timing must remain available in UTC");
       assert.ok(Date.parse(value.endTimestamp) >= Date.parse(value.startTimestamp), "normalized SDK timing reversed");
     }
+    const operations = await api("GET", `${orgPath}/transactions/${reference.source}/${reference.id}/span-groups?project=${project.id}`);
+    assert.deepEqual(operations.sample, reference);
+    assert.equal(operations.transactionCount, 1);
+    assert.equal(operations.spanCount, 1, "segment roots must not inflate child-operation counts");
+    assert.equal(operations.timedSpanCount, 1);
+    assert.equal(operations.data.length, 1);
+    const operation = operations.data[0];
+    assert.equal(operation.op, "compat.child");
+    assert.equal(operation.description, "SDK acceptance child");
+    assert.equal(operation.count, 1);
+    assert.equal(operation.timedCount, 1);
+    const expectedDuration = (emittedChild.end_timestamp - emittedChild.start_timestamp) * 1000;
+    for (const metric of [operation.avgDuration, operation.p95Duration, operation.totalTime]) {
+      assert.ok(typeof metric === "number" && Math.abs(metric - expectedDuration) <= 0.002, `child-operation metric ${metric} differs from emitted SDK duration ${expectedDuration}`);
+    }
     return true;
   });
-  console.log(`PASS: Node SDK transaction ${JSON.stringify(transactionName)} aggregated and span occurrence retained root/child timing, parent and raw typed attributes for trace ${traceID}`);
+  console.log(`PASS: Node SDK transaction ${JSON.stringify(transactionName)} retained occurrence context and child-operation metrics for trace ${traceID}`);
 
 }
 

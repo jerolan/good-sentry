@@ -217,7 +217,7 @@
     const organizations = state.me.organizations || [];
     const org = state.organization;
     const selector = node('select', { class: 'select org-select', 'aria-label': 'Organization', onchange: event => {
-      navigate({ org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, page: null, changes: null });
+      navigate({ org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, page: null, changes: null });
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
@@ -227,7 +227,7 @@
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
-          { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
+          { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
           { 'aria-current': view === section ? 'page' : null })));
     const logout = node('button', { type: 'button', class: 'btn btn-sm', onclick: async () => {
       logout.disabled = true;
@@ -306,6 +306,25 @@
           if (version !== state.requestVersion) return;
           renderMonitor(main, monitor, history, (latest || history).data?.[0], params);
         }
+      } else if (view === 'transactions' && (params.has('spanGroupsSource') || params.has('spanGroups'))) {
+        const source = params.get('spanGroupsSource');
+        const id = params.get('spanGroups');
+        if (!source || !id) throw new Error('This operations link is incomplete. Open Operations from the Transactions list.');
+        const query = new URLSearchParams({ page: params.has('page') ? params.get('page') : '1' });
+        for (const name of ['project', 'start', 'end']) if (params.has(name)) query.set(name, params.get(name));
+        let result;
+        try {
+          result = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/transactions/${encodeURIComponent(source)}/${encodeURIComponent(id)}/span-groups?${query}`);
+        } catch (error) {
+          if (error.status !== 503) throw error;
+          if (version === state.requestVersion) {
+            renderSpanGroupsPending(main);
+            if (focus) main.querySelector('h1')?.focus();
+          }
+          return;
+        }
+        if (version !== state.requestVersion) return;
+        renderSpanGroups(main, result, params);
       } else if (view === 'transactions' && (params.has('sampleSource') || params.has('sample'))) {
         const source = params.get('sampleSource');
         const id = params.get('sample');
@@ -401,7 +420,7 @@
     const copy = button('Copy', () => copyValue(traceID, 'Trace ID'), 'small');
     copy.setAttribute('aria-label', 'Copy trace ID');
     return node('div', { class: 'trace-reference' },
-      state.me.features?.logs === false ? node('code', {}, traceID) : routeLink(traceID, { view: 'logs', issue: null, sampleSource: null, sample: null, project: projectID || null, trace: traceID, query: null, environment: null, level: null, service: null, status: null, sort: null, page: null, start: params?.get('start') || null, end: params?.get('end') || null, window: params?.get('window') || null }, { class: 'mono', title: 'View logs with this trace ID' }), copy);
+      state.me.features?.logs === false ? node('code', {}, traceID) : routeLink(traceID, { view: 'logs', issue: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, project: projectID || null, trace: traceID, query: null, environment: null, level: null, service: null, status: null, sort: null, page: null, start: params?.get('start') || null, end: params?.get('end') || null, window: params?.get('window') || null }, { class: 'mono', title: 'View logs with this trace ID' }), copy);
   }
 
   function milliseconds(value) {
@@ -457,18 +476,66 @@
     } else {
       const rows = transactions.map(transaction => node('tr', {},
         node('td', { class: 'transaction-name' }, node('strong', {}, transaction.latestSample
-          ? routeLink(text(transaction.transaction, 'Unnamed transaction'), { sampleSource: transaction.latestSample.source, sample: transaction.latestSample.id, page: null }, { class: 'issue-link', title: 'Open the latest transaction occurrence' })
+          ? routeLink(text(transaction.transaction, 'Unnamed transaction'), { sampleSource: transaction.latestSample.source, sample: transaction.latestSample.id, spanGroupsSource: null, spanGroups: null, page: null }, { class: 'issue-link', title: 'Open the latest transaction occurrence' })
           : text(transaction.transaction, 'Unnamed transaction'))),
         node('td', {}, node('span', { class: 'mono' }, text(transaction.op, 'Not provided'))),
         node('td', { class: 'nowrap' }, number(transaction.count)), node('td', { class: 'nowrap' }, number(transaction.errorCount)),
         node('td', { class: 'nowrap' }, milliseconds(transaction.avgDuration)), node('td', { class: 'nowrap' }, milliseconds(transaction.p50)),
         node('td', { class: 'nowrap' }, milliseconds(transaction.p95)),
         node('td', { class: 'nowrap' }, node('time', { datetime: transaction.lastSeen }, date(transaction.lastSeen, true))),
-        node('td', {}, traceReference(transaction.latestTraceId, transaction.latestSample?.projectId || params.get('project'), params))));
-      const columns = ['Transaction', 'Operation', 'Events', 'Errors', 'Average', 'p50', 'p95', 'Last seen', 'Latest trace'];
+        node('td', {}, traceReference(transaction.latestTraceId, transaction.latestSample?.projectId || params.get('project'), params)),
+        node('td', {}, transaction.latestSample ? routeLink('Operations', { spanGroupsSource: transaction.latestSample.source, spanGroups: transaction.latestSample.id, sampleSource: null, sample: null, page: null }, { class: 'btn button small', title: 'View child-operation statistics' }) : 'Not available')));
+      const columns = ['Transaction', 'Operation', 'Events', 'Errors', 'Average', 'p50', 'p95', 'Last seen', 'Latest trace', 'Operations'];
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
     }
     main.append(panel);
+  }
+
+  function allTransactionsLink() {
+    return routeLink('← All transactions', { sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, page: null }, { class: 'back-link' });
+  }
+
+  function renderSpanGroupsPending(main) {
+    document.title = 'Indexing operations · GoodSentry';
+    main.replaceChildren(allTransactionsLink(), pageHeader('Transaction operations', 'Statistics are being prepared for stored transactions.'),
+      node('section', { class: 'card panel', 'aria-label': 'Historical indexing', role: 'status' },
+        node('div', { class: 'panel-body form-stack' }, node('h2', {}, 'Historical spans are being indexed'),
+          node('p', { class: 'muted' }, 'Operation statistics will appear when indexing of the matching transactions finishes. No partial metrics are shown. Try again shortly.'),
+          node('div', { class: 'actions' }, button('Retry operation statistics', () => loadRoute(true))))));
+  }
+
+  function renderSpanGroups(main, result, params) {
+    document.title = 'Transaction operations · GoodSentry';
+    const occurrence = routeLink('Open occurrence', { sampleSource: result.sample.source, sample: result.sample.id, spanGroupsSource: null, spanGroups: null, page: null }, { class: 'btn button' });
+    const heading = pageHeader('Transaction operations', text(result.transaction, 'Unnamed transaction'), node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), occurrence));
+    heading.classList.add('transaction-heading');
+    const project = params.get('project');
+    const projectName = project ? state.projects.find(item => String(item.id) === project)?.name || project : 'All projects';
+    const summary = node('section', { class: 'card panel', 'aria-label': 'Operation summary' },
+      node('dl', { class: 'stat-list' }, [['Transactions', result.transactionCount], ['Attributed spans', result.spanCount], ['Timed spans', result.timedSpanCount]].map(([label, value]) =>
+        node('div', { class: 'stat' }, node('dt', {}, label), node('dd', {}, number(value))))),
+      node('div', { class: 'panel-body form-stack' }, keyValues([['Transaction', result.transaction], ['Operation', result.op], ['Project scope', projectName]]),
+        node('p', { class: 'muted small' }, 'Legacy spans come from matching transactions. Standalone spans use their recorded segment association within the same project and trace. Segment roots are excluded.'),
+        node('p', { class: 'muted small' }, 'Counts include spans without valid timing. Average, p95 and accumulated time use valid durations only; Not available means no valid timing was recorded.'),
+        node('p', { class: 'muted small' }, 'Accumulated time sums individual span durations. Overlapping spans can make it exceed elapsed transaction time.')));
+    const panel = detailPanel('Operations', null);
+    panel.setAttribute('aria-label', 'Operation breakdown');
+    const groups = result.data || [];
+    if (!groups.length) panel.append(empty(result.page > 1 ? 'No operations on this page' : result.transactionCount === 0 ? 'No transactions in this interval' : 'No child operations recorded',
+      result.page > 1 ? 'Choose an earlier page to inspect the recorded operations.' : result.transactionCount === 0 ? 'The reference occurrence identifies this group, but the selected project and time window contain no matching transactions.' : 'The matching transactions have no attributed child spans.'));
+    else {
+      const columns = ['Operation', 'Description', 'Spans', 'Timed spans', 'Average', 'p95', 'Accumulated time'];
+      const rows = groups.map(group => node('tr', {}, node('td', { class: 'transaction-name mono' }, text(group.op)), node('td', { class: 'transaction-span-name' }, text(group.description)),
+        node('td', { class: 'nowrap' }, number(group.count)), node('td', { class: 'nowrap' }, number(group.timedCount)),
+        ['avgDuration', 'p95Duration', 'totalTime'].map(key => node('td', { class: 'nowrap' }, group[key] === null || group[key] === undefined ? 'Not available' : milliseconds(group[key])))));
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(label => node('th', { scope: 'col' }, label)))), node('tbody', {}, rows))));
+    }
+    const previous = button('Previous operations', () => navigate({ page: result.page - 1 }));
+    const next = button('Next operations', () => navigate({ page: result.page + 1 }));
+    previous.disabled = result.page <= 1;
+    next.disabled = !result.hasMore;
+    panel.append(node('div', { class: 'pagination' }, node('span', {}, `${number(result.groupCount)} operation groups · ${number(groups.length)} on this page · Page ${number(result.page)}`), node('div', { class: 'actions' }, previous, next)));
+    main.replaceChildren(allTransactionsLink(), heading, telemetryWindow(params, 'transactions').summary, summary, panel);
   }
 
   function renderTransactionDetail(main, detail, params) {
@@ -489,7 +556,7 @@
     const originWindow = telemetryWindow(params, 'transactions').summary;
     originWindow.setAttribute('aria-label', 'Originating aggregate window');
     originWindow.prepend(node('strong', {}, 'Aggregate window:'));
-    main.replaceChildren(routeLink('← All transactions', { sampleSource: null, sample: null, page: null }, { class: 'back-link' }),
+    main.replaceChildren(allTransactionsLink(),
       heading, originWindow, node('div', { class: 'transaction-summary' }, occurrence, context), transactionSpans(detail),
       node('details', { class: 'card panel' }, node('summary', {}, detail.sample.source === 'event' ? 'Original transaction JSON' : 'Original segment JSON'),
         node('pre', { class: 'event-json' }, JSON.stringify(detail.data, null, 2))));

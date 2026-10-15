@@ -170,7 +170,7 @@ func run() error {
 	if err := client.verifyTransaction(ctx, orgPath, created.ID, transactionName, transaction, child); err != nil {
 		return err
 	}
-	fmt.Printf("PASS: SDK transaction %q aggregated and event occurrence retained root/child timing, parent and raw context for trace %s\n", transactionName, transaction.TraceID.String())
+	fmt.Printf("PASS: SDK transaction %q retained occurrence context and child-operation metrics for trace %s\n", transactionName, transaction.TraceID.String())
 	if err := client.verifyLog(ctx, orgPath, logMessage, transaction.TraceID.String(), runID); err != nil {
 		return err
 	}
@@ -331,6 +331,37 @@ func (c *apiClient) verifyTransaction(ctx context.Context, orgPath, projectID, n
 			}
 			if detail.EventID == "" || detail.EventID != detail.Data.EventID || detail.Data.Transaction != name || detail.Data.SDK.Name != "sentry.go" || detail.Data.SDK.Version != "0.50.0" || detail.Data.Contexts.Trace.TraceID != traceID || detail.Data.Contexts.Trace.SpanID != root.SpanID.String() || detail.Data.Contexts.Trace.Op != "compat.sdk" || !got.Data.Data.Acceptance || got.Data.SpanID != child.SpanID.String() || got.Data.ParentSpanID != root.SpanID.String() || got.Data.Description != "SDK acceptance child" || got.Data.Op != "compat.child" {
 				return errors.New("Go occurrence lost raw SDK/trace/child context")
+			}
+			var operations struct {
+				Sample           transactionReference `json:"sample"`
+				TransactionCount int64                `json:"transactionCount"`
+				SpanCount        int64                `json:"spanCount"`
+				TimedSpanCount   int64                `json:"timedSpanCount"`
+				Data             []struct {
+					Op          string   `json:"op"`
+					Description string   `json:"description"`
+					Count       int64    `json:"count"`
+					TimedCount  int64    `json:"timedCount"`
+					Average     *float64 `json:"avgDuration"`
+					P95         *float64 `json:"p95Duration"`
+					Total       *float64 `json:"totalTime"`
+				} `json:"data"`
+			}
+			if err := c.json(ctx, http.MethodGet, orgPath+"/transactions/"+ref.Source+"/"+ref.ID+"/span-groups?project="+url.QueryEscape(projectID), nil, http.StatusOK, &operations); err != nil {
+				return err
+			}
+			if operations.Sample != ref || operations.TransactionCount != 1 || operations.SpanCount != 1 || operations.TimedSpanCount != 1 || len(operations.Data) != 1 {
+				return fmt.Errorf("Go SDK child-operation counts changed: %+v", operations)
+			}
+			operation := operations.Data[0]
+			if operation.Op != "compat.child" || operation.Description != "SDK acceptance child" || operation.Count != 1 || operation.TimedCount != 1 {
+				return fmt.Errorf("Go SDK child-operation identity changed: %+v", operation)
+			}
+			expectedDuration := child.EndTime.Sub(child.StartTime).Seconds() * 1000
+			for _, metric := range []*float64{operation.Average, operation.P95, operation.Total} {
+				if metric == nil || math.Abs(*metric-expectedDuration) > 0.002 {
+					return fmt.Errorf("Go SDK child-operation duration differs from SDK timing %v: %+v", expectedDuration, operation)
+				}
 			}
 			return nil
 		}

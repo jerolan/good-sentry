@@ -60,7 +60,7 @@ docker compose down
 | --- | --- |
 | Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, context, search, filters, resolve/reopen and comments. |
 | JavaScript source maps | Authenticated native uploads, release/distribution or Debug ID selection, original file/line/column/context and preserved minified stacks. |
-| Performance | Legacy transactions and span v2 segments, counts, errors, average, p50/p95, time windows and stored occurrence detail with context and paginated spans. |
+| Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics and stored occurrence detail with paginated spans. |
 | Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. |
 | Uptime | HTTP HEAD/GET/POST, TCP and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
 | Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |
@@ -79,7 +79,7 @@ The following pinned official clients have passed error, transaction and typed-l
 | Node.js | `11.7.0` |
 | Browser JavaScript | `11.7.0` |
 
-The Go and Node checks also open the captured transaction occurrence and verify root/child timing, parent identifiers and original SDK context.
+The Go and Node checks also verify occurrence context, root/child timing, parent identifiers and child-operation metrics against times emitted by each SDK.
 
 For an existing integration, start by changing its DSN. Keep the SDK's usual sampling and log settings. For example, with the verified Node SDK:
 
@@ -99,7 +99,7 @@ These checks establish the listed workflows for those versions. Attachments, add
 
 ### Current gaps
 
-Remaining work includes aggregate child-operation statistics and a full trace waterfall, release and deploy management, `sentry-cli` upload endpoints, native symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes a full trace waterfall, release and deploy management, `sentry-cli` upload endpoints, native symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The modern CLI bundle decoder is tested; its upload endpoints remain unconnected. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
@@ -137,6 +137,10 @@ Transactions and Logs offer past-hour, 24-hour, seven-day and 30-day presets. Ap
 The native query APIs accept paired RFC3339 `start` and `end` instants with time zones and a maximum interval of 366 days. They normalize to UTC microseconds, include the start and exclude the end. Logs also accepts `service`. Invalid or incomplete ranges return 400.
 
 Open a transaction name to inspect its latest stored occurrence. Legacy events show their nested spans; standalone segments show spans in the same project and trace, with their recorded parent IDs. Spans use 50-row pages and retain unavailable timing explicitly. Detail and related-log navigation preserve the originating filters; those time bounds do not hide the occurrence's spans.
+
+Choose **Operations** for a transaction group's child-operation counts, average, p95 and accumulated time. The breakdown combines matching legacy transactions and standalone segments within the selected project and interval. Standalone children use their recorded segment association; roots are excluded. Counts include unavailable timing, while duration metrics use valid durations only. Accumulated time includes overlapping spans.
+
+On upgrade, GoodSentry indexes historical legacy spans inside the application, one event per transaction. This resumes after restart and preserves original event JSON. A breakdown whose matching history is still pending shows an indexing message and retry action until its statistics are ready.
 
 </details>
 

@@ -83,9 +83,15 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 			return "", false, err
 		}
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO events(project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`, projectID, ev.ID, issueID, originID, ev.Type, ev.Title, ev.Level, ev.Timestamp, ev.Environment, ev.Release, ev.TraceID, ev.Transaction, ev.Duration, ev.Data)
+	var eventRowID int64
+	err = tx.QueryRow(ctx, `INSERT INTO events(project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`, projectID, ev.ID, issueID, originID, ev.Type, ev.Title, ev.Level, ev.Timestamp, ev.Environment, ev.Release, ev.TraceID, ev.Transaction, ev.Duration, ev.Data).Scan(&eventRowID)
 	if err != nil {
 		return "", false, err
+	}
+	if ev.Type == "transaction" {
+		if err = projectTransactionSpans(ctx, tx, eventRowID, ev.Data); err != nil {
+			return "", false, err
+		}
 	}
 	if issueID != nil {
 		if err = queueErrorAlerts(ctx, tx, projectID, ev.ID, issueID.(string)); err != nil {
