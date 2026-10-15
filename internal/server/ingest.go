@@ -94,7 +94,32 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		normalized = &ev
 	}
 	if normalized != nil {
-		if _, _, err = s.db.Ingest(r.Context(), project, *normalized); err != nil {
+		var children store.CaptureItems
+		for _, item := range env.Items {
+			switch item.Type {
+			case "attachment":
+				var filename, contentType string
+				_ = json.Unmarshal(item.Header["filename"], &filename)
+				_ = json.Unmarshal(item.Header["content_type"], &contentType)
+				filename = path.Base(strings.ReplaceAll(filename, "\\", "/"))
+				if filename == "." || filename == "/" || filename == "" {
+					filename = "attachment"
+				}
+				if contentType == "" {
+					contentType = "application/octet-stream"
+				}
+				children.Attachments = append(children.Attachments, store.CaptureAttachment{Filename: filename, ContentType: contentType, Data: item.Payload})
+			case "event", "transaction", "span", "log":
+			default:
+				header, _ := json.Marshal(item.Header)
+				children.EnvelopeItems = append(children.EnvelopeItems, store.CaptureEnvelopeItem{Type: item.Type, Header: header, Data: item.Payload})
+			}
+		}
+		var parts []store.CaptureItems
+		if len(children.Attachments) > 0 || len(children.EnvelopeItems) > 0 {
+			parts = []store.CaptureItems{children}
+		}
+		if _, _, err = s.db.Ingest(r.Context(), project, *normalized, parts...); err != nil {
 			report(w, err)
 			return
 		}
@@ -144,25 +169,13 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 				failure(w, 400, "An attachment requires an event in this envelope")
 				return
 			}
-			var filename, contentType string
-			_ = json.Unmarshal(item.Header["filename"], &filename)
-			_ = json.Unmarshal(item.Header["content_type"], &contentType)
-			filename = path.Base(strings.ReplaceAll(filename, "\\", "/"))
-			if filename == "." || filename == "/" || filename == "" {
-				filename = "attachment"
-			}
-			if contentType == "" {
-				contentType = "application/octet-stream"
-			}
-			if err = s.db.SaveAttachment(r.Context(), project, envelopeID, filename, contentType, item.Payload); err != nil {
-				report(w, err)
-				return
-			}
 		default:
-			header, _ := json.Marshal(item.Header)
-			if err = s.db.SaveEnvelopeItem(r.Context(), project, envelopeID, item.Type, header, item.Payload); err != nil {
-				report(w, err)
-				return
+			if normalized == nil {
+				header, _ := json.Marshal(item.Header)
+				if err = s.db.SaveEnvelopeItem(r.Context(), project, envelopeID, item.Type, header, item.Payload); err != nil {
+					report(w, err)
+					return
+				}
 			}
 			unsupported = append(unsupported, item.Type)
 		}

@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -53,7 +54,14 @@ type Comment struct {
 	CanEdit     bool       `json:"canEdit"`
 }
 
-func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (string, bool, error) {
+func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, parts ...CaptureItems) (string, bool, error) {
+	hasItems := false
+	for _, part := range parts {
+		if len(part.Attachments) > 0 || len(part.EnvelopeItems) > 0 {
+			hasItems = true
+			break
+		}
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return "", false, err
@@ -63,21 +71,42 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 	if _, err = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", projectID+":"+ev.ID); err != nil {
 		return "", false, err
 	}
-	var present bool
-	if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM events WHERE project_id::text=$1 AND event_id=$2)", projectID, ev.ID).Scan(&present); err != nil {
-		return "", false, err
-	}
-	if present {
-		var id string
-		err = tx.QueryRow(ctx, "SELECT COALESCE(issue_id::text,'') FROM events WHERE project_id::text=$1 AND event_id=$2", projectID, ev.ID).Scan(&id)
-		return id, false, err
-	}
-	var issueID any
-	var originID any
-	if ev.Type != "transaction" {
+	var receipt int64
+	var owner string
+	err = tx.QueryRow(ctx, "SELECT id,COALESCE(issue_id::text,'') FROM events WHERE project_id::text=$1 AND event_id=$2", projectID, ev.ID).Scan(&receipt, &owner)
+	if err == nil {
+		if !hasItems {
+			return owner, false, nil
+		}
 		if err = lockProjectIssues(ctx, tx, projectID, false); err != nil {
 			return "", false, err
 		}
+		// A deletion may win the gate after the first snapshot. The children
+		// belong to that exact receipt, even if its external ID is later reused.
+		var pinned int64
+		err = tx.QueryRow(ctx, "SELECT id FROM events WHERE id=$1 AND project_id::text=$2 AND event_id=$3 FOR KEY SHARE", receipt, projectID, ev.ID).Scan(&pinned)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return owner, false, nil
+		}
+		if err != nil {
+			return "", false, err
+		}
+		if err = saveCaptureItems(ctx, tx, projectID, ev.ID, parts); err != nil {
+			return "", false, err
+		}
+		return owner, false, tx.Commit(ctx)
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return "", false, err
+	}
+	var issueID any
+	var originID any
+	if ev.Type != "transaction" || hasItems {
+		if err = lockProjectIssues(ctx, tx, projectID, false); err != nil {
+			return "", false, err
+		}
+	}
+	if ev.Type != "transaction" {
 		own, target, err := activeIssueHashOrigin(ctx, tx, projectID, ev)
 		if err != nil {
 			return "", false, err
@@ -110,6 +139,9 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 	var eventRowID int64
 	err = tx.QueryRow(ctx, `INSERT INTO events(project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`, projectID, ev.ID, issueID, originID, ev.Type, ev.Title, ev.Level, ev.Timestamp, ev.Environment, ev.Release, ev.TraceID, ev.Transaction, ev.Duration, ev.Data).Scan(&eventRowID)
 	if err != nil {
+		return "", false, err
+	}
+	if err = saveCaptureItems(ctx, tx, projectID, ev.ID, parts); err != nil {
 		return "", false, err
 	}
 	if ev.Type == "transaction" {
