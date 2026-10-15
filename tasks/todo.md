@@ -47,6 +47,9 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
   - [x] Verify real PostgreSQL concurrency/reopen, transport boundaries, actual SDK/browser workflows, final image preservation and exact-source CI.
   - [x] Native conditional mute: timed/additional-count conditions, new-notification suppression and always-on expiry, with provider/HTTP/worker/browser/SDK/image/publication acceptance.
   - [ ] Complete release-anchored/next-release resolution as a separately specified increment; native simple-resolution acceptance alone is insufficient.
+  - [ ] Implement release comparison/classification and immutable selected/pending/bound policies with issue-scoped candidates and additive014 preservation.
+  - [ ] Integrate staged ingestion/alert eligibility, metadata-only pending binding, strict native resolution requests and original responsive controls.
+  - [ ] Verify old/equal/new/late/retry release behavior, finalization and real lock/cancellation/replica paths, actual SDK/browser/final-image workflows and exact publication before closing release resolution.
 - [ ] Deliver merge/unmerge with preserved event partitions and correct future grouping.
 - [x] Deliver releases, commit metadata and deploy records through compatible API.
   - [x] Define typed release contracts, shared organization/version storage and historical observed associations without changing original telemetry/maps.
