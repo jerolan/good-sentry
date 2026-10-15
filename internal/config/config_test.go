@@ -38,6 +38,12 @@ func TestDeploymentConfiguration(t *testing.T) {
 		{"no issue maintenance", map[string]string{"ISSUE_MAINTENANCE_INTERVAL_SECONDS": "0"}, "ISSUE_MAINTENANCE_INTERVAL_SECONDS"},
 		{"unbounded issue maintenance delay", map[string]string{"ISSUE_MAINTENANCE_INTERVAL_SECONDS": "3601"}, "ISSUE_MAINTENANCE_INTERVAL_SECONDS"},
 		{"fractional issue maintenance delay", map[string]string{"ISSUE_MAINTENANCE_INTERVAL_SECONDS": "1.5"}, "ISSUE_MAINTENANCE_INTERVAL_SECONDS"},
+		{"otlp no records", map[string]string{"GOODSENTRY_OTLP_MAX_RECORDS": "0"}, "GOODSENTRY_OTLP_MAX_RECORDS"},
+		{"otlp unbounded records", map[string]string{"GOODSENTRY_OTLP_MAX_RECORDS": "100001"}, "GOODSENTRY_OTLP_MAX_RECORDS"},
+		{"otlp fractional records", map[string]string{"GOODSENTRY_OTLP_MAX_RECORDS": "1.5"}, "GOODSENTRY_OTLP_MAX_RECORDS"},
+		{"otlp too few nodes", map[string]string{"GOODSENTRY_OTLP_MAX_NODES": "99"}, "GOODSENTRY_OTLP_MAX_NODES"},
+		{"otlp unbounded nodes", map[string]string{"GOODSENTRY_OTLP_MAX_NODES": "1000001"}, "GOODSENTRY_OTLP_MAX_NODES"},
+		{"otlp malformed nodes", map[string]string{"GOODSENTRY_OTLP_MAX_NODES": "many"}, "GOODSENTRY_OTLP_MAX_NODES"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
@@ -127,6 +133,28 @@ func TestIssueMaintenanceDeploymentOptions(t *testing.T) {
 			c, err := Load()
 			if err != nil || c.IssueMaintenanceIntervalSeconds != tc.want {
 				t.Fatalf("issue maintenance interval=%d want=%d err=%v", c.IssueMaintenanceIntervalSeconds, tc.want, err)
+			}
+		})
+	}
+}
+
+func TestOTLPDeploymentOptions(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+	t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
+	for _, tc := range []struct {
+		name, records, nodes   string
+		wantRecords, wantNodes int
+	}{
+		{"defaults", "", "", 1000, 100000},
+		{"minimum", "1", "100", 1, 100},
+		{"maximum", "100000", "1000000", 100000, 1000000},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("GOODSENTRY_OTLP_MAX_RECORDS", tc.records)
+			t.Setenv("GOODSENTRY_OTLP_MAX_NODES", tc.nodes)
+			c, err := Load()
+			if err != nil || c.OTLPMaxRecords != tc.wantRecords || c.OTLPMaxNodes != tc.wantNodes {
+				t.Fatalf("OTLP records=%d nodes=%d want=%d/%d err=%v", c.OTLPMaxRecords, c.OTLPMaxNodes, tc.wantRecords, tc.wantNodes, err)
 			}
 		})
 	}
