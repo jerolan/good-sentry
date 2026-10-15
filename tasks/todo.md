@@ -55,6 +55,8 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
   - Preserve child relationships and typed attributes; verify real Node 11.7.0 error, trace and logs after the initially failing trace check.
 - [ ] Deliver transaction/span storage, time-window aggregates, average/p50/p95, errors and detail UI.
   - Legacy transactions and standalone spans persist; selectable-window counts/average/p50/p95/error aggregates and project-filtered UI pass. Complete trace/transaction detail remains pending.
+- [ ] Open exact stored legacy/segment occurrences from aggregates with authorized detail, honest span scope, raw context and 50-row pagination through API/UI.
+- [ ] Add aggregate child-operation statistics and complete trace reconstruction/waterfall without assuming the per-envelope batch limit bounds a trace.
 - [x] Deliver SDK logs with typed attributes, filters, trace correlation and detail UI.
   - SDK ingestion, deduplication, project/text/level/environment/trace/service/time filters, 25-row pagination and typed-attribute UI pass. Exact max-int64 decimal display has a real browser RED/GREEN regression. Native OTLP remains independently pending below.
 - [x] Add the specified transaction/log absolute time windows and exact log-service filter, preserving defaults and URL/pagination behavior.
