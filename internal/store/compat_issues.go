@@ -232,7 +232,15 @@ func (s *Store) CompatibleIssue(ctx context.Context, access ManagementAccess, is
 		return record, compatibleIssueTargetError(err)
 	}
 	defer tx.Rollback(ctx)
-	record, err = scanCompatibleIssue(tx.QueryRow(ctx, "SELECT "+issueColumns+compatibleIssueExtras+issueJoins+` WHERE m.user_id=$1::bigint AND i.id=$2`, access.UserID, scope.issueID))
+	record, err = readCompatibleIssueRecord(ctx, tx, access.UserID, fmt.Sprint(scope.issueID), filter)
+	if err != nil {
+		return record, err
+	}
+	return record, tx.Commit(ctx)
+}
+
+func readCompatibleIssueRecord(ctx context.Context, tx pgx.Tx, userID, issueID string, filter CompatibleIssueDetailFilter) (CompatibleIssueRecord, error) {
+	record, err := scanCompatibleIssue(tx.QueryRow(ctx, "SELECT "+issueColumns+compatibleIssueExtras+issueJoins+` WHERE m.user_id=$1::bigint AND i.id=$2::bigint`, userID, issueID))
 	if err != nil {
 		return record, err
 	}
@@ -244,7 +252,7 @@ func (s *Store) CompatibleIssue(ctx context.Context, access ManagementAccess, is
 	if err = readCompatibleIssueMetrics(ctx, tx, records, occurrence, end, chart); err != nil {
 		return record, err
 	}
-	return records[0], tx.Commit(ctx)
+	return records[0], nil
 }
 
 func (s *Store) CompatibleIssueStats(ctx context.Context, access ManagementAccess, ids []string, period string) ([]CompatibleIssueStats, error) {

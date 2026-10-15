@@ -44,42 +44,20 @@ const issueAssignmentJSON = `(SELECT jsonb_strip_nulls(jsonb_build_object('type'
 
 // Authorization and mutable state are locked in the same transaction.
 func (s *Store) issueTransaction(ctx context.Context, userID, id string, write bool) (pgx.Tx, Issue, string, string, error) {
-	options := pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}
 	if write {
-		options = pgx.TxOptions{}
+		return s.issueWriteTransaction(ctx, ManagementAccess{UserID: userID, AllProjects: true}, id)
 	}
-	tx, err := s.pool.BeginTx(ctx, options)
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return nil, Issue{}, "", "", err
 	}
 	var org, role, project, canonical string
 	authorize := `SELECT p.organization_id::text,m.role,p.id::text,COALESCE(i.merged_into,i.id)::text FROM issues i JOIN projects p ON p.id=i.project_id JOIN memberships m ON m.organization_id=p.organization_id WHERE i.id::text=$1 AND m.user_id::text=$2`
-	if write {
-		authorize += " FOR SHARE OF m"
-	}
 	if err = tx.QueryRow(ctx, authorize, id, userID).Scan(&org, &role, &project, &canonical); err != nil {
 		_ = tx.Rollback(ctx)
 		return nil, Issue{}, "", "", dbError(err)
 	}
-	if write {
-		if err = lockProjectIssues(ctx, tx, project, false); err != nil {
-			_ = tx.Rollback(ctx)
-			return nil, Issue{}, "", "", err
-		}
-		var merged *string
-		if err = tx.QueryRow(ctx, `SELECT merged_into::text FROM issues WHERE id::text=$1 FOR UPDATE`, id).Scan(&merged); err != nil {
-			_ = tx.Rollback(ctx)
-			return nil, Issue{}, "", "", dbError(err)
-		}
-		if merged != nil {
-			_ = tx.Rollback(ctx)
-			return nil, Issue{}, "", "", &IssueMergedError{MergedInto: *merged}
-		}
-	} else {
-		id = canonical
-	}
-	// A fresh statement after a possible row-lock wait observes the assignment
-	// committed by the preceding writer, including its related table row.
+	id = canonical
 	i, err := scanIssue(tx.QueryRow(ctx, "SELECT "+issueColumns+issueJoins+"WHERE m.user_id::text=$1 AND i.id::text=$2", userID, id))
 	if err != nil {
 		_ = tx.Rollback(ctx)

@@ -10,12 +10,12 @@ import (
 
 func (s *Server) registerCompatibleIssueRoutes(mux *http.ServeMux) {
 	for _, root := range []string{"/api/0/organizations/{org}/issues/", "/api/0/projects/{org}/{project}/issues/"} {
-		mux.Handle("GET "+root+"{$}", s.compatible("event:read", s.compatibleIssues))
+		mux.Handle("GET "+root+"{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssues))
 	}
 	for _, root := range []string{"/api/0/issues/{issue}/", "/api/0/organizations/{org}/issues/{issue}/"} {
-		mux.Handle("GET "+root+"{$}", s.compatible("event:read", s.compatibleIssue))
+		mux.Handle("GET "+root+"{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssue))
 	}
-	mux.Handle("GET /api/0/organizations/{org}/issues-stats/{$}", s.compatible("event:read", s.compatibleIssueStats))
+	mux.Handle("GET /api/0/organizations/{org}/issues-stats/{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssueStats))
 }
 
 func reportCompatibleIssue(w http.ResponseWriter, err error) {

@@ -1001,7 +1001,7 @@
 
   function renderAPITokens(main, result) {
     document.title = 'API tokens · GoodSentry';
-    main.replaceChildren(pageHeader('API tokens', 'Read access for automation in this organization.', button('Refresh', () => loadRoute())));
+    main.replaceChildren(pageHeader('API tokens', 'Scoped access for automation in this organization.', button('Refresh', () => loadRoute())));
     if (issuedAPIToken) {
       const secret = issuedAPIToken.record.token;
       const reveal = node('section', { id: 'api-token-secret', class: 'card panel', 'aria-label': 'New API token' },
@@ -1014,7 +1014,7 @@
     main.append(apiTokenForm());
     const panel = node('section', { class: 'card panel', 'aria-label': 'API token metadata' }, node('div', { class: 'panel-title' }, node('h2', {}, 'Issued tokens')));
     const tokens = result.data || [];
-    if (!tokens.length) panel.append(empty('No API tokens on this page', 'Create a read credential for your automation, or choose an earlier page.'));
+    if (!tokens.length) panel.append(empty('No API tokens on this page', 'Create a credential for your automation, or choose an earlier page.'));
     else {
       const rows = tokens.map(token => {
         const status = token.revokedAt ? 'Revoked' : Date.parse(token.expiresAt) <= Date.now() ? 'Expired' : 'Active';
@@ -1052,13 +1052,13 @@
   }
 
   function apiTokenForm() {
-    const name = field('Token name', 'text', { name: 'name', required: true, autocomplete: 'off', placeholder: 'Deployment project reader' });
+    const name = field('Token name', 'text', { name: 'name', required: true, autocomplete: 'off', placeholder: 'Project automation' });
     name.wrap.append(node('p', { class: 'help' }, '1–100 characters. Names may be reused.'));
     const lifetime = field('Lifetime (days)', 'number', { name: 'expiresInDays', value: 90, required: true, min: 1, max: 366, step: 1 });
-    const scopes = ['org:read', 'project:read', 'project:releases', 'event:read'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
+    const scopes = ['org:read', 'project:read', 'project:releases', 'event:read', 'event:write'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
     const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Permissions'),
       scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
-      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issues and issue events. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issues and issue events. event:write reads issues and issue events, and changes issue status, assignment and supported mute or release policies. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
     const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
     const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
     const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
@@ -1076,7 +1076,7 @@
       const selectedScopes = scopes.filter(item => item.input.checked).map(item => item.scope);
       const projectIds = access.input.value === 'selected' ? projects.filter(item => item.input.checked).map(item => item.id) : [];
       if (!selectedScopes.length || (access.input.value === 'selected' && !projectIds.length)) {
-        formError(error, new Error(!selectedScopes.length ? 'Choose at least one read scope.' : 'Choose at least one project for restricted access.'));
+        formError(error, new Error(!selectedScopes.length ? 'Choose at least one scope.' : 'Choose at least one project for restricted access.'));
         return;
       }
       submit.disabled = true;

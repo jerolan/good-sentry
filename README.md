@@ -109,7 +109,7 @@ In the Resolution panel, choose an existing project release or use the issue's o
 
 **Resolve in next release** waits for a different open project release created or finalized after resolution. It needs a valid observed baseline. The first selected next release, or a newer release, reopens the issue when an error arrives. The application worker can select it from metadata without another event. Saved pending and selected states survive restart. Errors without a valid release reopen either policy. Applying the same policy preserves its progress; clear to simple resolution or reopen before starting a fresh next policy.
 
-Errors that remain resolved are still captured and counted, but do not create new issue notifications. Activity shows the selected boundary and the reason for a regression. These controls implement the native GoodSentry contract; compatible API0 issue management and commit-triggered resolution remain pending.
+Errors that remain resolved are still captured and counted, but do not create new issue notifications. Activity shows the selected boundary and the reason for a regression. The compatible individual issue API shares these native rules. Commit-triggered resolution remains pending.
 
 Ignore pauses new issue notifications while collecting every error. In issue detail, mute indefinitely, for a number of minutes, until a number of additional unique errors, or until either condition is met. The last additional error reopens the issue before normal alert eligibility runs. Retries never consume the count, and applying the same active condition preserves its deadline and progress. New captures and the maintenance worker evaluate elapsed time using the database receipt clock; SDK timestamps and timezone changes do not move the deadline. Activity records why a mute ended.
 
@@ -144,13 +144,32 @@ Invalid queries keep the filter form editable. Broader query syntax remains sepa
 
 Issue detail shows identified users from retained events and a real 24-hour event chart, including an accessible table of hourly counts in UTC. Anonymous events add to event counts without creating an identified user. Historical counts remain visible even when recent activity is empty.
 
-An explicit `event:read` token can read organization/project issue lists, organization/global issue detail and organization `issues-stats` under `/api/0/`. Reads honor its project grants. Omitted `query` selects unresolved issues; `query=` includes every status. Environment and occurrence filters return matching metrics alongside historical totals. Organization `statsPeriod` selects a relative time window; on the deprecated project list it selects the chart (`24h`, `14d` or empty to disable). `groupStatsPeriod` controls list charts separately.
+An explicit `event:read` or `event:write` token can read organization/project issue lists, organization/global issue detail and organization `issues-stats` under `/api/0/`. Reads honor its project grants. Omitted `query` selects unresolved issues; `query=` includes every status. Environment and occurrence filters return matching metrics alongside historical totals. Organization `statsPeriod` selects a relative time window; on the deprecated project list it selects the chart (`24h`, `14d` or empty to disable). `groupStatsPeriod` controls list charts separately.
 
-Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Unsupported query options return 400. Compatible issue mutations, merge/hash APIs, sliding-window conditions and feedback remain pending.
+Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Unsupported query options return 400. Bulk issue changes, compatible merge/hash/delete APIs, sliding-window conditions and feedback remain pending.
+
+### Compatible individual issue changes
+
+Create a token with the optional `event:write` permission and select its projects. It can update `/api/0/issues/{issue}/` or `/api/0/organizations/{org}/issues/{issue}/` with `PUT`. Use the trailing slash and replace `123` with an accessible issue ID:
+
+```sh
+curl --request PUT http://localhost:8000/api/0/issues/123/ \
+  --header "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+  --header 'Content-Type: application/json' \
+  --data '{"status":"resolved","statusDetails":{"inRelease":"latest"}}'
+```
+
+The response contains the saved compatible issue detail and real analytics. `latest` requires an existing release associated with that project. Use an exact release version instead, or `"status":"resolvedInNextRelease"` to apply the native next-release policy. Plain `resolved`, `unresolved` and `ignored` follow the native rules; `muted` is an alias of `ignored`.
+
+`assignedTo` accepts a member's ID, `user:ID`, `team:ID` or primary email. Null or an empty string unassigns. Omitted assignment and policy fields follow the native omission rules. For an ignored issue, `ignoreDuration` and `ignoreCount` select elapsed minutes and additional unique errors; zero disables that condition. These fields may also appear inside `statusDetails`. Identical policies preserve their existing progress.
+
+An explicit `statusDetails:null` or `{}` clears the current condition while keeping the effective status. An empty `inRelease` or `inNextRelease:false` clears only a resolved condition and is rejected for other statuses. Invalid targets or incompatible policies roll back the whole request. A merged alias returns409 with `mergedInto`; open the current group before retrying. An empty request object reads the authorized issue without expiring or changing its policies.
+
+Writer tokens inherit issue and issue-event reads. Project event routes still need `project:read`, release routes need `project:releases`, and native mutation routes require a session. Bulk changes, compatible grouping/deletion, username handles and user/window/commit conditions remain pending; unsupported fields return400.
 
 ### Compatible event reads
 
-Issue event routes accept an explicit `event:read` token restricted to the selected projects. Project event routes use `project:read`. These are separate permissions; the token form keeps `org:read` and `project:read` as defaults, with `event:read` unchecked.
+Issue event routes accept an explicit `event:read` or `event:write` token restricted to the selected projects. Project event routes use `project:read`. The token form keeps `org:read` and `project:read` as defaults; both event scopes start unchecked.
 
 Read errors from `/api/0/projects/{org}/{project}/events/`, `/api/0/issues/{issue}/events/` or `/api/0/organizations/{org}/issues/{issue}/events/`. Append the SDK event ID for full detail; issue routes also accept `latest`, `oldest` and `recommended` (latest). Project detail can retrieve a stored transaction by ID. The organization issue route additionally exposes `{event}/json/` as a legacy JSON projection.
 
@@ -247,17 +266,17 @@ On upgrade, GoodSentry indexes historical legacy spans inside the application, o
 </details>
 
 <details>
-<summary><strong>API tokens for project reads</strong></summary>
+<summary><strong>Scoped API tokens</strong></summary>
 
 Owners and admins can open **API tokens** to create a credential, select projects and set its lifetime. The secret appears once; copy it before dismissing or leaving the view. Tokens expire after 90 days by default, with a selectable lifetime of 1–366 days. Revocation takes effect on subsequent requests. An all-project credential also includes projects created later; a restricted credential keeps only its selected projects.
 
-The implemented scopes are `org:read` for listing authorized projects and `project:read` for individual project metadata. Compatible responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
+Choose `org:read` to list authorized projects, `project:read` for project metadata/events, `event:read` for issues and issue events, `event:write` for those reads and individual issue changes, or `project:releases` for release management. Compatible project responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
 
 ```sh
 SENTRY_URL=http://localhost:8000/ SENTRY_ORG=my-workspace sentry-cli projects list
 ```
 
-These credentials currently consume the compatible organization project-list and project-detail routes. Release/write scopes and the remaining management APIs are pending.
+Each compatible route checks its implemented scope and current project grants. Existing tokens retain their scopes. Broader management API coverage remains pending.
 
 </details>
 

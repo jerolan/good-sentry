@@ -18,10 +18,14 @@ func (s *Server) registerCompatibleEventRoutes(mux *http.ServeMux) {
 		{"/api/0/issues/{issue}/events/", "event:read"},
 		{"/api/0/organizations/{org}/issues/{issue}/events/", "event:read"},
 	} {
-		mux.Handle("GET "+route.root+"{$}", s.compatible(route.scope, s.compatibleEvents))
-		mux.Handle("GET "+route.root+"{event}/{$}", s.compatible(route.scope, s.compatibleEvent))
+		scopes := []string{route.scope}
+		if route.scope == "event:read" {
+			scopes = append(scopes, "event:write")
+		}
+		mux.Handle("GET "+route.root+"{$}", s.compatibleAny(scopes, s.compatibleEvents))
+		mux.Handle("GET "+route.root+"{event}/{$}", s.compatibleAny(scopes, s.compatibleEvent))
 	}
-	mux.Handle("GET /api/0/organizations/{org}/issues/{issue}/events/{event}/json/{$}", s.compatible("event:read", s.compatibleEventJSON))
+	mux.Handle("GET /api/0/organizations/{org}/issues/{issue}/events/{event}/json/{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleEventJSON))
 }
 
 func (s *Server) compatibleEventAccess(w http.ResponseWriter, r *http.Request) (store.ManagementAccess, bool) {
