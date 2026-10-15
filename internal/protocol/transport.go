@@ -147,7 +147,7 @@ func Authenticate(r *http.Request, header map[string]json.RawMessage, projectID 
 	}
 	var agreed string
 	accept := func(key string) error {
-		if !validKey(key) || (agreed != "" && key != agreed) {
+		if !ValidPublicKey(key) || (agreed != "" && key != agreed) {
 			return ErrAuth
 		}
 		agreed = key
@@ -219,7 +219,8 @@ func Authenticate(r *http.Request, header map[string]json.RawMessage, projectID 
 	return agreed, nil
 }
 
-func validKey(key string) bool {
+// ValidPublicKey applies the public-key syntax shared by SDK and OTLP transports.
+func ValidPublicKey(key string) bool {
 	return key != "" && !strings.ContainsFunc(key, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) || r == ',' || r == '=' })
 }
 
@@ -229,7 +230,7 @@ func authFields(fields url.Values) (string, error) {
 		return "", ErrAuth
 	}
 	for _, key := range keys {
-		if !validKey(key) || key != keys[0] {
+		if !ValidPublicKey(key) || key != keys[0] {
 			return "", ErrAuth
 		}
 	}

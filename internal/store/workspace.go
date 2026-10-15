@@ -171,3 +171,10 @@ func (s *Store) ValidKey(ctx context.Context, projectID, key string) (bool, erro
 	err := s.pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM project_keys WHERE project_id::text=$1 AND public_key=$2 AND enabled)", projectID, key).Scan(&ok)
 	return ok, err
 }
+
+// ProjectForPublicKey resolves an enabled SDK public key to its sole project.
+func (s *Store) ProjectForPublicKey(ctx context.Context, key string) (string, error) {
+	var projectID string
+	err := s.pool.QueryRow(ctx, "SELECT project_id::text FROM project_keys WHERE public_key=$1 AND enabled", key).Scan(&projectID)
+	return projectID, dbError(err)
+}

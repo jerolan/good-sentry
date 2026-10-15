@@ -94,6 +94,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("GET /api/v1/organizations/{org}/traces/{trace}/errors", s.auth(http.HandlerFunc(s.traceErrors)))
 	mux.Handle("GET /api/v1/organizations/{org}/spans", s.auth(http.HandlerFunc(s.spans)))
 	mux.Handle("GET /api/v1/organizations/{org}/logs", s.auth(http.HandlerFunc(s.logs)))
+	mux.Handle("GET /api/v1/organizations/{org}/logs/{log}", s.auth(http.HandlerFunc(s.logDetail)))
 	if cfg.Uptime {
 		mux.Handle("GET /api/v1/organizations/{org}/monitors", s.auth(http.HandlerFunc(s.monitors)))
 		mux.Handle("POST /api/v1/organizations/{org}/monitors", s.auth(http.HandlerFunc(s.saveMonitor)))
@@ -127,6 +128,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 			stripped.ServeHTTP(w, r)
 		})
 	}
+	handler = s.otlpRoutes(handler)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "same-origin")
