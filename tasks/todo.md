@@ -61,6 +61,10 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
   - [x] Add snapshot-based operation statistics and native authenticated routing with exact counts, continuous p95, nullable timing, canonical filters and explicit pending-history responses.
   - [x] Add the responsive operation breakdown with preserved filter/identity navigation and real browser pagination/empty/indexing acceptance.
   - [x] Verify actual pinned Go/Node child metrics, final PostgreSQL/race checks, image migration/restart persistence and remote CI for the statistics increment. Full trace waterfall remains separate.
+  - [ ] Upgrade legacy projection to version2 with normalized root/child IDs/times, preserving raw JSON, version1 statistics and resumable atomic history processing.
+  - [ ] Reconstruct the specified forest from narrow metadata with explicit duplicate/parent/cycle policies, timing bounds, paginated summaries/raw and related error/log counts.
+  - [ ] Add authenticated trace/node/error routes and responsive waterfall navigation with preserved origin state, project scope, parent-page access and exact raw JSON inspection.
+  - [ ] Verify real PostgreSQL deep/mixed/multi-envelope traces, HTTP boundaries, browser states, official SDK ancestry/timing and final-image upgrade/restart/CI before closing trace acceptance.
 - [x] Deliver SDK logs with typed attributes, filters, trace correlation and detail UI.
   - SDK ingestion, deduplication, project/text/level/environment/trace/service/time filters, 25-row pagination and typed-attribute UI pass. Exact max-int64 decimal display has a real browser RED/GREEN regression. Native OTLP remains independently pending below.
 - [x] Add the specified transaction/log absolute time windows and exact log-service filter, preserving defaults and URL/pagination behavior.
