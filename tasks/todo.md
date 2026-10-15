@@ -77,6 +77,11 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 
 ## Remaining parity and release verification
 
+- [ ] Publish reviewed code to the user-provided jerolan/good-sentry repository without overwriting remote work.
+- [ ] Replace the public README with a polished English introduction, original visual assets, actual quickstart and honest compatibility/status.
+- [ ] Build and browser-verify an original responsive static landing under site/ with project-base-path-safe assets and real product/demo context.
+- [ ] Add verified/pinned GitHub Actions CI and Pages workflows, push, fix actual workflow failures and verify the deployed public site URL.
+
 - [ ] Complete scoped API tokens, team memberships, invitations and email password recovery.
 - [ ] Complete supported Sentry-compatible management API routes, OpenAPI/admin flags and endpoint matrix.
 - [ ] Verify GitLab error tracking and Grafana datasource integrations.
