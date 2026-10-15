@@ -1,0 +1,12 @@
+{
+  "name": "goodsentry-sdk-compat",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sdk:node": "node javascript_smoke.mjs"
+  },
+  "dependencies": {
+    "@sentry/node": "11.7.0"
+  }
+}
