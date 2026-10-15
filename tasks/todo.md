@@ -51,6 +51,11 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
 - [x] Deliver authenticated native source-map upload/list and mapped capture through API and UI.
   - Owners/admins upload; actual members read metadata. Release/dist and debug-ID selection, original stacks, source location/context, idempotent retries, immutable-content conflict and input/processing budgets are verified.
 - [ ] Research and implement modern sentry-cli artifact bundles, then test the actual CLI.
+  - [ ] Fix upload contracts and typed quota/expiry/materialization configuration; add migration011 without changing historical maps or migrations.
+  - [ ] Persist authorized raw chunks with atomic quota/expiry and snapshot ordered assembly reads; atomically save scoped multi-project map sets with existing release-delete ordering.
+  - [ ] Resolve bundle file identity and script/map URL aliases in the independent consumer while preserving native matching and source bases.
+  - [ ] Connect compatible negotiation/multipart/assembly routes, strict size/checksum/gzip boundaries and automatic staging cleanup.
+  - [ ] Verify PostgreSQL/HTTP and official CLI injection/upload/retry/resume plus a real JavaScript SDK mapped exception, image restart/history, browser regressions and remote CI.
 - [ ] Implement native debug-file and minidump ingestion plus verified native symbolication.
 
 For each item above: add a consumer-facing test at the owning boundary, verify the actual UI/API outcome with stored data, inspect the diff and commit a single coherent increment. Do not mark a mapped-stack task complete based only on an upload response.
