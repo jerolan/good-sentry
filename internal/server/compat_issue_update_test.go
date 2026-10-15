@@ -36,14 +36,16 @@ func TestCompatibleIssueUpdateHTTPContract(t *testing.T) {
 		t.Helper()
 		var result map[string]json.RawMessage
 		decode(f.request(t, f.client, "GET", "/api/v1/issues/"+f.issueID, "", nil, 200), &result)
-		var issue map[string]json.RawMessage
-		decode(result["issue"], &issue)
-		delete(issue, "analytics")
-		raw, err := json.Marshal(issue)
+		var analytics map[string]json.RawMessage
+		decode(result["analytics"], &analytics)
+		// Chart timestamps advance with the transaction clock. Preserve the
+		// actual user count and every business field when checking for writes.
+		delete(analytics, "stats")
+		raw, err := json.Marshal(analytics)
 		if err != nil {
 			t.Fatal(err)
 		}
-		result["issue"] = raw
+		result["analytics"] = raw
 		return result
 	}
 	type credential struct{ ID, Token string }
