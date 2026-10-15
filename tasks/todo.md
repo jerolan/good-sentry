@@ -95,6 +95,10 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - [x] Add verified/pinned GitHub Actions CI and Pages workflows, push, fix actual workflow failures and verify the deployed public site URL.
 
 - [ ] Complete scoped API tokens, team memberships, invitations and email password recovery.
+  - [ ] Store hashed expiring/revocable organization/project-scoped read credentials and consume them through authorized compatible project reads, preserving current memberships and explicit all-project semantics.
+  - [ ] Add session/CSRF-protected credential management and bearer/scope/header/prefix transport boundaries without widening native or SDK authentication.
+  - [ ] Deliver the responsive one-time-secret creation/list/revoke UI with real owner/member, pagination, input retention and safe text acceptance.
+  - [ ] Verify actual issued credentials with pinned sentry-cli project listing, revoked rejection, PostgreSQL/race checks and final-image restart/remote CI. Release/write consumers and the remaining account capabilities stay required.
 - [ ] Complete supported Sentry-compatible management API routes, OpenAPI/admin flags and endpoint matrix.
 - [ ] Verify GitLab error tracking and Grafana datasource integrations.
 - [ ] Deliver optional authenticated MCP with tool-level scope enforcement.
