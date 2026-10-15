@@ -401,6 +401,16 @@
   .monitor-fields > .field:nth-child(3),.monitor-fields > .field:last-child { @apply col-span-full; }
   .checkbox-field { @apply flex items-center gap-2 font-medium; }
   .checkbox-field input { @apply w-4 h-4; }
+  .token-form-fields { @apply grid gap-4; grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); }
+  .token-fieldset { @apply min-w-0 m-0 p-4 border border-outline rounded-md; }
+  .token-fieldset legend { @apply px-1 font-semibold; }
+  .token-fieldset[hidden] { @apply hidden; }
+  .token-fieldset .checkbox-field { @apply wrap-anywhere items-start; }
+  .token-fieldset input { @apply shrink-0; }
+  .token-secret { @apply block p-3 bg-surface-subtle rounded-md font-mono wrap-anywhere; }
+  .token-name { @apply min-w-[180px] max-w-[260px] wrap-anywhere; }
+  .token-projects { @apply min-w-[220px] max-w-[300px] wrap-anywhere; }
+  .token-actions { @apply min-w-[180px]; }
   .monitor-confirmation { @apply p-4 mb-5 rounded-md border border-[#edc9c8] bg-danger-soft flex flex-col gap-3 wrap-anywhere; }
   .button.danger { @apply text-white bg-danger border-danger; }
   @media(min-width:1500px) {

@@ -6,13 +6,14 @@
   const configuredBase = document.querySelector('meta[name="goodsentry-base"]')?.content || '';
   const base = configuredBase === '__GOODSENTRY_BASE__' ? '' : configuredBase.replace(/\/$/, '');
   const pageSize = 25;
-  const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts' };
+  const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', 'api-tokens': 'API tokens' };
   const traceReset = { traceView: null, traceProject: null, tracePage: null, traceNode: null, traceErrorsPage: null, returnView: null };
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
   let fieldNumber = 0;
   let notificationTimer;
   let alertsUI;
+  let issuedAPIToken;
 
   function node(tag, attributes = {}, ...children) {
     const element = document.createElement(tag);
@@ -137,6 +138,7 @@
   }
 
   function navigate(changes) {
+    if (Object.hasOwn(changes, 'view') || Object.hasOwn(changes, 'org')) clearAPIToken();
     history.pushState(null, '', routeURL(changes));
     loadRoute(true);
   }
@@ -160,6 +162,7 @@
       monitors: 'M2 12h5l3-8 4 16 3-8h5',
       alerts: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4',
       projects: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
+      'api-tokens': 'M14 7a5 5 0 1 0 3 9l4-4-3-3-2 2M7 7h.01',
     };
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     for (const [name, value] of Object.entries({ class: 'nav-icon', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false' })) svg.setAttribute(name, value);
@@ -174,6 +177,7 @@
   }
 
   function renderAuth(setup) {
+    clearAPIToken();
     document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
     state.projects = [];
     commentDrafts.clear();
@@ -222,10 +226,11 @@
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
-      ['issues', 'transactions', 'logs', 'monitors', 'alerts', 'projects']
+      ['issues', 'transactions', 'logs', 'monitors', 'alerts', 'projects', 'api-tokens']
         .filter(section => section !== 'monitors' || state.me.features?.uptime === true)
         .filter(section => section !== 'logs' || state.me.features?.logs !== false)
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
+        .filter(section => section !== 'api-tokens' || ['owner', 'admin'].includes(org?.role))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
           { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
@@ -269,6 +274,7 @@
     state.organization = state.me.organizations?.find(item => item.slug === params.get('org')) || state.me.organizations?.[0] || null;
     const requestedView = params.get('view');
     const view = Object.prototype.hasOwnProperty.call(viewNames, requestedView) ? requestedView : 'issues';
+    if (view !== 'api-tokens' || issuedAPIToken?.organization !== state.organization?.slug) clearAPIToken();
     const main = renderShell(view);
     if (!state.organization) {
       main.append(node('div', { class: 'card panel no-org' }, empty('No organization access', 'Your account does not belong to an organization. Contact your workspace owner to request access.')));
@@ -276,6 +282,11 @@
     }
     if ((view === 'monitors' && state.me.features?.uptime !== true) || (view === 'logs' && state.me.features?.logs === false)) {
       main.append(pageHeader(viewNames[view], `${viewNames[view]} is disabled on this server.`));
+      return;
+    }
+    if (view === 'api-tokens' && !['owner', 'admin'].includes(state.organization.role)) {
+      main.append(pageHeader('API tokens', 'Organization owners and admins manage automation credentials.'),
+        node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner or admin to manage API tokens.')));
       return;
     }
     loading(main, view === 'issues' && params.get('issue') ? 'Loading issue…' : `Loading ${viewNames[view].toLowerCase()}…`);
@@ -289,6 +300,11 @@
         renderIssue(main, detail);
       } else if (view === 'projects') {
         renderProjects(main);
+      } else if (view === 'api-tokens') {
+        const query = new URLSearchParams({ page: params.has('page') ? params.get('page') : '1' });
+        const result = await request(`${apiTokenPath()}?${query}`);
+        if (version !== state.requestVersion) return;
+        renderAPITokens(main, result);
       } else if (view === 'alerts') {
         const { createAlertsUI } = await import('./alerts.js');
         if (version !== state.requestVersion) return;
@@ -824,6 +840,111 @@
     main.append(panel);
   }
 
+  function clearAPIToken() {
+    issuedAPIToken = null;
+    document.getElementById('api-token-secret')?.remove();
+  }
+
+  function apiTokenPath(id) {
+    const path = `/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/api-tokens`;
+    return id ? `${path}/${encodeURIComponent(id)}` : path;
+  }
+
+  function renderAPITokens(main, result) {
+    document.title = 'API tokens · GoodSentry';
+    main.replaceChildren(pageHeader('API tokens', 'Read access for automation in this organization.', button('Refresh', () => loadRoute())));
+    if (issuedAPIToken) {
+      const secret = issuedAPIToken.record.token;
+      const reveal = node('section', { id: 'api-token-secret', class: 'card panel', 'aria-label': 'New API token' },
+        node('div', { class: 'panel-body form-stack' }, node('h2', {}, 'Save your API token'),
+          node('p', { class: 'muted' }, 'This secret is shown only once. Copy it now and store it securely; it cannot be retrieved after you dismiss or leave this view.'),
+          node('code', { class: 'token-secret', 'aria-label': 'API token secret' }, secret),
+          node('div', { class: 'actions' }, button('Copy token', () => copyValue(secret, 'API token'), 'primary'), button('Dismiss token', clearAPIToken))));
+      main.append(reveal);
+    }
+    main.append(apiTokenForm());
+    const panel = node('section', { class: 'card panel', 'aria-label': 'API token metadata' }, node('div', { class: 'panel-title' }, node('h2', {}, 'Issued tokens')));
+    const tokens = result.data || [];
+    if (!tokens.length) panel.append(empty('No API tokens on this page', 'Create a read credential for your automation, or choose an earlier page.'));
+    else {
+      const rows = tokens.map(token => {
+        const status = token.revokedAt ? 'Revoked' : Date.parse(token.expiresAt) <= Date.now() ? 'Expired' : 'Active';
+        const controls = node('div', { class: 'actions' });
+        const revoke = button('Revoke', () => {
+          const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+          const confirm = button('Confirm revoke', async () => {
+            confirm.disabled = true;
+            try {
+              await request(apiTokenPath(token.id), { method: 'DELETE' });
+              if (issuedAPIToken?.record.id === token.id) clearAPIToken();
+              notify('API token revoked.');
+              await loadRoute();
+            } catch (failure) { formError(error, failure); confirm.disabled = false; }
+          }, 'danger small');
+          controls.replaceChildren(node('p', { class: 'small' }, 'Revoke this token? Subsequent requests will be denied.'), error, confirm, button('Cancel', () => controls.replaceChildren(revoke), 'small'));
+        }, 'small');
+        if (!token.revokedAt) controls.append(revoke);
+        return node('tr', {},
+          node('td', { class: 'token-name' }, node('strong', {}, token.name), node('div', { class: 'small muted' }, `Token ${token.id}`), node('code', {}, `${token.prefix}…`)),
+          node('td', {}, node('span', { class: `badge badge-sm ${status === 'Active' ? 'resolved' : 'ignored'}` }, status), token.revokedAt ? node('div', {}, node('time', { class: 'small muted', datetime: token.revokedAt }, date(token.revokedAt))) : null),
+          node('td', {}, token.scopes.map(scope => node('div', { class: 'small mono' }, scope))),
+          node('td', { class: 'token-projects' }, token.allProjects ? 'All current and future projects' : token.projects.length ? token.projects.map(project => node('div', {}, project.name, node('span', { class: 'small muted mono' }, ` (${project.slug})`))) : 'No remaining selected projects'),
+          node('td', { class: 'small nowrap' }, `User ${token.createdBy}`, node('div', { class: 'muted' }, node('time', { datetime: token.dateCreated }, date(token.dateCreated)))),
+          node('td', { class: 'nowrap' }, node('time', { datetime: token.expiresAt }, date(token.expiresAt))), node('td', { class: 'token-actions' }, controls));
+      });
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, ['Token', 'Status', 'Scopes', 'Projects', 'Created by / created', 'Expires', 'Actions'].map(label => node('th', { scope: 'col' }, label)))), node('tbody', {}, rows))));
+    }
+    const previous = button('Previous', () => navigate({ page: result.page - 1 }));
+    const next = button('Next', () => navigate({ page: result.page + 1 }));
+    previous.disabled = result.page <= 1;
+    next.disabled = !result.hasMore;
+    panel.append(node('div', { class: 'pagination' }, node('span', {}, `${number(tokens.length)} tokens on this page · Page ${number(result.page)}`), node('div', { class: 'actions' }, previous, next)));
+    main.append(panel);
+  }
+
+  function apiTokenForm() {
+    const name = field('Token name', 'text', { name: 'name', required: true, autocomplete: 'off', placeholder: 'Deployment project reader' });
+    name.wrap.append(node('p', { class: 'help' }, '1–100 characters. Names may be reused.'));
+    const lifetime = field('Lifetime (days)', 'number', { name: 'expiresInDays', value: 90, required: true, min: 1, max: 366, step: 1 });
+    const scopes = ['org:read', 'project:read'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: true }) }));
+    const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Read scopes'),
+      scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads individual project metadata.'));
+    const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
+    const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
+    const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
+      projects.map(project => node('label', { class: 'checkbox-field' }, project.input, project.name)), projects.length ? null : node('p', { class: 'muted small' }, 'Create a project before issuing a restricted token.'));
+    access.input.addEventListener('change', () => { projectFields.hidden = access.input.value !== 'selected'; });
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Create token');
+    const form = node('form', { class: 'panel-body form-stack', 'aria-label': 'Create API token' },
+      node('h2', {}, 'Create API token'), error, node('div', { class: 'token-form-fields' }, name.wrap, lifetime.wrap), scopeFields, access.wrap,
+      node('p', { class: 'muted small' }, 'All current and future projects includes projects created after this token. Selected projects grants access only to your choices.'),
+      projectFields, node('div', { class: 'actions' }, submit));
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      const selectedScopes = scopes.filter(item => item.input.checked).map(item => item.scope);
+      const projectIds = access.input.value === 'selected' ? projects.filter(item => item.input.checked).map(item => item.id) : [];
+      if (!selectedScopes.length || (access.input.value === 'selected' && !projectIds.length)) {
+        formError(error, new Error(!selectedScopes.length ? 'Choose at least one read scope.' : 'Choose at least one project for restricted access.'));
+        return;
+      }
+      submit.disabled = true;
+      submit.textContent = 'Creating token…';
+      const version = state.requestVersion;
+      const organization = state.organization.slug;
+      try {
+        const record = await request(apiTokenPath(), { method: 'POST', body: { name: name.input.value, scopes: selectedScopes, projectIds, expiresInDays: Number(lifetime.input.value) } });
+        if (version !== state.requestVersion) return;
+        issuedAPIToken = { organization, record };
+        await loadRoute();
+      } catch (failure) { formError(error, failure); }
+      finally { submit.disabled = false; submit.textContent = 'Create token'; }
+    });
+    return node('section', { class: 'card panel' }, form);
+  }
+
   function canManageMonitors() {
     return ['owner', 'admin'].includes(state.organization.role);
   }
@@ -1268,5 +1389,6 @@
   }
 
   addEventListener('popstate', () => loadRoute(true));
+  addEventListener('pagehide', clearAPIToken);
   initialize();
 })();

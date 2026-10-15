@@ -64,6 +64,7 @@ docker compose down
 | Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. |
 | Uptime | HTTP HEAD/GET/POST, TCP and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
 | Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |
+| Automation credentials | Expiring, revocable read tokens limited to an organization and selected projects, with one-time reveal and compatible project metadata reads. |
 | Deployment | One non-root application image, PostgreSQL-only coordination, embedded Tailwind CSS and persistence across application restarts. |
 
 The browser workflows run at 320, 768 and 1440 pixels. PostgreSQL integration and race tests cover concurrent ingestion, duplicate retries, tenant boundaries, fenced worker leases and restart recovery. Alert acceptance uses actual local HTTP/SMTP receivers, including retries across two application replicas.
@@ -143,6 +144,21 @@ Choose **Operations** for a transaction group's child-operation counts, average,
 Choose **View trace** from a transaction, occurrence, log or error to inspect its stored spans across projects. The waterfall uses recorded parent IDs and UTC timestamps, with 50-node pages, links to parents on other pages, selected raw JSON and related errors and logs. Missing, ambiguous and cyclic relationships remain visible. Incomplete timing stays unavailable; zero-duration spans appear as points. A trace includes all stored time in its selected project scope, and Back restores the originating filters and page.
 
 On upgrade, GoodSentry indexes historical legacy spans inside the application, one event per transaction. This resumes after restart and preserves original event JSON and operation statistics. Pending history shows an indexing message and retry action. Related trace logs include historical uppercase IDs; ordinary Logs filters retain exact matching.
+
+</details>
+
+<details>
+<summary><strong>API tokens for project reads</strong></summary>
+
+Owners and admins can open **API tokens** to create a credential, select projects and set its lifetime. The secret appears once; copy it before dismissing or leaving the view. Tokens expire after 90 days by default, with a selectable lifetime of 1–366 days. Revocation takes effect on subsequent requests. An all-project credential also includes projects created later; a restricted credential keeps only its selected projects.
+
+The implemented scopes are `org:read` for listing authorized projects and `project:read` for individual project metadata. Compatible responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
+
+```sh
+SENTRY_URL=http://localhost:8000/ SENTRY_ORG=my-workspace sentry-cli projects list
+```
+
+These credentials currently consume the compatible organization project-list and project-detail routes. Release/write scopes and the remaining management APIs are pending.
 
 </details>
 
