@@ -51,7 +51,8 @@ type Log struct {
 	Body        string          `json:"body"`
 	Service     string          `json:"service"`
 	Environment string          `json:"environment"`
-	Attributes  json.RawMessage `json:"attributes"`
+	Attributes  json.RawMessage `json:"attributes,omitempty"`
+	Source      string          `json:"source,omitempty"`
 }
 
 func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID string, window *TimeWindow) ([]TransactionGroup, error) {
@@ -147,7 +148,7 @@ func (s *Store) Logs(ctx context.Context, userID, orgSlug string, f LogFilter) (
 	}
 	args = append(args, (page-1)*25)
 	rows, err := s.pool.Query(ctx, `SELECT l.id::text,l.project_id::text,l.timestamp,l.trace_id,l.span_id,
-		l.level,l.body,l.service,l.environment,l.attributes FROM logs l JOIN projects p ON p.id=l.project_id `+
+		l.level,l.body,l.service,l.environment,l.attributes,l.otlp_batch_id IS NOT NULL FROM logs l JOIN projects p ON p.id=l.project_id `+
 		where+fmt.Sprintf("ORDER BY l.timestamp DESC,l.id DESC LIMIT 25 OFFSET $%d", len(args)), args...)
 	if err != nil {
 		return nil, err
@@ -156,8 +157,13 @@ func (s *Store) Logs(ctx context.Context, userID, orgSlug string, f LogFilter) (
 	items := []Log{}
 	for rows.Next() {
 		var l Log
-		if err := rows.Scan(&l.ID, &l.ProjectID, &l.Timestamp, &l.TraceID, &l.SpanID, &l.Level, &l.Body, &l.Service, &l.Environment, &l.Attributes); err != nil {
+		var native bool
+		if err := rows.Scan(&l.ID, &l.ProjectID, &l.Timestamp, &l.TraceID, &l.SpanID, &l.Level, &l.Body, &l.Service, &l.Environment, &l.Attributes, &native); err != nil {
 			return nil, err
+		}
+		if native {
+			l.Source = "otlp"
+			l.Attributes = nil
 		}
 		items = append(items, l)
 	}
