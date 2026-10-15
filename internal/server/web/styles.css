@@ -319,6 +319,19 @@
   .time-window-summary { @apply flex flex-wrap items-center gap-3 mb-4 text-muted text-sm; }
   .time-window-summary .mono { @apply wrap-anywhere min-w-0; }
   .transaction-name { @apply min-w-[200px] wrap-anywhere; }
+  .transaction-heading > div:first-child { @apply min-w-0 flex-1; }
+  .transaction-heading h1,.transaction-heading p { @apply wrap-anywhere; }
+  .transaction-summary { @apply grid grid-cols-2 gap-4 mb-5; }
+  .transaction-summary > .panel + .panel { @apply mt-0; }
+  .transaction-context .trace-reference { @apply min-w-0 flex-wrap; }
+  .transaction-context .trace-reference code { @apply wrap-anywhere; }
+  .transaction-context > div:first-child > p { @apply mb-2; }
+  .transaction-span-name { @apply min-w-[240px] max-w-[400px] wrap-anywhere; }
+  .transaction-span-name > div { @apply mt-1; }
+  .transaction-span-raw { @apply mt-3; }
+  .transaction-span-raw > summary { @apply p-0 text-sm text-accent; }
+  .transaction-span-raw[open] > summary { @apply border-0 mb-2; }
+  .transaction-span-raw .event-json { @apply p-3; }
   .trace-reference { @apply flex items-center gap-2 min-w-[260px]; }
   .trace-reference a { @apply wrap-anywhere text-[.8rem]; }
   .log-message-column { @apply min-w-[280px] max-w-[560px]; }
@@ -391,6 +404,7 @@
     .topbar { @apply px-6 py-4; }
   }
   @media(max-width:900px) {
+    .transaction-summary { @apply grid-cols-1; }
     .detail-grid { @apply grid-cols-1; }
     .detail-aside { @apply grid grid-cols-2 gap-4 items-start; }
     .detail-aside>.panel+.panel { @apply mt-0; }

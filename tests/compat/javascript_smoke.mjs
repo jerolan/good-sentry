@@ -58,11 +58,15 @@ async function main() {
   const message = `GoodSentry Node SDK acceptance ${runID}`;
   const transactionName = `GoodSentry Node SDK transaction ${runID}`;
   const logBody = `GoodSentry Node SDK log ${runID}`;
+  const finishedSpans = new Map();
   const options = {
     dsn: project.dsn, tracesSampleRate: 1, attachStacktrace: true,
     environment: "sdk-compat", release: "goodsentry-compat@1",
     debug: Boolean(process.env.COMPAT_DEBUG),
     beforeSendSpan(span) {
+      finishedSpans.set(span.span_id, {
+        start_timestamp: span.start_timestamp, end_timestamp: span.end_timestamp,
+      });
       if (process.env.COMPAT_DEBUG && JSON.stringify(span).includes(runID)) {
         console.error("SDK root span:", JSON.stringify(span));
       }
@@ -87,10 +91,12 @@ async function main() {
   Sentry.init(options);
   const eventID = Sentry.captureException(new Error(message));
   assert.ok(eventID, "official Node SDK dropped the exception");
-  let traceID;
+  let traceID, rootSpanID, childSpanID;
   await Sentry.startSpan({ name: transactionName, op: "compat.node" }, async (span) => {
     traceID = span.spanContext().traceId;
-    await Sentry.startSpan({ name: "SDK acceptance child", op: "compat.child" }, async () => {
+    rootSpanID = span.spanContext().spanId;
+    await Sentry.startSpan({ name: "SDK acceptance child", op: "compat.child" }, async (child) => {
+      childSpanID = child.spanContext().spanId;
       Sentry.logger.info(logBody, {
         "compat.run": runID, "compat.attempt": 7,
         "compat.ready": true, "compat.ratio": 1.5,
@@ -145,9 +151,60 @@ async function main() {
     assert.equal(row.count, 1);
     assert.equal(row.errorCount, 0);
     assert.ok(row.avgDuration > 0 && row.p50 > 0 && row.p95 >= row.p50, "invalid transaction duration metrics");
+    const reference = row.latestSample;
+    assert.equal(reference.source, "span", "current Node SDK must select a standalone segment occurrence");
+    assert.equal(reference.projectId, project.id, "aggregate linked an occurrence from another project");
+    assert.match(reference.id, /^[1-9][0-9]*$/, "occurrence ID must be a positive decimal row identity");
+    const detail = await api("GET", `${orgPath}/transactions/${reference.source}/${reference.id}?page=1`);
+    assert.deepEqual(detail.sample, reference);
+    assert.equal(detail.traceId, traceID);
+    assert.equal(detail.spanId, rootSpanID);
+    assert.equal(detail.parentSpanId, "");
+    assert.equal(detail.name, transactionName);
+    assert.equal(detail.op, "compat.node");
+    assert.equal(detail.environment, "sdk-compat");
+    assert.equal(detail.release, "goodsentry-compat@1");
+    assert.equal(detail.duration, row.avgDuration, "detail selected a different duration than the aggregate occurrence");
+    const emittedRoot = finishedSpans.get(rootSpanID);
+    assert.ok(emittedRoot, "official SDK did not finish the expected root span");
+    assert.ok(Number.isFinite(emittedRoot.start_timestamp) && Number.isFinite(emittedRoot.end_timestamp), "streaming SDK root timing must be finite Unix seconds");
+    assert.ok(Math.abs(detail.duration - (emittedRoot.end_timestamp - emittedRoot.start_timestamp) * 1000) <= 0.002, `occurrence changed SDK root duration: detail=${detail.duration}, SDK start=${emittedRoot.start_timestamp} end=${emittedRoot.end_timestamp}`);
+    assert.equal(detail.spanScope, "projectTrace");
+    assert.equal(detail.spanCount, 2);
+    assert.equal(detail.spans.length, 2);
+    assert.equal(detail.page, 1);
+    assert.equal(detail.pageSize, 50);
+    assert.equal(detail.hasMore, false);
+    assert.equal(detail.data.is_segment, true);
+    assert.equal(detail.data.trace_id, traceID);
+    assert.equal(detail.data.span_id, rootSpanID);
+    assert.equal(detail.data.name, transactionName);
+    for (const [key, value] of Object.entries({
+      "sentry.op": "compat.node", "sentry.environment": "sdk-compat", "sentry.release": "goodsentry-compat@1",
+    })) assert.deepEqual(detail.data.attributes[key], { type: "string", value }, `raw root attribute ${key} changed`);
+    const child = detail.spans.find((value) => value.spanId === childSpanID);
+    assert.ok(child, "occurrence lost the SDK child span");
+    assert.equal(child.parentSpanId, rootSpanID);
+    assert.equal(child.name, "SDK acceptance child");
+    assert.equal(child.op, "compat.child");
+    assert.equal(child.data.is_segment, false);
+    assert.equal(child.data.trace_id, traceID);
+    assert.equal(child.data.span_id, childSpanID);
+    assert.equal(child.data.parent_span_id, rootSpanID);
+    assert.equal(child.data.name, "SDK acceptance child");
+    assert.deepEqual(child.data.attributes["sentry.op"], { type: "string", value: "compat.child" });
+    assert.deepEqual(child.data.attributes["sentry.segment.id"], { type: "string", value: rootSpanID });
+    const emittedChild = finishedSpans.get(childSpanID);
+    assert.ok(emittedChild, "official SDK did not finish the expected child span");
+    assert.ok(Number.isFinite(emittedChild.start_timestamp) && Number.isFinite(emittedChild.end_timestamp), "streaming SDK child timing must be finite Unix seconds");
+    assert.ok(child.duration !== null && child.duration >= 0 && Math.abs(child.duration - (emittedChild.end_timestamp - emittedChild.start_timestamp) * 1000) <= 0.002, "occurrence changed SDK child duration");
+    for (const value of [detail, child]) {
+      assert.ok(value.startTimestamp?.endsWith("Z") && value.endTimestamp?.endsWith("Z"), "normalized SDK timing must remain available in UTC");
+      assert.ok(Date.parse(value.endTimestamp) >= Date.parse(value.startTimestamp), "normalized SDK timing reversed");
+    }
     return true;
   });
-  console.log(`PASS: Node SDK transaction ${JSON.stringify(transactionName)} aggregated with trace ${traceID}`);
+  console.log(`PASS: Node SDK transaction ${JSON.stringify(transactionName)} aggregated and span occurrence retained root/child timing, parent and raw typed attributes for trace ${traceID}`);
 
 }
 

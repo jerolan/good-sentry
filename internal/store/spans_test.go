@@ -219,4 +219,41 @@ func TestTransactionsCombineSegmentsWithLegacyWithoutCountingChildren(t *testing
 			}
 		})
 	}
+	// Row ids come from separate sequences. A later event id must not change
+	// the documented source tie-break, or split the trace and sample identity.
+	tied := spanFixture("0000000000000010", true, float64(base.Unix())+3.875, float64(base.Unix())+4)
+	tied["trace_id"] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+	if _, err := db.IngestSpans(ctx, project.ID, spanBatch(t, tied), 1); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `SELECT setval(pg_get_serial_sequence('events','id'),10000)`); err != nil {
+		t.Fatal(err)
+	}
+	legacy.ID = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+	legacy.TraceID = legacy.ID
+	if _, _, err := db.Ingest(ctx, project.ID, legacy); err != nil {
+		t.Fatal(err)
+	}
+	var latestID string
+	if err := db.pool.QueryRow(ctx, `SELECT id::text FROM spans WHERE project_id=$1 AND span_id='0000000000000010'`, project.ID).Scan(&latestID); err != nil {
+		t.Fatal(err)
+	}
+	groups, err = db.Transactions(ctx, user.ID, org.Slug, "", nil)
+	if err != nil || len(groups) != 1 || groups[0].Count != 6 || groups[0].LatestTraceID != tied["trace_id"] || groups[0].LatestSample != (TransactionReference{Source: "span", ID: latestID, ProjectID: project.ID}) {
+		t.Fatalf("equal-time source selection split occurrence identity: %+v, %v", groups, err)
+	}
+	other, err := db.CreateProject(ctx, user.ID, org.Slug, "Equal-time sibling", "javascript")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.IngestSpans(ctx, other.ID, spanBatch(t, tied), 1); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.pool.QueryRow(ctx, `SELECT id::text FROM spans WHERE project_id=$1 AND span_id='0000000000000010'`, other.ID).Scan(&latestID); err != nil {
+		t.Fatal(err)
+	}
+	groups, err = db.Transactions(ctx, user.ID, org.Slug, "", nil)
+	if err != nil || len(groups) != 1 || groups[0].Count != 7 || groups[0].LatestSample != (TransactionReference{Source: "span", ID: latestID, ProjectID: other.ID}) {
+		t.Fatalf("equal-time occurrence lost its actual sibling project: %+v, %v", groups, err)
+	}
 }

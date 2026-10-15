@@ -12,11 +12,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -146,6 +148,7 @@ func run() error {
 	transactionName := "GoodSentry SDK transaction " + runID
 	transaction := sentry.StartTransaction(ctx, transactionName, sentry.WithOpName("compat.sdk"))
 	child := transaction.StartChild("compat.child")
+	child.Description = "SDK acceptance child"
 	child.SetData("acceptance", true)
 	logMessage := "GoodSentry SDK log " + runID
 	sentry.NewLogger(transaction.Context()).Info().
@@ -164,10 +167,10 @@ func run() error {
 		return err
 	}
 	fmt.Printf("PASS: official sentry-go v0.50.0 exception %s persisted and visible in project %s\n", *eventID, created.Slug)
-	if err := client.verifyTransaction(ctx, orgPath, transactionName, transaction.TraceID.String()); err != nil {
+	if err := client.verifyTransaction(ctx, orgPath, created.ID, transactionName, transaction, child); err != nil {
 		return err
 	}
-	fmt.Printf("PASS: SDK transaction %q aggregated with trace %s\n", transactionName, transaction.TraceID.String())
+	fmt.Printf("PASS: SDK transaction %q aggregated and event occurrence retained root/child timing, parent and raw context for trace %s\n", transactionName, transaction.TraceID.String())
 	if err := client.verifyLog(ctx, orgPath, logMessage, transaction.TraceID.String(), runID); err != nil {
 		return err
 	}
@@ -217,18 +220,26 @@ func (c *apiClient) verifyException(ctx context.Context, orgPath, eventID string
 	return fmt.Errorf("captured event %s was not visible through the authenticated issue API", eventID)
 }
 
-func (c *apiClient) verifyTransaction(ctx context.Context, orgPath, name, traceID string) error {
+type transactionReference struct {
+	Source    string `json:"source"`
+	ID        string `json:"id"`
+	ProjectID string `json:"projectId"`
+}
+
+func (c *apiClient) verifyTransaction(ctx context.Context, orgPath, projectID, name string, root, child *sentry.Span) error {
+	traceID := root.TraceID.String()
 	for attempt := 0; attempt < 25; attempt++ {
 		var listed struct {
 			Data []struct {
-				Transaction   string  `json:"transaction"`
-				Op            string  `json:"op"`
-				Count         int     `json:"count"`
-				ErrorCount    int     `json:"errorCount"`
-				AvgDuration   float64 `json:"avgDuration"`
-				P50           float64 `json:"p50"`
-				P95           float64 `json:"p95"`
-				LatestTraceID string  `json:"latestTraceId"`
+				Transaction   string               `json:"transaction"`
+				Op            string               `json:"op"`
+				Count         int                  `json:"count"`
+				ErrorCount    int                  `json:"errorCount"`
+				AvgDuration   float64              `json:"avgDuration"`
+				P50           float64              `json:"p50"`
+				P95           float64              `json:"p95"`
+				LatestTraceID string               `json:"latestTraceId"`
+				LatestSample  transactionReference `json:"latestSample"`
 			} `json:"data"`
 		}
 		if err := c.json(ctx, http.MethodGet, orgPath+"/transactions", nil, http.StatusOK, &listed); err != nil {
@@ -243,6 +254,83 @@ func (c *apiClient) verifyTransaction(ctx context.Context, orgPath, name, traceI
 			}
 			if transaction.AvgDuration <= 0 || transaction.P50 <= 0 || transaction.P95 < transaction.P50 {
 				return fmt.Errorf("SDK transaction aggregate has invalid duration metrics: %+v", transaction)
+			}
+			ref := transaction.LatestSample
+			id, err := strconv.ParseInt(ref.ID, 10, 64)
+			if err != nil || id <= 0 || strconv.FormatInt(id, 10) != ref.ID || ref.Source != "event" || ref.ProjectID != projectID {
+				return fmt.Errorf("Go aggregate has invalid event occurrence reference: %+v", ref)
+			}
+			var detail struct {
+				Sample         transactionReference `json:"sample"`
+				EventID        string               `json:"eventId"`
+				TraceID        string               `json:"traceId"`
+				SpanID         string               `json:"spanId"`
+				ParentSpanID   string               `json:"parentSpanId"`
+				Name           string               `json:"name"`
+				Op             string               `json:"op"`
+				Environment    string               `json:"environment"`
+				Release        string               `json:"release"`
+				Duration       float64              `json:"duration"`
+				StartTimestamp *time.Time           `json:"startTimestamp"`
+				EndTimestamp   time.Time            `json:"endTimestamp"`
+				SpanScope      string               `json:"spanScope"`
+				SpanCount      int                  `json:"spanCount"`
+				Page           int                  `json:"page"`
+				PageSize       int                  `json:"pageSize"`
+				HasMore        bool                 `json:"hasMore"`
+				Data           struct {
+					EventID     string `json:"event_id"`
+					Transaction string `json:"transaction"`
+					SDK         struct {
+						Name    string `json:"name"`
+						Version string `json:"version"`
+					} `json:"sdk"`
+					Contexts struct {
+						Trace struct {
+							TraceID string `json:"trace_id"`
+							SpanID  string `json:"span_id"`
+							Op      string `json:"op"`
+						} `json:"trace"`
+					} `json:"contexts"`
+				} `json:"data"`
+				Spans []struct {
+					ID             string     `json:"id"`
+					SpanID         string     `json:"spanId"`
+					ParentSpanID   string     `json:"parentSpanId"`
+					Name           string     `json:"name"`
+					Op             string     `json:"op"`
+					StartTimestamp *time.Time `json:"startTimestamp"`
+					EndTimestamp   *time.Time `json:"endTimestamp"`
+					Duration       *float64   `json:"duration"`
+					Data           struct {
+						SpanID       string `json:"span_id"`
+						ParentSpanID string `json:"parent_span_id"`
+						Description  string `json:"description"`
+						Op           string `json:"op"`
+						Data         struct {
+							Acceptance bool `json:"acceptance"`
+						} `json:"data"`
+					} `json:"data"`
+				} `json:"spans"`
+			}
+			if err := c.json(ctx, http.MethodGet, orgPath+"/transactions/"+ref.Source+"/"+ref.ID+"?page=1", nil, http.StatusOK, &detail); err != nil {
+				return err
+			}
+			if detail.Sample != ref || detail.TraceID != traceID || detail.SpanID != root.SpanID.String() || detail.ParentSpanID != "" || detail.Name != name || detail.Op != "compat.sdk" || detail.Environment != "sdk-compat" || detail.Release != "goodsentry-compat@1" {
+				return fmt.Errorf("Go occurrence lost its project/root identity or context: %+v", detail)
+			}
+			if detail.StartTimestamp == nil || math.Abs(detail.StartTimestamp.Sub(root.StartTime).Seconds()) > 0.000002 || math.Abs(detail.EndTimestamp.Sub(root.EndTime).Seconds()) > 0.000002 || detail.Duration <= 0 || math.Abs(detail.Duration-root.EndTime.Sub(root.StartTime).Seconds()*1000) > 0.002 || detail.Duration != transaction.AvgDuration {
+				return fmt.Errorf("Go occurrence lost SDK root timing: duration=%v start=%v end=%v", detail.Duration, detail.StartTimestamp, detail.EndTimestamp)
+			}
+			if detail.SpanScope != "transaction" || detail.SpanCount != 1 || len(detail.Spans) != 1 || detail.Page != 1 || detail.PageSize != 50 || detail.HasMore {
+				return fmt.Errorf("Go occurrence child scope/pagination changed: scope=%s count=%d rows=%d", detail.SpanScope, detail.SpanCount, len(detail.Spans))
+			}
+			got := detail.Spans[0]
+			if got.ID != "1" || got.SpanID != child.SpanID.String() || got.ParentSpanID != root.SpanID.String() || got.Name != "SDK acceptance child" || got.Op != "compat.child" || got.StartTimestamp == nil || got.EndTimestamp == nil || got.Duration == nil || *got.Duration < 0 || math.Abs(*got.Duration-child.EndTime.Sub(child.StartTime).Seconds()*1000) > 0.002 {
+				return fmt.Errorf("Go occurrence lost SDK child name/parent/timing: %+v", got)
+			}
+			if detail.EventID == "" || detail.EventID != detail.Data.EventID || detail.Data.Transaction != name || detail.Data.SDK.Name != "sentry.go" || detail.Data.SDK.Version != "0.50.0" || detail.Data.Contexts.Trace.TraceID != traceID || detail.Data.Contexts.Trace.SpanID != root.SpanID.String() || detail.Data.Contexts.Trace.Op != "compat.sdk" || !got.Data.Data.Acceptance || got.Data.SpanID != child.SpanID.String() || got.Data.ParentSpanID != root.SpanID.String() || got.Data.Description != "SDK acceptance child" || got.Data.Op != "compat.child" {
+				return errors.New("Go occurrence lost raw SDK/trace/child context")
 			}
 			return nil
 		}

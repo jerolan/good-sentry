@@ -58,10 +58,10 @@
     notificationTimer = setTimeout(() => { notifications.textContent = ''; }, 5000);
   }
 
-  function parseLogJSON(source) {
+  function parseTelemetryJSON(source) {
     const parsed = JSON.parse(source);
-    // Keep large integer digits as display text; their declared attribute type
-    // remains integer. Validate first, and leave quoted strings untouched.
+    // Keep large integer digits as display text. Validate first, and leave
+    // quoted strings untouched.
     const precise = source.replace(/"(?:\\.|[^"\\])*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g, token => {
       if (!/^-?\d+$/.test(token) || Number.isSafeInteger(Number(token))) return token;
       return JSON.stringify(token);
@@ -86,8 +86,9 @@
       throw new Error('Cannot reach GoodSentry. Check your connection and try again.');
     }
     if (response.status === 204) return null;
-    const data = await response.text().then(source => path.split('?')[0].endsWith('/logs')
-      ? parseLogJSON(source) : JSON.parse(source)).catch(() => null);
+    const endpoint = path.split('?')[0];
+    const data = await response.text().then(source => endpoint.endsWith('/logs') || /\/transactions\/(event|span)\/[^/]+$/.test(endpoint)
+      ? parseTelemetryJSON(source) : JSON.parse(source)).catch(() => null);
     if (!response.ok) {
       if (response.status === 401 && state.me) {
         state.me = null;
@@ -216,7 +217,7 @@
     const organizations = state.me.organizations || [];
     const org = state.organization;
     const selector = node('select', { class: 'select org-select', 'aria-label': 'Organization', onchange: event => {
-      navigate({ org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, page: null, changes: null });
+      navigate({ org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, page: null, changes: null });
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
@@ -226,7 +227,7 @@
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
-          { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
+          { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
           { 'aria-current': view === section ? 'page' : null })));
     const logout = node('button', { type: 'button', class: 'btn btn-sm', onclick: async () => {
       logout.disabled = true;
@@ -305,6 +306,14 @@
           if (version !== state.requestVersion) return;
           renderMonitor(main, monitor, history, (latest || history).data?.[0], params);
         }
+      } else if (view === 'transactions' && (params.has('sampleSource') || params.has('sample'))) {
+        const source = params.get('sampleSource');
+        const id = params.get('sample');
+        if (!source || !id) throw new Error('This occurrence link is incomplete. Open a transaction from the Transactions list.');
+        const query = new URLSearchParams({ page: params.has('page') ? params.get('page') : '1' });
+        const detail = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/transactions/${encodeURIComponent(source)}/${encodeURIComponent(id)}?${query}`);
+        if (version !== state.requestVersion) return;
+        renderTransactionDetail(main, detail, params);
       } else if (view === 'transactions' || view === 'logs') {
         const query = new URLSearchParams();
         const filters = view === 'transactions' ? ['project', 'start', 'end'] : ['project', 'query', 'level', 'environment', 'trace', 'service', 'start', 'end', 'page'];
@@ -392,7 +401,7 @@
     const copy = button('Copy', () => copyValue(traceID, 'Trace ID'), 'small');
     copy.setAttribute('aria-label', 'Copy trace ID');
     return node('div', { class: 'trace-reference' },
-      state.me.features?.logs === false ? node('code', {}, traceID) : routeLink(traceID, { view: 'logs', issue: null, project: projectID || null, trace: traceID, query: null, environment: null, level: null, service: null, status: null, sort: null, page: null, start: params?.get('start') || null, end: params?.get('end') || null, window: params?.get('window') || null }, { class: 'mono', title: 'View logs with this trace ID' }), copy);
+      state.me.features?.logs === false ? node('code', {}, traceID) : routeLink(traceID, { view: 'logs', issue: null, sampleSource: null, sample: null, project: projectID || null, trace: traceID, query: null, environment: null, level: null, service: null, status: null, sort: null, page: null, start: params?.get('start') || null, end: params?.get('end') || null, window: params?.get('window') || null }, { class: 'mono', title: 'View logs with this trace ID' }), copy);
   }
 
   function milliseconds(value) {
@@ -447,17 +456,74 @@
       panel.append(empty('No transactions in this time window', 'Transactions appear when your SDK sends performance data. Check the selected project and your SDK sampling configuration.'));
     } else {
       const rows = transactions.map(transaction => node('tr', {},
-        node('td', { class: 'transaction-name' }, node('strong', {}, text(transaction.transaction, 'Unnamed transaction'))),
+        node('td', { class: 'transaction-name' }, node('strong', {}, transaction.latestSample
+          ? routeLink(text(transaction.transaction, 'Unnamed transaction'), { sampleSource: transaction.latestSample.source, sample: transaction.latestSample.id, page: null }, { class: 'issue-link', title: 'Open the latest transaction occurrence' })
+          : text(transaction.transaction, 'Unnamed transaction'))),
         node('td', {}, node('span', { class: 'mono' }, text(transaction.op, 'Not provided'))),
         node('td', { class: 'nowrap' }, number(transaction.count)), node('td', { class: 'nowrap' }, number(transaction.errorCount)),
         node('td', { class: 'nowrap' }, milliseconds(transaction.avgDuration)), node('td', { class: 'nowrap' }, milliseconds(transaction.p50)),
         node('td', { class: 'nowrap' }, milliseconds(transaction.p95)),
         node('td', { class: 'nowrap' }, node('time', { datetime: transaction.lastSeen }, date(transaction.lastSeen, true))),
-        node('td', {}, traceReference(transaction.latestTraceId, params.get('project'), params))));
+        node('td', {}, traceReference(transaction.latestTraceId, transaction.latestSample?.projectId || params.get('project'), params))));
       const columns = ['Transaction', 'Operation', 'Events', 'Errors', 'Average', 'p50', 'p95', 'Last seen', 'Latest trace'];
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
     }
     main.append(panel);
+  }
+
+  function renderTransactionDetail(main, detail, params) {
+    document.title = `${text(detail.name, 'Transaction occurrence')} · GoodSentry`;
+    const heading = pageHeader(text(detail.name, 'Unnamed transaction'), `${detail.projectName} · ${text(detail.op, 'No operation recorded')}`, button('Refresh', () => loadRoute()));
+    heading.classList.add('transaction-heading');
+    const occurrence = detailPanel('Occurrence', node('div', { class: 'panel-body' }, keyValues([
+      ['Project', detail.projectName], ['Project ID', detail.sample.projectId], ['Operation', detail.op],
+      ['Duration', milliseconds(detail.duration)], ['Status', detail.status], ['Environment', detail.environment], ['Release', detail.release],
+      ['Start (UTC)', detail.startTimestamp || 'Not available'], ['End (UTC)', detail.endTimestamp || 'Not available'],
+    ])));
+    const context = detailPanel('Trace context', node('div', { class: 'panel-body form-stack transaction-context' },
+      node('div', {}, node('p', { class: 'muted small' }, state.me.features?.logs === false ? 'Trace ID' : 'Trace ID · open to view related logs'), traceReference(detail.traceId, detail.sample.projectId, params)),
+      keyValues([
+        ['Source', detail.sample.source === 'event' ? 'Legacy transaction' : 'Standalone segment'], ['Record ID', detail.sample.id],
+        ['Event ID', detail.eventId], ['Span ID', detail.spanId], ['Parent span ID', detail.parentSpanId],
+      ])));
+    const originWindow = telemetryWindow(params, 'transactions').summary;
+    originWindow.setAttribute('aria-label', 'Originating aggregate window');
+    originWindow.prepend(node('strong', {}, 'Aggregate window:'));
+    main.replaceChildren(routeLink('← All transactions', { sampleSource: null, sample: null, page: null }, { class: 'back-link' }),
+      heading, originWindow, node('div', { class: 'transaction-summary' }, occurrence, context), transactionSpans(detail),
+      node('details', { class: 'card panel' }, node('summary', {}, detail.sample.source === 'event' ? 'Original transaction JSON' : 'Original segment JSON'),
+        node('pre', { class: 'event-json' }, JSON.stringify(detail.data, null, 2))));
+  }
+
+  function transactionSpans(detail) {
+    const projectTrace = detail.spanScope === 'projectTrace';
+    const panel = detailPanel(projectTrace ? 'Spans in this project and trace' : 'Transaction spans', node('div', { class: 'panel-body muted small' },
+      projectTrace
+        ? 'Shows all standalone spans in this exact project and trace, including segment roots. Parent IDs describe recorded relationships; rows may belong to other segments. The originating time window does not filter these spans.'
+        : 'Shows spans nested in this transaction, in the order sent by the SDK. The originating time window does not filter these spans.'));
+    panel.setAttribute('aria-label', 'Occurrence spans');
+    const spans = detail.spans || [];
+    if (!spans.length) panel.append(empty(detail.page > 1 ? 'No spans on this page' : 'No spans recorded', detail.page > 1 ? 'Choose an earlier page to inspect the recorded spans.' : projectTrace ? 'No standalone spans were found in this project and trace.' : 'This transaction has no nested spans.'));
+    else {
+      const timestamp = value => value ? node('time', { datetime: value }, value) : node('span', { class: 'muted' }, 'Not available');
+      const rows = spans.map(span => node('tr', {},
+        node('td', { class: 'transaction-span-name' }, node('strong', {}, text(span.name, 'Unnamed span')),
+          node('div', { class: 'mono small' }, text(span.spanId, 'No span ID recorded')),
+          node('div', { class: 'muted small' }, `Record: ${span.id}`),
+          node('details', { class: 'transaction-span-raw' }, node('summary', {}, 'Raw span JSON'), node('pre', { class: 'event-json' }, JSON.stringify(span.data, null, 2)))),
+        node('td', { class: 'mono' }, text(span.op)), node('td', {}, text(span.status)),
+        node('td', { class: 'mono nowrap' }, timestamp(span.startTimestamp)), node('td', { class: 'mono nowrap' }, timestamp(span.endTimestamp)),
+        node('td', { class: 'nowrap' }, span.duration === null || span.duration === undefined ? 'Not available' : milliseconds(span.duration)),
+        node('td', { class: 'mono' }, text(span.parentSpanId))));
+      const columns = ['Span and raw data', 'Operation', 'Status', 'Start (UTC)', 'End (UTC)', 'Duration', 'Parent span ID'];
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
+    }
+    const previous = button('Previous spans', () => navigate({ page: detail.page - 1 }));
+    const next = button('Next spans', () => navigate({ page: detail.page + 1 }));
+    previous.disabled = detail.page <= 1;
+    next.disabled = !detail.hasMore;
+    panel.append(node('div', { class: 'pagination' }, node('span', {}, `${number(detail.spanCount)} spans · ${number(spans.length)} on this page · Page ${number(detail.page)}`), node('div', { class: 'actions' }, previous, next)));
+    return panel;
   }
 
   function logAttributes(attributes) {

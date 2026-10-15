@@ -142,6 +142,13 @@ func TestTransactionsAggregateStoredDurationsAndScope(t *testing.T) {
 	if main == nil || main.Transaction != "GET /checkout" || main.Count != 5 || main.ErrorCount != 1 || math.Abs(main.AvgDuration-400) > 0.001 || math.Abs(main.P50-300) > 0.001 || math.Abs(main.P95-880) > 0.001 || main.LatestTraceID != "00000000000000000000000000000005" {
 		t.Fatalf("wrong persisted aggregate: %+v", main)
 	}
+	var latestID string
+	if err := db.pool.QueryRow(ctx, `SELECT id::text FROM events WHERE project_id=$1 AND event_id='00000000000000000000000000000005'`, project.ID).Scan(&latestID); err != nil {
+		t.Fatal(err)
+	}
+	if main.LatestSample != (TransactionReference{Source: "event", ID: latestID, ProjectID: project.ID}) {
+		t.Fatalf("aggregate cannot open its latest stored transaction: %+v", main.LatestSample)
+	}
 	if _, err := db.Transactions(ctx, "999999999", org.Slug, project.ID, nil); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("unauthorized transaction read: %v", err)
 	}
@@ -153,6 +160,12 @@ func TestTransactionsAggregateStoredDurationsAndScope(t *testing.T) {
 	groups, err = db.Transactions(ctx, user.ID, org.Slug, "", historical)
 	if err != nil || len(groups) != 1 || groups[0].Count != 2 {
 		t.Fatalf("organization-wide window leaked another tenant or omitted sibling project: %+v, %v", groups, err)
+	}
+	if err := db.pool.QueryRow(ctx, `SELECT id::text FROM events WHERE project_id=$1 AND event_id='00000000000000000000000000000015'`, other.ID).Scan(&latestID); err != nil {
+		t.Fatal(err)
+	}
+	if groups[0].LatestSample != (TransactionReference{Source: "event", ID: latestID, ProjectID: other.ID}) {
+		t.Fatalf("equal-time aggregate lost its selected sibling-project identity: %+v", groups[0].LatestSample)
 	}
 	if groups, err := db.Transactions(ctx, user.ID, org.Slug, foreignProject, historical); err != nil || len(groups) != 0 {
 		t.Fatalf("foreign project escaped transaction scope: %+v, %v", groups, err)

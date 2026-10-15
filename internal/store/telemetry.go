@@ -17,15 +17,16 @@ import (
 var ErrInvalidLog = errors.New("invalid log payload")
 
 type TransactionGroup struct {
-	Transaction   string    `json:"transaction"`
-	Op            string    `json:"op"`
-	Count         int64     `json:"count"`
-	ErrorCount    int64     `json:"errorCount"`
-	AvgDuration   float64   `json:"avgDuration"`
-	P50           float64   `json:"p50"`
-	P95           float64   `json:"p95"`
-	LastSeen      time.Time `json:"lastSeen"`
-	LatestTraceID string    `json:"latestTraceId"`
+	Transaction   string               `json:"transaction"`
+	Op            string               `json:"op"`
+	Count         int64                `json:"count"`
+	ErrorCount    int64                `json:"errorCount"`
+	AvgDuration   float64              `json:"avgDuration"`
+	P50           float64              `json:"p50"`
+	P95           float64              `json:"p95"`
+	LastSeen      time.Time            `json:"lastSeen"`
+	LatestTraceID string               `json:"latestTraceId"`
+	LatestSample  TransactionReference `json:"latestSample"`
 }
 
 type TimeWindow struct {
@@ -68,17 +69,20 @@ func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID str
 	rows, err := s.pool.Query(ctx, `WITH telemetry AS (
 		SELECT e.transaction_name AS name,COALESCE(e.data#>>'{contexts,trace,op}','') AS op,e.duration,
 		(e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed,
-		e.timestamp AS timestamp,e.trace_id,e.id,0 AS source
+		e.timestamp AS timestamp,e.trace_id,e.id,0 AS source,e.project_id
 		FROM events e JOIN projects p ON p.id=e.project_id
 		WHERE p.organization_id::text=$1 AND ($2='' OR e.project_id::text=$2) AND e.kind='transaction' AND `+eventRange+`
 		UNION ALL
-		SELECT s.name,s.op,s.duration,s.status='error',s.end_timestamp,s.trace_id,s.id,1
+		SELECT s.name,s.op,s.duration,s.status='error',s.end_timestamp,s.trace_id,s.id,1,s.project_id
 		FROM spans s JOIN projects p ON p.id=s.project_id
 		WHERE p.organization_id::text=$1 AND ($2='' OR s.project_id::text=$2) AND s.is_segment AND `+spanRange+`
 	)
 		SELECT name,op,count(*),count(*) FILTER(WHERE failed),avg(duration),
 		percentile_cont(0.5) WITHIN GROUP(ORDER BY duration),percentile_cont(0.95) WITHIN GROUP(ORDER BY duration),
-		max(timestamp),(array_agg(trace_id ORDER BY timestamp DESC,source DESC,id DESC))[1]
+		max(timestamp),(array_agg(trace_id ORDER BY timestamp DESC,source DESC,id DESC))[1],
+		(array_agg(source ORDER BY timestamp DESC,source DESC,id DESC))[1],
+		(array_agg(id ORDER BY timestamp DESC,source DESC,id DESC))[1]::text,
+		(array_agg(project_id ORDER BY timestamp DESC,source DESC,id DESC))[1]::text
 		FROM telemetry
 		GROUP BY name,op ORDER BY count(*) DESC,max(timestamp) DESC,name,op`, args...)
 	if err != nil {
@@ -88,8 +92,14 @@ func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID str
 	items := []TransactionGroup{}
 	for rows.Next() {
 		var g TransactionGroup
-		if err := rows.Scan(&g.Transaction, &g.Op, &g.Count, &g.ErrorCount, &g.AvgDuration, &g.P50, &g.P95, &g.LastSeen, &g.LatestTraceID); err != nil {
+		var source int
+		if err := rows.Scan(&g.Transaction, &g.Op, &g.Count, &g.ErrorCount, &g.AvgDuration, &g.P50, &g.P95, &g.LastSeen, &g.LatestTraceID,
+			&source, &g.LatestSample.ID, &g.LatestSample.ProjectID); err != nil {
 			return nil, err
+		}
+		g.LatestSample.Source = "event"
+		if source == 1 {
+			g.LatestSample.Source = "span"
 		}
 		items = append(items, g)
 	}
