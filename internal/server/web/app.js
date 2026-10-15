@@ -6,13 +6,14 @@
   const configuredBase = document.querySelector('meta[name="goodsentry-base"]')?.content || '';
   const base = configuredBase === '__GOODSENTRY_BASE__' ? '' : configuredBase.replace(/\/$/, '');
   const pageSize = 25;
-  const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', 'api-tokens': 'API tokens' };
+  const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', releases: 'Releases', 'api-tokens': 'API tokens' };
   const traceReset = { traceView: null, traceProject: null, tracePage: null, traceNode: null, traceErrorsPage: null, returnView: null };
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
   let fieldNumber = 0;
   let notificationTimer;
   let alertsUI;
+  let releasesUI;
   let issuedAPIToken;
 
   function node(tag, attributes = {}, ...children) {
@@ -62,34 +63,36 @@
 
   function parseTelemetryJSON(source) {
     const parsed = JSON.parse(source);
-    // Keep large integer digits as display text. Validate first, and leave
-    // quoted strings untouched.
+    // Preserve large integers and extreme exponents as display text. Validate
+    // first, and leave quoted strings and finite decimal values untouched.
     const precise = source.replace(/"(?:\\.|[^"\\])*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g, token => {
-      if (!/^-?\d+$/.test(token) || Number.isSafeInteger(Number(token))) return token;
-      return JSON.stringify(token);
+      if (token.startsWith('"')) return token;
+      const value = Number(token);
+      return !Number.isFinite(value) || (/^-?\d+$/.test(token) && !Number.isSafeInteger(value)) ? JSON.stringify(token) : token;
     });
     return precise === source ? parsed : JSON.parse(precise);
   }
 
   async function request(path, options = {}) {
     let response;
+    const { jsonText, ...fetchOptions } = options;
     const multipart = options.body instanceof FormData;
     const headers = { Accept: 'application/json', ...options.headers };
-    if (options.body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
+    if (jsonText !== undefined || (options.body !== undefined && !multipart)) headers['Content-Type'] = 'application/json';
     if (options.method && options.method !== 'GET' && state.me?.csrfToken) {
       headers['X-CSRF-Token'] = state.me.csrfToken;
     }
     try {
       response = await fetch(base + path, {
-        ...options, credentials: 'same-origin', headers,
-        body: options.body === undefined ? undefined : multipart ? options.body : JSON.stringify(options.body),
+        ...fetchOptions, credentials: 'same-origin', headers,
+        body: jsonText !== undefined ? jsonText : options.body === undefined ? undefined : multipart ? options.body : JSON.stringify(options.body),
       });
     } catch (_) {
       throw new Error('Cannot reach GoodSentry. Check your connection and try again.');
     }
     if (response.status === 204) return null;
     const endpoint = path.split('?')[0];
-    const data = await response.text().then(source => endpoint.endsWith('/logs') || /\/transactions\/(event|span)\/[^/]+$/.test(endpoint) || /\/traces\/[^/]+\/nodes\/[^/]+$/.test(endpoint)
+    const data = await response.text().then(source => endpoint.endsWith('/logs') || /\/transactions\/(event|span)\/[^/]+$/.test(endpoint) || /\/traces\/[^/]+\/nodes\/[^/]+$/.test(endpoint) || /\/releases(?:\/|$)/.test(endpoint)
       ? parseTelemetryJSON(source) : JSON.parse(source)).catch(() => null);
     if (!response.ok) {
       if (response.status === 401 && state.me) {
@@ -163,6 +166,7 @@
       alerts: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4',
       projects: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
       'api-tokens': 'M14 7a5 5 0 1 0 3 9l4-4-3-3-2 2M7 7h.01',
+      releases: 'M20 12l-8 8L3 11V3h8l9 9ZM7 7h.01',
     };
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     for (const [name, value] of Object.entries({ class: 'nav-icon', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false' })) svg.setAttribute(name, value);
@@ -222,18 +226,18 @@
     const organizations = state.me.organizations || [];
     const org = state.organization;
     const selector = node('select', { class: 'select org-select', 'aria-label': 'Organization', onchange: event => {
-      navigate({ ...traceReset, org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, page: null, changes: null });
+      navigate({ ...traceReset, org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null });
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
-      ['issues', 'transactions', 'logs', 'monitors', 'alerts', 'projects', 'api-tokens']
+      ['issues', 'transactions', 'logs', 'monitors', 'alerts', 'releases', 'projects', 'api-tokens']
         .filter(section => section !== 'monitors' || state.me.features?.uptime === true)
         .filter(section => section !== 'logs' || state.me.features?.logs !== false)
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .filter(section => section !== 'api-tokens' || ['owner', 'admin'].includes(org?.role))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
-          { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
+          { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
           { 'aria-current': view === section ? 'page' : null })));
     const logout = node('button', { type: 'button', class: 'btn btn-sm', onclick: async () => {
       logout.disabled = true;
@@ -268,6 +272,7 @@
   }
 
   async function loadRoute(focus = false) {
+    releasesUI?.closeDialogs();
     if (!state.me) return;
     const version = ++state.requestVersion;
     const params = new URLSearchParams(location.search);
@@ -305,6 +310,11 @@
         const result = await request(`${apiTokenPath()}?${query}`);
         if (version !== state.requestVersion) return;
         renderAPITokens(main, result);
+      } else if (view === 'releases') {
+        const { createReleasesUI } = await import('./releases.js');
+        if (version !== state.requestVersion) return;
+        releasesUI ||= createReleasesUI({ state, node, request, navigate, routeLink, button, field, selectField, pageHeader, empty, formError, notify, number, text, errorState, reload: () => loadRoute() });
+        await releasesUI.render(main, params, () => version === state.requestVersion);
       } else if (view === 'alerts') {
         const { createAlertsUI } = await import('./alerts.js');
         if (version !== state.requestVersion) return;
@@ -906,10 +916,10 @@
     const name = field('Token name', 'text', { name: 'name', required: true, autocomplete: 'off', placeholder: 'Deployment project reader' });
     name.wrap.append(node('p', { class: 'help' }, '1–100 characters. Names may be reused.'));
     const lifetime = field('Lifetime (days)', 'number', { name: 'expiresInDays', value: 90, required: true, min: 1, max: 366, step: 1 });
-    const scopes = ['org:read', 'project:read'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: true }) }));
-    const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Read scopes'),
+    const scopes = ['org:read', 'project:read', 'project:releases'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope !== 'project:releases' }) }));
+    const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Permissions'),
       scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
-      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads individual project metadata.'));
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
     const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
     const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
     const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
@@ -1131,7 +1141,7 @@
   }
 
   function sourceMapDisclosure(project) {
-    const disclosure = node('details', { class: 'source-map-disclosure', 'aria-label': `Source maps for ${project.name}` }, node('summary', {}, `Source maps · ${project.name}`));
+    const disclosure = node('details', { class: 'source-map-disclosure', open: new URLSearchParams(location.search).get('sourceMaps') === project.id, 'aria-label': `Source maps for ${project.name}` }, node('summary', {}, `Source maps · ${project.name}`));
     let initialized = false;
     disclosure.addEventListener('toggle', () => {
       if (!disclosure.open || initialized) return;
@@ -1172,7 +1182,8 @@
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const status = node('p', { class: 'source-map-status', role: 'status' });
     const name = field('Artifact name or URL', 'text', { name: 'name', required: true, maxlength: 2048, autocomplete: 'off' });
-    const release = field('Release', 'text', { name: 'release', maxlength: 200, autocomplete: 'off' });
+    const release = field('Release', 'text', { name: 'release', maxlength: 510, autocomplete: 'off' });
+    release.input.addEventListener('input', () => release.input.setCustomValidity(Array.from(release.input.value).length > 255 ? 'Use at most 255 Unicode characters for the release.' : ''));
     const dist = field('Distribution', 'text', { name: 'dist', maxlength: 200, autocomplete: 'off' });
     const debug = field('Debug ID', 'text', { name: 'debugId', maxlength: 64, autocomplete: 'off', spellcheck: 'false' });
     const file = field('Source map file', 'file', { name: 'file', required: true, accept: '.map,.json,application/json' });
@@ -1188,12 +1199,12 @@
       event.preventDefault();
       error.textContent = '';
       status.textContent = '';
-      if (!release.input.value.trim() && !debug.input.value.trim()) {
+      if (!release.input.value && !debug.input.value.trim()) {
         formError(error, new Error('Provide a release or debug ID before uploading this source map.'));
         return;
       }
       const payload = new FormData(form);
-      for (const fieldName of ['name', 'release', 'dist', 'debugId']) payload.set(fieldName, String(payload.get(fieldName) || '').trim());
+      for (const fieldName of ['name', 'dist', 'debugId']) payload.set(fieldName, String(payload.get(fieldName) || '').trim());
       submit.disabled = true;
       submit.textContent = 'Uploading…';
       try {

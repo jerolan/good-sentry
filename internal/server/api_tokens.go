@@ -67,13 +67,13 @@ func (s *Server) createAPIToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if input.Scopes == nil || len(*input.Scopes) == 0 || input.ProjectIDs == nil || input.ExpiresInDays == nil || *input.ExpiresInDays < 1 || *input.ExpiresInDays > 366 {
-		failure(w, 400, "Provide read scopes, project IDs and a lifetime from 1 to 366 days; null is not allowed")
+		failure(w, 400, "Provide scopes, project IDs and a lifetime from 1 to 366 days; null is not allowed")
 		return
 	}
 	seen := map[string]bool{}
 	for _, scope := range *input.Scopes {
-		if (scope != "org:read" && scope != "project:read") || seen[scope] {
-			failure(w, 400, "Scopes must be distinct implemented values: org:read or project:read")
+		if (scope != "org:read" && scope != "project:read" && scope != "project:releases") || seen[scope] {
+			failure(w, 400, "Scopes must be distinct implemented values: org:read, project:read or project:releases")
 			return
 		}
 		seen[scope] = true

@@ -46,6 +46,7 @@ func (s *Store) IngestSpans(ctx context.Context, projectID string, payload json.
 	}
 	defer tx.Rollback(ctx)
 	count := 0
+	freshReleases := map[string]struct{}{}
 	for _, span := range spans {
 		result, err := tx.Exec(ctx, `INSERT INTO spans(project_id,trace_id,span_id,parent_span_id,name,status,is_segment,
 			start_timestamp,end_timestamp,duration,op,environment,release,attributes,data)
@@ -57,6 +58,19 @@ func (s *Store) IngestSpans(ctx context.Context, projectID string, payload json.
 			return 0, err
 		}
 		count += int(result.RowsAffected())
+		if result.RowsAffected() == 1 {
+			freshReleases[span.Release] = struct{}{}
+		}
+	}
+	versions := make([]string, 0, len(freshReleases))
+	for version := range freshReleases {
+		versions = append(versions, version)
+	}
+	sort.Strings(versions)
+	for _, version := range versions {
+		if err := observeRelease(ctx, tx, projectID, version); err != nil {
+			return 0, err
+		}
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return 0, err

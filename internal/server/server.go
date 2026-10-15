@@ -53,8 +53,9 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("GET /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.apiTokens)))
 	mux.Handle("POST /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.createAPIToken)))
 	mux.Handle("DELETE /api/v1/organizations/{org}/api-tokens/{token}", s.auth(http.HandlerFunc(s.revokeAPIToken)))
-	mux.Handle("GET /api/0/organizations/{org}/projects/", s.compatible("org:read", s.compatibleProjects))
-	mux.Handle("GET /api/0/projects/{org}/{project}/", s.compatible("project:read", s.compatibleProject))
+	mux.Handle("GET /api/0/organizations/{org}/projects/{$}", s.compatible("org:read", s.compatibleProjects))
+	mux.Handle("GET /api/0/projects/{org}/{project}/{$}", s.compatible("project:read", s.compatibleProject))
+	s.registerReleaseRoutes(mux)
 	mux.Handle("GET /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.projects)))
 	mux.Handle("POST /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.createProject)))
 	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/sourcemaps", s.auth(http.HandlerFunc(s.sourceMaps)))
@@ -142,7 +143,7 @@ func (s *Server) assets(w http.ResponseWriter, r *http.Request) {
 		_, _ = io.WriteString(w, strings.ReplaceAll(string(body), "__GOODSENTRY_BASE__", html.EscapeString(s.cfg.Prefix)))
 		return
 	}
-	if r.URL.Path != "/app.css" && r.URL.Path != "/app.js" && r.URL.Path != "/alerts.js" {
+	if r.URL.Path != "/app.css" && r.URL.Path != "/app.js" && r.URL.Path != "/alerts.js" && r.URL.Path != "/releases.js" {
 		failure(w, 404, "Not found")
 		return
 	}

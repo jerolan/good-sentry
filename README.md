@@ -60,11 +60,12 @@ docker compose down
 | --- | --- |
 | Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, context, search, filters, resolve/reopen and comments. |
 | JavaScript source maps | Authenticated native uploads, release/distribution or Debug ID selection, original file/line/column/context and preserved minified stacks. |
+| Releases | Shared project versions, observed SDK releases, local commit metadata, completed deploys and compatible CLI lifecycle operations, with a responsive management UI. |
 | Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail and a cross-project trace waterfall. |
 | Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. |
 | Uptime | HTTP HEAD/GET/POST, TCP and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
 | Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |
-| Automation credentials | Expiring, revocable read tokens limited to an organization and selected projects, with one-time reveal and compatible project metadata reads. |
+| Automation credentials | Expiring, revocable tokens limited to an organization and selected projects, one-time reveal, project metadata reads and optional release writes. |
 | Deployment | One non-root application image, PostgreSQL-only coordination, embedded Tailwind CSS and persistence across application restarts. |
 
 The browser workflows run at 320, 768 and 1440 pixels. PostgreSQL integration and race tests cover concurrent ingestion, duplicate retries, tenant boundaries, fenced worker leases and restart recovery. Alert acceptance uses actual local HTTP/SMTP receivers, including retries across two application replicas.
@@ -98,9 +99,31 @@ Sentry.captureException(new Error("Hello from GoodSentry"));
 
 These checks establish the listed workflows for those versions. Attachments, additional envelope types and other SDK versions need their own verification. Unknown envelope items are retained and reported through `unsupportedItems`; retention alone does not implement their functionality.
 
+### Release automation
+
+In **API tokens**, create a token with `org:read`, `project:read` and the optional `project:releases` permission. Choose the projects it may access. A shared release can be changed only when the token covers every associated project.
+
+The official `sentry-cli 3.8.0` has passed this workflow against the application image, including local Git comparison with the preceding release:
+
+```sh
+export SENTRY_URL=http://localhost:8000
+export SENTRY_ORG=your-organization
+export SENTRY_PROJECT=your-project
+export SENTRY_AUTH_TOKEN=your-token
+version="$(git rev-parse HEAD)"
+
+sentry-cli releases new "$version"
+sentry-cli releases set-commits "$version" --local
+sentry-cli releases finalize "$version"
+sentry-cli deploys new --release "$version" --env production
+sentry-cli deploys list --release "$version"
+```
+
+Create, finalize, list, info, archive, restore and delete also pass with the issued credential. Revocation disables subsequent requests. Release deletion removes its metadata and release-specific source maps while preserving captured events and stacks. Repository integration with `--auto` and CLI artifact uploads remain pending.
+
 ### Current gaps
 
-Remaining work includes release and deploy management, `sentry-cli` upload endpoints, native symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, `sentry-cli` upload endpoints, native symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The modern CLI bundle decoder is tested; its upload endpoints remain unconnected. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 

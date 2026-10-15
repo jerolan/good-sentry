@@ -98,6 +98,9 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 			return "", false, err
 		}
 	}
+	if err = observeRelease(ctx, tx, projectID, ev.Release); err != nil {
+		return "", false, err
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return "", false, err
 	}

@@ -13,6 +13,10 @@ import (
 type apiGrantKey struct{}
 
 func (s *Server) compatible(scope string, next http.HandlerFunc) http.Handler {
+	return s.compatibleAny([]string{scope}, next)
+}
+
+func (s *Server) compatibleAny(scopes []string, next http.HandlerFunc) http.Handler {
 	session := s.auth(next)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		values := r.Header.Values("Authorization")
@@ -34,8 +38,8 @@ func (s *Server) compatible(scope string, next http.HandlerFunc) http.Handler {
 			}
 			return
 		}
-		if !slices.Contains(grant.Scopes, scope) {
-			failure(w, 403, "Credential does not grant the required scope: "+scope)
+		if !slices.ContainsFunc(scopes, func(scope string) bool { return slices.Contains(grant.Scopes, scope) }) {
+			failure(w, 403, "Credential requires one of these scopes: "+strings.Join(scopes, ", "))
 			return
 		}
 		ctx := context.WithValue(r.Context(), identityKey{}, identity{User: grant.User})
@@ -70,6 +74,7 @@ func (s *Server) managementAccess(w http.ResponseWriter, r *http.Request) (store
 			return store.ManagementAccess{}, false
 		}
 		access.AllProjects, access.ProjectIDs = grant.AllProjects, grant.ProjectIDs
+		access.ReadOnly = !slices.Contains(grant.Scopes, "project:releases")
 	}
 	return access, true
 }

@@ -4,6 +4,7 @@
 @source "./index.html";
 @source "./app.js";
 @source "./alerts.js";
+@source "./releases.js";
 
 @plugin "../../../third_party/daisyui/daisyui.mjs" {
   themes: false;
@@ -411,6 +412,22 @@
   .token-name { @apply min-w-[180px] max-w-[260px] wrap-anywhere; }
   .token-projects { @apply min-w-[220px] max-w-[300px] wrap-anywhere; }
   .token-actions { @apply min-w-[180px]; }
+  .release-filters { grid-template-columns: minmax(160px,2fr) minmax(140px,1fr) minmax(140px,1fr) auto; }
+  .release-version { @apply whitespace-pre-wrap wrap-anywhere; }
+  .release-identity { @apply min-w-[200px] max-w-[360px] wrap-anywhere; }
+  .release-value { @apply min-w-[160px] max-w-[280px] wrap-anywhere; }
+  .release-message { @apply min-w-[240px] max-w-[440px] whitespace-pre-wrap wrap-anywhere; }
+  .release-context { @apply grid gap-5; grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); }
+  .release-context dt { @apply text-muted text-xs mb-1; }
+  .release-context dd { @apply m-0 wrap-anywhere; }
+  .release-project-list { @apply border-t border-outline; }
+  .release-project { @apply flex justify-between items-start flex-wrap gap-3 mt-4; }
+  .release-project > div { @apply min-w-0 wrap-anywhere; }
+  .release-project-choices { @apply max-h-[260px] overflow-auto; }
+  .release-raw { @apply min-w-[150px]; }
+  .release-raw pre { @apply max-w-[560px] max-h-[360px] overflow-auto p-3 bg-surface-subtle rounded-md text-xs; }
+  .release-dialog { @apply max-w-[760px]; }
+  .release-dialog textarea { @apply font-mono text-xs; }
   .monitor-confirmation { @apply p-4 mb-5 rounded-md border border-[#edc9c8] bg-danger-soft flex flex-col gap-3 wrap-anywhere; }
   .button.danger { @apply text-white bg-danger border-danger; }
   @media(min-width:1500px) {
@@ -462,6 +479,7 @@
     .page-header { @apply flex-wrap; }
     .page-header h1 { @apply text-[1.5rem]; }
     .filters { @apply grid-cols-2 gap-[.65rem]; }
+    .filters.release-filters { @apply grid-cols-1; }
     .filters.telemetry-filters { @apply grid-cols-2; }
     .filters .search-field { @apply col-span-full; }
     th,td { @apply px-4 py-3; }

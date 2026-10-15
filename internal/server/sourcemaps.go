@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 
 	"goodsentry/internal/artifact"
+	"goodsentry/internal/store"
 )
 
 func (s *Server) sourceMaps(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +40,11 @@ func (s *Server) uploadSourceMap(w http.ResponseWriter, r *http.Request) {
 	name, release, dist := values["name"], values["release"], values["dist"]
 	debugID := strings.ToLower(strings.ReplaceAll(values["debugId"], "-", ""))
 	_, idErr := hex.DecodeString(debugID)
-	if name == "" || len(name) > 2048 || len(release) > 200 || len(dist) > 200 ||
+	var releaseErr error
+	if release != "" {
+		_, releaseErr = store.ParseReleaseVersion(release)
+	}
+	if name == "" || len(name) > 2048 || releaseErr != nil || len(dist) > 200 ||
 		(release == "" && debugID == "") || (debugID != "" && (len(debugID) != 32 || idErr != nil)) {
 		failure(w, 400, "Provide an artifact name and either a release or a valid debug ID")
 		return
@@ -106,7 +111,10 @@ func sourceMapUpload(r *http.Request) (map[string]string, []byte, error) {
 			if !utf8.Valid(value) || bytes.IndexByte(value, 0) >= 0 {
 				return nil, nil, errors.New("Source map metadata requires UTF-8 text without null bytes")
 			}
-			values[name] = strings.TrimSpace(string(value))
+			values[name] = string(value)
+			if name != "release" {
+				values[name] = strings.TrimSpace(values[name])
+			}
 		}
 		if err != nil {
 			return nil, nil, fmt.Errorf("Read source map upload: %w", err)

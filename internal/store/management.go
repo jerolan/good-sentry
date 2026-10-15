@@ -11,6 +11,7 @@ type ManagementAccess struct {
 	OrganizationID string
 	AllProjects    bool
 	ProjectIDs     []int64
+	ReadOnly       bool
 }
 
 type ManagementProject struct {

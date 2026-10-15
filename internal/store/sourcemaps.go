@@ -30,20 +30,43 @@ type SourceMapFile struct {
 const sourceMapColumns = "id::text,name,release,dist,debug_id,checksum,size,created_at"
 
 func (s *Store) SaveSourceMap(ctx context.Context, userID, orgSlug, projectID, name, release, dist, debugID string, data []byte) (SourceMapFile, bool, error) {
-	org, err := s.sourceMapProject(ctx, userID, orgSlug, projectID)
+	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return SourceMapFile{}, false, err
 	}
-	if org.Role != "owner" && org.Role != "admin" {
+	defer tx.Rollback(ctx)
+	var role string
+	err = tx.QueryRow(ctx, `SELECT m.role FROM organizations o
+		JOIN memberships m ON m.organization_id=o.id AND m.user_id=$1::bigint
+		JOIN projects p ON p.organization_id=o.id
+		WHERE o.slug=$2 AND p.id::text=$3 FOR SHARE OF m,p`, userID, orgSlug, projectID).Scan(&role)
+	if err != nil {
+		return SourceMapFile{}, false, dbError(err)
+	}
+	if role != "owner" && role != "admin" {
 		return SourceMapFile{}, false, ErrForbidden
+	}
+	if release != "" {
+		if _, err := ParseReleaseVersion(release); err != nil {
+			return SourceMapFile{}, false, ErrInvalidReleaseInput
+		}
+		if err := observeRelease(ctx, tx, projectID, release); err != nil {
+			return SourceMapFile{}, false, err
+		}
+		if err := lockReleaseArtifacts(ctx, tx, projectID, release); err != nil {
+			return SourceMapFile{}, false, err
+		}
 	}
 	debugID = normalizeSourceMapDebugID(debugID)
 	digest := sha256.Sum256(data)
 	checksum := hex.EncodeToString(digest[:])
-	meta, err := scanSourceMap(s.pool.QueryRow(ctx, `INSERT INTO source_maps(project_id,name,release,dist,debug_id,checksum,size,data)
+	meta, err := scanSourceMap(tx.QueryRow(ctx, `INSERT INTO source_maps(project_id,name,release,dist,debug_id,checksum,size,data)
 		VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(project_id,name,release,dist,debug_id) DO NOTHING
 		RETURNING `+sourceMapColumns, projectID, name, release, dist, debugID, checksum, int64(len(data)), data))
 	if err == nil {
+		if err := tx.Commit(ctx); err != nil {
+			return SourceMapFile{}, false, err
+		}
 		return meta, true, nil
 	}
 	if !errors.Is(err, ErrNotFound) {
@@ -51,13 +74,16 @@ func (s *Store) SaveSourceMap(ctx context.Context, userID, orgSlug, projectID, n
 	}
 	// This is a separate statement so a competing upload that won the unique
 	// key is visible after INSERT waited for that upload's commit.
-	meta, err = scanSourceMap(s.pool.QueryRow(ctx, "SELECT "+sourceMapColumns+
+	meta, err = scanSourceMap(tx.QueryRow(ctx, "SELECT "+sourceMapColumns+
 		" FROM source_maps WHERE project_id::text=$1 AND name=$2 AND release=$3 AND dist=$4 AND debug_id=$5", projectID, name, release, dist, debugID))
 	if err != nil {
 		return SourceMapFile{}, false, err
 	}
 	if meta.Checksum != checksum {
 		return meta, false, ErrConflict
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return SourceMapFile{}, false, err
 	}
 	return meta, false, nil
 }
