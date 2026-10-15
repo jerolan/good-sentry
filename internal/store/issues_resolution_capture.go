@@ -178,7 +178,7 @@ func (s *Store) BindNextIssueRelease(ctx context.Context, interval time.Duration
 	defer tx.Rollback(ctx)
 	var id string
 	err = tx.QueryRow(ctx, `SELECT i.id::text FROM issues i JOIN issue_resolutions r ON r.issue_id=i.id
- WHERE i.status='resolved' AND r.mode='next_release' AND r.release_id IS NULL AND r.next_check_at<=clock_timestamp()
+ WHERE i.merged_into IS NULL AND i.status='resolved' AND r.mode='next_release' AND r.release_id IS NULL AND r.next_check_at<=clock_timestamp()
  ORDER BY r.next_check_at,i.id LIMIT 1 FOR UPDATE OF i SKIP LOCKED`).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
@@ -191,11 +191,12 @@ func (s *Store) BindNextIssueRelease(ctx context.Context, interval time.Duration
 		return false, err
 	}
 	var status, project string
+	var merged *string
 	var now time.Time
-	if err = tx.QueryRow(ctx, "SELECT status,project_id::text,clock_timestamp() FROM issues WHERE id=$1::bigint", id).Scan(&status, &project, &now); err != nil {
+	if err = tx.QueryRow(ctx, "SELECT status,project_id::text,clock_timestamp(),merged_into::text FROM issues WHERE id=$1::bigint", id).Scan(&status, &project, &now, &merged); err != nil {
 		return false, err
 	}
-	if status == "resolved" && p != nil && p.mode == "next_release" && p.release == nil && p.nextCheckAt != nil && !p.nextCheckAt.After(now) {
+	if merged == nil && status == "resolved" && p != nil && p.mode == "next_release" && p.release == nil && p.nextCheckAt != nil && !p.nextCheckAt.After(now) {
 		bound, err := bindLockedIssueRelease(ctx, tx, id, project, p)
 		if err != nil {
 			return false, err

@@ -52,21 +52,31 @@ func (s *Store) issueTransaction(ctx context.Context, userID, id string, write b
 	if err != nil {
 		return nil, Issue{}, "", "", err
 	}
-	var org, role string
-	authorize := `SELECT p.organization_id::text,m.role FROM issues i JOIN projects p ON p.id=i.project_id JOIN memberships m ON m.organization_id=p.organization_id WHERE i.id::text=$1 AND m.user_id::text=$2`
+	var org, role, project, canonical string
+	authorize := `SELECT p.organization_id::text,m.role,p.id::text,COALESCE(i.merged_into,i.id)::text FROM issues i JOIN projects p ON p.id=i.project_id JOIN memberships m ON m.organization_id=p.organization_id WHERE i.id::text=$1 AND m.user_id::text=$2`
 	if write {
 		authorize += " FOR SHARE OF m"
 	}
-	if err = tx.QueryRow(ctx, authorize, id, userID).Scan(&org, &role); err != nil {
+	if err = tx.QueryRow(ctx, authorize, id, userID).Scan(&org, &role, &project, &canonical); err != nil {
 		_ = tx.Rollback(ctx)
 		return nil, Issue{}, "", "", dbError(err)
 	}
 	if write {
-		var locked string
-		if err = tx.QueryRow(ctx, `SELECT id::text FROM issues WHERE id::text=$1 FOR UPDATE`, id).Scan(&locked); err != nil {
+		if err = lockProjectIssues(ctx, tx, project, false); err != nil {
+			_ = tx.Rollback(ctx)
+			return nil, Issue{}, "", "", err
+		}
+		var merged *string
+		if err = tx.QueryRow(ctx, `SELECT merged_into::text FROM issues WHERE id::text=$1 FOR UPDATE`, id).Scan(&merged); err != nil {
 			_ = tx.Rollback(ctx)
 			return nil, Issue{}, "", "", dbError(err)
 		}
+		if merged != nil {
+			_ = tx.Rollback(ctx)
+			return nil, Issue{}, "", "", &IssueMergedError{MergedInto: *merged}
+		}
+	} else {
+		id = canonical
 	}
 	// A fresh statement after a possible row-lock wait observes the assignment
 	// committed by the preceding writer, including its related table row.
@@ -264,16 +274,17 @@ func (s *Store) IssueActivities(ctx context.Context, userID, id string, page int
 	if err != nil {
 		return nil, 0, err
 	}
-	tx, _, _, _, err := s.issueTransaction(ctx, userID, id, false)
+	tx, issue, _, _, err := s.issueTransaction(ctx, userID, id, false)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer tx.Rollback(ctx)
+	id = issue.ID
 	var total int
-	if err = tx.QueryRow(ctx, `SELECT count(*) FROM issue_activity WHERE issue_id=$1::bigint`, id).Scan(&total); err != nil {
+	if err = tx.QueryRow(ctx, `SELECT count(*) FROM issue_activity WHERE issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint)`, id).Scan(&total); err != nil {
 		return nil, 0, err
 	}
-	rows, err := tx.Query(ctx, `SELECT a.id::text,a.action,a.data,a.created_at,u.id::text,u.name,u.email FROM issue_activity a LEFT JOIN users u ON u.id=a.user_id WHERE issue_id=$1::bigint ORDER BY a.id DESC LIMIT 25 OFFSET $2`, id, offset)
+	rows, err := tx.Query(ctx, `SELECT a.id::text,a.action,a.data,a.created_at,u.id::text,u.name,u.email FROM issue_activity a LEFT JOIN users u ON u.id=a.user_id WHERE a.issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint) ORDER BY a.id DESC LIMIT 25 OFFSET $2`, id, offset)
 	if err != nil {
 		return nil, 0, err
 	}

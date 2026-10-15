@@ -11,6 +11,8 @@
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
   const commentEditDrafts = new Map();
+  const mergeSelection = { scope: null, issues: new Map() };
+  let issueViewContext;
   let issueRenderVersion = 0;
   let fieldNumber = 0;
   let notificationTimer;
@@ -105,6 +107,7 @@
       }
       const error = new Error(data?.detail || `The request failed (${response.status}). Try again.`);
       error.status = response.status;
+      if (response.status === 409 && typeof data?.mergedInto === 'string' && /^[1-9][0-9]*$/.test(data.mergedInto)) error.mergedInto = data.mergedInto;
       throw error;
     }
     return data;
@@ -127,9 +130,28 @@
     return { input, wrap: node('div', { class: 'field' }, node('label', { for: id }, label), input) };
   }
 
-  function formError(target, error) {
+  function formError(target, error, issueView) {
     target.textContent = error.message;
+    if (error.status === 409 && error.mergedInto) target.append(' ', currentGroupLink(error.mergedInto, issueView));
     target.focus();
+  }
+
+  function currentGroupLink(id, view) {
+    const changes = { view: 'issues', issue: id };
+    return node('a', { href: routeURL(changes), onclick: event => {
+      if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      if (view) issueViewContext = { organization: state.organization.slug, issueId: id, view };
+      navigate(changes);
+    } }, 'Open current group');
+  }
+
+  function issueScope(params) {
+    return JSON.stringify([state.organization?.slug, params.get('project') || '', params.get('query') || '', params.get('status') || 'unresolved', params.get('environment') || '', params.get('release') || '', params.get('sort') || 'date']);
+  }
+
+  function sortedIssueIDs(ids) {
+    return [...ids].sort((left, right) => BigInt(left) < BigInt(right) ? -1 : BigInt(left) > BigInt(right) ? 1 : 0);
   }
 
   function routeURL(changes = {}) {
@@ -188,6 +210,9 @@
     state.projects = [];
     commentDrafts.clear();
     commentEditDrafts.clear();
+    mergeSelection.issues.clear();
+    mergeSelection.scope = null;
+    issueViewContext = undefined;
     document.title = setup ? 'Set up GoodSentry' : 'Sign in · GoodSentry';
     app.setAttribute('aria-busy', 'false');
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
@@ -282,6 +307,12 @@
     state.organization = state.me.organizations?.find(item => item.slug === params.get('org')) || state.me.organizations?.[0] || null;
     const requestedView = params.get('view');
     const view = Object.prototype.hasOwnProperty.call(viewNames, requestedView) ? requestedView : 'issues';
+    const scope = issueScope(params);
+    if (view !== 'issues' || mergeSelection.scope !== scope) {
+      mergeSelection.issues.clear();
+      mergeSelection.scope = scope;
+    }
+    if (view !== 'issues' || !params.get('issue') || issueViewContext?.organization !== state.organization?.slug || issueViewContext?.issueId !== params.get('issue')) issueViewContext = undefined;
     if (view !== 'api-tokens' || issuedAPIToken?.organization !== state.organization?.slug) clearAPIToken();
     const main = renderShell(view);
     if (!state.organization) {
@@ -303,9 +334,13 @@
       if (version !== state.requestVersion) return;
       state.projects = projects.data || [];
       if (params.get('issue') && view === 'issues') {
-        const detail = await request(`/api/v1/issues/${encodeURIComponent(params.get('issue'))}`);
+        const requestedID = params.get('issue');
+        const detail = await request(`/api/v1/issues/${encodeURIComponent(requestedID)}`);
         if (version !== state.requestVersion) return;
-        renderIssue(main, detail);
+        const detailView = issueViewContext?.view || { draftIssueId: requestedID };
+        delete detailView.commentsResult;
+        if (detail.issue.id !== requestedID) history.replaceState(null, '', routeURL({ issue: detail.issue.id }));
+        renderIssue(main, detail, detailView);
       } else if (view === 'projects') {
         renderProjects(main);
       } else if (view === 'api-tokens') {
@@ -442,16 +477,20 @@
       return;
     }
     const issues = result.data || [];
+    const merge = issueMergeControls(main, issues);
+    panel.append(merge.panel);
     if (!issues.length) {
       panel.append(empty('No matching issues', 'Errors will appear here when your SDK sends them. Check the selected project, status, environment and release, or clear your filters.'));
     } else {
       const rows = issues.map(issue => node('tr', {},
+        node('td', {}, merge.checkbox(issue)),
         node('td', { class: 'issue-column' }, routeLink(issue.title, { issue: issue.id }, { class: 'issue-link issue-title' }),
           node('div', { class: 'issue-subtitle' }, node('span', { class: 'mono' }, issue.shortId || issue.id), node('span', {}, issue.project?.name || 'Project'), issue.environment ? node('span', {}, issue.environment) : null)),
         node('td', {}, badge(issue.level)), node('td', {}, badge(issue.status)), node('td', { class: 'nowrap' }, number(issue.count)),
         node('td', { class: 'nowrap' }, node('time', { datetime: issue.lastSeen, title: date(issue.lastSeen) }, date(issue.lastSeen, true)))));
-      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, ['Issue', 'Level', 'Status', 'Events', 'Last seen'].map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, node('th', { scope: 'col' }, merge.pageCheckbox), ['Issue', 'Level', 'Status', 'Events', 'Last seen'].map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
     }
+    merge.sync();
     const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
     const total = Number(result.total) || 0;
     const previous = button('Previous', () => navigate({ page: page - 1 }));
@@ -460,6 +499,87 @@
     next.disabled = page * pageSize >= total;
     panel.append(node('div', { class: 'pagination' }, node('span', {}, `${number(total)} ${total === 1 ? 'issue' : 'issues'} · Page ${page}`), node('div', { class: 'actions' }, previous, next)));
     main.append(panel);
+  }
+
+  function issueMergeControls(main, issues) {
+    const scope = mergeSelection.scope, version = state.requestVersion;
+    const organization = state.organization.slug;
+    const alive = () => main.isConnected && version === state.requestVersion && scope === mergeSelection.scope && !!state.me;
+    const selected = mergeSelection.issues;
+    for (const issue of issues) if (selected.has(issue.id)) selected.set(issue.id, issue);
+    const boxes = [];
+    let pending = false, confirming = false;
+    const status = node('p', { class: 'small', role: 'status' });
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const confirmation = node('div', { class: 'form-stack', hidden: true });
+    const clear = button('Clear selection', () => { selected.clear(); changed(); }, 'small');
+    const merge = button('Merge selected', () => { confirming = true; sync(); }, 'small');
+    const pageCheckbox = node('input', { type: 'checkbox', class: 'size-4 shrink-0 cursor-pointer accent-primary', 'aria-label': 'Select all issues on this page', onchange: () => {
+      const add = pageCheckbox.checked;
+      if (add && selected.size + issues.filter(issue => !selected.has(issue.id)).length > 100) {
+        formError(error, new Error('Select at most 100 issues. Clear some selections before adding this page.'));
+        sync();
+        return;
+      }
+      for (const issue of issues) { if (add) selected.set(issue.id, issue); else selected.delete(issue.id); }
+      changed();
+    } });
+    function changed() { confirming = false; error.textContent = ''; sync(); }
+    async function submit() {
+      if (!alive() || pending || selected.size < 2 || new Set([...selected.values()].map(issue => issue.projectId)).size !== 1) return;
+      const ids = sortedIssueIDs(selected.keys());
+      pending = true;
+      error.textContent = '';
+      sync();
+      try {
+        const result = await request(`/api/v1/organizations/${encodeURIComponent(organization)}/issues/merge`, { method: 'POST', body: { issueIds: ids } });
+        if (!alive()) return;
+        selected.clear();
+        navigate({ issue: result.issue.id });
+        notify(result.changed ? 'Issues merged.' : 'These issues already belong to one group.');
+      } catch (failure) {
+        if (alive()) formError(error, failure);
+      } finally {
+        pending = false;
+        if (alive()) sync();
+      }
+    }
+    function sync() {
+      const count = selected.size;
+      const mixed = new Set([...selected.values()].map(issue => issue.projectId)).size > 1;
+      const root = count ? sortedIssueIDs(selected.keys())[0] : null;
+      status.textContent = `${count} selected · Up to 100. Selections stay across pages with the same filters.`;
+      clear.disabled = pending || count === 0;
+      merge.disabled = pending || count < 2 || mixed;
+      merge.textContent = pending ? 'Merging…' : 'Merge selected';
+      const selectedHere = issues.filter(issue => selected.has(issue.id)).length;
+      pageCheckbox.checked = issues.length > 0 && selectedHere === issues.length;
+      pageCheckbox.indeterminate = selectedHere > 0 && selectedHere < issues.length;
+      pageCheckbox.disabled = pending || issues.length === 0;
+      for (const { input, issue } of boxes) {
+        input.checked = selected.has(issue.id);
+        input.disabled = pending || (!input.checked && count >= 100);
+      }
+      explanation.textContent = mixed ? 'Selected issues belong to different projects. Select issues from one project to merge.' : 'The issue with the lowest ID keeps its status, assignment and active policies. Events and original groups are retained.';
+      confirmation.hidden = !confirming || count < 2 || mixed;
+      if (confirming) {
+        const confirm = button('Confirm merge', submit, 'primary small');
+        const cancel = button('Cancel merge', () => { confirming = false; sync(); }, 'small');
+        confirm.disabled = pending;
+        cancel.disabled = pending;
+        confirmation.replaceChildren(node('p', {}, `Merge ${count} selected issues into issue ${root}?`), node('div', { class: 'actions' }, confirm, cancel));
+      }
+    }
+    const explanation = node('p', { class: 'muted small' });
+    const panel = node('div', { class: 'panel-body form-stack', role: 'group', 'aria-label': 'Merge issues' }, status, node('div', { class: 'actions' }, merge, clear), explanation, confirmation, error);
+    return { panel, pageCheckbox, sync, checkbox: issue => {
+      const input = node('input', { type: 'checkbox', class: 'size-4 shrink-0 cursor-pointer accent-primary', 'aria-label': `Select issue ${issue.shortId || issue.id}`, onchange: () => {
+        if (input.checked) selected.set(issue.id, issue); else selected.delete(issue.id);
+        changed();
+      } });
+      boxes.push({ input, issue });
+      return input;
+    } };
   }
 
   function projectFilter(params) {
@@ -1333,7 +1453,14 @@
   function renderIssue(main, detail, previousView) {
     const issue = detail.issue;
     const event = detail.event || {};
-    const view = previousView || { commentPage: 1, activityPage: 1, assigneePage: 1, assigneeQuery: '', commentsResult: { data: detail.comments || [], total: detail.commentTotal ?? detail.comments?.length ?? 0, page: 1, pageSize } };
+    const view = previousView || {};
+    view.draftIssueId ??= issue.id;
+    view.commentPage ??= 1;
+    view.activityPage ??= 1;
+    view.assigneePage ??= 1;
+    view.assigneeQuery ??= '';
+    view.commentsResult ??= { data: detail.comments || [], total: detail.commentTotal ?? detail.comments?.length ?? 0, page: 1, pageSize };
+    issueViewContext = { organization: state.organization.slug, issueId: issue.id, view };
     const renderVersion = ++issueRenderVersion;
     const routeVersion = state.requestVersion;
     const alive = () => renderVersion === issueRenderVersion && routeVersion === state.requestVersion && main.isConnected && !!state.me;
@@ -1354,7 +1481,7 @@
         const result = await operation();
         if (alive() && current()) await success(result);
       } catch (failure) {
-        if (alive() && current()) formError(target, failure);
+        if (alive() && current()) formError(target, failure, view);
       } finally {
         mutationPending = false;
         if (alive()) mutationControls.forEach((disabled, control) => {
@@ -1381,7 +1508,7 @@
     statusActions.append(button('Refresh issue', () => loadRoute(true)));
     const heading = node('div', { class: 'page-header' }, node('div', {},
       node('div', { class: 'eyebrow' }, issue.shortId || issue.id), node('h1', { class: 'detail-title', tabindex: '-1' }, issue.title),
-      node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), issue.regressedAt ? node('span', { class: 'badge badge-sm error' }, 'Regressed') : null, node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge badge-sm' }, issue.environment) : null)), statusActions);
+      node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), issue.regressedAt ? node('span', { class: 'badge badge-sm error' }, 'Regressed') : null, issue.groupSize != null ? node('span', { class: 'badge badge-sm' }, `${number(issue.groupSize)} original ${issue.groupSize === 1 ? 'group' : 'groups'}`) : null, node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge badge-sm' }, issue.environment) : null)), statusActions);
     const stats = node('dl', { class: 'stat-list' }, [['Events', number(issue.count)], ['First seen', date(issue.firstSeen, true)], ['Last seen', date(issue.lastSeen, true)]].map(([name, value]) => node('div', { class: 'stat' }, node('dt', {}, name), node('dd', {}, value))));
     const summary = node('section', { class: 'card panel' }, stats, node('div', { class: 'panel-body' },
       node('p', { class: 'muted small' }, 'Latest event'), node('p', { class: 'mono' }, text(event.event_id || event.eventID)),
@@ -1391,13 +1518,22 @@
     for (const [label, timestamp] of [['Last resolved', issue.resolvedAt], ['Regressed', issue.regressedAt]]) {
       if (timestamp) summary.lastElementChild.append(node('p', { class: 'event-message small' }, `${label}: `, node('time', { datetime: timestamp, title: timestamp }, date(timestamp))));
     }
-    const triage = { alive, register, mutate, patchIssue };
+    const refresh = async () => {
+      const updated = await request(path);
+      if (!alive()) return false;
+      delete view.commentsResult;
+      if (updated.issue.id !== issue.id) history.replaceState(null, '', routeURL({ issue: updated.issue.id }));
+      renderIssue(main, updated, view);
+      return true;
+    };
+    const triage = { alive, register, mutate, patchIssue, refresh };
     const activity = issueActivity(path, view, triage);
     const comments = issueComments(issue, path, view, triage, () => activity.load(view.activityPage));
     const assignment = issueAssignment(issue, path, view, triage);
     const mute = issueMute(issue, view, triage);
     const resolution = issueResolution(issue, path, view, triage);
-    const left = node('div', {}, summary, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
+    const origins = issueOrigins(issue, path, view, triage);
+    const left = node('div', {}, summary, origins.panel, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
     left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': 'Event details' },
@@ -1415,11 +1551,155 @@
     activity.load(view.activityPage);
     assignment.load(view.assigneePage);
     resolution.start();
+    origins.load(view.origins.page);
+  }
+
+  function issueOrigins(issue, path, view, triage) {
+    view.origins ??= { query: '', search: '', page: 1, selected: new Map(), outcome: null };
+    const draft = view.origins, selected = draft.selected;
+    const search = field('Search original groups', 'search', { value: draft.query, autocomplete: 'off' });
+    const validate = () => search.input.setCustomValidity(new TextEncoder().encode(search.input.value).length > 200 || search.input.value.includes('\0') ? 'Use at most 200 bytes without null characters.' : '');
+    search.input.addEventListener('input', () => { draft.query = search.input.value; validate(); });
+    validate();
+    const searchForm = node('form', { class: 'form-stack', 'aria-label': 'Find original groups' }, search.wrap, node('div', { class: 'actions' }, node('button', { class: 'btn button small', type: 'submit' }, 'Search original groups')));
+    const status = node('p', { class: 'small', role: 'status' });
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const outcome = node('div', { class: 'form-stack' });
+    const confirmation = node('div', { class: 'form-stack', hidden: true });
+    const content = node('div');
+    let sequence = 0, selectingAll = false, confirming = false, rows = [], boxes = [], pageCheckbox;
+    const clear = button('Clear original-group selection', () => { selected.clear(); changed(); }, 'small');
+    const separate = button('Separate selected', () => { confirming = true; sync(); }, 'small');
+    const all = button('Select all original groups', selectAll, 'small');
+    const panel = detailPanel('Original groups', node('div', {}, node('div', { class: 'panel-body form-stack' },
+      node('p', { class: 'muted small' }, 'Each row is an original group. Separate selected groups without copying or losing events. Comments and activity stay with their original groups.'), searchForm,
+      status, node('div', { class: 'actions' }, separate, clear, all), confirmation, error, outcome), content));
+    panel.setAttribute('aria-label', 'Original groups');
+    const alive = () => triage.alive() && panel.isConnected;
+    const disabled = (control, value) => { control.disabled = value; triage.register(control); };
+    function changed() { confirming = false; error.textContent = ''; sync(); }
+    function sync() {
+      status.textContent = `${selected.size} selected · Select up to 100, including the current root. Selections stay across pages and searches.`;
+      disabled(clear, selectingAll || selected.size === 0);
+      disabled(separate, selectingAll || selected.size === 0);
+      disabled(all, selectingAll || issue.groupSize > 100);
+      all.textContent = selectingAll ? 'Selecting original groups…' : 'Select all original groups';
+      for (const { input, origin } of boxes) {
+        input.checked = selected.has(origin.id);
+        disabled(input, selectingAll || (!input.checked && selected.size >= 100));
+      }
+      if (pageCheckbox) {
+        const count = rows.filter(origin => selected.has(origin.id)).length;
+        pageCheckbox.checked = rows.length > 0 && count === rows.length;
+        pageCheckbox.indeterminate = count > 0 && count < rows.length;
+        disabled(pageCheckbox, selectingAll || rows.length === 0);
+      }
+      confirmation.hidden = !confirming || selected.size === 0;
+      if (confirming) {
+        const confirm = button('Confirm separation', submit, 'primary small');
+        const cancel = button('Cancel separation', () => { confirming = false; sync(); }, 'small');
+        disabled(confirm, selectingAll);
+        disabled(cancel, selectingAll);
+        confirmation.replaceChildren(node('p', {}, `Separate ${selected.size} original ${selected.size === 1 ? 'group' : 'groups'}? Unselected groups stay together under their lowest ID.`),
+          ...(selected.has(issue.id) ? [node('p', { class: 'muted small' }, 'The selected current root keeps its own state. The remaining group uses the state of its new root.')] : []), node('div', { class: 'actions' }, confirm, cancel));
+      }
+    }
+    function moved(id) {
+      const failure = new Error('This issue now belongs to a different group. Open the current group to continue.');
+      failure.status = 409;
+      failure.mergedInto = id;
+      return failure;
+    }
+    function showOutcome() {
+      if (!draft.outcome) return;
+      const result = draft.outcome;
+      const ids = sortedIssueIDs(new Set([...result.detachedIssueIds, ...(result.remainingIssueId ? [result.remainingIssueId] : [])]));
+      outcome.replaceChildren(node('p', { role: 'status' }, result.changed ? 'Original groups separated.' : 'The selected groups are already separate.'),
+        node('div', { class: 'actions' }, ids.map(id => routeLink(`Open issue ${id}`, { issue: id }, { class: 'btn button small' }))));
+    }
+    async function submit() {
+      if (!alive() || selected.size === 0 || selectingAll) return;
+      const ids = sortedIssueIDs(selected.keys());
+      await triage.mutate(() => request(`${path}/unmerge`, { method: 'POST', body: { originIds: ids } }), async result => {
+        selected.clear();
+        draft.page = 1;
+        draft.outcome = result;
+        showOutcome();
+        if (await triage.refresh()) notify(result.changed ? 'Original groups separated.' : 'The selected groups are already separate.');
+      }, error, () => panel.isConnected);
+    }
+    async function selectAll() {
+      if (!alive() || selectingAll) return;
+      selectingAll = true;
+      error.textContent = '';
+      sync();
+      try {
+        const first = await request(`${path}/origins?page=1`);
+        if (!alive()) return;
+        if (first.issueId !== issue.id) throw moved(first.issueId);
+        if (first.total > 100) throw new Error('This group has more than 100 original groups. Select individual groups or pages, up to 100 at a time.');
+        const pages = await Promise.all(Array.from({ length: Math.max(0, Math.ceil(first.total / pageSize) - 1) }, (_, index) => request(`${path}/origins?page=${index + 2}`)));
+        if (!alive()) return;
+        if (pages.some(result => result.issueId !== issue.id || result.total !== first.total)) throw new Error('Group membership changed while selecting. Refresh the original groups and try again.');
+        const origins = [first, ...pages].flatMap(result => result.data);
+        if (new Set(origins.map(origin => origin.id)).size !== first.total) throw new Error('Group membership changed while selecting. Refresh the original groups and try again.');
+        selected.clear();
+        for (const origin of origins) selected.set(origin.id, origin);
+        confirming = false;
+      } catch (failure) { if (alive()) formError(error, failure, view); }
+      finally { selectingAll = false; if (alive()) sync(); }
+    }
+    async function load(page) {
+      const current = ++sequence;
+      draft.page = page;
+      rows = []; boxes = []; pageCheckbox = undefined;
+      content.replaceChildren(node('p', { class: 'panel-body muted', role: 'status' }, 'Loading original groups…'));
+      try {
+        const query = new URLSearchParams({ page: String(page), query: draft.search });
+        const result = await request(`${path}/origins?${query}`);
+        if (!alive() || current !== sequence) return;
+        if (result.issueId !== issue.id) throw moved(result.issueId);
+        rows = result.data;
+        pageCheckbox = node('input', { type: 'checkbox', class: 'size-4 shrink-0 cursor-pointer accent-primary', 'aria-label': 'Select all original groups on this page', onchange: () => {
+          const add = pageCheckbox.checked;
+          if (add && selected.size + rows.filter(origin => !selected.has(origin.id)).length > 100) {
+            formError(error, new Error('Select at most 100 original groups. Clear some selections before adding this page.'));
+            sync(); return;
+          }
+          for (const origin of rows) { if (add) selected.set(origin.id, origin); else selected.delete(origin.id); }
+          changed();
+        } });
+        const dates = timestamp => timestamp ? node('time', { datetime: timestamp, title: timestamp }, date(timestamp)) : 'Not recorded';
+        const body = rows.map(origin => {
+          if (selected.has(origin.id)) selected.set(origin.id, origin);
+          const input = node('input', { type: 'checkbox', class: 'size-4 shrink-0 cursor-pointer accent-primary', 'aria-label': `Select original group ${origin.id}`, onchange: () => {
+            if (input.checked) selected.set(origin.id, origin); else selected.delete(origin.id);
+            changed();
+          } });
+          boxes.push({ input, origin });
+          return node('tr', {}, node('td', {}, input), node('td', { class: 'issue-column' }, node('strong', { class: 'wrap-anywhere' }, origin.title),
+            node('div', { class: 'issue-subtitle' }, node('span', { class: 'mono' }, `Issue ${origin.id}`), origin.isRoot ? node('span', { class: 'badge badge-sm' }, 'Current root') : null),
+            node('p', { class: 'mono small wrap-anywhere' }, origin.fingerprint)), node('td', {}, number(origin.count)), node('td', {}, dates(origin.firstSeen)), node('td', {}, dates(origin.lastSeen)));
+        });
+        content.replaceChildren(rows.length ? node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, node('th', { scope: 'col' }, pageCheckbox), ['Original group', 'Events', 'First seen', 'Last seen'].map(label => node('th', { scope: 'col' }, label)))), node('tbody', {}, body))) : node('p', { class: 'panel-body muted' }, result.total ? 'No original groups on this page. Choose an earlier page.' : 'No matching original groups.'), issueHistoryPager('origins', result, load));
+        sync();
+      } catch (failure) {
+        if (alive() && current === sequence) {
+          const loadError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+          formError(loadError, failure, view);
+          content.replaceChildren(node('div', { class: 'panel-body form-stack' }, loadError, button('Retry original groups', () => load(page), 'small')));
+        }
+      }
+    }
+    searchForm.addEventListener('submit', event => { event.preventDefault(); draft.search = search.input.value; load(1); });
+    showOutcome();
+    sync();
+    return { panel, load };
   }
 
   function issueHistoryPager(kind, result, load) {
-    const singular = { comments: 'comment', activity: 'activity entry', assignees: 'assignee', releases: 'release' }[kind];
-    const plural = kind === 'activity' ? 'activity entries' : kind;
+    const singular = { comments: 'comment', activity: 'activity entry', assignees: 'assignee', releases: 'release', origins: 'original group' }[kind];
+    const plural = kind === 'activity' ? 'activity entries' : kind === 'origins' ? 'original groups' : kind;
     const previous = button(`Previous ${kind}`, () => load(result.page - 1));
     const next = button(`Next ${kind}`, () => load(result.page + 1));
     previous.disabled = result.page <= 1;
@@ -1618,7 +1898,7 @@
     const panel = detailPanel('Activity', node('div', {}, node('div', { class: 'panel-body actions' }, button('Refresh activity', () => load(view.activityPage), 'small')), content));
     panel.setAttribute('aria-label', 'Activity');
     let sequence = 0;
-    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', resolution_bound: 'Next release selected', unresolved: 'Reopened issue', ignored: 'Marked ignored', unignored: 'Mute ended', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment' };
+    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', resolution_bound: 'Next release selected', unresolved: 'Reopened issue', ignored: 'Marked ignored', unignored: 'Mute ended', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment', merged: 'Merged issues', unmerged: 'Separated original groups' };
     function entry(item) {
       const actor = item.user?.name || item.user?.email || (['first_seen', 'regressed', 'unignored', 'resolution_bound'].includes(item.type) ? 'System' : 'Actor not recorded');
       const data = item.data || {};
@@ -1635,6 +1915,27 @@
         description = [data.eventID ? `New event ${data.eventID}` : '', data.resolvedAt ? `Previously resolved ${date(data.resolvedAt)}` : '', reason, data.resolution ? issueResolutionDescription(data.resolution) : ''].filter(Boolean).join(' · ');
       }
       else if (item.type.startsWith('comment_') && data.commentID) description = `Comment ${data.commentID}`;
+      else if (item.type === 'merged') {
+        if (Array.isArray(data.sourceIssueIds)) description = `Merged issues ${data.sourceIssueIds.join(', ')} · Recorded events: ${number(data.count)}`;
+        else {
+          description = `Original issue ${text(data.sourceIssueId)} joined issue ${text(data.mergedInto)}`;
+          if (data.previous) {
+            const previous = data.previous;
+            description += ` · Previous status: ${text(previous.status)} · Events: ${number(previous.count)} · Assignment: ${issueActor(previous.assignedTo)}`;
+            if (previous.resolvedAt) description += ` · Resolved: ${date(previous.resolvedAt)}`;
+            if (previous.regressedAt) description += ` · Regressed: ${date(previous.regressedAt)}`;
+            if (previous.status === 'ignored') {
+              description += ` · Mute: ${issueMuteDescription(previous.ignore)}`;
+              if (previous.ignore?.until) description += ` · Mute ends: ${date(previous.ignore.until)}`;
+              if (previous.ignore?.remaining != null) description += ` · Additional errors remaining: ${number(previous.ignore.remaining)}`;
+            }
+            if (previous.status === 'resolved') description += ` · ${issueResolutionDescription(previous.resolution)}`;
+          }
+        }
+      } else if (item.type === 'unmerged') {
+        description = [data.sourceIssueId ? `Separated from issue ${data.sourceIssueId}` : '', Array.isArray(data.originIds) ? `Selected original groups: ${data.originIds.join(', ')}` : '',
+          data.remainingIssueId ? `Remaining group: ${data.remainingIssueId}` : 'No remaining group', `Recorded events: ${number(data.count)}`].filter(Boolean).join(' · ');
+      }
       return node('li', { class: 'comment' }, node('div', { class: 'comment-top' }, node('strong', {}, labels[item.type] || 'Recorded activity'), node('time', { datetime: item.dateCreated, title: item.dateCreated }, date(item.dateCreated))), node('p', { class: 'muted small' }, actor), description ? node('p', {}, description) : null);
     }
     async function load(page) {
@@ -1656,8 +1957,9 @@
     const history = node('div');
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const comment = field('Add a comment', 'textarea', { name: 'text', required: true, maxlength: 10000, rows: 3, placeholder: 'What should the team know?' });
-    comment.input.value = commentDrafts.get(issue.id) || '';
-    comment.input.addEventListener('input', () => commentDrafts.set(issue.id, comment.input.value));
+    const draftIssueId = view.draftIssueId;
+    comment.input.value = commentDrafts.get(draftIssueId) || '';
+    comment.input.addEventListener('input', () => commentDrafts.set(draftIssueId, comment.input.value));
     const submit = triage.register(node('button', { class: 'btn button primary', type: 'submit' }, 'Post comment'));
     const form = node('form', { class: 'comment-form form-stack' }, error, comment.wrap, node('div', { class: 'actions' }, submit));
     const panel = detailPanel('Comments', node('div', {}, node('div', { class: 'panel-body actions' }, button('Refresh comments', () => load(view.commentPage), 'small')), history, form));
@@ -1665,7 +1967,7 @@
     let sequence = 0;
     function renderComment(record) {
       const row = node('li', { class: 'comment' });
-      const draftKey = `${issue.id}:${record.id}`;
+      const draftKey = record.id;
       function show() {
         const heading = node('div', { class: 'comment-top' }, node('strong', {}, record.user?.name || record.user?.email || 'Member'), node('time', { datetime: record.dateCreated, title: record.dateCreated }, date(record.dateCreated)));
         row.replaceChildren(heading, ...(record.updatedAt ? [node('p', { class: 'small muted' }, 'Edited ', node('time', { datetime: record.updatedAt, title: record.updatedAt }, date(record.updatedAt)))] : []), node('p', {}, record.text));
@@ -1733,7 +2035,7 @@
       if (!value) { formError(error, new Error('Enter a comment before posting.')); return; }
       const draft = comment.input.value;
       triage.mutate(() => request(`${path}/comments`, { method: 'POST', body: { text: value } }), async () => {
-        if (comment.input.value === draft) { comment.input.value = ''; commentDrafts.delete(issue.id); }
+        if (comment.input.value === draft) { comment.input.value = ''; commentDrafts.delete(draftIssueId); }
         await load(1);
         if (triage.alive()) { refreshActivity(); notify('Comment posted.'); comment.input.focus(); }
       }, error, () => form.isConnected);

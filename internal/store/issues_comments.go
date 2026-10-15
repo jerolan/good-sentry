@@ -36,12 +36,12 @@ func (s *Store) IssueComments(ctx context.Context, userID, id string, page int) 
 	if err != nil {
 		return nil, 0, err
 	}
-	tx, _, _, role, err := s.issueTransaction(ctx, userID, id, false)
+	tx, issue, _, role, err := s.issueTransaction(ctx, userID, id, false)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer tx.Rollback(ctx)
-	items, total, err := readIssueComments(ctx, tx, userID, role, id, offset)
+	items, total, err := readIssueComments(ctx, tx, userID, role, issue.ID, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -50,10 +50,10 @@ func (s *Store) IssueComments(ctx context.Context, userID, id string, page int) 
 
 func readIssueComments(ctx context.Context, tx pgx.Tx, userID, role, id string, offset int) ([]Comment, int, error) {
 	var total int
-	if err := tx.QueryRow(ctx, `SELECT count(*) FROM comments WHERE issue_id=$1::bigint`, id).Scan(&total); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT count(*) FROM comments WHERE issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint)`, id).Scan(&total); err != nil {
 		return nil, 0, err
 	}
-	rows, err := tx.Query(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id=$1::bigint ORDER BY c.id DESC LIMIT 25 OFFSET $2`, id, offset)
+	rows, err := tx.Query(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint) ORDER BY c.id DESC LIMIT 25 OFFSET $2`, id, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -104,7 +104,7 @@ func (s *Store) EditComment(ctx context.Context, userID, id, commentID, text str
 		return Comment{}, err
 	}
 	defer tx.Rollback(ctx)
-	c, err := scanComment(tx.QueryRow(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id=$1::bigint AND c.id::text=$2 FOR UPDATE OF c`, id, commentID), userID, role)
+	c, err := scanComment(tx.QueryRow(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint) AND c.id::text=$2 FOR UPDATE OF c`, id, commentID), userID, role)
 	if err != nil {
 		return c, err
 	}
@@ -131,7 +131,7 @@ func (s *Store) DeleteComment(ctx context.Context, userID, id, commentID string)
 		return err
 	}
 	defer tx.Rollback(ctx)
-	c, err := scanComment(tx.QueryRow(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id=$1::bigint AND c.id::text=$2 FOR UPDATE OF c`, id, commentID), userID, role)
+	c, err := scanComment(tx.QueryRow(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint) AND c.id::text=$2 FOR UPDATE OF c`, id, commentID), userID, role)
 	if err != nil {
 		return err
 	}

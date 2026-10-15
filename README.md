@@ -52,7 +52,7 @@ docker compose restart goodsentry
 docker compose down
 ```
 
-`down` preserves the named volumes. Adding `-v` deletes them. Migrations apply automatically at startup under a database lock and verify their checksums.
+`down` preserves the named volumes. Adding `-v` deletes them. Migrations apply automatically at startup under a database lock and verify their checksums. Stop older backend replicas before starting a version with native issue grouping. Current-version replicas coordinate grouping through PostgreSQL locks.
 
 ## What works today
 
@@ -115,6 +115,14 @@ Ignore pauses new issue notifications while collecting every error. In issue det
 
 The maintenance worker runs inside the application, including when uptime and log ingestion are disabled. It catches up after restart. Lists may show an expired mute until its next maintenance pass. Captures still contribute to project-wide alert windows, so a threshold crossed during mute is not replayed afterward. Deliveries already queued or in progress retain their status. Native conditional mute does not yet implement the compatible API's affected-user or sliding-window conditions.
 
+### Merge and separate issues
+
+Select 2 to 100 issues from one project and confirm **Merge selected**. Selections stay across pages with the same filters. The lowest issue ID retains its assignment, status and active mute or release policy. Absorbed roots clear their active policies and record the previous state in activity. Merging history does not consume mute progress, reopen a resolution or queue notifications.
+
+In **Original groups**, search or page through the original fingerprints and separate selected groups, including the current root. Each selected group becomes standalone; unselected groups stay together. SDK captures continue to follow their original fingerprint. Counts and dates describe the resulting stored events. Comments and activity stay with their original group, including after separation.
+
+Old issue links open the current group. If another user merges an issue while you edit it, the application preserves your drafts and provides an **Open current group** link. These controls implement native GoodSentry grouping. Compatible API0 merge and hash operations remain pending.
+
 ### Issue search
 
 The Issues view combines project, status, environment and release filters with text and tag queries:
@@ -171,7 +179,7 @@ Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. 
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, compatible release-resolution and mute APIs, merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, compatible release-resolution, mute, merge and hash APIs, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 

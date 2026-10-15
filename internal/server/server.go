@@ -70,8 +70,11 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/alert-deliveries", s.auth(http.HandlerFunc(s.alertDeliveries)))
 	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/alert-deliveries/{delivery}", s.auth(http.HandlerFunc(s.alertDelivery)))
 	mux.Handle("GET /api/v1/organizations/{org}/issues", s.auth(http.HandlerFunc(s.issues)))
+	mux.Handle("POST /api/v1/organizations/{org}/issues/merge", s.auth(http.HandlerFunc(s.mergeIssues)))
 	mux.Handle("GET /api/v1/issues/{issue}", s.auth(http.HandlerFunc(s.issue)))
 	mux.Handle("PATCH /api/v1/issues/{issue}", s.auth(http.HandlerFunc(s.triage)))
+	mux.Handle("POST /api/v1/issues/{issue}/unmerge", s.auth(http.HandlerFunc(s.unmergeIssue)))
+	mux.Handle("GET /api/v1/issues/{issue}/origins", s.auth(http.HandlerFunc(s.issueOrigins)))
 	mux.Handle("GET /api/v1/issues/{issue}/assignees", s.auth(http.HandlerFunc(s.issueAssignees)))
 	mux.Handle("GET /api/v1/issues/{issue}/releases", s.auth(http.HandlerFunc(s.issueReleases)))
 	mux.Handle("GET /api/v1/issues/{issue}/activity", s.auth(http.HandlerFunc(s.issueActivity)))
@@ -171,6 +174,11 @@ func failure(w http.ResponseWriter, status int, message string) {
 	writeJSON(w, status, map[string]string{"detail": message})
 }
 func report(w http.ResponseWriter, err error) {
+	var merged *store.IssueMergedError
+	if errors.As(err, &merged) {
+		writeJSON(w, 409, map[string]string{"detail": merged.Error(), "mergedInto": merged.MergedInto})
+		return
+	}
 	switch {
 	case errors.Is(err, store.ErrNotFound):
 		failure(w, 404, "Not found")

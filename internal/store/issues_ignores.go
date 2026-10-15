@@ -87,13 +87,14 @@ func expireLockedIssueIgnore(ctx context.Context, tx pgx.Tx, id string, addition
 	var minutes, count *int32
 	var until *time.Time
 	var baseline *int64
+	var merged *string
 	var now time.Time
-	err := tx.QueryRow(ctx, `SELECT i.status,i.receipt_count,g.minutes,g.count,g.until,g.baseline,clock_timestamp()
-  FROM issues i LEFT JOIN issue_ignores g ON g.issue_id=i.id WHERE i.id=$1::bigint`, id).Scan(&status, &receipts, &minutes, &count, &until, &baseline, &now)
+	err := tx.QueryRow(ctx, `SELECT i.status,i.receipt_count,g.minutes,g.count,g.until,g.baseline,clock_timestamp(),i.merged_into::text
+  FROM issues i LEFT JOIN issue_ignores g ON g.issue_id=i.id WHERE i.id=$1::bigint`, id).Scan(&status, &receipts, &minutes, &count, &until, &baseline, &now, &merged)
 	if err != nil {
 		return false, err
 	}
-	if status != "ignored" || baseline == nil {
+	if merged != nil || status != "ignored" || baseline == nil {
 		return false, nil
 	}
 	previous := IssueIgnore{Minutes: minutes, Count: count, Until: until}
@@ -144,7 +145,7 @@ func (s *Store) ExpireIssueIgnore(ctx context.Context) (bool, error) {
 	defer tx.Rollback(ctx)
 	var id string
 	err = tx.QueryRow(ctx, `SELECT i.id::text FROM issues i JOIN issue_ignores g ON g.issue_id=i.id
-  WHERE i.status='ignored' AND g.until<=clock_timestamp() ORDER BY g.until,i.id LIMIT 1 FOR UPDATE OF i SKIP LOCKED`).Scan(&id)
+  WHERE i.merged_into IS NULL AND i.status='ignored' AND g.until<=clock_timestamp() ORDER BY g.until,i.id LIMIT 1 FOR UPDATE OF i SKIP LOCKED`).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	}
