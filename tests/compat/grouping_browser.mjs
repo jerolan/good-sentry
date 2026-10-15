@@ -34,7 +34,7 @@ const comments = (tab = page) => panel('Comments', tab);
 const mute = () => panel('Mute notifications');
 const resolution = () => panel('Resolution');
 const issues = () => panel('Issues');
-const selection = () => page.getByRole('group', { name: 'Merge issues', exact: true });
+const selection = () => page.getByRole('group', { name: 'Selected issues', exact: true });
 async function visible(locator) { await locator.waitFor({ state: 'visible' }); return locator; }
 async function until(read, accepts, message) {
   const deadline = Date.now() + 20000;
@@ -138,19 +138,20 @@ try {
     await issues().getByRole('button', { name: 'Next', exact: true }).click(); await expectIssuePage(102, number + 1);
   }
   const allBoxes = await issues().getByRole('checkbox').all(); assert.equal(allBoxes.length, 3);
-  assert.ok(await allBoxes[1].isDisabled()); assert.ok(await allBoxes[2].isDisabled());
-  await allBoxes[0].click(); await visible(selection().getByRole('alert').filter({ hasText: 'Select at most 100 issues.' }));
-  await page.getByRole('button', { name: 'Refresh', exact: true }).click(); await expectIssuePage(102, 5); await visible(selection().getByText(/^100 selected/));
+  assert.ok(await allBoxes[1].isEnabled()); assert.ok(await allBoxes[2].isEnabled());
+  await allBoxes[0].check(); await visible(selection().getByText(/^102 selected/));
+  assert.ok(await selection().getByRole('button', { name: 'Merge selected', exact: true }).isDisabled());
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click(); await expectIssuePage(102, 5); await visible(selection().getByText(/^102 selected/));
   await captureUI('selection-limit', selection());
   await selection().getByRole('button', { name: 'Clear selection', exact: true }).click();
   await applyFilters({ Project: '' }); await expectIssuePage(103, 1);
   await issues().getByRole('checkbox', { name: `Select issue ${crossProject.shortId || crossProject.id}`, exact: true }).check();
   const newest = byIndex.get(101); await issues().getByRole('checkbox', { name: `Select issue ${newest.shortId || newest.id}`, exact: true }).check();
   assert.ok(await selection().getByRole('button', { name: 'Merge selected', exact: true }).isDisabled());
-  await visible(selection().getByText(/different projects/)); await captureUI('mixed-project-selection', selection());
+  await visible(selection().getByText(/Merging requires.*one project/)); await captureUI('mixed-project-selection', selection());
   await applyFilters({ Project: project.id, 'Search issues': `${JSON.stringify(prefix)} cohort:merge` }); await expectIssuePage(26, 1);
   await visible(selection().getByText(/^0 selected/)); assert.equal(params(page).page, undefined);
-  checks.push('Real list selection survives four page changes and Refresh, stops at100, blocks mixed projects and clears when filter/project scope changes');
+  checks.push('Real list selection survives four page changes and Refresh, permits102 while disabling merge above100, blocks mixed-project merging and clears when filter/project scope changes');
 
   await issues().getByRole('checkbox', { name: 'Select all issues on this page', exact: true }).check();
   await issues().getByRole('button', { name: 'Next', exact: true }).click(); await expectIssuePage(26, 2);
@@ -159,7 +160,9 @@ try {
   await selection().getByRole('button', { name: 'Merge selected', exact: true }).click();
   await visible(selection().getByText(`Merge 26 selected issues into issue ${rootID}?`, { exact: true })); assert.equal(mergeRequests, 0);
   await selection().getByRole('button', { name: 'Cancel merge', exact: true }).click(); assert.equal(mergeRequests, 0);
-  await selection().getByRole('button', { name: 'Merge selected', exact: true }).click(); await captureUI('merge-confirmation', selection());
+  await selection().getByRole('button', { name: 'Merge selected', exact: true }).click();
+  assert.equal((await selection().textContent()).includes('null'), false, 'Merge confirmation must not render a null placeholder');
+  await captureUI('merge-confirmation', selection());
   const merged = await clickRequest(selection().getByRole('button', { name: 'Confirm merge', exact: true }), 'POST', mergePath);
   assert.deepEqual(merged.request().postDataJSON(), { issueIds: mergedIDs }); assert.equal((await merged.json()).issue.id, rootID); page.off('request', trackMerge);
   await visible(origins().getByText('26 original groups · Page 1', { exact: true })); await visible(page.getByText('26 original groups', { exact: true }));

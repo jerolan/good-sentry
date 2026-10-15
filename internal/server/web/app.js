@@ -662,7 +662,7 @@
         confirm.disabled = pending;
         cancel.disabled = pending;
         confirmation.replaceChildren(node('p', {}, deleting ? `Delete the whole groups for ${count} selected ${count === 1 ? 'issue' : 'issues'}?` : `Merge ${count} selected issues into issue ${root}?`),
-          deleting ? node('p', { class: 'muted small' }, issueDeletionWarning) : null, node('div', { class: 'actions' }, confirm, cancel));
+          ...(deleting ? [node('p', { class: 'muted small' }, issueDeletionWarning)] : []), node('div', { class: 'actions' }, confirm, cancel));
       }
     }
     const explanation = node('p', { class: 'muted small' });
