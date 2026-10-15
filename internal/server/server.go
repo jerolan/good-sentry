@@ -69,6 +69,9 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("GET /api/v1/organizations/{org}/transactions", s.auth(http.HandlerFunc(s.transactions)))
 	mux.Handle("GET /api/v1/organizations/{org}/transactions/{source}/{id}", s.auth(http.HandlerFunc(s.transactionDetail)))
 	mux.Handle("GET /api/v1/organizations/{org}/transactions/{source}/{id}/span-groups", s.auth(http.HandlerFunc(s.transactionSpanGroups)))
+	mux.Handle("GET /api/v1/organizations/{org}/traces/{trace}", s.auth(http.HandlerFunc(s.trace)))
+	mux.Handle("GET /api/v1/organizations/{org}/traces/{trace}/nodes/{node}", s.auth(http.HandlerFunc(s.traceNode)))
+	mux.Handle("GET /api/v1/organizations/{org}/traces/{trace}/errors", s.auth(http.HandlerFunc(s.traceErrors)))
 	mux.Handle("GET /api/v1/organizations/{org}/spans", s.auth(http.HandlerFunc(s.spans)))
 	mux.Handle("GET /api/v1/organizations/{org}/logs", s.auth(http.HandlerFunc(s.logs)))
 	if cfg.Uptime {

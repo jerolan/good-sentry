@@ -170,7 +170,7 @@ func run() error {
 	if err := client.verifyTransaction(ctx, orgPath, created.ID, transactionName, transaction, child); err != nil {
 		return err
 	}
-	fmt.Printf("PASS: SDK transaction %q retained occurrence context and child-operation metrics for trace %s\n", transactionName, transaction.TraceID.String())
+	fmt.Printf("PASS: SDK transaction %q retained occurrence context, child-operation metrics and trace ancestry/timing for trace %s\n", transactionName, transaction.TraceID.String())
 	if err := client.verifyLog(ctx, orgPath, logMessage, transaction.TraceID.String(), runID); err != nil {
 		return err
 	}
@@ -363,7 +363,7 @@ func (c *apiClient) verifyTransaction(ctx context.Context, orgPath, projectID, n
 					return fmt.Errorf("Go SDK child-operation duration differs from SDK timing %v: %+v", expectedDuration, operation)
 				}
 			}
-			return nil
+			return c.verifyTrace(ctx, orgPath, projectID, name, ref, root, child)
 		}
 		select {
 		case <-ctx.Done():
@@ -372,6 +372,102 @@ func (c *apiClient) verifyTransaction(ctx context.Context, orgPath, projectID, n
 		}
 	}
 	return fmt.Errorf("SDK transaction %q was not visible through the authenticated telemetry API", name)
+}
+
+func (c *apiClient) verifyTrace(ctx context.Context, orgPath, projectID, name string, ref transactionReference, root, child *sentry.Span) error {
+	type node struct {
+		ID             string     `json:"id"`
+		Source         string     `json:"source"`
+		RecordID       string     `json:"recordId"`
+		Ordinal        int        `json:"ordinal"`
+		Kind           string     `json:"kind"`
+		ProjectID      string     `json:"projectId"`
+		Name           string     `json:"name"`
+		Op             string     `json:"op"`
+		Environment    string     `json:"environment"`
+		Release        string     `json:"release"`
+		SpanID         string     `json:"spanId"`
+		ParentSpanID   string     `json:"parentSpanId"`
+		SpanIDStatus   string     `json:"spanIdStatus"`
+		ParentStatus   string     `json:"parentStatus"`
+		ParentID       string     `json:"parentId"`
+		ParentPage     int        `json:"parentPage"`
+		Depth          int        `json:"depth"`
+		ChildCount     int        `json:"childCount"`
+		StartTimestamp *time.Time `json:"startTimestamp"`
+		EndTimestamp   *time.Time `json:"endTimestamp"`
+		Duration       *float64   `json:"duration"`
+		Offset         *float64   `json:"offset"`
+	}
+	var trace struct {
+		TraceID        string     `json:"traceId"`
+		ProjectID      string     `json:"projectId"`
+		NodeCount      int        `json:"nodeCount"`
+		ProjectCount   int        `json:"projectCount"`
+		LogCount       int        `json:"logCount"`
+		LogsEnabled    bool       `json:"logsEnabled"`
+		StartTimestamp *time.Time `json:"startTimestamp"`
+		EndTimestamp   *time.Time `json:"endTimestamp"`
+		Duration       *float64   `json:"duration"`
+		Data           []node     `json:"data"`
+	}
+	tracePath := orgPath + "/traces/" + root.TraceID.String()
+	projectQuery := "?project=" + url.QueryEscape(projectID)
+	if err := c.json(ctx, http.MethodGet, tracePath+projectQuery, nil, http.StatusOK, &trace); err != nil {
+		return err
+	}
+	if trace.TraceID != root.TraceID.String() || trace.ProjectID != projectID || trace.NodeCount != 2 || trace.ProjectCount != 1 || !trace.LogsEnabled || trace.LogCount < 1 || len(trace.Data) != 2 {
+		return fmt.Errorf("Go SDK trace lost identity, roots/children or related log: %+v", trace)
+	}
+	rootID, childID := "event-"+ref.ID, "event-"+ref.ID+"-1"
+	if trace.Data[0].ID != rootID || trace.Data[1].ID != childID {
+		return fmt.Errorf("Go SDK trace forest changed stored root/child identities: %+v", trace.Data)
+	}
+	rootNode, childNode := trace.Data[0], trace.Data[1]
+	if rootNode.Kind != "transaction" || rootNode.Ordinal != 0 || rootNode.SpanID != root.SpanID.String() || rootNode.ParentSpanID != "" || rootNode.ParentStatus != "none" || rootNode.ParentID != "" || rootNode.ParentPage != 0 || rootNode.Depth != 0 || rootNode.ChildCount != 1 || rootNode.Name != name || rootNode.Op != "compat.sdk" {
+		return fmt.Errorf("Go SDK trace root changed identity or context: %+v", rootNode)
+	}
+	if childNode.Kind != "span" || childNode.Ordinal != 1 || childNode.SpanID != child.SpanID.String() || childNode.ParentSpanID != root.SpanID.String() || childNode.ParentStatus != "resolved" || childNode.ParentID != rootID || childNode.ParentPage != 1 || childNode.Depth != 1 || childNode.ChildCount != 0 || childNode.Name != "SDK acceptance child" || childNode.Op != "compat.child" {
+		return fmt.Errorf("Go SDK trace child changed explicit ancestry or context: %+v", childNode)
+	}
+	closeTime := func(got *time.Time, want time.Time) bool {
+		return got != nil && got.Location() == time.UTC && math.Abs(got.Sub(want).Seconds()*1000) <= 0.002
+	}
+	if !closeTime(trace.StartTimestamp, root.StartTime) || !closeTime(trace.EndTimestamp, root.EndTime) || trace.Duration == nil || math.Abs(*trace.Duration-root.EndTime.Sub(root.StartTime).Seconds()*1000) > 0.002 {
+		return fmt.Errorf("Go SDK trace bounds changed emitted root timing: %+v", trace)
+	}
+	for i, emitted := range []*sentry.Span{root, child} {
+		got := trace.Data[i]
+		if got.Source != "event" || got.RecordID != ref.ID || got.ProjectID != projectID || got.SpanIDStatus != "valid" || got.Environment != "sdk-compat" || got.Release != "goodsentry-compat@1" {
+			return fmt.Errorf("Go SDK trace node lost source/project/context: %+v", got)
+		}
+		if !closeTime(got.StartTimestamp, emitted.StartTime) || !closeTime(got.EndTimestamp, emitted.EndTime) || got.Duration == nil || math.Abs(*got.Duration-emitted.EndTime.Sub(emitted.StartTime).Seconds()*1000) > 0.002 || got.Offset == nil || math.Abs(*got.Offset-emitted.StartTime.Sub(root.StartTime).Seconds()*1000) > 0.002 {
+			return fmt.Errorf("Go SDK trace node changed emitted timing/offset: %+v", got)
+		}
+	}
+	var raw struct {
+		ID        string `json:"id"`
+		Source    string `json:"source"`
+		RecordID  string `json:"recordId"`
+		Ordinal   int    `json:"ordinal"`
+		ProjectID string `json:"projectId"`
+		Data      struct {
+			SpanID       string `json:"span_id"`
+			ParentSpanID string `json:"parent_span_id"`
+			Description  string `json:"description"`
+			Op           string `json:"op"`
+			Data         struct {
+				Acceptance bool `json:"acceptance"`
+			} `json:"data"`
+		} `json:"data"`
+	}
+	if err := c.json(ctx, http.MethodGet, tracePath+"/nodes/"+childID+projectQuery, nil, http.StatusOK, &raw); err != nil {
+		return err
+	}
+	if raw.ID != childID || raw.Source != "event" || raw.RecordID != ref.ID || raw.Ordinal != 1 || raw.ProjectID != projectID || raw.Data.SpanID != child.SpanID.String() || raw.Data.ParentSpanID != root.SpanID.String() || raw.Data.Description != "SDK acceptance child" || raw.Data.Op != "compat.child" || !raw.Data.Data.Acceptance {
+		return fmt.Errorf("Go SDK trace raw child lost original metadata or acceptance data: %+v", raw)
+	}
+	return nil
 }
 
 func (c *apiClient) verifyLog(ctx context.Context, orgPath, body, traceID, runID string) error {

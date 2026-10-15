@@ -217,9 +217,76 @@ async function main() {
     for (const metric of [operation.avgDuration, operation.p95Duration, operation.totalTime]) {
       assert.ok(typeof metric === "number" && Math.abs(metric - expectedDuration) <= 0.002, `child-operation metric ${metric} differs from emitted SDK duration ${expectedDuration}`);
     }
+    const tracePath = `${orgPath}/traces/${traceID}`;
+    const trace = await api("GET", `${tracePath}?project=${project.id}`);
+    assert.equal(trace.traceId, traceID);
+    assert.equal(trace.projectId, project.id);
+    assert.equal(trace.nodeCount, 2);
+    assert.equal(trace.projectCount, 1);
+    assert.equal(trace.logsEnabled, true);
+    assert.ok(trace.logCount >= 1, "trace lost its official SDK log correlation");
+    assert.equal(trace.data.length, 2);
+    const [rootNode, childNode] = trace.data;
+    assert.deepEqual(trace.data.map((node) => node.id), [`span-${reference.id}`, `span-${child.id}`], "trace forest lost concrete SDK root/child order");
+    assert.equal(rootNode.kind, "segment");
+    assert.equal(rootNode.recordId, reference.id);
+    assert.equal(rootNode.parentSpanId, "");
+    assert.equal(rootNode.parentStatus, "none");
+    assert.equal(rootNode.parentId, "");
+    assert.equal(rootNode.parentPage, 0);
+    assert.equal(rootNode.depth, 0);
+    assert.equal(rootNode.childCount, 1);
+    assert.equal(childNode.kind, "span");
+    assert.equal(childNode.recordId, child.id);
+    assert.equal(childNode.parentSpanId, rootSpanID);
+    assert.equal(childNode.parentStatus, "resolved");
+    assert.equal(childNode.parentId, rootNode.id);
+    assert.equal(childNode.parentPage, 1);
+    assert.equal(childNode.depth, 1);
+    assert.equal(childNode.childCount, 0);
+    const utcMilliseconds = (value) => {
+      assert.equal(typeof value, "string", "trace timing must be an available UTC instant");
+      const parts = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,9}))?Z$/.exec(value);
+      assert.ok(parts, `trace timing must be UTC RFC3339: ${value}`);
+      return Date.parse(`${parts[1]}Z`) + Number(`0.${parts[2] || "0"}`) * 1000;
+    };
+    assert.ok(Math.abs(utcMilliseconds(trace.startTimestamp) - emittedRoot.start_timestamp * 1000) <= 0.002, "trace start changed emitted SDK timing");
+    assert.ok(Math.abs(utcMilliseconds(trace.endTimestamp) - emittedRoot.end_timestamp * 1000) <= 0.002, "trace end changed emitted SDK timing");
+    assert.ok(typeof trace.duration === "number" && Math.abs(trace.duration - (emittedRoot.end_timestamp - emittedRoot.start_timestamp) * 1000) <= 0.002, "trace duration changed emitted SDK root interval");
+    for (const [node, emitted, spanId, name, op] of [
+      [rootNode, emittedRoot, rootSpanID, transactionName, "compat.node"],
+      [childNode, emittedChild, childSpanID, "SDK acceptance child", "compat.child"],
+    ]) {
+      assert.equal(node.source, "span");
+      assert.equal(node.ordinal, 0);
+      assert.equal(node.projectId, project.id);
+      assert.equal(node.spanId, spanId);
+      assert.equal(node.spanIdStatus, "valid");
+      assert.equal(node.name, name);
+      assert.equal(node.op, op);
+      assert.equal(node.environment, "sdk-compat");
+      assert.equal(node.release, "goodsentry-compat@1");
+      assert.ok(Math.abs(utcMilliseconds(node.startTimestamp) - emitted.start_timestamp * 1000) <= 0.002, "trace node start changed emitted SDK timing");
+      assert.ok(Math.abs(utcMilliseconds(node.endTimestamp) - emitted.end_timestamp * 1000) <= 0.002, "trace node end changed emitted SDK timing");
+      assert.ok(typeof node.duration === "number" && Math.abs(node.duration - (emitted.end_timestamp - emitted.start_timestamp) * 1000) <= 0.002, "trace node duration changed emitted SDK interval");
+      assert.ok(typeof node.offset === "number" && Math.abs(node.offset - (emitted.start_timestamp - emittedRoot.start_timestamp) * 1000) <= 0.002, "trace node offset changed emitted SDK position");
+    }
+    const raw = await api("GET", `${tracePath}/nodes/${childNode.id}?project=${project.id}`);
+    assert.equal(raw.id, childNode.id);
+    assert.equal(raw.source, "span");
+    assert.equal(raw.recordId, child.id);
+    assert.equal(raw.ordinal, 0);
+    assert.equal(raw.projectId, project.id);
+    assert.equal(raw.data.trace_id, traceID);
+    assert.equal(raw.data.span_id, childSpanID);
+    assert.equal(raw.data.parent_span_id, rootSpanID);
+    assert.equal(raw.data.name, "SDK acceptance child");
+    assert.equal(raw.data.is_segment, false);
+    assert.deepEqual(raw.data.attributes["sentry.op"], { type: "string", value: "compat.child" });
+    assert.deepEqual(raw.data.attributes["sentry.segment.id"], { type: "string", value: rootSpanID });
     return true;
   });
-  console.log(`PASS: Node SDK transaction ${JSON.stringify(transactionName)} retained occurrence context and child-operation metrics for trace ${traceID}`);
+  console.log(`PASS: Node SDK transaction ${JSON.stringify(transactionName)} retained occurrence context, child-operation metrics and trace ancestry/timing for trace ${traceID}`);
 
 }
 

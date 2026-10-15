@@ -38,6 +38,7 @@ type LogFilter struct {
 	Project, Query, Level, Environment, TraceID, Service string
 	Window                                               *TimeWindow
 	Page                                                 int
+	CanonicalTrace                                       bool
 }
 
 type Log struct {
@@ -113,9 +114,15 @@ func (s *Store) Logs(ctx context.Context, userID, orgSlug string, f LogFilter) (
 	}
 	args := []any{org.ID}
 	where := "WHERE p.organization_id::text=$1 "
+	traceColumn := "l.trace_id"
+	if f.CanonicalTrace && f.TraceID != "" {
+		traceColumn = "lower(l.trace_id)"
+		f.TraceID = strings.ToLower(f.TraceID)
+		where += "AND l.trace_id<>'' "
+	}
 	for _, filter := range []struct{ value, column string }{
 		{f.Project, "l.project_id::text"}, {f.Level, "l.level"},
-		{f.Environment, "l.environment"}, {f.TraceID, "l.trace_id"},
+		{f.Environment, "l.environment"}, {f.TraceID, traceColumn},
 		{f.Service, "l.service"},
 	} {
 		if filter.value != "" {

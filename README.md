@@ -60,7 +60,7 @@ docker compose down
 | --- | --- |
 | Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, context, search, filters, resolve/reopen and comments. |
 | JavaScript source maps | Authenticated native uploads, release/distribution or Debug ID selection, original file/line/column/context and preserved minified stacks. |
-| Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics and stored occurrence detail with paginated spans. |
+| Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail and a cross-project trace waterfall. |
 | Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. |
 | Uptime | HTTP HEAD/GET/POST, TCP and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
 | Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |
@@ -79,7 +79,7 @@ The following pinned official clients have passed error, transaction and typed-l
 | Node.js | `11.7.0` |
 | Browser JavaScript | `11.7.0` |
 
-The Go and Node checks also verify occurrence context, root/child timing, parent identifiers and child-operation metrics against times emitted by each SDK.
+The Go and Node checks also verify occurrence context, child-operation metrics and trace parent relationships, depth, timing and selected raw records against data emitted by each SDK.
 
 For an existing integration, start by changing its DSN. Keep the SDK's usual sampling and log settings. For example, with the verified Node SDK:
 
@@ -99,7 +99,7 @@ These checks establish the listed workflows for those versions. Attachments, add
 
 ### Current gaps
 
-Remaining work includes a full trace waterfall, release and deploy management, `sentry-cli` upload endpoints, native symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes release and deploy management, `sentry-cli` upload endpoints, native symbolication, native OTLP, retention, assignment and merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The modern CLI bundle decoder is tested; its upload endpoints remain unconnected. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
@@ -140,7 +140,9 @@ Open a transaction name to inspect its latest stored occurrence. Legacy events s
 
 Choose **Operations** for a transaction group's child-operation counts, average, p95 and accumulated time. The breakdown combines matching legacy transactions and standalone segments within the selected project and interval. Standalone children use their recorded segment association; roots are excluded. Counts include unavailable timing, while duration metrics use valid durations only. Accumulated time includes overlapping spans.
 
-On upgrade, GoodSentry indexes historical legacy spans inside the application, one event per transaction. This resumes after restart and preserves original event JSON. A breakdown whose matching history is still pending shows an indexing message and retry action until its statistics are ready.
+Choose **View trace** from a transaction, occurrence, log or error to inspect its stored spans across projects. The waterfall uses recorded parent IDs and UTC timestamps, with 50-node pages, links to parents on other pages, selected raw JSON and related errors and logs. Missing, ambiguous and cyclic relationships remain visible. Incomplete timing stays unavailable; zero-duration spans appear as points. A trace includes all stored time in its selected project scope, and Back restores the originating filters and page.
+
+On upgrade, GoodSentry indexes historical legacy spans inside the application, one event per transaction. This resumes after restart and preserves original event JSON and operation statistics. Pending history shows an indexing message and retry action. Related trace logs include historical uppercase IDs; ordinary Logs filters retain exact matching.
 
 </details>
 

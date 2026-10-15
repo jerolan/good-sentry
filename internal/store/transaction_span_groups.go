@@ -45,7 +45,7 @@ func (s *Store) ProjectTransactionSpans(ctx context.Context) (bool, error) {
 	var id int64
 	var data json.RawMessage
 	err = tx.QueryRow(ctx, `SELECT id,data FROM events
-		WHERE kind='transaction' AND span_projection_version=0
+		WHERE kind='transaction' AND span_projection_version<2
 		ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1`).Scan(&id, &data)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
@@ -177,18 +177,27 @@ func (s *Store) TransactionSpanGroups(ctx context.Context, userID, orgSlug, sour
 }
 
 func projectTransactionSpans(ctx context.Context, tx pgx.Tx, eventID int64, data json.RawMessage) error {
+	// Replace the derived rows inside this transaction. Version-one statistics
+	// stay visible until all version-two metadata and its marker commit together.
+	if _, err := tx.Exec(ctx, "DELETE FROM transaction_span_operations WHERE event_id=$1", eventID); err != nil {
+		return err
+	}
 	var children []json.RawMessage
-	_ = json.Unmarshal(detailObject(data)["spans"], &children)
+	root := detailObject(data)
+	_ = json.Unmarshal(root["spans"], &children)
 	if len(children) != 0 {
-		_, err := tx.CopyFrom(ctx, pgx.Identifier{"transaction_span_operations"}, []string{"event_id", "ordinal", "op", "description", "duration"},
+		_, err := tx.CopyFrom(ctx, pgx.Identifier{"transaction_span_operations"}, []string{"event_id", "ordinal", "op", "description", "duration", "span_id", "parent_span_id", "status", "start_timestamp", "end_timestamp"},
 			pgx.CopyFromSlice(len(children), func(i int) ([]any, error) {
 				span := legacyDetailSpan(children[i], int64(i+1))
-				return []any{eventID, i + 1, span.Op, span.Name, span.Duration}, nil
+				return []any{eventID, i + 1, span.Op, span.Name, span.Duration, span.SpanID, span.ParentSpanID, span.Status, span.StartTimestamp, span.EndTimestamp}, nil
 			}))
 		if err != nil {
 			return err
 		}
 	}
-	_, err := tx.Exec(ctx, "UPDATE events SET span_projection_version=1 WHERE id=$1", eventID)
+	trace := detailObject(detailObject(root["contexts"])["trace"])
+	_, err := tx.Exec(ctx, `UPDATE events SET span_projection_version=2,trace_span_id=$2,trace_parent_span_id=$3,
+		trace_op=$4,trace_status=$5,trace_start_timestamp=$6 WHERE id=$1`, eventID,
+		detailString(trace, "span_id"), detailString(trace, "parent_span_id"), detailString(trace, "op"), detailString(trace, "status"), detailTimestamp(root["start_timestamp"]))
 	return err
 }

@@ -7,6 +7,7 @@
   const base = configuredBase === '__GOODSENTRY_BASE__' ? '' : configuredBase.replace(/\/$/, '');
   const pageSize = 25;
   const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts' };
+  const traceReset = { traceView: null, traceProject: null, tracePage: null, traceNode: null, traceErrorsPage: null, returnView: null };
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
   let fieldNumber = 0;
@@ -87,7 +88,7 @@
     }
     if (response.status === 204) return null;
     const endpoint = path.split('?')[0];
-    const data = await response.text().then(source => endpoint.endsWith('/logs') || /\/transactions\/(event|span)\/[^/]+$/.test(endpoint)
+    const data = await response.text().then(source => endpoint.endsWith('/logs') || /\/transactions\/(event|span)\/[^/]+$/.test(endpoint) || /\/traces\/[^/]+\/nodes\/[^/]+$/.test(endpoint)
       ? parseTelemetryJSON(source) : JSON.parse(source)).catch(() => null);
     if (!response.ok) {
       if (response.status === 401 && state.me) {
@@ -217,7 +218,7 @@
     const organizations = state.me.organizations || [];
     const org = state.organization;
     const selector = node('select', { class: 'select org-select', 'aria-label': 'Organization', onchange: event => {
-      navigate({ org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, page: null, changes: null });
+      navigate({ ...traceReset, org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, page: null, changes: null });
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
@@ -227,7 +228,7 @@
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
-          { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
+          { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
           { 'aria-current': view === section ? 'page' : null })));
     const logout = node('button', { type: 'button', class: 'btn btn-sm', onclick: async () => {
       logout.disabled = true;
@@ -306,6 +307,8 @@
           if (version !== state.requestVersion) return;
           renderMonitor(main, monitor, history, (latest || history).data?.[0], params);
         }
+      } else if (view === 'transactions' && params.has('traceView')) {
+        await loadTrace(main, params, version);
       } else if (view === 'transactions' && (params.has('spanGroupsSource') || params.has('spanGroups'))) {
         const source = params.get('spanGroupsSource');
         const id = params.get('spanGroups');
@@ -335,7 +338,7 @@
         renderTransactionDetail(main, detail, params);
       } else if (view === 'transactions' || view === 'logs') {
         const query = new URLSearchParams();
-        const filters = view === 'transactions' ? ['project', 'start', 'end'] : ['project', 'query', 'level', 'environment', 'trace', 'service', 'start', 'end', 'page'];
+        const filters = view === 'transactions' ? ['project', 'start', 'end'] : ['project', 'query', 'level', 'environment', 'trace', 'traceMatch', 'service', 'start', 'end', 'page'];
         for (const name of filters) {
           if (params.has(name)) query.set(name, params.get(name));
         }
@@ -356,7 +359,10 @@
       }
       if (focus) main.querySelector('h1')?.focus();
     } catch (error) {
-      if (version === state.requestVersion) errorState(main, error, () => loadRoute(focus));
+      if (version === state.requestVersion) {
+        if (params.has('traceView') && view === 'transactions') renderTraceFailure(main, error, false);
+        else errorState(main, error, () => loadRoute(focus));
+      }
     }
   }
 
@@ -420,7 +426,142 @@
     const copy = button('Copy', () => copyValue(traceID, 'Trace ID'), 'small');
     copy.setAttribute('aria-label', 'Copy trace ID');
     return node('div', { class: 'trace-reference' },
-      state.me.features?.logs === false ? node('code', {}, traceID) : routeLink(traceID, { view: 'logs', issue: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, project: projectID || null, trace: traceID, query: null, environment: null, level: null, service: null, status: null, sort: null, page: null, start: params?.get('start') || null, end: params?.get('end') || null, window: params?.get('window') || null }, { class: 'mono', title: 'View logs with this trace ID' }), copy);
+      state.me.features?.logs === false ? node('code', {}, traceID) : routeLink(traceID, { ...traceReset, view: 'logs', issue: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, project: projectID || null, trace: traceID, traceMatch: null, query: null, environment: null, level: null, service: null, status: null, sort: null, page: null, start: params?.get('start') || null, end: params?.get('end') || null, window: params?.get('window') || null }, { class: 'mono', title: 'View logs with this trace ID' }), copy, traceEntry(traceID, params));
+  }
+
+  function traceEntry(traceID, params = new URLSearchParams(location.search)) {
+    if (typeof traceID !== 'string' || !/^[a-f\d]{32}$/i.test(traceID)) return null;
+    return routeLink('View trace', { ...traceReset, view: 'transactions', traceView: traceID.toLowerCase(), returnView: params.get('view') || 'issues' }, { class: 'btn button small', title: 'View this trace across all authorized projects and stored time' });
+  }
+
+  function traceBackLink() {
+    const requested = new URLSearchParams(location.search).get('returnView');
+    const view = Object.prototype.hasOwnProperty.call(viewNames, requested) ? requested : 'transactions';
+    return routeLink(`← Back to ${viewNames[view].toLowerCase()}`, { ...traceReset, view }, { class: 'back-link' });
+  }
+
+  async function loadTrace(main, params, version) {
+    const path = `/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/traces/${encodeURIComponent(params.get('traceView'))}`;
+    const scope = new URLSearchParams();
+    if (params.has('traceProject')) scope.set('project', params.get('traceProject'));
+    const graphQuery = new URLSearchParams(scope);
+    graphQuery.set('page', params.has('tracePage') ? params.get('tracePage') : '1');
+    let graph;
+    try { graph = await request(`${path}?${graphQuery}`); }
+    catch (error) { if (version === state.requestVersion) renderTraceFailure(main, error, error.status === 503); return; }
+    if (version !== state.requestVersion) return;
+    const errorQuery = new URLSearchParams(scope);
+    errorQuery.set('page', params.has('traceErrorsPage') ? params.get('traceErrorsPage') : '1');
+    const [errors, selected] = await Promise.allSettled([
+      request(`${path}/errors?${errorQuery}`),
+      params.get('traceNode') ? request(`${path}/nodes/${encodeURIComponent(params.get('traceNode'))}?${scope}`) : Promise.resolve(null),
+    ]);
+    if (version !== state.requestVersion) return;
+    renderTrace(main, graph, errors, selected, params);
+  }
+
+  function renderTraceFailure(main, error, indexing) {
+    document.title = 'Trace · GoodSentry';
+    const body = node('section', { class: 'card panel', 'aria-label': indexing ? 'Trace indexing' : 'Trace error' }, node('div', { class: 'panel-body form-stack', role: indexing ? 'status' : 'alert' },
+      node('h2', {}, indexing ? 'Historical trace data is being indexed' : 'Could not load this trace'),
+      node('p', { class: 'muted' }, indexing ? 'The matching transaction history is being prepared. No partial waterfall is shown. Try again shortly.' : error.message),
+      node('div', { class: 'actions' }, button(indexing ? 'Retry trace' : 'Try again', () => loadRoute(true)))));
+    main.replaceChildren(traceBackLink(), pageHeader('Trace', 'All stored time in the selected project scope.'), body);
+  }
+
+  function traceTiming(item, graph) {
+    const knownDuration = item.duration !== null && item.duration !== undefined;
+    const knownOffset = item.offset !== null && item.offset !== undefined;
+    const partial = !knownDuration && (!item.startTimestamp || !item.endTimestamp);
+    const label = knownDuration ? `${traceMilliseconds(item.duration)}${item.duration === 0 ? ' (point)' : ''}`
+      : item.startTimestamp && item.endTimestamp ? 'Invalid interval' : item.startTimestamp ? 'Recorded start; duration unavailable' : item.endTimestamp ? 'Recorded end; duration unavailable' : 'Timing unavailable';
+    const track = node('div', { class: 'trace-track', role: 'img', 'aria-label': `${knownOffset ? `Offset ${traceMilliseconds(item.offset)}; ` : ''}${label}` });
+    if (knownOffset && (knownDuration || partial)) {
+      const extent = Number(graph.duration);
+      const left = extent > 0 ? Math.max(0, Math.min(100, Number(item.offset) / extent * 100)) : 0;
+      const marker = node('span', { class: `trace-bar${!knownDuration || item.duration === 0 ? ' point' : ''}${!knownDuration ? ' partial' : ''}`, 'aria-hidden': true });
+      marker.style.left = `${left}%`;
+      if (knownDuration && item.duration > 0) marker.style.width = `${extent > 0 ? Math.min(100 - left, Number(item.duration) / extent * 100) : 0}%`;
+      track.append(marker);
+    }
+    return node('div', { class: 'trace-timing' }, track, node('p', { class: 'small' }, label, knownOffset ? ` · ${traceMilliseconds(item.offset)} offset` : ''),
+      node('div', { class: 'trace-endpoints mono' }, node('span', {}, `Start: ${item.startTimestamp || 'Not available'}`), node('span', {}, `End: ${item.endTimestamp || 'Not available'}`)));
+  }
+
+  function traceMilliseconds(value) {
+    return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(value)} ms`;
+  }
+
+  function renderTrace(main, graph, errors, selected, params) {
+    document.title = `Trace ${graph.traceId} · GoodSentry`;
+    const actions = node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), button('Copy trace ID', () => copyValue(graph.traceId, 'Trace ID')));
+    if (graph.logsEnabled) actions.append(routeLink('View related logs', { ...traceReset, view: 'logs', trace: graph.traceId, traceMatch: 'canonical', project: params.get('traceProject') || null, issue: null, sample: null, sampleSource: null, spanGroups: null, spanGroupsSource: null, page: null, query: null, level: null, environment: null, service: null, start: null, end: null, window: null }, { class: 'btn button', title: 'Related logs across all stored time' }));
+    const heading = pageHeader('Trace', graph.traceId, actions); heading.classList.add('transaction-heading');
+    const project = selectField('Trace project', [['', 'All projects'], ...state.projects.map(item => [String(item.id), item.name])], params.get('traceProject') || '');
+    const form = node('form', { class: 'filters transaction-filters', 'aria-label': 'Trace project scope' }, project.wrap, node('button', { class: 'btn button', type: 'submit' }, 'Apply scope'));
+    form.addEventListener('submit', event => { event.preventDefault(); navigate({ traceProject: project.input.value, tracePage: null, traceNode: null, traceErrorsPage: null }); });
+    const parentLabels = { none: 'No recorded parent', resolved: 'Resolved parent', missing: 'Missing parent', ambiguous: 'Ambiguous parent', invalid: 'Invalid parent ID', cycle: 'Cycle reference' };
+    const stats = [['Nodes', graph.nodeCount], ['Projects', graph.projectCount], ['Errors', graph.errorCount], ...(graph.logsEnabled ? [['Logs', graph.logCount]] : []), ['Untimed intervals', graph.untimedCount], ['Invalid span IDs', graph.invalidSpanIdCount]];
+    const summary = node('section', { class: 'card panel', 'aria-label': 'Trace summary' },
+      node('dl', { class: 'stat-list' }, stats.map(([label, value]) => node('div', { class: 'stat' }, node('dt', {}, label), node('dd', {}, number(value))))),
+      node('div', { class: 'panel-body form-stack' }, node('p', { class: 'muted small' }, 'All stored time. This trace is independent of the filters used to open it. New events can change its pages; Refresh loads a new snapshot.'),
+        keyValues([['Recorded start (UTC)', graph.startTimestamp], ['Recorded end (UTC)', graph.endTimestamp], ['Recorded time range', graph.duration === null ? 'Not available' : traceMilliseconds(graph.duration)]]),
+        node('div', { class: 'actions small', 'aria-label': 'Relationship counts' }, Object.entries(parentLabels).map(([status, label]) => node('span', { class: 'badge badge-sm' }, `${label}: ${number(graph.relationships?.[status])}`))),
+        graph.logsEnabled ? null : node('p', { class: 'muted small' }, 'Related logs are disabled on this server.')));
+    const forest = detailPanel('Waterfall', node('div', { class: 'panel-body muted small' }, 'Only recorded parent references create links. Indentation is limited visually; each row shows its actual depth. Unknown, ambiguous and cyclic relationships stay visible.'));
+    forest.setAttribute('aria-label', 'Trace waterfall');
+    const items = graph.data || [];
+    if (!items.length) forest.append(empty('No transaction or span nodes', 'This trace has related events but no stored transaction or span nodes in the selected project scope.'));
+    else {
+      const rows = items.map(item => {
+        const name = node('div', { class: 'trace-node-label' }, routeLink(text(item.name, 'Unnamed node'), { traceNode: item.id }, { class: 'issue-link issue-title', 'aria-current': params.get('traceNode') === item.id ? 'true' : null }),
+          node('p', { class: 'muted small' }, `${item.kind} · ${item.projectName}`), node('p', { class: 'mono small' }, item.id),
+          node('p', { class: 'small' }, `${text(item.op)} · Status: ${text(item.status)}`), node('p', { class: 'muted small' }, `Depth ${item.depth} · ${number(item.childCount)} children`),
+          item.environment || item.release ? node('p', { class: 'muted small' }, [item.environment, item.release].filter(Boolean).join(' · ')) : null,
+          item.summaryTruncated ? node('p', { class: 'trace-preview-note' }, 'Preview truncated. Select this node to inspect the full original JSON.') : null);
+        name.style.paddingLeft = `${Math.min(6, Math.max(0, item.depth)) * 12}px`;
+        const relation = node('div', { class: 'trace-relationship' }, node('strong', {}, parentLabels[item.parentStatus] || text(item.parentStatus)),
+          node('p', { class: 'small' }, `Span ID: ${text(item.spanIdStatus)}`), node('code', {}, text(item.spanId, 'No recorded span ID')),
+          node('p', { class: 'small' }, 'Recorded parent: ', node('code', {}, text(item.parentSpanId, 'None'))),
+          item.parentId && item.parentPage > 0 ? routeLink(`Jump to parent (page ${item.parentPage})`, { tracePage: item.parentPage, traceNode: item.parentId }, { class: 'small' }) : null);
+        return node('tr', { class: params.get('traceNode') === item.id ? 'trace-selected' : null }, node('td', { class: 'trace-node-column' }, name), node('td', { class: 'trace-timeline-column' }, traceTiming(item, graph)), node('td', { class: 'trace-relationship-column' }, relation));
+      });
+      forest.append(node('div', { class: 'table-scroll' }, node('table', { class: 'trace-table' }, node('thead', {}, node('tr', {}, ['Node and depth', 'Recorded timing', 'Recorded relationship'].map(label => node('th', { scope: 'col' }, label)))), node('tbody', {}, rows))));
+    }
+    const previous = button('Previous nodes', () => navigate({ tracePage: graph.page - 1 })); const next = button('Next nodes', () => navigate({ tracePage: graph.page + 1 }));
+    previous.disabled = graph.page <= 1; next.disabled = !graph.hasMore;
+    forest.append(node('div', { class: 'pagination' }, node('span', {}, `${number(graph.nodeCount)} nodes · Page ${number(graph.page)}`), node('div', { class: 'actions' }, previous, next)));
+    main.replaceChildren(traceBackLink(), heading, form, summary, forest, traceRawPanel(selected, params), traceErrorsPanel(errors));
+  }
+
+  function traceRawPanel(result, params) {
+    const panel = detailPanel('Selected node JSON', null); panel.setAttribute('aria-label', 'Selected trace node');
+    if (!params.get('traceNode')) panel.append(node('p', { class: 'panel-body muted small' }, 'Select a node name to inspect its original payload.'));
+    else if (result.status === 'rejected') panel.append(node('div', { class: 'panel-body form-stack', role: 'alert' }, node('p', {}, result.reason.status === 503 ? 'Historical node data is being indexed. Try again shortly.' : result.reason.message), node('div', { class: 'actions' }, button('Retry selected node', () => loadRoute()))));
+    else {
+      const item = result.value;
+      panel.append(node('div', { class: 'panel-body form-stack' }, node('p', { class: 'muted small' }, 'Full original payload for this selected record.'),
+        keyValues([['Node ID', item.id], ['Source', item.source], ['Record ID', item.recordId], ['Ordinal', item.ordinal], ['Project ID', item.projectId]])), node('pre', { class: 'event-json' }, JSON.stringify(item.data, null, 2)));
+    }
+    return panel;
+  }
+
+  function traceErrorsPanel(result) {
+    const panel = detailPanel('Related errors', node('p', { class: 'panel-body muted small' }, 'All stored time in the selected trace project scope.'));
+    panel.setAttribute('aria-label', 'Trace errors');
+    if (result.status === 'rejected') { panel.append(node('div', { class: 'panel-body form-stack', role: 'alert' }, node('p', {}, result.reason.message), node('div', { class: 'actions' }, button('Retry errors', () => loadRoute())))); return panel; }
+    const errors = result.value; const items = errors.data || [];
+    if (!items.length) panel.append(empty('No related errors', 'No stored errors match this trace and project scope.'));
+    else {
+      const rows = items.map(item => node('tr', {}, node('td', { class: 'transaction-span-name' }, text(item.title), item.summaryTruncated ? node('p', { class: 'trace-preview-note' }, 'Error title preview truncated.') : null),
+        node('td', {}, text(item.projectName)), node('td', {}, badge(item.level)), node('td', { class: 'mono nowrap' }, node('time', { datetime: item.timestamp }, item.timestamp)), node('td', { class: 'mono' }, text(item.spanId)),
+        node('td', {}, item.issueId ? routeLink('Open issue', { ...traceReset, view: 'issues', issue: item.issueId, project: item.projectId, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, page: null, query: null, status: null, sort: null, level: null, environment: null, trace: null, traceMatch: null, service: null, start: null, end: null, window: null }, { class: 'btn button small' }) : 'No linked issue')));
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, ['Error', 'Project', 'Level', 'Time (UTC)', 'Span ID', 'Issue'].map(label => node('th', { scope: 'col' }, label)))), node('tbody', {}, rows))));
+    }
+    const previous = button('Previous errors', () => navigate({ traceErrorsPage: errors.page - 1 })); const next = button('Next errors', () => navigate({ traceErrorsPage: errors.page + 1 }));
+    previous.disabled = errors.page <= 1; next.disabled = !errors.hasMore;
+    panel.append(node('div', { class: 'pagination' }, node('span', {}, `${number(errors.total)} errors · Page ${number(errors.page)}`), node('div', { class: 'actions' }, previous, next)));
+    return panel;
   }
 
   function milliseconds(value) {
@@ -610,21 +751,23 @@
     const level = selectField('Level', [['', 'All levels'], ...['trace', 'debug', 'info', 'warn', 'warning', 'error', 'fatal'].map(value => [value, value])], params.get('level') || '');
     const environment = field('Environment', 'text', { name: 'environment', value: params.get('environment') || '', placeholder: 'All environments' });
     const trace = field('Trace ID', 'text', { name: 'trace', value: params.get('trace') || '', placeholder: 'All traces', spellcheck: 'false', autocomplete: 'off' });
+    const canonicalTrace = params.get('traceMatch') === 'canonical';
     const service = field('Service', 'text', { name: 'service', value: params.get('service') || '', maxlength: 4000, placeholder: 'Exact service name', autocomplete: 'off' });
     const window = telemetryWindow(params, 'logs');
     const form = node('form', { class: 'filters log-filters', role: 'search', 'aria-label': 'Filter logs' }, search.wrap, project.wrap, level.wrap, environment.wrap, trace.wrap, service.wrap, window.wrap,
       node('button', { class: 'btn button', type: 'submit' }, 'Apply filters'));
     form.addEventListener('submit', event => {
       event.preventDefault();
-      navigate({ project: project.input.value, query: search.input.value.trim(), level: level.input.value, environment: environment.input.value.trim(), trace: trace.input.value.trim(), service: service.input.value, ...window.changes(), page: null });
+      navigate({ project: project.input.value, query: search.input.value.trim(), level: level.input.value, environment: environment.input.value.trim(), trace: trace.input.value.trim(), traceMatch: canonicalTrace && /^[a-f\d]{32}$/i.test(trace.input.value.trim()) ? 'canonical' : null, service: service.input.value, ...window.changes(), page: null });
     });
     main.append(form, window.summary);
+    if (canonicalTrace) main.append(node('p', { class: 'time-window-summary' }, node('span', { class: 'badge badge-sm' }, 'Trace matching'), 'Identifies traces regardless of letter case'));
     const logs = result.data || [];
     const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
     const panel = node('section', { class: 'card panel', 'aria-label': 'Logs' });
     if (!logs.length) {
       panel.append(empty(page > 1 ? 'No more logs on this page' : 'No matching logs', 'Check your filters, or send logs from your application SDK.',
-        button('Clear filters', () => navigate({ project: null, query: null, level: null, environment: null, trace: null, service: null, start: null, end: null, window: null, page: null }))));
+        button('Clear filters', () => navigate({ project: null, query: null, level: null, environment: null, trace: null, traceMatch: null, service: null, start: null, end: null, window: null, page: null }))));
     } else {
       const rows = logs.map(log => {
         const projectName = state.projects.find(project => String(project.id) === String(log.projectId))?.name || log.projectId;
@@ -1061,6 +1204,8 @@
     const summary = node('section', { class: 'card panel' }, stats, node('div', { class: 'panel-body' },
       node('p', { class: 'muted small' }, 'Latest event'), node('p', { class: 'mono' }, text(event.event_id || event.eventID)),
       event.message || event.logentry?.formatted ? node('pre', { class: 'event-message' }, text(event.message || event.logentry.formatted)) : null));
+    const selectedTrace = traceEntry(event.contexts?.trace?.trace_id);
+    if (selectedTrace) summary.lastElementChild.append(node('div', { class: 'event-message actions' }, selectedTrace));
     const left = node('div', {}, summary, stackTrace(event), breadcrumbs(event), commentsPanel(issue, detail.comments || []));
     left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];

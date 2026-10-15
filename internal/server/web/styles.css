@@ -334,6 +334,20 @@
   .transaction-span-raw .event-json { @apply p-3; }
   .trace-reference { @apply flex items-center gap-2 min-w-[260px]; }
   .trace-reference a { @apply wrap-anywhere text-[.8rem]; }
+  .trace-table { @apply min-w-[1180px]; }
+  .trace-node-column { @apply w-[340px] min-w-[340px] max-w-[420px] wrap-anywhere; }
+  .trace-node-label > p { @apply mt-1; }
+  .trace-timeline-column { @apply w-[560px] min-w-[560px]; }
+  .trace-relationship-column { @apply min-w-[280px] max-w-[380px] wrap-anywhere; }
+  .trace-relationship { @apply grid gap-2; }
+  .trace-relationship code { @apply wrap-anywhere; }
+  .trace-preview-note { @apply text-xs text-warning mt-2; }
+  .trace-selected { @apply bg-[#edf7f3]; }
+  .trace-track { @apply relative h-6 my-2 rounded-sm bg-surface-subtle border-x border-outline; }
+  .trace-bar { @apply absolute top-1 h-4 min-w-[2px] rounded-sm bg-accent; }
+  .trace-bar.point { @apply w-[6px] h-[6px] min-w-0 rounded-full top-[8px]; transform: translateX(-50%); }
+  .trace-bar.partial { @apply bg-warning; }
+  .trace-endpoints { @apply grid gap-1 text-xs text-muted mt-2; }
   .log-message-column { @apply min-w-[280px] max-w-[560px]; }
   .log-entry > summary { @apply p-0 font-medium; }
   .log-entry[open] > summary { @apply border-b-0; }

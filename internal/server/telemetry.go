@@ -44,6 +44,20 @@ func (s *Server) logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q := r.URL.Query()
+	trace := q.Get("trace")
+	traceMatch := q.Get("traceMatch")
+	if traceMatch != "" && traceMatch != "exact" && traceMatch != "canonical" {
+		failure(w, 400, "Trace match must be exact or canonical")
+		return
+	}
+	if traceMatch == "canonical" {
+		var valid bool
+		trace, valid = canonicalTraceID(trace)
+		if !valid {
+			failure(w, 400, "Canonical trace matching requires a 32-digit hexadecimal trace ID")
+			return
+		}
+	}
 	window, err := queryTimeWindow(q)
 	if err != nil {
 		failure(w, 400, err.Error())
@@ -59,7 +73,7 @@ func (s *Server) logs(w http.ResponseWriter, r *http.Request) {
 		failure(w, 400, "Page is too large")
 		return
 	}
-	items, err := s.db.Logs(r.Context(), current(r).User.ID, r.PathValue("org"), store.LogFilter{Project: q.Get("project"), Query: q.Get("query"), Level: q.Get("level"), Environment: q.Get("environment"), TraceID: q.Get("trace"), Page: page, Service: service, Window: window})
+	items, err := s.db.Logs(r.Context(), current(r).User.ID, r.PathValue("org"), store.LogFilter{Project: q.Get("project"), Query: q.Get("query"), Level: q.Get("level"), Environment: q.Get("environment"), TraceID: trace, Page: page, Service: service, Window: window, CanonicalTrace: traceMatch == "canonical"})
 	if err != nil {
 		report(w, err)
 		return
