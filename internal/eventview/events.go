@@ -127,14 +127,14 @@ func project(record Record, fields map[string]json.RawMessage, full bool) Event 
 	for _, entry := range []Entry{
 		{Type: "exception", Data: exceptions},
 		{Type: "message", Data: messageData},
-		{Type: "request", Data: objectRaw(fields["request"])},
+		{Type: "request", Data: requestView(fields["request"])},
 		{Type: "csp", Data: objectRaw(fields["csp"])},
 	} {
 		if len(entry.Data) > 0 {
 			entries = append(entries, entry)
 		}
 	}
-	if breadcrumbs, _ := collection(fields["breadcrumbs"]); len(breadcrumbs) > 0 {
+	if breadcrumbs := breadcrumbView(fields["breadcrumbs"]); len(breadcrumbs) > 0 {
 		entries = append(entries, Entry{Type: "breadcrumbs", Data: breadcrumbs})
 	}
 	result.Entries = &entries
