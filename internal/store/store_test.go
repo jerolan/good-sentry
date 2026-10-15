@@ -116,11 +116,11 @@ func TestDurableCaptureAndTenantScope(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	detail, err := db.Issue(ctx, user.ID, id)
-	if err != nil || detail.Count != 1 {
-		t.Fatalf("restart lost issue: %+v %v", detail, err)
+	detail, err := db.IssueDetail(ctx, user.ID, id)
+	if err != nil || detail.Issue.Count != 1 {
+		t.Fatalf("restart lost issue: %+v %v", detail.Issue, err)
 	}
-	if _, err = db.Issue(ctx, "99999999", id); err != ErrNotFound {
+	if _, err = db.IssueDetail(ctx, "99999999", id); err != ErrNotFound {
 		t.Fatalf("tenant boundary failed: %v", err)
 	}
 	if _, err = db.UpdateIssue(ctx, user.ID, id, IssueUpdate{Status: "resolved"}); err != nil {
@@ -130,8 +130,8 @@ func TestDurableCaptureAndTenantScope(t *testing.T) {
 	if _, _, err = db.Ingest(ctx, project.ID, ev); err != nil {
 		t.Fatal(err)
 	}
-	detail, err = db.Issue(ctx, user.ID, id)
-	if err != nil || detail.Status != "unresolved" || detail.Count != 2 {
-		t.Fatalf("regression missing: %+v %v", detail, err)
+	detail, err = db.IssueDetail(ctx, user.ID, id)
+	if err != nil || detail.Issue.Status != "unresolved" || detail.Issue.Count != 2 {
+		t.Fatalf("regression missing: %+v %v", detail.Issue, err)
 	}
 }

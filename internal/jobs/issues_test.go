@@ -84,11 +84,11 @@ func TestIssueMaintenanceCatchUpAndStop(t *testing.T) {
 		t.Helper()
 		deadline := time.Now().Add(5 * time.Second)
 		for time.Now().Before(deadline) {
-			i, err := db.Issue(ctx, owner.ID, id)
+			detail, err := db.IssueDetail(ctx, owner.ID, id)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if i.Status == "unresolved" && i.Ignore == nil {
+			if detail.Issue.Status == "unresolved" && detail.Issue.Ignore == nil {
 				a, _, err := db.IssueActivities(ctx, owner.ID, id, 1)
 				if err != nil || len(a) != 3 || a[0].Type != "unignored" || a[0].User != nil {
 					t.Fatalf("worker history=%+v err=%v", a, err)
@@ -111,10 +111,11 @@ func TestIssueMaintenanceCatchUpAndStop(t *testing.T) {
 		t.Fatal("stop did not cancel the configured idle wait")
 	}
 	second := due(2)
-	beforeCanceled, err := db.Issue(ctx, owner.ID, second)
+	beforeCanceledDetail, err := db.IssueDetail(ctx, owner.ID, second)
 	if err != nil {
 		t.Fatal(err)
 	}
+	beforeCanceled := beforeCanceledDetail.Issue
 	beforeHistory, _, err := db.IssueActivities(ctx, owner.ID, second, 1)
 	if err != nil {
 		t.Fatal(err)
@@ -169,7 +170,8 @@ func TestIssueMaintenanceCatchUpAndStop(t *testing.T) {
 	if err = admin.QueryRow(releaseCtx, "SELECT id::text FROM issues WHERE id=$1::bigint FOR UPDATE", second).Scan(&released); err != nil {
 		t.Fatalf("canceled worker did not release its issue row: %v", err)
 	}
-	afterCanceled, err := db.Issue(ctx, owner.ID, second)
+	afterCanceledDetail, err := db.IssueDetail(ctx, owner.ID, second)
+	afterCanceled := afterCanceledDetail.Issue
 	if err != nil || !reflect.DeepEqual(afterCanceled, beforeCanceled) {
 		t.Fatalf("canceled worker partially changed mute: %+v %v", afterCanceled, err)
 	}
@@ -182,9 +184,9 @@ func TestIssueMaintenanceCatchUpAndStop(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db2.Close()
-	i, err := db2.Issue(ctx, owner.ID, second)
-	if err != nil || i.Status != "ignored" || i.Ignore == nil {
-		t.Fatalf("stopped worker or reopen changed pending mute: %+v %v", i, err)
+	detail, err := db2.IssueDetail(ctx, owner.ID, second)
+	if err != nil || detail.Issue.Status != "ignored" || detail.Issue.Ignore == nil {
+		t.Fatalf("stopped worker or reopen changed pending mute: %+v %v", detail.Issue, err)
 	}
 	stop2 := jobs.StartIssueMaintenance(ctx, db2, time.Hour)
 	defer stop2()

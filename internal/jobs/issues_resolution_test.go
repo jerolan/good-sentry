@@ -268,7 +268,7 @@ func (f *resolutionWorkerFixture) reopen(t *testing.T) *store.Store {
 
 func (f *resolutionWorkerFixture) snapshot(t *testing.T, db *store.Store, id string) (store.Issue, []store.IssueActivity) {
 	t.Helper()
-	i, err := db.Issue(f.ctx, f.owner.ID, id)
+	detail, err := db.IssueDetail(f.ctx, f.owner.ID, id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -276,7 +276,7 @@ func (f *resolutionWorkerFixture) snapshot(t *testing.T, db *store.Store, id str
 	if err != nil {
 		t.Fatal(err)
 	}
-	return i, a
+	return detail.Issue, a
 }
 
 func (f *resolutionWorkerFixture) wait(t *testing.T, message string, ready func() bool) {

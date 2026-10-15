@@ -72,11 +72,11 @@ func triageForeignOrganization(t *testing.T, ctx context.Context, db *Store, lab
 
 func triageIssue(t *testing.T, ctx context.Context, db *Store, userID, id string) Issue {
 	t.Helper()
-	got, err := db.Issue(ctx, userID, id)
+	got, err := db.IssueDetail(ctx, userID, id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return got
+	return got.Issue
 }
 
 func triageActivities(t *testing.T, ctx context.Context, db *Store, userID, id string) []IssueActivity {

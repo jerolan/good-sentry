@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func normalizedComment(text string) (string, error) {
@@ -39,8 +41,16 @@ func (s *Store) IssueComments(ctx context.Context, userID, id string, page int) 
 		return nil, 0, err
 	}
 	defer tx.Rollback(ctx)
+	items, total, err := readIssueComments(ctx, tx, userID, role, id, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	return items, total, tx.Commit(ctx)
+}
+
+func readIssueComments(ctx context.Context, tx pgx.Tx, userID, role, id string, offset int) ([]Comment, int, error) {
 	var total int
-	if err = tx.QueryRow(ctx, `SELECT count(*) FROM comments WHERE issue_id=$1::bigint`, id).Scan(&total); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT count(*) FROM comments WHERE issue_id=$1::bigint`, id).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 	rows, err := tx.Query(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id=$1::bigint ORDER BY c.id DESC LIMIT 25 OFFSET $2`, id, offset)
@@ -61,7 +71,7 @@ func (s *Store) IssueComments(ctx context.Context, userID, id string, page int) 
 	if err != nil {
 		return nil, 0, err
 	}
-	return items, total, tx.Commit(ctx)
+	return items, total, nil
 }
 
 func (s *Store) AddComment(ctx context.Context, userID, id, text string) (Comment, error) {

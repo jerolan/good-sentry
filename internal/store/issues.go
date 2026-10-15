@@ -369,27 +369,3 @@ func issueSearchPattern(value string, wildcard bool) string {
 	}
 	return value
 }
-
-func (s *Store) Issue(ctx context.Context, userID, id string) (Issue, error) {
-	return scanIssue(s.pool.QueryRow(ctx, "SELECT "+issueColumns+issueJoins+"WHERE m.user_id::text=$1 AND i.id::text=$2", userID, id))
-}
-
-func (s *Store) Events(ctx context.Context, userID, issueID string) ([]EventSummary, error) {
-	if _, err := s.Issue(ctx, userID, issueID); err != nil {
-		return nil, err
-	}
-	rows, err := s.pool.Query(ctx, "SELECT event_id,timestamp,data FROM events WHERE issue_id::text=$1 ORDER BY timestamp DESC,id DESC LIMIT 50", issueID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []EventSummary{}
-	for rows.Next() {
-		var e EventSummary
-		if err = rows.Scan(&e.ID, &e.DateCreated, &e.Data); err != nil {
-			return nil, err
-		}
-		items = append(items, e)
-	}
-	return items, rows.Err()
-}

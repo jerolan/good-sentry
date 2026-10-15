@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -91,26 +90,10 @@ func (s *Server) issues(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]any{"data": items, "total": total, "pageSize": 25, "page": page})
 }
 func (s *Server) issue(w http.ResponseWriter, r *http.Request) {
-	uid := current(r).User.ID
-	id := r.PathValue("issue")
-	issue, err := s.db.Issue(r.Context(), uid, id)
+	detail, err := s.db.IssueDetail(r.Context(), current(r).User.ID, r.PathValue("issue"))
 	if err != nil {
 		report(w, err)
 		return
 	}
-	events, err := s.db.Events(r.Context(), uid, id)
-	if err != nil {
-		report(w, err)
-		return
-	}
-	comments, commentTotal, err := s.db.IssueComments(r.Context(), uid, id, 1)
-	if err != nil {
-		report(w, err)
-		return
-	}
-	raw := json.RawMessage(`{}`)
-	if len(events) > 0 {
-		raw = events[0].Data
-	}
-	writeJSON(w, 200, map[string]any{"issue": issue, "event": raw, "events": events, "comments": comments, "commentTotal": commentTotal})
+	writeJSON(w, 200, detail)
 }
