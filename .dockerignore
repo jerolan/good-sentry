@@ -1,9 +1,0 @@
-.git
-.env
-.env.*
-bin
-uploads
-node_modules
-test-results
-.tools
-.tmp
