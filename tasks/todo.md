@@ -42,6 +42,10 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
   - [x] Connect strict native HTTP queries, release/All status/first-seen controls and safe clickable event tags with complete URL/history navigation.
   - [x] Verify PostgreSQL concurrency/reopen, HTTP grammar boundaries, actual SDK/browser25+1 workflows, final image restart and remote CI before closing search.
 - [ ] Deliver resolved/ignored/regression workflow, assignment, comments and activity history.
+  - [ ] Native increment: transactional user/team assignment, simple-resolution regression and recorded activity; preserve unique captures and historical rows.
+  - [ ] Native comment edit/delete/moderation and bounded independent histories, strict authenticated routes and responsive UI.
+  - [ ] Verify real PostgreSQL concurrency/reopen, transport boundaries, actual SDK/browser workflows, final image preservation and exact-source CI.
+  - [ ] Complete release-anchored/next-release resolution and timed/count-based mute as separately specified increments; native simple-resolution acceptance alone is insufficient.
 - [ ] Deliver merge/unmerge with preserved event partitions and correct future grouping.
 - [x] Deliver releases, commit metadata and deploy records through compatible API.
   - [x] Define typed release contracts, shared organization/version storage and historical observed associations without changing original telemetry/maps.
