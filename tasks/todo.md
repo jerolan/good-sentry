@@ -51,6 +51,11 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
   - [x] Integrate staged ingestion/alert eligibility, metadata-only pending binding, strict native resolution requests and original responsive controls.
   - [x] Verify old/equal/new/late/retry release behavior, finalization and real lock/cancellation/replica paths, actual SDK/browser/final-image workflows and exact publication before closing native release resolution.
 - [ ] Deliver merge/unmerge with preserved event partitions and correct future grouping.
+  - [ ] Add migration015/private monotonic capture progress and prove existing mute/upgrade/reopen behavior independently of historical count changes.
+  - [ ] Add constrained flat topology, project lock ownership, atomic partition merge/separation and unchanged policy/notification semantics.
+  - [ ] Deliver coherent canonical detail/origin/history reads and strict native merge/unmerge transport, including stale alias409 and retry no-ops.
+  - [ ] Deliver safe responsive list selection and origin separation with preserved drafts/navigation and existing controls.
+  - [ ] Verify owning PostgreSQL/concurrency/migrations, actual SDK/browser regressions, final100-event image upgrade/restart and exact public tree/CI/site before closing the native child.
 - [x] Deliver releases, commit metadata and deploy records through compatible API.
   - [x] Define typed release contracts, shared organization/version storage and historical observed associations without changing original telemetry/maps.
   - [x] Implement scoped snapshot reads and transactional create/update/project-remove/delete, ordered complete commit sets/manual repositories and completed deploy records.
