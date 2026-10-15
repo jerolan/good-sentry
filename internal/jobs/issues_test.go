@@ -160,6 +160,15 @@ func TestIssueMaintenanceCatchUpAndStop(t *testing.T) {
 	if err = blocker.Rollback(ctx); err != nil {
 		t.Fatal(err)
 	}
+	// pgx can finish cancellation in Go before its asynchronous connection
+	// cleanup releases PostgreSQL locks. Wait for that actual rollback before
+	// starting a new SKIP LOCKED worker with an hour-long idle interval.
+	releaseCtx, releaseCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer releaseCancel()
+	var released string
+	if err = admin.QueryRow(releaseCtx, "SELECT id::text FROM issues WHERE id=$1::bigint FOR UPDATE", second).Scan(&released); err != nil {
+		t.Fatalf("canceled worker did not release its issue row: %v", err)
+	}
 	afterCanceled, err := db.Issue(ctx, owner.ID, second)
 	if err != nil || !reflect.DeepEqual(afterCanceled, beforeCanceled) {
 		t.Fatalf("canceled worker partially changed mute: %+v %v", afterCanceled, err)
