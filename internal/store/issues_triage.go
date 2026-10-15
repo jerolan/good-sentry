@@ -21,6 +21,7 @@ type IssueUpdate struct {
 	Status     string
 	Assignment *IssueAssignmentChange
 	Ignore     *IssueIgnoreChange
+	Resolution *IssueResolutionChange
 }
 type IssueActor struct {
 	Type  string `json:"type"`
@@ -93,7 +94,7 @@ func canonicalIssueID(id string) bool {
 }
 
 func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change IssueUpdate) (Issue, error) {
-	if change.Status == "" && change.Assignment == nil || !validIssueIgnore(change.Ignore, change.Status) {
+	if change.Status == "" && change.Assignment == nil || !validIssueIgnore(change.Ignore, change.Status) || !validIssueResolution(change.Resolution, change.Status) {
 		return Issue{}, ErrInvalidIssueChange
 	}
 	if change.Status != "" && change.Status != "unresolved" && change.Status != "resolved" && change.Status != "ignored" {
@@ -119,6 +120,10 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 			return i, dbError(err)
 		}
 	}
+	resolution, resolutionChanged, err := prepareIssueResolution(ctx, tx, i, org, change)
+	if err != nil {
+		return i, err
+	}
 	if i.Status == "ignored" {
 		expired, err := expireLockedIssueIgnore(ctx, tx, id, 0, "")
 		if err != nil {
@@ -137,7 +142,7 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 		}
 	}
 	ignoreChanged := change.Status == "ignored" && !sameIssueIgnore(i.Ignore, wantedIgnore)
-	if change.Status != "" && (change.Status != i.Status || ignoreChanged) {
+	if change.Status != "" && (change.Status != i.Status || ignoreChanged || resolutionChanged) {
 		var data any = map[string]string{"from": i.Status, "to": change.Status}
 		if err := replaceIssueIgnore(ctx, tx, &i, wantedIgnore); err != nil {
 			return i, err
@@ -145,10 +150,17 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 		if change.Status == "ignored" {
 			data = map[string]any{"from": i.Status, "to": change.Status, "ignore": i.Ignore}
 		}
+		if change.Status == "resolved" && (resolution != nil || resolutionChanged) {
+			data = map[string]any{"from": i.Status, "to": change.Status, "resolution": resolution.public()}
+		}
 		stamp, e := recordIssueActivity(ctx, tx, id, &userID, change.Status, data)
 		if e != nil {
 			return i, e
 		}
+		if err = replaceIssueResolution(ctx, tx, id, resolution, stamp); err != nil {
+			return i, err
+		}
+		i.Resolution = resolution.public()
 		i.Status = change.Status
 		i.RegressedAt = nil
 		i.ResolvedAt = nil

@@ -103,7 +103,13 @@ These checks establish the listed workflows for those versions. Attachments, add
 
 Assign an issue to a workspace member or team, or clear its assignment. Search people and teams from issue detail. Comments and activity have independent pages of 25 entries. Authors and workspace owners/admins can edit or delete comments; editing preserves their original creation time.
 
-Resolve records the current receipt time. A new error received afterward reopens the issue and records a regression, even when that error occurred earlier. Retrying an already accepted event ID leaves its count and resolution unchanged. Release-based resolution remains pending.
+Simple Resolve records the current receipt time. A new unique error reopens the issue and records a regression, even when that error occurred earlier. Retrying an already accepted event ID preserves its count, resolution, activity and release metadata.
+
+In the Resolution panel, choose an existing project release or use the issue's observed release. A newer release reopens the issue. GoodSentry uses semantic version order for recognized project histories and compatible package names, ignoring build metadata; other identities use recorded release creation dates. The selected reference and comparison stay fixed when metadata changes or is deleted.
+
+**Resolve in next release** waits for a different open project release created or finalized after resolution. It needs a valid observed baseline. The first selected next release, or a newer release, reopens the issue when an error arrives. The application worker can select it from metadata without another event. Saved pending and selected states survive restart. Errors without a valid release reopen either policy. Applying the same policy preserves its progress; clear to simple resolution or reopen before starting a fresh next policy.
+
+Errors that remain resolved are still captured and counted, but do not create new issue notifications. Activity shows the selected boundary and the reason for a regression. These controls implement the native GoodSentry contract; compatible API0 issue management and commit-triggered resolution remain pending.
 
 Ignore pauses new issue notifications while collecting every error. In issue detail, mute indefinitely, for a number of minutes, until a number of additional unique errors, or until either condition is met. The last additional error reopens the issue before normal alert eligibility runs. Retries never consume the count, and applying the same active condition preserves its deadline and progress. New captures and the maintenance worker evaluate elapsed time using the database receipt clock; SDK timestamps and timezone changes do not move the deadline. Activity records why a mute ended.
 
@@ -165,7 +171,7 @@ Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. 
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, release-based resolution and conditional mute, merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, compatible release-resolution and mute APIs, merge/unmerge, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
@@ -190,7 +196,7 @@ Compose supplies the local database connection. Environment values override the 
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
 | `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
 | `MONITOR_WORKERS` | `2` | Concurrent checks per process, from 1 to 16. |
-| `ISSUE_MAINTENANCE_INTERVAL_SECONDS` | `1` | Idle polling for expired issue mutes, from 1 to 3600 seconds. Longer intervals delay status display; fresh captures check expiry immediately. |
+| `ISSUE_MAINTENANCE_INTERVAL_SECONDS` | `1` | Polling for expired mutes and pending next-release resolution, from 1 to 3600 seconds. Longer intervals delay metadata-only binding and status display; fresh captures evaluate immediately. |
 | `ALERT_WORKERS` | `2` | Concurrent deliveries per process, from 1 to 16. |
 | `ALERT_MAX_ATTEMPTS` | `5` | Maximum delivery attempts, from 1 to 20. |
 | `ALERT_DELIVERY_TIMEOUT_SECONDS` | `10` | Delivery timeout, from 1 to 60 seconds. |

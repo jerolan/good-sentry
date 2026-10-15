@@ -15,23 +15,24 @@ import (
 )
 
 type Issue struct {
-	ID          string       `json:"id"`
-	ProjectID   string       `json:"projectId"`
-	Project     Project      `json:"project"`
-	Title       string       `json:"title"`
-	Level       string       `json:"level"`
-	Platform    string       `json:"platform"`
-	Status      string       `json:"status"`
-	Count       int64        `json:"count"`
-	FirstSeen   time.Time    `json:"firstSeen"`
-	LastSeen    time.Time    `json:"lastSeen"`
-	Environment string       `json:"environment"`
-	Release     string       `json:"release"`
-	ShortID     string       `json:"shortId"`
-	AssignedTo  *IssueActor  `json:"assignedTo"`
-	ResolvedAt  *time.Time   `json:"resolvedAt"`
-	RegressedAt *time.Time   `json:"regressedAt"`
-	Ignore      *IssueIgnore `json:"ignore"`
+	ID          string           `json:"id"`
+	ProjectID   string           `json:"projectId"`
+	Project     Project          `json:"project"`
+	Title       string           `json:"title"`
+	Level       string           `json:"level"`
+	Platform    string           `json:"platform"`
+	Status      string           `json:"status"`
+	Count       int64            `json:"count"`
+	FirstSeen   time.Time        `json:"firstSeen"`
+	LastSeen    time.Time        `json:"lastSeen"`
+	Environment string           `json:"environment"`
+	Release     string           `json:"release"`
+	ShortID     string           `json:"shortId"`
+	AssignedTo  *IssueActor      `json:"assignedTo"`
+	ResolvedAt  *time.Time       `json:"resolvedAt"`
+	RegressedAt *time.Time       `json:"regressedAt"`
+	Ignore      *IssueIgnore     `json:"ignore"`
+	Resolution  *IssueResolution `json:"resolution"`
 }
 type IssueFilter struct {
 	Project, Query, Status, Environment, Release, Sort string
@@ -90,8 +91,7 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 		}
 		var status string
 		var count int64
-		var resolvedAt *time.Time
-		if err = tx.QueryRow(ctx, `SELECT status,count,resolved_at FROM issues WHERE id=$1 FOR UPDATE`, issueID).Scan(&status, &count, &resolvedAt); err != nil {
+		if err = tx.QueryRow(ctx, `SELECT status,count FROM issues WHERE id=$1 FOR UPDATE`, issueID).Scan(&status, &count); err != nil {
 			return "", false, err
 		}
 		if status == "ignored" {
@@ -99,23 +99,12 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 				return "", false, err
 			}
 		}
-		var regressedAt *time.Time
-		if status == "resolved" {
-			if resolvedAt != nil {
-				stamp := resolvedAt.UTC()
-				resolvedAt = &stamp
-			}
-			stamp, e := recordIssueActivity(ctx, tx, issueID.(string), nil, "regressed", map[string]any{"eventID": ev.ID, "resolvedAt": resolvedAt})
-			if e != nil {
-				return "", false, e
-			}
-			regressedAt = &stamp
-		} else if count == 0 {
+		if count == 0 {
 			if _, err = recordIssueActivity(ctx, tx, issueID.(string), nil, "first_seen", map[string]string{"eventID": ev.ID}); err != nil {
 				return "", false, err
 			}
 		}
-		_, err = tx.Exec(ctx, `UPDATE issues SET count=count+1,first_seen=LEAST(first_seen,$2),last_seen=GREATEST(last_seen,$2),status=CASE WHEN status='resolved' THEN 'unresolved' ELSE status END,resolved_at=CASE WHEN status='resolved' THEN NULL ELSE resolved_at END,regressed_at=COALESCE($6,regressed_at),title=CASE WHEN $2>=last_seen THEN $3 ELSE title END,environment=CASE WHEN $2>=last_seen THEN $4 ELSE environment END,release=CASE WHEN $2>=last_seen THEN $5 ELSE release END WHERE id=$1`, issueID, ev.Timestamp, ev.Title, ev.Environment, ev.Release, regressedAt)
+		_, err = tx.Exec(ctx, `UPDATE issues SET count=count+1,first_seen=LEAST(first_seen,$2),last_seen=GREATEST(last_seen,$2),title=CASE WHEN $2>=last_seen THEN $3 ELSE title END,environment=CASE WHEN $2>=last_seen THEN $4 ELSE environment END,release=CASE WHEN $2>=last_seen THEN $5 ELSE release END WHERE id=$1`, issueID, ev.Timestamp, ev.Title, ev.Environment, ev.Release)
 		if err != nil {
 			return "", false, err
 		}
@@ -130,13 +119,23 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 			return "", false, err
 		}
 	}
+	var alerts *errorAlertCapture
 	if issueID != nil {
-		if err = queueErrorAlerts(ctx, tx, projectID, ev.ID, issueID.(string)); err != nil {
+		alerts, err = prepareErrorAlerts(ctx, tx, projectID, ev.ID, issueID.(string))
+		if err != nil {
 			return "", false, err
 		}
 	}
 	if err = observeRelease(ctx, tx, projectID, ev.Release); err != nil {
 		return "", false, err
+	}
+	if issueID != nil {
+		if err = settleIssueResolution(ctx, tx, issueID.(string), projectID, ev.ID, ev.Release); err != nil {
+			return "", false, err
+		}
+		if err = alerts.enqueue(ctx, tx, ev.ID, issueID.(string)); err != nil {
+			return "", false, err
+		}
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return "", false, err
@@ -147,20 +146,31 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event) (s
 	return issueID.(string), true, nil
 }
 
-const issueColumns = `i.id::text,p.id::text,p.slug,p.name,i.title,i.level,i.platform,i.status,i.count,i.first_seen,i.last_seen,i.environment,i.release,i.resolved_at,i.regressed_at,` + issueAssignmentJSON + "," + issueIgnoreJSON
+const issueColumns = `i.id::text,p.id::text,p.slug,p.name,i.title,i.level,i.platform,i.status,i.count,i.first_seen,i.last_seen,i.environment,i.release,i.resolved_at,i.regressed_at,` + issueAssignmentJSON + "," + issueIgnoreJSON + "," + issueResolutionJSON
 const issueJoins = ` FROM issues i JOIN projects p ON p.id=i.project_id JOIN organizations o ON o.id=p.organization_id JOIN memberships m ON m.organization_id=o.id `
 
 type scanner interface{ Scan(...any) error }
 
 func scanIssue(row scanner) (Issue, error) {
 	var i Issue
-	var assigned, ignored json.RawMessage
-	err := row.Scan(&i.ID, &i.ProjectID, &i.Project.Slug, &i.Project.Name, &i.Title, &i.Level, &i.Platform, &i.Status, &i.Count, &i.FirstSeen, &i.LastSeen, &i.Environment, &i.Release, &i.ResolvedAt, &i.RegressedAt, &assigned, &ignored)
+	var assigned, ignored, resolution json.RawMessage
+	err := row.Scan(&i.ID, &i.ProjectID, &i.Project.Slug, &i.Project.Name, &i.Title, &i.Level, &i.Platform, &i.Status, &i.Count, &i.FirstSeen, &i.LastSeen, &i.Environment, &i.Release, &i.ResolvedAt, &i.RegressedAt, &assigned, &ignored, &resolution)
 	if err == nil && len(assigned) > 0 {
 		err = json.Unmarshal(assigned, &i.AssignedTo)
 	}
 	if err == nil && len(ignored) > 0 {
 		err = json.Unmarshal(ignored, &i.Ignore)
+	}
+	if err == nil && len(resolution) > 0 {
+		err = json.Unmarshal(resolution, &i.Resolution)
+	}
+	if i.Resolution != nil {
+		for _, reference := range []*IssueResolutionRelease{i.Resolution.Release, i.Resolution.Baseline} {
+			if reference != nil {
+				reference.DateCreated = reference.DateCreated.UTC()
+				reference.DateReleased = releaseTimeUTC(reference.DateReleased)
+			}
+		}
 	}
 	if i.Ignore != nil && i.Ignore.Until != nil {
 		stamp := i.Ignore.Until.UTC()

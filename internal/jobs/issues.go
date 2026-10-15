@@ -9,8 +9,8 @@ import (
 	"goodsentry/internal/store"
 )
 
-// StartIssueMaintenance drains durable mute deadlines on startup and after each
-// idle interval. Issue row locks coordinate replicas without a separate service.
+// StartIssueMaintenance drains mute deadlines and pending release resolutions
+// on startup and after each idle interval. Issue row locks coordinate replicas without a separate service.
 func StartIssueMaintenance(parent context.Context, db *store.Store, interval time.Duration) func() {
 	ctx, cancel := context.WithCancel(parent)
 	var wg sync.WaitGroup
@@ -25,6 +25,18 @@ func StartIssueMaintenance(parent context.Context, db *store.Store, interval tim
 			}
 			if err == nil && processed {
 				continue
+			}
+			if err == nil {
+				processed, err = db.BindNextIssueRelease(ctx, interval)
+				if ctx.Err() != nil {
+					return
+				}
+				if err != nil {
+					slog.Error("Issue release resolution could not be checked", "entryPoint", "issue_maintenance_worker", "operation", "bind_release", "error", err)
+				}
+				if err == nil && processed {
+					continue
+				}
 			}
 			timer := time.NewTimer(interval)
 			select {

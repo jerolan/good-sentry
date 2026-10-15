@@ -39,43 +39,59 @@ func lockedAlertRules(ctx context.Context, tx pgx.Tx, projectID string, kind not
 	return rules, err
 }
 
-// These hooks run inside ingestion/check transactions, after their identity and
-// domain locks. Rule locks precede outbox rows; delivery workers never lock rules.
-func queueErrorAlerts(ctx context.Context, tx pgx.Tx, projectID, eventID, issueID string) error {
-	var kind, title, environment string
-	var received time.Time
-	err := tx.QueryRow(ctx, `SELECT kind,title,environment,created_at FROM events WHERE project_id=$1::bigint AND event_id=$2`, projectID, eventID).Scan(&kind, &title, &environment, &received)
-	if err != nil {
-		return err
+// Error capture locks rules before observing release metadata. Enqueuing runs
+// after resolution settles, retaining the same rule snapshot and lock order.
+type errorAlertCapture struct {
+	title, environment string
+	received           time.Time
+	rules              []notify.Rule
+	project            alertProjectInfo
+}
+
+func prepareErrorAlerts(ctx context.Context, tx pgx.Tx, projectID, eventID, issueID string) (*errorAlertCapture, error) {
+	c := &errorAlertCapture{}
+	var kind, status string
+	if err := tx.QueryRow(ctx, `SELECT kind,title,environment,created_at FROM events WHERE project_id=$1::bigint AND event_id=$2`, projectID, eventID).
+		Scan(&kind, &c.title, &c.environment, &c.received); err != nil {
+		return nil, err
 	}
 	if kind == "transaction" || issueID == "" {
+		return nil, nil
+	}
+	if err := tx.QueryRow(ctx, "SELECT status FROM issues WHERE id=$1::bigint", issueID).Scan(&status); err != nil {
+		return nil, err
+	}
+	if status == "ignored" {
+		return nil, nil
+	}
+	var err error
+	c.rules, err = lockedAlertRules(ctx, tx, projectID, notify.Frequency, c.environment)
+	if err != nil || len(c.rules) == 0 {
+		return nil, err
+	}
+	c.project, err = triggerProject(ctx, tx, projectID)
+	return c, err
+}
+
+func (c *errorAlertCapture) enqueue(ctx context.Context, tx pgx.Tx, eventID, issueID string) error {
+	if c == nil {
 		return nil
 	}
 	var status string
 	if err := tx.QueryRow(ctx, "SELECT status FROM issues WHERE id=$1::bigint", issueID).Scan(&status); err != nil {
 		return err
 	}
-	if status == "ignored" {
+	if status != "unresolved" {
 		return nil
 	}
-	rules, err := lockedAlertRules(ctx, tx, projectID, notify.Frequency, environment)
-	if err != nil {
-		return err
-	}
-	if len(rules) == 0 {
-		return nil
-	}
-	p, err := triggerProject(ctx, tx, projectID)
-	if err != nil {
-		return err
-	}
+	// Read the database clock after both rule and release waits.
 	now, err := alertNow(ctx, tx)
 	if err != nil {
 		return err
 	}
-	for _, r := range rules {
+	for _, r := range c.rules {
 		start := now.Add(-time.Duration(r.WindowMinutes) * time.Minute)
-		if !received.After(start) || received.After(now) {
+		if !c.received.After(start) || c.received.After(now) {
 			continue
 		}
 		if r.LastTriggered != nil && now.Before(r.LastTriggered.Add(time.Duration(r.CooldownSeconds)*time.Second)) {
@@ -84,18 +100,18 @@ func queueErrorAlerts(ctx context.Context, tx pgx.Tx, projectID, eventID, issueI
 		var before int
 		err := tx.QueryRow(ctx, `SELECT count(*) FROM (SELECT 1 FROM events WHERE project_id=$1::bigint AND event_id<>$2
 			AND kind<>'transaction' AND created_at>$3 AND created_at<=$4 AND (cardinality($5::text[])=0 OR environment=ANY($5::text[])) LIMIT $6) counted`,
-			projectID, eventID, start, now, r.Environments, r.Quantity).Scan(&before)
+			c.project.ID, eventID, start, now, r.Environments, r.Quantity).Scan(&before)
 		if err != nil {
 			return err
 		}
 		if before != r.Quantity-1 {
 			continue
 		}
-		payload := alertPayload(r, p, "error_frequency", received)
-		payload.Issue = &notify.Resource{ID: issueID, Name: boundedAlertText(title, 200)}
-		payload.EventID, payload.Count, payload.WindowMinutes, payload.Environment = eventID, r.Quantity, r.WindowMinutes, boundedAlertText(environment, 128)
-		payload.URL = alertResourceURL("issues", p.Organization, "issue", issueID)
-		n, err := enqueueAlert(ctx, tx, r, p, "event:"+eventID, payload, now)
+		payload := alertPayload(r, c.project, "error_frequency", c.received)
+		payload.Issue = &notify.Resource{ID: issueID, Name: boundedAlertText(c.title, 200)}
+		payload.EventID, payload.Count, payload.WindowMinutes, payload.Environment = eventID, r.Quantity, r.WindowMinutes, boundedAlertText(c.environment, 128)
+		payload.URL = alertResourceURL("issues", c.project.Organization, "issue", issueID)
+		n, err := enqueueAlert(ctx, tx, r, c.project, "event:"+eventID, payload, now)
 		if err != nil {
 			return err
 		}

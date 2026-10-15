@@ -75,12 +75,12 @@ func issueBody(w http.ResponseWriter, r *http.Request, allowed ...string) (map[s
 }
 
 func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
-	fields, ok := issueBody(w, r, "status", "assignedTo", "ignore")
+	fields, ok := issueBody(w, r, "status", "assignedTo", "ignore", "resolution")
 	if !ok {
 		return
 	}
 	if len(fields) == 0 {
-		failure(w, 400, "Provide status, assignedTo or ignore")
+		failure(w, 400, "Provide status, assignedTo, ignore or resolution")
 		return
 	}
 	var change store.IssueUpdate
@@ -116,6 +116,14 @@ func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
 					change.Ignore.Condition.Count = &n
 				}
 			}
+		}
+	}
+	if raw, present := fields["resolution"]; present {
+		var err error
+		change.Resolution, err = issueResolutionChange(raw, change.Status)
+		if err != nil {
+			failure(w, 400, err.Error())
+			return
 		}
 	}
 	if raw, present := fields["assignedTo"]; present {

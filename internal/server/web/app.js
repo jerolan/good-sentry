@@ -1396,10 +1396,12 @@
     const comments = issueComments(issue, path, view, triage, () => activity.load(view.activityPage));
     const assignment = issueAssignment(issue, path, view, triage);
     const mute = issueMute(issue, view, triage);
+    const resolution = issueResolution(issue, path, view, triage);
     const left = node('div', {}, summary, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
     left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': 'Event details' },
+      resolution.panel,
       mute,
       assignment.panel,
       detailPanel('Event details', node('div', { class: 'panel-body' }, keyValues(meta))),
@@ -1412,10 +1414,11 @@
     comments.start();
     activity.load(view.activityPage);
     assignment.load(view.assigneePage);
+    resolution.start();
   }
 
   function issueHistoryPager(kind, result, load) {
-    const singular = { comments: 'comment', activity: 'activity entry', assignees: 'assignee' }[kind];
+    const singular = { comments: 'comment', activity: 'activity entry', assignees: 'assignee', releases: 'release' }[kind];
     const plural = kind === 'activity' ? 'activity entries' : kind;
     const previous = button(`Previous ${kind}`, () => load(result.page - 1));
     const next = button(`Next ${kind}`, () => load(result.page + 1));
@@ -1427,6 +1430,95 @@
   function issueActor(actor) {
     if (!actor) return 'Unassigned';
     return actor.name || actor.email || actor.slug || (actor.type === 'team' ? 'Unnamed team' : 'Member');
+  }
+
+  function issueResolutionDescription(resolution) {
+    if (!resolution) return 'Simple resolution';
+    if (resolution.mode === 'release') return `Chosen release: ${resolution.release?.version ?? 'Not recorded'}`;
+    return resolution.release ? `Next release: ${resolution.release.version}` : `Waiting for the next release · Baseline: ${resolution.baseline?.version ?? 'Not recorded'}`;
+  }
+
+  function issueResolution(issue, path, view, triage) {
+    view.resolutionDraft ??= { version: issue.resolution?.mode === 'release' ? issue.resolution.release?.version || '' : '', query: '', search: '', page: 1, open: false };
+    const draft = view.resolutionDraft;
+    const content = node('div', { class: 'panel-body form-stack' });
+    const reference = (label, value) => {
+      if (!value) return;
+      const times = node('dl', { class: 'key-values small' });
+      for (const [name, timestamp] of [['Created (UTC)', value.dateCreated], ['Released (UTC)', value.dateReleased]]) times.append(node('dt', {}, name), node('dd', {}, timestamp ? node('time', { datetime: timestamp }, timestamp) : 'Not recorded'));
+      content.append(node('div', { class: 'form-stack' }, node('p', { class: 'muted small' }, label), node('code', { class: 'whitespace-pre-wrap wrap-anywhere' }, value.version), times));
+    };
+    if (issue.status !== 'resolved') content.append(node('p', {}, 'This issue is not resolved.'));
+    else if (!issue.resolution) content.append(node('p', {}, 'Simple resolution. Any new error reopens this issue.'));
+    else {
+      const policy = issue.resolution;
+      content.append(node('p', {}, policy.mode === 'release' ? 'Resolved in a chosen release.' : policy.release ? 'The next release has been selected.' : 'Waiting for the next eligible project release.'),
+        node('p', { class: 'muted small' }, policy.comparison === 'semantic' ? 'Comparison: semantic version order.' : 'Comparison: recorded release dates.'));
+      reference(policy.mode === 'release' ? 'Chosen release' : 'Selected next release', policy.release);
+      reference('Original observed baseline', policy.baseline);
+      content.append(node('p', { class: 'muted small' }, 'Saved release references stay fixed if release metadata changes.'));
+    }
+    content.append(node('p', { class: 'muted small' }, 'Errors without a valid release reopen this issue. Build metadata does not change semantic version order.'));
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const version = field('Chosen release version', 'text', { value: draft.version, required: true, autocomplete: 'off' });
+    const validateVersion = () => version.input.setCustomValidity(Array.from(version.input.value).length > 255 ? 'Use at most 255 Unicode characters.' : '');
+    version.input.addEventListener('input', () => { draft.version = version.input.value; validateVersion(); });
+    validateVersion();
+    const choose = value => { draft.version = value; version.input.value = value; validateVersion(); version.input.focus(); };
+    const observed = button('Use observed release', () => choose(issue.release), 'small');
+    observed.disabled = !issue.release;
+    const simple = button('Resolve without release', () => triage.patchIssue({ status: 'resolved', resolution: null }, 'Issue resolved without a release condition.', error, () => form.isConnected), 'small');
+    simple.disabled = issue.status === 'resolved' && !issue.resolution;
+    triage.register(simple);
+    const next = triage.register(button('Resolve in next release', () => triage.patchIssue({ status: 'resolved', resolution: { mode: 'next_release' } }, 'Issue resolved in the next release.', error, () => form.isConnected), 'small'));
+    const form = node('form', { class: 'form-stack', 'aria-label': 'Choose release resolution' }, version.wrap,
+      node('p', { class: 'muted small' }, 'Version identity includes its exact spaces, case and slashes.'),
+      node('div', { class: 'actions' }, triage.register(node('button', { class: 'btn button primary', type: 'submit' }, 'Resolve in release')), observed),
+      node('div', { class: 'actions' }, simple, next), error);
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      triage.patchIssue({ status: 'resolved', resolution: { mode: 'release', version: version.input.value } }, 'Issue resolved in the chosen release.', error, () => form.isConnected);
+    });
+    content.append(form);
+    if (issue.release) content.append(node('div', {}, node('p', { class: 'muted small' }, 'Last SDK-observed release'), node('code', { class: 'whitespace-pre-wrap wrap-anywhere' }, issue.release)));
+    const search = field('Search project releases', 'search', { value: draft.query, autocomplete: 'off' });
+    const validateSearch = () => search.input.setCustomValidity(new TextEncoder().encode(search.input.value).length > 200 ? 'Use at most 200 bytes for this search.' : '');
+    search.input.addEventListener('input', () => {
+      draft.query = search.input.value;
+      validateSearch();
+    });
+    validateSearch();
+    const searchForm = node('form', { class: 'form-stack', 'aria-label': 'Find a release for this issue' }, search.wrap, node('button', { class: 'btn button', type: 'submit' }, 'Search releases'));
+    const results = node('div');
+    const browse = node('details', { open: draft.open }, node('summary', {}, 'Browse project releases'), node('div', { class: 'form-stack' }, searchForm, results));
+    content.append(browse);
+    const panel = detailPanel('Resolution', content);
+    panel.setAttribute('aria-label', 'Resolution');
+    let sequence = 0, started = false;
+    async function load(page) {
+      const current = ++sequence;
+      draft.page = page;
+      results.replaceChildren(node('p', { class: 'muted small', role: 'status' }, 'Loading releases…'));
+      try {
+        const query = new URLSearchParams({ page: String(page), query: draft.search });
+        const result = await request(`${path}/releases?${query}`);
+        if (!triage.alive() || current !== sequence || !panel.isConnected) return;
+        const list = node('ul', { class: 'comment-list', 'aria-label': 'Project release candidates' }, result.data.map(release => {
+          const use = button('Use release', () => { choose(release.version); browse.open = false; draft.open = false; }, 'small');
+          use.setAttribute('aria-label', `Use release ${release.version}`);
+          return node('li', { class: 'comment' }, node('code', { class: 'whitespace-pre-wrap wrap-anywhere' }, release.version), node('p', { class: 'small muted' }, release.status),
+            node('p', { class: 'mono small' }, 'Created (UTC): ', node('time', { datetime: release.dateCreated }, release.dateCreated)),
+            release.dateReleased ? node('p', { class: 'mono small' }, 'Released (UTC): ', node('time', { datetime: release.dateReleased }, release.dateReleased)) : null, use);
+        }));
+        results.replaceChildren(result.data.length ? list : node('p', { class: 'muted small' }, result.total ? 'No releases on this page. Choose an earlier page.' : 'No matching releases for this issue’s project.'), issueHistoryPager('releases', result, load));
+      } catch (failure) {
+        if (triage.alive() && current === sequence && panel.isConnected) results.replaceChildren(node('div', { class: 'form-stack', role: 'alert' }, node('p', {}, failure.message), button('Retry releases', () => load(page))));
+      }
+    }
+    const start = () => { if (browse.open && !started) { started = true; load(draft.page); } };
+    browse.addEventListener('toggle', () => { draft.open = browse.open; if (panel.isConnected) start(); });
+    searchForm.addEventListener('submit', event => { event.preventDefault(); draft.search = search.input.value; started = true; load(1); });
+    return { panel, start };
   }
 
   function issueMuteDescription(ignore) {
@@ -1526,17 +1618,22 @@
     const panel = detailPanel('Activity', node('div', {}, node('div', { class: 'panel-body actions' }, button('Refresh activity', () => load(view.activityPage), 'small')), content));
     panel.setAttribute('aria-label', 'Activity');
     let sequence = 0;
-    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', unresolved: 'Reopened issue', ignored: 'Marked ignored', unignored: 'Mute ended', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment' };
+    const labels = { first_seen: 'First error recorded', regressed: 'Issue regressed', resolved: 'Marked resolved', resolution_bound: 'Next release selected', unresolved: 'Reopened issue', ignored: 'Marked ignored', unignored: 'Mute ended', assigned: 'Assigned issue', unassigned: 'Cleared assignment', comment_added: 'Added a comment', comment_edited: 'Edited a comment', comment_deleted: 'Deleted a comment' };
     function entry(item) {
-      const actor = item.user?.name || item.user?.email || (['first_seen', 'regressed', 'unignored'].includes(item.type) ? 'System' : 'Actor not recorded');
+      const actor = item.user?.name || item.user?.email || (['first_seen', 'regressed', 'unignored', 'resolution_bound'].includes(item.type) ? 'System' : 'Actor not recorded');
       const data = item.data || {};
       let description = '';
       if (item.type === 'assigned') description = `${issueActor(data.from)} → ${issueActor(data.to)}`;
       else if (item.type === 'unassigned' && data.from) description = `Previously assigned to ${issueActor(data.from)}`;
       else if (['resolved', 'unresolved', 'ignored'].includes(item.type) && data.from && data.to) description = `${data.from} → ${data.to}`;
-      if (item.type === 'ignored' && Object.hasOwn(data, 'ignore')) description = [description, `Mute: ${issueMuteDescription(data.ignore)}`].filter(Boolean).join(' · ');
+      if (item.type === 'resolved' && Object.hasOwn(data, 'resolution')) description = [description, issueResolutionDescription(data.resolution)].filter(Boolean).join(' · ');
+      else if (item.type === 'resolution_bound') description = issueResolutionDescription(data.resolution);
+      else if (item.type === 'ignored' && Object.hasOwn(data, 'ignore')) description = [description, `Mute: ${issueMuteDescription(data.ignore)}`].filter(Boolean).join(' · ');
       else if (item.type === 'unignored') description = [data.reason === 'duration' ? 'Duration reached' : data.reason === 'count' ? 'Additional error count reached' : 'Mute condition ended', data.ignore ? `Previous condition: ${issueMuteDescription(data.ignore)}` : '', data.eventID ? `New event ${data.eventID}` : ''].filter(Boolean).join(' · ');
-      else if (item.type === 'regressed') description = [data.eventID ? `New event ${data.eventID}` : '', data.resolvedAt ? `Previously resolved ${date(data.resolvedAt)}` : ''].filter(Boolean).join(' · ');
+      else if (item.type === 'regressed') {
+        const reason = { newer_release: 'Newer release observed', next_release: 'Next release reached', missing_release: 'Missing or invalid release' }[data.reason];
+        description = [data.eventID ? `New event ${data.eventID}` : '', data.resolvedAt ? `Previously resolved ${date(data.resolvedAt)}` : '', reason, data.resolution ? issueResolutionDescription(data.resolution) : ''].filter(Boolean).join(' · ');
+      }
       else if (item.type.startsWith('comment_') && data.commentID) description = `Comment ${data.commentID}`;
       return node('li', { class: 'comment' }, node('div', { class: 'comment-top' }, node('strong', {}, labels[item.type] || 'Recorded activity'), node('time', { datetime: item.dateCreated, title: item.dateCreated }, date(item.dateCreated))), node('p', { class: 'muted small' }, actor), description ? node('p', {}, description) : null);
     }
