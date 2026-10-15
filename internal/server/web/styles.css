@@ -1,9 +1,50 @@
-@layer theme, base, components, utilities;
+@layer theme, base, components, utilities, app;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities) source(none);
 @source "./index.html";
 @source "./app.js";
 @source "./alerts.js";
+
+@plugin "../../../third_party/daisyui/daisyui.mjs" {
+  themes: false;
+  include: button, card, badge, input, select, textarea;
+  logs: false;
+}
+
+@plugin "../../../third_party/daisyui/daisyui-theme.mjs" {
+  name: "goodsentry";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: #ffffff;
+  --color-base-200: #f7f8fa;
+  --color-base-300: #e5e8ed;
+  --color-base-content: #202932;
+  --color-primary: #087c6b;
+  --color-primary-content: #ffffff;
+  --color-secondary: #334d49;
+  --color-secondary-content: #ffffff;
+  --color-accent: #087c6b;
+  --color-accent-content: #ffffff;
+  --color-neutral: #263d38;
+  --color-neutral-content: #ffffff;
+  --color-info: #2163ac;
+  --color-info-content: #ffffff;
+  --color-success: #16704f;
+  --color-success-content: #ffffff;
+  --color-warning: #8a5815;
+  --color-warning-content: #ffffff;
+  --color-error: #a62e37;
+  --color-error-content: #ffffff;
+  --radius-selector: .25rem;
+  --radius-field: .375rem;
+  --radius-box: .5rem;
+  --size-selector: .25rem;
+  --size-field: .25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
 
 @theme inline {
   --color-canvas: var(--bg);
@@ -11,7 +52,7 @@
   --color-surface-subtle: var(--surface-subtle);
   --color-ink: var(--text);
   --color-muted: var(--muted);
-  --color-outline: var(--border);
+  --color-outline: var(--outline-color);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-sidebar: var(--sidebar);
@@ -34,17 +75,18 @@
 @layer base {
   :root {
     color-scheme: light;
-    --bg: #f5f7f7;
+    --bg: #f7f8fa;
     --surface: #fff;
-    --surface-subtle: #f0f4f3;
-    --text: #1b302e;
-    --muted: #586c68;
-    --border: #d9e2df;
+    --surface-subtle: #f1f3f5;
+    --text: #202932;
+    --muted: #626e7a;
+    --outline-color: #e5e8ed;
     --accent: #087c6b;
     --accent-hover: #056354;
-    --accent-soft: #e4f3ee;
-    --sidebar: #142b2a;
-    --sidebar-text: #cfdfdc;
+    --accent-soft: #e9f5f1;
+    --sidebar: #ffffff;
+    --auth-bg: #142b2a;
+    --sidebar-text: #47525e;
     --danger: #a62e37;
     --danger-soft: #fff0f0;
     --warning: #8a5815;
@@ -56,7 +98,7 @@
   }
 }
 
-@layer components {
+@layer app {
   * {
     box-sizing: border-box;
   }
@@ -76,7 +118,7 @@
     outline-offset: 3px;
   }
   h1,h2,h3,p { @apply m-0; }
-  h1 { @apply text-[1.65rem] tracking-[-.04em] font-[650] leading-[1.3]; }
+  h1 { @apply text-[1.55rem] tracking-[-.025em] font-[650] leading-[1.3]; }
   h2 { @apply text-[1.05rem] tracking-[-.015em]; }
   h3 { @apply text-[.95rem]; }
   small,.small { @apply text-sm; }
@@ -86,70 +128,75 @@
   .skip-link { @apply fixed top-[-80px] left-4 bg-surface px-4 py-3 z-100; }
   .skip-link:focus { @apply top-4; }
   .startup { @apply min-h-screen flex items-center justify-center flex-col gap-4 p-8; }
-  .brand-mark { @apply w-9 h-9 grid place-items-center border border-[#7ebdb2] text-[#d2f6e8] rounded-md font-[750] bg-accent text-[1.4rem]; }
+  .brand-mark { @apply w-8 h-8 grid place-items-center border border-accent text-white rounded-md font-[750] bg-accent text-[1.25rem] shrink-0; }
   .app-shell {
     @apply grid min-h-screen;
-    grid-template-columns: 224px minmax(0,1fr);
+    grid-template-columns: 248px minmax(0,1fr);
   }
-  .sidebar { @apply bg-sidebar text-sidebar-text flex flex-col px-4 py-7 gap-8 sticky top-0 h-screen; }
-  .brand { @apply flex items-center gap-3 no-underline text-white text-[1.2rem] font-[650] tracking-[-.03em]; }
+  .sidebar { @apply bg-sidebar text-sidebar-text border-r border-outline flex flex-col p-4 gap-6 sticky top-0 h-screen; }
+  .brand { @apply flex items-center gap-3 no-underline text-ink text-[1.2rem] font-[650] tracking-[-.03em]; }
+  .sidebar > .brand { @apply px-2 py-1; }
   .org-label {
-    @apply text-xs uppercase tracking-[.09em] text-[#a3beb7];
+    @apply text-xs uppercase tracking-[.07em] text-muted font-medium;
     margin: 0 .5rem .5rem;
   }
-  .org-select { @apply w-full border border-[#41605b] bg-[#203b37] text-[#f1f8f5] px-[.65rem] py-[.55rem] rounded-md text-ellipsis; }
-  .nav { @apply grid gap-[.35rem]; }
-  .nav a { @apply flex items-center gap-3 px-[.75rem] py-[.65rem] rounded-md text-sidebar-text no-underline font-medium; }
-  .nav a:hover { @apply bg-[#203b37]; }
-  .nav a[aria-current=page] { @apply text-[#e3fff7] bg-[#285248]; }
-  .nav-icon { @apply grid place-items-center w-[1.15rem] text-[1.1rem]; }
+  .org-select { @apply select w-full border border-outline bg-surface text-ink pl-3 pr-8 rounded-md text-ellipsis text-sm; }
+  .nav { @apply grid gap-1; }
+  .nav a { @apply flex items-center gap-3 px-3 py-[.7rem] rounded-md text-sidebar-text no-underline font-medium border border-transparent; }
+  .nav a:hover { @apply bg-surface-subtle text-ink; }
+  .nav a[aria-current=page] { @apply text-accent bg-[#e9f5f1] border-[#d9ede5]; }
+  .nav-icon { @apply block w-[1.15rem] h-[1.15rem] shrink-0; }
   .account {
-    @apply mt-auto border-t border-[#36534c] wrap-anywhere;
+    @apply mt-auto border-t border-outline wrap-anywhere;
     padding: .75rem .5rem 0;
   }
-  .account strong { @apply text-[#f1f8f5] block; }
-  .account .small { @apply text-[#b0cac1]; }
-  .account button { @apply mt-3 text-[#d6ebe3] border border-[#4c6b62] bg-transparent px-[.65rem] py-[.35rem] rounded-md; }
+  .account strong { @apply text-ink block font-semibold; }
+  .account .small { @apply text-muted text-xs; }
+  .account button { @apply btn btn-sm mt-3 text-ink border border-outline bg-surface px-3 rounded-md shadow-none; }
   .content { @apply min-w-0; }
-  .topbar { @apply border-b border-outline bg-surface px-[2rem] py-[.9rem] flex justify-between gap-4 text-muted text-sm; }
+  .topbar { @apply min-h-16 border-b border-outline bg-surface px-6 py-4 flex items-center justify-between gap-4 text-muted text-sm; }
   .topbar strong { @apply font-semibold text-ink; }
-  .main { @apply p-8 max-w-[1600px] m-auto; }
+  .main { @apply p-6 max-w-[1600px] m-auto; }
   .page-header { @apply flex items-start justify-between gap-4 mb-6; }
-  .page-header p { @apply mt-[.45rem] text-muted; }
-  .eyebrow { @apply text-accent uppercase text-[.7rem] tracking-[.11em] font-bold mb-2; }
+  .page-header p { @apply mt-2 text-muted text-sm; }
+  .eyebrow { @apply text-muted uppercase text-[.7rem] tracking-[.08em] font-semibold mb-2; }
   .actions { @apply flex gap-2 items-center flex-wrap; }
-  .button { @apply border border-outline bg-surface text-ink px-[.85rem] py-[.5rem] rounded-md font-medium leading-normal inline-flex items-center justify-center gap-2 no-underline whitespace-nowrap; }
+  .button { @apply btn border border-outline bg-surface text-ink px-[.85rem] rounded-md font-medium leading-normal inline-flex items-center justify-center gap-2 no-underline whitespace-nowrap shadow-none text-sm; }
   .button:hover { @apply bg-surface-subtle; }
-  .button.primary { @apply bg-accent border-accent text-white; }
+  .button.primary { @apply btn-primary bg-accent border-accent text-white; }
   .button.primary:hover { @apply bg-accent-hover border-accent-hover; }
-  .button.small { @apply px-[.6rem] py-[.3rem] text-[.8rem]; }
+  .button.small { @apply btn-sm px-[.6rem] text-[.8rem]; }
   .text-button { @apply p-0 bg-none bg-transparent border-0 text-accent text-left underline underline-offset-3 font-medium; }
-  .panel { @apply bg-surface border border-outline rounded-md overflow-hidden; }
+  .panel { @apply card block bg-surface border border-outline rounded-md overflow-hidden shadow-[0_1px_2px_#152d2110]; }
   .panel+.panel { @apply mt-4; }
   .panel-title { @apply px-5 py-4 border-b border-outline flex justify-between items-center gap-3; }
   .panel-body { @apply p-5; }
   .filters {
-    @apply grid gap-3 items-end p-4 bg-surface border border-outline rounded-md mb-4;
+    @apply grid gap-3 items-end p-4 bg-surface border border-outline rounded-md mb-5 shadow-[0_1px_2px_#152d2108];
     grid-template-columns: minmax(160px,2fr) minmax(120px,1fr) minmax(110px,1fr) minmax(110px,1fr) minmax(110px,1fr) auto;
   }
   .field { @apply flex flex-col gap-[.4rem] min-w-0; }
   .field>label { @apply text-[.8rem] font-semibold; }
-  .field input,.field select,.field textarea { @apply min-w-0 w-full bg-surface text-ink border border-[#b7c9c3] px-[.65rem] py-[.55rem] rounded-sm; }
-  .field textarea { @apply resize-y min-h-[6rem]; }
+  .field input { @apply input; }
+  .field select { @apply select; }
+  .field textarea { @apply textarea; }
+  .field input,.field select,.field textarea { @apply min-w-0 w-full bg-surface text-ink border border-[#c8d0d8] px-3 rounded-md shadow-none text-sm; }
+  .field select { @apply pr-8; }
+  .field textarea { @apply resize-y min-h-[6rem] py-2; }
   .field .help { @apply text-[.8rem] text-muted; }
-  .field input::placeholder,.field textarea::placeholder { @apply text-[#6c8079]; }
+  .field input::placeholder,.field textarea::placeholder { @apply text-[#687580]; }
   .field input[readonly] { @apply bg-surface-subtle; }
   .form-stack { @apply grid gap-4; }
   .form-error { @apply bg-danger-soft border border-[#edc9c8] text-danger px-4 py-3 rounded-md; }
   .form-error:empty { @apply hidden; }
-  .empty { @apply px-6 py-12 flex items-center text-center flex-col gap-3; }
-  .empty-icon { @apply grid place-items-center w-[2.75rem] h-[2.75rem] border border-outline rounded-full bg-surface-subtle text-accent text-[1.4rem] mb-1; }
+  .empty { @apply px-6 py-16 flex items-center text-center flex-col gap-3; }
+  .empty-icon { @apply grid place-items-center w-12 h-12 border border-[#d9ede5] rounded-lg bg-[#e9f5f1] text-accent text-[1.4rem] mb-2; }
   .empty p { @apply max-w-[36rem] text-muted; }
   .error-state { @apply border border-[#edc9c8] bg-danger-soft p-6 rounded-md grid gap-3; }
   .error-state .button { @apply justify-self-start; }
   .table-scroll { @apply overflow-auto; }
   table { @apply w-full border-collapse text-left; }
-  th { @apply bg-[#f8faf9] text-muted text-xs uppercase tracking-[.05em] font-semibold whitespace-nowrap; }
+  th { @apply bg-[#fbfcfd] text-muted text-xs tracking-[.015em] font-medium whitespace-nowrap; }
   th,td { @apply px-[1.25rem] py-[.85rem] border-b border-outline align-top; }
   tr:last-child td { @apply border-b-0; }
   .issue-title { @apply font-semibold wrap-anywhere; }
@@ -158,7 +205,7 @@
   .issue-subtitle { @apply flex gap-2 flex-wrap mt-[.35rem] text-muted text-[.8rem]; }
   .issue-column { @apply min-w-[240px] max-w-[640px]; }
   .nowrap { @apply whitespace-nowrap; }
-  .badge { @apply inline-flex items-center gap-[.35rem] border border-outline bg-surface-subtle text-muted rounded-sm px-[.45rem] py-[.12rem] text-xs font-medium whitespace-nowrap; }
+  .badge { @apply badge-sm inline-flex items-center gap-[.35rem] border border-outline bg-surface-subtle text-muted rounded-sm px-[.45rem] py-[.12rem] text-xs font-medium whitespace-nowrap; height: auto; }
   .badge.error,.badge.fatal {
     @apply text-[#9a2834] bg-[#fff0f2];
     border-color: #ecc2c8;
@@ -226,12 +273,13 @@
     @apply min-h-screen grid;
     grid-template-columns: minmax(280px,.85fr) minmax(400px,1.15fr);
   }
-  .auth-intro { @apply bg-sidebar text-[#f1f8f5] p-12 flex flex-col justify-between gap-12; }
+  .auth-intro { @apply bg-[var(--auth-bg)] text-[#f1f8f5] p-12 flex flex-col justify-between gap-12; }
+  .auth-intro .brand { @apply text-white; }
   .auth-intro h2 { @apply text-[2.1rem] leading-tight tracking-[-.045em] max-w-[360px]; }
   .auth-intro p { @apply text-[#bad0c8] mt-4 max-w-[340px]; }
   .auth-foot { @apply text-[.8rem] text-[#bad0c8]; }
   .auth-main { @apply flex items-center justify-center p-8; }
-  .auth-box { @apply w-full max-w-[390px]; }
+  .auth-box { @apply card block w-full max-w-[440px] border border-outline rounded-lg bg-surface p-7 shadow-[0_2px_6px_#152d2108]; }
   .auth-box>p {
     @apply text-muted;
     margin: .75rem 0 1.75rem;
@@ -249,7 +297,7 @@
   dialog form { @apply p-5; }
   dialog .dialog-actions { @apply flex justify-end gap-2 mt-2; }
   .notifications {
-    @apply fixed bottom-6 left-1/2 z-30 text-white bg-sidebar rounded-md;
+    @apply fixed bottom-6 left-1/2 z-30 text-white bg-ink rounded-md;
     transform: translateX(-50%);
     max-width: calc(100% - 2rem);
     box-shadow: 0 3px 16px #10292326;
@@ -329,7 +377,7 @@
   .monitor-confirmation { @apply p-4 mb-5 rounded-md border border-[#edc9c8] bg-danger-soft flex flex-col gap-3 wrap-anywhere; }
   .button.danger { @apply text-white bg-danger border-danger; }
   @media(min-width:1500px) {
-    .main { @apply px-12 py-10; }
+    .main { @apply px-8 py-7; }
   }
   @media(max-width:1150px) {
     .filters { @apply grid-cols-3; }
@@ -337,10 +385,10 @@
       grid-template-columns: minmax(0,1fr) 250px;
     }
     .app-shell {
-      grid-template-columns: 200px minmax(0,1fr);
+      grid-template-columns: 216px minmax(0,1fr);
     }
     .main { @apply p-6; }
-    .topbar { @apply px-[1.5rem] py-[.9rem]; }
+    .topbar { @apply px-6 py-4; }
   }
   @media(max-width:900px) {
     .detail-grid { @apply grid-cols-1; }
@@ -358,7 +406,7 @@
       @apply h-auto static p-4 grid gap-4;
       grid-template-columns: 1fr auto;
     }
-    .sidebar .brand { @apply text-[1.1rem]; }
+    .sidebar .brand { @apply text-[1.1rem] p-0; }
     .sidebar .brand-mark { @apply w-[1.8rem] h-[1.8rem] text-[1.1rem]; }
     .sidebar .org-switch { @apply col-span-full row-start-2; }
     .org-label { @apply hidden; }
@@ -367,7 +415,7 @@
       grid-template-columns: repeat(2,1fr);
     }
     .nav a { @apply justify-center p-2; }
-    .account { @apply col-start-2 row-start-1 p-0 border-0 max-w-[130px]; }
+    .account { @apply col-start-2 row-start-1 p-0 border-0 max-w-[130px] m-0; }
     .account strong,.account .small { @apply hidden; }
     .account button { @apply m-0 text-[.8rem]; }
     .topbar { @apply px-4 py-3; }
@@ -388,8 +436,8 @@
     .auth-intro { @apply p-6 gap-6; }
     .auth-intro h2 { @apply text-[1.35rem] max-w-none; }
     .auth-intro p,.auth-foot { @apply hidden; }
-    .auth-main { @apply px-6 py-8; }
-    .auth-box { @apply max-w-[420px]; }
+    .auth-main { @apply px-4 py-6; }
+    .auth-box { @apply max-w-[440px] p-5; }
     .pagination { @apply flex-wrap; }
     .comment-top { @apply flex-wrap gap-1; }
     .dsn { @apply min-w-[200px]; }

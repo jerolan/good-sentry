@@ -103,18 +103,18 @@
   }
 
   function button(label, click, kind = '') {
-    return node('button', { type: 'button', class: `button ${kind}`, onclick: click }, label);
+    return node('button', { type: 'button', class: `btn button ${kind}`, onclick: click }, label);
   }
 
   function field(label, type = 'text', attributes = {}) {
     const id = `field-${++fieldNumber}`;
-    const input = node(type === 'textarea' ? 'textarea' : 'input', { id, ...(type === 'textarea' ? {} : { type }), ...attributes });
+    const input = node(type === 'textarea' ? 'textarea' : 'input', { id, class: type === 'textarea' ? 'textarea' : 'input', ...(type === 'textarea' ? {} : { type }), ...attributes });
     return { input, wrap: node('div', { class: 'field' }, node('label', { for: id }, label), input) };
   }
 
   function selectField(label, options, value, attributes = {}) {
     const id = `field-${++fieldNumber}`;
-    const input = node('select', { id, ...attributes }, options.map(([key, name]) => node('option', { value: key }, name)));
+    const input = node('select', { id, class: 'select', ...attributes }, options.map(([key, name]) => node('option', { value: key }, name)));
     input.value = value;
     return { input, wrap: node('div', { class: 'field' }, node('label', { for: id }, label), input) };
   }
@@ -150,6 +150,23 @@
     }, label);
   }
 
+  function navigationIcon(section) {
+    const paths = {
+      issues: 'M12 8v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+      transactions: 'M4 17l5-6 4 3 7-9m-5 0h5v5',
+      logs: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
+      monitors: 'M2 12h5l3-8 4 16 3-8h5',
+      alerts: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4',
+      projects: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
+    };
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    for (const [name, value] of Object.entries({ class: 'nav-icon', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false' })) svg.setAttribute(name, value);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', paths[section]);
+    svg.append(path);
+    return svg;
+  }
+
   function brand() {
     return node('div', { class: 'brand' }, node('span', { class: 'brand-mark', 'aria-hidden': true }, 'G'), 'GoodSentry');
   }
@@ -166,7 +183,7 @@
     const email = field('Email', 'email', { name: 'email', autocomplete: 'username', required: true, maxlength: 254 });
     const password = field('Password', 'password', { name: 'password', autocomplete: setup ? 'new-password' : 'current-password', required: true, ...(setup ? { minlength: 12 } : {}) });
     if (setup) password.wrap.append(node('p', { class: 'help' }, 'Use at least 12 characters.'));
-    const submit = node('button', { type: 'submit', class: 'button primary' }, setup ? 'Create workspace' : 'Sign in');
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, setup ? 'Create workspace' : 'Sign in');
     const form = node('form', { class: 'form-stack' }, setup ? [name.wrap, organization.wrap] : [], email.wrap, password.wrap, submit);
     form.addEventListener('submit', async event => {
       event.preventDefault();
@@ -198,20 +215,20 @@
   function renderShell(view) {
     const organizations = state.me.organizations || [];
     const org = state.organization;
-    const selector = node('select', { class: 'org-select', 'aria-label': 'Organization', onchange: event => {
+    const selector = node('select', { class: 'select org-select', 'aria-label': 'Organization', onchange: event => {
       navigate({ org: event.target.value, issue: null, monitor: null, project: null, alertProject: null, rule: null, delivery: null, page: null, changes: null });
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
-      [['issues', '◉'], ['transactions', '↗'], ['logs', '≡'], ['monitors', '◷'], ['alerts', '♧'], ['projects', '▦']]
-        .filter(([section]) => section !== 'monitors' || state.me.features?.uptime === true)
-        .filter(([section]) => section !== 'logs' || state.me.features?.logs !== false)
-        .filter(([section]) => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
-        .map(([section, icon]) =>
-        routeLink([node('span', { class: 'nav-icon', 'aria-hidden': true }, icon), viewNames[section]],
+      ['issues', 'transactions', 'logs', 'monitors', 'alerts', 'projects']
+        .filter(section => section !== 'monitors' || state.me.features?.uptime === true)
+        .filter(section => section !== 'logs' || state.me.features?.logs !== false)
+        .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
+        .map(section =>
+        routeLink([navigationIcon(section), viewNames[section]],
           { view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null },
           { 'aria-current': view === section ? 'page' : null })));
-    const logout = node('button', { type: 'button', onclick: async () => {
+    const logout = node('button', { type: 'button', class: 'btn btn-sm', onclick: async () => {
       logout.disabled = true;
       try {
         await request('/api/v1/logout', { method: 'POST' });
@@ -231,7 +248,7 @@
   }
 
   function loading(target, message) {
-    target.replaceChildren(node('div', { class: 'page-header' }, node('h1', {}, message)), node('div', { class: 'panel loading-rows', role: 'status', 'aria-label': message, 'aria-busy': 'true' },
+    target.replaceChildren(node('div', { class: 'page-header' }, node('h1', {}, message)), node('div', { class: 'card panel loading-rows', role: 'status', 'aria-label': message, 'aria-busy': 'true' },
       [1, 2, 3].map(() => node('div', { class: 'loading-row', 'aria-hidden': true }, node('div', { class: 'skeleton wide' }), node('div', { class: 'skeleton' })))));
   }
 
@@ -252,7 +269,7 @@
     const view = Object.prototype.hasOwnProperty.call(viewNames, requestedView) ? requestedView : 'issues';
     const main = renderShell(view);
     if (!state.organization) {
-      main.append(node('div', { class: 'panel no-org' }, empty('No organization access', 'Your account does not belong to an organization. Contact your workspace owner to request access.')));
+      main.append(node('div', { class: 'card panel no-org' }, empty('No organization access', 'Your account does not belong to an organization. Contact your workspace owner to request access.')));
       return;
     }
     if ((view === 'monitors' && state.me.features?.uptime !== true) || (view === 'logs' && state.me.features?.logs === false)) {
@@ -322,14 +339,14 @@
   function badge(value) {
     const known = ['unresolved', 'resolved', 'ignored', 'error', 'fatal', 'warning', 'info', 'debug'];
     const variant = ({ warn: 'warning', up: 'resolved', down: 'error', unknown: 'ignored' })[value] || value;
-    return node('span', { class: `badge ${known.includes(variant) ? variant : ''}` }, text(value, 'Unknown'));
+    return node('span', { class: `badge badge-sm ${known.includes(variant) ? variant : ''}` }, text(value, 'Unknown'));
   }
 
   function renderIssues(main, result, params) {
     document.title = 'Issues · GoodSentry';
     main.replaceChildren(pageHeader('Issues', 'Find, investigate and triage application errors.', node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), button('Create project', openProjectDialog, 'primary'))));
     if (!state.projects.length) {
-      main.append(node('section', { class: 'panel' }, empty('Connect your first application', 'Create a project to get a DSN. Set it in your existing Sentry SDK to start receiving errors.', button('Create project', openProjectDialog, 'primary'))));
+      main.append(node('section', { class: 'card panel' }, empty('Connect your first application', 'Create a project to get a DSN. Set it in your existing Sentry SDK to start receiving errors.', button('Create project', openProjectDialog, 'primary'))));
       return;
     }
     const search = field('Search issues', 'search', { name: 'query', placeholder: 'Message or exception', value: params.get('query') || '' });
@@ -338,14 +355,14 @@
     const status = selectField('Status', [['unresolved', 'Unresolved'], ['resolved', 'Resolved'], ['ignored', 'Ignored']], params.get('status') || 'unresolved');
     const environment = field('Environment', 'text', { name: 'environment', value: params.get('environment') || '', placeholder: 'All environments' });
     const sort = selectField('Sort by', [['date', 'Last seen'], ['freq', 'Event count']], params.get('sort') || 'date');
-    const filters = node('form', { class: 'filters', role: 'search', 'aria-label': 'Filter issues' }, search.wrap, project.wrap, status.wrap, environment.wrap, sort.wrap, node('button', { class: 'button', type: 'submit' }, 'Apply filters'));
+    const filters = node('form', { class: 'filters', role: 'search', 'aria-label': 'Filter issues' }, search.wrap, project.wrap, status.wrap, environment.wrap, sort.wrap, node('button', { class: 'btn button', type: 'submit' }, 'Apply filters'));
     filters.addEventListener('submit', event => {
       event.preventDefault();
       navigate({ query: search.input.value.trim(), project: project.input.value, status: status.input.value, environment: environment.input.value.trim(), sort: sort.input.value, page: null, issue: null });
     });
     main.append(filters);
     const issues = result.data || [];
-    const panel = node('section', { class: 'panel', 'aria-label': 'Issues' });
+    const panel = node('section', { class: 'card panel', 'aria-label': 'Issues' });
     if (!issues.length) {
       panel.append(empty('No matching issues', 'Errors will appear here when your SDK sends them. Check the selected project, status and environment, or clear your filters.', button('Clear filters', () => navigate({ query: null, project: null, status: null, environment: null, sort: null, page: null }))));
     } else {
@@ -409,7 +426,7 @@
       return `${parsed.toISOString().slice(0, 19)}.${fraction.padEnd(6, '0').slice(0, 6)}Z`;
     }
     const summary = node('section', { class: 'time-window-summary', 'aria-label': 'Active time window' },
-      node('span', { class: 'badge' }, hasRange ? preset?.[1] || 'Custom interval' : endpoint === 'transactions' ? 'Last 24 hours' : 'All time'),
+      node('span', { class: 'badge badge-sm' }, hasRange ? preset?.[1] || 'Custom interval' : endpoint === 'transactions' ? 'Last 24 hours' : 'All time'),
       hasRange ? node('span', { class: 'mono' }, `UTC: ${utc(params.get('start'))} ≤ timestamp < ${utc(params.get('end'))}`)
         : node('span', {}, endpoint === 'transactions' ? 'Default rolling window.' : 'No time restriction.'));
     return { ...control, changes, summary };
@@ -421,10 +438,10 @@
     const project = projectFilter(params);
     const window = telemetryWindow(params, 'transactions');
     const form = node('form', { class: 'filters transaction-filters telemetry-filters', 'aria-label': 'Filter transactions' }, project.wrap, window.wrap,
-      node('button', { class: 'button', type: 'submit' }, 'Apply filter'));
+      node('button', { class: 'btn button', type: 'submit' }, 'Apply filter'));
     form.addEventListener('submit', event => { event.preventDefault(); navigate({ project: project.input.value, ...window.changes(), page: null }); });
     main.append(form, window.summary);
-    const panel = node('section', { class: 'panel', 'aria-label': 'Transaction aggregates' });
+    const panel = node('section', { class: 'card panel', 'aria-label': 'Transaction aggregates' });
     const transactions = result.data || [];
     if (!transactions.length) {
       panel.append(empty('No transactions in this time window', 'Transactions appear when your SDK sends performance data. Check the selected project and your SDK sampling configuration.'));
@@ -447,7 +464,7 @@
     const entries = pairs(attributes);
     if (!entries.length) return node('p', { class: 'muted small' }, 'No attributes recorded.');
     return node('dl', { class: 'key-values log-attributes', 'aria-label': 'Log attributes' }, entries.map(([name, attribute]) => [
-      node('dt', {}, name), node('dd', {}, node('span', { class: 'badge' }, text(attribute?.type, 'Unknown type')), node('pre', {}, text(attribute?.value))),
+      node('dt', {}, name), node('dd', {}, node('span', { class: 'badge badge-sm' }, text(attribute?.type, 'Unknown type')), node('pre', {}, text(attribute?.value))),
     ]));
   }
 
@@ -463,7 +480,7 @@
     const service = field('Service', 'text', { name: 'service', value: params.get('service') || '', maxlength: 4000, placeholder: 'Exact service name', autocomplete: 'off' });
     const window = telemetryWindow(params, 'logs');
     const form = node('form', { class: 'filters log-filters', role: 'search', 'aria-label': 'Filter logs' }, search.wrap, project.wrap, level.wrap, environment.wrap, trace.wrap, service.wrap, window.wrap,
-      node('button', { class: 'button', type: 'submit' }, 'Apply filters'));
+      node('button', { class: 'btn button', type: 'submit' }, 'Apply filters'));
     form.addEventListener('submit', event => {
       event.preventDefault();
       navigate({ project: project.input.value, query: search.input.value.trim(), level: level.input.value, environment: environment.input.value.trim(), trace: trace.input.value.trim(), service: service.input.value, ...window.changes(), page: null });
@@ -471,7 +488,7 @@
     main.append(form, window.summary);
     const logs = result.data || [];
     const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
-    const panel = node('section', { class: 'panel', 'aria-label': 'Logs' });
+    const panel = node('section', { class: 'card panel', 'aria-label': 'Logs' });
     if (!logs.length) {
       panel.append(empty(page > 1 ? 'No more logs on this page' : 'No matching logs', 'Check your filters, or send logs from your application SDK.',
         button('Clear filters', () => navigate({ project: null, query: null, level: null, environment: null, trace: null, service: null, start: null, end: null, window: null, page: null }))));
@@ -514,7 +531,7 @@
   function renderProjects(main) {
     document.title = 'Projects · GoodSentry';
     main.replaceChildren(pageHeader('Projects', 'Each application gets its own SDK key and DSN.', button('Create project', openProjectDialog, 'primary')));
-    const panel = node('section', { class: 'panel', 'aria-label': 'Projects' });
+    const panel = node('section', { class: 'card panel', 'aria-label': 'Projects' });
     if (!state.projects.length) {
       panel.append(empty('Create your first project', 'Choose a name and platform, then copy the project DSN into your Sentry SDK configuration.', button('Create project', openProjectDialog, 'primary')));
     } else {
@@ -522,7 +539,7 @@
         node('td', {}, node('div', { class: 'project-name' }, project.name), node('div', { class: 'muted small mono' }, project.slug)),
         node('td', {}, badge(project.platform)),
         node('td', {}, node('div', { class: 'dsn' }, node('code', {}, project.dsn), button('Copy', () => copyValue(project.dsn), 'small'))),
-        node('td', {}, routeLink('View issues', { view: 'issues', project: project.id, query: null, status: null, environment: null, page: null }, { class: 'button small' }))));
+        node('td', {}, routeLink('View issues', { view: 'issues', project: project.id, query: null, status: null, environment: null, page: null }, { class: 'btn button small' }))));
       const columns = ['Project', 'Platform', 'DSN', ''].map((name, index) => node('th', { scope: 'col', ...(index === 3 ? { 'aria-label': 'Actions' } : {}) }, name));
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns)), node('tbody', {}, rows))));
       panel.append(...state.projects.map(sourceMapDisclosure));
@@ -541,14 +558,14 @@
   }
 
   function monitorStatus(monitor) {
-    return node('div', { class: 'actions', role: 'group', 'aria-label': 'Confirmed monitor status' }, badge(monitor.status || 'unknown'), !monitor.enabled ? node('span', { class: 'badge' }, 'Paused') : null);
+    return node('div', { class: 'actions', role: 'group', 'aria-label': 'Confirmed monitor status' }, badge(monitor.status || 'unknown'), !monitor.enabled ? node('span', { class: 'badge badge-sm' }, 'Paused') : null);
   }
 
   function renderMonitors(main, result) {
     document.title = 'Uptime · GoodSentry';
     const manage = canManageMonitors();
     main.replaceChildren(pageHeader('Uptime', 'HTTP, TCP and heartbeat monitoring.', node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), manage ? button('Create monitor', () => openMonitorDialog(), 'primary') : null)));
-    const panel = node('section', { class: 'panel', 'aria-label': 'Monitors' });
+    const panel = node('section', { class: 'card panel', 'aria-label': 'Monitors' });
     const monitors = result.data || [];
     if (!monitors.length) panel.append(empty('No monitors yet', manage ? 'Add a service endpoint or incoming heartbeat to start monitoring.' : 'An organization owner or admin can add a monitor.', manage ? button('Create monitor', () => openMonitorDialog(), 'primary') : null));
     else {
@@ -556,7 +573,7 @@
       const rows = monitors.map(monitor => node('tr', {},
         node('td', { class: 'monitor-name' }, routeLink(monitor.name, { view: 'monitors', monitor: monitor.id, page: null, changes: null }, { class: 'issue-link issue-title' }),
           monitor.project ? node('p', { class: 'small muted' }, state.projects.find(project => project.slug === monitor.project)?.name || monitor.project) : null),
-        node('td', {}, monitorStatus(monitor)), node('td', {}, node('span', { class: 'badge' }, monitor.type)),
+        node('td', {}, monitorStatus(monitor)), node('td', {}, node('span', { class: 'badge badge-sm' }, monitor.type)),
         node('td', { class: 'monitor-target' }, monitor.type === 'heartbeat' ? 'Incoming heartbeat' : monitor.url),
         node('td', { class: 'nowrap' }, `${number(monitor.intervalSeconds)} s`),
         node('td', { class: 'nowrap' }, monitor.lastCheck ? date(monitor.lastCheck, true) : 'Not checked yet')));
@@ -624,9 +641,9 @@
 
   function monitorChecks(monitor, history, params) {
     const changes = selectField('Check history', [['true', 'Transitions only'], ['false', 'All checks']], params.get('changes') === 'false' ? 'false' : 'true');
-    const form = node('form', { class: 'filters transaction-filters', 'aria-label': 'Filter monitor checks' }, changes.wrap, node('button', { type: 'submit', class: 'button' }, 'Apply history filter'));
+    const form = node('form', { class: 'filters transaction-filters', 'aria-label': 'Filter monitor checks' }, changes.wrap, node('button', { type: 'submit', class: 'btn button' }, 'Apply history filter'));
     form.addEventListener('submit', event => { event.preventDefault(); navigate({ changes: changes.input.value, page: null }); });
-    const panel = node('section', { class: 'panel', 'aria-label': 'Monitor check history' }, node('div', { class: 'panel-title' }, node('h2', {}, 'Check history')));
+    const panel = node('section', { class: 'card panel', 'aria-label': 'Monitor check history' }, node('div', { class: 'panel-title' }, node('h2', {}, 'Check history')));
     const checks = history.data || [];
     if (!checks.length) panel.append(empty('No checks in this view', changes.input.value === 'true' ? 'Confirmed status changes will appear here. Select All checks to inspect every recorded result.' : 'Results appear after the monitor runs or receives a heartbeat.'));
     else {
@@ -664,7 +681,7 @@
     const threshold = field('Failure confirmation threshold', 'number', { name: 'confirmationThreshold', required: true, min: 1, max: 100, step: 1, value: config.confirmationThreshold });
     const enabled = node('input', { type: 'checkbox', checked: config.enabled });
     const note = node('p', { class: 'muted small' });
-    const submit = node('button', { type: 'submit', class: 'button primary' }, monitor ? 'Save monitor' : 'Create monitor');
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, monitor ? 'Save monitor' : 'Create monitor');
     const close = () => dialog.close();
     function updateFields() {
       const heartbeat = type.input.value === 'heartbeat';
@@ -765,7 +782,7 @@
     const helpID = `source-map-help-${++fieldNumber}`;
     release.input.setAttribute('aria-describedby', helpID);
     debug.input.setAttribute('aria-describedby', helpID);
-    const submit = node('button', { type: 'submit', class: 'button primary' }, 'Upload source map');
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Upload source map');
     const form = node('form', { class: 'source-map-form form-stack', 'aria-label': `Upload source map for ${project.name}` }, node('h2', {}, 'Upload source map'),
       node('p', { class: 'muted small', id: helpID }, 'Provide a release or debug ID to match the correct build. The artifact name identifies the generated file URL. Distribution is optional.'),
       error, node('div', { class: 'source-map-fields' }, name.wrap, release.wrap, dist.wrap, debug.wrap, file.wrap),
@@ -797,7 +814,7 @@
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const name = field('Project name', 'text', { name: 'name', required: true, maxlength: 200, autocomplete: 'off' });
     const platform = selectField('Platform', [['javascript', 'JavaScript / Browser'], ['node', 'Node.js'], ['python', 'Python'], ['go', 'Go'], ['java', 'Java'], ['php', 'PHP'], ['ruby', 'Ruby'], ['csharp', '.NET'], ['other', 'Other']], 'javascript');
-    const submit = node('button', { type: 'submit', class: 'button primary' }, 'Create project');
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Create project');
     const close = () => dialog.close();
     const form = node('form', { class: 'form-stack' }, error, name.wrap, platform.wrap,
       node('div', { class: 'dialog-actions' }, button('Cancel', close), submit));
@@ -834,12 +851,12 @@
   }
 
   function detailPanel(title, content) {
-    return node('section', { class: 'panel' }, node('div', { class: 'panel-title' }, node('h2', {}, title)), content);
+    return node('section', { class: 'card panel' }, node('div', { class: 'panel-title' }, node('h2', {}, title)), content);
   }
 
   function stackFrame(frame) {
     const location = [frame.filename || frame.abs_path || frame.module || 'Unknown file', frame.lineno, frame.colno].filter(value => value !== undefined && value !== null && value !== '').join(':');
-    const row = node('li', { class: 'stack-frame' }, node('div', { class: 'frame-heading' }, node('span', { class: 'frame-function' }, frame.function || '<anonymous>'), frame.in_app ? node('span', { class: 'badge' }, 'App frame') : null), node('div', { class: 'frame-path' }, location));
+    const row = node('li', { class: 'stack-frame' }, node('div', { class: 'frame-heading' }, node('span', { class: 'frame-function' }, frame.function || '<anonymous>'), frame.in_app ? node('span', { class: 'badge badge-sm' }, 'App frame') : null), node('div', { class: 'frame-path' }, location));
     if (frame.context_line !== undefined && frame.context_line !== null) {
       const before = Array.isArray(frame.pre_context) ? frame.pre_context : [];
       const after = Array.isArray(frame.post_context) ? frame.post_context : [];
@@ -906,13 +923,13 @@
     }
     const heading = node('div', { class: 'page-header' }, node('div', {},
       node('div', { class: 'eyebrow' }, issue.shortId || issue.id), node('h1', { class: 'detail-title', tabindex: '-1' }, issue.title),
-      node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge' }, issue.environment) : null)), statusActions);
+      node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge badge-sm' }, issue.environment) : null)), statusActions);
     const stats = node('dl', { class: 'stat-list' }, [['Events', number(issue.count)], ['First seen', date(issue.firstSeen, true)], ['Last seen', date(issue.lastSeen, true)]].map(([name, value]) => node('div', { class: 'stat' }, node('dt', {}, name), node('dd', {}, value))));
-    const summary = node('section', { class: 'panel' }, stats, node('div', { class: 'panel-body' },
+    const summary = node('section', { class: 'card panel' }, stats, node('div', { class: 'panel-body' },
       node('p', { class: 'muted small' }, 'Latest event'), node('p', { class: 'mono' }, text(event.event_id || event.eventID)),
       event.message || event.logentry?.formatted ? node('pre', { class: 'event-message' }, text(event.message || event.logentry.formatted)) : null));
     const left = node('div', {}, summary, stackTrace(event), breadcrumbs(event), commentsPanel(issue, detail.comments || []));
-    left.append(node('details', { class: 'panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
+    left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': 'Event details' },
       detailPanel('Event details', node('div', { class: 'panel-body' }, keyValues(meta))),
@@ -933,7 +950,7 @@
     const comment = field('Add a comment', 'textarea', { name: 'text', required: true, maxlength: 10000, rows: 3, placeholder: 'What should the team know?' });
     comment.input.value = commentDrafts.get(issue.id) || '';
     comment.input.addEventListener('input', () => commentDrafts.set(issue.id, comment.input.value));
-    const submit = node('button', { class: 'button primary', type: 'submit' }, 'Post comment');
+    const submit = node('button', { class: 'btn button primary', type: 'submit' }, 'Post comment');
     const form = node('form', { class: 'comment-form form-stack' }, error, comment.wrap, node('div', { class: 'actions' }, submit));
     form.addEventListener('submit', async event => {
       event.preventDefault();

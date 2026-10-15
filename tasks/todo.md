@@ -31,6 +31,8 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
   - Verify docker compose up --build from a clean database, readiness, SDK capture and persisted data after restart.
 - [x] Compile the user-authorized Tailwind CSS into the embedded UI.
   - Verify a pinned reproducible stylesheet build, browser workflow and responsive widths; retain a single Go runtime image.
+- [x] Integrate actual pinned daisyUI components and the original Nexus-inspired dashboard theme.
+  - Official standalone plugins compile with Tailwind; their checksums and MIT notice are verified in the non-root image. Existing workflows, component states and responsive access pass with the compiled assets.
 
 ## Issue workflow and artifacts
 
@@ -70,7 +72,7 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - [x] Implement the specified uptime network policy, transition history and owner/member UI.
   - Default private-target rejection and explicit opt-in pass in the built image. Actual member reads, hidden write controls, disabled-feature API/UI and transition/all-check pagination pass in Chromium. Scheduling and expected-body semantics are explicit GoodSentry decisions in SPEC.md.
 - [x] Deliver frequency alert rules, cooldown and durable delivery intents.
-  - Project-scoped native rules, receipt-time threshold crossings, environment filtering and transactional event/check outbox pass real PostgreSQL, HTTP capture, browser and restart checks. Automatic delivery remains a separate incomplete item below.
+  - Project-scoped native rules, receipt-time threshold crossings, environment filtering and transactional event/check outbox pass real PostgreSQL, HTTP capture, browser and restart checks. Automatic delivery is verified separately below.
 - [x] Deliver SMTP/consolemail and webhook retries, plus uptime down/recovery alerts.
   - User explicitly authorized configured automatic delivery on 2026-10-14, resolving the previous automatic approval rejection. Startup composes sender/workers and exposes their availability. Actual-image SMTP/webhook retries survive restart and coordinate across two replicas; browser sent/attempt views pass with real local receipts. Provider-specific payloads and full product parity remain incomplete.
 - [ ] Deliver provider-specific Slack/Discord/Teams/Feishu/Google Chat/ntfy/Zulip alert payloads and verified destination workflows.
@@ -97,6 +99,9 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - [ ] Audit every specification requirement against current artifact/runtime evidence; only then complete the goal.
 
 ## Evidence log
+
+- 2026-10-14: Actual daisyUI 5.7.50 components/theme compile with Tailwind 4.3.3 from vendored official standalone modules. Primary review caught a variable collision and then a cascade-layer conflict; GoodSentry owns its color variable and final app layer after plugin utilities. Computed primary contrast is 5.115:1, with white text, distinct error/resolved/warning badges, visible keyboard focus, disabled controls, native dialogs and conditional hidden fields verified. Four unchanged browser harnesses pass 30 groups and 87 captures at 320/768/1440; three focused state groups add three login captures. Zero page errors or failed transport requests; intentional anonymous 401/validation 400 are recorded separately. Reports: ignored test-results/dashboard-daisyui-{browser,windows,uptime,alerts,finish}. Primary inspected desktop/mobile issues and alert dialogs.
+- 2026-10-14: Final dashboard image sha256:c86e3ab4c93ee1bc7438ac81c2f7e8ab9c6329095088c4f56d2b9c3efc20812d is ready, runs as 65532:65532 and reports 24,454,389 image bytes, not RSS. Primary inspected test-results/container-dashboard-daisyui/report.json: CSS aecce572389dd301f9f15430272761f86985fca55382d1353286991e6afba0fd and JS 896391d1354f74b8ed7ab9e10e67c0d54bf51050f0c2a2dcf4fe1284e1463139 match served bytes; both build-input checksums pass. Runtime MIT notice matches the official dependency bytes, with no Node or plugin modules in the exported image. Session and acceptance-owned canceled delivery history survive app replacement; automatic-delivery features are active, consolemail is configured and private-network opt-ins remain false.
 
 - 2026-10-14: Time-window/store tests first failed with ignored explicit intervals and service, then passed half-open boundaries in both transaction transports, combined aggregates without child inflation, historical/default behavior, exact service, other filters and tenant/project isolation. HTTP regression first returned 200 for an incomplete interval; the final real capture-to-filter workflow passes with offset normalization, malformed/empty/microsecond-collapsed range rejection and service validation.
 - 2026-10-14: Time-window browser acceptance passes 5 groups/12 screenshots; unchanged UI regression passes 14 groups/27 screenshots at 320/768/1440 pixels. Verified 2 mixed legacy/segment transactions, boundary exclusion, 26 combined-filter logs with exact int64 and second-page start record, all four presets, fixed bounds across pagination/filter/reload, UTC microseconds, trace links, default/clear behavior and real invalid-range 400. Zero page errors, failed requests or document overflow. Primary inspected reports, harness assertions and desktop transaction/mobile log captures under ignored test-results/browser-telemetry-windows-final and browser-telemetry-windows-regressions.
