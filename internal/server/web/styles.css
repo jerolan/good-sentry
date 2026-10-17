@@ -370,6 +370,18 @@
   .log-attributes dd { @apply flex flex-col items-start gap-1 min-w-0; }
   .log-attributes pre { @apply max-w-full; }
   .log-identifiers { @apply mt-4 pt-3 border-t border-outline; }
+  .otlp-disclosure { @apply m-4 rounded-md border border-outline; }
+  .otlp-disclosure > summary { @apply p-4 font-medium; }
+  .otlp-body { @apply p-4 min-w-0; }
+  .otlp-body .dsn { @apply min-w-0 flex-wrap; }
+  .otlp-body .dsn code { @apply min-w-0; }
+  .otlp-body pre { @apply p-3 bg-surface-subtle rounded-md; }
+  .otlp-context { @apply mt-4 pt-3 border-t border-outline; }
+  .otlp-detail h3 { @apply mt-4 mb-2 font-semibold; }
+  .otlp-attributes { @apply m-0; }
+  .otlp-attributes dt { @apply mt-3 font-mono font-semibold wrap-anywhere; }
+  .otlp-attributes dd { @apply m-0 mt-1; }
+  .otlp-value pre { @apply mt-2; }
   .source-map-disclosure { @apply border-t border-outline; }
   .source-map-disclosure > summary { @apply px-5 py-3 text-sm text-accent; }
   .source-map-disclosure[open] > summary { @apply border-b border-outline; }

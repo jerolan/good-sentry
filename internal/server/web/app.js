@@ -1037,7 +1037,7 @@
         const projectName = state.projects.find(project => String(project.id) === String(log.projectId))?.name || log.projectId;
         const isOTLP = log.source === 'otlp';
         const disclosure = isOTLP
-          ? otlpRowDisclosure(log, params)
+          ? otlpRowDisclosure(log)
           : node('details', { class: 'log-entry' }, node('summary', {}, node('span', { class: 'log-message' }, text(log.body, '(empty message)'))),
             node('div', { class: 'log-detail' }, node('h2', {}, 'Log attributes'), logAttributes(log.attributes),
               node('div', { class: 'log-identifiers' }, keyValues([['Log ID', log.id], ['Span ID', log.spanId]]))));
@@ -1422,7 +1422,7 @@
 
   function otlpEndpoint(project) {
     const dsn = new URL(project.dsn);
-    return dsn.origin + dsn.pathname.replace(/\/$/, '') + '/v1/logs';
+    return dsn.origin + dsn.pathname.replace(/\/[^/]+\/?$/, '/v1/logs');
   }
 
   function otlpDisclosure(project) {
@@ -1438,33 +1438,48 @@
     const endpoint = otlpEndpoint(project);
     const copyEndpoint = button('Copy endpoint', () => copyValue(endpoint, 'OTLP endpoint'), 'small');
     const copyKey = button('Copy key', () => copyValue(key, 'OTLP key'), 'small');
-    const example = `${'// Exporter configuration (Python)'}\n` +
-      `pip install opentelemetry-sdk opentelemetry-exporter-otlp-proto-http\n\n` +
-      `# Environment variables\n` +
+    const environment = `pip install opentelemetry-sdk==1.45.1 opentelemetry-exporter-otlp-proto-http==1.45.1\n\n` +
       `export OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="${endpoint}"\n` +
       `export OTEL_EXPORTER_OTLP_LOGS_PROTOCOL="http/protobuf"\n` +
-      `export OTEL_EXPORTER_OTLP_LOGS_HEADERS="x-goodsentry-key=${key}"\n\n` +
-      `from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler\n` +
-      `from opentelemetry.sdk._logs.export import BatchLogRecordExporter\n` +
+      `export OTEL_EXPORTER_OTLP_LOGS_HEADERS="x-goodsentry-key=${key}"\n` +
+      `export OTEL_EXPORTER_OTLP_LOGS_COMPRESSION="gzip"\n`;
+    const example = `from opentelemetry._logs import LogRecord, SeverityNumber\n` +
+      `from opentelemetry.sdk._logs import LoggerProvider\n` +
+      `from opentelemetry.sdk._logs.export import BatchLogRecordProcessor\n` +
+      `from opentelemetry.exporter.otlp.proto.http import Compression\n` +
       `from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter\n\n` +
-      `exporter = OTLPLogExporter(endpoint="${endpoint}", headers={"x-goodsentry-key": "${key}"})\n` +
+      `exporter = OTLPLogExporter(\n` +
+      `    endpoint="${endpoint}",\n` +
+      `    headers={"x-goodsentry-key": "${key}"},\n` +
+      `    compression=Compression.Gzip,\n` +
+      `)\n` +
       `provider = LoggerProvider()\n` +
-      `provider.add_log_record_processor(BatchLogRecordExporter(exporter))\n`;
+      `provider.add_log_record_processor(BatchLogRecordProcessor(exporter))\n` +
+      `provider.get_logger("my.application").emit(LogRecord(\n` +
+      `    body="Hello from OpenTelemetry",\n` +
+      `    severity_number=SeverityNumber.INFO,\n` +
+      `    severity_text="INFO",\n` +
+      `))\n` +
+      `provider.force_flush()\n` +
+      `provider.shutdown()\n`;
     disclosure.append(node('div', { class: 'otlp-body form-stack' },
       node('h2', {}, 'OpenTelemetry log ingestion'),
       node('p', { class: 'muted small' }, 'Send logs from any OpenTelemetry HTTP exporter. This endpoint is separate from your Sentry DSN: exporters use a header key instead of DSN credentials.'),
       node('div', { class: 'dsn' }, node('code', { 'aria-label': 'OTLP endpoint' }, endpoint), copyEndpoint),
       node('div', { class: 'dsn' }, node('code', { 'aria-label': 'OTLP key header' }, `X-GoodSentry-Key: ${key}`), copyKey),
+      node('h3', {}, 'Install the exporter'),
+      node('pre', { class: 'mono', 'aria-label': 'Exporter environment' }, environment),
+      node('h3', {}, 'Send a Python log'),
       node('pre', { class: 'mono', 'aria-label': 'Python exporter example' }, example),
       node('p', { class: 'muted small' }, `Sentry DSN (SDK errors): ${project.dsn}. OTLP exporter endpoint: ${endpoint}.`)));
     return disclosure;
   }
 
-  function otlpRowDisclosure(log, params) {
+  function otlpRowDisclosure(log) {
     const disclosure = node('details', { class: 'log-entry otlp-entry' }, node('summary', {}, node('span', { class: 'log-message' }, text(log.body, '(empty message)'))));
     const content = node('div', { class: 'log-detail otlp-detail' });
     disclosure.append(content);
-    disclosure.addEventListener('toggle', async () => {
+    const load = async () => {
       if (!disclosure.open || content.dataset.loaded) return;
       content.dataset.loaded = 'pending';
       content.replaceChildren(node('p', { class: 'muted otlp-loading', role: 'status', 'aria-busy': 'true' }, 'Loading OTLP detail…'));
@@ -1472,18 +1487,44 @@
       const path = `/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/logs/${encodeURIComponent(log.id)}`;
       try {
         const detail = await request(path);
-        if (version !== state.requestVersion) return;
+        if (version !== state.requestVersion || !disclosure.isConnected) return;
         content.dataset.loaded = 'done';
         content.replaceChildren(...otlpDetailNodes(detail));
       } catch (error) {
-        if (version !== state.requestVersion) return;
+        if (version !== state.requestVersion || !disclosure.isConnected) return;
         content.dataset.loaded = '';
         content.replaceChildren(node('div', { class: 'error-state', role: 'alert' },
           node('h2', {}, 'Could not load OTLP detail'), node('p', {}, error.message),
-          button('Try again', () => { disclosure.open = false; disclosure.open = true; })));
+          button('Try again', load)));
       }
-    });
+    };
+    disclosure.addEventListener('toggle', load);
     return disclosure;
+  }
+
+  function otlpValue(value) {
+    const types = { stringValue: 'string', boolValue: 'boolean', intValue: 'int64', doubleValue: 'double', bytesValue: 'bytes (base64)', arrayValue: 'array', kvlistValue: 'key/value list', stringValueStrindex: 'string dictionary index' };
+    const kind = Object.keys(value || {}).find(key => Object.hasOwn(types, key));
+    return node('div', { class: 'otlp-value' }, node('span', { class: 'badge badge-sm' }, kind ? types[kind] : 'empty AnyValue'),
+      node('pre', { class: 'mono' }, JSON.stringify(value ?? {}, null, 2)));
+  }
+
+  function otlpAttributes(attributes) {
+    if (!attributes?.length) return node('p', { class: 'muted small' }, 'No attributes');
+    return node('dl', { class: 'otlp-attributes' }, attributes.map(attribute => [
+      node('dt', {}, attribute.keyStrindex ? `Dictionary key index: ${attribute.keyStrindex}` : JSON.stringify(attribute.key ?? '')),
+      node('dd', {}, otlpValue(attribute.value)),
+    ]));
+  }
+
+  function otlpContext(name, value, schemaURL) {
+    return node('section', { class: 'otlp-context', 'aria-label': name }, node('h3', {}, name),
+      node('p', { class: 'muted small mono' }, `Schema URL: ${schemaURL ? JSON.stringify(schemaURL) : '(absent)'}`),
+      value == null ? node('p', { class: 'muted' }, '(absent)') : [
+        name === 'Scope' ? keyValues([['Name', JSON.stringify(value.name ?? '')], ['Version', JSON.stringify(value.version ?? '')]]) : null,
+        node('h4', {}, 'Attributes'), otlpAttributes(value.attributes),
+        keyValues([['Dropped attributes', value.droppedAttributesCount ?? 0]]),
+      ]);
   }
 
   function otlpDetailNodes(detail) {
@@ -1495,15 +1536,15 @@
         ['Log ID', detail.id], ['Source', detail.source], ['Severity number', record.severityNumber],
         ['Severity text', record.severityText], ['Event name', record.eventName],
         ['Timestamp source', detail.timestampSource], ['Received at', detail.receivedAt], ['Trace flags', detail.traceFlags],
+        ['Trace ID', record.traceId], ['Span ID', record.spanId], ['Original flags', record.flags ?? 0],
+        ['Dropped attributes', record.droppedAttributesCount ?? 0],
       ])),
       node('h3', {}, 'Timestamps (exact nanoseconds)'),
       keyValues([['timeUnixNano', record.timeUnixNano], ['observedTimeUnixNano', record.observedTimeUnixNano]]),
-      node('h3', {}, 'Resource'),
-      node('pre', { class: 'mono' }, text(data.resource)),
-      node('p', { class: 'muted small mono' }, text(data.resourceSchemaUrl, 'No resource schema URL')),
-      node('h3', {}, 'Scope'),
-      node('pre', { class: 'mono' }, text(data.scope)),
-      node('p', { class: 'muted small mono' }, text(data.scopeSchemaUrl, 'No scope schema URL')),
+      node('h3', {}, 'Body'), otlpValue(record.body),
+      otlpContext('Resource', data.resource, data.resourceSchemaUrl),
+      otlpContext('Scope', data.scope, data.scopeSchemaUrl),
+      node('h3', {}, 'Record attributes'), otlpAttributes(record.attributes),
       node('h3', {}, 'Log record'),
       node('pre', { class: 'mono' }, text(record)),
     ];

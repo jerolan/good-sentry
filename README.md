@@ -99,6 +99,25 @@ Sentry.captureException(new Error("Hello from GoodSentry"));
 
 These checks establish the listed workflows for those versions. Attachments, additional envelope types and other SDK versions need their own verification. Unknown envelope items are retained and reported through `unsupportedItems`; retention alone does not implement their functionality.
 
+### OpenTelemetry logs
+
+Open **Projects** and expand the project's **OpenTelemetry** panel. Copy its
+OTLP endpoint and `X-GoodSentry-Key` header. The endpoint is
+`https://your-host/v1/logs`, including your configured path prefix, while the
+header selects the project. A Sentry DSN is a different address.
+
+Use an OTLP/HTTP logs exporter with `http/protobuf` or `http/json`. Gzip is
+supported. The Projects panel includes an executable Python example with the
+verified `opentelemetry-sdk==1.45.1` and protobuf HTTP exporter `1.45.1`.
+The official JSON HTTP exporter `0.66b1` also passes real network acceptance.
+
+Logs retain resource, scope and record values, exact integer and nanosecond
+strings, bytes and trace identifiers. Expand a row to fetch its typed detail.
+Repeated OTLP exports create repeated occurrences, including identical records
+within a batch. Delivery is at least once. Existing Sentry log deduplication
+continues to use the SDK envelope identity. Only the logs signal is exposed
+through OTLP; this endpoint does not accept OTLP traces or metrics.
+
 ### Issue triage
 
 Assign an issue to a workspace member or team, or clear its assignment. Search people and teams from issue detail. Comments and activity have independent pages of 25 entries. Authors and workspace owners/admins can edit or delete comments; editing preserves their original creation time.
