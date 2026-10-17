@@ -62,7 +62,7 @@ docker compose down
 | JavaScript source maps | Official CLI injection/bundle uploads and native uploads, Debug ID or release/distribution selection, original source context and preserved minified stacks. |
 | Releases | Shared project versions, observed SDK releases, local commit metadata, completed deploys and compatible CLI lifecycle operations, with a responsive management UI. |
 | Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail and a cross-project trace waterfall. |
-| Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. |
+| Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. Native OpenTelemetry `/v1/logs` ingestion accepts standard OTLP/HTTP exporters (binary protobuf and JSON, optional gzip) without a Sentry SDK or extra collector. |
 | Uptime | HTTP HEAD/GET/POST, TCP and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
 | Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |
 | Automation credentials | Expiring, revocable tokens limited to an organization and selected projects, one-time reveal, project metadata reads and optional release writes. |
@@ -245,7 +245,7 @@ Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. 
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, native OTLP, retention, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, retention, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
@@ -268,6 +268,8 @@ Compose supplies the local database connection. Environment values override the 
 | `ARTIFACT_STAGING_MAX_BYTES` | `268435456` | Per-organization temporary chunk quota; at least `MAX_BODY_BYTES`, from 1 MiB to 1 TiB. |
 | `ARTIFACT_MAX_MAP_RECORDS` | `1000` | Maximum maps × selected projects in one atomic assembly, from 1 to 100000. |
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
+| `GOODSENTRY_OTLP_MAX_RECORDS` | `1000` | Maximum records per OTLP log batch, from 1 to 100000. |
+| `GOODSENTRY_OTLP_MAX_NODES` | `100000` | Maximum decoded nodes per OTLP log batch, from 100 to 1000000. |
 | `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
 | `MONITOR_WORKERS` | `2` | Concurrent checks per process, from 1 to 16. |
 | `ISSUE_MAINTENANCE_INTERVAL_SECONDS` | `1` | Polling for expired mutes and pending next-release resolution, from 1 to 3600 seconds. Longer intervals delay metadata-only binding and status display; fresh captures evaluate immediately. |
