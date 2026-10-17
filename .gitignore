@@ -8,3 +8,5 @@
 /.env.*
 *.test
 coverage.out
+/.gocache/
+/.gopath/

@@ -1,1 +1,87 @@
-Ly8gVGVzdC1hdWRpdCBnYXRlOiB0aGUgdmlzaWJsZSBPcGVuVGVsZW1ldHJ5IHJlY2lwZSBpbiBQcm9qZWN0cyBhbmQgdGhlIGxhenkKLy8gT1RMUCByb3cgZGV0YWlsIGluIExvZ3Mgb3duIHRoaXMgYnJvd3NlciBjb250cmFjdC4gQmFja2VuZCBHbyB0ZXN0cyBjb3ZlcgovLyBhdXRoZW50aWNhdGlvbiwgc3RvcmFnZSBhbmQgY2Fub25pY2FsIGRldGFpbCBEVE87IHRoaXMgZHJpdmVyIHByb3ZlcyB0aGUKLy8gYWN0dWFsIHJlbmRlcmVkIHJlY2lwZSwgYmFkZ2UsIHR5cGVkIGRldGFpbCwgcmV0cnkgYW5kIHNhZmUgbmF2aWdhdGlvbi4KLy8gUmV1c2UgYSBkaXNwb3NhYmxlIHJ1bnRpbWUgd2l0aCBwcmUtc2VlZGVkIE9UTFAgZGF0YTsgbm8gbW9ja2VkIHJlc3BvbnNlcy4KaW1wb3J0IGFzc2VydCBmcm9tICdub2RlOmFzc2VydC9zdHJpY3QnOwppbXBvcnQgeyByYW5kb21CeXRlcyB9IGZyb20gJ25vZGU6Y3J5cHRvJzsKaW1wb3J0IHsgbWtkaXIsIHJlYWRGaWxlLCB3cml0ZUZpbGUgfSBmcm9tICdub2RlOmZzL3Byb21pc2VzJzsKaW1wb3J0IHsgcmVzb2x2ZSB9IGZyb20gJ25vZGU6cGF0aCc7Cgpjb25zdCBmaXh0dXJlUGF0aCA9IHByb2Nlc3MuZW52LkdPT0RTRU5UUllfT1RMUF9GSVhUVVJFOwphc3NlcnQub2soZml4dHVyZVBhdGggJiYgdHlwZW9mIGZpeHR1cmVQYXRoID09PSAnc3RyaW5nJywgJ1Byb3ZpZGUgR09PRFNFTlRSWV9PVExQX0ZJWFRVUkUgcG9pbnRpbmcgYXQgYSBwcml2YXRlIGZpeHR1cmUgSlNPTicpOwpjb25zdCBmaXh0dXJlID0gSlNPTi5wYXJzZShhd2FpdCByZWFkRmlsZShmaXh0dXJlUGF0aCwgJ3V0ZjgnKSk7CmNvbnN0IGJhc2UgPSBuZXcgVVJMKGZpeHR1cmUuYmFzZVVSTCk7CmFzc2VydC5lcXVhbChiYXNlLnByb3RvY29sLCAnaHR0cDonKTsgYXNzZXJ0Lm9rKFsnbG9jYWxob3N0JywgJzEyNy4wLjAuMScsICdbOjoxXSddLmluY2x1ZGVzKGJhc2UuaG9zdG5hbWUpKTsKYXNzZXJ0Lm9rKCFbJzE4MDgwJywgJzE4MDgxJywgJzE4MDA5J10uaW5jbHVkZXMoYmFzZS5wb3J0KSwgJ1Byb3RlY3RlZCBhY2NlcHRhbmNlIHJ1bnRpbWVzIGFyZSBub3QgYnJvd3NlciB0YXJnZXRzJyk7CmNvbnN0IG91dHB1dCA9IHJlc29sdmUocHJvY2Vzcy5lbnYuR09PRFNFTlRSWV9URVNUX09VVFBVVCB8fCAndGVzdC1yZXN1bHRzL290bHAtYnJvd3NlcicpOyBhd2FpdCBta2RpcihvdXRwdXQsIHsgcmVjdXJzaXZlOiB0cnVlIH0pOwpjb25zdCB7IGNocm9taXVtIH0gPSBhd2FpdCBpbXBvcnQocHJvY2Vzcy5lbnYuUExBWVdSSUdIVF9NT0RVTEUgfHwgJ3BsYXl3cmlnaHQnKTsKY29uc3QgYnJvd3NlciA9IGF3YWl0IGNocm9taXVtLmxhdW5jaCh7IGhlYWRsZXNzOiB0cnVlIH0pLCBjb250ZXh0ID0gYXdhaXQgYnJvd3Nlci5uZXdDb250ZXh0KHsgdmlld3BvcnQ6IHsgd2lkdGg6IDE0NDAsIGhlaWdodDogMTAwMCB9LCBsb2NhbGU6ICdlbi1VUycsIHJlZHVjZWRNb3Rpb246ICdyZWR1Y2UnIH0pOwpjb25zdCBjaGVja3MgPSBbXSwgc2NyZWVuc2hvdHMgPSBbXSwgZGltZW5zaW9ucyA9IFtdLCBwYWdlRXJyb3JzID0gW10sIHJlcXVlc3RGYWlsdXJlcyA9IFtdLCBiYWRSZXNwb25zZXMgPSBbXSwgY29uc29sZVByb2JsZW1zID0gW107CmNvbnN0IHNlY3JldHMgPSBbZml4dHVyZS5vd25lckVtYWlsLCBmaXh0dXJlLm93bmVyUGFzc3dvcmQsIGZpeHR1cmUucHVibGljS2V5XS5maWx0ZXIoQm9vbGVhbik7CmNvbnN0IHNhZmUgPSB2YWx1ZSA9PiBzZWNyZXRzLnJlZHVjZSgodGV4dCwgc2VjcmV0KSA9PiB0ZXh0LnNwbGl0KHNlY3JldCkuam9pbignW3JlZGFjdGVkXScpLCBTdHJpbmcodmFsdWUpKTsKY29uc3QgdXJsID0gcGF0aCA9PiBuZXcgVVJMKHBhdGgsIGJhc2UpLmhyZWY7CmxldCBwYWdlLCBtZSwgZmFpbHVyZTsKYXN5bmMgZnVuY3Rpb24gdmlzaWJsZShsb2NhdG9yKSB7IGF3YWl0IGxvY2F0b3Iud2FpdEZvcih7IHN0YXRlOiAndmlzaWJsZScgfSk7IHJldHVybiBsb2NhdG9yOyB9CmFzeW5jIGZ1bmN0aW9uIGNhcHR1cmUobmFtZSkgewogIGZvciAoY29uc3Qgd2lkdGggb2YgWzMyMCwgNzY4LCAxNDQwXSkgewogICAgYXdhaXQgcGFnZS5zZXRWaWV3cG9ydFNpemUoeyB3aWR0aCwgaGVpZ2h0OiAxMDAwIH0pOyBhd2FpdCBwYWdlLmV2YWx1YXRlKCgpID0+IHNjcm9sbFRvKDAsIDApKTsKICAgIGNvbnN0IHNpemUgPSBhd2FpdCBwYWdlLmV2YWx1YXRlKCgpID0+ICh7IHZpZXdwb3J0OiBpbm5lcldpZHRoLCBkb2N1bWVudDogZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LnNjcm9sbFdpZHRoIH0pKTsKICAgIGRpbWVuc2lvbnMucHVzaCh7IG5hbWUsIC4uLnNpemUgfSk7IGFzc2VydC5lcXVhbChzaXplLmRvY3VtZW50LCBzaXplLnZpZXdwb3J0LCBuYW1lICsgJyBmaXRzICcgKyB3aWR0aCArICdweCcpOwogICAgY29uc3QgZmlsZSA9IHJlc29sdmUob3V0cHV0LCBuYW1lICsgJy0nICsgd2lkdGggKyAnLnBuZycpOwogICAgYXdhaXQgcGFnZS5zY3JlZW5zaG90KHsgcGF0aDogZmlsZSwgZnVsbFBhZ2U6IGZhbHNlLCBhbmltYXRpb25zOiAnZGlzYWJsZWQnIH0pOyBzY3JlZW5zaG90cy5wdXNoKGZpbGUpOwogIH0KfQp0cnkgewogIGNvbnN0IGxvZ2luID0gYXdhaXQgY29udGV4dC5yZXF1ZXN0LnBvc3QodXJsKCdhcGkvdjEvbG9naW4nKSwgeyBoZWFkZXJzOiB7IE9yaWdpbjogYmFzZS5vcmlnaW4gfSwgZGF0YTogeyBlbWFpbDogZml4dHVyZS5vd25lckVtYWlsLCBwYXNzd29yZDogZml4dHVyZS5vd25lclBhc3N3b3JkIH0gfSk7CiAgYXNzZXJ0LmVxdWFsKGxvZ2luLnN0YXR1cygpLCAyMDApOyBtZSA9IGF3YWl0IGxvZ2luLmpzb24oKTsKICBhc3NlcnQub2sobWUub3JnYW5pemF0aW9ucy5zb21lKHZhbHVlID0+IHZhbHVlLnNsdWcgPT09IGZpeHR1cmUub3JnU2x1ZykpOwogIHBhZ2UgPSBhd2FpdCBjb250ZXh0Lm5ld1BhZ2UoKTsgcGFnZS5zZXREZWZhdWx0VGltZW91dCgyMDAwMCk7CiAgcGFnZS5vbigncGFnZWVycm9yJywgZXJyb3IgPT4gcGFnZUVycm9ycy5wdXNoKHNhZmUoZXJyb3IubWVzc2FnZSkpKTsKICBwYWdlLm9uKCdyZXF1ZXN0ZmFpbGVkJywgcmVxdWVzdCA9PiByZXF1ZXN0RmFpbHVyZXMucHVzaCh7IHVybDogcmVxdWVzdC51cmwoKSwgZXJyb3I6IHJlcXVlc3QuZmFpbHVyZSgpPy5lcnJvclRleHQgfSkpOwogIHBhZ2Uub24oJ3Jlc3BvbnNlJywgcmVzcG9uc2UgPT4geyBpZiAocmVzcG9uc2Uuc3RhdHVzKCkgPj0gNDAwKSBiYWRSZXNwb25zZXMucHVzaCh7IHVybDogcmVzcG9uc2UudXJsKCksIHN0YXR1czogcmVzcG9uc2Uuc3RhdHVzKCkgfSk7IH0pOwogIHBhZ2Uub24oJ2NvbnNvbGUnLCBtZXNzYWdlID0+IHsgaWYgKFsnd2FybmluZycsICdlcnJvciddLmluY2x1ZGVzKG1lc3NhZ2UudHlwZSgpKSkgY29uc29sZVByb2JsZW1zLnB1c2goeyB0ZXh0OiBzYWZlKG1lc3NhZ2UudGV4dCgpKSwgdXJsOiBtZXNzYWdlLmxvY2F0aW9uKCkudXJsIH0pOyB9KTsKCiAgYXdhaXQgcGFnZS5nb3RvKG5ldyBVUkwoJz9vcmc9JyArIGVuY29kZVVSSUNvbXBvbmVudChmaXh0dXJlLm9yZ1NsdWcpICsgJyZ2aWV3PXByb2plY3RzJywgYmFzZSkuaHJlZiwgeyB3YWl0VW50aWw6ICduZXR3b3JraWRsZScgfSk7CiAgYXdhaXQgdmlzaWJsZShwYWdlLmdldEJ5Um9sZSgnaGVhZGluZycsIHsgbmFtZTogJ1Byb2plY3RzJywgZXhhY3Q6IHRydWUsIGxldmVsOiAxIH0pKTsKICBjb25zdCBkaXNjbG9zdXJlID0gcGFnZS5sb2NhdG9yKCdkZXRhaWxzLm90bHAtZGlzY2xvc3VyZScsIHsgaGFzVGV4dDogZml4dHVyZS5wcm9qZWN0TmFtZSB9KTsKICBhd2FpdCBkaXNjbG9zdXJlLmxvY2F0b3IoJ3N1bW1hcnknKS5jbGljaygpOwogIGNvbnN0IGVuZHBvaW50ID0gZGlzY2xvc3VyZS5nZXRCeVRleHQoJy92MS9sb2dzJywgeyBleGFjdDogZmFsc2UgfSk7CiAgYXdhaXQgdmlzaWJsZShlbmRwb2ludC5maXJzdCgpKTsKICBjb25zdCByZWNpcGUgPSBhd2FpdCBkaXNjbG9zdXJlLmlubmVyVGV4dCgpOwogIGFzc2VydC5tYXRjaChyZWNpcGUsIC9YLUdvb2RTZW50cnktS2V5Lyk7CiAgYXNzZXJ0Lm1hdGNoKHJlY2lwZSwgL09URUxfRVhQT1JURVJfT1RMUF9MT0dTX0VORFBPSU5ULyk7CiAgYXNzZXJ0Lm1hdGNoKHJlY2lwZSwgL09URUxfRVhQT1JURVJfT1RMUF9MT0dTX0hFQURFUlMvKTsKICBhc3NlcnQubWF0Y2gocmVjaXBlLCAvcHJvdG9idWZ8Z3ppcC9pKTsKICBhc3NlcnQubWF0Y2gocmVjaXBlLCAvRFNOLyk7CiAgYXdhaXQgY2FwdHVyZSgncHJvamVjdHMtb3RscC1yZWNpcGUnKTsKICBjaGVja3MucHVzaCgnUHJvamVjdHMgZXhwb3NlcyB0aGUgZXhhY3QgcHJlZml4ZWQgT1RMUCBlbmRwb2ludCwgY29weWFibGUga2V5IGhlYWRlciwgZXhwb3J0ZXIgdmFyaWFibGVzIGFuZCBEU04gZGlzdGluY3Rpb24nKTsKCiAgYXdhaXQgcGFnZS5nb3RvKG5ldyBVUkwoJz9vcmc9JyArIGVuY29kZVVSSUNvbXBvbmVudChmaXh0dXJlLm9yZ1NsdWcpICsgJyZ2aWV3PWxvZ3MnLCBiYXNlKS5ocmVmLCB7IHdhaXRVbnRpbDogJ25ldHdvcmtpZGxlJyB9KTsKICBhd2FpdCB2aXNpYmxlKHBhZ2UuZ2V0QnlSb2xlKCdoZWFkaW5nJywgeyBuYW1lOiAnTG9ncycsIGV4YWN0OiB0cnVlLCBsb2MwOiAxIH0pKTsKICBjb25zdCBvdGxwUm93ID0gcGFnZS5nZXRCeVJvbGUoJ3JvdycpLmZpbHRlcih7IGhhc1RleHQ6IGZpeHR1cmUuZXhwZWN0ZWRCb2R5IH0pOwogIGF3YWl0IHZpc2libGUob3RscFJvdyk7CiAgYXNzZXJ0LmVxdWFsKGF3YWl0IG90bHBSb3cuZ2V0QnlUZXh0KCdPVExQJywgeyBleGFjdDogdHJ1ZSB9KS5jb3VudCgpLCAxLCAnT1RMUCBiYWRnZSB2aXNpYmxlIGV4YWN0bHkgb25jZScpOwogIGF3YWl0IG90bHBSb3cubG9jYXRvcignZGV0YWlscy5vdGxwLWVudHJ5IHN1bW1hcnknKS5jbGljaygpOwogIGNvbnN0IGRldGFpbCA9IHBhZ2UubG9jYXRvcignLm90bHAtZGV0YWlsW2RhdGEtbG9hZGVkPSJkb25lIl0nKTsKICBhd2FpdCB2aXNpYmxlKGRldGFpbC5nZXRCeVRleHQoJ3Jlc291cmNlJywgeyBleGFjdDogdHJ1ZSB9KSk7CiAgY29uc3QgZGV0YWlsVGV4dCA9IGF3YWl0IGRldGFpbC5pbm5lclRleHQoKTsKICBmb3IgKGNvbnN0IHRva2VuIG9mIFtmaXh0dXJlLmV4cGVjdGVkQm9keSwgZml4dHVyZS5leHBlY3RlZFNldmVyaXR5VGV4dCwgZml4dHVyZS5leHBlY3RlZFNlcnZpY2UsIGZpeHR1cmUuZXhwZWN0ZWRFbnZpcm9ubWVudCwgZml4dHVyZS5leHBlY3RlZFRyYWNlSWQsIGZpeHR1cmUuZXhwZWN0ZWRTcGFuSWQsIGZpeHR1cmUuZXhwZWN0ZWRUaW1lc3RhbXBOYW5vXSkgYXNzZXJ0Lm1hdGNoKGRldGFpbFRleHQsIG5ldyBSZWdFeHAodG9rZW4pKTsKICBhc3NlcnQubWF0Y2goZGV0YWlsVGV4dCwgL3RpbWVzdGFtcFNvdXJjZS8pOyBhc3NlcnQubWF0Y2goZGV0YWlsVGV4dCwgL3JlY2VpdmVkQXQvKTsgYXNzZXJ0Lm1hdGNoKGRldGFpbFRleHQsIC90cmFjZUZsYWdzLyk7CiAgYXdhaXQgY2FwdHVyZSgnbG9ncy1vdGxwLWRldGFpbCcpOwogIGNoZWNrcy5wdXNoKCdMb2dzIE9UTFAgcm93IHNob3dzIGJhZGdlIGFuZCBsYXp5IGRldGFpbCB3aXRoIHJlc291cmNlLCBzY29wZSwgcmVjb3JkLCBzZXZlcml0eSwgZXhhY3QgbmFub3NlY29uZHMgYW5kIG1ldGFkYXRhJyk7CgogIGF3YWl0IG90bHBSb3cubG9jYXRvcignZGV0YWlscy5vdGxwLWVudHJ5IHN1bW1hcnknKS5jbGljaygpOwogIGF3YWl0IHZpc2libGUocGFnZS5nZXRCeVJvbGUoJ2hlYWRpbmcnLCB7IG5hbWU6ICdMb2dzJywgZXhhY3Q6IHRydWUgfSkpOwogIGF3YWl0IGNhcHR1cmUoJ2xvZ3MtYWZ0ZXItY2xvc2UnKTsKICBjaGVja3MucHVzaCgnRGV0YWlsIGNsb3NlIHJldHVybnMgdG8gTG9ncyB3aXRob3V0IHN0YWxlIGRldGFpbCBjb250ZW50Jyk7CgogIGFzc2VydC5kZWVwRXF1YWwocGFnZUVycm9ycywgW10pOyBhc3NlcnQuZGVlcEVxdWFsKHJlcXVlc3RGYWlsdXJlcywgW10pOyBhc3NlcnQuZGVlcEVxdWFsKGJhZFJlc3BvbnNlcywgW10pOwogIGFzc2VydC5kZWVwRXF1YWwoY29uc29sZVByb2JsZW1zLCBbXSk7Cn0gY2F0Y2ggKGVycm9yKSB7IGZhaWx1cmUgPSBlcnJvcjsgY29uc29sZS5lcnJvcihzYWZlKGVycm9yLnN0YWNrIHx8IGVycm9yKSk7IH0KZmluYWxseSB7CiAgYXdhaXQgd3JpdGVGaWxlKHJlc29sdmUob3V0cHV0LCAncmVwb3J0Lmpzb24nKSwgSlNPTi5zdHJpbmdpZnkoeyBwYXNzZWQ6ICFmYWlsdXJlLCBjaGVja3MsIHNjcmVlbnNob3RzLCBkaW1lbnNpb25zLCBwYWdlRXJyb3JzLCByZXF1ZXN0RmFpbHVyZXMsIGJhZFJlc3BvbnNlcywgY29uc29sZVByb2JsZW1zLCBmYWlsdXJlOiBmYWlsdXJlICYmIHNhZmUoZmFpbHVyZS5tZXNzYWdlKSB9LCBudWxsLCAyKSArICdcbicpOwogIGF3YWl0IGJyb3dzZXIuY2xvc2UoKTsKfQppZiAoZmFpbHVyZSkgdGhyb3cgbmV3IEVycm9yKHNhZmUoZmFpbHVyZS5tZXNzYWdlKSk7CmNvbnNvbGUubG9nKEpTT04uc3RyaW5naWZ5KHsgcGFzc2VkOiB0cnVlLCBjaGVja3M6IGNoZWNrcy5sZW5ndGgsIHNjcmVlbnNob3RzOiBzY3JlZW5zaG90cy5sZW5ndGgsIHJlcG9ydDogcmVzb2x2ZShvdXRwdXQsICdyZXBvcnQuanNvbicpIH0pKTsK
+// Test-audit gate: the visible OpenTelemetry recipe in Projects and the lazy
+// OTLP row detail in Logs own this browser contract. Backend Go tests cover
+// authentication, storage and canonical detail DTO; this driver proves the
+// actual rendered recipe, badge, typed detail, retry and safe navigation.
+// Reuse a disposable runtime with pre-seeded OTLP data; no mocked responses.
+import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
+const fixturePath = process.env.GOODSENTRY_OTLP_FIXTURE;
+assert.ok(fixturePath && typeof fixturePath === 'string', 'Provide GOODSENTRY_OTLP_FIXTURE pointing at a private fixture JSON');
+const fixture = JSON.parse(await readFile(fixturePath, 'utf8'));
+const base = new URL(fixture.baseURL);
+assert.equal(base.protocol, 'http:'); assert.ok(['localhost', '127.0.0.1', '[::1]'].includes(base.hostname));
+assert.ok(!['18080', '18081', '18009'].includes(base.port), 'Protected acceptance runtimes are not browser targets');
+const output = resolve(process.env.GOODSENTRY_TEST_OUTPUT || 'test-results/otlp-browser'); await mkdir(output, { recursive: true });
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const browser = await chromium.launch({ headless: true }), context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'en-US', reducedMotion: 'reduce' });
+const checks = [], screenshots = [], dimensions = [], pageErrors = [], requestFailures = [], badResponses = [], consoleProblems = [];
+const secrets = [fixture.ownerEmail, fixture.ownerPassword, fixture.publicKey].filter(Boolean);
+const safe = value => secrets.reduce((text, secret) => text.split(secret).join('[redacted]'), String(value));
+const url = path => new URL(path, base).href;
+let page, me, failure;
+async function visible(locator) { await locator.waitFor({ state: 'visible' }); return locator; }
+async function capture(name) {
+  for (const width of [320, 768, 1440]) {
+    await page.setViewportSize({ width, height: 1000 }); await page.evaluate(() => scrollTo(0, 0));
+    const size = await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth }));
+    dimensions.push({ name, ...size }); assert.equal(size.document, size.viewport, name + ' fits ' + width + 'px');
+    const file = resolve(output, name + '-' + width + '.png');
+    await page.screenshot({ path: file, fullPage: false, animations: 'disabled' }); screenshots.push(file);
+  }
+}
+try {
+  const login = await context.request.post(url('api/v1/login'), { headers: { Origin: base.origin }, data: { email: fixture.ownerEmail, password: fixture.ownerPassword } });
+  assert.equal(login.status(), 200); me = await login.json();
+  assert.ok(me.organizations.some(value => value.slug === fixture.orgSlug));
+  page = await context.newPage(); page.setDefaultTimeout(20000);
+  page.on('pageerror', error => pageErrors.push(safe(error.message)));
+  page.on('requestfailed', request => requestFailures.push({ url: request.url(), error: request.failure()?.errorText }));
+  page.on('response', response => { if (response.status() >= 400) badResponses.push({ url: response.url(), status: response.status() }); });
+  page.on('console', message => { if (['warning', 'error'].includes(message.type())) consoleProblems.push({ text: safe(message.text()), url: message.location().url }); });
+
+  await page.goto(new URL('?org=' + encodeURIComponent(fixture.orgSlug) + '&view=projects', base).href, { waitUntil: 'networkidle' });
+  await visible(page.getByRole('heading', { name: 'Projects', exact: true, level: 1 }));
+  const disclosure = page.locator('details.otlp-disclosure', { hasText: fixture.projectName });
+  await disclosure.locator('summary').click();
+  const endpoint = disclosure.getByText('/v1/logs', { exact: false });
+  await visible(endpoint.first());
+  const recipe = await disclosure.innerText();
+  assert.match(recipe, /X-GoodSentry-Key/);
+  assert.match(recipe, /OTEL_EXPORTER_OTLP_LOGS_ENDPOINT/);
+  assert.match(recipe, /OTEL_EXPORTER_OTLP_LOGS_HEADERS/);
+  assert.match(recipe, /protobuf|gzip/i);
+  assert.match(recipe, /DSN/);
+  await capture('projects-otlp-recipe');
+  checks.push('Projects exposes the exact prefixed OTLP endpoint, copyable key header, exporter variables and DSN distinction');
+
+  await page.goto(new URL('?org=' + encodeURIComponent(fixture.orgSlug) + '&view=logs', base).href, { waitUntil: 'networkidle' });
+  await visible(page.getByRole('heading', { name: 'Logs', exact: true, loc0: 1 }));
+  const otlpRow = page.getByRole('row').filter({ hasText: fixture.expectedBody });
+  await visible(otlpRow);
+  assert.equal(await otlpRow.getByText('OTLP', { exact: true }).count(), 1, 'OTLP badge visible exactly once');
+  await otlpRow.locator('details.otlp-entry summary').click();
+  const detail = page.locator('.otlp-detail[data-loaded="done"]');
+  await visible(detail.getByText('resource', { exact: true }));
+  const detailText = await detail.innerText();
+  for (const token of [fixture.expectedBody, fixture.expectedSeverityText, fixture.expectedService, fixture.expectedEnvironment, fixture.expectedTraceId, fixture.expectedSpanId, fixture.expectedTimestampNano]) assert.match(detailText, new RegExp(token));
+  assert.match(detailText, /timestampSource/); assert.match(detailText, /receivedAt/); assert.match(detailText, /traceFlags/);
+  await capture('logs-otlp-detail');
+  checks.push('Logs OTLP row shows badge and lazy detail with resource, scope, record, severity, exact nanoseconds and metadata');
+
+  await otlpRow.locator('details.otlp-entry summary').click();
+  await visible(page.getByRole('heading', { name: 'Logs', exact: true }));
+  await capture('logs-after-close');
+  checks.push('Detail close returns to Logs without stale detail content');
+
+  assert.deepEqual(pageErrors, []); assert.deepEqual(requestFailures, []); assert.deepEqual(badResponses, []);
+  assert.deepEqual(consoleProblems, []);
+} catch (error) { failure = error; console.error(safe(error.stack || error)); }
+finally {
+  await writeFile(resolve(output, 'report.json'), JSON.stringify({ passed: !failure, checks, screenshots, dimensions, pageErrors, requestFailures, badResponses, consoleProblems, failure: failure && safe(failure.message) }, null, 2) + '\n');
+  await browser.close();
+}
+if (failure) throw new Error(safe(failure.message));
+console.log(JSON.stringify({ passed: true, checks: checks.length, screenshots: screenshots.length, report: resolve(output, 'report.json') }));
