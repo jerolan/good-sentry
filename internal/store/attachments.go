@@ -5,16 +5,19 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type Attachment struct {
-	ID          string `json:"id"`
-	Filename    string `json:"filename"`
-	ContentType string `json:"contentType"`
-	Size        int    `json:"size"`
-	Data        []byte `json:"-"`
+	ID                string    `json:"id"`
+	Filename          string    `json:"filename"`
+	ContentType       string    `json:"contentType"`
+	Size              int       `json:"size"`
+	Data              []byte    `json:"-"`
+	DateCreated       time.Time `json:"dateCreated"`
+	MetadataTruncated bool      `json:"metadataTruncated,omitempty"`
 }
 
 type CaptureAttachment struct {
