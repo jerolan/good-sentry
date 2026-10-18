@@ -76,6 +76,8 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("GET /api/v1/organizations/{org}/issues", s.auth(http.HandlerFunc(s.issues)))
 	mux.Handle("POST /api/v1/organizations/{org}/issues/merge", s.auth(http.HandlerFunc(s.mergeIssues)))
 	mux.Handle("GET /api/v1/issues/{issue}", s.auth(http.HandlerFunc(s.issue)))
+	mux.Handle("GET /api/v1/issues/{issue}/events/{event}/attachments", s.auth(http.HandlerFunc(s.issueEventAttachments)))
+	mux.Handle("GET /api/v1/issues/{issue}/events/{event}/attachments/{attachment}", s.auth(http.HandlerFunc(s.issueEventAttachment)))
 	mux.Handle("PATCH /api/v1/issues/{issue}", s.auth(http.HandlerFunc(s.triage)))
 	mux.Handle("POST /api/v1/issues/{issue}/unmerge", s.auth(http.HandlerFunc(s.unmergeIssue)))
 	mux.Handle("GET /api/v1/issues/{issue}/origins", s.auth(http.HandlerFunc(s.issueOrigins)))
