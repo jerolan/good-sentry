@@ -72,8 +72,8 @@ func (s *Server) createAPIToken(w http.ResponseWriter, r *http.Request) {
 	}
 	seen := map[string]bool{}
 	for _, scope := range *input.Scopes {
-		if (scope != "org:read" && scope != "project:read" && scope != "project:releases" && scope != "event:read" && scope != "event:write" && scope != "event:admin") || seen[scope] {
-			failure(w, 400, "Scopes must be distinct implemented values: org:read, project:read, project:releases, event:read, event:write or event:admin")
+		if (scope != "org:read" && scope != "project:read" && scope != "project:releases" && scope != "event:read" && scope != "event:write" && scope != "event:admin" && scope != "project:write") || seen[scope] {
+			failure(w, 400, "Scopes must be distinct implemented values: org:read, project:read, project:releases, project:write, event:read, event:write or event:admin")
 			return
 		}
 		seen[scope] = true

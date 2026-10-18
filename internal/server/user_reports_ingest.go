@@ -19,24 +19,10 @@ func envelopeUserReport(env protocol.Envelope, envelopeID string, parent *event.
 		if item.Type != "user_report" {
 			continue
 		}
-		if report != nil || !utf8.Valid(item.Payload) {
+		if report != nil {
 			return nil, store.ErrInvalidUserReport
 		}
-		var fields map[string]json.RawMessage
-		if json.Unmarshal(item.Payload, &fields) != nil || fields == nil {
-			return nil, store.ErrInvalidUserReport
-		}
-		for _, key := range []string{"event_id", "name", "email", "comments"} {
-			var value string
-			if len(fields[key]) == 0 || string(fields[key]) == "null" || json.Unmarshal(fields[key], &value) != nil {
-				return nil, store.ErrInvalidUserReport
-			}
-		}
-		var input store.UserReportInput
-		if json.Unmarshal(item.Payload, &input) != nil {
-			return nil, store.ErrInvalidUserReport
-		}
-		input, err := store.NormalizeUserReport(input)
+		input, err := decodeUserReportPayload(item.Payload, false)
 		if err != nil {
 			return nil, err
 		}
@@ -61,6 +47,31 @@ func envelopeUserReport(env protocol.Envelope, envelopeID string, parent *event.
 		}
 	}
 	return report, nil
+}
+
+func decodeUserReportPayload(raw []byte, strict bool) (store.UserReportInput, error) {
+	var input store.UserReportInput
+	var fields map[string]json.RawMessage
+	if !utf8.Valid(raw) || json.Unmarshal(raw, &fields) != nil || fields == nil {
+		return input, store.ErrInvalidUserReport
+	}
+	if strict {
+		for key := range fields {
+			if key != "event_id" && key != "name" && key != "email" && key != "comments" {
+				return input, store.ErrInvalidUserReport
+			}
+		}
+	}
+	for _, key := range []string{"event_id", "name", "email", "comments"} {
+		var value string
+		if len(fields[key]) == 0 || string(fields[key]) == "null" || json.Unmarshal(fields[key], &value) != nil {
+			return input, store.ErrInvalidUserReport
+		}
+	}
+	if json.Unmarshal(raw, &input) != nil {
+		return input, store.ErrInvalidUserReport
+	}
+	return store.NormalizeUserReport(input)
 }
 
 func reportUserReport(w http.ResponseWriter, err error) {

@@ -76,6 +76,12 @@ func (s *Store) SubmitUserReport(ctx context.Context, projectID string, input Us
 		return UserReport{}, err
 	}
 	defer tx.Rollback(ctx)
+	return commitUserReport(ctx, tx, projectID, input)
+}
+
+// Path writers pin their caller authority before entering these shared receipt
+// and project gates. Ingest already owns the gates and uses saveUserReport.
+func commitUserReport(ctx context.Context, tx pgx.Tx, projectID string, input UserReportInput) (UserReport, error) {
 	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,0))`, projectID+":"+input.EventID); err != nil {
 		return UserReport{}, err
 	}

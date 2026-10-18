@@ -478,7 +478,7 @@ On upgrade, GoodSentry indexes historical legacy spans inside the application, o
 
 Owners and admins can open **API tokens** to create a credential, select projects and set its lifetime. The secret appears once; copy it before dismissing or leaving the view. Tokens expire after 90 days by default, with a selectable lifetime of 1–366 days. Revocation takes effect on subsequent requests. An all-project credential also includes projects created later; a restricted credential keeps only its selected projects.
 
-Choose `org:read` to list authorized projects, `project:read` for project metadata/events, `event:read` for issues and issue events, `event:write` for those reads, individual/bulk issue changes and merging, `event:admin` for issue deletion only, or `project:releases` for release management. Compatible project responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
+Choose `org:read` to list authorized projects, `project:read` for project metadata/events and legacy user reports, `project:write` to submit legacy user feedback, `event:read` for issues and issue events, `event:write` for those reads, individual/bulk issue changes and merging, `event:admin` for issue deletion only, or `project:releases` for release management. `project:write` does not grant reads or other project changes. Compatible project responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
 
 ```sh
 SENTRY_URL=http://localhost:8000/ SENTRY_ORG=my-workspace sentry-cli projects list

@@ -11,6 +11,8 @@ import (
 
 func (s *Server) registerUserReportRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/0/projects/{org}/{project}/user-feedback/{$}", s.compatible("project:read", s.compatibleUserReports))
+	mux.HandleFunc("POST /api/0/projects/{org}/{project}/user-feedback/{$}", s.submitUserReport)
+	mux.HandleFunc("OPTIONS /api/0/projects/{org}/{project}/user-feedback/{$}", s.preflight)
 	for _, root := range []string{"/api/0/issues/{issue}/user-reports/", "/api/0/organizations/{org}/issues/{issue}/user-reports/"} {
 		mux.Handle("GET "+root+"{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleUserReports))
 	}
