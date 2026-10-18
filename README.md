@@ -258,6 +258,10 @@ sentry-cli sourcemaps upload --wait ./dist
 
 Deploy those injected files so the SDK can attach their Debug IDs to captured exceptions. The official CLI `3.8.0` and Node SDK `11.7.0` have passed this complete workflow, including the original file, line and source context, preserved minified stack, duplicate uploads and project isolation. Uploading the same build under additional release/dist selectors preserves its usable identity.
 
+CLI `3.8.0` requires a server URL at the origin root, such as
+`http://localhost:8000/`. It rejects `SENTRY_URL` values containing a path
+prefix before making an HTTP request.
+
 Optional `--release` and `--dist` values must match your SDK configuration. An upload with `--release` does not create release metadata; a separate release command or fresh SDK capture does. The release/dist workflow without injection also passes when the artifact URL prefix matches the emitted filename. Incorrect version/distribution selectors remain unmapped.
 
 Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. Temporary staging has a configurable quota and expiry, with automatic cleanup in the Go process. Native debug-file and minidump uploads remain pending.
@@ -276,7 +280,7 @@ compatible attachment management API.
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, retention for other data classes, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, release retention, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
@@ -322,7 +326,7 @@ remain until their last log expires. Deleted rows no longer appear in lists or
 detail reads. Eligible rows can remain visible until the maintenance pass.
 Recovery requires restoring an operator backup; increasing the lifetime does
 not recover deleted logs. Expiration does not archive logs or implement
-retention for completed files or releases.
+retention for release metadata.
 
 ### Transaction and span retention
 
@@ -335,7 +339,7 @@ Each PostgreSQL transaction removes at most 250 legacy transactions and 250
 standalone spans. A legacy transaction's attachments, opaque envelope items and
 span-operation projections leave with its receipt. Errors, logs and releases
 keep their independent lifetimes, including when they share a trace. Standalone
-opaque items without a selected parent remain for future file retention.
+opaque items without a selected parent follow the independent file lifetime.
 
 Cleanup runs at startup and after the configured retention interval, including
 when logs or uptime are disabled. Locked receipts wait for a later pass.
@@ -363,6 +367,31 @@ results, and **Not checked yet** for a monitor that has never run. An empty
 history filter does not hide a retained latest result. Increasing the lifetime
 does not recover deleted history; recovery requires an operator backup.
 
+### Completed file retention
+
+Source maps, event attachments and stored opaque envelope items expire after
+90 days by default. `GOODSENTRY_FILE_RETENTION_DAYS` overrides
+`GLITCHTIP_FILE_RETENTION_DAYS`, then inherits the master lifetime. Values must
+be whole days from 1 to 3650. PostgreSQL receipt time starts each file's age;
+SDK timestamps do not shorten it.
+
+Each transaction removes at most 250 receipts per file class. Cleanup runs at
+startup and after the retention interval, including when logs or uptime are
+disabled. Readers can finish their existing snapshot; later reads reflect
+physical deletion.
+
+File expiry preserves retained events, recorded stack frames, release
+metadata, issue comments, assignments, mute progress and independent telemetry.
+Native attachment lists become empty and selected downloads return 404 while
+the parent event remains readable. Future captures cannot use an expired
+source map. Uploading the same build again restores mapping for subsequent
+captures; stored historical events keep their original frames.
+
+Repeating a retained event can restore its expired attachment and opaque
+children with fresh file receipts without incrementing the parent event count.
+An opaque orphan can also start a fresh lifetime after deletion. Increasing
+retention does not restore bytes; recovery requires an operator backup.
+
 ## Configuration
 
 Compose supplies the local database connection. Environment values override the defaults below.
@@ -388,6 +417,7 @@ Compose supplies the local database connection. Environment values override the 
 | `GOODSENTRY_LOG_RETENTION_DAYS` | Master lifetime | Sentry and OTLP log lifetime. |
 | `GOODSENTRY_TRANSACTION_RETENTION_DAYS` | Master lifetime | Legacy transaction and standalone span lifetime. |
 | `GOODSENTRY_UPTIME_RETENTION_DAYS` | Master lifetime | Completed monitor result lifetime; cached state and alert history remain available. |
+| `GOODSENTRY_FILE_RETENTION_DAYS` | Master lifetime | Source map, attachment and opaque envelope item lifetime; retained event history remains available. |
 | `GOODSENTRY_RETENTION_INTERVAL_SECONDS` | `60` | Idle cleanup interval, from 1 to 3600 seconds. |
 | `MONITOR_WORKERS` | `2` | Concurrent checks per process, from 1 to 16. |
 | `ISSUE_MAINTENANCE_INTERVAL_SECONDS` | `1` | Polling for expired mutes and pending next-release resolution, from 1 to 3600 seconds. Longer intervals delay metadata-only binding and status display; fresh captures evaluate immediately. |
