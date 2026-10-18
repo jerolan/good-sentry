@@ -93,7 +93,14 @@ func releaseLockProjects(ctx context.Context, tx pgx.Tx, orgID string, ids []int
 	return nil
 }
 
+const releaseIdentityLockKeySQL = `hashtextextended(current_database()||':'||current_schema()||':release-identity:'||$1||':'||$2,0)`
+
 func releaseIdentity(ctx context.Context, tx pgx.Tx, orgID string, version ReleaseVersion, create bool) (string, bool, error) {
+	// Wait before INSERT evaluates created_at, including a fresh generation
+	// replacing an identity deleted by retention in another transaction.
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(`+releaseIdentityLockKeySQL+`)`, orgID, string(version)); err != nil {
+		return "", false, err
+	}
 	for {
 		var id string
 		if create {
