@@ -48,6 +48,8 @@ func run() error {
 	defer stopIssueMaintenance()
 	stopLogRetention := jobs.StartLogRetention(ctx, db, cfg.LogRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopLogRetention()
+	stopTransactionRetention := jobs.StartTransactionRetention(ctx, db, cfg.TransactionRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	defer stopTransactionRetention()
 	alertTimeout := time.Duration(cfg.AlertTimeoutSeconds) * time.Second
 	sender, err := notify.NewSender(notify.Options{
 		Domain: cfg.Domain, EmailURL: cfg.EmailURL, FromEmail: cfg.FromEmail,

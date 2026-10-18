@@ -290,7 +290,27 @@ remain until their last log expires. Deleted rows no longer appear in lists or
 detail reads. Eligible rows can remain visible until the maintenance pass.
 Recovery requires restoring an operator backup; increasing the lifetime does
 not recover deleted logs. Expiration does not archive logs or implement
-retention for errors, transactions, uptime, completed files or releases.
+retention for errors, uptime, completed files or releases.
+
+### Transaction and span retention
+
+Legacy transaction events and standalone spans expire by server receipt time.
+`GOODSENTRY_TRANSACTION_RETENTION_DAYS` overrides
+`GLITCHTIP_TRANSACTION_RETENTION_DAYS`, then inherits the master lifetime above.
+The default is 90 days; valid values are whole days from 1 to 3650.
+
+Each PostgreSQL transaction removes at most 250 legacy transactions and 250
+standalone spans. A legacy transaction's attachments, opaque envelope items and
+span-operation projections leave with its receipt. Errors, logs and releases
+keep their independent lifetimes, including when they share a trace. Standalone
+opaque items without a selected parent remain for future file retention.
+
+Cleanup runs at startup and after the configured retention interval, including
+when logs or uptime are disabled. Locked receipts wait for a later pass.
+Transaction metrics and trace nodes reflect the surviving data; a trace can
+still show related errors or logs after its last span expires. Retrying a
+physically expired SDK identity can create a new receipt. Raising the lifetime
+does not restore deleted data; recovery requires an operator backup.
 
 ## Configuration
 
@@ -312,6 +332,10 @@ Compose supplies the local database connection. Environment values override the 
 | `GOODSENTRY_OTLP_MAX_RECORDS` | `1000` | Maximum records per OTLP log batch, from 1 to 100000. |
 | `GOODSENTRY_OTLP_MAX_NODES` | `100000` | Maximum decoded nodes per OTLP log batch, from 100 to 1000000. |
 | `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
+| `GOODSENTRY_RETENTION_DAYS` | `90` | Master receipt lifetime; whole days from 1 to 3650. |
+| `GOODSENTRY_LOG_RETENTION_DAYS` | Master lifetime | Sentry and OTLP log lifetime. |
+| `GOODSENTRY_TRANSACTION_RETENTION_DAYS` | Master lifetime | Legacy transaction and standalone span lifetime. |
+| `GOODSENTRY_RETENTION_INTERVAL_SECONDS` | `60` | Idle cleanup interval, from 1 to 3600 seconds. |
 | `MONITOR_WORKERS` | `2` | Concurrent checks per process, from 1 to 16. |
 | `ISSUE_MAINTENANCE_INTERVAL_SECONDS` | `1` | Polling for expired mutes and pending next-release resolution, from 1 to 3600 seconds. Longer intervals delay metadata-only binding and status display; fresh captures evaluate immediately. |
 | `ALERT_WORKERS` | `2` | Concurrent deliveries per process, from 1 to 16. |

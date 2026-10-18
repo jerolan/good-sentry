@@ -30,6 +30,24 @@ func StartLogRetention(parent context.Context, db *store.Store, days int, interv
 	})
 }
 
+// StartTransactionRetention shares the log worker's backlog and cancellation
+// lifecycle. Ingestion feature switches do not disable expiry of stored rows.
+func StartTransactionRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		transactions, spans, err := db.CleanupTransactions(ctx, days)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Transaction retention pass failed", "entryPoint", "transaction_retention_worker", "operation", "cleanup_transactions")
+		} else if transactions > 0 || spans > 0 {
+			slog.Info("Transaction retention cleanup committed", "entryPoint", "transaction_retention_worker", "transactions", transactions, "spans", spans)
+			return true
+		}
+		return false
+	})
+}
+
 func startRetention(parent context.Context, interval time.Duration, cleanup func(context.Context) bool) func() {
 	ctx, cancel := context.WithCancel(parent)
 	var wg sync.WaitGroup
