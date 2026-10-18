@@ -36,7 +36,8 @@ type UserReport struct {
 	Issue       *string         `json:"issue"`
 }
 
-func normalizeUserReport(input UserReportInput) (UserReportInput, error) {
+// NormalizeUserReport validates the public input and normalizes its SDK identity.
+func NormalizeUserReport(input UserReportInput) (UserReportInput, error) {
 	id, ok := compatibleEventReference(input.EventID, false)
 	if !ok || strings.TrimSpace(input.Comments) == "" {
 		return input, ErrInvalidUserReport
@@ -66,7 +67,7 @@ func scanUserReport(row pgx.Row) (UserReport, error) {
 // SubmitUserReport is an SDK write. Its caller authorizes the project key;
 // management callers additionally recheck membership/grants in their transaction.
 func (s *Store) SubmitUserReport(ctx context.Context, projectID string, input UserReportInput) (UserReport, error) {
-	input, err := normalizeUserReport(input)
+	input, err := NormalizeUserReport(input)
 	if err != nil || !canonicalIssueID(projectID) {
 		return UserReport{}, ErrInvalidUserReport
 	}
@@ -101,7 +102,7 @@ func (s *Store) SubmitUserReport(ctx context.Context, projectID string, input Us
 // The caller holds receipt then shared project gates. Reports are serialized
 // with error insertion/deletion without adding a reverse event/issue lock order.
 func saveUserReport(ctx context.Context, tx pgx.Tx, projectID string, input UserReportInput) (UserReport, error) {
-	input, err := normalizeUserReport(input)
+	input, err := NormalizeUserReport(input)
 	if err != nil {
 		return UserReport{}, err
 	}

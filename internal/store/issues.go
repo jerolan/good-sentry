@@ -58,7 +58,7 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 	hasItems := false
 	for _, part := range parts {
 		for _, input := range part.UserReports {
-			report, err := normalizeUserReport(input)
+			report, err := NormalizeUserReport(input)
 			if err != nil || report.EventID != ev.ID {
 				return "", false, ErrInvalidUserReport
 			}
