@@ -121,6 +121,10 @@ func issueWireRelease(value *eventview.ReleaseReference) *compatibleIssueRelease
 
 func projectCompatibleIssue(record store.CompatibleIssueRecord, domain string, detail bool) (compatibleIssueView, error) {
 	i := record.Issue
+	permalink := url.Values{"org": {record.OrganizationSlug}, "issue": {i.ID}}
+	if i.Category == "feedback" {
+		permalink.Set("view", "feedback")
+	}
 	view := compatibleIssueView{
 		ID: i.ID, Count: strconv.FormatInt(i.Count, 10), ShortID: i.ShortID,
 		Title: issueWireText(i.Title, 255), Level: i.Level, Status: i.Status,
@@ -130,7 +134,7 @@ func projectCompatibleIssue(record store.CompatibleIssueRecord, domain string, d
 		FirstSeen: i.FirstSeen.UTC(), LastSeen: i.LastSeen.UTC(), IsUnhandled: record.IsUnhandled,
 		Stats: issueWireStats(record.Stats), FirstRelease: issueWireRelease(record.FirstRelease), LastRelease: issueWireRelease(record.LastRelease),
 		Lifetime:  compatibleIssueLifetime{Count: strconv.FormatInt(i.Count, 10), UserCount: record.UserCount, FirstSeen: i.FirstSeen.UTC(), LastSeen: i.LastSeen.UTC()},
-		Permalink: strings.TrimRight(domain, "/") + "/?" + url.Values{"org": {record.OrganizationSlug}, "issue": {i.ID}}.Encode(),
+		Permalink: strings.TrimRight(domain, "/") + "/?" + permalink.Encode(),
 	}
 	if record.Latest != nil {
 		latest, err := eventview.Project(*record.Latest, false)

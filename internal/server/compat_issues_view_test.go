@@ -108,6 +108,9 @@ func TestCompatibleFeedbackIssueCategoryWithEmptyHistory(t *testing.T) {
 		if err := json.Unmarshal(raw, &wire); err != nil || wire["issueCategory"] != "feedback" || wire["type"] != "feedback" || wire["userReportCount"] != float64(0) {
 			t.Fatal("feedback wire category/type lost with retained=", retained, string(raw), err)
 		}
+		if !strings.Contains(wire["permalink"].(string), "view=feedback") {
+			t.Fatal("feedback permalink opened the error category", wire["permalink"])
+		}
 	}
 }
 
