@@ -1264,14 +1264,16 @@
     }
     const heading = pageHeader(monitor.name, monitor.type === 'heartbeat' ? 'Incoming heartbeat monitor' : `${monitor.type} · ${monitor.url}`, actions);
     heading.classList.add('monitor-heading');
+    const missingResult = monitor.lastCheck ? 'No retained result' : 'Not checked yet';
     const summary = detailPanel('Current state', node('div', { class: 'panel-body' }, monitorStatus(monitor), keyValues([
       ['Interval', `${number(monitor.intervalSeconds)} seconds`], ['Last check', monitor.lastCheck ? date(monitor.lastCheck) : 'Not checked yet'],
       ['Last status change', monitor.lastChange ? date(monitor.lastChange) : 'No changes yet'], ['Next deadline', monitor.enabled ? date(monitor.nextCheck) : 'Paused'],
-      ['Consecutive failures', monitor.consecutiveFailures], ['Last probe result', latest ? latest.up ? 'Up' : 'Down' : 'Not checked yet'],
-      ['Last reason', latest ? text(latest.reason) : 'Not checked yet'], ['Last HTTP status', latest?.statusCode ?? 'Not applicable'],
+      ['Consecutive failures', monitor.consecutiveFailures], ['Last probe result', latest ? latest.up ? 'Up' : 'Down' : missingResult],
+      ['Last reason', latest ? text(latest.reason) : missingResult], ['Last HTTP status', latest?.statusCode ?? 'Not applicable'],
       ['Last latency', latest?.responseTimeMs === undefined || latest?.responseTimeMs === null ? 'Not applicable' : milliseconds(latest.responseTimeMs)],
     ])));
     summary.setAttribute('aria-label', 'Current monitor state');
+    if (!latest && monitor.lastCheck) summary.querySelector('.panel-body').append(node('p', { class: 'muted small', role: 'status' }, 'No check results are retained. The last known monitor state and schedule remain available.'));
     const panels = node('div', { class: 'monitor-summary' }, summary,
       detailPanel('Configuration', node('div', { class: 'panel-body' }, keyValues([
         ['Type', monitor.type], ['Project', monitor.project || 'None'], ['Environment', monitor.environment || 'Not set'], ['Failure threshold', monitor.confirmationThreshold],

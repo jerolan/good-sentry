@@ -65,6 +65,23 @@ func StartEventRetention(parent context.Context, db *store.Store, days int, inte
 	})
 }
 
+// StartUptimeRetention expires completed history even when probing is disabled.
+func StartUptimeRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		checks, err := db.CleanupMonitorChecks(ctx, days)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Uptime retention pass failed", "entryPoint", "uptime_retention_worker", "operation", "cleanup_monitor_checks")
+		} else if checks > 0 {
+			slog.Info("Uptime retention cleanup committed", "entryPoint", "uptime_retention_worker", "checks", checks)
+			return true
+		}
+		return false
+	})
+}
+
 func startRetention(parent context.Context, interval time.Duration, cleanup func(context.Context) bool) func() {
 	ctx, cancel := context.WithCancel(parent)
 	var wg sync.WaitGroup

@@ -9,6 +9,7 @@ import (
 
 	"goodsentry/internal/jobs"
 	"goodsentry/internal/store"
+	"goodsentry/internal/uptime"
 )
 
 // The lifecycle owns startup backlog draining, idle catch-up, retry and prompt
@@ -16,7 +17,7 @@ import (
 // sleeps for an hour during shutdown. Exercise real rows through public
 // start/stop functions; no fake store, timer, logger or call-order seam.
 func TestRetentionWorkersDrainRetryAndStop(t *testing.T) {
-	for _, class := range []string{"logs", "transactions", "events"} {
+	for _, class := range []string{"logs", "transactions", "events", "uptime"} {
 		t.Run(class, func(t *testing.T) { retentionWorkerLifecycle(t, class) })
 	}
 }
@@ -30,6 +31,7 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 	start := jobs.StartLogRetention
 	countQuery := "SELECT count(*) FROM logs"
 	failureTable, valueColumn := "logs", "body"
+	var monitorID string
 	if class == "transactions" {
 		start = jobs.StartTransactionRetention
 		countQuery = "SELECT (SELECT count(*) FROM events)+(SELECT count(*) FROM spans)"
@@ -38,9 +40,27 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 		start = jobs.StartEventRetention
 		countQuery = "SELECT count(*) FROM events"
 		failureTable, valueColumn = "events", "title"
+	} else if class == "uptime" {
+		start = jobs.StartUptimeRetention
+		countQuery = "SELECT count(*) FROM monitor_checks"
+		failureTable, valueColumn = "monitor_checks", "reason"
+		c := uptime.Defaults()
+		c.Name, c.Type, c.Enabled = "Paused retention backlog", uptime.Heartbeat, false
+		m, err := f.db.CreateMonitor(f.ctx, f.owner.ID, f.org.Slug, c)
+		if err != nil {
+			t.Fatal(err)
+		}
+		monitorID = m.ID
 	}
 	seed := func(prefix string, count int) {
 		t.Helper()
+		if class == "uptime" {
+			if _, err := f.admin.Exec(f.ctx, `INSERT INTO monitor_checks(monitor_id,started_at,completed_at,up,status,previous_status,is_change,reason)
+ SELECT $1,now()-interval '2 days',now()-interval '2 days',true,'up','up',false,$2 FROM generate_series(1,$3::integer)`, monitorID, prefix, count); err != nil {
+				t.Fatal(err)
+			}
+			return
+		}
 		if class == "transactions" {
 			// Publish the existing backlog together. A running worker may clean
 			// between two independent commits before the late-failure row exists.
