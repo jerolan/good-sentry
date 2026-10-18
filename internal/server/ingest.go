@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"goodsentry/internal/artifact"
 	"goodsentry/internal/event"
@@ -60,14 +61,31 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 	}
 	var normalized *event.Event
 	for _, item := range env.Items {
-		if item.Type != "event" && item.Type != "transaction" {
+		if item.Type != "event" && item.Type != "transaction" && item.Type != "feedback" {
 			continue
 		}
 		if normalized != nil {
-			failure(w, 400, "An envelope may contain one event or transaction")
+			failure(w, 400, "An envelope may contain one event, transaction or feedback")
 			return
 		}
 		raw := json.RawMessage(item.Payload)
+		if item.Type == "feedback" {
+			var fields map[string]json.RawMessage
+			if !utf8.Valid(raw) || json.Unmarshal(raw, &fields) != nil || fields == nil {
+				failure(w, 400, "Invalid feedback")
+				return
+			}
+			if supplied, exists := fields["type"]; exists {
+				var kind string
+				if json.Unmarshal(supplied, &kind) != nil || kind != "feedback" {
+					failure(w, 400, "A feedback item requires feedback payload type")
+					return
+				}
+			} else {
+				fields["type"] = json.RawMessage(`"feedback"`)
+				raw, _ = json.Marshal(fields)
+			}
+		}
 		if item.Type == "transaction" {
 			var value map[string]json.RawMessage
 			if json.Unmarshal(raw, &value) != nil || value == nil {
@@ -77,7 +95,13 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 			value["type"] = json.RawMessage(`"transaction"`)
 			raw, _ = json.Marshal(value)
 		}
-		raw, err = s.mapEvent(r.Context(), project, raw)
+		var payloadKind struct {
+			Type string `json:"type"`
+		}
+		_ = json.Unmarshal(raw, &payloadKind)
+		if payloadKind.Type != "feedback" {
+			raw, err = s.mapEvent(r.Context(), project, raw)
+		}
 		if err != nil {
 			if errors.Is(err, store.ErrArtifactLimit) || errors.Is(err, artifact.ErrSourceMapLimit) {
 				failure(w, 413, "Selected source maps exceed the configured processing limit")
@@ -120,7 +144,7 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 					contentType = "application/octet-stream"
 				}
 				children.Attachments = append(children.Attachments, store.CaptureAttachment{Filename: filename, ContentType: contentType, Data: item.Payload})
-			case "event", "transaction", "span", "log", "user_report":
+			case "event", "transaction", "feedback", "span", "log", "user_report":
 			default:
 				header, _ := json.Marshal(item.Header)
 				children.EnvelopeItems = append(children.EnvelopeItems, store.CaptureEnvelopeItem{Type: item.Type, Header: header, Data: item.Payload})
@@ -139,7 +163,7 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 	unsupported := []string{}
 	for _, item := range env.Items {
 		switch item.Type {
-		case "event", "transaction":
+		case "event", "transaction", "feedback":
 			continue
 		case "user_report":
 			if normalized == nil {
