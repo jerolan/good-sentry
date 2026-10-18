@@ -334,7 +334,9 @@ func TestArtifactChunkReadSnapshotDuringConcurrentReplacement(t *testing.T) {
 	ctx, db, user, org, project := telemetryStore(t)
 	access := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, AllProjects: true}
 	first, second := artifactChunkFixture("one"), artifactChunkFixture("TWO")
-	if err := db.SaveArtifactChunks(ctx, access, []ArtifactChunk{first, second}, ArtifactStagingPolicy{MaxBytes: 6, TTL: 25 * time.Millisecond}); err != nil {
+	const lifetime = 100 * time.Millisecond
+	policy := ArtifactStagingPolicy{MaxBytes: 6, TTL: lifetime}
+	if err := db.SaveArtifactChunks(ctx, access, []ArtifactChunk{first, second}, policy); err != nil {
 		t.Fatal(err)
 	}
 	// Expiry and the actual cleanup provider remove valid immutable chunks
@@ -342,28 +344,79 @@ func TestArtifactChunkReadSnapshotDuringConcurrentReplacement(t *testing.T) {
 	// use identical bytes and their real content digests; no clock seam is used.
 	start := make(chan struct{})
 	results := make(chan error, 5)
+	finished := make(chan struct{})
+	type observation struct {
+		phase    int64
+		complete bool
+	}
+	observed := make(chan observation, 32)
+	var phase atomic.Int64
+	phase.Store(1)
 	var group sync.WaitGroup
 	var completeReads, missingReads atomic.Int64
+	// Hold each actual state until a reader observes it. The old fixed read
+	// budget could finish entirely after expiry under CI/race scheduling. Keep
+	// all60 real expiry/replacement cycles and every coherence assertion.
+	waitForState := func(wantComplete bool, expectedPhase int64) error {
+		ticker := time.NewTicker(20 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case value := <-observed:
+				if value.phase == expectedPhase && value.complete == wantComplete {
+					return nil
+				}
+			case <-ticker.C:
+				if wantComplete {
+					if err := db.SaveArtifactChunks(ctx, access, []ArtifactChunk{first, second}, policy); err != nil {
+						return err
+					}
+				}
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+	}
 	group.Go(func() {
+		defer close(finished)
 		<-start
 		for range 60 {
-			time.Sleep(30 * time.Millisecond)
+			if err := waitForState(true, phase.Load()); err != nil {
+				results <- err
+				return
+			}
+			time.Sleep(lifetime + 5*time.Millisecond)
 			if _, err := db.CleanupArtifactChunks(ctx); err != nil {
 				results <- err
 				return
 			}
-			time.Sleep(5 * time.Millisecond)
-			if err := db.SaveArtifactChunks(ctx, access, []ArtifactChunk{first, second}, ArtifactStagingPolicy{MaxBytes: 6, TTL: 25 * time.Millisecond}); err != nil {
+			if err := waitForState(false, phase.Add(1)); err != nil {
 				results <- err
 				return
 			}
+			if err := db.SaveArtifactChunks(ctx, access, []ArtifactChunk{first, second}, policy); err != nil {
+				results <- err
+				return
+			}
+			phase.Add(1)
+		}
+		if err := waitForState(true, phase.Load()); err != nil {
+			results <- err
+			return
 		}
 		results <- nil
 	})
 	for range 4 {
 		group.Go(func() {
 			<-start
-			for range 250 {
+			for {
+				select {
+				case <-finished:
+					results <- nil
+					return
+				default:
+				}
+				readPhase := phase.Load()
 				data, missing, err := db.ArtifactChunkData(ctx, access, []string{project.ID}, []string{first.Checksum, second.Checksum}, 6)
 				if err != nil {
 					results <- err
@@ -382,8 +435,11 @@ func TestArtifactChunkReadSnapshotDuringConcurrentReplacement(t *testing.T) {
 					results <- fmt.Errorf("partially visible atomic batch: data=%q missing=%v", data, missing)
 					return
 				}
+				select {
+				case observed <- observation{phase: readPhase, complete: len(missing) == 0}:
+				default:
+				}
 			}
-			results <- nil
 		})
 	}
 	close(start)
