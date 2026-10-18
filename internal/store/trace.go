@@ -157,7 +157,7 @@ func (s *Store) Trace(ctx context.Context, userID, orgSlug, traceID, projectID s
 func traceRelatedProjects(ctx context.Context, tx pgx.Tx, table string, args []any, projects map[int64]struct{}) (int64, error) {
 	filter := ""
 	if table == "events" {
-		filter = " AND x.kind<>'transaction'"
+		filter = " AND x.kind NOT IN ('transaction','feedback')"
 	}
 	rows, err := tx.Query(ctx, `SELECT x.project_id,count(*) FROM `+table+` x JOIN projects p ON p.id=x.project_id
 	 WHERE p.organization_id=$1::bigint AND x.trace_id<>'' AND lower(x.trace_id)=$2 AND ($3='' OR x.project_id=NULLIF($3,'')::bigint)`+filter+` GROUP BY x.project_id`, args...)

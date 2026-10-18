@@ -23,6 +23,7 @@ type Issue struct {
 	Level       string           `json:"level"`
 	Platform    string           `json:"platform"`
 	Status      string           `json:"status"`
+	Category    string           `json:"category"`
 	Count       int64            `json:"count"`
 	GroupSize   int              `json:"groupSize"`
 	FirstSeen   time.Time        `json:"firstSeen"`
@@ -55,6 +56,9 @@ type Comment struct {
 }
 
 func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, parts ...CaptureItems) (string, bool, error) {
+	if ev.Type == "feedback" && ev.Feedback == nil {
+		return "", false, ErrInvalidFeedback
+	}
 	hasItems := false
 	for _, part := range parts {
 		for _, input := range part.UserReports {
@@ -72,14 +76,19 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 		return "", false, err
 	}
 	defer tx.Rollback(ctx)
-	// Serialize only a retry identity. Different events group under row locks.
-	if _, err = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", projectID+":"+ev.ID); err != nil {
+	// Receipt gates precede project/row locks, including an optional feedback
+	// association. Unrelated events still group under issue-row locks.
+	if err = lockCaptureReceipts(ctx, tx, projectID, ev); err != nil {
 		return "", false, err
 	}
 	var receipt int64
 	var owner string
-	err = tx.QueryRow(ctx, "SELECT id,COALESCE(issue_id::text,'') FROM events WHERE project_id::text=$1 AND event_id=$2", projectID, ev.ID).Scan(&receipt, &owner)
+	var storedKind string
+	err = tx.QueryRow(ctx, "SELECT id,COALESCE(issue_id::text,''),kind FROM events WHERE project_id::text=$1 AND event_id=$2", projectID, ev.ID).Scan(&receipt, &owner, &storedKind)
 	if err == nil {
+		if (ev.Type == "feedback" || storedKind == "feedback") && ev.Type != storedKind {
+			return "", false, ErrConflict
+		}
 		if !hasItems {
 			return owner, false, nil
 		}
@@ -126,7 +135,7 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 		if err = tx.QueryRow(ctx, `SELECT status,receipt_count FROM issues WHERE id=$1 FOR UPDATE`, issueID).Scan(&status, &receipts); err != nil {
 			return "", false, err
 		}
-		if status == "ignored" {
+		if status == "ignored" && ev.Type != "feedback" {
 			if _, err = expireLockedIssueIgnore(ctx, tx, issueID.(string), 1, ev.ID); err != nil {
 				return "", false, err
 			}
@@ -146,8 +155,16 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 	if err != nil {
 		return "", false, err
 	}
+	if ev.Type == "feedback" {
+		if err = saveFeedbackAssociation(ctx, tx, projectID, ev, eventRowID); err != nil {
+			return "", false, err
+		}
+	}
 	if ev.Type == "error" || ev.Type == "message" {
 		if err := bindPendingUserReport(ctx, tx, projectID, ev.ID, eventRowID); err != nil {
+			return "", false, err
+		}
+		if _, err = bindFeedbackForError(ctx, tx, projectID, ev.ID, eventRowID); err != nil {
 			return "", false, err
 		}
 	}
@@ -160,16 +177,18 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 		}
 	}
 	var alerts *errorAlertCapture
-	if issueID != nil {
+	if issueID != nil && ev.Type != "feedback" {
 		alerts, err = prepareErrorAlerts(ctx, tx, projectID, ev.ID, issueID.(string))
 		if err != nil {
 			return "", false, err
 		}
 	}
-	if err = observeRelease(ctx, tx, projectID, ev.Release); err != nil {
-		return "", false, err
+	if ev.Type != "feedback" {
+		if err = observeRelease(ctx, tx, projectID, ev.Release); err != nil {
+			return "", false, err
+		}
 	}
-	if issueID != nil {
+	if issueID != nil && ev.Type != "feedback" {
 		if err = settleIssueResolution(ctx, tx, issueID.(string), projectID, ev.ID, ev.Release); err != nil {
 			return "", false, err
 		}
@@ -186,7 +205,7 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 	return issueID.(string), true, nil
 }
 
-const issueColumns = `i.id::text,p.id::text,p.slug,p.name,i.title,i.level,i.platform,i.status,i.count,i.first_seen,i.last_seen,i.environment,i.release,i.resolved_at,i.regressed_at,` + issueAssignmentJSON + "," + issueIgnoreJSON + "," + issueResolutionJSON + `,1+(SELECT count(*) FROM issues group_member WHERE group_member.merged_into=i.id)`
+const issueColumns = `i.id::text,p.id::text,p.slug,p.name,i.title,i.level,i.platform,i.status,i.count,i.first_seen,i.last_seen,i.environment,i.release,i.resolved_at,i.regressed_at,` + issueAssignmentJSON + "," + issueIgnoreJSON + "," + issueResolutionJSON + `,1+(SELECT count(*) FROM issues group_member WHERE group_member.merged_into=i.id),i.category`
 const issueJoins = ` FROM issues i JOIN projects p ON p.id=i.project_id JOIN organizations o ON o.id=p.organization_id JOIN memberships m ON m.organization_id=o.id `
 
 type scanner interface{ Scan(...any) error }
@@ -194,7 +213,7 @@ type scanner interface{ Scan(...any) error }
 func scanIssue(row scanner, additional ...any) (Issue, error) {
 	var i Issue
 	var assigned, ignored, resolution json.RawMessage
-	destinations := []any{&i.ID, &i.ProjectID, &i.Project.Slug, &i.Project.Name, &i.Title, &i.Level, &i.Platform, &i.Status, &i.Count, &i.FirstSeen, &i.LastSeen, &i.Environment, &i.Release, &i.ResolvedAt, &i.RegressedAt, &assigned, &ignored, &resolution, &i.GroupSize}
+	destinations := []any{&i.ID, &i.ProjectID, &i.Project.Slug, &i.Project.Name, &i.Title, &i.Level, &i.Platform, &i.Status, &i.Count, &i.FirstSeen, &i.LastSeen, &i.Environment, &i.Release, &i.ResolvedAt, &i.RegressedAt, &assigned, &ignored, &resolution, &i.GroupSize, &i.Category}
 	err := row.Scan(append(destinations, additional...)...)
 	if err == nil && len(assigned) > 0 {
 		err = json.Unmarshal(assigned, &i.AssignedTo)

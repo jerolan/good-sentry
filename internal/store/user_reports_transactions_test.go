@@ -223,7 +223,14 @@ func TestPendingUserReportCleanupFailureRollsBack(t *testing.T) {
 func TestUserReportsMigration029PreservesAndReopens(t *testing.T) {
 	f := resolutionStore(t)
 	f.capture(t, 1, "before029@1", time.Now().Add(-365*24*time.Hour))
-	if _, err := f.db.pool.Exec(f.ctx, `DROP TABLE user_reports; ALTER TABLE events DROP CONSTRAINT events_report_receipt; DELETE FROM schema_migrations WHERE version=29`); err != nil {
+	// Later feedback associations reference029's receipt tuple. Retire only
+	// their empty fixture catalog before restoring the pre029 schema.
+	if _, err := f.db.pool.Exec(f.ctx, `DROP TABLE feedback_events; DELETE FROM schema_migrations WHERE version=31;
+ ALTER TABLE issues DROP CONSTRAINT issues_group_root_fkey;
+ ALTER TABLE issues DROP CONSTRAINT issues_project_category_id_key;
+ ALTER TABLE issues DROP COLUMN category;
+ ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into) REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+ DROP TABLE user_reports; ALTER TABLE events DROP CONSTRAINT events_report_receipt; DELETE FROM schema_migrations WHERE version=29`); err != nil {
 		t.Fatal(err)
 	}
 	before := groupDatabaseSnapshot(t, f.ctx, f.db, 28)
@@ -234,6 +241,13 @@ func TestUserReportsMigration029PreservesAndReopens(t *testing.T) {
 		}
 		after := groupDatabaseSnapshot(t, f.ctx, reopened, 28)
 		delete(after, "user_reports")
+		delete(after, "feedback_events")
+		var priorIssues string
+		if err := reopened.pool.QueryRow(f.ctx, `SELECT COALESCE(jsonb_agg(payload ORDER BY payload::text),'[]'::jsonb)::text
+ FROM (SELECT to_jsonb(i)-'category' AS payload FROM issues i) preserved`).Scan(&priorIssues); err != nil {
+			t.Fatal(err)
+		}
+		after["issues"] = priorIssues
 		if !reflect.DeepEqual(before, after) {
 			t.Fatal("029 rewrote old rows or historical migration receipts")
 		}
