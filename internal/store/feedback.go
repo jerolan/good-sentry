@@ -35,24 +35,34 @@ func lockCaptureReceipts(ctx context.Context, tx pgx.Tx, projectID string, ev ev
 	return nil
 }
 
-func saveFeedbackAssociation(ctx context.Context, tx pgx.Tx, projectID string, ev event.Event, receipt int64) error {
-	var associatedID *string
-	var target *int64
-	pending := false
-	if ev.Feedback.AssociatedEventID != "" {
-		associatedID = &ev.Feedback.AssociatedEventID
+type feedbackAssociation struct {
+	reference *string
+	receipt   *int64
+	pending   bool
+}
+
+// Resolve and pin behind the project gate, before acquiring the feedback's own
+// route/issue rows. The selected numeric identity survives until metadata save.
+func pinFeedbackAssociation(ctx context.Context, tx pgx.Tx, projectID, associatedID string) (feedbackAssociation, error) {
+	var association feedbackAssociation
+	if associatedID != "" {
+		association.reference = &associatedID
 		var kind string
-		err := tx.QueryRow(ctx, `SELECT id,kind FROM events WHERE project_id=$1::bigint AND event_id=$2 FOR KEY SHARE`, projectID, *associatedID).Scan(&target, &kind)
+		err := tx.QueryRow(ctx, `SELECT id,kind FROM events WHERE project_id=$1::bigint AND event_id=$2 FOR KEY SHARE`, projectID, associatedID).Scan(&association.receipt, &kind)
 		if errors.Is(err, pgx.ErrNoRows) {
-			pending = true
+			association.pending = true
 		} else if err != nil {
-			return err
+			return association, err
 		} else if kind != "error" && kind != "message" {
-			target = nil
+			association.receipt = nil
 		}
 	}
+	return association, nil
+}
+
+func saveFeedbackAssociation(ctx context.Context, tx pgx.Tx, projectID, eventID string, receipt int64, association feedbackAssociation) error {
 	_, err := tx.Exec(ctx, `INSERT INTO feedback_events(event_receipt_id,project_id,event_id,associated_event_id,associated_event_receipt_id,association_pending)
- VALUES($1,$2::bigint,$3,$4,$5,$6)`, receipt, projectID, ev.ID, associatedID, target, pending)
+ VALUES($1,$2::bigint,$3,$4,$5,$6)`, receipt, projectID, eventID, association.reference, association.receipt, association.pending)
 	return err
 }
 

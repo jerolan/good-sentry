@@ -120,6 +120,13 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 			return "", false, err
 		}
 	}
+	var association feedbackAssociation
+	if ev.Type == "feedback" {
+		association, err = pinFeedbackAssociation(ctx, tx, projectID, ev.Feedback.AssociatedEventID)
+		if err != nil {
+			return "", false, err
+		}
+	}
 	if ev.Type != "transaction" {
 		own, target, err := activeIssueHashOrigin(ctx, tx, projectID, ev)
 		if err != nil {
@@ -156,7 +163,7 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 		return "", false, err
 	}
 	if ev.Type == "feedback" {
-		if err = saveFeedbackAssociation(ctx, tx, projectID, ev, eventRowID); err != nil {
+		if err = saveFeedbackAssociation(ctx, tx, projectID, ev.ID, eventRowID, association); err != nil {
 			return "", false, err
 		}
 	}

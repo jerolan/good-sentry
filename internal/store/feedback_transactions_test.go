@@ -9,11 +9,52 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // Actual project/receipt waits and declared SQL failures own frozen generation,
 // cancellation and atomic binding. Sequential state tests cannot reach these
 // interleavings; all barriers are real PostgreSQL locks with no product seam.
+func TestFeedbackPinsTargetBeforeOwnRouteWait(t *testing.T) {
+	f := resolutionStore(t)
+	const targetID = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	const feedbackID = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+	if _, _, err := f.db.Ingest(f.ctx, f.project.ID, modernErrorWithID(t, targetID)); err != nil {
+		t.Fatal(err)
+	}
+	before := groupDatabaseSnapshot(t, f.ctx, f.db, 0)
+	barrier, pid := captureItemsBarrier(t, f)
+	if _, err := barrier.Exec(f.ctx, `LOCK TABLE issue_hash_routes IN ACCESS EXCLUSIVE MODE`); err != nil {
+		t.Fatal(err)
+	}
+	ev := modernFeedbackEvent(t, feedbackID, "Target before own routing", targetID)
+	ctx, cancel := context.WithCancel(f.ctx)
+	defer cancel()
+	done := make(chan error, 1)
+	go func() { _, _, err := f.db.Ingest(ctx, f.project.ID, ev); done <- err }()
+	groupWaitBlocked(t, f.ctx, barrier, pid, 1)
+	// The actual row lock must already exist when the writer reaches its own
+	// route. This probes lock compatibility, not a private helper call shape.
+	probe, err := f.db.pool.Begin(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = probe.Exec(f.ctx, `SELECT id FROM events WHERE project_id=$1::bigint AND event_id=$2 FOR UPDATE NOWAIT`, f.project.ID, targetID)
+	var pgerr *pgconn.PgError
+	locked := errors.As(err, &pgerr) && pgerr.Code == "55P03"
+	_ = probe.Rollback(f.ctx)
+	cancel()
+	groupAwaitCancellation(t, done, "feedback pre-route target pin")
+	if err := barrier.Rollback(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	groupRequireUnchanged(t, f.ctx, f.db, before)
+	if !locked {
+		t.Fatal("feedback target was not pinned before the own route wait")
+	}
+}
+
 func TestFeedbackBindingFreezesTargetAcrossProjectWait(t *testing.T) {
 	f := resolutionStore(t)
 	targetID := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
