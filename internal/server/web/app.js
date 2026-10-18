@@ -1724,6 +1724,7 @@
   function renderIssue(main, detail, previousView) {
     const issue = detail.issue;
     const event = detail.event || {};
+    const hasEvents = Array.isArray(detail.events) && detail.events.length > 0;
     const view = previousView || {};
     view.draftIssueId ??= issue.id;
     view.knownOriginIDs = new Set([issue.id]);
@@ -1786,8 +1787,10 @@
     const affectedUsers = detail.analytics?.userCount;
     const stats = node('dl', { class: 'stat-list issue-stat-list' }, [['Events', number(issue.count)], ['Affected users', affectedUsers == null ? 'Unavailable' : number(affectedUsers)], ['First seen', date(issue.firstSeen, true)], ['Last seen', date(issue.lastSeen, true)]].map(([name, value]) => node('div', { class: 'stat' }, node('dt', {}, name), node('dd', {}, value), name === 'Affected users' ? node('p', { class: 'stat-note' }, 'Identified retained users') : null)));
     const summary = node('section', { class: 'card panel', 'aria-label': 'Issue summary' }, stats, node('div', { class: 'panel-body' },
-      node('p', { class: 'muted small' }, 'Latest event'), node('p', { class: 'mono' }, text(event.event_id || event.eventID)),
-      event.message || event.logentry?.formatted ? node('pre', { class: 'event-message' }, text(event.message || event.logentry.formatted)) : null));
+      node('p', { class: 'muted small' }, hasEvents ? 'Latest event' : 'No retained events'),
+      hasEvents ? node('p', { class: 'mono' }, text(event.event_id || event.eventID)) : null,
+      event.message || event.logentry?.formatted ? node('pre', { class: 'event-message' }, text(event.message || event.logentry.formatted)) : null,
+      hasEvents ? null : node('p', { role: 'status' }, 'This issue has no stored event payloads. Comments, activity and triage remain available.')));
     const selectedTrace = traceEntry(event.contexts?.trace?.trace_id);
     if (selectedTrace) summary.lastElementChild.append(node('div', { class: 'event-message actions' }, selectedTrace));
     for (const [label, timestamp] of [['Last resolved', issue.resolvedAt], ['Regressed', issue.regressedAt]]) {
@@ -1822,16 +1825,16 @@
     const resolution = issueResolution(issue, path, view, triage);
     const origins = issueOrigins(issue, path, view, triage);
     const grouping = detailPanel('Future grouping', node('p', { class: 'panel-body muted', role: 'status' }, 'Loading active signatures…'));
-    const left = node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, stackTrace(event), breadcrumbs(event), comments.panel, activity.panel);
-    left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
+    const left = node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, hasEvents ? stackTrace(event) : null, hasEvents ? breadcrumbs(event) : null, comments.panel, activity.panel);
+    if (hasEvents) left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
-    const right = node('aside', { class: 'detail-aside', 'aria-label': 'Event details' },
+    const right = node('aside', { class: 'detail-aside', 'aria-label': hasEvents ? 'Event details' : 'Issue details' },
       resolution.panel,
       mute,
       assignment.panel,
-      detailPanel('Event details', node('div', { class: 'panel-body' }, keyValues(meta))),
-      detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))),
-      detailPanel('User', node('div', { class: 'panel-body' }, keyValues(event.user))));
+      detailPanel(hasEvents ? 'Event details' : 'Last known metadata', node('div', { class: 'panel-body' }, keyValues(meta))),
+      hasEvents ? detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))) : null,
+      hasEvents ? detailPanel('User', node('div', { class: 'panel-body' }, keyValues(event.user))) : null);
     if (event.contexts && Object.keys(event.contexts).length) right.append(detailPanel('Contexts', node('div', { class: 'panel-body' }, Object.entries(event.contexts).map(([name, context]) => node('section', { class: 'context-block' }, node('h3', {}, name), typeof context === 'object' && context ? keyValues(context) : node('p', {}, text(context)))))));
     if (event.request) right.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
     if (event.extra && Object.keys(event.extra).length) right.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));

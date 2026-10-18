@@ -48,6 +48,23 @@ func StartTransactionRetention(parent context.Context, db *store.Store, days int
 	})
 }
 
+// StartEventRetention expires receipts without discarding their issue history.
+func StartEventRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		events, err := db.CleanupEvents(ctx, days)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Event retention pass failed", "entryPoint", "event_retention_worker", "operation", "cleanup_events")
+		} else if events > 0 {
+			slog.Info("Event retention cleanup committed", "entryPoint", "event_retention_worker", "events", events)
+			return true
+		}
+		return false
+	})
+}
+
 func startRetention(parent context.Context, interval time.Duration, cleanup func(context.Context) bool) func() {
 	ctx, cancel := context.WithCancel(parent)
 	var wg sync.WaitGroup

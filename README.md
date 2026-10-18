@@ -270,6 +270,26 @@ The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle wo
 
 See the [complete specification](SPEC.md), [implementation order](tasks/plan.md) and [task evidence](tasks/todo.md) before relying on an unlisted capability.
 
+### Error event retention
+
+Errors and message events expire by server receipt time. Set
+`GOODSENTRY_EVENT_RETENTION_DAYS`, or its `GLITCHTIP_EVENT_RETENTION_DAYS`
+alias, to override the master lifetime. The default is 90 days; valid values
+are whole days from 1 to 3650.
+
+Cleanup removes at most 250 events per transaction, together with their owned
+attachments and opaque envelope items. Issue counts and summaries reflect the
+remaining events. Empty issues keep their last known metadata, active grouping
+signatures, comments, assignment, policies and activity. The UI shows **No
+retained events** and keeps triage available. Conditional mute progress remains
+independent of stored event counts.
+
+New captures can return to the same active issue. A physically expired event
+identity can receive a fresh lifetime; retained retries stay idempotent.
+Selected event and original JSON reads return 404 after removal. Cleanup runs
+inside the application, including with logs or uptime disabled. Recovery
+requires an operator backup; increasing the lifetime does not restore data.
+
 ### Log retention
 
 GoodSentry removes expired Sentry and OTLP logs in bounded PostgreSQL
@@ -290,7 +310,7 @@ remain until their last log expires. Deleted rows no longer appear in lists or
 detail reads. Eligible rows can remain visible until the maintenance pass.
 Recovery requires restoring an operator backup; increasing the lifetime does
 not recover deleted logs. Expiration does not archive logs or implement
-retention for errors, uptime, completed files or releases.
+retention for uptime, completed files or releases.
 
 ### Transaction and span retention
 
@@ -333,6 +353,7 @@ Compose supplies the local database connection. Environment values override the 
 | `GOODSENTRY_OTLP_MAX_NODES` | `100000` | Maximum decoded nodes per OTLP log batch, from 100 to 1000000. |
 | `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
 | `GOODSENTRY_RETENTION_DAYS` | `90` | Master receipt lifetime; whole days from 1 to 3650. |
+| `GOODSENTRY_EVENT_RETENTION_DAYS` | Master lifetime | Error and message event lifetime; issue history remains available. |
 | `GOODSENTRY_LOG_RETENTION_DAYS` | Master lifetime | Sentry and OTLP log lifetime. |
 | `GOODSENTRY_TRANSACTION_RETENTION_DAYS` | Master lifetime | Legacy transaction and standalone span lifetime. |
 | `GOODSENTRY_RETENTION_INTERVAL_SECONDS` | `60` | Idle cleanup interval, from 1 to 3600 seconds. |

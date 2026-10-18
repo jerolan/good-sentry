@@ -16,16 +16,12 @@ import (
 // sleeps for an hour during shutdown. Exercise real rows through public
 // start/stop functions; no fake store, timer, logger or call-order seam.
 func TestRetentionWorkersDrainRetryAndStop(t *testing.T) {
-	for _, transactions := range []bool{false, true} {
-		name := "logs"
-		if transactions {
-			name = "transactions"
-		}
-		t.Run(name, func(t *testing.T) { retentionWorkerLifecycle(t, transactions) })
+	for _, class := range []string{"logs", "transactions", "events"} {
+		t.Run(class, func(t *testing.T) { retentionWorkerLifecycle(t, class) })
 	}
 }
 
-func retentionWorkerLifecycle(t *testing.T, transactions bool) {
+func retentionWorkerLifecycle(t *testing.T, class string) {
 	f := newResolutionWorkerFixture(t)
 	project, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Retention worker", "go")
 	if err != nil {
@@ -34,14 +30,18 @@ func retentionWorkerLifecycle(t *testing.T, transactions bool) {
 	start := jobs.StartLogRetention
 	countQuery := "SELECT count(*) FROM logs"
 	failureTable, valueColumn := "logs", "body"
-	if transactions {
+	if class == "transactions" {
 		start = jobs.StartTransactionRetention
 		countQuery = "SELECT (SELECT count(*) FROM events)+(SELECT count(*) FROM spans)"
 		failureTable, valueColumn = "spans", "name"
+	} else if class == "events" {
+		start = jobs.StartEventRetention
+		countQuery = "SELECT count(*) FROM events"
+		failureTable, valueColumn = "events", "title"
 	}
 	seed := func(prefix string, count int) {
 		t.Helper()
-		if transactions {
+		if class == "transactions" {
 			// Publish the existing backlog together. A running worker may clean
 			// between two independent commits before the late-failure row exists.
 			tx, err := f.admin.Begin(f.ctx)
@@ -58,6 +58,13 @@ func retentionWorkerLifecycle(t *testing.T, transactions bool) {
 				t.Fatal(err)
 			}
 			if err := tx.Commit(f.ctx); err != nil {
+				t.Fatal(err)
+			}
+			return
+		}
+		if class == "events" {
+			if _, err := f.admin.Exec(f.ctx, `INSERT INTO events(project_id,event_id,kind,title,level,timestamp,data,created_at)
+ SELECT $1,$2||n,'error',$2,'error',now(),'{}',now()-interval '2 days' FROM generate_series(1,$3::integer) n`, project.ID, prefix, count); err != nil {
 				t.Fatal(err)
 			}
 			return
@@ -130,7 +137,7 @@ func retentionWorkerLifecycle(t *testing.T, transactions bool) {
 	if err := f.admin.QueryRow(f.ctx, "SELECT count(*) FROM "+failureTable+" WHERE "+valueColumn+"='retry'").Scan(&count); err != nil || count != 1 {
 		t.Fatalf("failure lost row count=%d err=%v", count, err)
 	}
-	if transactions {
+	if class == "transactions" {
 		if err := f.admin.QueryRow(f.ctx, "SELECT count(*) FROM events WHERE title='retry'").Scan(&count); err != nil || count != 1 {
 			t.Fatalf("late failure lost transaction receipt: %d %v", count, err)
 		}

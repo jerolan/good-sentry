@@ -50,6 +50,8 @@ func run() error {
 	defer stopLogRetention()
 	stopTransactionRetention := jobs.StartTransactionRetention(ctx, db, cfg.TransactionRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopTransactionRetention()
+	stopEventRetention := jobs.StartEventRetention(ctx, db, cfg.EventRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	defer stopEventRetention()
 	alertTimeout := time.Duration(cfg.AlertTimeoutSeconds) * time.Second
 	sender, err := notify.NewSender(notify.Options{
 		Domain: cfg.Domain, EmailURL: cfg.EmailURL, FromEmail: cfg.FromEmail,
