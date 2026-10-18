@@ -264,11 +264,33 @@ Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. 
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, retention, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, retention for other data classes, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
 See the [complete specification](SPEC.md), [implementation order](tasks/plan.md) and [task evidence](tasks/todo.md) before relying on an unlisted capability.
+
+### Log retention
+
+GoodSentry removes expired Sentry and OTLP logs in bounded PostgreSQL
+transactions. Log age starts at the server's receipt time, so an application
+timestamp does not shorten or extend its storage lifetime. The default is
+90 days. The application runs cleanup at startup and after each idle interval,
+including when new log ingestion is disabled.
+
+`GOODSENTRY_LOG_RETENTION_DAYS` overrides `GLITCHTIP_LOG_RETENTION_DAYS`, then
+inherits the master lifetime. The master precedence is
+`GOODSENTRY_RETENTION_DAYS`, `GLITCHTIP_RETENTION_DAYS`, `RETENTION_DAYS`, then
+90. Lifetimes must be whole days from 1 to 3650.
+`GOODSENTRY_RETENTION_INTERVAL_SECONDS` defaults to 60 and accepts 1 to 3600.
+
+Cleanup removes at most 250 log rows and 250 unreferenced OTLP batches per
+transaction, then continues while work remains. Shared canonical batch bytes
+remain until their last log expires. Deleted rows no longer appear in lists or
+detail reads. Eligible rows can remain visible until the maintenance pass.
+Recovery requires restoring an operator backup; increasing the lifetime does
+not recover deleted logs. Expiration does not archive logs or implement
+retention for errors, transactions, uptime, completed files or releases.
 
 ## Configuration
 
