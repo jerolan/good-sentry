@@ -54,6 +54,8 @@ func run() error {
 	defer stopEventRetention()
 	stopUptimeRetention := jobs.StartUptimeRetention(ctx, db, cfg.UptimeRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopUptimeRetention()
+	stopFileRetention := jobs.StartFileRetention(ctx, db, cfg.FileRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	defer stopFileRetention()
 	alertTimeout := time.Duration(cfg.AlertTimeoutSeconds) * time.Second
 	sender, err := notify.NewSender(notify.Options{
 		Domain: cfg.Domain, EmailURL: cfg.EmailURL, FromEmail: cfg.FromEmail,

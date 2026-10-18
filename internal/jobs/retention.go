@@ -82,6 +82,23 @@ func StartUptimeRetention(parent context.Context, db *store.Store, days int, int
 	})
 }
 
+// StartFileRetention expires durable bytes independently of ingestion switches.
+func StartFileRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		maps, attachments, items, err := db.CleanupFiles(ctx, days)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("File retention pass failed", "entryPoint", "file_retention_worker", "operation", "cleanup_files")
+		} else if maps > 0 || attachments > 0 || items > 0 {
+			slog.Info("File retention cleanup committed", "entryPoint", "file_retention_worker", "sourceMaps", maps, "attachments", attachments, "items", items)
+			return true
+		}
+		return false
+	})
+}
+
 func startRetention(parent context.Context, interval time.Duration, cleanup func(context.Context) bool) func() {
 	ctx, cancel := context.WithCancel(parent)
 	var wg sync.WaitGroup
