@@ -159,8 +159,8 @@ func projectCompatibleIssue(record store.CompatibleIssueRecord, domain string, d
 		}
 	}
 	if detail {
-		zero := int64(0)
-		view.UserReportCount = &zero
+		count := record.UserReportCount
+		view.UserReportCount = &count
 	}
 	return view, nil
 }

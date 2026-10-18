@@ -29,6 +29,8 @@ func eventObject(t *testing.T, value any) map[string]any {
 func TestProjectActualPayloadAndDetachedResults(t *testing.T) {
 	raw := json.RawMessage(`{"event_id":"untrusted","level":"warning","platform":"javascript","dist":"2","culprit":"checkout","logentry":{"formatted":"charge failed","message":"charge %s","params":[42]},"exception":{"values":[{"type":"Cause","value":"first"},{"type":"CheckoutError","value":"declined","stacktrace":{"frames":[{"filename":"charge.ts","lineno":27,"function":"charge","context_line":"throw error"}]},"raw_stacktrace":{"frames":[{"filename":"app.min.js","lineno":1,"colno":934}]}},{}]},"tags":[["region","mx"],["region","us"],["bad",3],["empty",""],["extra","ignored","shape"]],"user":{"id":"42","email":"a@example.com","data":{"paid":true}},"request":{"method":"POST","url":"https://example.com/pay","data":{"cart":42}},"breadcrumbs":[{"timestamp":123,"message":"clicked"}],"contexts":{"trace":{"trace_id":"abc","span_id":"def"}},"extra":{"cart":{"id":42}},"sdk":{"name":"sentry.javascript.browser","version":"11.7.0"},"modules":{"checkout":"2.0","bad":7,"unset":null},"errors":[{"type":"js_no_source","data":{"url":"app.js"}}],"environment":"production","release":"shop@2.0"}`)
 	before := append([]byte(nil), raw...)
+	report := json.RawMessage(`{"name":"Ada Lovelace","email":"ada@example.com","comments":"The page failed after checkout."}`)
+	reportBefore := append([]byte(nil), report...)
 	next := "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 	released := time.Date(2026, 10, 15, 2, 3, 4, 0, time.FixedZone("offset", -6*3600))
 	record := eventview.Record{
@@ -36,7 +38,7 @@ func TestProjectActualPayloadAndDetachedResults(t *testing.T) {
 		Kind: "error", Title: strings.Repeat("界", 254) + "🙂end", Level: "warning",
 		Timestamp:   time.Date(2026, 10, 15, 1, 2, 3, 123456789, time.FixedZone("offset", -6*3600)),
 		Received:    time.Date(2026, 10, 15, 1, 2, 4, 987654321, time.FixedZone("offset", -6*3600)),
-		Environment: "production", Release: "shop@2.0", Data: raw, SiblingsKnown: true, NextID: &next,
+		Environment: "production", Release: "shop@2.0", Data: raw, UserReport: report, SiblingsKnown: true, NextID: &next,
 		ReleaseInfo: &eventview.ReleaseReference{ID: "9", Version: "shop@2.0", DateCreated: released.Add(-time.Hour), DateReleased: &released},
 	}
 	summary, err := eventview.Project(record, false)
@@ -63,8 +65,11 @@ func TestProjectActualPayloadAndDetachedResults(t *testing.T) {
 		t.Fatal(err)
 	}
 	f := eventObject(t, full)
-	if value, exists := f["userReport"]; !exists || value != nil {
-		t.Fatalf("required nullable userReport = %#v, present=%t", value, exists)
+	if full.UserReport == nil || !bytes.Equal(*full.UserReport, reportBefore) {
+		t.Fatalf("full userReport = %q, want exact report bytes %q", full.UserReport, reportBefore)
+	}
+	if value, exists := f["userReport"]; !exists || !reflect.DeepEqual(value, map[string]any{"name": "Ada Lovelace", "email": "ada@example.com", "comments": "The page failed after checkout."}) {
+		t.Fatalf("full userReport projection = %#v, present=%t", value, exists)
 	}
 	if value, exists := f["previousEventID"]; !exists || value != nil || f["nextEventID"] != next {
 		t.Fatalf("known nullable siblings = %+v", f)
@@ -86,6 +91,21 @@ func TestProjectActualPayloadAndDetachedResults(t *testing.T) {
 	}
 	if f["context"].(map[string]any)["cart"].(map[string]any)["id"] != json.Number("42") || f["packages"].(map[string]any)["checkout"] != "2.0" || len(f["packages"].(map[string]any)) != 2 || f["packages"].(map[string]any)["unset"] != nil || len(f["errors"].([]any)) != 1 {
 		t.Fatalf("full payload lost: %+v", f)
+	}
+	(*full.UserReport)[0] = '['
+	reprojected, err := eventview.Project(record, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(report, reportBefore) || reprojected.UserReport == nil || !bytes.Equal(*reprojected.UserReport, reportBefore) {
+		t.Fatalf("mutating projected userReport changed stored or fresh bytes: stored=%q fresh=%v", report, reprojected.UserReport)
+	}
+	copy(*full.UserReport, reportBefore)
+	withoutReport := record
+	withoutReport.UserReport = nil
+	emptyReport, err := eventview.Project(withoutReport, true)
+	if err != nil || emptyReport.UserReport == nil || string(*emptyReport.UserReport) != "null" {
+		t.Fatal("missing report must remain an explicit null in full views", emptyReport.UserReport, err)
 	}
 	release := f["release"].(map[string]any)
 	if release["id"] != "9" || release["version"] != "shop@2.0" || release["dateCreated"] != "2026-10-15T07:03:04Z" || release["dateReleased"] != "2026-10-15T08:03:04Z" {

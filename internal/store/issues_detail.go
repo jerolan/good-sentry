@@ -6,12 +6,14 @@ import (
 )
 
 type IssueDetail struct {
-	Issue        Issue           `json:"issue"`
-	Event        json.RawMessage `json:"event"`
-	Events       []EventSummary  `json:"events"`
-	Comments     []Comment       `json:"comments"`
-	CommentTotal int             `json:"commentTotal"`
-	Analytics    IssueAnalytics  `json:"analytics"`
+	Issue           Issue           `json:"issue"`
+	Event           json.RawMessage `json:"event"`
+	Events          []EventSummary  `json:"events"`
+	Comments        []Comment       `json:"comments"`
+	CommentTotal    int             `json:"commentTotal"`
+	Analytics       IssueAnalytics  `json:"analytics"`
+	UserReports     []UserReport    `json:"userReports"`
+	UserReportCount int64           `json:"userReportCount"`
 }
 
 // IssueDetail reads authorization, issue state, events and comments from the
@@ -56,5 +58,12 @@ func (s *Store) IssueDetail(ctx context.Context, userID, id string) (IssueDetail
 		return detail, err
 	}
 	detail.Analytics = IssueAnalytics{UserCount: metrics[issue.ID].lifetime.UserCount, Stats: metrics[issue.ID].lifetime.Stats}
+	detail.UserReports, detail.UserReportCount, err = readUserReports(ctx, tx, compatibleEventScope{projectID: referenceID(issue.ProjectID), issueID: referenceID(issue.ID)}, 0, 25)
+	if err != nil {
+		return detail, err
+	}
+	if len(detail.UserReports) > 25 {
+		detail.UserReports = detail.UserReports[:25]
+	}
 	return detail, tx.Commit(ctx)
 }

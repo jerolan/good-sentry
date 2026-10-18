@@ -20,6 +20,7 @@ type Record struct {
 	SiblingsKnown                            bool
 	PreviousID, NextID                       *string
 	ReleaseInfo                              *ReleaseReference
+	UserReport                               json.RawMessage
 }
 
 type ReleaseReference struct {
@@ -171,6 +172,10 @@ func project(record Record, fields map[string]json.RawMessage, full bool) Event 
 	}
 	null := json.RawMessage("null")
 	result.UserReport = &null
+	if len(record.UserReport) > 0 {
+		report := append(json.RawMessage(nil), record.UserReport...)
+		result.UserReport = &report
+	}
 	return result
 }
 

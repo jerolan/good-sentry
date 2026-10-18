@@ -57,6 +57,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.Handle("GET /api/0/projects/{org}/{project}/{$}", s.compatible("project:read", s.compatibleProject))
 	s.registerCompatibleEventRoutes(mux)
 	s.registerCompatibleIssueRoutes(mux)
+	s.registerUserReportRoutes(mux)
 	s.registerCompatibleIssueWriteRoutes(mux)
 	s.registerCompatibleIssueDeleteRoutes(mux)
 	s.registerReleaseRoutes(mux)

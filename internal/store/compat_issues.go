@@ -31,6 +31,7 @@ type CompatibleIssueRecord struct {
 	Issue                             Issue
 	OrganizationSlug, ProjectPlatform string
 	NumComments, UserCount            int64
+	UserReportCount                   int64
 	IsUnhandled                       bool
 	Latest                            *eventview.Record
 	Filtered                          *CompatibleIssueMetrics
@@ -242,6 +243,9 @@ func (s *Store) CompatibleIssue(ctx context.Context, access ManagementAccess, is
 func readCompatibleIssueRecord(ctx context.Context, tx pgx.Tx, userID, issueID string, filter CompatibleIssueDetailFilter) (CompatibleIssueRecord, error) {
 	record, err := scanCompatibleIssue(tx.QueryRow(ctx, "SELECT "+issueColumns+compatibleIssueExtras+issueJoins+` WHERE m.user_id=$1::bigint AND i.id=$2::bigint`, userID, issueID))
 	if err != nil {
+		return record, err
+	}
+	if err := tx.QueryRow(ctx, `SELECT count(*) FROM user_reports report JOIN events e ON e.id=report.event_receipt_id WHERE e.issue_id=$1::bigint`, issueID).Scan(&record.UserReportCount); err != nil {
 		return record, err
 	}
 	occurrence, end, chart, err := prepareIssueMetrics(ctx, tx, CompatibleIssueFilter{Environments: filter.Environments, StatsPeriod: filter.StatsPeriod}, IssueSearch{})
