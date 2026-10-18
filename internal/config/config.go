@@ -15,7 +15,8 @@ type Config struct {
 	EmailURL, FromEmail, ValkeyURL, UploadDir string
 	Logs, Uptime, MCP, DuckDB, OpenAPI, Admin bool
 	MaxBodyBytes                              int64
-	RetentionDays                             int
+	RetentionDays, LogRetentionDays           int
+	RetentionIntervalSeconds                  int
 	MonitorWorkers                            int
 	UptimeAllowPrivate                        bool
 	AlertWorkers, AlertMaxAttempts            int
@@ -33,6 +34,7 @@ func Load() (Config, error) {
 	c := Config{DatabaseURL: os.Getenv("DATABASE_URL"), Secret: os.Getenv("SECRET_KEY"), EmailURL: value("EMAIL_URL", "consolemail://"), FromEmail: value("DEFAULT_FROM_EMAIL", "goodsentry@localhost"), ValkeyURL: os.Getenv("VALKEY_URL"), UploadDir: value("UPLOAD_DIR", "uploads"), MaxBodyBytes: 32 << 20, RetentionDays: 90, MonitorWorkers: 2, AlertWorkers: 2, AlertMaxAttempts: 5, AlertTimeoutSeconds: 10}
 	c.ArtifactChunkTTLHours, c.ArtifactStagingMaxBytes, c.ArtifactMaxMapRecords = 24, 256<<20, 1000
 	c.IssueMaintenanceIntervalSeconds = 1
+	c.RetentionIntervalSeconds = 60
 	c.OTLPMaxRecords, c.OTLPMaxNodes = 1000, 100000
 	port, err := strconv.Atoi(value("PORT", "8000"))
 	if err != nil || port < 1 || port > 65535 {
@@ -85,6 +87,7 @@ func Load() (Config, error) {
 		{"ARTIFACT_CHUNK_TTL_HOURS", 168, &c.ArtifactChunkTTLHours},
 		{"ARTIFACT_MAX_MAP_RECORDS", 100000, &c.ArtifactMaxMapRecords},
 		{"ISSUE_MAINTENANCE_INTERVAL_SECONDS", 3600, &c.IssueMaintenanceIntervalSeconds},
+		{"GOODSENTRY_RETENTION_INTERVAL_SECONDS", 3600, &c.RetentionIntervalSeconds},
 	} {
 		if raw := os.Getenv(option.name); raw != "" {
 			*option.dest, err = strconv.Atoi(raw)
@@ -123,11 +126,15 @@ func Load() (Config, error) {
 			return c, fmt.Errorf("MAX_BODY_BYTES must be between 1024 and 209715200")
 		}
 	}
-	if raw := os.Getenv("RETENTION_DAYS"); raw != "" {
-		c.RetentionDays, err = strconv.Atoi(raw)
-		if err != nil || c.RetentionDays < 1 || c.RetentionDays > 3650 {
-			return c, fmt.Errorf("RETENTION_DAYS must be between 1 and 3650")
-		}
+	master := alias("GOODSENTRY_RETENTION_DAYS", "GLITCHTIP_RETENTION_DAYS", value("RETENTION_DAYS", "90"))
+	c.RetentionDays, err = strconv.Atoi(master)
+	if err != nil || c.RetentionDays < 1 || c.RetentionDays > 3650 {
+		return c, fmt.Errorf("GOODSENTRY_RETENTION_DAYS / GLITCHTIP_RETENTION_DAYS / RETENTION_DAYS must be between 1 and 3650")
+	}
+	logs := alias("GOODSENTRY_LOG_RETENTION_DAYS", "GLITCHTIP_LOG_RETENTION_DAYS", strconv.Itoa(c.RetentionDays))
+	c.LogRetentionDays, err = strconv.Atoi(logs)
+	if err != nil || c.LogRetentionDays < 1 || c.LogRetentionDays > 3650 {
+		return c, fmt.Errorf("GOODSENTRY_LOG_RETENTION_DAYS / GLITCHTIP_LOG_RETENTION_DAYS must be between 1 and 3650")
 	}
 	if raw := os.Getenv("ARTIFACT_STAGING_MAX_BYTES"); raw != "" {
 		c.ArtifactStagingMaxBytes, err = strconv.ParseInt(raw, 10, 64)

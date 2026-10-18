@@ -44,6 +44,13 @@ func TestDeploymentConfiguration(t *testing.T) {
 		{"otlp too few nodes", map[string]string{"GOODSENTRY_OTLP_MAX_NODES": "99"}, "GOODSENTRY_OTLP_MAX_NODES"},
 		{"otlp unbounded nodes", map[string]string{"GOODSENTRY_OTLP_MAX_NODES": "1000001"}, "GOODSENTRY_OTLP_MAX_NODES"},
 		{"otlp malformed nodes", map[string]string{"GOODSENTRY_OTLP_MAX_NODES": "many"}, "GOODSENTRY_OTLP_MAX_NODES"},
+		{"invalid retention master", map[string]string{"GOODSENTRY_RETENTION_DAYS": "many"}, "GOODSENTRY_RETENTION_DAYS"},
+		{"invalid legacy retention master", map[string]string{"GLITCHTIP_RETENTION_DAYS": "0"}, "RETENTION_DAYS"},
+		{"invalid log retention", map[string]string{"GOODSENTRY_LOG_RETENTION_DAYS": "0"}, "LOG_RETENTION_DAYS"},
+		{"invalid legacy log retention", map[string]string{"GLITCHTIP_LOG_RETENTION_DAYS": "3651"}, "LOG_RETENTION_DAYS"},
+		{"fractional log retention", map[string]string{"GOODSENTRY_LOG_RETENTION_DAYS": "1.5"}, "LOG_RETENTION_DAYS"},
+		{"invalid retention interval", map[string]string{"GOODSENTRY_RETENTION_INTERVAL_SECONDS": "0"}, "RETENTION_INTERVAL_SECONDS"},
+		{"unbounded retention interval", map[string]string{"GOODSENTRY_RETENTION_INTERVAL_SECONDS": "3601"}, "RETENTION_INTERVAL_SECONDS"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
@@ -83,6 +90,44 @@ func TestExplicitGoodSentryFlagOverridesAlias(t *testing.T) {
 	}
 	if c.Logs {
 		t.Fatal("explicit false was ignored")
+	}
+}
+
+// The deployment loader owns precedence and integer admission. These cases
+// catch ignored aliases, a stale inherited log lifetime, or a lower-priority
+// invalid value overriding an explicit setting. No runtime cleanup is claimed.
+func TestLogRetentionConfiguration(t *testing.T) {
+	for _, tc := range []struct {
+		name                   string
+		env                    map[string]string
+		master, logs, interval int
+	}{
+		{"defaults", nil, 90, 90, 60},
+		{"existing master inherits", map[string]string{"RETENTION_DAYS": "15"}, 15, 15, 60},
+		{"legacy master inherits", map[string]string{"GLITCHTIP_RETENTION_DAYS": "30", "RETENTION_DAYS": "bad"}, 30, 30, 60},
+		{"explicit master wins", map[string]string{"GOODSENTRY_RETENTION_DAYS": "40", "GLITCHTIP_RETENTION_DAYS": "bad", "RETENTION_DAYS": "bad"}, 40, 40, 60},
+		{"legacy log override", map[string]string{"GLITCHTIP_LOG_RETENTION_DAYS": "7"}, 90, 7, 60},
+		{"explicit log wins", map[string]string{"GOODSENTRY_LOG_RETENTION_DAYS": "8", "GLITCHTIP_LOG_RETENTION_DAYS": "bad"}, 90, 8, 60},
+		{"minimum", map[string]string{"GOODSENTRY_RETENTION_DAYS": "1", "GOODSENTRY_LOG_RETENTION_DAYS": "1", "GOODSENTRY_RETENTION_INTERVAL_SECONDS": "1"}, 1, 1, 1},
+		{"maximum", map[string]string{"GOODSENTRY_RETENTION_DAYS": "3650", "GOODSENTRY_LOG_RETENTION_DAYS": "3650", "GOODSENTRY_RETENTION_INTERVAL_SECONDS": "3600"}, 3650, 3650, 3600},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+			t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
+			for _, key := range []string{"GOODSENTRY_RETENTION_DAYS", "GLITCHTIP_RETENTION_DAYS", "RETENTION_DAYS", "GOODSENTRY_LOG_RETENTION_DAYS", "GLITCHTIP_LOG_RETENTION_DAYS", "GOODSENTRY_RETENTION_INTERVAL_SECONDS"} {
+				t.Setenv(key, "")
+			}
+			for key, value := range tc.env {
+				t.Setenv(key, value)
+			}
+			cfg, err := Load()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if cfg.RetentionDays != tc.master || cfg.LogRetentionDays != tc.logs || cfg.RetentionIntervalSeconds != tc.interval {
+				t.Fatalf("master/logs/interval=%d/%d/%d, want %d/%d/%d", cfg.RetentionDays, cfg.LogRetentionDays, cfg.RetentionIntervalSeconds, tc.master, tc.logs, tc.interval)
+			}
+		})
 	}
 }
 
