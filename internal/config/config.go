@@ -16,6 +16,7 @@ type Config struct {
 	Logs, Uptime, MCP, DuckDB, OpenAPI, Admin bool
 	MaxBodyBytes                              int64
 	RetentionDays, LogRetentionDays           int
+	TransactionRetentionDays                  int
 	RetentionIntervalSeconds                  int
 	MonitorWorkers                            int
 	UptimeAllowPrivate                        bool
@@ -135,6 +136,11 @@ func Load() (Config, error) {
 	c.LogRetentionDays, err = strconv.Atoi(logs)
 	if err != nil || c.LogRetentionDays < 1 || c.LogRetentionDays > 3650 {
 		return c, fmt.Errorf("GOODSENTRY_LOG_RETENTION_DAYS / GLITCHTIP_LOG_RETENTION_DAYS must be between 1 and 3650")
+	}
+	transactions := alias("GOODSENTRY_TRANSACTION_RETENTION_DAYS", "GLITCHTIP_TRANSACTION_RETENTION_DAYS", strconv.Itoa(c.RetentionDays))
+	c.TransactionRetentionDays, err = strconv.Atoi(transactions)
+	if err != nil || c.TransactionRetentionDays < 1 || c.TransactionRetentionDays > 3650 {
+		return c, fmt.Errorf("GOODSENTRY_TRANSACTION_RETENTION_DAYS / GLITCHTIP_TRANSACTION_RETENTION_DAYS must be between 1 and 3650")
 	}
 	if raw := os.Getenv("ARTIFACT_STAGING_MAX_BYTES"); raw != "" {
 		c.ArtifactStagingMaxBytes, err = strconv.ParseInt(raw, 10, 64)
