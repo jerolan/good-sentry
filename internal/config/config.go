@@ -19,6 +19,7 @@ type Config struct {
 	TransactionRetentionDays                  int
 	EventRetentionDays                        int
 	UptimeRetentionDays                       int
+	FileRetentionDays, ReleaseRetentionDays   int
 	RetentionIntervalSeconds                  int
 	MonitorWorkers                            int
 	UptimeAllowPrivate                        bool
@@ -153,6 +154,16 @@ func Load() (Config, error) {
 	c.UptimeRetentionDays, err = strconv.Atoi(uptimeDays)
 	if err != nil || c.UptimeRetentionDays < 1 || c.UptimeRetentionDays > 3650 {
 		return c, fmt.Errorf("GOODSENTRY_UPTIME_RETENTION_DAYS / GLITCHTIP_UPTIME_RETENTION_DAYS must be between 1 and 3650")
+	}
+	fileDays := alias("GOODSENTRY_FILE_RETENTION_DAYS", "GLITCHTIP_FILE_RETENTION_DAYS", strconv.Itoa(c.RetentionDays))
+	c.FileRetentionDays, err = strconv.Atoi(fileDays)
+	if err != nil || c.FileRetentionDays < 1 || c.FileRetentionDays > 3650 {
+		return c, fmt.Errorf("GOODSENTRY_FILE_RETENTION_DAYS / GLITCHTIP_FILE_RETENTION_DAYS must be between 1 and 3650")
+	}
+	releaseDays := alias("GOODSENTRY_RELEASE_RETENTION_DAYS", "GLITCHTIP_RELEASE_RETENTION_DAYS", "365")
+	c.ReleaseRetentionDays, err = strconv.Atoi(releaseDays)
+	if err != nil || c.ReleaseRetentionDays < 1 || c.ReleaseRetentionDays > 3650 {
+		return c, fmt.Errorf("GOODSENTRY_RELEASE_RETENTION_DAYS / GLITCHTIP_RELEASE_RETENTION_DAYS must be between 1 and 3650")
 	}
 	if raw := os.Getenv("ARTIFACT_STAGING_MAX_BYTES"); raw != "" {
 		c.ArtifactStagingMaxBytes, err = strconv.ParseInt(raw, 10, 64)

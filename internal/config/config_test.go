@@ -60,6 +60,12 @@ func TestDeploymentConfiguration(t *testing.T) {
 		{"no uptime retention", map[string]string{"GOODSENTRY_UPTIME_RETENTION_DAYS": "0"}, "UPTIME_RETENTION_DAYS"},
 		{"excessive legacy uptime retention", map[string]string{"GLITCHTIP_UPTIME_RETENTION_DAYS": "3651"}, "UPTIME_RETENTION_DAYS"},
 		{"fractional uptime retention", map[string]string{"GOODSENTRY_UPTIME_RETENTION_DAYS": "1.5"}, "UPTIME_RETENTION_DAYS"},
+		{"no file retention", map[string]string{"GOODSENTRY_FILE_RETENTION_DAYS": "0"}, "FILE_RETENTION_DAYS"},
+		{"excessive legacy file retention", map[string]string{"GLITCHTIP_FILE_RETENTION_DAYS": "3651"}, "FILE_RETENTION_DAYS"},
+		{"fractional file retention", map[string]string{"GOODSENTRY_FILE_RETENTION_DAYS": "1.5"}, "FILE_RETENTION_DAYS"},
+		{"no release retention", map[string]string{"GOODSENTRY_RELEASE_RETENTION_DAYS": "0"}, "RELEASE_RETENTION_DAYS"},
+		{"excessive legacy release retention", map[string]string{"GLITCHTIP_RELEASE_RETENTION_DAYS": "3651"}, "RELEASE_RETENTION_DAYS"},
+		{"fractional release retention", map[string]string{"GOODSENTRY_RELEASE_RETENTION_DAYS": "1.5"}, "RELEASE_RETENTION_DAYS"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
@@ -103,34 +109,39 @@ func TestExplicitGoodSentryFlagOverridesAlias(t *testing.T) {
 }
 
 // The deployment loader owns precedence and integer admission. These cases
-// catch ignored aliases, a stale inherited log lifetime, or a lower-priority
+// catch ignored aliases, stale inherited lifetimes, or a lower-priority
 // invalid value overriding an explicit setting. No runtime cleanup is claimed.
 func TestTelemetryRetentionConfiguration(t *testing.T) {
 	for _, tc := range []struct {
-		name                                                 string
-		env                                                  map[string]string
-		master, logs, transactions, events, uptime, interval int
+		name                                                                  string
+		env                                                                   map[string]string
+		master, logs, transactions, events, uptime, files, releases, interval int
 	}{
-		{"defaults", nil, 90, 90, 90, 90, 90, 60},
-		{"existing master inherits", map[string]string{"RETENTION_DAYS": "15"}, 15, 15, 15, 15, 15, 60},
-		{"legacy master inherits", map[string]string{"GLITCHTIP_RETENTION_DAYS": "30", "RETENTION_DAYS": "bad"}, 30, 30, 30, 30, 30, 60},
-		{"explicit master wins", map[string]string{"GOODSENTRY_RETENTION_DAYS": "40", "GLITCHTIP_RETENTION_DAYS": "bad", "RETENTION_DAYS": "bad"}, 40, 40, 40, 40, 40, 60},
-		{"legacy log override", map[string]string{"GLITCHTIP_LOG_RETENTION_DAYS": "7"}, 90, 7, 90, 90, 90, 60},
-		{"explicit log wins", map[string]string{"GOODSENTRY_LOG_RETENTION_DAYS": "8", "GLITCHTIP_LOG_RETENTION_DAYS": "bad"}, 90, 8, 90, 90, 90, 60},
-		{"legacy transaction override", map[string]string{"GLITCHTIP_TRANSACTION_RETENTION_DAYS": "7"}, 90, 90, 7, 90, 90, 60},
-		{"explicit transaction wins", map[string]string{"GOODSENTRY_TRANSACTION_RETENTION_DAYS": "8", "GLITCHTIP_TRANSACTION_RETENTION_DAYS": "bad"}, 90, 90, 8, 90, 90, 60},
-		{"legacy event override", map[string]string{"GLITCHTIP_EVENT_RETENTION_DAYS": "7"}, 90, 90, 90, 7, 90, 60},
-		{"explicit event wins", map[string]string{"GOODSENTRY_EVENT_RETENTION_DAYS": "8", "GLITCHTIP_EVENT_RETENTION_DAYS": "bad"}, 90, 90, 90, 8, 90, 60},
-		{"legacy uptime override", map[string]string{"GLITCHTIP_UPTIME_RETENTION_DAYS": "7"}, 90, 90, 90, 90, 7, 60},
-		{"explicit uptime wins", map[string]string{"GOODSENTRY_UPTIME_RETENTION_DAYS": "8", "GLITCHTIP_UPTIME_RETENTION_DAYS": "bad"}, 90, 90, 90, 90, 8, 60},
-		{"independent classes", map[string]string{"GOODSENTRY_RETENTION_DAYS": "40", "GOODSENTRY_LOG_RETENTION_DAYS": "7", "GOODSENTRY_TRANSACTION_RETENTION_DAYS": "20", "GOODSENTRY_EVENT_RETENTION_DAYS": "25", "GOODSENTRY_UPTIME_RETENTION_DAYS": "30"}, 40, 7, 20, 25, 30, 60},
-		{"minimum", map[string]string{"GOODSENTRY_RETENTION_DAYS": "1", "GOODSENTRY_LOG_RETENTION_DAYS": "1", "GOODSENTRY_TRANSACTION_RETENTION_DAYS": "1", "GOODSENTRY_EVENT_RETENTION_DAYS": "1", "GOODSENTRY_UPTIME_RETENTION_DAYS": "1", "GOODSENTRY_RETENTION_INTERVAL_SECONDS": "1"}, 1, 1, 1, 1, 1, 1},
-		{"maximum", map[string]string{"GOODSENTRY_RETENTION_DAYS": "3650", "GOODSENTRY_LOG_RETENTION_DAYS": "3650", "GOODSENTRY_TRANSACTION_RETENTION_DAYS": "3650", "GOODSENTRY_EVENT_RETENTION_DAYS": "3650", "GOODSENTRY_UPTIME_RETENTION_DAYS": "3650", "GOODSENTRY_RETENTION_INTERVAL_SECONDS": "3600"}, 3650, 3650, 3650, 3650, 3650, 3600},
+		{"defaults", nil, 90, 90, 90, 90, 90, 90, 365, 60},
+		{"existing master inherits", map[string]string{"RETENTION_DAYS": "15"}, 15, 15, 15, 15, 15, 15, 365, 60},
+		{"legacy master inherits", map[string]string{"GLITCHTIP_RETENTION_DAYS": "30", "RETENTION_DAYS": "bad"}, 30, 30, 30, 30, 30, 30, 365, 60},
+		{"explicit master wins", map[string]string{"GOODSENTRY_RETENTION_DAYS": "40", "GLITCHTIP_RETENTION_DAYS": "bad", "RETENTION_DAYS": "bad"}, 40, 40, 40, 40, 40, 40, 365, 60},
+		{"legacy log override", map[string]string{"GLITCHTIP_LOG_RETENTION_DAYS": "7"}, 90, 7, 90, 90, 90, 90, 365, 60},
+		{"explicit log wins", map[string]string{"GOODSENTRY_LOG_RETENTION_DAYS": "8", "GLITCHTIP_LOG_RETENTION_DAYS": "bad"}, 90, 8, 90, 90, 90, 90, 365, 60},
+		{"legacy transaction override", map[string]string{"GLITCHTIP_TRANSACTION_RETENTION_DAYS": "7"}, 90, 90, 7, 90, 90, 90, 365, 60},
+		{"explicit transaction wins", map[string]string{"GOODSENTRY_TRANSACTION_RETENTION_DAYS": "8", "GLITCHTIP_TRANSACTION_RETENTION_DAYS": "bad"}, 90, 90, 8, 90, 90, 90, 365, 60},
+		{"legacy event override", map[string]string{"GLITCHTIP_EVENT_RETENTION_DAYS": "7"}, 90, 90, 90, 7, 90, 90, 365, 60},
+		{"explicit event wins", map[string]string{"GOODSENTRY_EVENT_RETENTION_DAYS": "8", "GLITCHTIP_EVENT_RETENTION_DAYS": "bad"}, 90, 90, 90, 8, 90, 90, 365, 60},
+		{"legacy uptime override", map[string]string{"GLITCHTIP_UPTIME_RETENTION_DAYS": "7"}, 90, 90, 90, 90, 7, 90, 365, 60},
+		{"explicit uptime wins", map[string]string{"GOODSENTRY_UPTIME_RETENTION_DAYS": "8", "GLITCHTIP_UPTIME_RETENTION_DAYS": "bad"}, 90, 90, 90, 90, 8, 90, 365, 60},
+		{"legacy file override", map[string]string{"GLITCHTIP_FILE_RETENTION_DAYS": "7"}, 90, 90, 90, 90, 90, 7, 365, 60},
+		{"explicit file wins", map[string]string{"GOODSENTRY_FILE_RETENTION_DAYS": "8", "GLITCHTIP_FILE_RETENTION_DAYS": "bad"}, 90, 90, 90, 90, 90, 8, 365, 60},
+		{"legacy release override", map[string]string{"GLITCHTIP_RELEASE_RETENTION_DAYS": "7"}, 90, 90, 90, 90, 90, 90, 7, 60},
+		{"explicit release wins", map[string]string{"GOODSENTRY_RELEASE_RETENTION_DAYS": "8", "GLITCHTIP_RELEASE_RETENTION_DAYS": "bad"}, 90, 90, 90, 90, 90, 90, 8, 60},
+		{"empty explicit values fall through", map[string]string{"GOODSENTRY_RETENTION_DAYS": "45", "GOODSENTRY_FILE_RETENTION_DAYS": "", "GLITCHTIP_FILE_RETENTION_DAYS": "7", "GOODSENTRY_RELEASE_RETENTION_DAYS": "", "GLITCHTIP_RELEASE_RETENTION_DAYS": "8"}, 45, 45, 45, 45, 45, 7, 8, 60},
+		{"independent classes", map[string]string{"GOODSENTRY_RETENTION_DAYS": "40", "GOODSENTRY_LOG_RETENTION_DAYS": "7", "GOODSENTRY_TRANSACTION_RETENTION_DAYS": "20", "GOODSENTRY_EVENT_RETENTION_DAYS": "25", "GOODSENTRY_UPTIME_RETENTION_DAYS": "30", "GOODSENTRY_FILE_RETENTION_DAYS": "35", "GOODSENTRY_RELEASE_RETENTION_DAYS": "50"}, 40, 7, 20, 25, 30, 35, 50, 60},
+		{"minimum", map[string]string{"GOODSENTRY_RETENTION_DAYS": "1", "GOODSENTRY_LOG_RETENTION_DAYS": "1", "GOODSENTRY_TRANSACTION_RETENTION_DAYS": "1", "GOODSENTRY_EVENT_RETENTION_DAYS": "1", "GOODSENTRY_UPTIME_RETENTION_DAYS": "1", "GOODSENTRY_FILE_RETENTION_DAYS": "1", "GOODSENTRY_RELEASE_RETENTION_DAYS": "1", "GOODSENTRY_RETENTION_INTERVAL_SECONDS": "1"}, 1, 1, 1, 1, 1, 1, 1, 1},
+		{"maximum", map[string]string{"GOODSENTRY_RETENTION_DAYS": "3650", "GOODSENTRY_LOG_RETENTION_DAYS": "3650", "GOODSENTRY_TRANSACTION_RETENTION_DAYS": "3650", "GOODSENTRY_EVENT_RETENTION_DAYS": "3650", "GOODSENTRY_UPTIME_RETENTION_DAYS": "3650", "GOODSENTRY_FILE_RETENTION_DAYS": "3650", "GOODSENTRY_RELEASE_RETENTION_DAYS": "3650", "GOODSENTRY_RETENTION_INTERVAL_SECONDS": "3600"}, 3650, 3650, 3650, 3650, 3650, 3650, 3650, 3600},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
 			t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
-			for _, key := range []string{"GOODSENTRY_RETENTION_DAYS", "GLITCHTIP_RETENTION_DAYS", "RETENTION_DAYS", "GOODSENTRY_LOG_RETENTION_DAYS", "GLITCHTIP_LOG_RETENTION_DAYS", "GOODSENTRY_TRANSACTION_RETENTION_DAYS", "GLITCHTIP_TRANSACTION_RETENTION_DAYS", "GOODSENTRY_EVENT_RETENTION_DAYS", "GLITCHTIP_EVENT_RETENTION_DAYS", "GOODSENTRY_UPTIME_RETENTION_DAYS", "GLITCHTIP_UPTIME_RETENTION_DAYS", "GOODSENTRY_RETENTION_INTERVAL_SECONDS"} {
+			for _, key := range []string{"GOODSENTRY_RETENTION_DAYS", "GLITCHTIP_RETENTION_DAYS", "RETENTION_DAYS", "GOODSENTRY_LOG_RETENTION_DAYS", "GLITCHTIP_LOG_RETENTION_DAYS", "GOODSENTRY_TRANSACTION_RETENTION_DAYS", "GLITCHTIP_TRANSACTION_RETENTION_DAYS", "GOODSENTRY_EVENT_RETENTION_DAYS", "GLITCHTIP_EVENT_RETENTION_DAYS", "GOODSENTRY_UPTIME_RETENTION_DAYS", "GLITCHTIP_UPTIME_RETENTION_DAYS", "GOODSENTRY_FILE_RETENTION_DAYS", "GLITCHTIP_FILE_RETENTION_DAYS", "GOODSENTRY_RELEASE_RETENTION_DAYS", "GLITCHTIP_RELEASE_RETENTION_DAYS", "GOODSENTRY_RETENTION_INTERVAL_SECONDS"} {
 				t.Setenv(key, "")
 			}
 			for key, value := range tc.env {
@@ -140,8 +151,8 @@ func TestTelemetryRetentionConfiguration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if cfg.RetentionDays != tc.master || cfg.LogRetentionDays != tc.logs || cfg.TransactionRetentionDays != tc.transactions || cfg.EventRetentionDays != tc.events || cfg.UptimeRetentionDays != tc.uptime || cfg.RetentionIntervalSeconds != tc.interval {
-				t.Fatalf("master/logs/transactions/events/uptime/interval=%d/%d/%d/%d/%d/%d, want %d/%d/%d/%d/%d/%d", cfg.RetentionDays, cfg.LogRetentionDays, cfg.TransactionRetentionDays, cfg.EventRetentionDays, cfg.UptimeRetentionDays, cfg.RetentionIntervalSeconds, tc.master, tc.logs, tc.transactions, tc.events, tc.uptime, tc.interval)
+			if cfg.RetentionDays != tc.master || cfg.LogRetentionDays != tc.logs || cfg.TransactionRetentionDays != tc.transactions || cfg.EventRetentionDays != tc.events || cfg.UptimeRetentionDays != tc.uptime || cfg.FileRetentionDays != tc.files || cfg.ReleaseRetentionDays != tc.releases || cfg.RetentionIntervalSeconds != tc.interval {
+				t.Fatalf("master/logs/transactions/events/uptime/files/releases/interval=%d/%d/%d/%d/%d/%d/%d/%d, want %d/%d/%d/%d/%d/%d/%d/%d", cfg.RetentionDays, cfg.LogRetentionDays, cfg.TransactionRetentionDays, cfg.EventRetentionDays, cfg.UptimeRetentionDays, cfg.FileRetentionDays, cfg.ReleaseRetentionDays, cfg.RetentionIntervalSeconds, tc.master, tc.logs, tc.transactions, tc.events, tc.uptime, tc.files, tc.releases, tc.interval)
 			}
 		})
 	}
