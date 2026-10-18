@@ -60,6 +60,8 @@ func run() error {
 	defer stopReleaseRetention()
 	stopPendingUserReports := jobs.StartPendingUserReports(ctx, db, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopPendingUserReports()
+	stopFeedbackAssociations := jobs.StartFeedbackAssociations(ctx, db, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	defer stopFeedbackAssociations()
 	alertTimeout := time.Duration(cfg.AlertTimeoutSeconds) * time.Second
 	sender, err := notify.NewSender(notify.Options{
 		Domain: cfg.Domain, EmailURL: cfg.EmailURL, FromEmail: cfg.FromEmail,

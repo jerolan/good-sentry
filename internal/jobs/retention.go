@@ -134,6 +134,24 @@ func StartPendingUserReports(parent context.Context, db *store.Store, interval t
 	})
 }
 
+// StartFeedbackAssociations catches up associations skipped by bounded capture.
+// It binds retained receipts and never deletes feedback or error history.
+func StartFeedbackAssociations(parent context.Context, db *store.Store, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		bound, err := db.BindPendingFeedbackAssociations(ctx)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Feedback association pass failed", "entryPoint", "feedback_associations_worker", "operation", "bind_pending_feedback_associations")
+		} else if bound > 0 {
+			slog.Info("Feedback associations committed", "entryPoint", "feedback_associations_worker", "boundFeedback", bound)
+			return true
+		}
+		return false
+	})
+}
+
 func startRetention(parent context.Context, interval time.Duration, cleanup func(context.Context) bool) func() {
 	ctx, cancel := context.WithCancel(parent)
 	var wg sync.WaitGroup
