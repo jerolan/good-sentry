@@ -316,7 +316,7 @@ func TestAPITokenHTTPContract(t *testing.T) {
 		"long Unicode name": encode(map[string]string{"name": strings.Repeat("界", 101)}),
 		"control in name":   `{"name":"bad\u0001name"}`, "unknown field": `{"name":"Bad","unknown":true}`,
 		"empty scopes": `{"name":"Bad","scopes":[]}`, "duplicate scopes": `{"name":"Bad","scopes":["org:read","org:read"]}`,
-		"unknown scope":      `{"name":"Bad","scopes":["project:write"]}`,
+		"unknown scope":      `{"name":"Bad","scopes":["unimplemented:write"]}`,
 		"numeric project ID": `{"name":"Bad","projectIds":[1]}`, "zero project ID": `{"name":"Bad","projectIds":["0"]}`,
 		"noncanonical project ID": `{"name":"Bad","projectIds":["01"]}`, "overflow project ID": `{"name":"Bad","projectIds":["9223372036854775808"]}`,
 		"zero expiry": `{"name":"Bad","expiresInDays":0}`, "large expiry": `{"name":"Bad","expiresInDays":367}`,

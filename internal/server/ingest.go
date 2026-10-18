@@ -93,8 +93,19 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		}
 		normalized = &ev
 	}
+	userReport, err := envelopeUserReport(env, envelopeID, normalized)
+	if err != nil {
+		reportUserReport(w, err)
+		return
+	}
+	if userReport != nil && normalized == nil {
+		envelopeID = userReport.EventID
+	}
 	if normalized != nil {
 		var children store.CaptureItems
+		if userReport != nil {
+			children.UserReports = []store.UserReportInput{*userReport}
+		}
 		for _, item := range env.Items {
 			switch item.Type {
 			case "attachment":
@@ -109,18 +120,18 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 					contentType = "application/octet-stream"
 				}
 				children.Attachments = append(children.Attachments, store.CaptureAttachment{Filename: filename, ContentType: contentType, Data: item.Payload})
-			case "event", "transaction", "span", "log":
+			case "event", "transaction", "span", "log", "user_report":
 			default:
 				header, _ := json.Marshal(item.Header)
 				children.EnvelopeItems = append(children.EnvelopeItems, store.CaptureEnvelopeItem{Type: item.Type, Header: header, Data: item.Payload})
 			}
 		}
 		var parts []store.CaptureItems
-		if len(children.Attachments) > 0 || len(children.EnvelopeItems) > 0 {
+		if len(children.Attachments) > 0 || len(children.EnvelopeItems) > 0 || len(children.UserReports) > 0 {
 			parts = []store.CaptureItems{children}
 		}
 		if _, _, err = s.db.Ingest(r.Context(), project, *normalized, parts...); err != nil {
-			report(w, err)
+			reportUserReport(w, err)
 			return
 		}
 		envelopeID = normalized.ID
@@ -130,6 +141,13 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		switch item.Type {
 		case "event", "transaction":
 			continue
+		case "user_report":
+			if normalized == nil {
+				if _, err := s.db.SubmitUserReport(r.Context(), project, *userReport); err != nil {
+					reportUserReport(w, err)
+					return
+				}
+			}
 		case "span":
 			var contentType string
 			_ = json.Unmarshal(item.Header["content_type"], &contentType)

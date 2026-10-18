@@ -280,11 +280,36 @@ compatible attachment management API.
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, further conditional policies, modern SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
 See the [complete specification](SPEC.md), [implementation order](tasks/plan.md) and [task evidence](tasks/todo.md) before relying on an unlisted capability.
+
+### Legacy user feedback
+
+GoodSentry receives legacy `captureUserFeedback` reports through Sentry SDK
+envelopes and `POST /api/0/projects/{organization}/{project}/user-feedback/`.
+Official Sentry Browser `7.120.4` passes with its normal network transport.
+Modern `captureFeedback` events remain separate pending work.
+
+Open an issue's **User reports** panel to read the reporter's name, contact
+text and comments. Reports have 25 rows per page. **View event** opens the
+actual reported error, including older errors outside the latest 50 summaries,
+with its stack, metadata and downloadable attachments. Report reads preserve
+comment and policy drafts. Supplied contact details are displayed as text.
+
+A report can arrive before its error. It stays pending for up to 30 minutes,
+then the application removes it if no matching error arrives. A linked report
+expires with that stored error. Submission is accepted through 30 minutes
+after the error's server receipt; a report can be changed through five minutes
+after its first receipt. Later submissions return `409`. SDK timestamps and
+updates do not extend these windows.
+
+SDK writes use the project's DSN key. REST writes also accept an authorized
+session with CSRF or an explicitly scoped `project:write` token. DSN keys do
+not grant report reads. Project listing uses `project:read`; issue listing
+uses `event:read` or `event:write`. Existing token defaults stay unchanged.
 
 ### Error event retention
 
@@ -478,7 +503,7 @@ On upgrade, GoodSentry indexes historical legacy spans inside the application, o
 
 Owners and admins can open **API tokens** to create a credential, select projects and set its lifetime. The secret appears once; copy it before dismissing or leaving the view. Tokens expire after 90 days by default, with a selectable lifetime of 1–366 days. Revocation takes effect on subsequent requests. An all-project credential also includes projects created later; a restricted credential keeps only its selected projects.
 
-Choose `org:read` to list authorized projects, `project:read` for project metadata/events, `event:read` for issues and issue events, `event:write` for those reads, individual/bulk issue changes and merging, `event:admin` for issue deletion only, or `project:releases` for release management. Compatible project responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
+Choose `org:read` to list authorized projects, `project:read` for project metadata/events and legacy user reports, `project:write` to submit legacy user feedback, `event:read` for issues and issue events, `event:write` for those reads, individual/bulk issue changes and merging, `event:admin` for issue deletion only, or `project:releases` for release management. `project:write` does not grant reads or other project changes. Compatible project responses exclude SDK keys and DSNs. Set `SENTRY_AUTH_TOKEN` to the issued secret, then use the verified sentry-cli 3.8.0 command:
 
 ```sh
 SENTRY_URL=http://localhost:8000/ SENTRY_ORG=my-workspace sentry-cli projects list

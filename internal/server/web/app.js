@@ -24,6 +24,7 @@
   let alertsUI;
   let releasesUI;
   let hashesUI;
+  let reportsUI;
   let issuedAPIToken;
 
   function node(tag, attributes = {}, ...children) {
@@ -1159,10 +1160,10 @@
     const name = field('Token name', 'text', { name: 'name', required: true, autocomplete: 'off', placeholder: 'Project automation' });
     name.wrap.append(node('p', { class: 'help' }, '1–100 characters. Names may be reused.'));
     const lifetime = field('Lifetime (days)', 'number', { name: 'expiresInDays', value: 90, required: true, min: 1, max: 366, step: 1 });
-    const scopes = ['org:read', 'project:read', 'project:releases', 'event:read', 'event:write', 'event:admin'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
+    const scopes = ['org:read', 'project:read', 'project:write', 'project:releases', 'event:read', 'event:write', 'event:admin'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
     const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Permissions'),
       scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
-      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata and project-scoped event data. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. event:admin deletes whole issue groups and their recorded history; it does not grant read or other write permissions. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata, project-scoped event data and legacy user reports. project:write submits legacy user feedback; it does not grant project reads or other project changes. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. event:admin deletes whole issue groups and their recorded history; it does not grant read or other write permissions. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
     const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
     const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
     const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
@@ -1918,7 +1919,8 @@
     // The selected raw event is the first retained history entry in IssueDetail.
     const attachments = hasEvents ? eventAttachments(path, detail.events[0].eventID, alive) : null;
     const grouping = detailPanel('Future grouping', node('p', { class: 'panel-body muted', role: 'status' }, 'Loading active signatures…'));
-    const left = node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, hasEvents ? stackTrace(event) : null, hasEvents ? breadcrumbs(event) : null, attachments?.panel, comments.panel, activity.panel);
+    const reports = detailPanel('User reports', node('p', { class: 'panel-body muted', role: 'status' }, 'Loading user reports…'));
+    const left = node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, hasEvents ? stackTrace(event) : null, hasEvents ? breadcrumbs(event) : null, attachments?.panel, reports, comments.panel, activity.panel);
     if (hasEvents) left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': hasEvents ? 'Event details' : 'Issue details' },
@@ -1939,6 +1941,42 @@
     resolution.start();
     origins.load(view.origins.page);
     loadIssueHashes(grouping, issue, view, triage);
+    loadIssueReports(reports, issue, detail, view, triage);
+  }
+
+  async function loadIssueReports(placeholder, issue, detail, view, triage, retry = 0) {
+    try {
+      const { createReportsUI } = await import(retry ? `./reports.js?retry=${retry}` : './reports.js');
+      if (!triage.alive() || !placeholder.isConnected) return;
+      reportsUI ||= createReportsUI({ node, request, button, detailPanel, formError, date, number });
+      const eventContent = (event, eventID, isCurrent) => {
+        const path = `/api/v1/issues/${encodeURIComponent(issue.id)}`;
+        const attachments = eventAttachments(path, eventID, () => triage.alive() && isCurrent());
+        const meta = [['Platform', event.platform], ['Environment', event.environment], ['Release', event.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
+        const content = node('div', { class: 'reported-event-content' },
+          node('div', { class: 'panel-body' }, event.message || event.logentry?.formatted ? node('pre', { class: 'event-message' }, text(event.message || event.logentry.formatted)) : null, keyValues(meta)),
+          stackTrace(event), breadcrumbs(event), attachments.panel,
+          detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))),
+          detailPanel('User', node('div', { class: 'panel-body' }, keyValues(event.user))));
+        if (event.contexts && Object.keys(event.contexts).length) content.append(detailPanel('Contexts', node('div', { class: 'panel-body' }, Object.entries(event.contexts).map(([name, context]) => node('section', { class: 'context-block' }, node('h3', {}, name), typeof context === 'object' && context ? keyValues(context) : node('p', {}, text(context)))))));
+        if (event.request) content.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
+        if (event.extra && Object.keys(event.extra).length) content.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
+        content.append(node('details', { class: 'card panel' }, node('summary', {}, 'Reported event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
+        // These panels belong to Reported event, below the issue's User reports heading.
+        content.querySelectorAll('h3').forEach(heading => heading.replaceWith(node('h5', {}, heading.textContent)));
+        content.querySelectorAll('h2').forEach(heading => heading.replaceWith(node('h4', {}, heading.textContent)));
+        return { content, start: attachments.start };
+      };
+      const reports = reportsUI.issue({ issue, organization: state.organization.slug, initialReports: detail.userReports, total: detail.userReportCount, view, triage, eventContent });
+      placeholder.replaceWith(reports.panel);
+      if (retry) reports.panel.querySelector('h2')?.focus();
+      reports.start();
+    } catch (failure) {
+      if (!triage.alive() || !placeholder.isConnected) return;
+      placeholder.replaceChildren(node('div', { class: 'panel-title' }, node('h2', {}, 'User reports')),
+        node('div', { class: 'panel-body form-stack' }, node('p', { class: 'form-error', role: 'alert' }, failure.message), button('Retry user reports', () => loadIssueReports(placeholder, issue, detail, view, triage, retry + 1), 'small')));
+      if (retry) placeholder.querySelector('button')?.focus();
+    }
   }
 
   async function loadIssueHashes(placeholder, issue, view, triage) {

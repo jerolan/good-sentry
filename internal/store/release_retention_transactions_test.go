@@ -105,7 +105,7 @@ func TestReleaseRetentionLateFailureAndCancellation(t *testing.T) {
  `+trigger); err != nil {
 				t.Fatal(err)
 			}
-			before := groupDatabaseSnapshot(t, f.ctx, f.db, 28)
+			before := groupDatabaseSnapshot(t, f.ctx, f.db, 0)
 			if mode == "cancel" {
 				barrier, pid := captureItemsBarrier(t, f)
 				if _, err := barrier.Exec(f.ctx, `SELECT pg_advisory_xact_lock(hashtextextended(current_schema(),9345))`); err != nil {
