@@ -116,6 +116,24 @@ func StartReleaseRetention(parent context.Context, db *store.Store, days int, in
 	})
 }
 
+// StartPendingUserReports reclaims reports whose matching error never arrived.
+// Its fixed pending lifetime is independent of all event/file retention days.
+func StartPendingUserReports(parent context.Context, db *store.Store, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		removed, err := db.CleanupPendingUserReports(ctx)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Pending user report cleanup failed", "entryPoint", "pending_user_reports_worker", "operation", "cleanup_pending_user_reports")
+		} else if removed > 0 {
+			slog.Info("Pending user report cleanup committed", "entryPoint", "pending_user_reports_worker", "removedPendingReports", removed)
+			return true
+		}
+		return false
+	})
+}
+
 func startRetention(parent context.Context, interval time.Duration, cleanup func(context.Context) bool) func() {
 	ctx, cancel := context.WithCancel(parent)
 	var wg sync.WaitGroup

@@ -17,7 +17,7 @@ import (
 // sleeps for an hour during shutdown. Exercise real rows through public
 // start/stop functions; no fake store, timer, logger or call-order seam.
 func TestRetentionWorkersDrainRetryAndStop(t *testing.T) {
-	for _, class := range []string{"logs", "transactions", "events", "uptime", "files", "releases"} {
+	for _, class := range []string{"logs", "transactions", "events", "uptime", "files", "releases", "pending_reports"} {
 		t.Run(class, func(t *testing.T) { retentionWorkerLifecycle(t, class) })
 	}
 }
@@ -59,9 +59,23 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 		start = jobs.StartReleaseRetention
 		countQuery = "SELECT count(*) FROM releases"
 		failureTable, valueColumn = "releases", "version"
+	} else if class == "pending_reports" {
+		start = func(ctx context.Context, db *store.Store, _ int, interval time.Duration) func() {
+			return jobs.StartPendingUserReports(ctx, db, interval)
+		}
+		countQuery = "SELECT count(*) FROM user_reports"
+		failureTable, valueColumn = "user_reports", "comments"
 	}
 	seed := func(prefix string, count int) {
 		t.Helper()
+		if class == "pending_reports" {
+			if _, err := f.admin.Exec(f.ctx, `INSERT INTO user_reports(project_id,event_id,name,email,comments,created_at)
+ SELECT $1::bigint,md5($2||n::text),'','',$2,clock_timestamp()-interval '2 hours'
+ FROM generate_series(1,$3::integer) n`, project.ID, prefix, count); err != nil {
+				t.Fatal(err)
+			}
+			return
+		}
 		if class == "releases" {
 			if _, err := f.admin.Exec(f.ctx, `WITH inserted AS (
  INSERT INTO releases(organization_id,version,created_at)
