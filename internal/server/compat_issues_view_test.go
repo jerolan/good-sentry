@@ -86,6 +86,31 @@ func TestCompatibleIssueWireProjection(t *testing.T) {
 	}
 }
 
+// Category is durable even after receipt expiry; latest-payload inference and
+// a missing JSON field would mislabel an empty feedback history. Provider SQL
+// cannot verify this public wire type, and no projection seam is required.
+func TestCompatibleFeedbackIssueCategoryWithEmptyHistory(t *testing.T) {
+	for _, retained := range []bool{false, true} {
+		record := store.CompatibleIssueRecord{Issue: store.Issue{ID: "42", Category: "feedback", Title: "Actual feedback title", Count: 0}}
+		if retained {
+			record.Issue.Count = 1
+			record.Latest = &eventview.Record{ID: strings.Repeat("a", 32), Kind: "feedback", Title: record.Issue.Title, Data: json.RawMessage(`{"contexts":{"feedback":{"message":"Actual feedback message"}}}`)}
+		}
+		view, err := projectCompatibleIssue(record, "https://good.example.test", true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := json.Marshal(view)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var wire map[string]any
+		if err := json.Unmarshal(raw, &wire); err != nil || wire["issueCategory"] != "feedback" || wire["type"] != "feedback" || wire["userReportCount"] != float64(0) {
+			t.Fatal("feedback wire category/type lost with retained=", retained, string(raw), err)
+		}
+	}
+}
+
 func TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory(t *testing.T) {
 	until := time.Date(2026, 10, 15, 8, 0, 0, 0, time.FixedZone("fixture", -6*3600))
 	configured, remaining := int32(30), int64(7)

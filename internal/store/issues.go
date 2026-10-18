@@ -38,8 +38,8 @@ type Issue struct {
 	Resolution  *IssueResolution `json:"resolution"`
 }
 type IssueFilter struct {
-	Project, Query, Status, Environment, Release, Sort string
-	Page                                               int
+	Project, Query, Status, Category, Environment, Release, Sort string
+	Page                                                         int
 }
 type EventSummary struct {
 	ID          string          `json:"eventID"`
@@ -282,6 +282,9 @@ func (s *Store) Issues(ctx context.Context, userID, orgSlug string, f IssueFilte
 	if f.Status != "" && f.Status != "all" {
 		where += "AND i.status=" + bind(f.Status) + " "
 	}
+	if f.Category != "" {
+		where += "AND i.category=" + bind(f.Category) + " "
+	}
 	// Every event predicate is conjoined within one occurrence. Lifetime issue
 	// summaries remain independent of which historical occurrence matched.
 	eventPredicates := []string{}
@@ -343,7 +346,7 @@ func (s *Store) Issues(ctx context.Context, userID, orgSlug string, f IssueFilte
 }
 
 func validateIssueFilter(f IssueFilter) (IssueSearch, error) {
-	for _, value := range []string{f.Project, f.Query, f.Status, f.Environment, f.Release, f.Sort} {
+	for _, value := range []string{f.Project, f.Query, f.Status, f.Category, f.Environment, f.Release, f.Sort} {
 		if !utf8.ValidString(value) || strings.ContainsRune(value, 0) {
 			return IssueSearch{}, fmt.Errorf("%w: filters must be valid UTF-8 without NUL", ErrInvalidIssueFilter)
 		}
@@ -363,6 +366,9 @@ func validateIssueFilter(f IssueFilter) (IssueSearch, error) {
 	case "", "date", "freq", "new":
 	default:
 		return IssueSearch{}, fmt.Errorf("%w: invalid issue sort", ErrInvalidIssueFilter)
+	}
+	if f.Category != "" && f.Category != "error" && f.Category != "feedback" {
+		return IssueSearch{}, fmt.Errorf("%w: invalid issue category", ErrInvalidIssueFilter)
 	}
 	if f.Page < 0 || f.Page > 1000000 {
 		return IssueSearch{}, fmt.Errorf("%w: page must be between 1 and 1000000", ErrInvalidIssueFilter)

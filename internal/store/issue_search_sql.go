@@ -14,6 +14,8 @@ func issueSearchPredicates(search IssueSearch, args *[]any) (issuePredicates, ev
 		switch term.Field {
 		case "status":
 			predicate = issueSearchValues("i.status", term.Values, args)
+		case "category":
+			predicate = issueSearchValues("i.category", term.Values, args)
 		case "environment":
 			predicate = issueSearchValues("e.environment", term.Values, args)
 		case "release":
@@ -39,7 +41,7 @@ func issueSearchPredicates(search IssueSearch, args *[]any) (issuePredicates, ev
 		if term.Negated {
 			predicate = "NOT(" + predicate + ")"
 		}
-		if term.Field == "status" {
+		if term.Field == "status" || term.Field == "category" {
 			issuePredicates = append(issuePredicates, predicate)
 		} else {
 			eventPredicates = append(eventPredicates, predicate)

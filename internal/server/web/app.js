@@ -479,6 +479,7 @@
         }
         if (!query.has('status')) query.set('status', 'unresolved');
         if (!query.has('sort')) query.set('sort', 'date');
+        query.set('category', 'error');
         const issues = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/issues?${query}`);
         if (version !== state.requestVersion) return;
         const page = Math.max(1, parseInt(params.get('page'), 10) || 1);

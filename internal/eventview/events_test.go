@@ -184,6 +184,50 @@ func TestProjectEvidenceAndMalformedOptionalShapes(t *testing.T) {
 	}
 }
 
+func TestProjectFeedbackUsesStoredContextMessage(t *testing.T) {
+	contexts := json.RawMessage(`{ "feedback" : { "message" : "  Follow up  ", "score" : 9007199254740993, "answered" : true } }`)
+	data := json.RawMessage(`{"type":"transaction","transaction":"GET /wrong","csp":{"blocked_uri":"https://wrong.example"},"exception":{"values":[{"type":"WrongError","value":"wrong"}]},"contexts":` + string(contexts) + `}`)
+	dataBefore := append([]byte(nil), data...)
+	report := json.RawMessage(`{"comments":"must not leak"}`)
+	record := eventview.Record{Kind: "feedback", Title: strings.Repeat("界", 256), Data: data, UserReport: report}
+
+	for _, full := range []bool{false, true} {
+		got, err := eventview.Project(record, full)
+		if err != nil {
+			t.Fatal(err)
+		}
+		projected := eventObject(t, got)
+		if projected["type"] != "feedback" || projected["message"] != "  Follow up  " || projected["title"] != strings.Repeat("界", 255) {
+			t.Fatalf("feedback projection = %+v", projected)
+		}
+		if !reflect.DeepEqual(projected["metadata"], map[string]any{"title": strings.Repeat("界", 255)}) {
+			t.Fatalf("feedback metadata = %#v", projected["metadata"])
+		}
+		if !full {
+			for _, field := range []string{"contexts", "entries", "userReport"} {
+				if _, exists := projected[field]; exists {
+					t.Fatalf("summary exposed %s", field)
+				}
+			}
+			continue
+		}
+		if !bytes.Equal(got.Contexts, contexts) {
+			t.Fatalf("contexts bytes = %q, want %q", got.Contexts, contexts)
+		}
+		if got.UserReport == nil || string(*got.UserReport) != "null" || projected["userReport"] != nil {
+			t.Fatalf("feedback userReport = %v / %#v", got.UserReport, projected["userReport"])
+		}
+		got.Contexts[0] = '['
+		if !bytes.Equal(data, dataBefore) {
+			t.Fatal("mutating projected contexts changed stored event data")
+		}
+		fresh, err := eventview.Project(record, true)
+		if err != nil || !bytes.Equal(fresh.Contexts, contexts) {
+			t.Fatalf("fresh contexts = %q, err=%v", fresh.Contexts, err)
+		}
+	}
+}
+
 func TestLegacyJSONRealIdentityExactUnixAndTagDictionary(t *testing.T) {
 	for _, tc := range []struct {
 		name string

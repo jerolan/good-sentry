@@ -184,7 +184,7 @@ func (s *Store) CompatibleIssues(ctx context.Context, access ManagementAccess, p
 	if shortID > 0 {
 		where += ` AND upper(p.slug)=upper(` + bind(shortProject) + `) AND i.id IN(SELECT COALESCE(alias.merged_into,alias.id) FROM issues alias WHERE alias.project_id=i.project_id AND alias.id=` + bind(shortID) + `)`
 	}
-	issueTerms, _, err := issueSearchPredicates(issueStatusSearch(search), &args)
+	issueTerms, _, err := issueSearchPredicates(issueStateSearch(search), &args)
 	if err != nil {
 		return nil, err
 	}

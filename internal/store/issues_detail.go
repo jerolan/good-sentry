@@ -14,6 +14,8 @@ type IssueDetail struct {
 	Analytics       IssueAnalytics  `json:"analytics"`
 	UserReports     []UserReport    `json:"userReports"`
 	UserReportCount int64           `json:"userReportCount"`
+	FeedbackItems   []FeedbackItem  `json:"feedbackItems"`
+	FeedbackCount   int64           `json:"feedbackCount"`
 }
 
 // IssueDetail reads authorization, issue state, events and comments from the
@@ -64,6 +66,13 @@ func (s *Store) IssueDetail(ctx context.Context, userID, id string) (IssueDetail
 	}
 	if len(detail.UserReports) > 25 {
 		detail.UserReports = detail.UserReports[:25]
+	}
+	detail.FeedbackItems, detail.FeedbackCount, err = readFeedbackItems(ctx, tx, issue.ID, 0)
+	if err != nil {
+		return detail, err
+	}
+	if len(detail.FeedbackItems) > 25 {
+		detail.FeedbackItems = detail.FeedbackItems[:25]
 	}
 	return detail, tx.Commit(ctx)
 }

@@ -58,6 +58,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	s.registerCompatibleEventRoutes(mux)
 	s.registerCompatibleIssueRoutes(mux)
 	s.registerUserReportRoutes(mux)
+	s.registerFeedbackRoutes(mux)
 	s.registerCompatibleIssueWriteRoutes(mux)
 	s.registerCompatibleIssueDeleteRoutes(mux)
 	s.registerReleaseRoutes(mux)

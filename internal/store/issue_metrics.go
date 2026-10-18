@@ -34,10 +34,10 @@ type issueOccurrenceFilter struct {
 	search       IssueSearch
 }
 
-func issueStatusSearch(search IssueSearch) IssueSearch {
+func issueStateSearch(search IssueSearch) IssueSearch {
 	result := IssueSearch{}
 	for _, term := range search.Terms {
-		if term.Field == "status" {
+		if term.Field == "status" || term.Field == "category" {
 			result.Terms = append(result.Terms, term)
 		}
 	}
@@ -58,7 +58,7 @@ func (f issueOccurrenceFilter) predicates(args *[]any) ([]string, error) {
 	}
 	search := IssueSearch{Text: f.search.Text}
 	for _, term := range f.search.Terms {
-		if term.Field != "status" {
+		if term.Field != "status" && term.Field != "category" {
 			search.Terms = append(search.Terms, term)
 		}
 	}
