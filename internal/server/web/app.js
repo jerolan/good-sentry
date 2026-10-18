@@ -85,9 +85,9 @@
 
   async function request(path, options = {}) {
     let response;
-    const { jsonText, withLinks = false, ...fetchOptions } = options;
+    const { jsonText, withLinks = false, binary = false, ...fetchOptions } = options;
     const multipart = options.body instanceof FormData;
-    const headers = { Accept: 'application/json', ...options.headers };
+    const headers = { Accept: binary ? 'application/octet-stream' : 'application/json', ...options.headers };
     if (jsonText !== undefined || (options.body !== undefined && !multipart)) headers['Content-Type'] = 'application/json';
     if (options.method && options.method !== 'GET' && state.me?.csrfToken) {
       headers['X-CSRF-Token'] = state.me.csrfToken;
@@ -101,6 +101,7 @@
       throw new Error('Cannot reach GoodSentry. Check your connection and try again.');
     }
     if (response.status === 204) return null;
+    if (binary && response.ok) return response.blob();
     const endpoint = path.split('?')[0];
     const data = await response.text().then(source => endpoint.endsWith('/logs') || /\/logs\/\d+$/.test(endpoint) || /\/transactions\/(event|span)\/[^/]+$/.test(endpoint) || /\/traces\/[^/]+\/nodes\/[^/]+$/.test(endpoint) || /\/releases(?:\/|$)/.test(endpoint)
       ? parseTelemetryJSON(source) : JSON.parse(source)).catch(() => null);
@@ -1644,6 +1645,94 @@
     return node('section', { class: 'card panel' }, node('div', { class: 'panel-title' }, node('h2', {}, title)), content);
   }
 
+  function eventAttachments(issuePath, eventID, current) {
+    const path = `${issuePath}/events/${encodeURIComponent(eventID)}/attachments`;
+    const content = node('div');
+    const status = node('p', { class: 'small', role: 'status' });
+    const downloadError = node('p', { class: 'form-error', role: 'alert' });
+    let page = 1, sequence = 0;
+    const refresh = button('Refresh attachments', () => load(1), 'small');
+    const previous = button('Previous attachments', () => load(page - 1), 'small');
+    const next = button('Next attachments', () => load(page + 1), 'small');
+    const pageLabel = node('span', { class: 'muted small', 'aria-live': 'polite' });
+    const panel = detailPanel('Event attachments', node('div', { class: 'panel-body form-stack' },
+      node('div', { class: 'actions' }, refresh), content,
+      node('div', { class: 'actions', 'aria-label': 'Attachment pages' }, previous, pageLabel, next), status, downloadError));
+    panel.setAttribute('aria-label', 'Event attachments');
+    const alive = () => current() && panel.isConnected;
+
+    async function download(file, control) {
+      control.disabled = true;
+      status.textContent = 'Downloading attachment…';
+      downloadError.textContent = '';
+      try {
+        const blob = await request(`${path}/${encodeURIComponent(file.id)}`, { binary: true });
+        if (!alive()) return;
+        const url = URL.createObjectURL(blob);
+        const link = node('a', { href: url, download: file.downloadName });
+        document.body.append(link);
+        try { link.click(); }
+        finally { link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
+        status.textContent = 'Download started.';
+      } catch (error) {
+        if (!alive()) return;
+        status.textContent = '';
+        downloadError.textContent = error.status === 404
+          ? 'This attachment is no longer stored or accessible. Refresh attachments to see the current files.'
+          : error.message;
+      } finally { control.disabled = false; }
+    }
+
+    async function load(requestedPage) {
+      const version = ++sequence;
+      refresh.disabled = previous.disabled = next.disabled = true;
+      status.textContent = '';
+      downloadError.textContent = '';
+      pageLabel.textContent = `Page ${requestedPage}`;
+      content.replaceChildren(node('p', { class: 'muted', role: 'status', 'aria-busy': 'true' }, 'Loading attachments…'));
+      let more = false;
+      try {
+        const result = await request(`${path}?page=${requestedPage}`);
+        if (!alive() || version !== sequence) return;
+        page = requestedPage;
+        const files = result.data || [];
+        more = result.hasMore;
+        if (!files.length) {
+          content.replaceChildren(node('p', { class: 'muted', role: 'status' }, page === 1 ? 'No attachments stored for this event.' : 'No attachments on this page.'));
+        } else {
+          const rows = files.map(file => {
+            const control = button('Download', () => download(file, control), 'small');
+            control.setAttribute('aria-label', `Download ${file.downloadName}`);
+            const name = Array.from(file.filename);
+            const filename = name.length > 120
+              ? node('details', {}, node('summary', {}, name.slice(0, 100).join('') + '…'), node('p', { class: 'small' }, file.filename))
+              : node('strong', {}, file.filename);
+            return node('tr', {},
+              node('td', { class: 'artifact-name' }, filename, file.metadataTruncated ? node('p', { class: 'small muted' }, 'Name or type shortened for display.') : null),
+              node('td', { class: 'artifact-name' }, text(file.contentType)),
+              node('td', { class: 'nowrap' }, `${number(file.size)} B`),
+              node('td', { class: 'nowrap' }, node('time', { datetime: file.dateCreated }, date(file.dateCreated, true))),
+              node('td', {}, control));
+          });
+          content.replaceChildren(node('div', { class: 'table-scroll', 'aria-label': 'Attachment metadata', tabindex: '0' }, node('table', {},
+            node('thead', {}, node('tr', {}, ['Name', 'Type', 'Size', 'Uploaded', 'Download'].map(name => node('th', { scope: 'col' }, name)))),
+            node('tbody', {}, rows))));
+        }
+      } catch (error) {
+        if (!alive() || version !== sequence) return;
+        errorState(content, error, () => load(requestedPage));
+      } finally {
+        if (alive() && version === sequence) {
+          refresh.disabled = false;
+          previous.disabled = page <= 1;
+          next.disabled = !more;
+          pageLabel.textContent = `Page ${page}`;
+        }
+      }
+    }
+    return { panel, start: () => load(1) };
+  }
+
   function stackFrame(frame) {
     const location = [frame.filename || frame.abs_path || frame.module || 'Unknown file', frame.lineno, frame.colno].filter(value => value !== undefined && value !== null && value !== '').join(':');
     const row = node('li', { class: 'stack-frame' }, node('div', { class: 'frame-heading' }, node('span', { class: 'frame-function' }, frame.function || '<anonymous>'), frame.in_app ? node('span', { class: 'badge badge-sm' }, 'App frame') : null), node('div', { class: 'frame-path' }, location));
@@ -1826,8 +1915,10 @@
     const mute = issueMute(issue, view, triage);
     const resolution = issueResolution(issue, path, view, triage);
     const origins = issueOrigins(issue, path, view, triage);
+    // The selected raw event is the first retained history entry in IssueDetail.
+    const attachments = hasEvents ? eventAttachments(path, detail.events[0].eventID, alive) : null;
     const grouping = detailPanel('Future grouping', node('p', { class: 'panel-body muted', role: 'status' }, 'Loading active signatures…'));
-    const left = node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, hasEvents ? stackTrace(event) : null, hasEvents ? breadcrumbs(event) : null, comments.panel, activity.panel);
+    const left = node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, hasEvents ? stackTrace(event) : null, hasEvents ? breadcrumbs(event) : null, attachments?.panel, comments.panel, activity.panel);
     if (hasEvents) left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': hasEvents ? 'Event details' : 'Issue details' },
@@ -1841,6 +1932,7 @@
     if (event.request) right.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
     if (event.extra && Object.keys(event.extra).length) right.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
     main.replaceChildren(routeLink('← All issues', { issue: null }, { class: 'back-link' }), heading, actionError, deleteConfirmation, node('div', { class: 'detail-grid' }, left, right));
+    attachments?.start();
     comments.start();
     activity.load(view.activityPage);
     assignment.load(view.assigneePage);

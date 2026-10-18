@@ -97,7 +97,7 @@ Sentry.init({
 Sentry.captureException(new Error("Hello from GoodSentry"));
 ```
 
-These checks establish the listed workflows for those versions. Attachments, additional envelope types and other SDK versions need their own verification. Unknown envelope items are retained and reported through `unsupportedItems`; retention alone does not implement their functionality.
+These checks establish the listed workflows for those versions. Node SDK `11.7.0` also passes binary attachments with native metadata, pagination and byte-exact downloads for organization owners and members. Additional envelope types and other SDK versions need their own verification. Unknown envelope items are retained and reported through `unsupportedItems`; retention alone does not implement their functionality.
 
 ### OpenTelemetry logs
 
@@ -261,6 +261,18 @@ Deploy those injected files so the SDK can attach their Debug IDs to captured ex
 Optional `--release` and `--dist` values must match your SDK configuration. An upload with `--release` does not create release metadata; a separate release command or fresh SDK capture does. The release/dist workflow without injection also passes when the artifact URL prefix matches the emitted filename. Incorrect version/distribution selectors remain unmapped.
 
 Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. Temporary staging has a configurable quota and expiry, with automatic cleanup in the Go process. Native debug-file and minidump uploads remain pending.
+
+### Event attachments
+
+Open an issue to list attachments for its displayed retained event. The panel
+shows names, types, sizes and upload dates, with 25 files per page. Long names
+can be expanded. Downloaded files use a safe filename and an explicit binary
+download; their contents are never rendered as a preview.
+
+Organization members can read the files through their current signed-in
+session. An SDK DSN or management bearer token does not grant access to the
+native download routes. These native endpoints do not yet implement Sentry's
+compatible attachment management API.
 
 ### Current gaps
 
