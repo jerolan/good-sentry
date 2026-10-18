@@ -162,7 +162,7 @@ func (s *Server) assets(w http.ResponseWriter, r *http.Request) {
 		_, _ = io.WriteString(w, strings.ReplaceAll(string(body), "__GOODSENTRY_BASE__", html.EscapeString(s.cfg.Prefix)))
 		return
 	}
-	if r.URL.Path != "/app.css" && r.URL.Path != "/app.js" && r.URL.Path != "/alerts.js" && r.URL.Path != "/releases.js" && r.URL.Path != "/hashes.js" {
+	if r.URL.Path != "/app.css" && r.URL.Path != "/app.js" && r.URL.Path != "/alerts.js" && r.URL.Path != "/releases.js" && r.URL.Path != "/hashes.js" && r.URL.Path != "/reports.js" {
 		failure(w, 404, "Not found")
 		return
 	}

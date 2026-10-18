@@ -4,6 +4,7 @@
 @source "./index.html";
 @source "./app.js";
 @source "./hashes.js";
+@source "./reports.js";
 @source "./alerts.js";
 @source "./releases.js";
 
@@ -172,6 +173,11 @@
   .panel { @apply card block bg-surface border border-outline rounded-md overflow-hidden shadow-[0_1px_2px_#152d2110]; }
   .panel+.panel { @apply mt-4; }
   .panel-title { @apply px-5 py-4 border-b border-outline flex justify-between items-center gap-3; }
+  .reported-event-content h4,.reported-event-content h5 { @apply m-0; }
+  .user-reports-body,.user-reports-body .form-stack { grid-template-columns: minmax(0,1fr); }
+  .reported-event-content .panel-title h4 { @apply text-[1.05rem] tracking-[-.015em]; }
+  .reported-event-content h5 { @apply text-[.95rem]; }
+  .reported-event-content .context-block h5 { @apply mb-[.65rem]; }
   .panel-body { @apply p-5; }
   .filters {
     @apply grid gap-3 items-end p-4 bg-surface border border-outline rounded-md mb-5 shadow-[0_1px_2px_#152d2108];
