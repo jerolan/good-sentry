@@ -189,6 +189,7 @@
   .field input::placeholder,.field textarea::placeholder { @apply text-[#687580]; }
   .field input[readonly] { @apply bg-surface-subtle; }
   .form-stack { @apply grid gap-4; }
+  .form-stack[aria-label="Confirm issue deletion"][hidden] { @apply hidden; }
   .form-error { @apply bg-danger-soft border border-[#edc9c8] text-danger px-4 py-3 rounded-md; }
   .form-error:empty { @apply hidden; }
   .empty { @apply px-6 py-16 flex items-center text-center flex-col gap-3; }
