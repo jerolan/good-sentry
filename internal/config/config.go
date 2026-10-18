@@ -18,6 +18,7 @@ type Config struct {
 	RetentionDays, LogRetentionDays           int
 	TransactionRetentionDays                  int
 	EventRetentionDays                        int
+	UptimeRetentionDays                       int
 	RetentionIntervalSeconds                  int
 	MonitorWorkers                            int
 	UptimeAllowPrivate                        bool
@@ -147,6 +148,11 @@ func Load() (Config, error) {
 	c.EventRetentionDays, err = strconv.Atoi(events)
 	if err != nil || c.EventRetentionDays < 1 || c.EventRetentionDays > 3650 {
 		return c, fmt.Errorf("GOODSENTRY_EVENT_RETENTION_DAYS / GLITCHTIP_EVENT_RETENTION_DAYS must be between 1 and 3650")
+	}
+	uptimeDays := alias("GOODSENTRY_UPTIME_RETENTION_DAYS", "GLITCHTIP_UPTIME_RETENTION_DAYS", strconv.Itoa(c.RetentionDays))
+	c.UptimeRetentionDays, err = strconv.Atoi(uptimeDays)
+	if err != nil || c.UptimeRetentionDays < 1 || c.UptimeRetentionDays > 3650 {
+		return c, fmt.Errorf("GOODSENTRY_UPTIME_RETENTION_DAYS / GLITCHTIP_UPTIME_RETENTION_DAYS must be between 1 and 3650")
 	}
 	if raw := os.Getenv("ARTIFACT_STAGING_MAX_BYTES"); raw != "" {
 		c.ArtifactStagingMaxBytes, err = strconv.ParseInt(raw, 10, 64)
