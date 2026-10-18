@@ -280,7 +280,7 @@ compatible attachment management API.
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, release retention, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, further conditional policies, SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
@@ -325,8 +325,7 @@ transaction, then continues while work remains. Shared canonical batch bytes
 remain until their last log expires. Deleted rows no longer appear in lists or
 detail reads. Eligible rows can remain visible until the maintenance pass.
 Recovery requires restoring an operator backup; increasing the lifetime does
-not recover deleted logs. Expiration does not archive logs or implement
-retention for release metadata.
+not recover deleted logs. Expiration does not archive logs.
 
 ### Transaction and span retention
 
@@ -392,6 +391,33 @@ children with fresh file receipts without incrementing the parent event count.
 An opaque orphan can also start a fresh lifetime after deletion. Increasing
 retention does not restore bytes; recovery requires an operator backup.
 
+### Release metadata retention
+
+Release identities expire 365 days after PostgreSQL first records their
+organization and version. `GOODSENTRY_RELEASE_RETENTION_DAYS` overrides
+`GLITCHTIP_RELEASE_RETENTION_DAYS`, then defaults to 365 independently of the
+master and file lifetimes. Values must be whole days from 1 to 3650.
+
+Each pass removes at most 250 release identities and their owned project
+associations, commits and deployments. A shared release expires across all
+its projects. Open and archived releases follow the same lifetime. Fresh
+captures, added projects, finalization and client-supplied release dates do
+not refresh the first receipt. Cleanup runs at startup and after the retention
+interval, including with logs or uptime disabled.
+
+Automatic expiry keeps source maps and other files on their independent
+lifetimes. Events, stored stack frames, issue comments, assignments, mute
+progress, saved resolution references and alert history survive. Missing
+release metadata disappears from lists and selected metadata reads return
+404. The issue's recorded release reference remains readable.
+
+A fresh capture, native source-map upload or explicit CLI creation can record
+the same version as a new identity with a fresh lifetime. Retrying a retained
+event does not recreate metadata or increase its count. A retained source map
+continues mapping new captures after release metadata expires. Explicit manual
+release deletion keeps its existing behavior of removing associated release
+files. Recovery of expired metadata requires an operator backup.
+
 ## Configuration
 
 Compose supplies the local database connection. Environment values override the defaults below.
@@ -418,6 +444,7 @@ Compose supplies the local database connection. Environment values override the 
 | `GOODSENTRY_TRANSACTION_RETENTION_DAYS` | Master lifetime | Legacy transaction and standalone span lifetime. |
 | `GOODSENTRY_UPTIME_RETENTION_DAYS` | Master lifetime | Completed monitor result lifetime; cached state and alert history remain available. |
 | `GOODSENTRY_FILE_RETENTION_DAYS` | Master lifetime | Source map, attachment and opaque envelope item lifetime; retained event history remains available. |
+| `GOODSENTRY_RELEASE_RETENTION_DAYS` | `365` | Organization/version metadata lifetime, independent of file and master lifetimes. |
 | `GOODSENTRY_RETENTION_INTERVAL_SECONDS` | `60` | Idle cleanup interval, from 1 to 3600 seconds. |
 | `MONITOR_WORKERS` | `2` | Concurrent checks per process, from 1 to 16. |
 | `ISSUE_MAINTENANCE_INTERVAL_SECONDS` | `1` | Polling for expired mutes and pending next-release resolution, from 1 to 3600 seconds. Longer intervals delay metadata-only binding and status display; fresh captures evaluate immediately. |
