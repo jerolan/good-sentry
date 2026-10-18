@@ -65,6 +65,10 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
   - [x] Add atomic native detail analytics and accessible affected-user/24-hour chart UI while preserving drafts/grouping/resolution flows.
   - [x] Verify owning tests, actual SDK/browser, cloned120-event image upgrade/restart and exact public source/CI.
 - [ ] Implement actual SDK user-feedback ingestion, issue report retrieval/counts and usable feedback UI; current null/zero placeholders do not close feedback parity.
+  - [ ] Add029 legacy report storage, receipt/update/pending clocks, generation-safe error binding and bounded orphan cleanup with real PostgreSQL proofs.
+  - [ ] Add scoped snapshot lists/counts/full-event reports, strict DSN/session/token transports and in-process pending expiry.
+  - [ ] Add usable safe report UI and verify full integration/race/vet, actual SDK/browser/copied-image restart/recovery and exact public source/CI.
+  - [ ] Specify and deliver modern captureFeedback separately, including standalone/associated submissions, attachments, category-filtered issues and usable triage. Legacy report success does not close this parent.
 
 - [x] Deliver compatible event inspection through project and legacy/organization issue routes.
   - [x] Add event:read without changing credential defaults or old rows, and implement pure compatible event/JSON projection, including reachable public request/breadcrumb contracts.
