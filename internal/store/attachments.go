@@ -35,6 +35,7 @@ type CaptureEnvelopeItem struct {
 type CaptureItems struct {
 	Attachments   []CaptureAttachment
 	EnvelopeItems []CaptureEnvelopeItem
+	UserReports   []UserReportInput
 }
 
 func saveCaptureItems(ctx context.Context, tx pgx.Tx, projectID, eventID string, parts []CaptureItems) error {
@@ -47,6 +48,11 @@ func saveCaptureItems(ctx context.Context, tx pgx.Tx, projectID, eventID string,
 		}
 		for _, item := range part.EnvelopeItems {
 			if err := saveEnvelopeItem(ctx, tx, projectID, eventID, item.Type, item.Header, item.Data); err != nil {
+				return err
+			}
+		}
+		for _, input := range part.UserReports {
+			if _, err := saveUserReport(ctx, tx, projectID, input); err != nil {
 				return err
 			}
 		}

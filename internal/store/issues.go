@@ -57,9 +57,14 @@ type Comment struct {
 func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, parts ...CaptureItems) (string, bool, error) {
 	hasItems := false
 	for _, part := range parts {
-		if len(part.Attachments) > 0 || len(part.EnvelopeItems) > 0 {
+		for _, input := range part.UserReports {
+			report, err := normalizeUserReport(input)
+			if err != nil || report.EventID != ev.ID {
+				return "", false, ErrInvalidUserReport
+			}
+		}
+		if len(part.Attachments) > 0 || len(part.EnvelopeItems) > 0 || len(part.UserReports) > 0 {
 			hasItems = true
-			break
 		}
 	}
 	tx, err := s.pool.Begin(ctx)
@@ -140,6 +145,11 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 	err = tx.QueryRow(ctx, `INSERT INTO events(project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`, projectID, ev.ID, issueID, originID, ev.Type, ev.Title, ev.Level, ev.Timestamp, ev.Environment, ev.Release, ev.TraceID, ev.Transaction, ev.Duration, ev.Data).Scan(&eventRowID)
 	if err != nil {
 		return "", false, err
+	}
+	if ev.Type == "error" || ev.Type == "message" {
+		if err := bindPendingUserReport(ctx, tx, projectID, ev.ID, eventRowID); err != nil {
+			return "", false, err
+		}
 	}
 	if err = saveCaptureItems(ctx, tx, projectID, ev.ID, parts); err != nil {
 		return "", false, err
