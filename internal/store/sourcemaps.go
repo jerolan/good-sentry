@@ -55,9 +55,9 @@ func (s *Store) SaveSourceMap(ctx context.Context, userID, orgSlug, projectID, n
 		if err := observeRelease(ctx, tx, projectID, release); err != nil {
 			return SourceMapFile{}, false, err
 		}
-		if err := lockReleaseArtifacts(ctx, tx, projectID, release); err != nil {
-			return SourceMapFile{}, false, err
-		}
+	}
+	if err := lockReleaseArtifacts(ctx, tx, projectID, release); err != nil {
+		return SourceMapFile{}, false, err
 	}
 	meta, created, err := saveSourceMapTx(ctx, tx, projectID, name, release, dist, debugID, data, nil)
 	if err != nil {
