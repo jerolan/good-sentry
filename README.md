@@ -59,6 +59,7 @@ docker compose down
 | Capability | Verified behavior |
 | --- | --- |
 | Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, historical tag/environment/release search, sorting/pages, user/team assignment, editable comments and recorded triage activity with regressions. |
+| User feedback | Modern SDK submissions with optional error associations, per-submission attachments and paginated triage, plus legacy reports attached to their original error. |
 | JavaScript source maps | Official CLI injection/bundle uploads and native uploads, Debug ID or release/distribution selection, original source context and preserved minified stacks. |
 | Releases | Shared project versions, observed SDK releases, local commit metadata, completed deploys and compatible CLI lifecycle operations, with a responsive management UI. |
 | Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail and a cross-project trace waterfall. |
@@ -181,7 +182,7 @@ Issue detail shows identified users from retained events and a real 24-hour even
 
 An explicit `event:read` or `event:write` token can read organization/project issue lists, organization/global issue detail and organization `issues-stats` under `/api/0/`. Reads honor its project grants. Omitted `query` selects unresolved issues; `query=` includes every status. Environment and occurrence filters return matching metrics alongside historical totals. Organization `statsPeriod` selects a relative time window; on the deprecated project list it selects the chart (`24h`, `14d` or empty to disable). `groupStatsPeriod` controls list charts separately.
 
-Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Unsupported query options return 400. Compatible issue deletion, sliding-window conditions and feedback remain pending.
+Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Unsupported query options return 400. Compatible sliding-window conditions remain pending. Issue category filters distinguish errors from modern feedback, including retained issues with no remaining events.
 
 ### Compatible individual issue changes
 
@@ -215,7 +216,7 @@ curl --request PUT 'http://localhost:8000/api/0/projects/my-workspace/my-project
 
 Merging requires explicit IDs from one project and retains the lowest current root. `merge:1` is also accepted; false, zero and null do not separate groups. Assignment and policy-only changes require IDs too. A status change can select by current `status`, project, environment, search and occurrence time. Without IDs or a query, the project route includes all statuses; the organization route selects unresolved issues. Explicit `query=` includes every status. Operations select at most1000 roots by default; an explicit `limit` accepts1–100. Release selectors require one project. The response acknowledges supplied changes and the actual merge parent/children; issue GETs show each saved state.
 
-The real official sentry-cli3.8.0 has passed resolve, mute, unresolve, next-release and selection by IDs, status or `--all`, followed by authenticated state checks. Bulk `snoozeDuration:null` is accepted, and a nonnull value aliases ignoreDuration in minutes. SDK capture, retries and future routing remain intact. Compatible issue deletion remains a required follow-up.
+The real official sentry-cli3.8.0 has passed resolve, mute, unresolve, next-release and selection by IDs, status or `--all`, followed by authenticated state checks. Bulk `snoozeDuration:null` is accepted, and a nonnull value aliases ignoreDuration in minutes. SDK capture, retries and future routing remain intact.
 
 ### Compatible event reads
 
@@ -280,18 +281,55 @@ compatible attachment management API.
 
 ### Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, further conditional policies, modern SDK feedback, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, further conditional policies, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with the pinned CLI above. Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
 See the [complete specification](SPEC.md), [implementation order](tasks/plan.md) and [task evidence](tasks/todo.md) before relying on an unlisted capability.
+
+### Modern user feedback
+
+The official Node SDK `11.7.0` sends feedback through its normal transport.
+After configuring its DSN, capture a standalone submission or associate it
+with an error from the same project:
+
+```js
+const errorID = Sentry.captureException(new Error("Checkout failed"));
+Sentry.captureFeedback({
+  message: "The checkout button stopped responding.",
+  name: "Alex",
+  email: "alex@example.com",
+  associatedEventId: errorID,
+});
+await Sentry.flush(5000);
+```
+
+Open **Feedback** to search, assign, comment on, resolve, reopen or ignore
+submissions. Each new SDK feedback ID starts its own issue; related feedback
+issues can be merged. Feedback stays separate from error counts, error alert
+thresholds and release regression policies.
+
+The submission list has 25 rows per page. Inspect the selected submission's
+original message, contexts, JSON and downloadable attachments, including
+submissions older than the latest 50 event summaries. Names, contact details
+and source URLs are displayed as text. Retrying an existing feedback ID keeps
+its first payload and receipt time; a new attachment can still be added.
+
+An error arriving later can bind a pending reference through the same
+application process. The association records a specific stored error receipt.
+If that error expires, the feedback remains readable and reports the error as
+unavailable. Reusing the error's SDK ID does not replace the old association.
+Expired feedback removes its own attachments without deleting the associated
+error. An issue with no retained submissions keeps its category and triage
+history. **Inspect associated error** shows the retained error and links to
+its current issue; file downloads belong to the selected feedback submission.
 
 ### Legacy user feedback
 
 GoodSentry receives legacy `captureUserFeedback` reports through Sentry SDK
 envelopes and `POST /api/0/projects/{organization}/{project}/user-feedback/`.
 Official Sentry Browser `7.120.4` passes with its normal network transport.
-Modern `captureFeedback` events remain separate pending work.
+Modern `captureFeedback` submissions use the separate **Feedback** view above.
 
 Open an issue's **User reports** panel to read the reporter's name, contact
 text and comments. Reports have 25 rows per page. **View event** opens the
