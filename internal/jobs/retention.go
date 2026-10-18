@@ -99,6 +99,23 @@ func StartFileRetention(parent context.Context, db *store.Store, days int, inter
 	})
 }
 
+// StartReleaseRetention shares the in-process receipt maintenance lifecycle.
+func StartReleaseRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		releases, err := db.CleanupReleases(ctx, days)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Release retention pass failed", "entryPoint", "release_retention_worker", "operation", "cleanup_releases")
+		} else if releases > 0 {
+			slog.Info("Release retention cleanup committed", "entryPoint", "release_retention_worker", "removedReleases", releases)
+			return true
+		}
+		return false
+	})
+}
+
 func startRetention(parent context.Context, interval time.Duration, cleanup func(context.Context) bool) func() {
 	ctx, cancel := context.WithCancel(parent)
 	var wg sync.WaitGroup

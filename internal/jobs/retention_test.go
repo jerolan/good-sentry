@@ -17,7 +17,7 @@ import (
 // sleeps for an hour during shutdown. Exercise real rows through public
 // start/stop functions; no fake store, timer, logger or call-order seam.
 func TestRetentionWorkersDrainRetryAndStop(t *testing.T) {
-	for _, class := range []string{"logs", "transactions", "events", "uptime", "files"} {
+	for _, class := range []string{"logs", "transactions", "events", "uptime", "files", "releases"} {
 		t.Run(class, func(t *testing.T) { retentionWorkerLifecycle(t, class) })
 	}
 }
@@ -55,9 +55,23 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 		start = jobs.StartFileRetention
 		countQuery = "SELECT (SELECT count(*) FROM source_maps)+(SELECT count(*) FROM attachments)+(SELECT count(*) FROM envelope_items)"
 		failureTable, valueColumn = "envelope_items", "item_type"
+	} else if class == "releases" {
+		start = jobs.StartReleaseRetention
+		countQuery = "SELECT count(*) FROM releases"
+		failureTable, valueColumn = "releases", "version"
 	}
 	seed := func(prefix string, count int) {
 		t.Helper()
+		if class == "releases" {
+			if _, err := f.admin.Exec(f.ctx, `WITH inserted AS (
+ INSERT INTO releases(organization_id,version,created_at)
+ SELECT $1::bigint,CASE WHEN $3::integer=1 THEN $2 ELSE $2||n END,clock_timestamp()-interval '2 days'
+ FROM generate_series(1,$3::integer) n RETURNING id
+) INSERT INTO release_projects(release_id,project_id) SELECT id,$4::bigint FROM inserted`, f.org.ID, prefix, count, project.ID); err != nil {
+				t.Fatal(err)
+			}
+			return
+		}
 		if class == "files" {
 			// A running worker must observe the complete three-table backlog,
 			// including the later row that establishes atomic retry behavior.
