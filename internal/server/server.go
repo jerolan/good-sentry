@@ -117,6 +117,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.HandleFunc("POST /api/{project}/store/", s.ingest)
 	mux.HandleFunc("OPTIONS /api/{project}/envelope/", s.preflight)
 	mux.HandleFunc("OPTIONS /api/{project}/store/", s.preflight)
+	s.registerSecurityReportRoutes(mux)
 	mux.HandleFunc("/", s.assets)
 	var handler http.Handler = mux
 	if cfg.Prefix != "" {

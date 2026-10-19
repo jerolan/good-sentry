@@ -114,7 +114,7 @@ func Normalize(raw json.RawMessage, envelopeID string, now time.Time) (Event, er
 	if typ == "" || typ == "default" {
 		typ = "error"
 	}
-	if typ != "error" && typ != "message" && typ != "transaction" && typ != "feedback" {
+	if typ != "error" && typ != "message" && typ != "transaction" && typ != "feedback" && typ != "csp" {
 		return Event{}, fmt.Errorf("unsupported event type %q", typ)
 	}
 	var feedback *Feedback
