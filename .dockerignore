@@ -7,3 +7,12 @@ node_modules
 test-results
 .tools
 .tmp
+.gocache
+.gopath
+.pnpm
+goodsentry-clone
+ignored
+otlp-venv
+__pycache__
+**/__pycache__
+*.log
