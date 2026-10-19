@@ -114,6 +114,9 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 }
 
 func applyIssueUpdate(ctx context.Context, tx pgx.Tx, userID, org string, i Issue, change IssueUpdate) (Issue, error) {
+	if i.Category == "feedback" && ((change.Ignore != nil && change.Ignore.Condition != nil) || (change.Resolution != nil && change.Resolution.Policy != nil)) {
+		return i, ErrInvalidIssueChange
+	}
 	id := i.ID
 	var err error
 	var target *IssueActor

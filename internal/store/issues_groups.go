@@ -192,6 +192,13 @@ func (s *Store) MergeIssues(ctx context.Context, userID, orgSlug string, ids []s
 func applyIssueMerge(ctx context.Context, tx pgx.Tx, userID string, roots, members []int64) (IssueMergeResult, error) {
 	var result IssueMergeResult
 	var err error
+	var categories int
+	if err = tx.QueryRow(ctx, `SELECT count(DISTINCT category) FROM issues WHERE id=ANY($1::bigint[])`, roots).Scan(&categories); err != nil {
+		return result, err
+	}
+	if categories > 1 {
+		return result, ErrInvalidIssueChange
+	}
 	parent := strconv.FormatInt(roots[0], 10)
 	if len(roots) > 1 {
 		sources := make([]Issue, 0, len(roots)-1)

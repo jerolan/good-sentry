@@ -20,6 +20,10 @@ type CompatibleIssueHash struct {
 // The project gate precedes this route lock and both issue-row locks. Reset
 // holds the exclusive gate, so a committed capture stays on exactly one side.
 func activeIssueHashOrigin(ctx context.Context, tx pgx.Tx, projectID string, ev event.Event) (string, *string, error) {
+	category := "error"
+	if ev.Type == "feedback" {
+		category = "feedback"
+	}
 	if _, err := tx.Exec(ctx, `INSERT INTO issue_hash_routes(project_id,fingerprint) VALUES($1::bigint,$2)
  ON CONFLICT(project_id,fingerprint) DO NOTHING`, projectID, ev.Fingerprint); err != nil {
 		return "", nil, err
@@ -31,8 +35,8 @@ func activeIssueHashOrigin(ctx context.Context, tx pgx.Tx, projectID string, ev 
 	}
 	if own == nil {
 		var created string
-		if err := tx.QueryRow(ctx, `INSERT INTO issues(project_id,fingerprint,title,level,platform,first_seen,last_seen,environment,release)
- VALUES($1::bigint,$2,$3,$4,$5,$6,$6,$7,$8) RETURNING id::text`, projectID, ev.Fingerprint, ev.Title, ev.Level, ev.Platform, ev.Timestamp, ev.Environment, ev.Release).Scan(&created); err != nil {
+		if err := tx.QueryRow(ctx, `INSERT INTO issues(project_id,fingerprint,title,level,platform,first_seen,last_seen,environment,release,category)
+ VALUES($1::bigint,$2,$3,$4,$5,$6,$6,$7,$8,$9) RETURNING id::text`, projectID, ev.Fingerprint, ev.Title, ev.Level, ev.Platform, ev.Timestamp, ev.Environment, ev.Release, category).Scan(&created); err != nil {
 			return "", nil, err
 		}
 		if _, err := tx.Exec(ctx, `UPDATE issue_hash_routes SET origin_issue_id=$3::bigint WHERE project_id=$1::bigint AND fingerprint=$2`, projectID, ev.Fingerprint, created); err != nil {
@@ -41,8 +45,12 @@ func activeIssueHashOrigin(ctx context.Context, tx pgx.Tx, projectID string, ev 
 		own = &created
 	}
 	var target *string
-	if err := tx.QueryRow(ctx, `SELECT merged_into::text FROM issues WHERE project_id=$1::bigint AND id=$2::bigint FOR UPDATE`, projectID, *own).Scan(&target); err != nil {
+	var existingCategory string
+	if err := tx.QueryRow(ctx, `SELECT merged_into::text,category FROM issues WHERE project_id=$1::bigint AND id=$2::bigint FOR UPDATE`, projectID, *own).Scan(&target, &existingCategory); err != nil {
 		return "", nil, err
+	}
+	if existingCategory != category {
+		return "", nil, ErrConflict
 	}
 	return *own, target, nil
 }

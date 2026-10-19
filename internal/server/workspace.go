@@ -59,7 +59,7 @@ func (s *Server) issues(w http.ResponseWriter, r *http.Request) {
 	}
 	for name, values := range q {
 		switch name {
-		case "project", "query", "status", "environment", "release", "sort", "page":
+		case "project", "query", "status", "category", "environment", "release", "sort", "page":
 		default:
 			failure(w, 400, "Unknown issue query parameter")
 			return
@@ -77,7 +77,7 @@ func (s *Server) issues(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	f := store.IssueFilter{Project: q.Get("project"), Query: q.Get("query"), Status: q.Get("status"), Environment: q.Get("environment"), Release: q.Get("release"), Sort: q.Get("sort"), Page: page}
+	f := store.IssueFilter{Project: q.Get("project"), Query: q.Get("query"), Status: q.Get("status"), Category: q.Get("category"), Environment: q.Get("environment"), Release: q.Get("release"), Sort: q.Get("sort"), Page: page}
 	items, total, err := s.db.Issues(r.Context(), current(r).User.ID, r.PathValue("org"), f)
 	if err != nil {
 		if errors.Is(err, store.ErrInvalidIssueFilter) {

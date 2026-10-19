@@ -13,7 +13,7 @@ func (s *Store) TraceErrors(ctx context.Context, userID, orgSlug, traceID, proje
 	defer tx.Rollback(ctx)
 	result := TraceErrors{Data: []TraceError{}, Page: max(page, 1), PageSize: 25}
 	args := []any{orgID, strings.ToLower(traceID), projectID}
-	where := ` FROM events e JOIN projects p ON p.id=e.project_id WHERE p.organization_id=$1::bigint AND e.trace_id<>'' AND lower(e.trace_id)=$2 AND ($3='' OR e.project_id=NULLIF($3,'')::bigint) AND e.kind<>'transaction'`
+	where := ` FROM events e JOIN projects p ON p.id=e.project_id WHERE p.organization_id=$1::bigint AND e.trace_id<>'' AND lower(e.trace_id)=$2 AND ($3='' OR e.project_id=NULLIF($3,'')::bigint) AND e.kind NOT IN ('transaction','feedback')`
 	if err := tx.QueryRow(ctx, "SELECT count(*)"+where, args...).Scan(&result.Total); err != nil {
 		return TraceErrors{}, err
 	}

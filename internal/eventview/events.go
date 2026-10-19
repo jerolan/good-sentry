@@ -91,6 +91,10 @@ func project(record Record, fields map[string]json.RawMessage, full bool) Event 
 	message, messageData := eventMessage(fields)
 	typ := "default"
 	switch {
+	case record.Kind == "feedback":
+		typ = "feedback"
+		feedback := object(object(fields["contexts"])["feedback"])
+		message = stringValue(feedback["message"])
 	case record.Kind == "transaction" || stringValue(fields["type"]) == "transaction":
 		typ = "transaction"
 	case record.Kind == "csp" || stringValue(fields["type"]) == "csp" || object(fields["csp"]) != nil:
@@ -107,6 +111,8 @@ func project(record Record, fields map[string]json.RawMessage, full bool) Event 
 		}
 	} else if typ == "default" && message != "" {
 		metadata["title"] = message
+	} else if typ == "feedback" {
+		metadata["title"] = responseTitle(record.Title)
 	}
 	level := record.Level
 	if value := stringPointer(fields["level"]); value != nil {
@@ -172,7 +178,7 @@ func project(record Record, fields map[string]json.RawMessage, full bool) Event 
 	}
 	null := json.RawMessage("null")
 	result.UserReport = &null
-	if len(record.UserReport) > 0 {
+	if typ != "feedback" && len(record.UserReport) > 0 {
 		report := append(json.RawMessage(nil), record.UserReport...)
 		result.UserReport = &report
 	}

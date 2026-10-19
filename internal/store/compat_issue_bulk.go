@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
@@ -195,6 +196,9 @@ func (s *Store) UpdateCompatibleIssues(ctx context.Context, access ManagementAcc
 		}
 		merged, err := applyIssueMerge(ctx, tx, access.UserID, roots, members)
 		if err != nil {
+			if errors.Is(err, ErrInvalidIssueChange) {
+				return result, ErrInvalidCompatibleIssueChange
+			}
 			return result, err
 		}
 		children := make([]string, 0, len(roots)-1)

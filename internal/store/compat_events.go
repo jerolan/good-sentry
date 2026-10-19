@@ -128,6 +128,9 @@ func (s *Store) CompatibleEvents(ctx context.Context, access ManagementAccess, t
 		where += " AND " + predicate
 	}
 	where += " AND e.kind<>'transaction'"
+	if target.kind == "project" {
+		where += " AND e.kind<>'feedback'"
+	}
 	order := "e.timestamp DESC,e.id DESC"
 	if filter.Sample {
 		order = "md5(e.project_id::text||':'||e.event_id),e.id"

@@ -1,0 +1,33 @@
+# Development
+
+[Documentation](README.md) · [Project home](../README.md)
+
+Build, test and preview the project locally.
+
+## Development
+
+Use Go 1.27.2. The server uses `go:embed`; Node is not part of its runtime. Tailwind CSS 4.3.3 and daisyUI 5.7.50 compile `internal/server/web/styles.css` into `app.css`. The dashboard uses original styling inspired by the [Nexus dashboard examples](https://nexus.daisyui.com/). Docker verifies the official CLI and vendored plugin checksums. The generated CSS is committed so local Go builds do not require frontend tools. The daisyUI dependency and its MIT notice live in [third_party/daisyui](../third_party/daisyui); the runtime image includes that notice.
+
+```sh
+go test ./...
+go vet ./...
+go build -trimpath -o bin/goodsentry ./cmd/goodsentry
+```
+
+For integration tests, set `DATABASE_URL` to a disposable PostgreSQL instance. Tests create isolated schemas. Race detection requires a C compiler.
+
+```sh
+go test -race -tags=integration ./...
+```
+
+Pinned external SDK clients and browser workflows live in [tests/compat](../tests/compat). They are test tooling, separate from the server module and image. The CI workflow runs formatting, vet, the integration/race suite and the actual Docker build.
+
+The product landing lives in [site](../site). [GitHub Pages Actions](../.github/workflows/pages.yml) publishes that directory from `main` or a manual dispatch. Preview it locally with:
+
+```sh
+python3 -m http.server 8001 --directory site
+```
+
+## Independent implementation
+
+GoodSentry is developed from public protocol specifications, official documentation and black-box tests with official SDKs and the CLI. Design decisions, source references and verification limits are recorded in [SPEC.md](../SPEC.md).

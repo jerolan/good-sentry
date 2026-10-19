@@ -36,7 +36,7 @@ func prepareBulkIssueSelection(ctx context.Context, tx pgx.Tx, access Management
 		}
 		s.scope += " AND p.id=ANY(" + bind(ids) + "::bigint[])"
 	}
-	// Scope parameters are kept separate from occurrence/status parameters so all
+	// Scope parameters are kept separate from occurrence/state parameters so all
 	// explicit IDs are admitted before query filtering or result limiting.
 	s.scopeCount = len(s.args)
 	s.order, _ = issueSort(f.Sort)
@@ -47,7 +47,7 @@ func prepareBulkIssueSelection(ctx context.Context, tx pgx.Tx, access Management
 	if status != "" {
 		s.terms = append(s.terms, "i.status="+bind(status))
 	}
-	issueTerms, _, err := issueSearchPredicates(issueStatusSearch(search), &s.args)
+	issueTerms, _, err := issueSearchPredicates(issueStateSearch(search), &s.args)
 	if err != nil {
 		return s, err
 	}

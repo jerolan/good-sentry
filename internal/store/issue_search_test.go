@@ -31,6 +31,16 @@ func TestIssueSearchGrammar(t *testing.T) {
 			{Field: "level", Values: []IssueSearchValue{{Value: "error"}}},
 			{Field: "tag", Key: "env", Values: []IssueSearchValue{{Value: "custom"}}},
 		}}},
+		{"issue category reserved values", `issue.category:error issue.category:feedback`, IssueSearch{Terms: []IssueSearchTerm{
+			{Field: "category", Values: []IssueSearchValue{{Value: "error"}}},
+			{Field: "category", Values: []IssueSearchValue{{Value: "feedback"}}},
+		}}},
+		{"issue category lists and negation", `!issue.category:[error,feedback]`, IssueSearch{Terms: []IssueSearchTerm{
+			{Field: "category", Negated: true, Values: []IssueSearchValue{{Value: "error"}, {Value: "feedback"}}},
+		}}},
+		{"issue category tag remains literal", `tags["issue.category"]:feedback`, IssueSearch{Terms: []IssueSearchTerm{
+			{Field: "tag", Key: "issue.category", Values: []IssueSearchValue{{Value: "feedback"}}},
+		}}},
 		{"explicit tags preserve reserved and arbitrary keys", `tags[release]:"v one" tags["arbitrary:key"]:["A", B]`, IssueSearch{Terms: []IssueSearchTerm{
 			{Field: "tag", Key: "release", Values: []IssueSearchValue{{Value: "v one"}}},
 			{Field: "tag", Key: "arbitrary:key", Values: []IssueSearchValue{{Value: "A"}, {Value: "B"}}},
@@ -75,6 +85,7 @@ func TestIssueSearchMalformed(t *testing.T) {
 		`"unclosed`, `"bad\q"`, `"text"suffix`,
 		`!tag:`, `!tag: value`, `tags[key]:`, `tags[key]: value`,
 		`:value`, `!is:`, `is:all`, `status:RESOLVED`, `status:*`, `status:""`,
+		`issue.category:`, `issue.category:other`, `issue.category:*`, `issue.category:[error,*]`, `issue.category:""`,
 		`tag:[]`, `tag:[a,]`, `tag:[,a]`, `tag:[a,,b]`, `tag:[a b]`, `tag:[a`, `tag:[a]suffix`,
 		`tag:"unterminated`, `tag:"a"suffix`, `tag:a"b`, `tag:a[b]`,
 		`tags[]:a`, `tags[""]:a`, `tags["key":a`, `tags[key]a`, `tags[key:a`,

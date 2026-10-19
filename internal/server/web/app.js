@@ -6,7 +6,7 @@
   const configuredBase = document.querySelector('meta[name="goodsentry-base"]')?.content || '';
   const base = configuredBase === '__GOODSENTRY_BASE__' ? '' : configuredBase.replace(/\/$/, '');
   const pageSize = 25;
-  const viewNames = { issues: 'Issues', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', releases: 'Releases', 'api-tokens': 'API tokens' };
+  const viewNames = { issues: 'Issues', feedback: 'Feedback', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', releases: 'Releases', 'api-tokens': 'API tokens' };
   const traceReset = { traceView: null, traceProject: null, tracePage: null, traceNode: null, traceErrorsPage: null, returnView: null };
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
@@ -25,6 +25,7 @@
   let releasesUI;
   let hashesUI;
   let reportsUI;
+  let feedbackUI;
   let issuedAPIToken;
 
   function node(tag, attributes = {}, ...children) {
@@ -145,7 +146,7 @@
   }
 
   function currentGroupLink(id, view) {
-    const changes = { view: 'issues', issue: id };
+    const changes = { view: issueViewName(new URLSearchParams(location.search)), issue: id };
     return node('a', { href: routeURL(changes), onclick: event => {
       if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
@@ -154,8 +155,12 @@
     } }, 'Open current group');
   }
 
+  function isIssueView(view) { return view === 'issues' || view === 'feedback'; }
+
+  function issueViewName(params) { return params.get('view') === 'feedback' ? 'feedback' : 'issues'; }
+
   function issueScope(params) {
-    return JSON.stringify([state.organization?.slug, params.get('project') || '', params.get('query') || '', params.get('status') || 'unresolved', params.get('environment') || '', params.get('release') || '', params.get('sort') || 'date']);
+    return JSON.stringify([state.organization?.slug, issueViewName(params), params.get('project') || '', params.get('query') || '', params.get('status') || 'unresolved', params.get('environment') || '', params.get('release') || '', params.get('sort') || 'date']);
   }
 
   function sortedIssueIDs(ids) {
@@ -207,7 +212,7 @@
     const message = view ? 'Issue deleted.' : 'Deletion request completed.';
     issueDeletion = { organization, scope: issueScope(new URLSearchParams(location.search)), message, bulk: !view };
     notify(message);
-    navigate({ view: 'issues', issue: null });
+    navigate({ view: issueViewName(new URLSearchParams(location.search)), issue: null });
     if (draftIDs.length) void confirmDeletedIssueDrafts(organization, draftIDs);
   }
 
@@ -241,6 +246,7 @@
   function navigationIcon(section) {
     const paths = {
       issues: 'M12 8v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+      feedback: 'M4 4h16v12H8l-4 4V4ZM8 8h8M8 12h5',
       transactions: 'M4 17l5-6 4 3 7-9m-5 0h5v5',
       logs: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
       monitors: 'M2 12h5l3-8 4 16 3-8h5',
@@ -317,15 +323,17 @@
       navigate({ ...traceReset, org: event.target.value, issue: null, monitor: null, project: null, release: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null });
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
     if (org) selector.value = org.slug;
+    const currentParams = new URLSearchParams(location.search);
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
-      ['issues', 'transactions', 'logs', 'monitors', 'alerts', 'releases', 'projects', 'api-tokens']
+      ['issues', 'feedback', 'transactions', 'logs', 'monitors', 'alerts', 'releases', 'projects', 'api-tokens']
         .filter(section => section !== 'monitors' || state.me.features?.uptime === true)
         .filter(section => section !== 'logs' || state.me.features?.logs !== false)
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .filter(section => section !== 'api-tokens' || ['owner', 'admin'].includes(org?.role))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
-          { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, release: null, level: null, trace: null, service: null, window: null, start: null, end: null },
+          { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, release: null, level: null, trace: null, service: null, window: null, start: null, end: null,
+            ...(isIssueView(view) && isIssueView(section) ? Object.fromEntries(['query', 'status', 'sort', 'environment', 'release'].map(name => [name, currentParams.get(name)])) : {}) },
           { 'aria-current': view === section ? 'page' : null })));
     const logout = node('button', { type: 'button', class: 'btn btn-sm', onclick: async () => {
       logout.disabled = true;
@@ -366,16 +374,16 @@
     const params = new URLSearchParams(location.search);
     state.organization = state.me.organizations?.find(item => item.slug === params.get('org')) || state.me.organizations?.[0] || null;
     const requestedView = params.get('view');
-    const view = Object.prototype.hasOwnProperty.call(viewNames, requestedView) ? requestedView : 'issues';
+    let view = Object.prototype.hasOwnProperty.call(viewNames, requestedView) ? requestedView : 'issues';
     const scope = issueScope(params);
-    if (issueDeletion && (view !== 'issues' || issueDeletion.organization !== state.organization?.slug || issueDeletion.scope !== scope)) issueDeletion = undefined;
-    if (view !== 'issues' || mergeSelection.scope !== scope) {
+    if (issueDeletion && (!isIssueView(view) || issueDeletion.organization !== state.organization?.slug || issueDeletion.scope !== scope)) issueDeletion = undefined;
+    if (!isIssueView(view) || mergeSelection.scope !== scope) {
       mergeSelection.issues.clear();
       mergeSelection.scope = scope;
     }
-    if (view !== 'issues' || !params.get('issue') || issueViewContext?.organization !== state.organization?.slug || issueViewContext?.issueId !== params.get('issue')) issueViewContext = undefined;
+    if (!isIssueView(view) || !params.get('issue') || issueViewContext?.organization !== state.organization?.slug || issueViewContext?.issueId !== params.get('issue')) issueViewContext = undefined;
     if (view !== 'api-tokens' || issuedAPIToken?.organization !== state.organization?.slug) clearAPIToken();
-    const main = renderShell(view);
+    let main = renderShell(view);
     if (!state.organization) {
       main.append(node('div', { class: 'card panel no-org' }, empty('No organization access', 'Your account does not belong to an organization. Contact your workspace owner to request access.')));
       return;
@@ -389,19 +397,30 @@
         node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner or admin to manage API tokens.')));
       return;
     }
-    loading(main, view === 'issues' && params.get('issue') ? 'Loading issue…' : `Loading ${viewNames[view].toLowerCase()}…`);
+    loading(main, isIssueView(view) && params.get('issue') ? 'Loading issue…' : `Loading ${viewNames[view].toLowerCase()}…`);
     try {
       const projects = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/projects`);
       if (version !== state.requestVersion) return;
       state.projects = projects.data || [];
-      if (params.get('issue') && view === 'issues') {
+      if (params.get('issue') && isIssueView(view)) {
         const requestedID = params.get('issue');
         const detail = await request(`/api/v1/issues/${encodeURIComponent(requestedID)}`);
         if (version !== state.requestVersion) return;
+        const categoryView = detail.issue.category === 'feedback' ? 'feedback' : 'issues';
+        const changedView = view !== categoryView;
+        if (changedView) {
+          view = categoryView;
+          params.set('view', view);
+          mergeSelection.issues.clear();
+          mergeSelection.scope = issueScope(params);
+          issueDeletion = undefined;
+          history.replaceState(null, '', routeURL({ view, issue: detail.issue.id }));
+          main = renderShell(view);
+        }
         const detailView = issueViewContext?.view || { draftIssueId: requestedID };
         delete detailView.commentsResult;
         rememberIssueCommentOwners(detail, detailView);
-        if (detail.issue.id !== requestedID) history.replaceState(null, '', routeURL({ issue: detail.issue.id }));
+        if (detail.issue.id !== requestedID && !changedView) history.replaceState(null, '', routeURL({ issue: detail.issue.id }));
         renderIssue(main, detail, detailView);
       } else if (view === 'projects') {
         renderProjects(main);
@@ -479,6 +498,7 @@
         }
         if (!query.has('status')) query.set('status', 'unresolved');
         if (!query.has('sort')) query.set('sort', 'date');
+        query.set('category', view === 'feedback' ? 'feedback' : 'error');
         const issues = await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/issues?${query}`);
         if (version !== state.requestVersion) return;
         const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
@@ -493,7 +513,7 @@
     } catch (error) {
       if (version === state.requestVersion) {
         if (params.has('traceView') && view === 'transactions') renderTraceFailure(main, error, false);
-        else if (view === 'issues' && !params.get('issue') && state.me) renderIssues(main, null, params, error);
+        else if (isIssueView(view) && !params.get('issue') && state.me) renderIssues(main, null, params, error);
         else errorState(main, error, () => loadRoute(focus));
       }
     }
@@ -510,8 +530,10 @@
   }
 
   function renderIssues(main, result, params, failure) {
-    document.title = 'Issues · GoodSentry';
-    main.replaceChildren(pageHeader('Issues', 'Find, investigate and triage application errors.', node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), button('Create project', openProjectDialog, 'primary'))));
+    const feedback = issueViewName(params) === 'feedback';
+    const title = feedback ? 'Feedback' : 'Issues';
+    document.title = `${title} · GoodSentry`;
+    main.replaceChildren(pageHeader(title, feedback ? 'Read and triage feedback from your application users.' : 'Find, investigate and triage application errors.', node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), button('Create project', openProjectDialog, 'primary'))));
     const outcome = issueDeletion?.scope === issueScope(params) ? node('div', { class: 'card panel panel-body form-stack', role: 'status', tabindex: '-1' },
       node('p', {}, issueDeletion.message), issueDeletion.bulk ? node('p', { class: 'small muted' }, 'If any selected issue was already missing, the whole request made no changes. Remaining issues can be selected again after refresh.') : null) : null;
     if (outcome) main.append(outcome);
@@ -519,7 +541,7 @@
       main.append(node('section', { class: 'card panel' }, empty('Connect your first application', 'Create a project to get a DSN. Set it in your existing Sentry SDK to start receiving errors.', button('Create project', openProjectDialog, 'primary'))));
       return;
     }
-    const search = field('Search issues', 'search', { name: 'query', placeholder: 'Message or exception', value: params.get('query') || '' });
+    const search = field(feedback ? 'Search feedback' : 'Search issues', 'search', { name: 'query', placeholder: feedback ? 'Feedback text or tags' : 'Message or exception', value: params.get('query') || '' });
     search.wrap.classList.add('search-field');
     const project = selectField('Project', [['', 'All projects'], ...state.projects.map(item => [String(item.id), item.name])], params.get('project') || '');
     const status = selectField('Status', [['all', 'All statuses'], ['unresolved', 'Unresolved'], ['resolved', 'Resolved'], ['ignored', 'Ignored']], params.get('status') || 'unresolved');
@@ -528,11 +550,11 @@
     const validateRelease = () => release.input.setCustomValidity(Array.from(release.input.value).length > 255 ? 'Use at most 255 Unicode characters for the release.' : '');
     release.input.addEventListener('input', validateRelease);
     validateRelease();
-    const sort = selectField('Sort by', [['date', 'Last seen'], ['freq', 'Event count'], ['new', 'First seen']], params.get('sort') || 'date');
+    const sort = selectField('Sort by', [['date', 'Last seen'], ['freq', feedback ? 'Submission count' : 'Event count'], ['new', 'First seen']], params.get('sort') || 'date');
     const helpID = `issue-search-help-${++fieldNumber}`;
     search.input.setAttribute('aria-describedby', helpID);
     const clearFilters = () => navigate({ query: null, project: null, status: null, environment: null, release: null, sort: null, page: null, issue: null });
-    const filters = node('form', { class: 'filters', role: 'search', 'aria-label': 'Filter issues' }, search.wrap, project.wrap, status.wrap, environment.wrap, release.wrap, sort.wrap,
+    const filters = node('form', { class: 'filters', role: 'search', 'aria-label': feedback ? 'Filter feedback' : 'Filter issues' }, search.wrap, project.wrap, status.wrap, environment.wrap, release.wrap, sort.wrap,
       node('div', { class: 'actions' }, node('button', { class: 'btn button', type: 'submit' }, 'Apply filters'), button('Clear filters', clearFilters)));
     filters.addEventListener('submit', event => {
       event.preventDefault();
@@ -541,7 +563,7 @@
     main.append(filters, node('div', { class: 'connection-help muted small', id: helpID },
       node('p', {}, 'Search text or tags: region:eu, "literal phrase", region:[eu,us], !region:eu. Quote "*" to match a literal star.'),
       node('p', {}, 'Environment, release, tags and text must match the same stored event. Counts, first seen and last seen cover the issue’s full history.')));
-    const panel = node('section', { class: 'card panel', 'aria-label': 'Issues' });
+    const panel = node('section', { class: 'card panel', 'aria-label': title });
     if (failure) {
       errorState(panel, failure, () => loadRoute(true));
       main.append(panel);
@@ -555,7 +577,7 @@
     const merge = issueMergeControls(main, issues);
     panel.append(merge.panel);
     if (!issues.length) {
-      panel.append(empty('No matching issues', 'Errors will appear here when your SDK sends them. Check the selected project, status, environment and release, or clear your filters.'));
+      panel.append(empty(feedback ? 'No matching feedback' : 'No matching issues', feedback ? 'Submissions appear here when your Sentry SDK sends feedback. Check the selected filters, or clear them to see more.' : 'Errors will appear here when your SDK sends them. Check the selected project, status, environment and release, or clear your filters.'));
     } else {
       const rows = issues.map(issue => node('tr', {},
         node('td', {}, merge.checkbox(issue)),
@@ -563,7 +585,7 @@
           node('div', { class: 'issue-subtitle' }, node('span', { class: 'mono' }, issue.shortId || issue.id), node('span', {}, issue.project?.name || 'Project'), issue.environment ? node('span', {}, issue.environment) : null)),
         node('td', {}, badge(issue.level)), node('td', {}, badge(issue.status)), node('td', { class: 'nowrap' }, number(issue.count)),
         node('td', { class: 'nowrap' }, node('time', { datetime: issue.lastSeen, title: date(issue.lastSeen) }, date(issue.lastSeen, true)))));
-      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, node('th', { scope: 'col' }, merge.pageCheckbox), ['Issue', 'Level', 'Status', 'Events', 'Last seen'].map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, node('th', { scope: 'col' }, merge.pageCheckbox), [feedback ? 'Feedback' : 'Issue', 'Level', 'Status', feedback ? 'Submissions' : 'Events', 'Last seen'].map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
     }
     merge.sync();
     const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
@@ -1163,7 +1185,7 @@
     const scopes = ['org:read', 'project:read', 'project:write', 'project:releases', 'event:read', 'event:write', 'event:admin'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
     const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Permissions'),
       scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
-      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata, project-scoped event data and legacy user reports. project:write submits legacy user feedback; it does not grant project reads or other project changes. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. event:admin deletes whole issue groups and their recorded history; it does not grant read or other write permissions. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata, project-scoped event data, attachments and legacy user reports. project:write submits legacy user feedback and reads event attachments; it does not grant other project reads or changes. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. event:admin deletes whole issue groups and their recorded history; it does not grant read or other write permissions. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
     const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
     const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
     const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
@@ -1638,7 +1660,7 @@
     const entries = pairs(values).filter(entry => entry.length === 2 && typeof entry[0] === 'string' && typeof entry[1] === 'string');
     if (!entries.length) return node('p', { class: 'muted small' }, 'None recorded.');
     return node('dl', { class: 'key-values' }, entries.map(([key, value]) => [node('dt', {}, key), node('dd', {},
-      routeLink(value || '""', { view: 'issues', issue: null, project: issue.projectId, query: `tags[${JSON.stringify(key)}]:${JSON.stringify(value)}`, status: 'all', page: null },
+      routeLink(value || '""', { view: issue.category === 'feedback' ? 'feedback' : 'issues', issue: null, project: issue.projectId, query: `tags[${JSON.stringify(key)}]:${JSON.stringify(value)}`, status: 'all', page: null },
         { class: 'text-button', title: `Find issues with tag ${JSON.stringify(key)}:${JSON.stringify(value)}` }))]));
   }
 
@@ -1815,6 +1837,7 @@
 
   function renderIssue(main, detail, previousView) {
     const issue = detail.issue;
+    const feedback = issue.category === 'feedback';
     const event = detail.event || {};
     const hasEvents = Array.isArray(detail.events) && detail.events.length > 0;
     const view = previousView || {};
@@ -1860,7 +1883,7 @@
     document.title = `${issue.title} · GoodSentry`;
     const statusLabel = badge(issue.status);
     const actionError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
-    const statusActions = node('div', { class: 'actions', 'aria-label': 'Issue status' });
+    const statusActions = node('div', { class: 'actions', 'aria-label': feedback ? 'Feedback status' : 'Issue status' });
     const patchIssue = (changes, message, errorTarget = actionError, current = () => true) => mutate(
       () => request(path, { method: 'PATCH', body: changes }),
       updated => {
@@ -1870,14 +1893,14 @@
       }, errorTarget, current);
     for (const [status, label] of [['unresolved', 'Reopen'], ['resolved', 'Resolve'], ['ignored', 'Ignore']]) {
       if (issue.status === status) continue;
-      statusActions.append(register(button(label, () => patchIssue({ status }, `Issue ${status === 'unresolved' ? 'reopened' : status}.`), status === 'resolved' ? 'primary' : '')));
+      statusActions.append(register(button(feedback && status === 'ignored' ? 'Ignore indefinitely' : label, () => patchIssue({ status }, `${feedback ? 'Feedback' : 'Issue'} ${status === 'unresolved' ? 'reopened' : status}.`), status === 'resolved' ? 'primary' : '')));
     }
     statusActions.append(register(button('Refresh issue', () => loadRoute(true))));
     const heading = node('div', { class: 'page-header' }, node('div', {},
       node('div', { class: 'eyebrow' }, issue.shortId || issue.id), node('h1', { class: 'detail-title', tabindex: '-1' }, issue.title),
       node('div', { class: 'detail-meta' }, statusLabel, badge(issue.level), issue.regressedAt ? node('span', { class: 'badge badge-sm error' }, 'Regressed') : null, issue.groupSize != null ? node('span', { class: 'badge badge-sm' }, `${number(issue.groupSize)} original ${issue.groupSize === 1 ? 'group' : 'groups'}`) : null, node('span', { class: 'muted' }, issue.project?.name || 'Project'), issue.environment ? node('span', { class: 'badge badge-sm' }, issue.environment) : null)), statusActions);
     const affectedUsers = detail.analytics?.userCount;
-    const stats = node('dl', { class: 'stat-list issue-stat-list' }, [['Events', number(issue.count)], ['Affected users', affectedUsers == null ? 'Unavailable' : number(affectedUsers)], ['First seen', date(issue.firstSeen, true)], ['Last seen', date(issue.lastSeen, true)]].map(([name, value]) => node('div', { class: 'stat' }, node('dt', {}, name), node('dd', {}, value), name === 'Affected users' ? node('p', { class: 'stat-note' }, 'Identified retained users') : null)));
+    const stats = node('dl', { class: 'stat-list issue-stat-list' }, [[feedback ? 'Submissions' : 'Events', number(issue.count)], ['Affected users', affectedUsers == null ? 'Unavailable' : number(affectedUsers)], ['First seen', date(issue.firstSeen, true)], ['Last seen', date(issue.lastSeen, true)]].map(([name, value]) => node('div', { class: 'stat' }, node('dt', {}, name), node('dd', {}, value), name === 'Affected users' ? node('p', { class: 'stat-note' }, 'Identified retained users') : null)));
     const summary = node('section', { class: 'card panel', 'aria-label': 'Issue summary' }, stats, node('div', { class: 'panel-body' },
       node('p', { class: 'muted small' }, hasEvents ? 'Latest event' : 'No retained events'),
       hasEvents ? node('p', { class: 'mono' }, text(event.event_id || event.eventID)) : null,
@@ -1900,7 +1923,7 @@
     const triage = { alive, register, mutate, patchIssue, refresh };
     const deleteError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const deleteConfirmation = node('section', { class: 'card panel panel-body form-stack', hidden: true, 'aria-label': 'Confirm issue deletion' });
-    const deleteIssue = register(button('Delete issue', () => { deleteConfirmation.hidden = false; confirmDelete.focus(); }, 'danger'));
+    const deleteIssue = register(button(feedback ? 'Delete feedback' : 'Delete issue', () => { deleteConfirmation.hidden = false; confirmDelete.focus(); }, 'danger'));
     const confirmDelete = register(button('Confirm deletion', async () => {
       confirmDelete.textContent = 'Deleting…';
       await triage.mutate(() => request(`/api/0/organizations/${encodeURIComponent(state.organization.slug)}/issues/${encodeURIComponent(issue.id)}/`, { method: 'DELETE' }),
@@ -1908,40 +1931,42 @@
       if (alive()) confirmDelete.textContent = 'Confirm deletion';
     }, 'danger'));
     const cancelDelete = register(button('Cancel deletion', () => { deleteConfirmation.hidden = true; deleteError.textContent = ''; deleteIssue.focus(); }));
-    deleteConfirmation.append(node('h2', {}, 'Delete this issue?'), node('p', {}, issueDeletionWarning), deleteError, node('div', { class: 'actions' }, confirmDelete, cancelDelete));
+    deleteConfirmation.append(node('h2', {}, feedback ? 'Delete this feedback group?' : 'Delete this issue?'), node('p', {}, feedback ? 'This removes the whole feedback group, its submissions, attachments, comments and assignment. Future submissions can create a new group.' : issueDeletionWarning), deleteError, node('div', { class: 'actions' }, confirmDelete, cancelDelete));
     statusActions.append(deleteIssue);
     const activity = issueActivity(path, view, triage);
     const comments = issueComments(issue, path, view, triage, () => activity.load(view.activityPage));
     const assignment = issueAssignment(issue, path, view, triage);
-    const mute = issueMute(issue, view, triage);
-    const resolution = issueResolution(issue, path, view, triage);
+    const mute = feedback ? null : issueMute(issue, view, triage);
+    const resolution = feedback ? null : issueResolution(issue, path, view, triage);
     const origins = issueOrigins(issue, path, view, triage);
     // The selected raw event is the first retained history entry in IssueDetail.
-    const attachments = hasEvents ? eventAttachments(path, detail.events[0].eventID, alive) : null;
+    const attachments = hasEvents && !feedback ? eventAttachments(path, detail.events[0].eventID, alive) : null;
     const grouping = detailPanel('Future grouping', node('p', { class: 'panel-body muted', role: 'status' }, 'Loading active signatures…'));
-    const reports = detailPanel('User reports', node('p', { class: 'panel-body muted', role: 'status' }, 'Loading user reports…'));
-    const left = node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, hasEvents ? stackTrace(event) : null, hasEvents ? breadcrumbs(event) : null, attachments?.panel, reports, comments.panel, activity.panel);
-    if (hasEvents) left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
+    const reports = detailPanel(feedback ? 'Feedback submissions' : 'User reports', node('p', { class: 'panel-body muted', role: 'status' }, feedback ? 'Loading feedback submissions…' : 'Loading user reports…'));
+    const left = feedback ? node('div', {}, summary, reports, issueAnalytics(detail.analytics), comments.panel, activity.panel, grouping, origins.panel) :
+      node('div', {}, summary, issueAnalytics(detail.analytics), grouping, origins.panel, hasEvents ? stackTrace(event) : null, hasEvents ? breadcrumbs(event) : null, attachments?.panel, reports, comments.panel, activity.panel);
+    if (hasEvents && !feedback) left.append(node('details', { class: 'card panel' }, node('summary', {}, 'Original event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
     const meta = [['Platform', event.platform || issue.platform], ['Environment', event.environment || issue.environment], ['Release', event.release || issue.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
     const right = node('aside', { class: 'detail-aside', 'aria-label': hasEvents ? 'Event details' : 'Issue details' },
-      resolution.panel,
+      resolution?.panel,
       mute,
       assignment.panel,
-      detailPanel(hasEvents ? 'Event details' : 'Last known metadata', node('div', { class: 'panel-body' }, keyValues(meta))),
-      hasEvents ? detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))) : null,
-      hasEvents ? detailPanel('User', node('div', { class: 'panel-body' }, keyValues(event.user))) : null);
-    if (event.contexts && Object.keys(event.contexts).length) right.append(detailPanel('Contexts', node('div', { class: 'panel-body' }, Object.entries(event.contexts).map(([name, context]) => node('section', { class: 'context-block' }, node('h3', {}, name), typeof context === 'object' && context ? keyValues(context) : node('p', {}, text(context)))))));
-    if (event.request) right.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
-    if (event.extra && Object.keys(event.extra).length) right.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
-    main.replaceChildren(routeLink('← All issues', { issue: null }, { class: 'back-link' }), heading, actionError, deleteConfirmation, node('div', { class: 'detail-grid' }, left, right));
+      detailPanel(hasEvents && !feedback ? 'Event details' : 'Last known metadata', node('div', { class: 'panel-body' }, keyValues(meta))),
+      hasEvents && !feedback ? detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))) : null,
+      hasEvents && !feedback ? detailPanel('User', node('div', { class: 'panel-body' }, keyValues(event.user))) : null);
+    if (!feedback && event.contexts && Object.keys(event.contexts).length) right.append(detailPanel('Contexts', node('div', { class: 'panel-body' }, Object.entries(event.contexts).map(([name, context]) => node('section', { class: 'context-block' }, node('h3', {}, name), typeof context === 'object' && context ? keyValues(context) : node('p', {}, text(context)))))));
+    if (!feedback && event.request) right.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
+    if (!feedback && event.extra && Object.keys(event.extra).length) right.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
+    main.replaceChildren(routeLink(feedback ? '← All feedback' : '← All issues', { issue: null }, { class: 'back-link' }), heading, actionError, deleteConfirmation, node('div', { class: 'detail-grid' }, left, right));
     attachments?.start();
     comments.start();
     activity.load(view.activityPage);
     assignment.load(view.assigneePage);
-    resolution.start();
+    resolution?.start();
     origins.load(view.origins.page);
     loadIssueHashes(grouping, issue, view, triage);
-    loadIssueReports(reports, issue, detail, view, triage);
+    if (feedback) loadIssueFeedback(reports, issue, detail, view, triage);
+    else loadIssueReports(reports, issue, detail, view, triage);
   }
 
   async function loadIssueReports(placeholder, issue, detail, view, triage, retry = 0) {
@@ -1949,24 +1974,7 @@
       const { createReportsUI } = await import(retry ? `./reports.js?retry=${retry}` : './reports.js');
       if (!triage.alive() || !placeholder.isConnected) return;
       reportsUI ||= createReportsUI({ node, request, button, detailPanel, formError, date, number });
-      const eventContent = (event, eventID, isCurrent) => {
-        const path = `/api/v1/issues/${encodeURIComponent(issue.id)}`;
-        const attachments = eventAttachments(path, eventID, () => triage.alive() && isCurrent());
-        const meta = [['Platform', event.platform], ['Environment', event.environment], ['Release', event.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
-        const content = node('div', { class: 'reported-event-content' },
-          node('div', { class: 'panel-body' }, event.message || event.logentry?.formatted ? node('pre', { class: 'event-message' }, text(event.message || event.logentry.formatted)) : null, keyValues(meta)),
-          stackTrace(event), breadcrumbs(event), attachments.panel,
-          detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))),
-          detailPanel('User', node('div', { class: 'panel-body' }, keyValues(event.user))));
-        if (event.contexts && Object.keys(event.contexts).length) content.append(detailPanel('Contexts', node('div', { class: 'panel-body' }, Object.entries(event.contexts).map(([name, context]) => node('section', { class: 'context-block' }, node('h3', {}, name), typeof context === 'object' && context ? keyValues(context) : node('p', {}, text(context)))))));
-        if (event.request) content.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
-        if (event.extra && Object.keys(event.extra).length) content.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
-        content.append(node('details', { class: 'card panel' }, node('summary', {}, 'Reported event JSON'), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
-        // These panels belong to Reported event, below the issue's User reports heading.
-        content.querySelectorAll('h3').forEach(heading => heading.replaceWith(node('h5', {}, heading.textContent)));
-        content.querySelectorAll('h2').forEach(heading => heading.replaceWith(node('h4', {}, heading.textContent)));
-        return { content, start: attachments.start };
-      };
+      const eventContent = (event, eventID, isCurrent) => selectedEventContent(event, issue, { eventID, isCurrent, triage, withAttachments: true, label: 'Reported event JSON' });
       const reports = reportsUI.issue({ issue, organization: state.organization.slug, initialReports: detail.userReports, total: detail.userReportCount, view, triage, eventContent });
       placeholder.replaceWith(reports.panel);
       if (retry) reports.panel.querySelector('h2')?.focus();
@@ -1975,6 +1983,45 @@
       if (!triage.alive() || !placeholder.isConnected) return;
       placeholder.replaceChildren(node('div', { class: 'panel-title' }, node('h2', {}, 'User reports')),
         node('div', { class: 'panel-body form-stack' }, node('p', { class: 'form-error', role: 'alert' }, failure.message), button('Retry user reports', () => loadIssueReports(placeholder, issue, detail, view, triage, retry + 1), 'small')));
+      if (retry) placeholder.querySelector('button')?.focus();
+    }
+  }
+
+  function selectedEventContent(event, issue, { eventID, isCurrent, triage, withAttachments, label }) {
+    const path = `/api/v1/issues/${encodeURIComponent(issue.id)}`;
+    const attachments = withAttachments ? eventAttachments(path, eventID, () => triage.alive() && isCurrent()) : null;
+    const meta = [['Platform', event.platform], ['Environment', event.environment], ['Release', event.release], ['SDK', event.sdk ? [event.sdk.name, event.sdk.version].filter(Boolean).join(' ') : null]];
+    const message = event.type === 'feedback' ? event.contexts?.feedback?.message : event.message || event.logentry?.formatted;
+    const content = node('div', { class: 'reported-event-content' },
+      node('div', { class: 'panel-body' }, message ? node('pre', { class: 'event-message' }, text(message)) : null, keyValues(meta)),
+      stackTrace(event), breadcrumbs(event), attachments?.panel,
+      detailPanel('Tags', node('div', { class: 'panel-body' }, issueTags(event.tags, issue))),
+      detailPanel('User', node('div', { class: 'panel-body' }, keyValues(event.user))));
+    if (event.contexts && Object.keys(event.contexts).length) content.append(detailPanel('Contexts', node('div', { class: 'panel-body' }, Object.entries(event.contexts).map(([name, context]) => node('section', { class: 'context-block' }, node('h3', {}, name), typeof context === 'object' && context ? keyValues(context) : node('p', {}, text(context)))))));
+    if (event.request) content.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
+    if (event.extra && Object.keys(event.extra).length) content.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
+    content.append(node('details', { class: 'card panel' }, node('summary', {}, label), node('pre', { class: 'event-json' }, JSON.stringify(event, null, 2))));
+    content.querySelectorAll('h3').forEach(heading => heading.replaceWith(node('h5', {}, heading.textContent)));
+    content.querySelectorAll('h2').forEach(heading => heading.replaceWith(node('h4', {}, heading.textContent)));
+    return { content, start: attachments?.start };
+  }
+
+  async function loadIssueFeedback(placeholder, issue, detail, view, triage, retry = 0) {
+    try {
+      const { createFeedbackUI } = await import(retry ? `./feedback.js?retry=${retry}` : './feedback.js');
+      if (!triage.alive() || !placeholder.isConnected) return;
+      feedbackUI ||= createFeedbackUI({ node, request, button, detailPanel, formError, date, number });
+      const submissionContent = (event, eventID, isCurrent) => selectedEventContent(event, issue, { eventID, isCurrent, triage, withAttachments: true, label: 'Submission JSON' });
+      const associatedContent = (event, isCurrent) => selectedEventContent(event, { ...issue, category: 'error' }, { isCurrent, triage, withAttachments: false, label: 'Associated event JSON' });
+      const associatedIssueLink = id => routeLink('Open associated issue', { ...traceReset, view: 'issues', issue: id, project: issue.projectId, query: null, status: null, environment: null, release: null, sort: null, page: null }, { class: 'btn button small' });
+      const feedback = feedbackUI.issue({ issue, organization: state.organization.slug, initialFeedback: detail.feedbackItems, total: detail.feedbackCount, view, triage, submissionContent, associatedContent, associatedIssueLink });
+      placeholder.replaceWith(feedback.panel);
+      if (retry) feedback.panel.querySelector('h2')?.focus();
+      feedback.start();
+    } catch (failure) {
+      if (!triage.alive() || !placeholder.isConnected) return;
+      placeholder.replaceChildren(node('div', { class: 'panel-title' }, node('h2', {}, 'Feedback submissions')),
+        node('div', { class: 'panel-body form-stack' }, node('p', { class: 'form-error', role: 'alert' }, failure.message), button('Retry feedback module', () => loadIssueFeedback(placeholder, issue, detail, view, triage, retry + 1), 'small')));
       if (retry) placeholder.querySelector('button')?.focus();
     }
   }

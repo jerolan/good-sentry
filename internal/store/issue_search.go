@@ -140,7 +140,7 @@ func (p *issueSearchParser) termOrText() (*IssueSearchTerm, string, error) {
 	}
 	p.pos++ // The colon is present for both bare and explicit tag terms.
 	if p.boundary() {
-		if negated || explicit {
+		if negated || explicit || key == "issue.category" {
 			return nil, "", p.invalid("filter requires a value")
 		}
 		return nil, p.query[start:p.pos], nil
@@ -153,6 +153,8 @@ func (p *issueSearchParser) termOrText() (*IssueSearchTerm, string, error) {
 		switch key {
 		case "is", "status":
 			term.Field, term.Key = "status", ""
+		case "issue.category":
+			term.Field, term.Key = "category", ""
 		case "environment", "release", "level":
 			term.Field, term.Key = key, ""
 		case "transaction":
@@ -181,6 +183,13 @@ func (p *issueSearchParser) termOrText() (*IssueSearchTerm, string, error) {
 		for _, value := range term.Values {
 			if value.Wildcard || (value.Value != "unresolved" && value.Value != "resolved" && value.Value != "ignored") {
 				return nil, "", p.invalid("status must be unresolved, resolved or ignored")
+			}
+		}
+	}
+	if term.Field == "category" {
+		for _, value := range term.Values {
+			if value.Wildcard || (value.Value != "error" && value.Value != "feedback") {
+				return nil, "", p.invalid("issue.category must be error or feedback")
 			}
 		}
 	}

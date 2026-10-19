@@ -55,7 +55,7 @@ func prepareErrorAlerts(ctx context.Context, tx pgx.Tx, projectID, eventID, issu
 		Scan(&kind, &c.title, &c.environment, &c.received); err != nil {
 		return nil, err
 	}
-	if kind == "transaction" || issueID == "" {
+	if kind == "transaction" || kind == "feedback" || issueID == "" {
 		return nil, nil
 	}
 	if err := tx.QueryRow(ctx, "SELECT status FROM issues WHERE id=$1::bigint", issueID).Scan(&status); err != nil {
@@ -99,7 +99,7 @@ func (c *errorAlertCapture) enqueue(ctx context.Context, tx pgx.Tx, eventID, iss
 		}
 		var before int
 		err := tx.QueryRow(ctx, `SELECT count(*) FROM (SELECT 1 FROM events WHERE project_id=$1::bigint AND event_id<>$2
-			AND kind<>'transaction' AND created_at>$3 AND created_at<=$4 AND (cardinality($5::text[])=0 OR environment=ANY($5::text[])) LIMIT $6) counted`,
+			AND kind NOT IN ('transaction','feedback') AND created_at>$3 AND created_at<=$4 AND (cardinality($5::text[])=0 OR environment=ANY($5::text[])) LIMIT $6) counted`,
 			c.project.ID, eventID, start, now, r.Environments, r.Quantity).Scan(&before)
 		if err != nil {
 			return err

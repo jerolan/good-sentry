@@ -28,6 +28,7 @@ type Event struct {
 	Timestamp   time.Time       `json:"timestamp"`
 	Duration    float64         `json:"duration"` // Milliseconds.
 	Data        json.RawMessage `json:"data"`
+	Feedback    *Feedback       `json:"-"`
 }
 
 type frame struct {
@@ -113,8 +114,18 @@ func Normalize(raw json.RawMessage, envelopeID string, now time.Time) (Event, er
 	if typ == "" || typ == "default" {
 		typ = "error"
 	}
-	if typ != "error" && typ != "message" && typ != "transaction" {
+	if typ != "error" && typ != "message" && typ != "transaction" && typ != "feedback" && typ != "csp" {
 		return Event{}, fmt.Errorf("unsupported event type %q", typ)
+	}
+	var feedback *Feedback
+	if typ == "feedback" {
+		if err := feedbackIdentity(fields["event_id"], envelopeID, id); err != nil {
+			return Event{}, err
+		}
+		feedback, err = normalizeFeedback(raw, fields["contexts"], id)
+		if err != nil {
+			return Event{}, err
+		}
 	}
 	timestamp := now.UTC()
 	if len(p.Timestamp) != 0 {
@@ -139,13 +150,17 @@ func Normalize(raw json.RawMessage, envelopeID string, now time.Time) (Event, er
 	}
 	exc := latestException(p.Exception.Values)
 	title := eventTitle(p, exc, typ)
+	if feedback != nil {
+		characters := []rune(text(feedback.Message))
+		title = string(characters[:min(255, len(characters))])
+	}
 	if title == "" {
 		title = "Unknown error"
 	}
 	level := p.Level
 	if level == "" {
 		level = "error"
-		if typ == "transaction" || typ == "message" {
+		if typ == "transaction" || typ == "message" || typ == "feedback" {
 			level = "info"
 		}
 	}
@@ -158,11 +173,15 @@ func Normalize(raw json.RawMessage, envelopeID string, now time.Time) (Event, er
 	if err != nil {
 		return Event{}, fmt.Errorf("encode normalized event: %w", err)
 	}
+	grouping := fingerprint(p, exc, title)
+	if feedback != nil {
+		grouping = "feedback:" + id
+	}
 	return Event{
 		ID: id, Type: typ, Title: title, Level: level, Platform: platform,
 		Environment: p.Environment, Release: p.Release, Transaction: p.Transaction,
 		TraceID: p.Contexts.Trace.ID, Timestamp: timestamp, Duration: duration,
-		Fingerprint: fingerprint(p, exc, title), Data: data,
+		Fingerprint: grouping, Data: data, Feedback: feedback,
 	}, nil
 }
 

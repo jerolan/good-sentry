@@ -4,9 +4,12 @@ package jobs_test
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
+	"goodsentry/internal/event"
 	"goodsentry/internal/jobs"
 	"goodsentry/internal/store"
 	"goodsentry/internal/uptime"
@@ -17,7 +20,7 @@ import (
 // sleeps for an hour during shutdown. Exercise real rows through public
 // start/stop functions; no fake store, timer, logger or call-order seam.
 func TestRetentionWorkersDrainRetryAndStop(t *testing.T) {
-	for _, class := range []string{"logs", "transactions", "events", "uptime", "files", "releases", "pending_reports"} {
+	for _, class := range []string{"logs", "transactions", "events", "uptime", "files", "releases", "pending_reports", "feedback_associations"} {
 		t.Run(class, func(t *testing.T) { retentionWorkerLifecycle(t, class) })
 	}
 }
@@ -31,6 +34,8 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 	start := jobs.StartLogRetention
 	countQuery := "SELECT count(*) FROM logs"
 	failureTable, valueColumn := "logs", "body"
+	failureOperation := "DELETE"
+	var retryMarkerQuery, stoppedMarkerQuery string
 	var monitorID string
 	if class == "transactions" {
 		start = jobs.StartTransactionRetention
@@ -65,13 +70,68 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 		}
 		countQuery = "SELECT count(*) FROM user_reports"
 		failureTable, valueColumn = "user_reports", "comments"
+	} else if class == "feedback_associations" {
+		start = func(ctx context.Context, db *store.Store, _ int, interval time.Duration) func() {
+			return jobs.StartFeedbackAssociations(ctx, db, interval)
+		}
+		countQuery = "SELECT count(*) FROM feedback_events WHERE association_pending"
+		failureTable, failureOperation = "feedback_events", "UPDATE"
+		retryMarkerQuery = `SELECT count(*) FROM feedback_events f JOIN events e ON e.id=f.event_receipt_id WHERE e.title='retry' AND f.association_pending`
+		stoppedMarkerQuery = `SELECT count(*) FROM feedback_events f JOIN events e ON e.id=f.event_receipt_id WHERE e.title='stopped' AND f.association_pending`
 	}
+	feedbackSequence := 0
 	seed := func(prefix string, count int) {
 		t.Helper()
 		if class == "pending_reports" {
 			if _, err := f.admin.Exec(f.ctx, `INSERT INTO user_reports(project_id,event_id,name,email,comments,created_at)
  SELECT $1::bigint,md5($2||n::text),'','',$2,clock_timestamp()-interval '2 hours'
  FROM generate_series(1,$3::integer) n`, project.ID, prefix, count); err != nil {
+				t.Fatal(err)
+			}
+			return
+		}
+		if class == "feedback_associations" {
+			targetID := fmt.Sprintf("%032x", 1_000_000+feedbackSequence)
+			for n := 0; n < count; n++ {
+				feedbackSequence++
+				id := fmt.Sprintf("%032x", feedbackSequence)
+				raw, err := json.Marshal(map[string]any{
+					"type": "feedback", "event_id": id,
+					"contexts": map[string]any{"feedback": map[string]any{"message": prefix, "associated_event_id": targetID}},
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				ev, err := event.Normalize(raw, "", time.Now())
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, fresh, err := f.db.Ingest(f.ctx, project.ID, ev); err != nil || !fresh {
+					t.Fatalf("seed feedback %d fresh=%v err=%v", n, fresh, err)
+				}
+			}
+			raw, err := json.Marshal(map[string]any{"event_id": targetID, "message": prefix, "level": "error"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			target, err := event.Normalize(raw, "", time.Now())
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Keep the bounded parent fast path from consuming the worker's
+			// actual backlog. The worker also skips these rows until release.
+			locked, err := f.admin.Begin(f.ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer locked.Rollback(f.ctx)
+			if _, err := locked.Exec(f.ctx, `SELECT event_receipt_id FROM feedback_events WHERE project_id=$1::bigint AND associated_event_id=$2 FOR UPDATE`, project.ID, targetID); err != nil {
+				t.Fatal(err)
+			}
+			if _, fresh, err := f.db.Ingest(f.ctx, project.ID, target); err != nil || !fresh {
+				t.Fatalf("seed target fresh=%v err=%v", fresh, err)
+			}
+			if err := locked.Rollback(f.ctx); err != nil {
 				t.Fatal(err)
 			}
 			return
@@ -194,8 +254,8 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 	seed("after-idle", 2)
 	waitEmpty()
 	if _, err := f.admin.Exec(f.ctx, `CREATE SEQUENCE retention_fail_attempt;
- CREATE FUNCTION fail_worker_cleanup() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM nextval('retention_fail_attempt'); RAISE EXCEPTION 'declared retention failure'; END $$;
- CREATE TRIGGER fail_worker_cleanup BEFORE DELETE ON `+failureTable+` FOR EACH ROW EXECUTE FUNCTION fail_worker_cleanup()`); err != nil {
+	 CREATE FUNCTION fail_worker_cleanup() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM nextval('retention_fail_attempt'); RAISE EXCEPTION 'declared retention failure'; END $$;
+	 CREATE TRIGGER fail_worker_cleanup BEFORE `+failureOperation+` ON `+failureTable+` FOR EACH ROW EXECUTE FUNCTION fail_worker_cleanup()`); err != nil {
 		t.Fatal(err)
 	}
 	seed("retry", 1)
@@ -214,8 +274,17 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 		t.Fatal("worker never reached the declared database failure")
 	}
 	var count int
-	if err := f.admin.QueryRow(f.ctx, "SELECT count(*) FROM "+failureTable+" WHERE "+valueColumn+"='retry'").Scan(&count); err != nil || count != 1 {
+	markerQuery := "SELECT count(*) FROM " + failureTable + " WHERE " + valueColumn + "='retry'"
+	if retryMarkerQuery != "" {
+		markerQuery = retryMarkerQuery
+	}
+	if err := f.admin.QueryRow(f.ctx, markerQuery).Scan(&count); err != nil || count != 1 {
 		t.Fatalf("failure lost row count=%d err=%v", count, err)
+	}
+	if class == "feedback_associations" {
+		if err := f.admin.QueryRow(f.ctx, countQuery).Scan(&count); err != nil || count != 1 {
+			t.Fatalf("failed bind changed pending association count=%d err=%v", count, err)
+		}
 	}
 	if class == "transactions" {
 		if err := f.admin.QueryRow(f.ctx, "SELECT count(*) FROM events WHERE title='retry'").Scan(&count); err != nil || count != 1 {
@@ -235,7 +304,11 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 	second()
 	seed("stopped", 1)
 	time.Sleep(60 * time.Millisecond)
-	if err := f.admin.QueryRow(f.ctx, "SELECT count(*) FROM "+failureTable+" WHERE "+valueColumn+"='stopped'").Scan(&count); err != nil || count != 1 {
+	markerQuery = "SELECT count(*) FROM " + failureTable + " WHERE " + valueColumn + "='stopped'"
+	if stoppedMarkerQuery != "" {
+		markerQuery = stoppedMarkerQuery
+	}
+	if err := f.admin.QueryRow(f.ctx, markerQuery).Scan(&count); err != nil || count != 1 {
 		t.Fatalf("stopped worker changed data: %d %v", count, err)
 	}
 }

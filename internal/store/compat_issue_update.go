@@ -100,6 +100,11 @@ func (s *Store) UpdateCompatibleIssue(ctx context.Context, access ManagementAcce
 
 func compatibleIssueChange(ctx context.Context, tx pgx.Tx, org string, issue Issue, input CompatibleIssueChange) (IssueUpdate, error) {
 	change := IssueUpdate{Status: input.Status}
+	if issue.Category == "feedback" && (input.Status == "resolvedInNextRelease" || input.Policy != nil &&
+		(input.Policy.Kind == CompatibleIssueReleasePolicy || input.Policy.Kind == CompatibleIssueLatestReleasePolicy || input.Policy.Kind == CompatibleIssueNextReleasePolicy ||
+			input.Policy.Kind == CompatibleIssueIgnorePolicy && (input.Policy.Count != nil || input.Policy.Minutes != nil))) {
+		return change, ErrInvalidCompatibleIssueChange
+	}
 	if change.Status == "muted" {
 		change.Status = "ignored"
 	}

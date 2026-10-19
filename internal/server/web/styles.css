@@ -5,6 +5,7 @@
 @source "./app.js";
 @source "./hashes.js";
 @source "./reports.js";
+@source "./feedback.js";
 @source "./alerts.js";
 @source "./releases.js";
 
@@ -175,6 +176,8 @@
   .panel-title { @apply px-5 py-4 border-b border-outline flex justify-between items-center gap-3; }
   .reported-event-content h4,.reported-event-content h5 { @apply m-0; }
   .user-reports-body,.user-reports-body .form-stack { grid-template-columns: minmax(0,1fr); }
+  .feedback-body { @apply grid min-w-0; grid-template-columns: minmax(0,1fr); }
+  .feedback-body .form-stack { grid-template-columns: minmax(0,1fr); }
   .reported-event-content .panel-title h4 { @apply text-[1.05rem] tracking-[-.015em]; }
   .reported-event-content h5 { @apply text-[.95rem]; }
   .reported-event-content .context-block h5 { @apply mb-[.65rem]; }

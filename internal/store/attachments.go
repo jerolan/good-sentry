@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -22,6 +23,7 @@ type Attachment struct {
 
 type CaptureAttachment struct {
 	Filename, ContentType string
+	Type                  string
 	Data                  []byte
 }
 
@@ -42,7 +44,12 @@ func saveCaptureItems(ctx context.Context, tx pgx.Tx, projectID, eventID string,
 	for _, part := range parts {
 		for _, item := range part.Attachments {
 			id := fmt.Sprintf("%x", sha256.Sum256(append([]byte(projectID+":"+eventID+":"+item.Filename+":"), item.Data...)))
-			if _, err := tx.Exec(ctx, "INSERT INTO attachments(id,project_id,event_id,filename,content_type,data) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO NOTHING", id, projectID, eventID, item.Filename, item.ContentType, item.Data); err != nil {
+			kind := item.Type
+			if kind == "" {
+				kind = "event.attachment"
+			}
+			checksum := fmt.Sprintf("%x", sha1.Sum(item.Data))
+			if _, err := tx.Exec(ctx, "INSERT INTO attachments(id,project_id,event_id,filename,content_type,data,attachment_type,checksum_sha1) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO NOTHING", id, projectID, eventID, item.Filename, item.ContentType, item.Data, kind, checksum); err != nil {
 				return err
 			}
 		}
