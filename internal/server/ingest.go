@@ -133,9 +133,10 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		for _, item := range env.Items {
 			switch item.Type {
 			case "attachment":
-				var filename, contentType string
+				var filename, contentType, attachmentType string
 				_ = json.Unmarshal(item.Header["filename"], &filename)
 				_ = json.Unmarshal(item.Header["content_type"], &contentType)
+				_ = json.Unmarshal(item.Header["attachment_type"], &attachmentType)
 				filename = path.Base(strings.ReplaceAll(filename, "\\", "/"))
 				if filename == "." || filename == "/" || filename == "" {
 					filename = "attachment"
@@ -143,7 +144,7 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 				if contentType == "" {
 					contentType = "application/octet-stream"
 				}
-				children.Attachments = append(children.Attachments, store.CaptureAttachment{Filename: filename, ContentType: contentType, Data: item.Payload})
+				children.Attachments = append(children.Attachments, store.CaptureAttachment{Filename: filename, ContentType: contentType, Type: attachmentType, Data: item.Payload})
 			case "event", "transaction", "feedback", "span", "log", "user_report":
 			default:
 				header, _ := json.Marshal(item.Header)
