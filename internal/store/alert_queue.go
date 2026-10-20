@@ -80,7 +80,7 @@ func (s *Store) ClaimAlertDelivery(ctx context.Context, maxAttempts int, timeout
 }
 
 func (s *Store) CompleteAlertDelivery(ctx context.Context, lease notify.Lease, outcome notify.Outcome, maxAttempts int) error {
-	if maxAttempts < 1 || maxAttempts > 20 || outcome.ElapsedMS < 0 || len(outcome.Reason) > 64 {
+	if maxAttempts < 1 || maxAttempts > 20 || outcome.ElapsedMS < 0 || len(outcome.Reason) > 64 || outcome.RetryAfter < 0 || outcome.RetryAfter > 0 && outcome.Disposition != notify.Retry {
 		return errors.New("invalid alert delivery outcome")
 	}
 	if outcome.Disposition != notify.Delivered && outcome.Disposition != notify.Retry && outcome.Disposition != notify.Permanent {
@@ -121,8 +121,7 @@ func (s *Store) CompleteAlertDelivery(ctx context.Context, lease notify.Lease, o
 		sent = &now
 	} else if outcome.Disposition == notify.Retry && d.Attempts < maxAttempts {
 		status = notify.Pending
-		delay := min(int64(15)<<(d.Attempts-1), int64(900))
-		next = now.Add(time.Duration(delay) * time.Second)
+		next = now.Add(notify.RetryDelay(d.Attempts, outcome.RetryAfter))
 	}
 	if _, err := tx.Exec(ctx, `UPDATE alert_deliveries SET status=$2,next_attempt=$3,updated_at=$4,sent_at=$5,last_reason=$6,last_status_code=$7,lease_token='',lease_expires_at=NULL WHERE id=$1`,
 		d.ID, status, next, now, sent, outcome.Reason, outcome.StatusCode); err != nil {

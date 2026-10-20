@@ -136,4 +136,5 @@ type Outcome struct {
 	Reason      string
 	StatusCode  *int
 	ElapsedMS   int64
+	RetryAfter  time.Duration
 }

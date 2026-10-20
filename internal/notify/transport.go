@@ -83,26 +83,30 @@ func (s *Sender) Deliver(ctx context.Context, delivery Delivery) (outcome Outcom
 	payload := delivery.Payload.Public(s.options.Domain)
 	deliveryCtx, cancel := context.WithTimeout(ctx, s.options.Timeout)
 	defer cancel()
-	if delivery.Recipient.Type == "webhook" {
+	if isWebhookRecipient(delivery.Recipient.Type) {
 		return s.webhook(deliveryCtx, delivery, payload), nil
 	}
 	message, messageErr := s.message(delivery, payload)
 	if messageErr != nil {
 		return Outcome{Disposition: Permanent, Reason: "invalid_payload"}, nil
 	}
+	return s.deliverMailMessage(deliveryCtx, delivery.Recipient.Destination, message), nil
+}
+
+func (s *Sender) deliverMailMessage(ctx context.Context, recipient string, message []byte) Outcome {
 	if s.mail.scheme == "consolemail" {
 		s.consoleMu.Lock()
 		defer s.consoleMu.Unlock()
-		if deliveryCtx.Err() != nil {
-			return failure(deliveryCtx.Err(), deliveryCtx, "console_error"), nil
+		if ctx.Err() != nil {
+			return failure(ctx.Err(), ctx, "console_error")
 		}
 		n, writeErr := s.options.Console.Write(message)
 		if writeErr != nil || n != len(message) {
-			return Outcome{Disposition: Retry, Reason: "console_error"}, nil
+			return Outcome{Disposition: Retry, Reason: "console_error"}
 		}
-		return Outcome{Disposition: Delivered, Reason: "accepted"}, nil
+		return Outcome{Disposition: Delivered, Reason: "accepted"}
 	}
-	return s.smtp(deliveryCtx, delivery.Recipient.Destination, message), nil
+	return s.smtp(ctx, recipient, message)
 }
 
 func safeIdentity(value string) bool {
@@ -117,33 +121,35 @@ func safeIdentity(value string) bool {
 	return true
 }
 
+func isWebhookRecipient(kind string) bool {
+	switch kind {
+	case "webhook", "slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip":
+		return true
+	default:
+		return false
+	}
+}
+
 func (s *Sender) webhook(ctx context.Context, delivery Delivery, payload Payload) Outcome {
-	body, err := json.Marshal(payload)
+	message, err := webhookRequestFor(delivery.Recipient.Type, payload)
 	if err != nil {
 		return Outcome{Disposition: Permanent, Reason: "invalid_payload"}
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, delivery.Recipient.Destination, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, delivery.Recipient.Destination, bytes.NewReader(message.Body))
 	if err != nil {
 		return Outcome{Disposition: Permanent, Reason: "invalid_destination"}
 	}
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Type", message.ContentType)
+	for name, value := range message.Headers {
+		request.Header.Set(name, value)
+	}
 	request.Header.Set("X-GoodSentry-Delivery-ID", delivery.ID)
 	request.Header.Set("X-GoodSentry-Event", payload.Kind)
 	response, err := s.client.Do(request)
 	if err != nil {
 		return failure(err, ctx, "http_error")
 	}
-	// Receiver content has no delivery semantics. Closing without reading bounds
-	// memory and prevents an unending response body from delaying acceptance.
-	response.Body.Close()
-	outcome := Outcome{Disposition: Permanent, Reason: "http_status", StatusCode: &response.StatusCode}
-	switch {
-	case response.StatusCode >= 200 && response.StatusCode < 300:
-		outcome.Disposition, outcome.Reason = Delivered, "accepted"
-	case response.StatusCode == 408 || response.StatusCode == 425 || response.StatusCode == 429 || response.StatusCode >= 500 && response.StatusCode < 600:
-		outcome.Disposition = Retry
-	}
-	return outcome
+	return webhookOutcome(ctx, delivery.Recipient.Type, response)
 }
 
 func (s *Sender) message(delivery Delivery, payload Payload) ([]byte, error) {
@@ -151,11 +157,7 @@ func (s *Sender) message(delivery Delivery, payload Payload) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	domain, _ := url.Parse(s.options.Domain)
-	messageHost := domain.Hostname()
-	if strings.Contains(messageHost, ":") {
-		messageHost = "[" + messageHost + "]"
-	}
+	messageHost := s.messageHost()
 	subject := strings.Map(func(ch rune) rune {
 		if unicode.IsControl(ch) {
 			return ' '
@@ -174,6 +176,15 @@ func (s *Sender) message(delivery Delivery, payload Payload) ([]byte, error) {
 	}
 	output.WriteString("\r\n")
 	return output.Bytes(), nil
+}
+
+func (s *Sender) messageHost() string {
+	domain, _ := url.Parse(s.options.Domain)
+	host := domain.Hostname()
+	if strings.Contains(host, ":") {
+		host = "[" + host + "]"
+	}
+	return host
 }
 
 func (s *Sender) smtp(ctx context.Context, recipient string, message []byte) Outcome {

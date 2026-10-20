@@ -103,4 +103,27 @@ func verifyAlertWorkflow(t *testing.T, request func(string, string, string, stri
 	if code != 200 || len(list["data"].([]any)) != 2 {
 		t.Fatalf("deleting alert lost delivery audit=%d %+v", code, list)
 	}
+	providers := []string{"slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip"}
+	providerRecipients := make([]string, 0, len(providers))
+	for _, provider := range providers {
+		providerRecipients = append(providerRecipients, fmt.Sprintf(`{"type":%q,"destination":%q}`, provider, "https://hooks.example.invalid/"+provider))
+	}
+	providerInput := `{"name":"Provider channel proof","quantity":1,"windowMinutes":5,"cooldownSeconds":900,"environments":[],"recipients":[` + strings.Join(providerRecipients, ",") + `]}`
+	code, providerRule := request("POST", collection, providerInput, csrf)
+	if code != 201 || len(providerRule["recipients"].([]any)) != len(providers) {
+		t.Fatalf("provider alert create=%d %+v", code, providerRule)
+	}
+	for index, recipient := range providerRule["recipients"].([]any) {
+		if recipient.(map[string]any)["type"] != providers[index] {
+			t.Fatalf("provider identity/order changed: %+v", providerRule["recipients"])
+		}
+	}
+	providerPath := collection + "/" + providerRule["id"].(string)
+	code, queued = request("POST", providerPath+"/test", "", csrf)
+	if code != 202 || queued["queued"] != float64(len(providers)) {
+		t.Fatalf("provider test queue=%d %+v", code, queued)
+	}
+	if code, _ = request("DELETE", providerPath, "", csrf); code != 204 {
+		t.Fatalf("provider alert delete=%d", code)
+	}
 }

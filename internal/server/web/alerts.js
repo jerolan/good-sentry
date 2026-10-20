@@ -186,8 +186,10 @@ export function createAlertsUI({ state, node, request, navigate, routeLink, butt
     }
     function addRecipient(recipient) {
       const index = ++recipientNumber;
-      const type = selectField(`Recipient type ${index}`, [['team_email', 'Project team email'], ['email', 'Email address'], ['webhook', 'Webhook']], recipient.type);
+      const type = selectField(`Recipient type ${index}`, [['team_email', 'Project team email'], ['email', 'Email address'], ['webhook', 'Generic webhook (JSON)'], ['slack', 'Slack incoming webhook'], ['discord', 'Discord webhook'], ['teams', 'Microsoft Teams webhook'], ['googlechat', 'Google Chat webhook'], ['feishu', 'Feishu / Lark bot'], ['ntfy', 'ntfy topic URL'], ['zulip', 'Zulip Slack-compatible webhook']], recipient.type);
       const destination = field(`Destination ${index}`, 'text', { value: recipient.destination || '', maxlength: 4000, autocomplete: 'off' });
+      const providerHelp = node('p', { class: 'small' });
+      destination.wrap.append(providerHelp);
       const row = node('div', { class: 'alert-recipient' });
       const item = { type, destination, row };
       item.remove = button(`Remove recipient ${index}`, () => { row.remove(); recipients.splice(recipients.indexOf(item), 1); updateRecipients(); }, 'small');
@@ -196,7 +198,21 @@ export function createAlertsUI({ state, node, request, navigate, routeLink, butt
         destination.wrap.hidden = team;
         destination.input.disabled = team;
         destination.input.required = !team;
-        destination.wrap.querySelector('label').textContent = `${type.input.value === 'email' ? 'Email address' : 'Webhook URL'} ${index}`;
+        const providers = {
+          slack: ['Slack webhook URL', 'Use the channel\'s incoming webhook URL. Keep it secret.'],
+          discord: ['Discord webhook URL', 'Use a Discord channel webhook URL. Keep it secret.'],
+          teams: ['Microsoft Teams webhook URL', 'Use a Teams workflow or incoming webhook URL. Keep it secret.'],
+          googlechat: ['Google Chat webhook URL', 'Use the space\'s Google Chat webhook URL. Keep it secret.'],
+          feishu: ['Feishu / Lark bot URL', 'Use a custom bot webhook URL without request signing. Keep it secret.'],
+          ntfy: ['ntfy topic URL', 'Use the topic URL, including its secret topic name.'],
+          zulip: ['Zulip webhook URL', 'Use Zulip\'s Slack-compatible incoming webhook URL. Keep it secret.'],
+        };
+        const provider = providers[type.input.value];
+        providerHelp.hidden = !provider;
+        providerHelp.textContent = provider ? provider[1] : '';
+        const label = type.input.value === 'email' ? 'Email address' : provider ? provider[0] : 'Webhook URL';
+        destination.wrap.querySelector('label').textContent = `${label} ${index}`;
+        destination.input.placeholder = provider ? 'Webhook URL (contains a secret)' : 'https://example.com/alert';
       }
       type.input.addEventListener('change', changeType);
       changeType();
@@ -215,7 +231,7 @@ export function createAlertsUI({ state, node, request, navigate, routeLink, butt
     const form = node('form', { class: 'form-stack', 'aria-label': rule ? 'Edit alert rule configuration' : 'Create alert rule configuration' }, error,
       node('div', { class: 'alert-fields' }, name.wrap, kind.wrap, quantity.wrap, window.wrap, cooldown.wrap, environments.wrap), note,
       node('label', { class: 'checkbox-field' }, enabled, 'Enabled'), node('fieldset', { class: 'alert-recipient-set' }, node('legend', {}, 'Recipients'), recipientRows, add),
-      node('p', { class: 'muted small' }, 'Project team email resolves current teammates. Webhooks receive GoodSentry JSON by POST. Test deliveries use the same worker as normal alerts.'),
+      node('p', { class: 'muted small' }, 'Project team email resolves current teammates. Provider URLs create native channel messages; generic webhooks receive GoodSentry JSON. Test deliveries use the same worker as normal alerts.'),
       node('div', { class: 'dialog-actions' }, button('Cancel', close), submit));
     form.addEventListener('submit', async event => {
       event.preventDefault(); error.textContent = '';

@@ -50,7 +50,9 @@ func TestConfigValidate(t *testing.T) {
 				c.Recipients = append(c.Recipients, Recipient{Type: "email", Destination: string(rune('a'+i)) + "@example.com"})
 			}
 		}},
-		{"recipient type", func(c *Config) { c.Recipients = []Recipient{{Type: "slack", Destination: "https://example.com"}} }},
+		{"recipient type", func(c *Config) {
+			c.Recipients = []Recipient{{Type: "unknown_provider", Destination: "https://example.com"}}
+		}},
 		{"team destination", func(c *Config) { c.Recipients = []Recipient{{Type: "team_email", Destination: "a@example.com"}} }},
 		{"email display name", func(c *Config) { c.Recipients = []Recipient{{Type: "email", Destination: "Name <a@example.com>"}} }},
 		{"email header injection", func(c *Config) {
@@ -84,6 +86,96 @@ func TestConfigValidate(t *testing.T) {
 	max.CooldownSeconds = 604800
 	if err := max.Validate(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestConfigSlackValidate(t *testing.T) {
+	for _, destination := range []string{
+		"https://relay.example.test/services/fixture-token?key=fixture-value",
+		"http://relay.example.test:8080/slack",
+		"https://relay.example.test/" + strings.Repeat("🙂", 2000-len("https://relay.example.test/")),
+	} {
+		c := Defaults()
+		c.Name = "Slack rule"
+		c.Recipients = []Recipient{{Type: "slack", Destination: "  " + destination + "  "}, {Type: "slack", Destination: destination}, {Type: "webhook", Destination: destination}}
+		if err := c.Validate(); err != nil {
+			t.Errorf("valid Slack destination rejected: %v", err)
+			continue
+		}
+		if len(c.Recipients) != 2 || c.Recipients[0] != (Recipient{Type: "slack", Destination: destination}) || c.Recipients[1] != (Recipient{Type: "webhook", Destination: destination}) {
+			t.Errorf("explicit provider identity or destination normalization lost: %#v", c.Recipients)
+		}
+	}
+	for _, tc := range []struct{ name, destination string }{
+		{"relative", "/services/hook"},
+		{"scheme", "ftp://relay.example.test/hook"},
+		{"credentials", "https://user:fixture-value@relay.example.test/hook"},
+		{"fragment", "https://relay.example.test/hook#part"},
+		{"empty fragment", "https://relay.example.test/hook#"},
+		{"missing host", "https:///hook"},
+		{"invalid port", "https://relay.example.test:0/hook"},
+		{"invalid escape", "https://relay.example.test/%zz"},
+		{"NUL", "https://relay.example.test/a\x00b"},
+		{"invalid Unicode", "https://relay.example.test/" + string([]byte{255})},
+		{"overlong Unicode", "https://relay.example.test/" + strings.Repeat("🙂", 2001-len("https://relay.example.test/"))},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := Defaults()
+			c.Name = "Slack rule"
+			c.Recipients = []Recipient{{Type: "slack", Destination: tc.destination}}
+			if c.Validate() == nil {
+				t.Fatal("invalid Slack destination accepted")
+			}
+		})
+	}
+}
+
+func TestConfigProviderWebhooksValidate(t *testing.T) {
+	providers := []string{"discord", "teams", "googlechat", "feishu", "ntfy", "zulip"}
+	for _, destination := range []string{
+		"https://hooks.example.test/services/fixture-token?key=fixture-value",
+		"http://hooks.example.test:8080/channel",
+		"https://hooks.example.test/" + strings.Repeat("🙂", 2000-len("https://hooks.example.test/")),
+	} {
+		config := Defaults()
+		config.Name = "Provider rule"
+		config.Recipients = nil
+		for _, provider := range providers {
+			config.Recipients = append(config.Recipients, Recipient{Type: provider, Destination: "  " + destination + "  "})
+		}
+		if err := config.Validate(); err != nil {
+			t.Fatalf("valid provider destinations rejected: %v", err)
+		}
+		if len(config.Recipients) != len(providers) {
+			t.Fatalf("provider identities collapsed: %#v", config.Recipients)
+		}
+		for index, provider := range providers {
+			if config.Recipients[index] != (Recipient{Type: provider, Destination: destination}) {
+				t.Fatalf("provider normalization lost explicit type: %#v", config.Recipients[index])
+			}
+		}
+	}
+	for _, provider := range providers {
+		for _, tc := range []struct{ name, destination string }{
+			{"relative", "/services/hook"},
+			{"scheme", "ftp://hooks.example.test/hook"},
+			{"credentials", "https://user:fixture-value@hooks.example.test/hook"},
+			{"fragment", "https://hooks.example.test/hook#part"},
+			{"missing host", "https:///hook"},
+			{"invalid port", "https://hooks.example.test:0/hook"},
+			{"NUL", "https://hooks.example.test/a\x00b"},
+			{"invalid Unicode", "https://hooks.example.test/" + string([]byte{255})},
+			{"overlong Unicode", "https://hooks.example.test/" + strings.Repeat("🙂", 2001-len("https://hooks.example.test/"))},
+		} {
+			t.Run(provider+"/"+tc.name, func(t *testing.T) {
+				config := Defaults()
+				config.Name = "Provider rule"
+				config.Recipients = []Recipient{{Type: provider, Destination: tc.destination}}
+				if config.Validate() == nil {
+					t.Fatal("invalid provider destination accepted")
+				}
+			})
+		}
 	}
 }
 

@@ -73,6 +73,155 @@ func TestWebhookDelivery(t *testing.T) {
 	}
 }
 
+func TestSlackWebhookDelivery(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var received atomic.Int64
+	headersFlushed := make(chan struct{})
+	incompleteReleased := make(chan struct{})
+	release := make(chan struct{})
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		received.Add(1)
+		if r.Method != http.MethodPost || r.Header.Get("Content-Type") != "application/json" || r.Header.Get("X-GoodSentry-Delivery-ID") != "delivery-123" || r.Header.Get("X-GoodSentry-Event") != "error_frequency" {
+			t.Errorf("unexpected Slack request identity: %s %#v", r.Method, r.Header)
+		}
+		var message struct {
+			Text   string            `json:"text"`
+			Blocks []json.RawMessage `json:"blocks"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&message); err != nil || len(message.Blocks) != 2 || !strings.Contains(message.Text, "https://errors.example/base/organizations/org/issues/issue-1") {
+			t.Errorf("Slack POST lost blocks or accessible public resource: %#v %v", message, err)
+		}
+		switch r.URL.Path {
+		case "/rate-limit":
+			w.Header().Set("Retry-After", "3600")
+			w.WriteHeader(http.StatusTooManyRequests)
+		case "/oversized":
+			io.WriteString(w, strings.Repeat(" ", 4095)+"ok")
+		case "/incomplete":
+			w.WriteHeader(http.StatusOK)
+			w.(http.Flusher).Flush()
+			close(headersFlushed)
+			select {
+			case <-r.Context().Done():
+			case <-release:
+			}
+			close(incompleteReleased)
+		default:
+			io.WriteString(w, "ok")
+		}
+	}))
+	defer server.Close()
+	defer close(release)
+	opts := senderOptions()
+	opts.AllowPrivate = true
+	sender, err := NewSender(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sender.Close()
+	for _, tc := range []struct {
+		path, reason string
+		want         Disposition
+		status       int
+		retryAfter   time.Duration
+	}{
+		{path: "/accepted", want: Delivered, reason: "accepted", status: 200},
+		{path: "/rate-limit", want: Retry, reason: "http_status", status: 429, retryAfter: time.Hour},
+		{path: "/oversized", want: Permanent, reason: "slack_response", status: 200},
+		{path: "/incomplete", want: Retry, reason: "timeout"},
+	} {
+		t.Run(tc.path, func(t *testing.T) {
+			d := delivery(Recipient{Type: "slack", Destination: server.URL + tc.path})
+			d.Payload.Count, d.Payload.WindowMinutes = 7, 5
+			outcome, err := sender.Deliver(ctx, d)
+			if err != nil || outcome.Disposition != tc.want || outcome.Reason != tc.reason || outcome.RetryAfter != tc.retryAfter || outcome.ElapsedMS < 0 {
+				t.Errorf("Slack POST outcome: %+v %v", outcome, err)
+			}
+			if tc.status != 0 && (outcome.StatusCode == nil || *outcome.StatusCode != tc.status) {
+				t.Errorf("Slack HTTP status lost: %+v", outcome)
+			}
+			if tc.path == "/incomplete" {
+				select {
+				case <-headersFlushed:
+				default:
+					t.Error("deadline did not reach the incomplete acknowledgment body")
+				}
+				select {
+				case <-incompleteReleased:
+				case <-time.After(time.Second):
+					t.Error("delivery deadline did not release the incomplete response handler")
+				}
+			}
+		})
+	}
+	if received.Load() != 4 {
+		t.Errorf("Slack delivery did not reach the real HTTP receiver four times: %d", received.Load())
+	}
+}
+
+func TestProviderWebhookDelivery(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		provider := strings.TrimPrefix(r.URL.Path, "/")
+		if r.Method != http.MethodPost || r.Header.Get("X-GoodSentry-Delivery-ID") != "delivery-123" || r.Header.Get("X-GoodSentry-Event") != "error_frequency" {
+			t.Errorf("%s lost GoodSentry request identity: %s %#v", provider, r.Method, r.Header)
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("%s body: %v", provider, err)
+			return
+		}
+		if provider == "ntfy" {
+			if r.Header.Get("Content-Type") != "text/plain; charset=UTF-8" || r.Header.Get("Title") != "GoodSentry: Fallos 🙂" || r.Header.Get("Click") != "https://errors.example/base/organizations/org/issues/issue-1" || !strings.Contains(string(body), r.Header.Get("Click")) {
+				t.Errorf("ntfy request bytes/headers: %s %#v", body, r.Header)
+			}
+		} else {
+			if r.Header.Get("Content-Type") != "application/json" {
+				t.Errorf("%s content type: %s", provider, r.Header.Get("Content-Type"))
+			}
+			var object map[string]any
+			if err := json.Unmarshal(body, &object); err != nil {
+				t.Errorf("%s JSON body: %v", provider, err)
+			}
+			if key := map[string]string{"slack": "blocks", "discord": "content", "teams": "sections", "googlechat": "text", "feishu": "msg_type", "zulip": "text"}[provider]; key != "" {
+				if _, present := object[key]; !present {
+					t.Errorf("%s body lacks %s: %s", provider, key, body)
+				}
+			}
+		}
+		switch provider {
+		case "discord":
+			w.WriteHeader(http.StatusNoContent)
+		case "feishu":
+			io.WriteString(w, `{"code":0,"msg":"success"}`)
+		case "zulip":
+			io.WriteString(w, `{"result":"success","msg":""}`)
+		case "slack":
+			io.WriteString(w, "ok")
+		default:
+			io.WriteString(w, `{"ok":true}`)
+		}
+	}))
+	defer server.Close()
+	opts := senderOptions()
+	opts.AllowPrivate = true
+	sender, err := NewSender(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sender.Close()
+	for _, provider := range []string{"slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip"} {
+		t.Run(provider, func(t *testing.T) {
+			d := delivery(Recipient{Type: provider, Destination: server.URL + "/" + provider})
+			d.Payload.Count, d.Payload.WindowMinutes = 7, 5
+			outcome, err := sender.Deliver(context.Background(), d)
+			if err != nil || outcome.Disposition != Delivered || outcome.Reason != "accepted" || outcome.StatusCode == nil {
+				t.Fatalf("%s delivery: %+v %v", provider, outcome, err)
+			}
+		})
+	}
+}
+
 func TestWebhookNetworkPolicy(t *testing.T) {
 	var received atomic.Int64
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
