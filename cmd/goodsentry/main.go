@@ -28,8 +28,8 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if cfg.MCP || cfg.DuckDB || cfg.Admin || cfg.OpenAPI || cfg.ValkeyURL != "" {
-		return errors.New("this increment does not yet provide MCP, DuckDB, admin, OpenAPI or Valkey; disable those options")
+	if err := cfg.ValidateRuntimeAvailability(); err != nil {
+		return err
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

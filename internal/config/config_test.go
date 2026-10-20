@@ -108,6 +108,74 @@ func TestExplicitGoodSentryFlagOverridesAlias(t *testing.T) {
 	}
 }
 
+func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
+	base := map[string]string{
+		"DATABASE_URL":             "postgres://goodsentry:local@localhost/goodsentry",
+		"SECRET_KEY":               strings.Repeat("a", 64),
+		"GOODSENTRY_DOMAIN":        "http://localhost:8000",
+		"SERVER_ROLE":              "all_in_one",
+		"VALKEY_URL":               "",
+		"GLITCHTIP_ENABLE_LOGS":    "false",
+		"GLITCHTIP_ENABLE_UPTIME":  "false",
+		"GLITCHTIP_ENABLE_MCP":     "true",
+		"GLITCHTIP_ENABLE_DUCKDB":  "true",
+		"GOODSENTRY_ENABLE_MCP":    "false",
+		"GOODSENTRY_ENABLE_DUCKDB": "false",
+		"ENABLE_ADMIN":             "false",
+		"ENABLE_OPENAPI":           "false",
+	}
+	for key, value := range base {
+		t.Setenv(key, value)
+	}
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Logs || cfg.Uptime || cfg.MCP || cfg.DuckDB || cfg.Admin || cfg.OpenAPI || cfg.ValkeyURL != "" {
+		t.Fatalf("alias precedence/runtime flags=%+v", cfg)
+	}
+	if err := cfg.ValidateRuntimeAvailability(); err != nil {
+		t.Fatalf("PostgreSQL-only defaults unavailable: %v", err)
+	}
+	for _, option := range []struct {
+		key, value, want string
+	}{
+		{"GOODSENTRY_ENABLE_MCP", "true", "MCP"},
+		{"GOODSENTRY_ENABLE_DUCKDB", "true", "DuckDB"},
+		{"ENABLE_ADMIN", "true", "admin"},
+		{"ENABLE_OPENAPI", "true", "OpenAPI"},
+	} {
+		t.Run(option.key, func(t *testing.T) {
+			t.Setenv(option.key, option.value)
+			cfg, err := Load()
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = cfg.ValidateRuntimeAvailability()
+			if err == nil || !strings.Contains(err.Error(), option.want) {
+				t.Fatalf("unavailable %s accepted: %v", option.want, err)
+			}
+		})
+	}
+	t.Setenv("GOODSENTRY_ENABLE_MCP", "false")
+	t.Setenv("GOODSENTRY_ENABLE_DUCKDB", "false")
+	t.Setenv("ENABLE_ADMIN", "false")
+	t.Setenv("ENABLE_OPENAPI", "false")
+	t.Setenv("VALKEY_URL", "redis://valkey.invalid:6379")
+	cfg, err = Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.ValidateRuntimeAvailability(); err == nil || !strings.Contains(err.Error(), "Valkey") {
+		t.Fatalf("Valkey mode accepted: %v", err)
+	}
+	t.Setenv("VALKEY_URL", "")
+	t.Setenv("SERVER_ROLE", "worker")
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "SERVER_ROLE") {
+		t.Fatalf("unsupported role accepted: %v", err)
+	}
+}
+
 // The deployment loader owns precedence and integer admission. These cases
 // catch ignored aliases, stale inherited lifetimes, or a lower-priority
 // invalid value overriding an explicit setting. No runtime cleanup is claimed.

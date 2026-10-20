@@ -34,6 +34,29 @@ type Config struct {
 	OTLPMaxRecords, OTLPMaxNodes              int
 }
 
+// ValidateRuntimeAvailability rejects feature switches whose implementation is
+// not part of this build. Parsing a flag is not permission to claim support.
+func (c Config) ValidateRuntimeAvailability() error {
+	for _, feature := range []struct {
+		name      string
+		enabled   bool
+		canonical string
+	}{
+		{"MCP", c.MCP, "GOODSENTRY_ENABLE_MCP"},
+		{"DuckDB", c.DuckDB, "GOODSENTRY_ENABLE_DUCKDB"},
+		{"admin", c.Admin, "ENABLE_ADMIN"},
+		{"OpenAPI", c.OpenAPI, "ENABLE_OPENAPI"},
+	} {
+		if feature.enabled {
+			return fmt.Errorf("%s is not implemented; set %s=false", feature.name, feature.canonical)
+		}
+	}
+	if c.ValkeyURL != "" {
+		return fmt.Errorf("Valkey is not implemented; leave VALKEY_URL empty for PostgreSQL-only mode")
+	}
+	return nil
+}
+
 func Load() (Config, error) {
 	c := Config{DatabaseURL: os.Getenv("DATABASE_URL"), Secret: os.Getenv("SECRET_KEY"), EmailURL: value("EMAIL_URL", "consolemail://"), FromEmail: value("DEFAULT_FROM_EMAIL", "goodsentry@localhost"), ValkeyURL: os.Getenv("VALKEY_URL"), UploadDir: value("UPLOAD_DIR", "uploads"), MaxBodyBytes: 32 << 20, RetentionDays: 90, MonitorWorkers: 2, AlertWorkers: 2, AlertMaxAttempts: 5, AlertTimeoutSeconds: 10}
 	c.ArtifactChunkTTLHours, c.ArtifactStagingMaxBytes, c.ArtifactMaxMapRecords = 24, 256<<20, 1000
