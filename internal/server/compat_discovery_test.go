@@ -57,8 +57,20 @@ func TestCompatibleDiscoveryHTTPContract(t *testing.T) {
 	}
 
 	var organizations []store.CompatibleOrganization
-	if err := json.Unmarshal(f.request(t, f.client, "GET", "/api/0/organizations/", "", nil, 200), &organizations); err != nil || len(organizations) != 2 {
+	organizationResponse := f.request(t, f.client, "GET", "/api/0/organizations/", "", nil, 200)
+	if err := json.Unmarshal(organizationResponse, &organizations); err != nil || len(organizations) != 2 {
 		t.Fatalf("organization discovery: %+v %v", organizations, err)
+	}
+	// Sentry CLI requires this exact wire spelling. Go's case-insensitive
+	// struct decoder would hide an incompatible lowercase JSON field.
+	var organizationWire []map[string]any
+	if err := json.Unmarshal(organizationResponse, &organizationWire); err != nil {
+		t.Fatal(err)
+	}
+	for _, organization := range organizationWire {
+		if required, exists := organization["require2FA"]; !exists || required != false {
+			t.Fatalf("organization lacks the CLI-compatible require2FA boolean: %s", organizationResponse)
+		}
 	}
 	if organizations[0].Slug != "discovery-http-second" || organizations[1].ID != f.org.ID || organizations[1].DateCreated.IsZero() || !organizations[1].IsAcceptingEvents {
 		t.Fatalf("organization DTO/order: %+v", organizations)

@@ -24,7 +24,7 @@ type CompatibleOrganization struct {
 	Status            CompatibleStatus `json:"status"`
 	Avatar            CompatibleAvatar `json:"avatar"`
 	IsEarlyAdopter    bool             `json:"isEarlyAdopter"`
-	Require2FA        bool             `json:"require2fa"`
+	Require2FA        bool             `json:"require2FA"`
 	IsAcceptingEvents bool             `json:"isAcceptingEvents"`
 	EventThrottleRate int              `json:"eventThrottleRate"`
 }
