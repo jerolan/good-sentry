@@ -59,6 +59,8 @@ func run() error {
 	defer stopFileRetention()
 	stopReleaseRetention := jobs.StartReleaseRetention(ctx, db, cfg.ReleaseRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopReleaseRetention()
+	stopProjectKeyRate := jobs.StartProjectKeyRateCleanup(ctx, db, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	defer stopProjectKeyRate()
 	stopPendingUserReports := jobs.StartPendingUserReports(ctx, db, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopPendingUserReports()
 	stopFeedbackAssociations := jobs.StartFeedbackAssociations(ctx, db, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)

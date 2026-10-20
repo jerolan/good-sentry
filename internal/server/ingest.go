@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -51,6 +52,22 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		failure(w, 403, "Invalid SDK authentication")
 		return
+	}
+	if charge := ingestRateCharge(env); charge > 0 {
+		allowed, retry, err := s.db.AdmitProjectKey(r.Context(), project, key, charge)
+		if err != nil {
+			report(w, err)
+			return
+		}
+		if !allowed {
+			if retry < 1 {
+				retry = 1
+			}
+			w.Header().Set("Retry-After", strconv.Itoa(retry))
+			w.Header().Set("X-Sentry-Rate-Limits", strconv.Itoa(retry)+":event:key:rate_limited")
+			failure(w, http.StatusTooManyRequests, "SDK key rate limit exceeded")
+			return
+		}
 	}
 	var envelopeID string
 	if raw, exists := env.Header["event_id"]; exists {
@@ -224,4 +241,21 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeJSON(w, 200, map[string]any{"id": envelopeID, "unsupportedItems": unsupported})
+}
+
+func ingestRateCharge(env protocol.Envelope) int {
+	charge := 0
+	for _, item := range env.Items {
+		switch item.Type {
+		case "event", "transaction", "feedback", "log":
+			charge++
+		case "span":
+			count := 1
+			if json.Unmarshal(item.Header["item_count"], &count) != nil || count < 1 || count > 1000 {
+				count = 1
+			}
+			charge += count
+		}
+	}
+	return charge
 }

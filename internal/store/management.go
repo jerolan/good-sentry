@@ -9,6 +9,7 @@ import (
 type ManagementAccess struct {
 	UserID         string
 	OrganizationID string
+	Role           string
 	AllProjects    bool
 	ProjectIDs     []int64
 	ReadOnly       bool

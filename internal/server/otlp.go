@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -84,7 +85,7 @@ func (s *Server) otlpLogs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Encoding, X-GoodSentry-Key")
-	w.Header().Set("Access-Control-Expose-Headers", "Retry-After")
+	w.Header().Set("Access-Control-Expose-Headers", "Retry-After, X-Sentry-Rate-Limits")
 
 	// Media recognition chooses the failure representation, but does not admit
 	// a request or read its entity before project authentication.
@@ -149,6 +150,22 @@ func (s *Server) otlpLogs(w http.ResponseWriter, r *http.Request) {
 		}
 		failOTLP(w, encoding, status)
 		return
+	}
+	if charge := len(batch.Records); charge > 0 {
+		allowed, retry, err := s.db.AdmitProjectKey(r.Context(), projectID, key, charge)
+		if err != nil {
+			failOTLP(w, encoding, http.StatusServiceUnavailable)
+			return
+		}
+		if !allowed {
+			if retry < 1 {
+				retry = 1
+			}
+			w.Header().Set("Retry-After", strconv.Itoa(retry))
+			w.Header().Set("X-Sentry-Rate-Limits", strconv.Itoa(retry)+":log_item:key:rate_limited")
+			failOTLP(w, encoding, http.StatusTooManyRequests)
+			return
+		}
 	}
 	if _, err := s.db.IngestOTLP(r.Context(), projectID, batch); err != nil {
 		failOTLP(w, encoding, http.StatusServiceUnavailable)

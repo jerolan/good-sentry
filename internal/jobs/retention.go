@@ -116,6 +116,24 @@ func StartReleaseRetention(parent context.Context, db *store.Store, days int, in
 	})
 }
 
+// StartProjectKeyRateCleanup bounds fixed-window quota history independently of
+// ingestion feature switches and application restarts.
+func StartProjectKeyRateCleanup(parent context.Context, db *store.Store, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		removed, err := db.CleanupProjectKeyRateUsage(ctx, 14*24*time.Hour, 250)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Project-key rate cleanup failed", "entryPoint", "project_key_rate_worker", "operation", "cleanup_project_key_rate")
+		} else if removed > 0 {
+			slog.Info("Project-key rate cleanup committed", "entryPoint", "project_key_rate_worker", "removedWindows", removed)
+			return true
+		}
+		return false
+	})
+}
+
 // StartPendingUserReports reclaims reports whose matching error never arrived.
 // Its fixed pending lifetime is independent of all event/file retention days.
 func StartPendingUserReports(parent context.Context, db *store.Store, interval time.Duration) func() {

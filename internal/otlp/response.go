@@ -36,6 +36,8 @@ func ErrorResponse(encoding Encoding, status int) []byte {
 		code, message = 7, "Invalid project key."
 	case 413:
 		code, message = 8, "OTLP logs capacity exceeded."
+	case 429:
+		code, message = 8, "OTLP log rate limit exceeded."
 	case 415:
 		code, message = 12, "Unsupported OTLP encoding."
 	case 404:

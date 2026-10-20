@@ -67,7 +67,7 @@ func (s *Server) managementAccess(w http.ResponseWriter, r *http.Request) (store
 		report(w, err)
 		return store.ManagementAccess{}, false
 	}
-	access := store.ManagementAccess{UserID: userID, OrganizationID: org.ID, AllProjects: true}
+	access := store.ManagementAccess{UserID: userID, OrganizationID: org.ID, Role: org.Role, AllProjects: true}
 	if grant, ok := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); ok {
 		if grant.OrganizationID != org.ID {
 			failure(w, 404, "Not found")

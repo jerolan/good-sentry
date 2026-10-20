@@ -91,6 +91,7 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 	s.registerReleaseRoutes(mux)
 	s.registerArtifactRoutes(mux)
 	s.registerCompatibleDiscoveryRoutes(mux)
+	s.registerCompatibleManagementRoutes(mux)
 	mux.Handle("GET /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.projects)))
 	mux.Handle("POST /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.createProject)))
 	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/sourcemaps", s.auth(http.HandlerFunc(s.sourceMaps)))
