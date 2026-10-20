@@ -19,6 +19,7 @@ import (
 
 var (
 	// ErrCredentialsChanged requires a fresh sign-in after account mutation.
+	ErrInvalidResetToken  = errors.New("invalid password reset token")
 	ErrCredentialsChanged = errors.New("credentials changed")
 	ErrNotFound           = errors.New("not found")
 	ErrConflict           = errors.New("conflict")

@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"goodsentry/internal/accountmail"
 	"goodsentry/internal/config"
 	"goodsentry/internal/jobs"
 	"goodsentry/internal/notify"
@@ -71,6 +72,14 @@ func run() error {
 		return err
 	}
 	defer sender.Close()
+	accountBox, err := accountmail.NewSecretBox(cfg.Secret)
+	if err != nil {
+		return err
+	}
+	stopAccountMail := jobs.StartAccountMail(ctx, db, sender, accountBox, jobs.AccountMailOptions{
+		Workers: cfg.AlertWorkers, MaxAttempts: cfg.AlertMaxAttempts, Timeout: alertTimeout, Domain: cfg.Domain,
+	})
+	defer stopAccountMail()
 	stopAlerts := jobs.StartAlerts(ctx, db, sender, jobs.AlertOptions{
 		Workers: cfg.AlertWorkers, MaxAttempts: cfg.AlertMaxAttempts, Timeout: alertTimeout,
 	})
@@ -80,7 +89,7 @@ func run() error {
 		stopWorkers := jobs.StartMonitors(ctx, db, cfg.MonitorWorkers, cfg.UptimeAllowPrivate)
 		defer stopWorkers()
 	}
-	srv := &http.Server{Addr: cfg.Addr, Handler: server.New(cfg, db), ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxHeaderBytes: 1 << 20}
+	srv := &http.Server{Addr: cfg.Addr, Handler: server.NewWithAccountMail(cfg, db, sender, accountBox), ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxHeaderBytes: 1 << 20}
 	done := make(chan error, 1)
 	go func() {
 		slog.Info("GoodSentry listening", "address", cfg.Addr, "domain", cfg.Domain)

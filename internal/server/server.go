@@ -13,7 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"goodsentry/internal/accountmail"
 	"goodsentry/internal/config"
+	"goodsentry/internal/notify"
 	"goodsentry/internal/store"
 )
 
@@ -21,8 +23,10 @@ import (
 var web embed.FS
 
 type Server struct {
-	cfg config.Config
-	db  *store.Store
+	cfg     config.Config
+	db      *store.Store
+	mail    *notify.Sender
+	account *accountmail.SecretBox
 }
 type identity struct {
 	User store.User
@@ -31,7 +35,11 @@ type identity struct {
 type identityKey struct{}
 
 func New(cfg config.Config, db *store.Store) http.Handler {
-	s := &Server{cfg: cfg, db: db}
+	return NewWithAccountMail(cfg, db, nil, nil)
+}
+
+func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sender, box *accountmail.SecretBox) http.Handler {
+	s := &Server{cfg: cfg, db: db, mail: sender, account: box}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]string{"status": "ok", "service": "GoodSentry"})
@@ -50,6 +58,8 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.HandleFunc("POST /api/v1/login", s.login)
 	mux.Handle("GET /api/v1/me", s.auth(http.HandlerFunc(s.me)))
 	mux.Handle("POST /api/v1/account/password", s.auth(http.HandlerFunc(s.changePassword)))
+	mux.HandleFunc("POST /api/v1/account/password/reset/request", s.requestPasswordReset)
+	mux.HandleFunc("POST /api/v1/account/password/reset", s.resetPassword)
 	mux.Handle("POST /api/v1/logout", s.auth(http.HandlerFunc(s.logout)))
 	mux.Handle("GET /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.apiTokens)))
 	mux.Handle("POST /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.createAPIToken)))
