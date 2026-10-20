@@ -11,3 +11,4 @@ coverage.out
 /.gocache/
 /.gopath/
 /.tmp/
+/tests/compat/__pycache__/
