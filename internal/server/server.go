@@ -90,6 +90,7 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 	s.registerCompatibleIssueDeleteRoutes(mux)
 	s.registerReleaseRoutes(mux)
 	s.registerArtifactRoutes(mux)
+	s.registerCompatibleDiscoveryRoutes(mux)
 	mux.Handle("GET /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.projects)))
 	mux.Handle("POST /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.createProject)))
 	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/sourcemaps", s.auth(http.HandlerFunc(s.sourceMaps)))
@@ -171,8 +172,37 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 				failure(w, 500, "Internal server error")
 			}
 		}()
+		if s.rejectSecurityReportMethod(w, r) {
+			return
+		}
 		handler.ServeHTTP(w, r)
 	})
+}
+
+// Security report URLs answer non-POST/OPTIONS with405. They use a path guard
+// rather than a methodless ServeMux pattern so GET /api/settings/{org}/ remains
+// an unambiguous discovery route.
+func (s *Server) rejectSecurityReportMethod(w http.ResponseWriter, r *http.Request) bool {
+	if r.Method == http.MethodPost || r.Method == http.MethodOptions {
+		return false
+	}
+	path := r.URL.Path
+	if s.cfg.Prefix != "" {
+		if path == s.cfg.Prefix {
+			return false
+		}
+		if !strings.HasPrefix(path, s.cfg.Prefix+"/") {
+			return false
+		}
+		path = strings.TrimPrefix(path, s.cfg.Prefix)
+	}
+	parts := strings.Split(path, "/")
+	if len(parts) != 5 || parts[0] != "" || parts[1] != "api" || parts[2] == "" || parts[2] == "settings" || parts[4] != "" || parts[3] != "security" && parts[3] != "csp-report" {
+		return false
+	}
+	w.Header().Set("Allow", "POST, OPTIONS")
+	failure(w, 405, "Security reports require POST")
+	return true
 }
 
 func (s *Server) assets(w http.ResponseWriter, r *http.Request) {

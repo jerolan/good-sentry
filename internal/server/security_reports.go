@@ -20,10 +20,6 @@ func (s *Server) registerSecurityReportRoutes(mux *http.ServeMux) {
 		pattern := "/api/{project}/" + route + "/{$}"
 		mux.HandleFunc("POST "+pattern, s.securityReports)
 		mux.HandleFunc("OPTIONS "+pattern, s.preflight)
-		mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Allow", "POST, OPTIONS")
-			failure(w, 405, "Security reports require POST")
-		})
 	}
 }
 
