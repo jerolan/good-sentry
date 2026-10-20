@@ -60,6 +60,21 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 	mux.Handle("POST /api/v1/account/password", s.auth(http.HandlerFunc(s.changePassword)))
 	mux.HandleFunc("POST /api/v1/account/password/reset/request", s.requestPasswordReset)
 	mux.HandleFunc("POST /api/v1/account/password/reset", s.resetPassword)
+	mux.Handle("GET /api/v1/organizations/{org}/members", s.auth(http.HandlerFunc(s.members)))
+	mux.Handle("PATCH /api/v1/organizations/{org}/members/{member}", s.auth(http.HandlerFunc(s.updateMemberRole)))
+	mux.Handle("DELETE /api/v1/organizations/{org}/members/{member}", s.auth(http.HandlerFunc(s.removeMember)))
+	mux.Handle("GET /api/v1/organizations/{org}/teams", s.auth(http.HandlerFunc(s.teams)))
+	mux.Handle("POST /api/v1/organizations/{org}/teams", s.auth(http.HandlerFunc(s.createTeam)))
+	mux.Handle("GET /api/v1/organizations/{org}/teams/{team}", s.auth(http.HandlerFunc(s.team)))
+	mux.Handle("PATCH /api/v1/organizations/{org}/teams/{team}", s.auth(http.HandlerFunc(s.updateTeam)))
+	mux.Handle("DELETE /api/v1/organizations/{org}/teams/{team}", s.auth(http.HandlerFunc(s.deleteTeam)))
+	mux.Handle("POST /api/v1/organizations/{org}/teams/{team}/members/{member}", s.auth(http.HandlerFunc(s.addTeamMember)))
+	mux.Handle("DELETE /api/v1/organizations/{org}/teams/{team}/members/{member}", s.auth(http.HandlerFunc(s.removeTeamMember)))
+	mux.Handle("GET /api/v1/organizations/{org}/invitations", s.auth(http.HandlerFunc(s.invitations)))
+	mux.Handle("POST /api/v1/organizations/{org}/invitations", s.auth(http.HandlerFunc(s.createInvitation)))
+	mux.Handle("DELETE /api/v1/organizations/{org}/invitations/{invitation}", s.auth(http.HandlerFunc(s.cancelInvitation)))
+	mux.HandleFunc("POST /api/v1/invitations/inspect", s.inspectInvitation)
+	mux.HandleFunc("POST /api/v1/invitations/accept", s.acceptInvitation)
 	mux.Handle("POST /api/v1/logout", s.auth(http.HandlerFunc(s.logout)))
 	mux.Handle("GET /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.apiTokens)))
 	mux.Handle("POST /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.createAPIToken)))
@@ -211,6 +226,8 @@ func report(w http.ResponseWriter, err error) {
 		failure(w, 409, "Resource already exists")
 	case errors.Is(err, store.ErrForbidden):
 		failure(w, 403, "Permission denied")
+	case errors.Is(err, store.ErrLastOwner):
+		failure(w, 409, "An organization must retain at least one owner")
 	case errors.Is(err, store.ErrCredentialsChanged):
 		failure(w, 401, "Session expired")
 	default:

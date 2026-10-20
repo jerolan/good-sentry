@@ -80,6 +80,10 @@ func run() error {
 		Workers: cfg.AlertWorkers, MaxAttempts: cfg.AlertMaxAttempts, Timeout: alertTimeout, Domain: cfg.Domain,
 	})
 	defer stopAccountMail()
+	stopInvitations := jobs.StartInvitations(ctx, db, sender, accountBox, jobs.InvitationOptions{
+		Workers: cfg.AlertWorkers, MaxAttempts: cfg.AlertMaxAttempts, Timeout: alertTimeout, Domain: cfg.Domain,
+	})
+	defer stopInvitations()
 	stopAlerts := jobs.StartAlerts(ctx, db, sender, jobs.AlertOptions{
 		Workers: cfg.AlertWorkers, MaxAttempts: cfg.AlertMaxAttempts, Timeout: alertTimeout,
 	})

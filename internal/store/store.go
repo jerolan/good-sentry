@@ -18,12 +18,15 @@ import (
 )
 
 var (
-	// ErrCredentialsChanged requires a fresh sign-in after account mutation.
-	ErrInvalidResetToken  = errors.New("invalid password reset token")
+	ErrNotFound  = errors.New("not found")
+	ErrConflict  = errors.New("conflict")
+	ErrForbidden = errors.New("forbidden")
+	// ErrCredentialsChanged means the caller's authenticated credential version
+	// no longer matches the durable account state. Callers must reauthenticate.
 	ErrCredentialsChanged = errors.New("credentials changed")
-	ErrNotFound           = errors.New("not found")
-	ErrConflict           = errors.New("conflict")
-	ErrForbidden          = errors.New("forbidden")
+	ErrInvalidResetToken  = errors.New("invalid password reset token")
+	ErrInvalidInvitation  = errors.New("invalid organization invitation")
+	ErrLastOwner          = errors.New("last owner")
 )
 
 //go:embed migrations/*.sql
