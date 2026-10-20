@@ -223,11 +223,11 @@ func TestCompatibleIssueUpdateMigration018PreservesRowsReceiptsAndReopen(t *test
 	if _, err = f.db.UpdateIssue(f.ctx, f.owner.ID, muted, IssueUpdate{Status: "ignored", Ignore: issueIgnoreChange(60, 5)}); err != nil {
 		t.Fatal(err)
 	}
-	if err = f.db.CreateSession(f.ctx, f.owner.ID, "migration018-session", "migration018-csrf", time.Now().Add(time.Hour)); err != nil {
+	if err = f.db.CreateSession(f.ctx, f.owner.ID, f.owner.AuthGeneration, "migration018-session", "migration018-csrf", time.Now().Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
-	restricted, _, _ := apiTokenFixture(t, f.ctx, f.db, f.owner.ID, f.org.Slug, "migration018-expired", []int64{apiTokenProjectID(t, f.project.ID)})
-	revoked, _, _ := apiTokenFixture(t, f.ctx, f.db, f.owner.ID, f.org.Slug, "migration018-revoked", nil)
+	restricted, _, _ := apiTokenFixture(t, f.ctx, f.db, f.owner, f.org.Slug, "migration018-expired", []int64{apiTokenProjectID(t, f.project.ID)})
+	revoked, _, _ := apiTokenFixture(t, f.ctx, f.db, f.owner, f.org.Slug, "migration018-revoked", nil)
 	if err = f.db.RevokeAPIToken(f.ctx, f.owner.ID, f.org.Slug, revoked.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -281,7 +281,7 @@ DELETE FROM schema_migrations WHERE version=18`); err != nil {
 		t.Fatal("018 changed catalog outside token scope allowlist")
 	}
 	_, hash, prefix := apiTokenCredentials("migration018-writer")
-	token, err := upgraded.CreateAPIToken(f.ctx, f.owner.ID, f.org.Slug, APITokenInput{Name: "Issue writer", Scopes: []string{"event:write"}, ProjectIDs: []int64{apiTokenProjectID(t, f.project.ID)}, ExpiresInDays: 1}, hash, prefix)
+	token, err := upgraded.CreateAPIToken(f.ctx, f.owner.ID, f.owner.AuthGeneration, f.org.Slug, APITokenInput{Name: "Issue writer", Scopes: []string{"event:write"}, ProjectIDs: []int64{apiTokenProjectID(t, f.project.ID)}, ExpiresInDays: 1}, hash, prefix)
 	if err != nil || !reflect.DeepEqual(token.Scopes, []string{"event:write"}) {
 		t.Fatalf("018 writer scope=%+v error=%v", token, err)
 	}

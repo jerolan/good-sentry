@@ -469,4 +469,88 @@ func TestAPITokenHTTPContract(t *testing.T) {
 	want("revoked token consumption", request(http.DefaultClient, "GET", listPath, "", "", bearer(all.Token)), 401)
 	want("cookie cannot rescue revoked bearer", request(ownerActor.client, "GET", listPath, "", "", bearer(all.Token)), 401)
 	want("absent credential ID", request(ownerActor.client, "DELETE", management+"/9223372036854775807", "", ownerActor.csrf, nil), 404)
+
+	// A request already admitted at the initial generation must not mint a token after a
+	// concurrent password-generation change commits. Hold the user row without
+	// committing so middleware reads the old generation, then release it while
+	// the issuer waits at FOR SHARE. The real HTTP caller must receive401 and
+	// leave no token behind; a later admission can issue with the new generation.
+	var staleBefore int
+	if err := fixture.QueryRow(ctx, `SELECT count(*) FROM api_tokens WHERE name='Stale admitted generation'`).Scan(&staleBefore); err != nil {
+		t.Fatal(err)
+	}
+	held, err := fixture.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer held.Rollback(ctx)
+	var generation int64
+	var holder int
+	if err := held.QueryRow(ctx, `UPDATE users SET auth_generation=auth_generation+1 WHERE id=$1::bigint
+ RETURNING auth_generation,pg_backend_pid()`, owner.ID).Scan(&generation, &holder); err != nil {
+		t.Fatal(err)
+	}
+	type staleResult struct {
+		status int
+		body   []byte
+		err    error
+	}
+	stale := make(chan staleResult, 1)
+	go func() {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, srv.URL+cfg.Prefix+management, strings.NewReader(`{"name":"Stale admitted generation","expiresInDays":1}`))
+		if err != nil {
+			stale <- staleResult{err: err}
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-CSRF-Token", ownerActor.csrf)
+		res, err := ownerActor.client.Do(req)
+		if err != nil {
+			stale <- staleResult{err: err}
+			return
+		}
+		defer res.Body.Close()
+		body, readErr := io.ReadAll(res.Body)
+		stale <- staleResult{status: res.StatusCode, body: body, err: readErr}
+	}()
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		var blocked bool
+		if err := admin.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid)) AND query LIKE '%FROM users%FOR SHARE%')`, holder).Scan(&blocked); err != nil {
+			t.Fatal(err)
+		}
+		if blocked {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("native token issuer never waited for the account generation lock")
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	if err := held.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	var staleResponse staleResult
+	select {
+	case staleResponse = <-stale:
+	case <-time.After(5 * time.Second):
+		t.Fatal("stale native token request did not finish")
+	}
+	if staleResponse.err != nil || staleResponse.status != 401 {
+		t.Fatalf("stale admitted generation status=%d err=%v body=%s", staleResponse.status, staleResponse.err, staleResponse.body)
+	}
+	var staleAfter int
+	if err := fixture.QueryRow(ctx, `SELECT count(*) FROM api_tokens WHERE name='Stale admitted generation'`).Scan(&staleAfter); err != nil {
+		t.Fatal(err)
+	}
+	if staleBefore != 0 || staleAfter != 0 {
+		t.Fatalf("stale generation wrote credentials: before=%d after=%d", staleBefore, staleAfter)
+	}
+	fresh := issue(ownerActor, `{"name":"Fresh generation"}`)
+	if fresh.Name != "Fresh generation" {
+		t.Fatalf("fresh generation did not issue after reauthentication: %+v", fresh)
+	}
+	if generation != owner.AuthGeneration+1 {
+		t.Fatalf("generation changed unexpectedly: %d", generation)
+	}
 }

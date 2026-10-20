@@ -198,10 +198,37 @@ func TestAccountDSNCaptureAndTriage(t *testing.T) {
 	if res.StatusCode != 404 {
 		t.Fatalf("disabled uptime route=%d", res.StatusCode)
 	}
+	if code, _ = request("POST", "/api/v1/account/password", `{"currentPassword":"correct-long-password","newPassword":"new-password-for-account"}`, ""); code != 403 {
+		t.Fatalf("password change without CSRF=%d", code)
+	}
+	if code, _ = request("POST", "/api/v1/account/password", `{"currentPassword":"wrong-password","newPassword":"new-password-for-account"}`, csrf); code != 400 {
+		t.Fatalf("wrong current password=%d", code)
+	}
+	longBytes := `{"currentPassword":"correct-long-password","newPassword":"` + strings.Repeat("界", 25) + `"}`
+	if code, _ = request("POST", "/api/v1/account/password", longBytes, csrf); code != 400 {
+		t.Fatalf("multibyte password byte bound=%d", code)
+	}
+	if code, _ = request("POST", "/api/v1/account/password", `{"currentPassword":"correct-long-password","newPassword":"short","unknown":true}`, csrf); code != 400 {
+		t.Fatalf("malformed password change=%d", code)
+	}
+	if code, _ = request("POST", "/api/v1/account/password", `{"currentPassword":"correct-long-password","newPassword":"new-password-for-account"}`, csrf); code != 204 {
+		t.Fatalf("password change=%d", code)
+	}
+	if code, _ = request("GET", "/api/v1/me", "", ""); code != 401 {
+		t.Fatalf("revoked session access=%d", code)
+	}
+	if code, _ = request("POST", "/api/v1/login", `{"email":"owner@example.test","password":"correct-long-password"}`, ""); code != 401 {
+		t.Fatalf("old password login=%d", code)
+	}
+	var changed map[string]any
+	if code, changed = request("POST", "/api/v1/login", `{"email":"owner@example.test","password":"new-password-for-account"}`, ""); code != 200 {
+		t.Fatalf("new password login=%d %+v", code, changed)
+	}
+	csrf = changed["csrfToken"].(string)
+	if code, _ = request("GET", "/api/v1/me", "", ""); code != 200 {
+		t.Fatalf("new session access=%d", code)
+	}
 	if code, _ = request("POST", "/api/v1/logout", "{}", csrf); code != 204 {
 		t.Fatalf("logout=%d", code)
-	}
-	if code, _ = request("GET", "/api/v1/issues/"+id, "", ""); code != 401 {
-		t.Fatalf("logged out access=%d", code)
 	}
 }

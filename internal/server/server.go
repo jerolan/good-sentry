@@ -49,6 +49,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 	mux.HandleFunc("POST /api/v1/setup", s.setup)
 	mux.HandleFunc("POST /api/v1/login", s.login)
 	mux.Handle("GET /api/v1/me", s.auth(http.HandlerFunc(s.me)))
+	mux.Handle("POST /api/v1/account/password", s.auth(http.HandlerFunc(s.changePassword)))
 	mux.Handle("POST /api/v1/logout", s.auth(http.HandlerFunc(s.logout)))
 	mux.Handle("GET /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.apiTokens)))
 	mux.Handle("POST /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.createAPIToken)))
@@ -200,6 +201,8 @@ func report(w http.ResponseWriter, err error) {
 		failure(w, 409, "Resource already exists")
 	case errors.Is(err, store.ErrForbidden):
 		failure(w, 403, "Permission denied")
+	case errors.Is(err, store.ErrCredentialsChanged):
+		failure(w, 401, "Session expired")
 	default:
 		slog.Error("Database operation failed", "error", err)
 		failure(w, 503, "Storage is temporarily unavailable")

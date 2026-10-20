@@ -72,8 +72,8 @@ func (s *Server) createAPIToken(w http.ResponseWriter, r *http.Request) {
 	}
 	seen := map[string]bool{}
 	for _, scope := range *input.Scopes {
-		if (scope != "org:read" && scope != "project:read" && scope != "project:releases" && scope != "event:read" && scope != "event:write" && scope != "event:admin" && scope != "project:write") || seen[scope] {
-			failure(w, 400, "Scopes must be distinct implemented values: org:read, project:read, project:releases, project:write, event:read, event:write or event:admin")
+		if (scope != "org:read" && scope != "org:write" && scope != "project:read" && scope != "project:releases" && scope != "event:read" && scope != "event:write" && scope != "event:admin" && scope != "project:write") || seen[scope] {
+			failure(w, 400, "Scopes must be distinct implemented values: org:read, org:write, project:read, project:releases, project:write, event:read, event:write or event:admin")
 			return
 		}
 		seen[scope] = true
@@ -93,7 +93,7 @@ func (s *Server) createAPIToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	secret = "gs_" + secret
-	result, err := s.db.CreateAPIToken(r.Context(), current(r).User.ID, r.PathValue("org"), store.APITokenInput{
+	result, err := s.db.CreateAPIToken(r.Context(), current(r).User.ID, current(r).User.AuthGeneration, r.PathValue("org"), store.APITokenInput{
 		Name: input.Name, Scopes: *input.Scopes, ProjectIDs: ids, ExpiresInDays: *input.ExpiresInDays,
 	}, s.hash(secret), secret[:11])
 	if err != nil {

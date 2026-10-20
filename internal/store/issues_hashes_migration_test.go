@@ -37,7 +37,7 @@ func TestCompatibleIssueHashesMigration019PreservesLegacyBackfillAndReopen(t *te
 	if _, err := f.db.AddComment(f.ctx, f.owner.ID, a, "Before route identities existed"); err != nil {
 		t.Fatal(err)
 	}
-	if err := f.db.CreateSession(f.ctx, f.owner.ID, "migration019-session", "migration019-csrf", time.Now().Add(time.Hour)); err != nil {
+	if err := f.db.CreateSession(f.ctx, f.owner.ID, f.owner.AuthGeneration, "migration019-session", "migration019-csrf", time.Now().Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 	hashLegacy018(t, f)

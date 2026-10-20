@@ -18,9 +18,11 @@ import (
 )
 
 var (
-	ErrNotFound  = errors.New("not found")
-	ErrConflict  = errors.New("conflict")
-	ErrForbidden = errors.New("forbidden")
+	// ErrCredentialsChanged requires a fresh sign-in after account mutation.
+	ErrCredentialsChanged = errors.New("credentials changed")
+	ErrNotFound           = errors.New("not found")
+	ErrConflict           = errors.New("conflict")
+	ErrForbidden          = errors.New("forbidden")
 )
 
 //go:embed migrations/*.sql

@@ -83,12 +83,15 @@ func tokenAdministrator(ctx context.Context, tx pgx.Tx, userID, orgSlug string, 
 	return orgID, nil
 }
 
-func (s *Store) CreateAPIToken(ctx context.Context, userID, orgSlug string, input APITokenInput, secretHash, prefix string) (APIToken, error) {
-	tx, err := s.pool.Begin(ctx)
+func (s *Store) CreateAPIToken(ctx context.Context, userID string, authGeneration int64, orgSlug string, input APITokenInput, secretHash, prefix string) (APIToken, error) {
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
 	if err != nil {
 		return APIToken{}, err
 	}
 	defer tx.Rollback(ctx)
+	if err = pinUserGeneration(ctx, tx, userID, authGeneration); err != nil {
+		return APIToken{}, err
+	}
 	orgID, err := tokenAdministrator(ctx, tx, userID, orgSlug, true)
 	if err != nil {
 		return APIToken{}, err
@@ -186,12 +189,12 @@ func (s *Store) RevokeAPIToken(ctx context.Context, userID, orgSlug, id string) 
 
 func (s *Store) AuthenticateAPIToken(ctx context.Context, secretHash string) (APITokenGrant, error) {
 	var grant APITokenGrant
-	err := s.pool.QueryRow(ctx, `SELECT u.id::text,u.email,u.name,t.organization_id::text,t.all_projects,t.scopes,
+	err := s.pool.QueryRow(ctx, `SELECT u.id::text,u.email,u.name,u.auth_generation,t.organization_id::text,t.all_projects,t.scopes,
 		ARRAY(SELECT p.id FROM api_token_projects tp JOIN projects p ON p.id=tp.project_id
 		WHERE tp.token_id=t.id AND p.organization_id=t.organization_id ORDER BY p.id)
 		FROM api_tokens t JOIN users u ON u.id=t.user_id
 		JOIN memberships m ON m.organization_id=t.organization_id AND m.user_id=t.user_id
 		WHERE t.secret_hash=$1 AND t.revoked_at IS NULL AND t.expires_at>now()`, secretHash).
-		Scan(&grant.User.ID, &grant.User.Email, &grant.User.Name, &grant.OrganizationID, &grant.AllProjects, &grant.Scopes, &grant.ProjectIDs)
+		Scan(&grant.User.ID, &grant.User.Email, &grant.User.Name, &grant.User.AuthGeneration, &grant.OrganizationID, &grant.AllProjects, &grant.Scopes, &grant.ProjectIDs)
 	return grant, dbError(err)
 }

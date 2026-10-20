@@ -25,10 +25,10 @@ func apiTokenCredentials(seed string) (secret, hash, prefix string) {
 	return secret, hex.EncodeToString(mac.Sum(nil)), secret[:11]
 }
 
-func apiTokenFixture(t *testing.T, ctx context.Context, db *Store, userID, orgSlug, seed string, projects []int64) (APIToken, string, string) {
+func apiTokenFixture(t *testing.T, ctx context.Context, db *Store, user User, orgSlug, seed string, projects []int64) (APIToken, string, string) {
 	t.Helper()
 	secret, hash, prefix := apiTokenCredentials(seed)
-	token, err := db.CreateAPIToken(ctx, userID, orgSlug, APITokenInput{
+	token, err := db.CreateAPIToken(ctx, user.ID, user.AuthGeneration, orgSlug, APITokenInput{
 		Name: "Automation", Scopes: []string{"org:read", "project:read"},
 		ProjectIDs: projects, ExpiresInDays: 90,
 	}, hash, prefix)
@@ -50,7 +50,7 @@ func apiTokenProjectID(t *testing.T, id string) int64 {
 func TestAPITokenPersistsDigestAndGrantAcrossReopen(t *testing.T) {
 	ctx, db, user, org, project := telemetryStore(t)
 	projectID := apiTokenProjectID(t, project.ID)
-	token, hash, secret := apiTokenFixture(t, ctx, db, user.ID, org.Slug, "persisted", []int64{projectID})
+	token, hash, secret := apiTokenFixture(t, ctx, db, user, org.Slug, "persisted", []int64{projectID})
 	if token.ID == "" || token.Name != "Automation" || token.Prefix != secret[:11] || token.CreatedBy != user.ID || token.AllProjects ||
 		!reflect.DeepEqual(token.Scopes, []string{"org:read", "project:read"}) ||
 		!reflect.DeepEqual(token.Projects, []APITokenProject{{ID: project.ID, Slug: project.Slug, Name: project.Name}}) ||
@@ -103,7 +103,7 @@ func TestAPITokenInvalidationUsesCurrentDatabaseState(t *testing.T) {
 	for _, cause := range []string{"expired", "revoked", "creator removed"} {
 		t.Run(cause, func(t *testing.T) {
 			ctx, db, user, org, project := telemetryStore(t)
-			token, hash, _ := apiTokenFixture(t, ctx, db, user.ID, org.Slug, cause, nil)
+			token, hash, _ := apiTokenFixture(t, ctx, db, user, org.Slug, cause, nil)
 			grant, err := db.AuthenticateAPIToken(ctx, hash)
 			if err != nil {
 				t.Fatal(err)
@@ -164,46 +164,46 @@ func TestAPITokenInvalidationUsesCurrentDatabaseState(t *testing.T) {
 
 func TestAPITokenAdministrationAndAtomicProjectBoundary(t *testing.T) {
 	ctx, db, user, org, project := telemetryStore(t)
-	token, _, _ := apiTokenFixture(t, ctx, db, user.ID, org.Slug, "owner", nil)
-	var member string
-	if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES('token-member@example.test',$1,'Member') RETURNING id::text`, []byte("already-hashed")).Scan(&member); err != nil {
+	token, _, _ := apiTokenFixture(t, ctx, db, user, org.Slug, "owner", nil)
+	var member User
+	if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES('token-member@example.test',$1,'Member') RETURNING id::text,auth_generation`, []byte("already-hashed")).Scan(&member.ID, &member.AuthGeneration); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.pool.Exec(ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1,$2,'member')`, org.ID, member); err != nil {
+	if _, err := db.pool.Exec(ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1,$2,'member')`, org.ID, member.ID); err != nil {
 		t.Fatal(err)
 	}
 	_, hash, prefix := apiTokenCredentials("member")
 	input := APITokenInput{Name: "Member automation", Scopes: []string{"project:read"}, ExpiresInDays: 1}
-	if _, err := db.CreateAPIToken(ctx, member, org.Slug, input, hash, prefix); !errors.Is(err, ErrForbidden) {
+	if _, err := db.CreateAPIToken(ctx, member.ID, member.AuthGeneration, org.Slug, input, hash, prefix); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("member create error = %v", err)
 	}
-	if _, err := db.APITokens(ctx, member, org.Slug, 1); !errors.Is(err, ErrForbidden) {
+	if _, err := db.APITokens(ctx, member.ID, org.Slug, 1); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("member history error = %v", err)
 	}
-	if err := db.RevokeAPIToken(ctx, member, org.Slug, token.ID); !errors.Is(err, ErrForbidden) {
+	if err := db.RevokeAPIToken(ctx, member.ID, org.Slug, token.ID); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("member revoke error = %v", err)
 	}
-	if _, err := db.pool.Exec(ctx, `UPDATE memberships SET role='admin' WHERE organization_id=$1 AND user_id=$2`, org.ID, member); err != nil {
+	if _, err := db.pool.Exec(ctx, `UPDATE memberships SET role='admin' WHERE organization_id=$1 AND user_id=$2`, org.ID, member.ID); err != nil {
 		t.Fatal(err)
 	}
-	adminToken, err := db.CreateAPIToken(ctx, member, org.Slug, input, hash, prefix)
+	adminToken, err := db.CreateAPIToken(ctx, member.ID, member.AuthGeneration, org.Slug, input, hash, prefix)
 	if err != nil {
 		t.Fatal(err)
 	}
-	page, err := db.APITokens(ctx, member, org.Slug, 1)
+	page, err := db.APITokens(ctx, member.ID, org.Slug, 1)
 	if err != nil || len(page.Data) != 2 {
 		t.Fatalf("admin history = %+v, error = %v", page, err)
 	}
-	if err := db.RevokeAPIToken(ctx, member, org.Slug, token.ID); err != nil {
+	if err := db.RevokeAPIToken(ctx, member.ID, org.Slug, token.ID); err != nil {
 		t.Fatalf("admin could not revoke organization credential: %v", err)
 	}
-	if _, err := db.pool.Exec(ctx, `UPDATE memberships SET role='member' WHERE organization_id=$1 AND user_id=$2`, org.ID, member); err != nil {
+	if _, err := db.pool.Exec(ctx, `UPDATE memberships SET role='member' WHERE organization_id=$1 AND user_id=$2`, org.ID, member.ID); err != nil {
 		t.Fatal(err)
 	}
 	if grant, err := db.AuthenticateAPIToken(ctx, hash); err != nil || !reflect.DeepEqual(grant.Scopes, []string{"project:read"}) {
 		t.Fatalf("downgraded creator read grant = %+v, error = %v", grant, err)
 	}
-	if err := db.RevokeAPIToken(ctx, member, org.Slug, adminToken.ID); !errors.Is(err, ErrForbidden) {
+	if err := db.RevokeAPIToken(ctx, member.ID, org.Slug, adminToken.ID); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("downgraded administrator revoke error = %v", err)
 	}
 	var foreignID string
@@ -217,7 +217,7 @@ func TestAPITokenAdministrationAndAtomicProjectBoundary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	foreignToken, _, _ := apiTokenFixture(t, ctx, db, user.ID, "foreign-token-org", "foreign", nil)
+	foreignToken, _, _ := apiTokenFixture(t, ctx, db, user, "foreign-token-org", "foreign", nil)
 	ownAccess := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, AllProjects: true}
 	if _, err := db.ManagementProject(ctx, ownAccess, foreign.ID); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("foreign project detail error = %v", err)
@@ -229,7 +229,7 @@ func TestAPITokenAdministrationAndAtomicProjectBoundary(t *testing.T) {
 	if err := db.RevokeAPIToken(ctx, user.ID, org.Slug, foreignToken.ID); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("foreign revoke error = %v", err)
 	}
-	if _, err := db.APITokens(ctx, member, "foreign-token-org", 1); !errors.Is(err, ErrNotFound) {
+	if _, err := db.APITokens(ctx, member.ID, "foreign-token-org", 1); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("nonmember history error = %v", err)
 	}
 	var beforeTokens, beforeProjects int
@@ -239,7 +239,7 @@ func TestAPITokenAdministrationAndAtomicProjectBoundary(t *testing.T) {
 	for _, invalid := range []int64{apiTokenProjectID(t, foreign.ID), 9223372036854775807} {
 		_, hash, prefix := apiTokenCredentials(fmt.Sprintf("invalid-project-%d", invalid))
 		input.ProjectIDs = []int64{apiTokenProjectID(t, project.ID), invalid}
-		if _, err := db.CreateAPIToken(ctx, user.ID, org.Slug, input, hash, prefix); !errors.Is(err, ErrNotFound) {
+		if _, err := db.CreateAPIToken(ctx, user.ID, user.AuthGeneration, org.Slug, input, hash, prefix); !errors.Is(err, ErrNotFound) {
 			t.Fatalf("invalid project %d error = %v", invalid, err)
 		}
 		var tokens, projects int
@@ -254,8 +254,8 @@ func TestAPITokenAdministrationAndAtomicProjectBoundary(t *testing.T) {
 
 func TestAPITokenAllAndRestrictedProjectGrants(t *testing.T) {
 	ctx, db, user, org, project := telemetryStore(t)
-	_, allHash, _ := apiTokenFixture(t, ctx, db, user.ID, org.Slug, "all-projects", nil)
-	restricted, restrictedHash, _ := apiTokenFixture(t, ctx, db, user.ID, org.Slug, "restricted-projects", []int64{apiTokenProjectID(t, project.ID)})
+	_, allHash, _ := apiTokenFixture(t, ctx, db, user, org.Slug, "all-projects", nil)
+	restricted, restrictedHash, _ := apiTokenFixture(t, ctx, db, user, org.Slug, "restricted-projects", []int64{apiTokenProjectID(t, project.ID)})
 	allGrant, err := db.AuthenticateAPIToken(ctx, allHash)
 	if err != nil || !allGrant.AllProjects {
 		t.Fatalf("all-project grant = %+v, error = %v", allGrant, err)
@@ -335,7 +335,7 @@ func TestAPITokenMetadataHistoryPaging(t *testing.T) {
 	}
 	created := make([]APIToken, 26)
 	for i := range created {
-		created[i], _, _ = apiTokenFixture(t, ctx, db, user.ID, org.Slug, fmt.Sprintf("history-%d", i), nil)
+		created[i], _, _ = apiTokenFixture(t, ctx, db, user, org.Slug, fmt.Sprintf("history-%d", i), nil)
 	}
 	// Equal creation timestamps make descending ID the observable tie-breaker.
 	if _, err := db.pool.Exec(ctx, `UPDATE api_tokens SET created_at='2025-01-01T00:00:00Z'`); err != nil {

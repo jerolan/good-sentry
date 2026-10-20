@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"net/http"
 	"net/mail"
 	"net/url"
@@ -140,7 +141,11 @@ func (s *Server) startSession(w http.ResponseWriter, r *http.Request, u store.Us
 		return
 	}
 	expires := time.Now().Add(7 * 24 * time.Hour)
-	if err = s.db.CreateSession(r.Context(), u.ID, s.hash(value), csrf, expires); err != nil {
+	if err = s.db.CreateSession(r.Context(), u.ID, u.AuthGeneration, s.hash(value), csrf, expires); err != nil {
+		if errors.Is(err, store.ErrCredentialsChanged) {
+			failure(w, 401, "Invalid email or password")
+			return
+		}
 		report(w, err)
 		return
 	}
@@ -162,6 +167,10 @@ func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
 		report(w, err)
 		return
 	}
-	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Path: s.cfg.Prefix + "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: strings.HasPrefix(s.cfg.Domain, "https://")})
+	s.clearSessionCookie(w)
 	writeJSON(w, 204, nil)
+}
+
+func (s *Server) clearSessionCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Path: s.cfg.Prefix + "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: strings.HasPrefix(s.cfg.Domain, "https://")})
 }

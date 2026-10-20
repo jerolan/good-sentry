@@ -55,7 +55,7 @@ func TestCompatibleIssueDeletionMigration020PreservesRowsScopesAndReopen(t *test
 	if err = f.db.SaveEnvelopeItem(f.ctx, f.project.ID, "", "independent_history", json.RawMessage(`{"type":"independent_history"}`), []byte{0, 253}); err != nil {
 		t.Fatal(err)
 	}
-	if err = f.db.CreateSession(f.ctx, f.owner.ID, "migration020-session", "migration020-csrf", time.Now().Add(time.Hour)); err != nil {
+	if err = f.db.CreateSession(f.ctx, f.owner.ID, f.owner.AuthGeneration, "migration020-session", "migration020-csrf", time.Now().Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 	lease, err := f.db.ClaimAlertDelivery(f.ctx, 3, time.Second)
@@ -67,7 +67,7 @@ func TestCompatibleIssueDeletionMigration020PreservesRowsScopesAndReopen(t *test
 	}
 	legacyScopes := []string{"org:read", "project:read", "project:releases", "event:read", "event:write"}
 	_, hash, prefix := apiTokenCredentials("migration020-restricted")
-	restricted, err := f.db.CreateAPIToken(f.ctx, f.owner.ID, f.org.Slug, APITokenInput{Name: "Established restricted credential", Scopes: legacyScopes, ProjectIDs: []int64{apiTokenProjectID(t, f.project.ID)}, ExpiresInDays: 30}, hash, prefix)
+	restricted, err := f.db.CreateAPIToken(f.ctx, f.owner.ID, f.owner.AuthGeneration, f.org.Slug, APITokenInput{Name: "Established restricted credential", Scopes: legacyScopes, ProjectIDs: []int64{apiTokenProjectID(t, f.project.ID)}, ExpiresInDays: 30}, hash, prefix)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func TestCompatibleIssueDeletionMigration020PreservesRowsScopesAndReopen(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, defaultHash, _ := apiTokenFixture(t, f.ctx, f.db, f.owner.ID, f.org.Slug, "migration020-default", nil)
+	_, defaultHash, _ := apiTokenFixture(t, f.ctx, f.db, f.owner, f.org.Slug, "migration020-default", nil)
 	defaultGrant, err := f.db.AuthenticateAPIToken(f.ctx, defaultHash)
 	if err != nil {
 		t.Fatal(err)
@@ -150,7 +150,7 @@ DELETE FROM schema_migrations WHERE version=20`); err != nil {
 		t.Fatalf("020 receipt does not match the embedded migration: checksum=%s err=%v", checksum, err)
 	}
 	_, adminHash, adminPrefix := apiTokenCredentials("migration020-admin")
-	admin, err := upgraded.CreateAPIToken(f.ctx, f.owner.ID, f.org.Slug, APITokenInput{Name: "Opt-in deletion", Scopes: []string{"event:admin"}, ProjectIDs: []int64{apiTokenProjectID(t, f.project.ID)}, ExpiresInDays: 1}, adminHash, adminPrefix)
+	admin, err := upgraded.CreateAPIToken(f.ctx, f.owner.ID, f.owner.AuthGeneration, f.org.Slug, APITokenInput{Name: "Opt-in deletion", Scopes: []string{"event:admin"}, ProjectIDs: []int64{apiTokenProjectID(t, f.project.ID)}, ExpiresInDays: 1}, adminHash, adminPrefix)
 	if err != nil || !reflect.DeepEqual(admin.Scopes, []string{"event:admin"}) {
 		t.Fatalf("020 did not admit exactly the requested opt-in scope: token=%+v err=%v", admin, err)
 	}

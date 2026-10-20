@@ -155,7 +155,7 @@ func TestUserReportPathAuthorityLocksAndCancellation(t *testing.T) {
 
 func TestUserReportScopeMigration030PreservesOldGrants(t *testing.T) {
 	f := resolutionStore(t)
-	apiTokenFixture(t, f.ctx, f.db, f.owner.ID, f.org.Slug, "before030", nil)
+	apiTokenFixture(t, f.ctx, f.db, f.owner, f.org.Slug, "before030", nil)
 	if _, err := f.db.SubmitUserReport(f.ctx, f.project.ID, UserReportInput{EventID: "cccccccccccccccccccccccccccccccc", Comments: "Before scope migration"}); err != nil {
 		t.Fatal(err)
 	}
@@ -184,7 +184,7 @@ func TestUserReportScopeMigration030PreservesOldGrants(t *testing.T) {
 		reopened.Close()
 	}
 	_, hash, prefix := apiTokenCredentials("feedback-only030")
-	if _, err := f.db.CreateAPIToken(f.ctx, f.owner.ID, f.org.Slug, APITokenInput{Name: "Feedback only", Scopes: []string{"project:write"}, ExpiresInDays: 90}, hash, prefix); err != nil {
+	if _, err := f.db.CreateAPIToken(f.ctx, f.owner.ID, f.owner.AuthGeneration, f.org.Slug, APITokenInput{Name: "Feedback only", Scopes: []string{"project:write"}, ExpiresInDays: 90}, hash, prefix); err != nil {
 		t.Fatal("new opt-in scope unavailable", err)
 	}
 	grant, err := f.db.AuthenticateAPIToken(f.ctx, hash)

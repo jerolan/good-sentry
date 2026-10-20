@@ -123,8 +123,8 @@ func TestCompatibleEventsMigration017PreservesRowsAndReceipts(t *testing.T) {
 	if _, err := f.db.AddComment(f.ctx, f.owner.ID, root, "Preserve migration history"); err != nil {
 		t.Fatal(err)
 	}
-	restricted, _, _ := apiTokenFixture(t, f.ctx, f.db, f.owner.ID, f.org.Slug, "migration017-restricted", []int64{apiTokenProjectID(t, f.project.ID)})
-	revoked, _, _ := apiTokenFixture(t, f.ctx, f.db, f.owner.ID, f.org.Slug, "migration017-revoked", nil)
+	restricted, _, _ := apiTokenFixture(t, f.ctx, f.db, f.owner, f.org.Slug, "migration017-restricted", []int64{apiTokenProjectID(t, f.project.ID)})
+	revoked, _, _ := apiTokenFixture(t, f.ctx, f.db, f.owner, f.org.Slug, "migration017-revoked", nil)
 	if err := f.db.RevokeAPIToken(f.ctx, f.owner.ID, f.org.Slug, revoked.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ DELETE FROM schema_migrations WHERE version=17`); err != nil {
 		t.Fatal("017 changed an index or a constraint other than the token scope allowlist")
 	}
 	_, hash, prefix := apiTokenCredentials("migration017-event-reader")
-	token, err := upgraded.CreateAPIToken(f.ctx, f.owner.ID, f.org.Slug, APITokenInput{Name: "Event reader", Scopes: []string{"event:read"}, ProjectIDs: []int64{apiTokenProjectID(t, f.project.ID)}, ExpiresInDays: 1}, hash, prefix)
+	token, err := upgraded.CreateAPIToken(f.ctx, f.owner.ID, f.owner.AuthGeneration, f.org.Slug, APITokenInput{Name: "Event reader", Scopes: []string{"event:read"}, ProjectIDs: []int64{apiTokenProjectID(t, f.project.ID)}, ExpiresInDays: 1}, hash, prefix)
 	if err != nil || !reflect.DeepEqual(token.Scopes, []string{"event:read"}) {
 		t.Fatalf("017 did not admit implemented event scope: token=%+v err=%v", token, err)
 	}

@@ -6,10 +6,11 @@ import (
 )
 
 type User struct {
-	ID           string `json:"id"`
-	Email        string `json:"email"`
-	Name         string `json:"name"`
-	PasswordHash []byte `json:"-"`
+	ID             string `json:"id"`
+	Email          string `json:"email"`
+	Name           string `json:"name"`
+	PasswordHash   []byte `json:"-"`
+	AuthGeneration int64  `json:"-"`
 }
 type Organization struct {
 	ID   string `json:"id"`
@@ -51,7 +52,7 @@ func (s *Store) Bootstrap(ctx context.Context, email string, password []byte, na
 	if exists {
 		return u, o, ErrConflict
 	}
-	err = tx.QueryRow(ctx, "INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3) RETURNING id::text,email,name", email, password, name).Scan(&u.ID, &u.Email, &u.Name)
+	err = tx.QueryRow(ctx, "INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3) RETURNING id::text,email,name,auth_generation", email, password, name).Scan(&u.ID, &u.Email, &u.Name, &u.AuthGeneration)
 	if err != nil {
 		return u, o, dbError(err)
 	}
@@ -75,7 +76,14 @@ func (s *Store) Bootstrap(ctx context.Context, email string, password []byte, na
 
 func (s *Store) UserByEmail(ctx context.Context, email string) (User, error) {
 	var u User
-	err := s.pool.QueryRow(ctx, "SELECT id::text,email,name,password_hash FROM users WHERE email=$1", email).Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash)
+	err := s.pool.QueryRow(ctx, "SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE email=$1", email).Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
+	return u, dbError(err)
+}
+
+func (s *Store) UserByID(ctx context.Context, userID string) (User, error) {
+	var u User
+	err := s.pool.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE id=$1::bigint`, userID).
+		Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
 	return u, dbError(err)
 }
 
@@ -102,14 +110,10 @@ func (s *Store) Organization(ctx context.Context, userID, slug string) (Organiza
 	return o, dbError(err)
 }
 
-func (s *Store) CreateSession(ctx context.Context, userID, tokenHash, csrf string, expires time.Time) error {
-	_, err := s.pool.Exec(ctx, "INSERT INTO sessions(token_hash,user_id,csrf_token,expires_at) VALUES($1,$2,$3,$4)", tokenHash, userID, csrf, expires)
-	return err
-}
 func (s *Store) Session(ctx context.Context, tokenHash string) (User, string, error) {
 	var u User
 	var csrf string
-	err := s.pool.QueryRow(ctx, "SELECT u.id::text,u.email,u.name,s.csrf_token FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now()", tokenHash).Scan(&u.ID, &u.Email, &u.Name, &csrf)
+	err := s.pool.QueryRow(ctx, "SELECT u.id::text,u.email,u.name,u.auth_generation,s.csrf_token FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now()", tokenHash).Scan(&u.ID, &u.Email, &u.Name, &u.AuthGeneration, &csrf)
 	return u, csrf, dbError(err)
 }
 func (s *Store) RevokeSession(ctx context.Context, tokenHash string) error {
