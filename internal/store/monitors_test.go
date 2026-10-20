@@ -260,6 +260,7 @@ func TestMonitorMembershipProjectScopeAndHistoryPagination(t *testing.T) {
 		t.Fatal(err)
 	}
 	c := monitorConfig("Private")
+	c.Type, c.URL = uptime.SSL, "https://Certificates.Example.test:8443/"
 	c.Project, c.Enabled = otherProject.Slug, false
 	other, err := db.CreateMonitor(ctx, outsider, "other-monitors", c)
 	if err != nil {

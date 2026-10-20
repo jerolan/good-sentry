@@ -11,6 +11,7 @@ const (
 	GET       Kind = "GET"
 	POST      Kind = "POST"
 	TCP       Kind = "TCP"
+	SSL       Kind = "SSL"
 	Heartbeat Kind = "heartbeat"
 )
 

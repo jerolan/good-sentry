@@ -86,6 +86,11 @@ func (c *Config) Validate() error {
 		if err != nil || !validHost(host) || !validPort(port) || (strings.HasPrefix(c.URL, "[") && !strings.Contains(host, ":")) {
 			return errors.New("TCP target must be host:port with a numeric port between 1 and 65535")
 		}
+	case SSL:
+		u, err := url.Parse(c.URL)
+		if err != nil || !validHTTPURL(u) || u.Scheme != "https" || strings.Contains(c.URL, "#") || u.ForceQuery || u.RawQuery != "" || u.RawPath != "" || (u.Path != "" && u.Path != "/") {
+			return errors.New("SSL target must be an HTTPS origin without credentials, query, fragment or a non-root path")
+		}
 	case HEAD, GET, POST:
 		u, err := url.Parse(c.URL)
 		if err != nil || strings.Contains(c.URL, "#") || !validHTTPURL(u) {
@@ -185,6 +190,25 @@ func (p *Prober) Check(ctx context.Context, c Config) (result Result, err error)
 			return Result{Reason: failureReason(dialErr, probeCtx, ReasonConnection)}, nil
 		}
 		conn.Close()
+		return Result{Up: true, Reason: ReasonOK}, nil
+	}
+	if c.Type == SSL {
+		target, _ := url.Parse(c.URL) // Validate has established a complete HTTPS origin.
+		port := target.Port()
+		if port == "" {
+			port = "443"
+		}
+		conn, dialErr := p.dialer.DialContext(probeCtx, "tcp", net.JoinHostPort(target.Hostname(), port))
+		if dialErr != nil {
+			return Result{Reason: failureReason(dialErr, probeCtx, ReasonConnection)}, nil
+		}
+		// Close the raw socket: TLS close_notify must not extend the probe or
+		// shutdown deadline after HandshakeContext has finished.
+		defer conn.Close()
+		secure := tls.Client(conn, &tls.Config{ServerName: target.Hostname(), MinVersion: tls.VersionTLS12})
+		if handshakeErr := secure.HandshakeContext(probeCtx); handshakeErr != nil {
+			return Result{Reason: failureReason(handshakeErr, probeCtx, ReasonTLS)}, nil
+		}
 		return Result{Up: true, Reason: ReasonOK}, nil
 	}
 	req, requestErr := http.NewRequestWithContext(probeCtx, string(c.Type), c.URL, nil)

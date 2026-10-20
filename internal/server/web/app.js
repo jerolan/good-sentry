@@ -1326,7 +1326,7 @@
       const rows = checks.map(check => node('tr', {},
         node('td', { class: 'nowrap' }, node('time', { datetime: check.completedAt }, date(check.completedAt, true))),
         node('td', {}, badge(check.up ? 'up' : 'down')), node('td', {}, badge(check.status)),
-        node('td', {}, check.isChange ? `${check.previousStatus} → ${check.status}` : 'No change'), node('td', { class: 'monitor-reason' }, text(check.reason)),
+        node('td', {}, check.isChange ? `${check.previousStatus} → ${check.status}` : 'No change'), node('td', { class: 'monitor-reason' }, monitor.type === 'SSL' && check.reason === 'tls_error' ? 'Certificate or secure connection failed' : text(check.reason)),
         node('td', {}, check.statusCode ?? 'Not applicable'), node('td', { class: 'nowrap' }, check.responseTimeMs === undefined || check.responseTimeMs === null ? 'Not applicable' : milliseconds(check.responseTimeMs))));
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
     }
@@ -1344,7 +1344,7 @@
     const dialog = node('dialog', { class: 'monitor-dialog', 'aria-labelledby': 'monitor-dialog-title' });
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const name = field('Monitor name', 'text', { name: 'name', value: config.name, required: true, maxlength: 400 });
-    const type = selectField('Monitor type', [['HEAD', 'HTTP HEAD'], ['GET', 'HTTP GET'], ['POST', 'HTTP POST'], ['TCP', 'TCP'], ['heartbeat', 'Incoming heartbeat']], config.type, monitor ? { disabled: true } : {});
+    const type = selectField('Monitor type', [['HEAD', 'HTTP HEAD'], ['GET', 'HTTP GET'], ['POST', 'HTTP POST'], ['TCP', 'TCP'], ['SSL', 'SSL certificate'], ['heartbeat', 'Incoming heartbeat']], config.type, monitor ? { disabled: true } : {});
     const target = field('Target URL', 'text', { name: 'url', value: config.url, maxlength: 2000, autocomplete: 'off', spellcheck: 'false' });
     const project = selectField('Project', [['', 'No project'], ...state.projects.map(item => [item.slug, item.name])], config.project || '');
     const environment = field('Monitor environment', 'text', { name: 'environment', value: config.environment || '', maxlength: 256, autocomplete: 'off' });
@@ -1364,14 +1364,14 @@
       target.wrap.hidden = heartbeat;
       target.input.disabled = heartbeat;
       target.input.required = !heartbeat;
-      target.wrap.querySelector('label').textContent = type.input.value === 'TCP' ? 'TCP host and port' : 'Target URL';
+      target.wrap.querySelector('label').textContent = type.input.value === 'TCP' ? 'TCP host and port' : type.input.value === 'SSL' ? 'HTTPS origin' : 'Target URL';
       timeout.wrap.hidden = heartbeat;
       timeout.input.disabled = heartbeat;
       expectedStatus.wrap.hidden = !http;
       expectedStatus.input.disabled = !http;
       expectedBody.wrap.hidden = !['GET', 'POST'].includes(type.input.value);
       expectedBody.input.disabled = expectedBody.wrap.hidden;
-      note.textContent = heartbeat ? 'A heartbeat must arrive within each interval. No additional grace interval is added.' : type.input.value === 'TCP' ? 'Enter a host and port. Bracket IPv6 addresses. Timeout applies to the connection.' : type.input.value === 'POST' ? 'POST checks send an empty body. Expected body is a literal substring in the first 1 MiB of the response.' : type.input.value === 'GET' ? 'Expected body is a literal substring in the first 1 MiB of the response.' : 'HEAD checks validate the response status without reading its body.';
+      note.textContent = heartbeat ? 'A heartbeat must arrive within each interval. No additional grace interval is added.' : type.input.value === 'TCP' ? 'Enter a host and port. Bracket IPv6 addresses. Timeout applies to the connection.' : type.input.value === 'SSL' ? 'Checks certificate trust, hostname and current validity at an HTTPS origin, such as https://example.com. Timeout applies to the complete check.' : type.input.value === 'POST' ? 'POST checks send an empty body. Expected body is a literal substring in the first 1 MiB of the response.' : type.input.value === 'GET' ? 'Expected body is a literal substring in the first 1 MiB of the response.' : 'HEAD checks validate the response status without reading its body.';
     }
     type.input.addEventListener('change', updateFields);
     updateFields();

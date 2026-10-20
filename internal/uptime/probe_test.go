@@ -29,6 +29,33 @@ func TestConfigValidate(t *testing.T) {
 			t.Errorf("valid configuration rejected: %v", err)
 		}
 	}
+	for _, origin := range []string{"https://example.invalid", "https://example.invalid/", "https://example.invalid:8443", "https://EXAMPLE.invalid:0443/", "https://127.0.0.1:443/", "https://[::1]", "https://[2001:db8::1]:9443/"} {
+		t.Run("SSL origin "+origin, func(t *testing.T) {
+			config := c
+			config.Type, config.URL = Kind("SSL"), "  "+origin+"  "
+			if err := config.Validate(); err != nil {
+				t.Fatalf("valid SSL origin rejected: %v", err)
+			}
+			if config.URL != origin {
+				t.Fatalf("SSL origin spelling changed: got %q want %q", config.URL, origin)
+			}
+		})
+	}
+	for _, target := range []string{
+		"http://example.invalid", "https://user@example.invalid", "https://user:pass@example.invalid",
+		"https://example.invalid?", "https://example.invalid/?check=1", "https://example.invalid#", "https://example.invalid/#certificate",
+		"https://example.invalid/health", "https://example.invalid//", "https://example.invalid/%2F", "https://example.invalid/%2e", "https://example.invalid%2F",
+		"https://", "https:///", "https://:443", "https://[localhost]", "https://[not-ipv6]", "https://::1:443", "https://exam\x01ple.invalid",
+		"https://example.invalid:", "https://example.invalid:https", "https://example.invalid:0", "https://example.invalid:65536", "https://example.invalid:-1", "https://example.invalid:443:444",
+	} {
+		t.Run("SSL rejects "+target, func(t *testing.T) {
+			config := c
+			config.Type, config.URL = Kind("SSL"), target
+			if err := config.Validate(); err == nil {
+				t.Fatalf("invalid SSL origin accepted: %q", target)
+			}
+		})
+	}
 	cases := []struct {
 		name string
 		edit func(*Config)
@@ -69,6 +96,7 @@ func TestConfigValidate(t *testing.T) {
 		{"tcp ipv6 brackets", func(c *Config) { c.Type = TCP; c.URL = "::1:80" }},
 		{"tcp control character", func(c *Config) { c.Type = TCP; c.URL = "local\x01host:80" }},
 		{"tcp bracketed hostname", func(c *Config) { c.Type = TCP; c.URL = "[localhost]:80" }},
+		{"ssl expected body", func(c *Config) { c.Type = Kind("SSL"); c.URL = "https://example.invalid"; c.ExpectedBody = "ready" }},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

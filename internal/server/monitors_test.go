@@ -33,8 +33,8 @@ func verifyUptimeWorkflow(t *testing.T, request func(string, string, string, str
 	if code != 200 || len(list["data"].([]any)) != 1 {
 		t.Fatalf("monitor list=%d %+v", code, list)
 	}
-	if code, _ = request("POST", collection, strings.Replace(input, `"GET"`, `"SSL"`, 1), csrf); code != 400 {
-		t.Fatalf("unimplemented monitor type=%d", code)
+	if code, _ = request("POST", collection, strings.Replace(input, `"GET"`, `"UNKNOWN"`, 1), csrf); code != 400 {
+		t.Fatalf("unsupported monitor type=%d", code)
 	}
 	if code, _ = request("POST", collection, strings.Replace(input, `"`+project+`"`, `"foreign-project"`, 1), csrf); code != 404 {
 		t.Fatalf("foreign project=%d", code)
@@ -51,7 +51,7 @@ func verifyUptimeWorkflow(t *testing.T, request func(string, string, string, str
 	monitor["enabled"] = false
 	config := func(item map[string]any) string {
 		in := map[string]any{}
-		for _, key := range []string{"name", "type", "url", "project", "intervalSeconds", "timeoutSeconds", "expectedStatus", "expectedBody", "confirmationThreshold", "enabled"} {
+		for _, key := range []string{"name", "type", "url", "project", "environment", "intervalSeconds", "timeoutSeconds", "expectedStatus", "expectedBody", "confirmationThreshold", "enabled"} {
 			in[key] = item[key]
 		}
 		body, err := json.Marshal(in)
@@ -59,6 +59,33 @@ func verifyUptimeWorkflow(t *testing.T, request func(string, string, string, str
 			t.Fatal(err)
 		}
 		return string(body)
+	}
+	code, ssl := request("POST", collection, `{"name":"Certificates","type":"SSL","url":" https://Certs.Example.test:8443/ ","project":"`+project+`","environment":"staging","intervalSeconds":300,"timeoutSeconds":7,"expectedStatus":204,"confirmationThreshold":2}`, csrf)
+	if code != 201 || ssl["type"] != "SSL" || ssl["url"] != "https://Certs.Example.test:8443/" || ssl["project"] != project || ssl["environment"] != "staging" || ssl["expectedStatus"] != float64(204) || ssl["expectedBody"] != "" || ssl["status"] != "unknown" {
+		t.Fatalf("SSL create/configuration=%d %+v", code, ssl)
+	}
+	sslPath := collection + "/" + ssl["id"].(string)
+	code, listed := request("GET", collection, "", "")
+	foundSSL := false
+	if data, ok := listed["data"].([]any); code == 200 && ok && len(data) == 2 {
+		for _, item := range data {
+			monitor := item.(map[string]any)
+			if monitor["id"] == ssl["id"] && monitor["type"] == "SSL" && monitor["url"] == ssl["url"] {
+				foundSSL = true
+			}
+		}
+	}
+	if !foundSSL {
+		t.Fatalf("SSL absent from monitor list=%d %+v", code, listed)
+	}
+	code, readSSL := request("GET", sslPath, "", "")
+	if code != 200 || config(readSSL) != config(ssl) {
+		t.Fatalf("SSL read changed configuration=%d %+v", code, readSSL)
+	}
+	ssl["name"], ssl["url"], ssl["environment"], ssl["enabled"] = "Renewed certificate", "https://Renewed.Example.test/", "production", false
+	code, sslPaused := request("PUT", sslPath, config(ssl), csrf)
+	if code != 200 || config(sslPaused) != config(ssl) || sslPaused["status"] != "unknown" || sslPaused["lastCheck"] != nil || sslPaused["lastChange"] != nil {
+		t.Fatalf("SSL edit/pause changed configuration or state=%d %+v", code, sslPaused)
 	}
 	code, paused := request("PUT", path, config(monitor), csrf)
 	if code != 200 || paused["enabled"] != false {
@@ -116,7 +143,7 @@ func verifyUptimeWorkflow(t *testing.T, request func(string, string, string, str
 	if res.StatusCode != 404 {
 		t.Fatalf("paused heartbeat=%d", res.StatusCode)
 	}
-	for _, target := range []string{path, hbPath} {
+	for _, target := range []string{path, sslPath, hbPath} {
 		if code, _ = request("DELETE", target, "", csrf); code != 204 {
 			t.Fatalf("monitor delete=%d", code)
 		}

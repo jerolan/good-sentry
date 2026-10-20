@@ -95,6 +95,15 @@ func TestMonitorWorkersProbeRecoverAndStop(t *testing.T) {
 		t.Fatal(err)
 	}
 	waitStatus(m.ID, uptime.Up)
+	sslTarget := httptest.NewTLSServer(http.NotFoundHandler())
+	defer sslTarget.Close()
+	sslConfig := uptime.Defaults()
+	sslConfig.Name, sslConfig.Type, sslConfig.URL, sslConfig.IntervalSeconds = "Untrusted SSL certificate", uptime.SSL, sslTarget.URL, 86400
+	sslMonitor, err := db.CreateMonitor(ctx, owner.ID, org.Slug, sslConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	waitStatus(sslMonitor.ID, uptime.Down)
 	stop1()
 	stop2()
 	history, _, err := db.MonitorChecks(ctx, owner.ID, org.Slug, m.ID, true, 1)
@@ -110,6 +119,14 @@ func TestMonitorWorkersProbeRecoverAndStop(t *testing.T) {
 	history, _, err = db3.MonitorChecks(ctx, owner.ID, org.Slug, m.ID, false, 1)
 	if err != nil || len(history) != 2 {
 		t.Fatalf("restart lost checks: %+v %v", history, err)
+	}
+	history, _, err = db3.MonitorChecks(ctx, owner.ID, org.Slug, sslMonitor.ID, false, 1)
+	if err != nil || len(history) != 1 {
+		t.Fatalf("restart lost SSL worker check: %+v %v", history, err)
+	}
+	sslCheck := history[0]
+	if sslCheck.Up || sslCheck.Status != uptime.Down || sslCheck.Reason != "tls_error" || sslCheck.StatusCode != nil || sslCheck.ResponseTimeMS == nil || *sslCheck.ResponseTimeMS < 0 {
+		t.Fatalf("SSL worker recorded incorrect check: %+v", sslCheck)
 	}
 	started := make(chan struct{}, 1)
 	cancelTarget := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
