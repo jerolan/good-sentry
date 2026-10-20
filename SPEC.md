@@ -42,7 +42,7 @@ Serve an original, responsive application UI with a compact sidebar, neutral sur
 
 ## Deployment and configuration
 
-Default HTTP port is 8000. docker compose up --build starts GoodSentry and PostgreSQL with health checks, persistent database storage and an uploads volume. The application image runs as a non-root user and includes CA roots. No separate web/worker/cron containers are needed. An externally managed PostgreSQL URL also works.
+Default HTTP port is8000. `docker compose up -d` pulls the public application image and starts it with PostgreSQL, health checks, persistent database storage and an uploads volume. `GOODSENTRY_IMAGE` may select a revision tag or immutable digest; explicit source builds use `GOODSENTRY_IMAGE=goodsentry:local docker compose up --build -d`. The application image runs as a non-root user and includes CA roots. No separate web/worker/cron containers are needed. An externally managed PostgreSQL URL also works.
 
 Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL_URL, DEFAULT_FROM_EMAIL, VALKEY_URL and GOODSENTRY_ENABLE_* flags. Accept GLITCHTIP_DOMAIN and the supplied GLITCHTIP_ENABLE_LOGS/UPTIME/MCP/DUCKDB names as migration aliases, with explicit GoodSentry variables taking precedence. SERVER_ROLE=all_in_one is supported. Reject unsupported role values rather than silently losing background tasks. ENABLE_OPENAPI and ENABLE_ADMIN control GoodSentry's own API documentation and administration surface, not Django functionality.
 

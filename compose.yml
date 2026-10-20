@@ -14,7 +14,7 @@ services:
       retries: 20
     restart: unless-stopped
   goodsentry:
-    image: goodsentry:local
+    image: ${GOODSENTRY_IMAGE:-ghcr.io/jerolan/good-sentry:main}
     build: .
     env_file:
       - path: .env

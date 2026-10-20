@@ -35,12 +35,12 @@ You need Git, Docker with Compose, and OpenSSL. On Windows, use a WSL2 distribut
 git clone https://github.com/jerolan/good-sentry.git
 cd good-sentry
 test -f .env || printf 'SECRET_KEY=%s\n' "$(openssl rand -hex 32)" > .env
-docker compose up --build -d
+docker compose up -d
 ```
 
 Open **http://localhost:8000**, create the first owner account and workspace, then create a project. Copy its DSN into your SDK configuration. There is no shared initial password.
 
-The first start builds the application image locally. Keep `.env` across restarts; configure your public domain and database credentials before exposing the installation. See [installation details](docs/getting-started.md) and the [configuration reference](docs/configuration.md).
+Compose pulls the public application image for amd64 or arm64. Keep `.env` across restarts; configure your public domain and database credentials before exposing the installation. See [installation details](docs/getting-started.md) and the [configuration reference](docs/configuration.md).
 
 ## Connect your SDK
 
