@@ -62,7 +62,9 @@ Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `
 | Errors and feedback | Grouped issues, stack traces, tags, search, assignment, comments, triage and SDK feedback. |
 | Releases | Sentry CLI lifecycle operations, commit/deploy metadata and JavaScript source maps. |
 | Performance and logs | Transactions, spans, trace waterfalls, typed logs and OTLP/HTTP log ingestion. |
-| Uptime and alerts | HTTP, TCP and heartbeat monitors; email and generic webhooks with durable retries. |
+| Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors; email and webhooks with durable retries. |
+| Accounts and teams | Password changes and email recovery, member roles, teams and single-use email invitations. |
+| Integration API | Sentry-compatible discovery for users, organizations, projects, members and teams; organization rename/delete, member invitations, team management, project-key DSNs with fixed-window rate limits, plus scoped automation credentials. |
 | Deployment | One non-root application image, PostgreSQL, automatic migrations and configurable retention. |
 
 ## Documentation
@@ -74,7 +76,7 @@ Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `
 
 ## Project status
 
-GoodSentry is in active development. **Full Sentry compatibility and GlitchTip feature parity are not complete.** Remaining work includes invitations and password recovery, native crash symbolication, SSL certificate monitors, provider-specific integrations and broader management APIs. The [roadmap](tasks/todo.md) records verification evidence and outstanding work.
+GoodSentry is in active development. **Full Sentry compatibility and GlitchTip feature parity are not complete.** Remaining work includes native crash symbolication, broader management APIs, GitLab/Grafana integrations, optional OAuth/OIDC, MCP and cold archival. The [compatibility guide](docs/compatibility.md) describes tested workflows and limits; the [roadmap](tasks/todo.md) records outstanding work.
 
 ## Development
 

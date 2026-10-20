@@ -8,15 +8,18 @@ Compatibility is verified per workflow and client version. The project remains i
 
 | Capability | Verified behavior |
 | --- | --- |
+| Accounts and people | Password changes with session/token revocation, SMTP password recovery, member roles, teams, organization rename/delete and single-use SMTP invitations. Real browser acceptance includes no-organization account access and long invitation emails. |
 | Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, historical tag/environment/release search, sorting/pages, user/team assignment, editable comments and recorded triage activity with regressions. |
 | User feedback | Modern SDK submissions with optional error associations, per-submission attachments and paginated triage, plus legacy reports attached to their original error. |
 | JavaScript source maps | Official CLI injection/bundle uploads and native uploads, Debug ID or release/distribution selection, original source context and preserved minified stacks. |
+| Debug files | Project-scoped multipart dSYM/DIF file storage and listing with exact bytes, metadata and SHA-1 deduplication. Chunked DIF assembly and native symbolication remain pending. |
 | Releases | Shared project versions, observed SDK releases, local commit metadata, completed deploys and compatible CLI lifecycle operations, with a responsive management UI. |
 | Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail and a cross-project trace waterfall. |
 | Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. Native OpenTelemetry `/v1/logs` ingestion accepts standard OTLP/HTTP exporters (binary protobuf and JSON, optional gzip) without a Sentry SDK or extra collector. |
-| Uptime | HTTP HEAD/GET/POST, TCP and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
+| Uptime | HTTP HEAD/GET/POST, TCP, SSL certificate and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
 | Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |
 | Automation credentials | Expiring, revocable tokens limited to an organization and selected projects, one-time reveal, project metadata reads and optional release writes. |
+| Management API | Sentry-compatible API root, current user, organization/project discovery and detail, organization rename/delete with responsive UI, member invitations, team reads and create/rename/delete, relation reads, project-key management with DSN metadata and fixed-window Sentry-envelope/OTLP-log limits, strict pagination, session/Bearer scope isolation and instance settings/license metadata. |
 | Deployment | One non-root application image, PostgreSQL-only coordination, embedded Tailwind CSS and persistence across application restarts. |
 
 The browser workflows run at 320, 768 and 1440 pixels. PostgreSQL integration and race tests cover concurrent ingestion, duplicate retries, tenant boundaries, fenced worker leases and restart recovery. Alert acceptance uses actual local HTTP/SMTP receivers, including retries across two application replicas.
@@ -70,7 +73,11 @@ request body limit. Each browser delivery counts as a separate occurrence.
 
 ## Current gaps
 
-Remaining work includes automatic repository integration, native debug-file/minidump uploads and symbolication, further conditional policies, invitations and password recovery, SSL certificate monitors, provider-specific alert formats, management API parity, integrations, MCP, OAuth/OIDC and cold archival.
+Remaining work includes native minidump processing and crash symbolication, automatic repository integrations, further conditional issue policies, broader management APIs, live GitLab/Grafana integration, MCP, OAuth/OIDC, administration/OpenAPI and cold archival. Debug-file multipart upload and listing retain bytes and metadata; chunked DIF assembly returns HTTP 501 until processing is implemented.
+
+Slack, Discord, Microsoft Teams, Google Chat, Feishu, ntfy and Zulip formats pass real local HTTP receiver, PostgreSQL and responsive browser checks. Receipts from external provider channels remain unverified. Configure and test your intended destination before relying on it.
+
+Current-image acceptance covers official Go, Python, Node and Browser SDK errors, transactions and typed logs, plus official protobuf/JSON OTLP exporters. SSL checks verify a public CA certificate through the running scheduler. Upgrade, application restart and an independent backup restore preserve the tested rows and telemetry.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with `sentry-cli 3.8.0`; see [release and source-map setup](releases-and-source-maps.md). Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
