@@ -8,6 +8,7 @@
 @source "./feedback.js";
 @source "./alerts.js";
 @source "./releases.js";
+@source "./people.js";
 
 @plugin "../../../third_party/daisyui/daisyui.mjs" {
   themes: false;
@@ -156,7 +157,10 @@
   }
   .account strong { @apply text-ink block font-semibold; }
   .account .small { @apply text-muted text-xs; }
-  .account button { @apply btn btn-sm mt-3 text-ink border border-outline bg-surface px-3 rounded-md shadow-none; }
+  .account-actions { @apply flex flex-wrap gap-2 mt-3; }
+  .account-actions .btn { @apply mt-0; }
+  .account button,.account .account-link { @apply btn btn-sm text-ink border border-outline bg-surface px-3 rounded-md shadow-none; }
+  .account .account-link { @apply no-underline; }
   .content { @apply min-w-0; }
   .topbar { @apply min-h-16 border-b border-outline bg-surface px-6 py-4 flex items-center justify-between gap-4 text-muted text-sm; }
   .topbar strong { @apply font-semibold text-ink; }
@@ -199,6 +203,17 @@
   .field input[readonly] { @apply bg-surface-subtle; }
   .form-stack { @apply grid gap-4; }
   .form-stack[aria-label="Confirm issue deletion"][hidden] { @apply hidden; }
+  .form-notice { @apply mt-4 rounded-md border border-[#b9ded2] bg-[#eef8f4] px-4 py-3 text-sm text-ink; }
+  .account-panel { @apply max-w-[720px]; }
+  .account-identity { @apply flex flex-col gap-1; }
+  .account-identity strong { @apply text-lg text-ink; }
+  .people-create { @apply max-w-[520px]; }
+  .people-team { @apply overflow-hidden; }
+  .people-team-detail { @apply border-t border-outline p-5; }
+  .people-team-header,.people-add { @apply flex flex-wrap items-end justify-between gap-4; }
+  .people-inline-form { @apply flex flex-wrap items-end gap-2; }
+  .people-inline-form .field { @apply min-w-[220px] mb-0; }
+  .people-invite-form { @apply grid gap-2; }
   .form-error { @apply bg-danger-soft border border-[#edc9c8] text-danger px-4 py-3 rounded-md; }
   .form-error:empty { @apply hidden; }
   .empty { @apply px-6 py-16 flex items-center text-center flex-col gap-3; }
@@ -303,6 +318,7 @@
   .auth-foot { @apply text-[.8rem] text-[#bad0c8]; }
   .auth-main { @apply flex items-center justify-center p-8; }
   .auth-box { @apply card block w-full max-w-[440px] border border-outline rounded-lg bg-surface p-7 shadow-[0_2px_6px_#152d2108]; }
+  .invitation-details { @apply wrap-anywhere; }
   .auth-box>p {
     @apply text-muted;
     margin: .75rem 0 1.75rem;
@@ -414,6 +430,10 @@
   .alert-destination { @apply min-w-[180px] max-w-[320px] wrap-anywhere; }
   .alert-destination p { @apply mt-1; }
   .alert-dialog { @apply max-w-[760px]; }
+  .org-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 0; }
+  .org-details > div { min-width: 0; }
+  .org-details dt { @apply text-xs text-muted; }
+  .org-details dd { @apply mt-1 wrap-anywhere; }
   .alert-fields { @apply grid grid-cols-2 gap-4; }
   .alert-fields > .field:last-child { @apply col-span-full; }
   .alert-fields [hidden],.alert-recipients [hidden] { @apply hidden; }
@@ -506,7 +526,8 @@
     .nav a { @apply justify-center p-2; }
     .account { @apply col-start-2 row-start-1 p-0 border-0 max-w-[130px] m-0; }
     .account strong,.account .small { @apply hidden; }
-    .account button { @apply m-0 text-[.8rem]; }
+    .account button,.account .account-link { @apply m-0 text-[.8rem]; }
+    .account-actions { @apply mt-0 justify-end; }
     .topbar { @apply px-4 py-3; }
     .topbar .server-label { @apply hidden; }
     .main { @apply px-4 py-5; }

@@ -6,7 +6,7 @@
   const configuredBase = document.querySelector('meta[name="goodsentry-base"]')?.content || '';
   const base = configuredBase === '__GOODSENTRY_BASE__' ? '' : configuredBase.replace(/\/$/, '');
   const pageSize = 25;
-  const viewNames = { issues: 'Issues', feedback: 'Feedback', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', releases: 'Releases', 'api-tokens': 'API tokens' };
+  const viewNames = { issues: 'Issues', feedback: 'Feedback', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', releases: 'Releases', 'api-tokens': 'API tokens', people: 'People', organization: 'Organization', account: 'Account' };
   const traceReset = { traceView: null, traceProject: null, tracePage: null, traceNode: null, traceErrorsPage: null, returnView: null };
   const state = { me: null, organization: null, projects: [], requestVersion: 0 };
   const commentDrafts = new Map();
@@ -26,6 +26,7 @@
   let hashesUI;
   let reportsUI;
   let feedbackUI;
+  let peopleUI;
   let issuedAPIToken;
 
   function node(tag, attributes = {}, ...children) {
@@ -254,6 +255,9 @@
       projects: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
       'api-tokens': 'M14 7a5 5 0 1 0 3 9l4-4-3-3-2 2M7 7h.01',
       releases: 'M20 12l-8 8L3 11V3h8l9 9ZM7 7h.01',
+      account: 'M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
+      people: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+      organization: 'M3 21h18M5 21V7l7-4 7 4v14M9 10h1m4 0h1M9 14h1m4 0h1M9 18h1m4 0h1',
     };
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     for (const [name, value] of Object.entries({ class: 'nav-icon', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.7', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false' })) svg.setAttribute(name, value);
@@ -267,7 +271,16 @@
     return node('div', { class: 'brand' }, node('span', { class: 'brand-mark', 'aria-hidden': true }, 'G'), 'GoodSentry');
   }
 
-  function renderAuth(setup) {
+  function authFrame(eyebrow, title, description, children, focus) {
+    const intro = node('aside', { class: 'auth-intro' }, brand(),
+      node('div', {}, node('h2', {}, 'See the error. Find the cause.'), node('p', {}, 'Your application errors, stack traces and release context in one workspace.')),
+      node('div', { class: 'auth-foot' }, 'GoodSentry · Error tracking'));
+    const box = node('div', { class: 'auth-box' }, node('div', { class: 'eyebrow' }, eyebrow), node('h1', { tabindex: '-1' }, title), node('p', {}, description), children);
+    app.replaceChildren(node('div', { class: 'auth-layout' }, intro, node('main', { id: 'main', class: 'auth-main' }, box)));
+    focus?.focus();
+  }
+
+  function renderAuth(setup, notice = '') {
     clearAPIToken();
     document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
     state.projects = [];
@@ -289,6 +302,7 @@
     if (setup) password.wrap.append(node('p', { class: 'help' }, 'Use at least 12 characters.'));
     const submit = node('button', { type: 'submit', class: 'btn button primary' }, setup ? 'Create workspace' : 'Sign in');
     const form = node('form', { class: 'form-stack' }, setup ? [name.wrap, organization.wrap] : [], email.wrap, password.wrap, submit);
+    if (!setup) form.append(node('button', { type: 'button', class: 'btn button', onclick: () => renderResetRequest() }, 'Forgot password?'));
     form.addEventListener('submit', async event => {
       event.preventDefault();
       error.textContent = '';
@@ -306,14 +320,105 @@
         submit.textContent = setup ? 'Create workspace' : 'Sign in';
       }
     });
-    const intro = node('aside', { class: 'auth-intro' }, brand(),
-      node('div', {}, node('h2', {}, 'See the error. Find the cause.'), node('p', {}, 'Your application errors, stack traces and release context in one workspace.')),
-      node('div', { class: 'auth-foot' }, 'GoodSentry · Error tracking'));
-    const box = node('div', { class: 'auth-box' }, node('div', { class: 'eyebrow' }, setup ? 'First-time setup' : 'Your workspace'),
-      node('h1', { tabindex: '-1' }, setup ? 'Welcome to GoodSentry' : 'Sign in to GoodSentry'),
-      node('p', {}, setup ? 'Create the first owner account and organization. Then connect your application with its project DSN.' : 'Use your account to view and manage application errors.'), error, form);
-    app.replaceChildren(node('div', { class: 'auth-layout' }, intro, node('main', { id: 'main', class: 'auth-main' }, box)));
-    (setup ? name : email).input.focus();
+    const children = node('div', {}, notice ? node('p', { class: 'form-notice', role: 'status', tabindex: '-1' }, notice) : null, error, form);
+    authFrame(setup ? 'First-time setup' : 'Your workspace', setup ? 'Welcome to GoodSentry' : 'Sign in to GoodSentry',
+      setup ? 'Create the first owner account and organization. Then connect your application with its project DSN.' : 'Use your account to view and manage application errors.', children, (setup ? name : email).input);
+  }
+
+  function renderResetRequest() {
+    document.title = 'Reset password · GoodSentry';
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const notice = node('div', { class: 'form-notice', role: 'status', tabindex: '-1', hidden: true });
+    const email = field('Email', 'email', { name: 'email', autocomplete: 'username', required: true, maxlength: 254 });
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Send reset link');
+    const form = node('form', { class: 'form-stack' }, email.wrap, notice, error, submit,
+      node('button', { type: 'button', class: 'btn button', onclick: () => renderAuth(false) }, 'Back to sign in'));
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      submit.disabled = true;
+      submit.textContent = 'Sending…';
+      try {
+        await request('/api/v1/account/password/reset/request', { method: 'POST', body: { email: email.input.value } });
+        notice.hidden = false;
+        notice.textContent = 'If an account exists for that email, a password reset message will arrive shortly.';
+        notice.focus();
+      } catch (failure) {
+        formError(error, failure);
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Send reset link';
+      }
+    });
+    authFrame('Account recovery', 'Reset your password', 'Enter the email address used to sign in. We will send a single-use link when the account exists.', form, email.input);
+  }
+
+  function renderResetPassword(token) {
+    document.title = 'Choose a new password · GoodSentry';
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const next = field('New password', 'password', { name: 'newPassword', autocomplete: 'new-password', required: true, minlength: 12, maxlength: 72 });
+    const confirm = field('Confirm new password', 'password', { name: 'confirmPassword', autocomplete: 'new-password', required: true, minlength: 12, maxlength: 72 });
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Set new password');
+    const form = node('form', { class: 'form-stack' }, next.wrap, confirm.wrap, error, submit,
+      node('button', { type: 'button', class: 'btn button', onclick: () => renderResetRequest() }, 'Request another link'));
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      if (next.input.value !== confirm.input.value) {
+        error.textContent = 'The new passwords do not match.';
+        error.focus();
+        return;
+      }
+      submit.disabled = true;
+      submit.textContent = 'Setting password…';
+      try {
+        await request('/api/v1/account/password/reset', { method: 'POST', body: { token, newPassword: next.input.value } });
+        history.replaceState(null, '', routeURL({ resetToken: null }));
+        renderAuth(false, 'Password reset. Sign in with your new password.');
+      } catch (failure) {
+        formError(error, failure);
+      } finally {
+        if (form.isConnected) {
+          submit.disabled = false;
+          submit.textContent = 'Set new password';
+        }
+      }
+    });
+    authFrame('Account recovery', 'Choose a new password', 'This link can be used once. Setting the password signs out every existing session and revokes personal API tokens.', form, next.input);
+  }
+
+  async function renderInvitation(token) {
+    document.title = 'Join your workspace · GoodSentry';
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const loading = node('div', { class: 'form-notice', role: 'status' }, 'Checking this invitation…');
+    authFrame('Workspace invitation', 'Join GoodSentry', 'Validating the single-use invitation link.', node('div', {}, loading, error));
+    let invitation;
+    try {
+      invitation = await request('/api/v1/invitations/inspect', { method: 'POST', body: { token } });
+    } catch (failure) {
+      error.textContent = failure.message;
+      return;
+    }
+    const name = field('Your name', 'text', { name: 'name', autocomplete: 'name', required: !invitation.existingAccount, maxlength: 120 });
+    const password = field(invitation.existingAccount ? 'Your current password' : 'Choose a password', 'password', { name: 'password', autocomplete: invitation.existingAccount ? 'current-password' : 'new-password', required: true, minlength: 12, maxlength: 72 });
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, invitation.existingAccount ? 'Sign in and join' : 'Create account and join');
+    const form = node('form', { class: 'form-stack' }, invitation.existingAccount ? null : name.wrap, password.wrap, error, submit);
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      submit.disabled = true;
+      submit.textContent = 'Joining…';
+      try {
+        state.me = await request('/api/v1/invitations/accept', { method: 'POST', body: { token, password: password.input.value, ...(invitation.existingAccount ? {} : { name: name.input.value }) } });
+        history.replaceState(null, '', routeURL({ inviteToken: null }));
+        await loadRoute(true);
+      } catch (failure) {
+        formError(error, failure);
+        submit.disabled = false;
+        submit.textContent = invitation.existingAccount ? 'Sign in and join' : 'Create account and join';
+      }
+    });
+    const details = node('div', { class: 'invitation-details' }, node('p', {}, node('strong', {}, invitation.organizationName), ' invited ', node('strong', {}, invitation.email), ` as ${invitation.role}.`));
+    authFrame('Workspace invitation', `Join ${invitation.organizationName}`, invitation.existingAccount ? 'Use your existing account password to accept.' : 'Choose your name and a password for the new account.', node('div', {}, details, form), invitation.existingAccount ? password.input : name.input);
   }
 
   function renderShell(view) {
@@ -325,11 +430,13 @@
     if (org) selector.value = org.slug;
     const currentParams = new URLSearchParams(location.search);
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
-      ['issues', 'feedback', 'transactions', 'logs', 'monitors', 'alerts', 'releases', 'projects', 'api-tokens']
+      ['issues', 'feedback', 'transactions', 'logs', 'monitors', 'alerts', 'releases', 'projects', 'api-tokens', 'people', 'organization']
         .filter(section => section !== 'monitors' || state.me.features?.uptime === true)
         .filter(section => section !== 'logs' || state.me.features?.logs !== false)
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .filter(section => section !== 'api-tokens' || ['owner', 'admin'].includes(org?.role))
+        .filter(section => section !== 'people' || ['owner', 'admin'].includes(org?.role))
+        .filter(section => section !== 'organization' || ['owner', 'admin'].includes(org?.role))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
           { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, release: null, level: null, trace: null, service: null, window: null, start: null, end: null,
@@ -344,9 +451,11 @@
         renderAuth(false);
       } catch (error) { notify(error.message); logout.disabled = false; }
     } }, 'Sign out');
+    const accountLink = routeLink('Account', { ...traceReset, view: 'account', issue: null, monitor: null, project: null, release: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, level: null, trace: null, service: null, window: null, start: null, end: null }, { class: 'btn btn-sm account-link' });
     const sidebar = node('aside', { class: 'sidebar' }, brand(),
       node('div', { class: 'org-switch' }, node('p', { class: 'org-label' }, 'Organization'), selector), nav,
-      node('div', { class: 'account' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'small' }, state.me.user.email), logout));
+      node('div', { class: 'account' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'small' }, state.me.user.email),
+        node('div', { class: 'account-actions' }, accountLink, logout)));
     const main = node('main', { id: 'main', class: 'main', tabindex: '-1' });
     app.replaceChildren(node('div', { class: 'app-shell' }, sidebar, node('div', { class: 'content' },
       node('header', { class: 'topbar' }, node('span', {}, node('strong', {}, org?.name || 'Workspace'), ' / ', viewNames[view]), node('span', { class: 'server-label' }, 'Application monitoring')), main)));
@@ -384,6 +493,11 @@
     if (!isIssueView(view) || !params.get('issue') || issueViewContext?.organization !== state.organization?.slug || issueViewContext?.issueId !== params.get('issue')) issueViewContext = undefined;
     if (view !== 'api-tokens' || issuedAPIToken?.organization !== state.organization?.slug) clearAPIToken();
     let main = renderShell(view);
+    if (view === 'account') {
+      renderAccount(main);
+      if (focus) main.querySelector('h1')?.focus();
+      return;
+    }
     if (!state.organization) {
       main.append(node('div', { class: 'card panel no-org' }, empty('No organization access', 'Your account does not belong to an organization. Contact your workspace owner to request access.')));
       return;
@@ -395,6 +509,11 @@
     if (view === 'api-tokens' && !['owner', 'admin'].includes(state.organization.role)) {
       main.append(pageHeader('API tokens', 'Organization owners and admins manage automation credentials.'),
         node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner or admin to manage API tokens.')));
+      return;
+    }
+    if (view === 'people' && !['owner', 'admin'].includes(state.organization.role)) {
+      main.append(pageHeader('People and teams', 'Organization owners and admins manage members and teams.'),
+        node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner or admin to manage people and teams.')));
       return;
     }
     loading(main, isIssueView(view) && params.get('issue') ? 'Loading issue…' : `Loading ${viewNames[view].toLowerCase()}…`);
@@ -429,6 +548,13 @@
         const result = await request(`${apiTokenPath()}?${query}`);
         if (version !== state.requestVersion) return;
         renderAPITokens(main, result);
+      } else if (view === 'people') {
+        const { createPeopleUI } = await import('./people.js');
+        if (version !== state.requestVersion) return;
+        peopleUI ||= createPeopleUI({ state, node, request, button, field, pageHeader, empty, formError, notify });
+        await peopleUI.render(main, params, () => version === state.requestVersion);
+      } else if (view === 'organization') {
+        await renderOrganizationSettings(main, version, params);
       } else if (view === 'releases') {
         const { createReleasesUI } = await import('./releases.js');
         if (version !== state.requestVersion) return;
@@ -516,6 +642,149 @@
         else if (isIssueView(view) && !params.get('issue') && state.me) renderIssues(main, null, params, error);
         else errorState(main, error, () => loadRoute(focus));
       }
+    }
+  }
+
+  function renderAccount(main) {
+    document.title = 'Account · GoodSentry';
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const current = field('Current password', 'password', { name: 'currentPassword', autocomplete: 'current-password', required: true, maxlength: 72 });
+    const next = field('New password', 'password', { name: 'newPassword', autocomplete: 'new-password', required: true, minlength: 12, maxlength: 72 });
+    const confirm = field('Confirm new password', 'password', { name: 'confirmPassword', autocomplete: 'new-password', required: true, minlength: 12, maxlength: 72 });
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Change password');
+    const form = node('form', { class: 'form-stack account-form', 'aria-label': 'Change password' }, current.wrap, next.wrap, confirm.wrap, submit);
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      if (next.input.value !== confirm.input.value) {
+        error.textContent = 'The new passwords do not match.';
+        error.focus();
+        return;
+      }
+      submit.disabled = true;
+      submit.textContent = 'Changing password…';
+      try {
+        await request('/api/v1/account/password', { method: 'POST', body: { currentPassword: current.input.value, newPassword: next.input.value } });
+        state.me = null;
+        state.requestVersion++;
+        renderAuth(false, 'Password changed. Sign in with your new password.');
+      } catch (failure) {
+        if (!state.me) return;
+        if (failure.status === 503 || !failure.status) {
+          error.textContent = 'The password change could not be confirmed. Sign in with your new password to verify the result.';
+          error.append(' ', button('Go to sign in', () => {
+            state.me = null;
+            state.requestVersion++;
+            renderAuth(false, 'Verify your account by signing in with your new password.');
+          }));
+          error.focus();
+        } else {
+          formError(error, failure);
+        }
+      } finally {
+        if (form.isConnected) {
+          submit.disabled = false;
+          submit.textContent = 'Change password';
+        }
+      }
+    });
+    main.replaceChildren(
+      node('div', { class: 'page-header' }, node('div', {}, node('div', { class: 'eyebrow' }, 'Your account'), node('h1', { tabindex: '-1' }, 'Account'),
+        node('p', {}, 'Manage the credentials used to sign in to GoodSentry.'))),
+      node('section', { class: 'card panel panel-body account-panel' },
+        node('div', { class: 'account-identity' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'muted' }, state.me.user.email)),
+        node('p', { class: 'small muted' }, 'Changing your password signs out every session and revokes personal API tokens in every organization. Project SDK keys keep working.'),
+        error, form));
+  }
+
+  async function renderOrganizationSettings(main, version, params) {
+    document.title = 'Organization · GoodSentry';
+    const org = state.organization;
+    main.replaceChildren(pageHeader('Organization', 'Manage the workspace name and lifecycle.', button('Refresh', () => loadRoute())));
+    let detail;
+    try {
+      detail = await request(`/api/0/organizations/${encodeURIComponent(org.slug)}/`);
+    } catch (failure) {
+      if (version !== state.requestVersion) return;
+      main.append(node('section', { class: 'card panel' }, empty('Could not load organization settings', failure.message, button('Try again', () => loadRoute()))));
+      return;
+    }
+    if (version !== state.requestVersion) return;
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const name = field('Organization name', 'text', { value: detail.name, required: true, maxlength: 200, autocomplete: 'organization' });
+    const save = node('button', { type: 'submit', class: 'btn button primary' }, 'Save organization name');
+    const form = node('form', { class: 'form-stack', 'aria-label': 'Rename organization' }, error, name.wrap, save);
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      save.disabled = true;
+      save.textContent = 'Saving…';
+      try {
+        const updated = await request(`/api/0/organizations/${encodeURIComponent(org.slug)}/`, { method: 'PUT', body: { name: name.input.value } });
+        state.organization.name = updated.name;
+        const selected = state.me.organizations.find(item => item.slug === org.slug);
+        if (selected) selected.name = updated.name;
+        notify('Organization name updated.');
+        await loadRoute(true);
+      } catch (failure) {
+        formError(error, failure);
+      } finally {
+        save.disabled = false;
+        save.textContent = 'Save organization name';
+      }
+    });
+    const details = node('dl', { class: 'org-details' },
+      node('div', {}, node('dt', {}, 'Organization ID'), node('dd', { class: 'mono' }, detail.id)),
+      node('div', {}, node('dt', {}, 'Slug'), node('dd', { class: 'mono' }, detail.slug)),
+      node('div', {}, node('dt', {}, 'Your role'), node('dd', {}, detail.access.includes('org:write') ? org.role : 'member')),
+      node('div', {}, node('dt', {}, 'Created'), node('dd', {}, date(detail.dateCreated))));
+    const renamePanel = node('section', { class: 'card panel', 'aria-label': 'Organization details' },
+      node('div', { class: 'panel-title' }, node('h2', {}, 'Workspace details')),
+      node('div', { class: 'panel-body form-stack' }, details, form));
+    main.append(renamePanel);
+    const deletePanel = node('section', { class: 'card panel', 'aria-label': 'Delete organization' },
+      node('div', { class: 'panel-title' }, node('h2', {}, 'Delete organization')),
+      node('div', { class: 'panel-body form-stack' },
+        node('p', { class: 'muted' }, org.role === 'owner'
+          ? 'Deleting this organization removes its projects, events, issues, teams, alerts and related data. This cannot be undone.'
+          : 'Only an organization owner can delete this workspace.'),
+        org.role === 'owner' ? button('Delete organization', openDeleteOrganization, 'danger') : null));
+    main.append(deletePanel);
+
+    function openDeleteOrganization() {
+      const dialog = node('dialog', { class: 'alert-dialog', 'aria-labelledby': 'delete-organization-title' });
+      const deleteError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+      const confirm = node('button', { type: 'submit', class: 'btn button danger' }, 'Delete organization permanently');
+      const deleteForm = node('form', { class: 'form-stack', 'aria-label': 'Confirm organization deletion' },
+        deleteError,
+        node('p', {}, `Delete ${detail.name}? This permanently removes all projects and stored data for this organization.`),
+        node('div', { class: 'dialog-actions' }, button('Cancel', () => dialog.close()), confirm));
+      deleteForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        deleteError.textContent = '';
+        confirm.disabled = true;
+        confirm.textContent = 'Deleting…';
+        try {
+          await request(`/api/0/organizations/${encodeURIComponent(org.slug)}/`, { method: 'DELETE' });
+          dialog.close();
+          state.me.organizations = state.me.organizations.filter(item => item.slug !== org.slug);
+          const next = state.me.organizations[0] || null;
+          const target = new URLSearchParams({ view: 'issues' });
+          if (next) target.set('org', next.slug);
+          history.pushState(null, '', location.pathname + '?' + target.toString());
+          notify('Organization deleted.');
+          loadRoute(true);
+        } catch (failure) {
+          formError(deleteError, failure);
+          confirm.disabled = false;
+          confirm.textContent = 'Delete organization permanently';
+        }
+      });
+      dialog.append(node('header', {}, node('h2', { id: 'delete-organization-title' }, 'Delete organization'), button('Close', () => dialog.close(), 'small')), deleteForm);
+      dialog.addEventListener('close', () => dialog.remove());
+      document.body.append(dialog);
+      dialog.showModal();
+      confirm.focus();
     }
   }
 
@@ -1182,10 +1451,10 @@
     const name = field('Token name', 'text', { name: 'name', required: true, autocomplete: 'off', placeholder: 'Project automation' });
     name.wrap.append(node('p', { class: 'help' }, '1–100 characters. Names may be reused.'));
     const lifetime = field('Lifetime (days)', 'number', { name: 'expiresInDays', value: 90, required: true, min: 1, max: 366, step: 1 });
-    const scopes = ['org:read', 'project:read', 'project:write', 'project:releases', 'event:read', 'event:write', 'event:admin'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
+      const scopes = ['org:read', 'org:write', 'project:read', 'project:write', 'project:releases', 'event:read', 'event:write', 'event:admin'].map(scope => ({ scope, input: node('input', { type: 'checkbox', name: 'scopes', value: scope, checked: scope === 'org:read' || scope === 'project:read' }) }));
     const scopeFields = node('fieldset', { class: 'token-fieldset form-stack' }, node('legend', {}, 'Permissions'),
       scopes.map(({ scope, input }) => node('label', { class: 'checkbox-field' }, input, scope)),
-      node('p', { class: 'small muted' }, 'org:read lists authorized projects. project:read reads project metadata, project-scoped event data, attachments and legacy user reports. project:write submits legacy user feedback and reads event attachments; it does not grant other project reads or changes. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. event:admin deletes whole issue groups and their recorded history; it does not grant read or other write permissions. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
+      node('p', { class: 'small muted' }, 'org:read lists authorized projects and organization people. org:write invites members and manages teams. project:read reads project metadata, project-scoped event data, attachments and legacy user reports. project:write submits legacy user feedback and reads event attachments; it does not grant other project reads or changes. event:read reads issues and issue events. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. event:admin deletes whole issue groups and their recorded history; it does not grant read or other write permissions. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.'));
     const access = selectField('Project access', [['all', 'All current and future projects'], ['selected', 'Selected projects only']], 'all');
     const projects = state.projects.map(project => ({ id: project.id, input: node('input', { type: 'checkbox', value: project.id }), name: project.name }));
     const projectFields = node('fieldset', { class: 'token-fieldset form-stack', hidden: true }, node('legend', {}, 'Selected projects'),
@@ -2542,6 +2811,24 @@
     try {
       const setup = await request('/api/v1/setup');
       if (setup.required) { renderAuth(true); return; }
+      const resetToken = new URLSearchParams(location.search).get('resetToken');
+      if (resetToken) {
+        if (/^[0-9a-f]{64}$/.test(resetToken)) renderResetPassword(resetToken);
+        else {
+          history.replaceState(null, '', routeURL({ resetToken: null }));
+          renderAuth(false, 'This password reset link is invalid. Request a new link to continue.');
+        }
+        return;
+      }
+      const inviteToken = new URLSearchParams(location.search).get('inviteToken');
+      if (inviteToken) {
+        if (/^[0-9a-f]{64}$/.test(inviteToken)) renderInvitation(inviteToken);
+        else {
+          history.replaceState(null, '', routeURL({ inviteToken: null }));
+          renderAuth(false, 'This invitation link is invalid or expired.');
+        }
+        return;
+      }
       try { state.me = await request('/api/v1/me'); }
       catch (error) { if (error.status === 401) { renderAuth(false); return; } throw error; }
       await loadRoute();
