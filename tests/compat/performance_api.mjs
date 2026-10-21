@@ -86,6 +86,29 @@ try {
   assert.equal(patterns.data[0].spansPerTxn, 6);
   report.checks.push('N+1 patterns aggregate repeated children per trace and then by transaction');
 
+  const groupQuery = new URLSearchParams({ start, end, sort: '-count', limit: '25' });
+  groupQuery.append('project', first.id);
+  groupQuery.append('project', second.id);
+  const groups = await call(`api/0/organizations/${organization}/transaction-groups/?${groupQuery}`, { cookie });
+  assert.equal(groups.status, 200);
+  const selectedGroup = groups.data.find(item => item.project === Number(first.id) && item.op === 'http.server');
+  const hiddenGroup = groups.data.find(item => item.project === Number(second.id));
+  assert.equal(selectedGroup.count, 6);
+  assert.equal(hiddenGroup.count, 1);
+  assert.deepEqual(Object.keys(selectedGroup).sort(), ['avgDuration', 'count', 'errorCount', 'errorRate', 'firstSeen', 'id', 'lastSeen', 'method', 'op', 'p50', 'p95', 'project', 'throughput', 'transaction']);
+  const detail = await call(`api/0/organizations/${organization}/transaction-groups/${selectedGroup.id}/`, { cookie });
+  assert.equal(detail.status, 200);
+  assert.equal(detail.data.id, selectedGroup.id);
+  assert.equal(detail.data.count, 6);
+  const trend = await call(`api/0/organizations/${organization}/transaction-groups/${selectedGroup.id}/trend/?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { cookie });
+  assert.equal(trend.status, 200);
+  assert.equal(trend.data[0].count, 6);
+  assert.ok(Math.abs(trend.data[0].totalTime - 600) < 0.01);
+  const groupSpans = await call(`api/0/organizations/${organization}/transaction-groups/${selectedGroup.id}/spans/?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { cookie });
+  assert.equal(groupSpans.status, 200);
+  assert.equal(groupSpans.data[0].count, 32);
+  report.checks.push('Transaction-group list IDs are stable and drive detail, trend and per-group spans');
+
   const credential = await call(`api/v1/organizations/${organization}/api-tokens`, {
     method: 'POST', cookie, csrf, body: { name: 'Performance API', scopes: ['event:read'], projectIds: [first.id], expiresInDays: 1 },
   });
@@ -96,6 +119,8 @@ try {
   assert.equal(scoped.data[0].count, 32);
   const hidden = await call(`api/0/organizations/${organization}/span-groups/?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&op=db.query&project=${second.id}`, { token: credential.data.token });
   assert.equal(hidden.status, 404);
+  const hiddenGroupResponse = await call(`api/0/organizations/${organization}/transaction-groups/${hiddenGroup.id}/`, { token: credential.data.token });
+  assert.equal(hiddenGroupResponse.status, 404);
   report.checks.push('Bearer project grants contain span groups and reject hidden project filters');
 
   const invalidSort = await call(`api/0/organizations/${organization}/span-groups/?sort=bad`, { cookie });
