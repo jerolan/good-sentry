@@ -1,0 +1,13 @@
+{
+  "image": "goodsentry:project-management-20261020",
+  "imageDigest": "sha256:10879d3dfcde8326518664974566d955f9d24097c97db045f04a9da9034e975d",
+  "architecture": "amd64",
+  "user": "65532:65532",
+  "sizeBytes": 37321274,
+  "binarySHA256": "5fc7b6f632ac49964665e2cd80e0982a8ac887c82fbcb46186bd82ef0586f3d2",
+  "binaryBytes": 22782112,
+  "health": {
+    "service": "GoodSentry",
+    "status": "ok"
+  }
+}

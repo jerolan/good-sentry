@@ -99,6 +99,8 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 	s.registerMCPRoutes(mux)
 	mux.Handle("GET /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.projects)))
 	mux.Handle("POST /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.createProject)))
+	mux.Handle("PUT /api/v1/organizations/{org}/projects/{project}", s.auth(http.HandlerFunc(s.updateProject)))
+	mux.Handle("DELETE /api/v1/organizations/{org}/projects/{project}", s.auth(http.HandlerFunc(s.deleteProject)))
 	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/sourcemaps", s.auth(http.HandlerFunc(s.sourceMaps)))
 	mux.Handle("POST /api/v1/organizations/{org}/projects/{project}/sourcemaps", s.auth(http.HandlerFunc(s.uploadSourceMap)))
 	mux.Handle("GET /api/v1/organizations/{org}/projects/{project}/alerts", s.auth(http.HandlerFunc(s.alerts)))

@@ -1371,6 +1371,7 @@
 
   function renderProjects(main) {
     document.title = 'Projects · GoodSentry';
+    const manage = ['owner', 'admin'].includes(state.organization.role);
     main.replaceChildren(pageHeader('Projects', 'Each application gets its own SDK key and DSN.', button('Create project', openProjectDialog, 'primary')));
     const panel = node('section', { class: 'card panel', 'aria-label': 'Projects' });
     if (!state.projects.length) {
@@ -1380,7 +1381,10 @@
         node('td', {}, node('div', { class: 'project-name' }, project.name), node('div', { class: 'muted small mono' }, project.slug)),
         node('td', {}, badge(project.platform)),
         node('td', {}, node('div', { class: 'dsn' }, node('code', {}, project.dsn), button('Copy', () => copyValue(project.dsn), 'small'))),
-        node('td', {}, routeLink('View issues', { view: 'issues', project: project.id, query: null, status: null, environment: null, release: null, page: null }, { class: 'btn button small' }))));
+        node('td', {}, node('div', { class: 'actions' },
+          routeLink('View issues', { view: 'issues', project: project.id, query: null, status: null, environment: null, release: null, page: null }, { class: 'btn button small' }),
+          manage ? button('Edit', () => openProjectDialog(project), 'small') : null,
+          manage ? button('Delete', () => confirmProjectDelete(project), 'danger small') : null))));
       const columns = ['Project', 'Platform', 'DSN', ''].map((name, index) => node('th', { scope: 'col', ...(index === 3 ? { 'aria-label': 'Actions' } : {}) }, name));
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns)), node('tbody', {}, rows))));
       panel.append(...state.projects.map(sourceMapDisclosure));
@@ -1388,6 +1392,36 @@
       main.append(node('p', { class: 'muted small connection-help' }, 'Use the DSN with your existing Sentry SDK. Keep the SDK configuration in your application; GoodSentry receives events at the project address.'));
     }
     main.append(panel);
+  }
+
+  function projectPath(project) {
+    return `/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/projects/${encodeURIComponent(project.id)}`;
+  }
+
+  function confirmProjectDelete(project) {
+    const dialog = node('dialog', { 'aria-labelledby': 'project-delete-title' });
+    const close = () => dialog.close();
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const submit = button('Delete project permanently', async () => {
+      submit.disabled = true;
+      try {
+        await request(projectPath(project), { method: 'DELETE' });
+        dialog.close();
+        await loadRoute();
+        notify('Project deleted.');
+      } catch (failure) {
+        formError(error, failure);
+        submit.disabled = false;
+      }
+    }, 'danger');
+    dialog.append(node('header', {}, node('h2', { id: 'project-delete-title' }, 'Delete ' + project.name), button('Close', close, 'small')),
+      node('div', { class: 'panel-body form-stack' }, error,
+        node('p', {}, 'This permanently deletes the project, its DSN keys, events, issues, logs, traces, releases, attachments and debug files. This cannot be undone.'),
+        node('div', { class: 'actions' }, button('Cancel', close), submit)));
+    dialog.addEventListener('close', () => dialog.remove(), { once: true });
+    document.body.append(dialog);
+    dialog.showModal();
+    submit.focus();
   }
 
   function clearAPIToken() {
@@ -1958,12 +1992,12 @@
     return form;
   }
 
-  function openProjectDialog() {
+  function openProjectDialog(project) {
     const dialog = node('dialog', { 'aria-labelledby': 'project-dialog-title' });
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
-    const name = field('Project name', 'text', { name: 'name', required: true, maxlength: 200, autocomplete: 'off' });
-    const platform = selectField('Platform', [['javascript', 'JavaScript / Browser'], ['node', 'Node.js'], ['python', 'Python'], ['go', 'Go'], ['java', 'Java'], ['php', 'PHP'], ['ruby', 'Ruby'], ['csharp', '.NET'], ['other', 'Other']], 'javascript');
-    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Create project');
+    const name = field('Project name', 'text', { name: 'name', required: true, maxlength: 200, autocomplete: 'off', value: project?.name || '' });
+    const platform = selectField('Platform', [['javascript', 'JavaScript / Browser'], ['node', 'Node.js'], ['python', 'Python'], ['go', 'Go'], ['java', 'Java'], ['php', 'PHP'], ['ruby', 'Ruby'], ['csharp', '.NET'], ['other', 'Other']], project?.platform || 'javascript');
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, project ? 'Save project' : 'Create project');
     const close = () => dialog.close();
     const form = node('form', { class: 'form-stack' }, error, name.wrap, platform.wrap,
       node('div', { class: 'dialog-actions' }, button('Cancel', close), submit));
@@ -1971,16 +2005,16 @@
       event.preventDefault();
       error.textContent = '';
       submit.disabled = true;
-      submit.textContent = 'Creating…';
+      submit.textContent = project ? 'Saving…' : 'Creating…';
       try {
-        await request(`/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/projects`, { method: 'POST', body: { name: name.input.value.trim(), platform: platform.input.value } });
+        await request(project ? projectPath(project) : `/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/projects`, { method: project ? 'PUT' : 'POST', body: { name: name.input.value.trim(), platform: platform.input.value } });
         dialog.close();
-        navigate({ view: 'projects', issue: null, page: null });
-        notify('Project created. Copy its DSN to connect your application.');
+        await loadRoute();
+        notify(project ? 'Project updated.' : 'Project created. Copy its DSN to connect your application.');
       } catch (failure) { formError(error, failure); }
-      finally { submit.disabled = false; submit.textContent = 'Create project'; }
+      finally { submit.disabled = false; submit.textContent = project ? 'Save project' : 'Create project'; }
     });
-    dialog.append(node('header', {}, node('h2', { id: 'project-dialog-title' }, 'Create project'), button('Close', close, 'small')), form);
+    dialog.append(node('header', {}, node('h2', { id: 'project-dialog-title' }, project ? 'Edit project' : 'Create project'), button('Close', close, 'small')), form);
     dialog.addEventListener('close', () => dialog.remove());
     document.body.append(dialog);
     dialog.showModal();

@@ -28,10 +28,61 @@ func (s *Server) registerCompatibleManagementRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/0/teams/{org}/{team}/members/{$}", s.compatible("org:read", s.compatibleTeamMembers))
 	mux.Handle("GET /api/0/teams/{org}/{team}/projects/{$}", s.compatible("org:read", s.compatibleTeamProjects))
 	mux.Handle("GET /api/0/projects/{org}/{project}/teams/{$}", s.compatible("project:read", s.compatibleProjectTeams))
+	mux.Handle("PUT /api/0/projects/{org}/{project}/{$}", s.compatible("project:write", s.compatibleUpdateProject))
+	mux.Handle("DELETE /api/0/projects/{org}/{project}/{$}", s.compatible("project:write", s.compatibleDeleteProject))
 	mux.Handle("POST /api/0/organizations/{org}/members/{$}", s.compatible("org:write", s.compatibleCreateOrganizationMember))
 	mux.Handle("POST /api/0/organizations/{org}/teams/{$}", s.compatible("org:write", s.compatibleCreateTeam))
 	mux.Handle("PUT /api/0/teams/{org}/{team}/{$}", s.compatible("org:write", s.compatibleUpdateTeam))
 	mux.Handle("DELETE /api/0/teams/{org}/{team}/{$}", s.compatible("org:write", s.compatibleDeleteTeam))
+}
+
+func (s *Server) projectWriteAccess(w http.ResponseWriter, r *http.Request) (store.ManagementAccess, bool) {
+	access, valid := s.managementAccess(w, r)
+	if !valid {
+		return store.ManagementAccess{}, false
+	}
+	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "admin" {
+		failure(w, 403, "Organization owner or admin permission required")
+		return store.ManagementAccess{}, false
+	}
+	return access, true
+}
+
+func (s *Server) compatibleUpdateProject(w http.ResponseWriter, r *http.Request) {
+	access, valid := s.projectWriteAccess(w, r)
+	if !valid {
+		return
+	}
+	var input struct {
+		Name              string `json:"name"`
+		Platform          string `json:"platform"`
+		EventThrottleRate *int   `json:"eventThrottleRate"`
+	}
+	if !bodyJSON(w, r, &input) {
+		return
+	}
+	if input.EventThrottleRate != nil && *input.EventThrottleRate != 0 {
+		failure(w, 400, "Project event throttling is not implemented")
+		return
+	}
+	project, err := s.db.UpdateManagementProject(r.Context(), access, r.PathValue("project"), input.Name, input.Platform)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, project)
+}
+
+func (s *Server) compatibleDeleteProject(w http.ResponseWriter, r *http.Request) {
+	access, valid := s.projectWriteAccess(w, r)
+	if !valid {
+		return
+	}
+	if err := s.db.DeleteManagementProject(r.Context(), access, r.PathValue("project")); err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 204, nil)
 }
 
 func (s *Server) compatibleOrganizationDetail(w http.ResponseWriter, r *http.Request) {

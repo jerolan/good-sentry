@@ -2,8 +2,12 @@ package store
 
 import (
 	"context"
+	"errors"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 )
 
 type ManagementAccess struct {
@@ -77,4 +81,43 @@ func (s *Store) ManagementProject(ctx context.Context, access ManagementAccess, 
 		access.UserID, access.OrganizationID, access.AllProjects, access.ProjectIDs, project, referenceID(project)).
 		Scan(&p.ID, &p.Name, &p.Slug, &p.Platform, &p.DateCreated)
 	return p, dbError(err)
+}
+
+func validProjectName(name string) bool {
+	return name != "" && utf8.ValidString(name) && len(name) <= 120 && !strings.ContainsFunc(name, unicode.IsControl)
+}
+
+func (s *Store) UpdateManagementProject(ctx context.Context, access ManagementAccess, project, name, platform string) (ManagementProject, error) {
+	current, err := s.ManagementProject(ctx, access, project)
+	if err != nil {
+		return ManagementProject{}, err
+	}
+	name = strings.TrimSpace(name)
+	platform = strings.TrimSpace(platform)
+	if !validProjectName(name) || len(platform) > 80 || strings.ContainsFunc(platform, unicode.IsControl) {
+		return ManagementProject{}, errors.New("invalid project name or platform")
+	}
+	if platform == "" {
+		platform = "other"
+	}
+	if _, err = s.pool.Exec(ctx, `UPDATE projects SET name=$2,platform=$3
+WHERE id::text=$1 AND organization_id=$4::bigint`, current.ID, name, platform, access.OrganizationID); err != nil {
+		return ManagementProject{}, err
+	}
+	return s.ManagementProject(ctx, access, current.ID)
+}
+
+func (s *Store) DeleteManagementProject(ctx context.Context, access ManagementAccess, project string) error {
+	current, err := s.ManagementProject(ctx, access, project)
+	if err != nil {
+		return err
+	}
+	result, err := s.pool.Exec(ctx, `DELETE FROM projects WHERE id::text=$1 AND organization_id=$2::bigint`, current.ID, access.OrganizationID)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }

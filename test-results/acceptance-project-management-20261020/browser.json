@@ -1,0 +1,21 @@
+{
+  "browser": "Chromium",
+  "results": [
+    {
+      "width": 320,
+      "horizontalOverflow": false,
+      "consoleErrors": 0,
+      "createStatus": 201,
+      "editAndReload": true,
+      "deleteAndReload": true
+    },
+    {
+      "width": 1440,
+      "horizontalOverflow": false,
+      "consoleErrors": 0,
+      "createStatus": 201,
+      "editAndReload": true,
+      "deleteAndReload": true
+    }
+  ]
+}

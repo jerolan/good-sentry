@@ -51,6 +51,48 @@ func (s *Server) createProject(w http.ResponseWriter, r *http.Request) {
 	p.PublicKey = ""
 	writeJSON(w, 201, p)
 }
+
+func (s *Server) nativeProjectWriteAccess(w http.ResponseWriter, r *http.Request) (store.ManagementAccess, bool) {
+	org, err := s.db.Organization(r.Context(), current(r).User.ID, r.PathValue("org"))
+	if err != nil {
+		report(w, err)
+		return store.ManagementAccess{}, false
+	}
+	if org.Role != "owner" && org.Role != "admin" {
+		failure(w, http.StatusForbidden, "Organization owner or admin permission required")
+		return store.ManagementAccess{}, false
+	}
+	return store.ManagementAccess{UserID: current(r).User.ID, OrganizationID: org.ID, Role: org.Role, AllProjects: true}, true
+}
+
+func (s *Server) updateProject(w http.ResponseWriter, r *http.Request) {
+	access, valid := s.nativeProjectWriteAccess(w, r)
+	if !valid {
+		return
+	}
+	var input struct{ Name, Platform string }
+	if !bodyJSON(w, r, &input) {
+		return
+	}
+	project, err := s.db.UpdateManagementProject(r.Context(), access, r.PathValue("project"), input.Name, input.Platform)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, project)
+}
+
+func (s *Server) deleteProject(w http.ResponseWriter, r *http.Request) {
+	access, valid := s.nativeProjectWriteAccess(w, r)
+	if !valid {
+		return
+	}
+	if err := s.db.DeleteManagementProject(r.Context(), access, r.PathValue("project")); err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, http.StatusNoContent, nil)
+}
 func (s *Server) issues(w http.ResponseWriter, r *http.Request) {
 	q, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
