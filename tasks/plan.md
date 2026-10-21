@@ -279,3 +279,5 @@ Native AMD64/x86 plus official chunked DIF and source-map regression pass local 
 Native AMD64/x86 and official DIF are publicly accepted at8425893. Continue the parent with ARM64/context coverage, CFI/DWARF unwinding, PDB/dSYM/SymCache consumption and archive extraction; then seek representative native crash receipts.
 
 ARM64 Minidump context support passes local full-race and final-image DIF at3682a21. Publish and verify exact public source/CI/image/binary, while keeping CFI/DWARF, PDB/dSYM/SymCache and real multi-platform receipts open.
+
+ARM64 native acceptance is public at3e2434c. Keep the parent open for CFI/DWARF, PDB/dSYM/SymCache, archive extraction and real receipts; next audit those remaining native consumers before implementation.
