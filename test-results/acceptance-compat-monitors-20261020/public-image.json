@@ -1,0 +1,8 @@
+{
+  "databaseId": 39585018434,
+  "workflowName": "Container image",
+  "revision": "82148dd5803cfb10151688494a9441b6942dfc57",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/jerolan/good-sentry/actions/runs/39585018434"
+}

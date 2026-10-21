@@ -291,3 +291,5 @@ Compatible/native project update and deletion are accepted at e3e6938 with immut
 Compatible issue comments are accepted at 3e69caa with shared native activity, event read/write scopes, cursor pagination and strict CommentSchema bodies. Continue the remaining issue tags/management routes and external receipts.
 
 Compatible issue tags are accepted at f07647d with merged-alias aggregation, object/array normalization and exact source/image/binary publication. Continue the remaining compatible monitors/alerts and administration routes.
+
+Compatible uptime monitors are accepted at 82148dd with native scheduler reuse, cursor pages, type aliases and owner/admin mutation authority. Continue compatible alerts and the remaining management routes.
