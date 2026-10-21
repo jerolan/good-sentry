@@ -141,6 +141,34 @@ func (s *Store) CompatibleOrganizationMember(ctx context.Context, userID, orgRef
 	return item, tx.Commit(ctx)
 }
 
+func (s *Store) CompatibleOrganizationInvitationMember(ctx context.Context, userID, orgRef, invitationID string) (CompatibleOrganizationUser, error) {
+	var item CompatibleOrganizationUser
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
+	if err != nil {
+		return item, err
+	}
+	defer tx.Rollback(ctx)
+	orgID, role, err := organizationMember(ctx, tx, userID, orgRef, false, false)
+	if err != nil {
+		return item, err
+	}
+	if role != "owner" && role != "admin" {
+		return item, ErrNotFound
+	}
+	err = tx.QueryRow(ctx, `SELECT id,email,role,created_at FROM organization_invitations
+		WHERE organization_id=$1::bigint AND id=$2 AND status IN ('pending','processing','sent','failed')`, orgID, invitationID).
+		Scan(&item.ID, &item.Email, &item.Role, &item.DateCreated)
+	if err != nil {
+		return item, dbError(err)
+	}
+	item.DateCreated = item.DateCreated.UTC()
+	item.RoleName = roleDisplay(item.Role)
+	item.Pending = true
+	item.IsOwner = item.Role == "owner"
+	item.Teams = []string{}
+	return item, tx.Commit(ctx)
+}
+
 func (s *Store) compatibleTeamMembership(ctx context.Context, actorID, orgRef, teamSlug, memberID string, add bool) (CompatibleTeamProject, error) {
 	var result CompatibleTeamProject
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})

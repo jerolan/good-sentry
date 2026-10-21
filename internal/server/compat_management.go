@@ -222,6 +222,18 @@ func compatibleMemberPathID(w http.ResponseWriter, r *http.Request) (string, boo
 	return canonicalPersonID(w, r.PathValue("member"))
 }
 
+func compatibleMemberReference(w http.ResponseWriter, r *http.Request) (string, bool, bool) {
+	value := r.PathValue("member")
+	if value == "me" {
+		return current(r).User.ID, false, true
+	}
+	if validInvitationID(value) {
+		return value, true, true
+	}
+	id, ok := canonicalPersonID(w, value)
+	return id, false, ok
+}
+
 func (s *Server) compatibleOrganizationMember(w http.ResponseWriter, r *http.Request) {
 	if _, valid := s.managementAccess(w, r); !valid {
 		return
@@ -229,11 +241,17 @@ func (s *Server) compatibleOrganizationMember(w http.ResponseWriter, r *http.Req
 	if _, valid := discoveryNoQuery(w, r); !valid {
 		return
 	}
-	memberID, valid := compatibleMemberPathID(w, r)
+	memberID, invitation, valid := compatibleMemberReference(w, r)
 	if !valid {
 		return
 	}
-	member, err := s.db.CompatibleOrganizationMember(r.Context(), current(r).User.ID, r.PathValue("org"), memberID)
+	var member store.CompatibleOrganizationUser
+	var err error
+	if invitation {
+		member, err = s.db.CompatibleOrganizationInvitationMember(r.Context(), current(r).User.ID, r.PathValue("org"), memberID)
+	} else {
+		member, err = s.db.CompatibleOrganizationMember(r.Context(), current(r).User.ID, r.PathValue("org"), memberID)
+	}
 	if err != nil {
 		report(w, err)
 		return
@@ -249,8 +267,12 @@ func (s *Server) compatibleUpdateOrganizationMember(w http.ResponseWriter, r *ht
 	if _, valid := s.orgWriteAccess(w, r); !valid {
 		return
 	}
-	memberID, valid := compatibleMemberPathID(w, r)
+	memberID, invitation, valid := compatibleMemberReference(w, r)
 	if !valid {
+		return
+	}
+	if invitation {
+		failure(w, 400, "Pending invitation role changes are not supported")
 		return
 	}
 	var input struct {
@@ -284,8 +306,16 @@ func (s *Server) compatibleDeleteOrganizationMember(w http.ResponseWriter, r *ht
 	if _, valid := s.orgWriteAccess(w, r); !valid {
 		return
 	}
-	memberID, valid := compatibleMemberPathID(w, r)
+	memberID, invitation, valid := compatibleMemberReference(w, r)
 	if !valid {
+		return
+	}
+	if invitation {
+		if err := s.db.CancelInvitation(r.Context(), current(r).User.ID, r.PathValue("org"), memberID); err != nil {
+			report(w, err)
+			return
+		}
+		writeJSON(w, 204, nil)
 		return
 	}
 	if err := s.db.RemoveMember(r.Context(), current(r).User.ID, r.PathValue("org"), memberID); err != nil {

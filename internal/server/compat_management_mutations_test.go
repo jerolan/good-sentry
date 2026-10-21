@@ -84,14 +84,23 @@ func TestCompatibleOrganizationInvitationMutationHTTP(t *testing.T) {
 	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "GET", mailPath, "", nil, 200), &members); err != nil || len(members) != 2 || !members[1].Pending || members[1].Email != "invitee@management.test" {
 		t.Fatalf("pending invitation visibility: %+v %v", members, err)
 	}
+	invitationPath := mailPath + invitation.ID + "/"
+	var pending store.CompatibleOrganizationUser
+	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "GET", invitationPath, "", nil, 200), &pending); err != nil || !pending.Pending || pending.ID != invitation.ID || pending.Email != "invitee@management.test" || pending.User != nil || pending.Teams == nil || len(pending.Teams) != 0 {
+		t.Fatalf("pending invitation detail: %+v %v", pending, err)
+	}
+	mailCall(t, f.ctx, mailClient, mailServer, "PUT", invitationPath, `{"orgRole":"member"}`, http.Header{"X-CSRF-Token": {mailCSRF}}, 400)
 
 	insertDiscoveryMember(t, f, "invitation-member@management.test", "Invitation member", "member")
 	memberClient, memberCSRF := loginManagementMemberOn(t, f, mailServer, "invitation-member@management.test")
+	mailCall(t, f.ctx, memberClient, mailServer, "GET", invitationPath, "", nil, 404)
 	mailCall(t, f.ctx, memberClient, mailServer, "POST", mailPath, `{"email":"member-invite@management.test","orgRole":"member"}`, http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
 	readToken := issueManagementToken(t, f, f.org.Slug, "Invitation reader", []string{"org:read"}, []string{f.project.ID})
 	mailCall(t, f.ctx, http.DefaultClient, mailServer, "POST", mailPath, `{"email":"read-denied@management.test","orgRole":"member"}`, http.Header{"Authorization": {"Bearer " + readToken}}, 403)
 	writeToken := issueManagementToken(t, f, f.org.Slug, "Invitation writer", []string{"org:write"}, []string{f.project.ID})
 	mailCall(t, f.ctx, http.DefaultClient, mailServer, "POST", mailPath, `{"email":"bearer-invite@management.test","orgRole":"member"}`, http.Header{"Authorization": {"Bearer " + writeToken}}, 201)
+	mailCall(t, f.ctx, http.DefaultClient, mailServer, "DELETE", invitationPath, "", http.Header{"Authorization": {"Bearer " + writeToken}}, 204)
+	mailCall(t, f.ctx, mailClient, mailServer, "GET", invitationPath, "", nil, 404)
 }
 
 func TestCompatibleOrganizationUpdateDeleteHTTP(t *testing.T) {

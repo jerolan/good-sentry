@@ -15,6 +15,14 @@ import (
 
 const invitationLifetime = 7 * 24 * time.Hour
 
+func validInvitationID(value string) bool {
+	if len(value) != 32 || value != strings.ToLower(value) {
+		return false
+	}
+	_, err := hex.DecodeString(value)
+	return err == nil
+}
+
 func validInvitationToken(value string) bool {
 	if len(value) != 64 || value != strings.ToLower(value) {
 		return false
@@ -75,11 +83,7 @@ func (s *Server) createInvitation(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) cancelInvitation(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("invitation")
-	if len(id) != 32 {
-		failure(w, 400, "Invalid invitation ID")
-		return
-	}
-	if _, err := hex.DecodeString(id); err != nil {
+	if !validInvitationID(id) {
 		failure(w, 400, "Invalid invitation ID")
 		return
 	}

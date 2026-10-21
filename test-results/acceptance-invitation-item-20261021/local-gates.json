@@ -1,0 +1,16 @@
+{
+  "testedAt": "2026-10-21T15:17:31Z",
+  "commands": [
+    {"command": "go test -race -count=1 -tags=integration ./...", "result": "pass", "log": "integration-race.log", "server": "126.337s", "store": "244.768s"},
+    {"command": "targeted invitation-item/member store and HTTP tests with -race", "result": "pass", "log": "targeted-invitation-item-race.log"},
+    {"command": "go vet -tags=integration ./...", "result": "pass", "log": "vet.log"},
+    {"command": "go mod verify", "result": "pass", "log": "mod-verify.log"},
+    {"command": "git diff --check and gofmt -l", "result": "pass"}
+  ],
+  "verifiedBehavior": [
+    "A 32-hex pending invitation ID resolves through the organization member-item detail route for owners/admins.",
+    "Pending details expose no fabricated user or teams and ordinary members receive 404.",
+    "Pending invitation role changes are rejected, while DELETE cancels the invitation and invalidates subsequent detail reads.",
+    "Existing active-member detail, role and team membership behavior remains unchanged."
+  ]
+}
