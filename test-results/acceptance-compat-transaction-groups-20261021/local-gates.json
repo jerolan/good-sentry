@@ -1,0 +1,40 @@
+{
+  "testedAt": "2026-10-21T20:30:00Z",
+  "commands": [
+    {
+      "command": "go test -race -count=1 -tags=integration ./...",
+      "result": "pass",
+      "log": "integration-race.log",
+      "server": "149.101s",
+      "store": "284.519s"
+    },
+    {
+      "command": "focused compatible performance and migration tests with -race",
+      "result": "pass",
+      "log": "targeted-performance-race.log"
+    },
+    {
+      "command": "go vet -tags=integration ./...",
+      "result": "pass",
+      "log": "vet.log"
+    },
+    {
+      "command": "go mod verify and production build",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check, gofmt and Node syntax",
+      "result": "pass"
+    }
+  ],
+  "localAPI": "local/report.json",
+  "verifiedBehavior": [
+    "Transaction-group IDs persist by project, transaction and operation and remain stable across list requests.",
+    "List responses expose the complete GlitchTip transaction-group schema and reject unsupported query/sort/cursor values.",
+    "Detail is retained-history based even when current telemetry has expired.",
+    "Trend returns daily UTC buckets with transaction count and total time.",
+    "Per-group spans resolve the numeric ID to the authorized project and return only the public span fields.",
+    "Bearer project grants cannot read the detail of a group in another project.",
+    "Migration052 preserves existing telemetry and reopens twice."
+  ]
+}

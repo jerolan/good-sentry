@@ -1,0 +1,7 @@
+{
+  "name": "goodsentry-transaction-groups-public-20261021",
+  "image": "ghcr.io/jerolan/good-sentry@sha256:68e520313ae0a9f06a90b08a24a65b961f8c112ecc8727aa984461928ebdb2d5",
+  "user": "65532:65532",
+  "status": "running",
+  "databaseSchema": "goodsentry_transaction_groups_public_20261021_2110"
+}
