@@ -1,0 +1,17 @@
+{
+  "testedAt": "2026-10-21T11:20:00Z",
+  "commands": [
+    {"command": "go test -race -tags=integration ./...", "result": "pass", "log": "integration-race.log", "server": "120.638s", "store": "241.490s"},
+    {"command": "targeted compatible user preference store/HTTP tests with -race", "result": "pass", "log": "targeted-user-preferences-race.log"},
+    {"command": "go vet -tags=integration ./...", "result": "pass"},
+    {"command": "go mod verify", "result": "pass", "output": "all modules verified"},
+    {"command": "git diff --check", "result": "pass"}
+  ],
+  "verifiedBehavior": [
+    "User name and options persist through database reopen.",
+    "Primary email listing is verified and read-only.",
+    "Secondary email verification routes fail explicitly.",
+    "subscribeByDefault persists through /notifications/ and /notifications/alerts/.",
+    "Only the current user or me can read or mutate preferences."
+  ]
+}

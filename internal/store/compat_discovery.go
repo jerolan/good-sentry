@@ -2,7 +2,10 @@ package store
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type CompatibleAvatar struct {
@@ -66,17 +69,18 @@ type CompatibleUserOptions struct {
 }
 
 type CompatibleUser struct {
-	ID              string                `json:"id"`
-	Username        string                `json:"username"`
-	Email           string                `json:"email"`
-	Name            string                `json:"name"`
-	DateJoined      time.Time             `json:"dateJoined"`
-	Options         CompatibleUserOptions `json:"options"`
-	HasPasswordAuth bool                  `json:"hasPasswordAuth"`
-	Identities      []any                 `json:"identities"`
-	LastLogin       *time.Time            `json:"lastLogin"`
-	IsSuperuser     bool                  `json:"isSuperuser"`
-	IsActive        bool                  `json:"isActive"`
+	ID                 string                `json:"id"`
+	Username           string                `json:"username"`
+	Email              string                `json:"email"`
+	Name               string                `json:"name"`
+	DateJoined         time.Time             `json:"dateJoined"`
+	Options            CompatibleUserOptions `json:"options"`
+	HasPasswordAuth    bool                  `json:"hasPasswordAuth"`
+	Identities         []any                 `json:"identities"`
+	LastLogin          *time.Time            `json:"lastLogin"`
+	IsSuperuser        bool                  `json:"isSuperuser"`
+	IsActive           bool                  `json:"isActive"`
+	SubscribeByDefault bool                  `json:"-"`
 }
 
 // CompatibleOrganizations returns only current memberships. The handler owns
@@ -156,8 +160,10 @@ func (s *Store) CompatibleUser(ctx context.Context, userID string) (CompatibleUs
 		return CompatibleUser{}, ErrNotFound
 	}
 	var user CompatibleUser
-	err := s.pool.QueryRow(ctx, `SELECT id::text,email,name,created_at FROM users WHERE id=$1::bigint`, userID).
-		Scan(&user.ID, &user.Email, &user.Name, &user.DateJoined)
+	var options []byte
+	err := s.pool.QueryRow(ctx, `SELECT id::text,email,name,created_at,options,notification_subscribe_by_default
+FROM users WHERE id=$1::bigint`, userID).
+		Scan(&user.ID, &user.Email, &user.Name, &user.DateJoined, &options, &user.SubscribeByDefault)
 	if err != nil {
 		return CompatibleUser{}, dbError(err)
 	}
@@ -165,6 +171,38 @@ func (s *Store) CompatibleUser(ctx context.Context, userID string) (CompatibleUs
 	user.DateJoined = user.DateJoined.UTC()
 	user.HasPasswordAuth = true
 	user.Identities = []any{}
+	if json.Unmarshal(options, &user.Options) != nil {
+		user.Options = CompatibleUserOptions{}
+	}
 	user.IsActive = true
 	return user, nil
+}
+
+func (s *Store) UpdateCompatibleUser(ctx context.Context, userID, name string, options CompatibleUserOptions) (CompatibleUser, error) {
+	if referenceID(userID) == 0 || !utf8.ValidString(name) || strings.ContainsRune(name, 0) || utf8.RuneCountInString(name) < 1 || utf8.RuneCountInString(name) > 255 {
+		return CompatibleUser{}, ErrNotFound
+	}
+	encoded, err := json.Marshal(options)
+	if err != nil {
+		return CompatibleUser{}, err
+	}
+	result, err := s.pool.Exec(ctx, `UPDATE users SET name=$2,options=$3::jsonb WHERE id::text=$1`, userID, name, encoded)
+	if err != nil {
+		return CompatibleUser{}, err
+	}
+	if result.RowsAffected() == 0 {
+		return CompatibleUser{}, ErrNotFound
+	}
+	return s.CompatibleUser(ctx, userID)
+}
+
+func (s *Store) UpdateUserNotifications(ctx context.Context, userID string, subscribe bool) (bool, error) {
+	result, err := s.pool.Exec(ctx, `UPDATE users SET notification_subscribe_by_default=$2 WHERE id::text=$1`, userID, subscribe)
+	if err != nil {
+		return false, err
+	}
+	if result.RowsAffected() == 0 {
+		return false, ErrNotFound
+	}
+	return subscribe, nil
 }
