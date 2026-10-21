@@ -155,6 +155,7 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
 - [ ] Implement native debug-file and minidump ingestion plus verified native symbolication.
   - [x] Add additive042 project-scoped debug-file storage and compatible multipart dSYM upload/list; preserve SHA-1 deduplication, metadata, exact bytes, owner/admin writes, member reads, project isolation, bounded pages and migration/reopen.
     - Chunked DIF assembly returns501 rather than losing bytes; reprocessing is the documented200 dummy. Minidump parsing, actual sentry-cli upload-dif capture and native symbolication remain open. Evidence: goal-debug-files/*.
+  - [x] First Minidump-AMD64 slice: authenticated multipart ingestion, SystemInfo/Thread/Module/Exception/Memory parsing, fatal event/debug-meta projection, raw-dump non-retention, bounded key quota, frame-pointer stack reconstruction and textual Breakpad `.sym` function/file/line symbolication pass real PostgreSQL/HTTP with a synthetic x64 crash. Remaining formats/architectures/CFI/DIF upload stay open.
 
 For each item above: add a consumer-facing test at the owning boundary, verify the actual UI/API outcome with stored data, inspect the diff and commit a single coherent increment. Do not mark a mapped-stack task complete based only on an upload response.
 

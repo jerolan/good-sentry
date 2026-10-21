@@ -149,6 +149,7 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 	mux.HandleFunc("OPTIONS /api/{project}/envelope/", s.preflight)
 	mux.HandleFunc("OPTIONS /api/{project}/store/", s.preflight)
 	s.registerSecurityReportRoutes(mux)
+	s.registerMinidumpRoutes(mux)
 	mux.HandleFunc("/", s.assets)
 	var handler http.Handler = mux
 	if cfg.Prefix != "" {
