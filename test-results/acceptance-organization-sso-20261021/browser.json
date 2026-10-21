@@ -1,0 +1,17 @@
+{
+ "steps": [
+  "organization SSO panel opened",
+  "edit renamed the application",
+  "login page listed the workspace application",
+  "delete removed the application"
+ ],
+ "errors": [
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "afterCreate": "Single sign-on\nOpenID Connect\n\nLet people sign in to this workspace with your identity provider. Register each callback URL at the provider, then share the login link.\n\nCorp SSOOpenID Connect\nhttp://127.0.0.1:18215/auth/social/stats-grafana-3d4f84/callback\nCopy callback\nEdit\nDelete\nCopy login link\nAdd application",
+ "hasCallback": true,
+ "overflow1440": 0,
+ "loginPageUrl": "http://127.0.0.1:18215/?sso=stats-grafana",
+ "loginPageButton": "http://127.0.0.1:18215/auth/social/stats-grafana-3d4f84/start",
+ "overflow390": 0
+}

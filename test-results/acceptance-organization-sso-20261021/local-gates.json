@@ -1,0 +1,10 @@
+{
+ "go_build": "pass: /tmp/goodsentry-sso built from working tree (33,394,380 bytes)",
+ "go_vet": "pass ",
+ "go_mod_verify": "pass all modules verified",
+ "gofmt": "pass: clean",
+ "js_syntax": "pass ",
+ "git_diff_check": "pass: clean",
+ "integration_race": "pass: 14 ok, 2 no-test-files, FULL_SUITE_EXIT:0 (see integration-race.log)",
+ "browser": "pass: 4 steps, only favicon 404, overflow 0 at 1440 and 390 (see browser.json)"
+}
