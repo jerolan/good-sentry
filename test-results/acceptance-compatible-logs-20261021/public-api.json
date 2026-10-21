@@ -1,0 +1,153 @@
+{
+  "list_page": {
+    "status": 200,
+    "link": "<http://127.0.0.1:18220/api/0/organizations/logs-org/logs/?cursor=2026-10-21T23%3A16%3A27Z%7C2&limit=1>; rel=\"next\"; results=\"true\"; cursor=\"2026-10-21T23:16:27Z|2\"",
+    "body": [
+      {
+        "id": "2",
+        "timestamp": "2026-10-21T23:16:27Z",
+        "level": "error",
+        "body": "public failure",
+        "service": "worker",
+        "environment": "production",
+        "host": "worker-1",
+        "traceID": "",
+        "spanID": "",
+        "severityNumber": 17,
+        "data": {
+          "environment": "production",
+          "host.name": "worker-1",
+          "service.name": "worker"
+        },
+        "projectId": "1"
+      }
+    ]
+  },
+  "list_filters": {
+    "status": 200,
+    "body": [
+      {
+        "id": "1",
+        "timestamp": "2026-10-21T23:16:27Z",
+        "level": "warning",
+        "body": "public warning",
+        "service": "api",
+        "environment": "production",
+        "host": "web-1",
+        "traceID": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "spanID": "bbbbbbbbbbbbbbbb",
+        "severityNumber": 13,
+        "data": {
+          "environment": "production",
+          "host.name": "web-1",
+          "service.name": "api"
+        },
+        "projectId": "1"
+      }
+    ]
+  },
+  "detail": {
+    "status": 200,
+    "body": {
+      "id": "1",
+      "timestamp": "2026-10-21T23:16:27Z",
+      "level": "warning",
+      "body": "public warning",
+      "service": "api",
+      "environment": "production",
+      "host": "web-1",
+      "traceID": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "spanID": "bbbbbbbbbbbbbbbb",
+      "severityNumber": 13,
+      "data": {
+        "environment": "production",
+        "host.name": "web-1",
+        "service.name": "api"
+      },
+      "projectId": "1"
+    }
+  },
+  "detail_missing": {
+    "status": 404,
+    "body": {
+      "detail": "Log not found"
+    }
+  },
+  "resources": {
+    "status": 200,
+    "body": [
+      {
+        "name": "api",
+        "type": "service",
+        "lastSeen": "2026-10-21T23:16:27Z"
+      },
+      {
+        "name": "production",
+        "type": "environment",
+        "lastSeen": "2026-10-21T23:16:27Z"
+      },
+      {
+        "name": "web-1",
+        "type": "host",
+        "lastSeen": "2026-10-21T23:16:27Z"
+      },
+      {
+        "name": "worker",
+        "type": "service",
+        "lastSeen": "2026-10-21T23:16:27Z"
+      },
+      {
+        "name": "worker-1",
+        "type": "host",
+        "lastSeen": "2026-10-21T23:16:27Z"
+      }
+    ]
+  },
+  "resources_host": {
+    "status": 200,
+    "body": [
+      {
+        "name": "web-1",
+        "type": "host",
+        "lastSeen": "2026-10-21T23:16:27Z"
+      },
+      {
+        "name": "worker-1",
+        "type": "host",
+        "lastSeen": "2026-10-21T23:16:27Z"
+      }
+    ]
+  },
+  "stats": {
+    "status": 200,
+    "intervals": 169,
+    "firstInterval": "2026-10-14T23:00:00Z",
+    "series": [
+      {
+        "name": "error",
+        "points": 169,
+        "total": 1
+      },
+      {
+        "name": "warning",
+        "points": 169,
+        "total": 1
+      }
+    ]
+  },
+  "rejected_level": {
+    "status": 400,
+    "body": {
+      "detail": "Levels must be trace, debug, info, warning, error or fatal"
+    }
+  },
+  "detail_query_rejected": {
+    "status": 400,
+    "body": {
+      "detail": "Log detail accepts no query parameters"
+    }
+  },
+  "invalid_token": {
+    "status": 401
+  }
+}
