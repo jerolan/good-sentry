@@ -83,3 +83,50 @@ func containsString(values []string, want string) bool {
 	}
 	return false
 }
+
+func TestCreateCompatibleProjectInTeam(t *testing.T) {
+	ctx, db, owner, org, _ := telemetryStore(t)
+	team, err := db.CreateTeam(ctx, owner.ID, org.Slug, "Backend")
+	if err != nil {
+		t.Fatal(err)
+	}
+	created, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Checkout API", "checkout-api", "go")
+	if err != nil || created.ID == "" || created.Name != "Checkout API" || created.Slug != "checkout-api" || created.Platform != "go" || len(created.Teams) != 1 || created.Teams[0].ID != team.ID {
+		t.Fatalf("create compatible project: %+v %v", created, err)
+	}
+	access := ManagementAccess{UserID: owner.ID, OrganizationID: org.ID, Role: "owner", AllProjects: true}
+	keys, err := db.CompatibleProjectKeys(ctx, access, created.ID, nil, 0, 100)
+	if err != nil || len(keys) != 1 || !keys[0].Enabled || keys[0].Public == "" {
+		t.Fatalf("created project key: %+v %v", keys, err)
+	}
+	var teamID int64
+	var member bool
+	if err := db.pool.QueryRow(ctx, `SELECT p.team_id::bigint,EXISTS(SELECT 1 FROM team_memberships tm WHERE tm.team_id=p.team_id AND tm.user_id=$2::bigint)
+FROM projects p WHERE p.id=$1::bigint`, created.ID, owner.ID).Scan(&teamID, &member); err != nil || !member || teamID == 0 {
+		t.Fatalf("project/team membership: %d %t %v", teamID, member, err)
+	}
+
+	derived, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Web Client", "", "")
+	if err != nil || derived.Slug != "web-client" || derived.Platform != "other" {
+		t.Fatalf("derive project slug/platform: %+v %v", derived, err)
+	}
+	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Duplicate", "checkout-api", "go"); !errors.Is(err, ErrConflict) {
+		t.Fatalf("duplicate project slug: %v", err)
+	}
+	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Invalid", "Bad Slug", "go"); !errors.Is(err, ErrInvalidProject) {
+		t.Fatalf("invalid project slug: %v", err)
+	}
+	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, "missing", "Missing team", "missing-team", "go"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("missing project team: %v", err)
+	}
+	var memberID string
+	if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES('project-creator-member@test',$1,'Project member') RETURNING id::text`, []byte("already-hashed")).Scan(&memberID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1::bigint,$2::bigint,'member')`, org.ID, memberID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.CreateCompatibleProject(ctx, memberID, org.Slug, team.Slug, "Forbidden", "forbidden", "go"); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("member project creation: %v", err)
+	}
+}

@@ -1,0 +1,17 @@
+{
+  "testedAt": "2026-10-21T12:03:30Z",
+  "commands": [
+    {"command": "go test -race -count=1 -tags=integration ./...", "result": "pass", "log": "integration-race.log", "server": "118.512s", "store": "232.200s"},
+    {"command": "targeted compatible project creation store/HTTP tests with -race", "result": "pass", "log": "targeted-project-create-race.log"},
+    {"command": "go vet -tags=integration ./...", "result": "pass", "log": "vet.log"},
+    {"command": "go mod verify", "result": "pass", "log": "mod-verify.log"},
+    {"command": "git diff --check and gofmt -l", "result": "pass"}
+  ],
+  "verifiedBehavior": [
+    "A project and its first enabled key are created atomically in the addressed organization team.",
+    "The creator is added to the target team idempotently.",
+    "Custom and derived slugs, platform defaults, duplicate conflicts and strict invalid inputs are covered.",
+    "Session owner/admin, org:write Bearer, CSRF and foreign-organization boundaries are enforced.",
+    "The new project is immediately readable through project, team and key routes."
+  ]
+}

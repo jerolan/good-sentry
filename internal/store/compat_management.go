@@ -5,10 +5,14 @@ import (
 	"errors"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
+
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrInvalidProjectKey = errors.New("invalid project key")
+var ErrInvalidProject = errors.New("invalid project")
 
 type CompatibleKeyRateLimit struct {
 	Window int `json:"window"`
@@ -57,6 +61,14 @@ type CompatibleTeam struct {
 	DateCreated time.Time `json:"dateCreated"`
 	IsMember    bool      `json:"isMember"`
 	MemberCount int       `json:"memberCount"`
+}
+
+func validCompatibleProjectName(name string) bool {
+	return name != "" && utf8.ValidString(name) && utf8.RuneCountInString(name) <= 64 && !strings.ContainsFunc(name, unicode.IsControl)
+}
+
+func validCompatibleProjectSlug(slug string) bool {
+	return slug != "" && len(slug) <= 64 && Slug(slug) == slug
 }
 
 type CompatibleOrganizationDetail struct {
@@ -138,6 +150,59 @@ func (s *Store) CompatibleOrganizationDetail(ctx context.Context, userID, refere
 		detail.Teams = append(detail.Teams, team)
 	}
 	return detail, rows.Err()
+}
+
+func (s *Store) CreateCompatibleProject(ctx context.Context, actorID, orgRef, teamSlug, name, projectSlug, platform string) (CompatibleOrganizationProject, error) {
+	var result CompatibleOrganizationProject
+	name = strings.TrimSpace(name)
+	platform = strings.TrimSpace(platform)
+	if projectSlug == "" {
+		projectSlug = Slug(name)
+	}
+	if !validCompatibleProjectName(name) || !validCompatibleProjectSlug(projectSlug) || len(platform) > 80 || !utf8.ValidString(platform) || strings.ContainsFunc(platform, unicode.IsControl) {
+		return result, ErrInvalidProject
+	}
+	if platform == "" {
+		platform = "other"
+	}
+	key, err := randomKey()
+	if err != nil {
+		return result, err
+	}
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return result, err
+	}
+	defer tx.Rollback(ctx)
+	orgID, _, err := manageableOrganization(ctx, tx, actorID, orgRef)
+	if err != nil {
+		return result, err
+	}
+	var teamID string
+	if err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug=$2 FOR SHARE`, orgID, teamSlug).Scan(&teamID); err != nil {
+		return result, dbError(err)
+	}
+	err = tx.QueryRow(ctx, `INSERT INTO projects(organization_id,team_id,name,slug,platform) VALUES($1::bigint,$2::bigint,$3,$4,$5)
+		RETURNING id::text,name,slug,platform,created_at`, orgID, teamID, name, projectSlug, platform).
+		Scan(&result.ID, &result.Name, &result.Slug, &result.Platform, &result.DateCreated)
+	if err != nil {
+		return result, dbError(err)
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO project_keys(public_key,project_id) VALUES($1,$2::bigint)`, key, result.ID); err != nil {
+		return result, err
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO team_memberships(team_id,user_id) VALUES($1::bigint,$2::bigint) ON CONFLICT DO NOTHING`, teamID, actorID); err != nil {
+		return result, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return result, err
+	}
+	result.DateCreated = result.DateCreated.UTC()
+	result.Features = []string{}
+	result.HasAccess = true
+	result.IsMember = true
+	result.Teams = []CompatibleTeamSlug{{ID: teamID, Slug: teamSlug}}
+	return result, nil
 }
 
 func validKeyUUID(value string) bool {

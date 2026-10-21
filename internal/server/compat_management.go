@@ -32,6 +32,7 @@ func (s *Server) registerCompatibleManagementRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/0/teams/{org}/{team}/{$}", s.compatible("org:read", s.compatibleTeam))
 	mux.Handle("GET /api/0/teams/{org}/{team}/members/{$}", s.compatible("org:read", s.compatibleTeamMembers))
 	mux.Handle("GET /api/0/teams/{org}/{team}/projects/{$}", s.compatible("org:read", s.compatibleTeamProjects))
+	mux.Handle("POST /api/0/teams/{org}/{team}/projects/{$}", s.compatible("org:write", s.compatibleCreateTeamProject))
 	mux.Handle("GET /api/0/projects/{org}/{project}/teams/{$}", s.compatible("project:read", s.compatibleProjectTeams))
 	mux.Handle("PUT /api/0/projects/{org}/{project}/{$}", s.compatible("project:write", s.compatibleUpdateProject))
 	mux.Handle("DELETE /api/0/projects/{org}/{project}/{$}", s.compatible("project:write", s.compatibleDeleteProject))
@@ -555,6 +556,49 @@ func (s *Server) compatibleTeamProjects(w http.ResponseWriter, r *http.Request) 
 	}
 	s.discoveryLinks(w, r, q, offset, limit, next)
 	writeJSON(w, 200, projects)
+}
+
+func (s *Server) compatibleCreateTeamProject(w http.ResponseWriter, r *http.Request) {
+	if _, valid := s.orgWriteAccess(w, r); !valid {
+		return
+	}
+	if _, valid := discoveryNoQuery(w, r); !valid {
+		return
+	}
+	teamSlug, valid := validTeamSlugInput(w, r.PathValue("team"))
+	if !valid {
+		return
+	}
+	var input struct {
+		Name              string  `json:"name"`
+		Slug              *string `json:"slug"`
+		Platform          *string `json:"platform"`
+		EventThrottleRate *int    `json:"eventThrottleRate"`
+	}
+	if !bodyJSON(w, r, &input) {
+		return
+	}
+	if input.EventThrottleRate != nil && *input.EventThrottleRate != 0 {
+		failure(w, 400, "Per-project event throttling is not supported")
+		return
+	}
+	var projectSlug, platform string
+	if input.Slug != nil {
+		projectSlug = *input.Slug
+	}
+	if input.Platform != nil {
+		platform = *input.Platform
+	}
+	project, err := s.db.CreateCompatibleProject(r.Context(), current(r).User.ID, r.PathValue("org"), teamSlug, input.Name, projectSlug, platform)
+	if errors.Is(err, store.ErrInvalidProject) {
+		failure(w, 400, "Project name, slug or platform is invalid")
+		return
+	}
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 201, project)
 }
 
 func (s *Server) compatibleProjectTeams(w http.ResponseWriter, r *http.Request) {
