@@ -295,3 +295,5 @@ Compatible issue tags are accepted at f07647d with merged-alias aggregation, obj
 Compatible uptime monitors are accepted at 82148dd with native scheduler reuse, cursor pages, type aliases and owner/admin mutation authority. Continue compatible alerts and the remaining management routes.
 
 Compatible project alerts are accepted at c5e3eb8 with native rule reuse, recipient conversion, test acknowledgement and exact publication. Continue user/notification management, administration flags and external receipts.
+
+Compatible user options and notification preferences are accepted at 93e6b42 with additive047 persistence, primary-email disclosure and explicit secondary-email limitations. Continue advanced administration and the remaining route matrix.
