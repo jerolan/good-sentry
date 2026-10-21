@@ -735,3 +735,12 @@ Anonymous pull and registry requests verify amd64 and arm64, UID `65532:65532` a
 An initial public restore comparison overlapped the CLI's own login and included one additional session. Preserve its failed 147-row snapshot and interference report; it is not accepted as a restoration proof. A separate pristine restore preserves all 146 source rows across 44 tables before any client is run. The public image then passes official Node errors/transactions/typed logs and official sentry-cli `3.8.0` info, organizations list and projects list. Its subsequent app-only restart preserves all 161 rows across 44 tables, the selected SDK event projection and eight source-exact served assets.
 
 Evidence: `test-results/acceptance-20261020/{public-source.json,ci-public.json,ci-public.log,pages.json,registry.json,public-pull.log,image-public.log,public-binary.json,public-restore-interference.json,public-restored-isolated.json,public-isolated-node-sdk.log,public-isolated-cli,public-before-restart.json,public-after-restart.json,public-runtime.json}`. Preserve the owned public checkpoint `goodsentry-public-pristine-76a1f1e-20261020` on 18172/database `goodsentry_public_pristine_76a1f1e`, its predecessor copies, backups and all original installations. This closes this delivery checkpoint only. Native crash processing, MCP/OAuth, archival, integrations, external provider receipts and every other unchecked specification requirement remain required.
+
+## MCP transport and workspace discovery prerequisite
+
+- [x] Verify the official SDK version and public transport changes. v1.8.0 is published on 2026-09-04, requires Go 1.25, supports 2026-07-28 and earlier protocols, and is downloaded with the recorded Go module sum. This is SDK/client documentation, not upstream server source.
+- [x] Specify request-local Bearer authority, transport/Origin/body admission, typed workspace tools, SQL grant containment and incomplete-feature availability in SPEC.md before implementation.
+- [ ] Add real HTTP/PostgreSQL acceptance using the official SDK client; reproduce missing endpoint/schema/data behavior before implementation.
+- [ ] Implement the specified transport and two metadata tools without changing credential grants/defaults or enabling the executable's incomplete MCP switch.
+- [ ] Verify owning and native sibling checks, full integration/race/vet, default image and matching public source/CI; keep all prior checkpoints intact.
+- [ ] Elaborate and deliver every remaining MCP tool and OAuth before completing the parent capability.

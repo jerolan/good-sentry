@@ -964,6 +964,32 @@ Optional MCP uses Streamable HTTP with authenticated scoped access to issues, lo
 GlitchTip's public MCP guide at https://glitchtip.com/documentation/mcp/ defines `/mcp`, Streamable HTTP, API-token authentication and OAuth2 with dynamic client registration. Its 17 named tools are `list_organizations`, `list_projects`, `list_issues`, `get_issue`, `get_latest_event`, `get_event`, `update_issue`, `list_transaction_groups`, `get_transaction_group`, `list_transaction_spans`, `list_span_groups`, `detect_n_plus_one`, `get_transaction_trend`, `list_alerts`, `list_monitors`, `list_logs` and `get_log`. The guide marks four span/trend tools as requiring DuckDB. These are remaining public requirements, not implemented capability flags. Elaborate the Go argument/result contracts, per-tool credential grants, OAuth lifecycle and actual client acceptance before enabling MCP. Supporting token transport alone does not close the complete MCP capability.
 
 
+
+### MCP transport and workspace discovery prerequisite
+
+Use the official `github.com/modelcontextprotocol/go-sdk` v1.8.0, whose published module requires Go 1.25 and whose verified module sum is `h1:KIvahhYqwtbeniWVPs3TcXEA7b8jEtwfBpOTAI+Urx4=`. GoodSentry remains Go 1.27.2, one application process and one image. Do not implement a parallel JSON-RPC transport or copy Sentry/GlitchTip implementation code. Sources are the SDK's tagged public API, https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http and the GlitchTip MCP guide above.
+
+This is an incomplete capability behind the existing MCP configuration switch. Preserve the default 404 endpoint and the executable's explicit refusal to start with MCP enabled until the remaining tools, OAuth and complete acceptance are implemented. Tests may construct the same real HTTP application with MCP selected to verify this prerequisite. A successful prerequisite is not permission to advertise MCP or close its parent task.
+
+Register the exact prefix-aware `/mcp` endpoint when constructing an MCP-selected handler. Use the SDK's stateless Streamable HTTP handler, JSON responses, request cancellation propagation and a body limit equal to the smaller of MAX_BODY_BYTES and the existing 1 MiB native JSON budget. Do not persist sessions, cache an actor between HTTP requests, supply a session ID or enable an independent SSE subscription stream. Support the SDK's current 2026-07-28 transport and its stateless 2025-11-25 legacy negotiation. POST carries protocol traffic; authenticated GET/DELETE/other methods return 405 with Allow: POST. Disabled MCP returns 404 without constructing protocol state.
+
+Validate Origin on every request before reading its body. Absence supports native clients; a present Origin must be a single value matching the configured public scheme/authority, and native cross-site fetches remain forbidden. Preserve the SDK's localhost protection. Send no-store on protocol/error responses and do not add credentialed or wildcard CORS access. Reject URL query parameters, including bearer credentials in the URL. Do not invent OAuth discovery URLs before OAuth exists.
+
+Only one syntactically valid native Bearer credential authorizes this prerequisite. Cookies and SDK keys never authorize MCP or rescue a malformed/revoked Bearer. Authenticate the token from PostgreSQL on every HTTP request, preserving database-clock expiry, revocation, current membership and its admitted organization/project grants. Storage failure remains generic 503, invalid credentials 401 with a Bearer challenge, invalid Origin 403. After admission create request-local tool handlers closing over that immutable grant and the originating HTTP context. A tool's missing scope produces an explicit MCP error result and no data query. SDK input-schema errors remain MCP tool errors; unsupported protocol operations retain SDK protocol errors. Never return raw storage diagnostics, credentials, password metadata or project DSNs.
+
+The first two real tools are:
+
+| Tool | Inputs | Result | Required scope |
+| --- | --- | --- | --- |
+| `list_organizations` | Optional query, page and limit | data of current authorized organizations, page, pageSize, hasMore | org:read |
+| `list_projects` | Required organization ID or slug; optional query, page and limit | data of permitted project metadata, page, pageSize, hasMore | project:read |
+
+Schemas reject unknown fields, null/wrong types and noninteger pagination. Page defaults to 1 and is 1..1000000; limit defaults to 25 and is 1..100. Query is at most 200 valid Unicode characters without controls. Organization references are 1..200 characters without controls. Defaults are applied at the SDK boundary. Use one lookahead row for hasMore and omit that row from data; return empty arrays rather than null. Both tools are read-only and closed-world in their annotations.
+
+Reuse existing compatible organization and management-project providers and their real DTOs. Organization selection must first be limited to the credential's organization, then match its ID/slug, so a foreign numeric slug cannot shadow an authorized ID. Project reads must intersect the token's selected projects and current membership in SQL; never load a broader set and filter raw results afterward. Cross-organization or missing references produce the same generic not-found tool error. No schema migration or credential scope/default change belongs to this prerequisite. Remaining telemetry/alert/monitor scope decisions and the OAuth lifecycle must be elaborated before their own implementation.
+
+Acceptance owns observable protocol behavior through a real HTTP listener and disposable PostgreSQL. Use the official SDK client to discover schemas and invoke both tools, read real metadata, page through results, verify project/organization isolation including numeric shadowing, refuse unknown/wrong inputs, and prove a revoked credential fails on the next call of an already connected client. Raw HTTP covers disabled 404, cookie/DSN separation, duplicate credentials, Origin/method/query/media/body limits, current and legacy protocol traffic and cancellation. Existing native token/discovery/SDK consumers, full integration/race/vet, the default non-root image and published matching source remain gates for the increment. Positive enabled-image availability remains gated by the complete MCP capability.
+
 ## Commands and source layout
 
 Commands to make executable as increments land:
