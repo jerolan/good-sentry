@@ -1,0 +1,12 @@
+{
+  "name": "goodsentry-performance-public-20261021b",
+  "image": "ghcr.io/jerolan/good-sentry@sha256:0ce99b3721a6d14a19b9bed6c1aeb4a2a12ac7c7a47b25590718a39a0485de13",
+  "user": "65532:65532",
+  "status": "running",
+  "databaseSchema": "goodsentry_performance_public_20261021_2005",
+  "fixture": {
+    "projects": 2,
+    "transactions": 7,
+    "credentials": 1
+  }
+}

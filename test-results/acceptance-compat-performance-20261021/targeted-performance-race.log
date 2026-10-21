@@ -1,0 +1,4 @@
+=== RUN   TestCompatibleSpanGroupsAndNPlusOneHTTP
+--- PASS: TestCompatibleSpanGroupsAndNPlusOneHTTP (0.66s)
+PASS
+ok  	goodsentry/internal/server	1.704s
