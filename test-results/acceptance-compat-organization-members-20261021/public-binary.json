@@ -1,0 +1,17 @@
+{
+  "revision": "c96e2e74d0a221cdc87c1e923804abc2ed75f026",
+  "amd64": {
+    "sha256": "0cac0829d74d29fc8a4df5c237757179fbcc79e200196c611f3763ef949c9604",
+    "bytes": 22904992,
+    "localSHA256": "0cac0829d74d29fc8a4df5c237757179fbcc79e200196c611f3763ef949c9604",
+    "localBytes": 22904992,
+    "exactLocalPublic": true
+  },
+  "arm64": {
+    "sha256": "5f19037f2b60aa8aaddc3f36961e1930abe7b3aa6ac7f7d3f899a6765fabcc6d",
+    "bytes": 21233824,
+    "localSHA256": "5f19037f2b60aa8aaddc3f36961e1930abe7b3aa6ac7f7d3f899a6765fabcc6d",
+    "localBytes": 21233824,
+    "exactLocalPublic": true
+  }
+}

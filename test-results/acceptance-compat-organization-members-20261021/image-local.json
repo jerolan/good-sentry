@@ -1,0 +1,8 @@
+{
+  "image": "goodsentry:compat-org-members-c96e2e7",
+  "imageID": "sha256:dee1d8d5fc77fe6fae18e440fc876799b869e8fa14d2107ec6faeac55bd47d5a",
+  "architecture": "amd64",
+  "user": "65532:65532",
+  "binarySHA256": "0cac0829d74d29fc8a4df5c237757179fbcc79e200196c611f3763ef949c9604",
+  "binaryBytes": 22904992
+}
