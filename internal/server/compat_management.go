@@ -23,6 +23,11 @@ func (s *Server) registerCompatibleManagementRoutes(mux *http.ServeMux) {
 	mux.Handle("PUT /api/0/projects/{org}/{project}/keys/{key}/{$}", s.compatible("project:write", s.compatibleUpdateProjectKey))
 	mux.Handle("DELETE /api/0/projects/{org}/{project}/keys/{key}/{$}", s.compatible("project:write", s.compatibleDeleteProjectKey))
 	mux.Handle("GET /api/0/organizations/{org}/members/{$}", s.compatible("org:read", s.compatibleOrganizationMembers))
+	mux.Handle("GET /api/0/organizations/{org}/members/{member}/{$}", s.compatible("org:read", s.compatibleOrganizationMember))
+	mux.Handle("PUT /api/0/organizations/{org}/members/{member}/{$}", s.compatible("org:write", s.compatibleUpdateOrganizationMember))
+	mux.Handle("DELETE /api/0/organizations/{org}/members/{member}/{$}", s.compatible("org:write", s.compatibleDeleteOrganizationMember))
+	mux.Handle("POST /api/0/organizations/{org}/members/{member}/teams/{team}/{$}", s.compatible("org:write", s.compatibleAddMemberToTeam))
+	mux.Handle("DELETE /api/0/organizations/{org}/members/{member}/teams/{team}/{$}", s.compatible("org:write", s.compatibleRemoveMemberFromTeam))
 	mux.Handle("GET /api/0/organizations/{org}/teams/{$}", s.compatible("org:read", s.compatibleOrganizationTeams))
 	mux.Handle("GET /api/0/teams/{org}/{team}/{$}", s.compatible("org:read", s.compatibleTeam))
 	mux.Handle("GET /api/0/teams/{org}/{team}/members/{$}", s.compatible("org:read", s.compatibleTeamMembers))
@@ -177,6 +182,126 @@ func (s *Server) compatibleOrganizationMembers(w http.ResponseWriter, r *http.Re
 	page, next := pageCompatible(members, offset, limit)
 	s.discoveryLinks(w, r, q, offset, limit, next)
 	writeJSON(w, 200, page)
+}
+
+func compatibleMemberPathID(w http.ResponseWriter, r *http.Request) (string, bool) {
+	if r.PathValue("member") == "me" {
+		return current(r).User.ID, true
+	}
+	return canonicalPersonID(w, r.PathValue("member"))
+}
+
+func (s *Server) compatibleOrganizationMember(w http.ResponseWriter, r *http.Request) {
+	if _, valid := s.managementAccess(w, r); !valid {
+		return
+	}
+	if _, valid := discoveryNoQuery(w, r); !valid {
+		return
+	}
+	memberID, valid := compatibleMemberPathID(w, r)
+	if !valid {
+		return
+	}
+	member, err := s.db.CompatibleOrganizationMember(r.Context(), current(r).User.ID, r.PathValue("org"), memberID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, member)
+}
+
+func compatibleOrganizationRole(value string) bool {
+	return value == "member" || value == "admin" || value == "owner"
+}
+
+func (s *Server) compatibleUpdateOrganizationMember(w http.ResponseWriter, r *http.Request) {
+	if _, valid := s.orgWriteAccess(w, r); !valid {
+		return
+	}
+	memberID, valid := compatibleMemberPathID(w, r)
+	if !valid {
+		return
+	}
+	var input struct {
+		OrgRole   string            `json:"orgRole"`
+		TeamRoles []json.RawMessage `json:"teamRoles"`
+	}
+	if !bodyJSON(w, r, &input) {
+		return
+	}
+	if !compatibleOrganizationRole(input.OrgRole) {
+		failure(w, 400, "Organization role must be owner, admin or member")
+		return
+	}
+	if len(input.TeamRoles) > 0 {
+		failure(w, 400, "Team roles are not supported yet")
+		return
+	}
+	if _, err := s.db.UpdateMemberRole(r.Context(), current(r).User.ID, r.PathValue("org"), memberID, input.OrgRole); err != nil {
+		report(w, err)
+		return
+	}
+	member, err := s.db.CompatibleOrganizationMember(r.Context(), current(r).User.ID, r.PathValue("org"), memberID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, member)
+}
+
+func (s *Server) compatibleDeleteOrganizationMember(w http.ResponseWriter, r *http.Request) {
+	if _, valid := s.orgWriteAccess(w, r); !valid {
+		return
+	}
+	memberID, valid := compatibleMemberPathID(w, r)
+	if !valid {
+		return
+	}
+	if err := s.db.RemoveMember(r.Context(), current(r).User.ID, r.PathValue("org"), memberID); err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 204, nil)
+}
+
+func (s *Server) compatibleAddMemberToTeam(w http.ResponseWriter, r *http.Request) {
+	if _, valid := s.orgWriteAccess(w, r); !valid {
+		return
+	}
+	memberID, valid := compatibleMemberPathID(w, r)
+	if !valid {
+		return
+	}
+	teamSlug, valid := validTeamSlugInput(w, r.PathValue("team"))
+	if !valid {
+		return
+	}
+	team, err := s.db.CompatibleAddTeamMember(r.Context(), current(r).User.ID, r.PathValue("org"), teamSlug, memberID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 201, team)
+}
+
+func (s *Server) compatibleRemoveMemberFromTeam(w http.ResponseWriter, r *http.Request) {
+	if _, valid := s.orgWriteAccess(w, r); !valid {
+		return
+	}
+	memberID, valid := compatibleMemberPathID(w, r)
+	if !valid {
+		return
+	}
+	teamSlug, valid := validTeamSlugInput(w, r.PathValue("team"))
+	if !valid {
+		return
+	}
+	team, err := s.db.CompatibleRemoveTeamMember(r.Context(), current(r).User.ID, r.PathValue("org"), teamSlug, memberID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, team)
 }
 
 func (s *Server) orgWriteAccess(w http.ResponseWriter, r *http.Request) (store.ManagementAccess, bool) {

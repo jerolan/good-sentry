@@ -119,3 +119,64 @@ func TestCompatibleTeamMutationsPreserveProjectRelations(t *testing.T) {
 		t.Fatalf("project retained deleted team relation: %v", *teamID)
 	}
 }
+
+func TestCompatibleOrganizationMemberDetailAndTeamMembership(t *testing.T) {
+	ctx, db, owner, org, _ := telemetryStore(t)
+	var member User
+	if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES('member@compat-member.test',$1,'Compat member') RETURNING id::text,auth_generation`, []byte("already-hashed")).Scan(&member.ID, &member.AuthGeneration); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1::bigint,$2::bigint,'member')`, org.ID, member.ID); err != nil {
+		t.Fatal(err)
+	}
+	team := "incident-response"
+	if _, err := db.CreateTeam(ctx, owner.ID, org.Slug, team); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := db.CompatibleAddTeamMember(ctx, member.ID, org.Slug, team, owner.ID); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("member added a team member: %v", err)
+	}
+	if _, err := db.CompatibleAddTeamMember(ctx, owner.ID, org.Slug, "missing", member.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("missing team was accepted: %v", err)
+	}
+	var outsiderID string
+	if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES('outsider@compat-member.test',$1,'Outsider') RETURNING id::text`, []byte("already-hashed")).Scan(&outsiderID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.CompatibleAddTeamMember(ctx, owner.ID, org.Slug, team, outsiderID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("outsider was added: %v", err)
+	}
+	if _, err := db.CompatibleAddTeamMember(ctx, owner.ID, org.Slug, team, member.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.CompatibleAddTeamMember(ctx, owner.ID, org.Slug, team, member.ID); err != nil {
+		t.Fatalf("member add was not idempotent: %v", err)
+	}
+
+	detail, err := db.CompatibleOrganizationMember(ctx, member.ID, org.Slug, member.ID)
+	if err != nil || detail.ID != member.ID || detail.Role != "member" || len(detail.Teams) != 1 || detail.Teams[0] != team || detail.User == nil {
+		t.Fatalf("member detail: %+v %v", detail, err)
+	}
+	members, err := db.CompatibleOrganizationMembers(ctx, owner.ID, org.Slug)
+	if err != nil || len(members) != 2 || members[0].ID != member.ID || len(members[0].Teams) != 1 || members[0].Teams[0] != team || len(members[1].Teams) != 1 || members[1].Teams[0] != "default" {
+		t.Fatalf("member team list: %+v %v", members, err)
+	}
+
+	removed, err := db.CompatibleRemoveTeamMember(ctx, owner.ID, org.Slug, team, member.ID)
+	if err != nil || removed.MemberCount != 0 {
+		t.Fatalf("remove team member: %+v %v", removed, err)
+	}
+	if _, err := db.CompatibleRemoveTeamMember(ctx, owner.ID, org.Slug, team, member.ID); err != nil {
+		t.Fatalf("member removal was not idempotent: %v", err)
+	}
+	if _, err := db.CompatibleRemoveTeamMember(ctx, owner.ID, org.Slug, team, outsiderID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("outsider team removal: %v", err)
+	}
+	if _, err := db.CompatibleOrganizationMember(ctx, owner.ID, org.Slug, "999999999"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("missing member detail: %v", err)
+	}
+	if _, err := db.CompatibleOrganizationMember(ctx, outsiderID, org.Slug, member.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("foreign viewer detail: %v", err)
+	}
+}

@@ -19,6 +19,7 @@ type CompatibleOrganizationUser struct {
 	User        *CompatibleUser `json:"user"`
 	Pending     bool            `json:"pending"`
 	IsOwner     bool            `json:"isOwner"`
+	Teams       []string        `json:"teams"`
 }
 
 type CompatibleTeamProject struct {
@@ -54,8 +55,8 @@ func (s *Store) CompatibleOrganizationMembers(ctx context.Context, userID, orgRe
 	if err != nil {
 		return nil, err
 	}
-	rows, err := tx.Query(ctx, `SELECT u.id::text,u.email,u.name,u.created_at,m.role FROM memberships m
-		JOIN users u ON u.id=m.user_id WHERE m.organization_id=$1::bigint ORDER BY lower(u.name),u.id`, orgID)
+	rows, err := tx.Query(ctx, compatibleOrganizationUserQuery+` WHERE m.organization_id=$1::bigint
+		GROUP BY u.id,u.email,u.name,u.created_at,m.role ORDER BY lower(u.name),u.id`, orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,14 +64,15 @@ func (s *Store) CompatibleOrganizationMembers(ctx context.Context, userID, orgRe
 	for rows.Next() {
 		var id, email, name, memberRole string
 		var created time.Time
-		if err = rows.Scan(&id, &email, &name, &created, &memberRole); err != nil {
+		var teams []string
+		if err = rows.Scan(&id, &email, &name, &created, &memberRole, &teams); err != nil {
 			rows.Close()
 			return nil, err
 		}
 		user := compatibleUser(id, email, name, created)
 		result = append(result, CompatibleOrganizationUser{
 			ID: id, Role: memberRole, RoleName: roleDisplay(memberRole), DateCreated: created.UTC(),
-			Email: email, User: &user, IsOwner: memberRole == "owner",
+			Email: email, User: &user, IsOwner: memberRole == "owner", Teams: teams,
 		})
 	}
 	if err = rows.Err(); err != nil {
@@ -94,6 +96,7 @@ func (s *Store) CompatibleOrganizationMembers(ctx context.Context, userID, orgRe
 			item.DateCreated = item.DateCreated.UTC()
 			item.RoleName = roleDisplay(item.Role)
 			item.Pending = true
+			item.Teams = []string{}
 			result = append(result, item)
 		}
 		if err = rows.Err(); err != nil {
@@ -101,6 +104,81 @@ func (s *Store) CompatibleOrganizationMembers(ctx context.Context, userID, orgRe
 		}
 	}
 	return result, tx.Commit(ctx)
+}
+
+const compatibleOrganizationUserQuery = `SELECT u.id::text,u.email,u.name,u.created_at,m.role,
+	COALESCE(array_agg(t.slug ORDER BY lower(t.slug),t.id) FILTER (WHERE t.id IS NOT NULL),ARRAY[]::text[])
+	FROM memberships m
+	JOIN users u ON u.id=m.user_id
+	LEFT JOIN team_memberships tm ON tm.user_id=m.user_id
+	LEFT JOIN teams t ON t.id=tm.team_id AND t.organization_id=m.organization_id`
+
+func (s *Store) CompatibleOrganizationMember(ctx context.Context, userID, orgRef, memberID string) (CompatibleOrganizationUser, error) {
+	var item CompatibleOrganizationUser
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
+	if err != nil {
+		return item, err
+	}
+	defer tx.Rollback(ctx)
+	orgID, _, err := organizationMember(ctx, tx, userID, orgRef, false, false)
+	if err != nil {
+		return item, err
+	}
+	var name string
+	var teams []string
+	err = tx.QueryRow(ctx, compatibleOrganizationUserQuery+` WHERE m.organization_id=$1::bigint AND m.user_id=$2::bigint
+		GROUP BY u.id,u.email,u.name,u.created_at,m.role`, orgID, memberID).
+		Scan(&item.ID, &item.Email, &name, &item.DateCreated, &item.Role, &teams)
+	if err != nil {
+		return item, dbError(err)
+	}
+	user := compatibleUser(item.ID, item.Email, name, item.DateCreated)
+	item.DateCreated = item.DateCreated.UTC()
+	item.RoleName = roleDisplay(item.Role)
+	item.User = &user
+	item.IsOwner = item.Role == "owner"
+	item.Teams = teams
+	return item, tx.Commit(ctx)
+}
+
+func (s *Store) compatibleTeamMembership(ctx context.Context, actorID, orgRef, teamSlug, memberID string, add bool) (CompatibleTeamProject, error) {
+	var result CompatibleTeamProject
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return result, err
+	}
+	defer tx.Rollback(ctx)
+	orgID, _, err := manageableOrganization(ctx, tx, actorID, orgRef)
+	if err != nil {
+		return result, err
+	}
+	if err = tx.QueryRow(ctx, `SELECT user_id::text FROM memberships WHERE organization_id=$1::bigint AND user_id=$2::bigint FOR SHARE`, orgID, memberID).Scan(&memberID); err != nil {
+		return result, dbError(err)
+	}
+	var teamID string
+	if err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug=$2 FOR SHARE`, orgID, teamSlug).Scan(&teamID); err != nil {
+		return result, dbError(err)
+	}
+	if add {
+		_, err = tx.Exec(ctx, `INSERT INTO team_memberships(team_id,user_id) VALUES($1::bigint,$2::bigint) ON CONFLICT DO NOTHING`, teamID, memberID)
+	} else {
+		_, err = tx.Exec(ctx, `DELETE FROM team_memberships WHERE team_id=$1::bigint AND user_id=$2::bigint`, teamID, memberID)
+	}
+	if err != nil {
+		return result, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return result, err
+	}
+	return s.CompatibleTeam(ctx, actorID, orgRef, teamSlug)
+}
+
+func (s *Store) CompatibleAddTeamMember(ctx context.Context, actorID, orgRef, teamSlug, memberID string) (CompatibleTeamProject, error) {
+	return s.compatibleTeamMembership(ctx, actorID, orgRef, teamSlug, memberID, true)
+}
+
+func (s *Store) CompatibleRemoveTeamMember(ctx context.Context, actorID, orgRef, teamSlug, memberID string) (CompatibleTeamProject, error) {
+	return s.compatibleTeamMembership(ctx, actorID, orgRef, teamSlug, memberID, false)
 }
 
 func compatibleTeamProjects(detail CompatibleOrganizationDetail) []CompatibleTeamProject {
