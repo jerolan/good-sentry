@@ -44,6 +44,10 @@ func TestProjectKeyRateAdmissionAndWindowReset(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// The store floors rate windows on the PostgreSQL clock, so start the two
+	// charges just after a clock second; otherwise they can straddle a boundary
+	// and both be admitted by design.
+	time.Sleep(time.Until(time.Now().Truncate(time.Second).Add(time.Second)))
 	if allowed, _, err := db.AdmitProjectKey(ctx, project.ID, short.Public, 1); err != nil || !allowed {
 		t.Fatalf("short first: %v %v", allowed, err)
 	}
