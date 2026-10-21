@@ -1,0 +1,11 @@
+{
+  "name": "wizard-cli-project",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "@sentry/cli": "^2.58.6"
+  },
+  "scripts": {
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org wizard-organization --project wizard-project ./out && sentry-cli --url http://127.0.0.1:18202/ sourcemaps upload --org wizard-organization --project wizard-project ./out"
+  }
+}

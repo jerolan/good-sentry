@@ -1,0 +1,12 @@
+{
+  "name": "goodsentry-wizard-public-20261021",
+  "image": "ghcr.io/jerolan/good-sentry@sha256:0cbb29c66c630b5aed4acb671dc9e77a61c1a26f3fd876d66314e3c33ff7b43c",
+  "user": "65532:65532",
+  "status": "running",
+  "databaseSchema": "goodsentry_wizard_public_20261021_1932",
+  "afterHandoff": {
+    "wizardTransfers": 0,
+    "apiTokens": 1,
+    "projects": 1
+  }
+}

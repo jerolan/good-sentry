@@ -1,0 +1,44 @@
+{
+  "testedAt": "2026-10-21T19:20:00Z",
+  "commands": [
+    {
+      "command": "go test -race -count=1 -tags=integration ./...",
+      "result": "pass",
+      "log": "integration-race.log",
+      "server": "132.071s",
+      "store": "263.963s"
+    },
+    {
+      "command": "focused wizard and migration tests with -race",
+      "result": "pass",
+      "log": "targeted-wizard-race.log"
+    },
+    {
+      "command": "go vet -tags=integration ./...",
+      "result": "pass",
+      "log": "vet.log"
+    },
+    {
+      "command": "go mod verify and production build",
+      "result": "pass"
+    },
+    {
+      "command": "JavaScript syntax checks and git diff --check",
+      "result": "pass"
+    }
+  ],
+  "browser": {
+    "red": "red/failure.log",
+    "green": "green/report.json",
+    "viewports": [390, 1440]
+  },
+  "officialCLI": "official-cli/result.json",
+  "verifiedBehavior": [
+    "The initial hash is signed, valid for ten minutes and creates no database row when polled anonymously.",
+    "Only a current owner or admin can create the transfer; bearer callers remain inside their source organization.",
+    "The browser handoff passes at 1440 and 390 pixels without page errors or overflow.",
+    "The payload returns the actual project, full DSN, enabled keys and a scoped source-map credential.",
+    "The official @sentry/wizard 8.0.1 completes login/project selection, creates .sentryclirc and a working script, then exits zero.",
+    "Deleting the hash removes the handoff; migration 051 preserves existing credentials and reopens twice."
+  ]
+}
