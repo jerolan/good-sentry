@@ -179,3 +179,30 @@ func TestCompatibleDiscoveryHTTPContract(t *testing.T) {
 		t.Fatalf("support link: %+v %v", support, err)
 	}
 }
+
+func TestGitLabErrorTrackingDiscoveryContract(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	token := issueManagementToken(t, f, f.org.Slug, "GitLab error tracking", []string{"org:read", "project:read", "event:read"}, []string{})
+	headers := http.Header{"Authorization": {"Bearer " + token}}
+	var projects []store.CompatibleProject
+	if err := json.Unmarshal(f.request(t, http.DefaultClient, "GET", "/api/0/projects/", "", headers, 200), &projects); err != nil || len(projects) != 1 || projects[0].Organization.Slug != f.org.Slug {
+		t.Fatalf("GitLab project discovery: %+v %v", projects, err)
+	}
+	issuesPath := "/api/0/projects/" + f.org.Slug + "/" + f.project.Slug + "/issues/?query=is%3Aunresolved&limit=10&sort=freq"
+	var issues []map[string]any
+	if err := json.Unmarshal(f.request(t, http.DefaultClient, "GET", issuesPath, "", headers, 200), &issues); err != nil || len(issues) != 1 || issues[0]["id"] != f.issueID {
+		t.Fatalf("GitLab issue discovery: %+v %v", issues, err)
+	}
+	var detail map[string]any
+	if err := json.Unmarshal(f.request(t, http.DefaultClient, "GET", "/api/0/issues/"+f.issueID+"/", "", headers, 200), &detail); err != nil || detail["shortId"] == "" {
+		t.Fatalf("GitLab issue detail: %+v %v", detail, err)
+	}
+	var event map[string]any
+	if err := json.Unmarshal(f.request(t, http.DefaultClient, "GET", "/api/0/issues/"+f.issueID+"/events/latest/", "", headers, 200), &event); err != nil || event["groupID"] != f.issueID {
+		t.Fatalf("GitLab latest event: %+v %v", event, err)
+	}
+	var repos []any
+	if err := json.Unmarshal(f.request(t, http.DefaultClient, "GET", "/api/0/organizations/"+f.org.Slug+"/repos/", "", headers, 200), &repos); err != nil || len(repos) != 0 {
+		t.Fatalf("GitLab repository contract: %+v %v", repos, err)
+	}
+}
