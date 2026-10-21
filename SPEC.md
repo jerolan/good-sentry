@@ -534,6 +534,14 @@ When uptime is enabled, `GET/POST /api/0/organizations/{org}/monitors/`, `GET/PU
 
 Lists and checks use strict cursor pagination. Checks expose start time, isUp and optional response time; native string reasons are omitted rather than coerced into the public integer union. Numeric environment IDs are rejected because GoodSentry's uptime environments are stored as names, not the public environment entity. PUT preserves omitted mutable fields and cannot change monitor kind.
 
+### Compatible project alerts
+
+GET/POST /api/0/projects/{org}/{project}/alerts/ and PUT/DELETE .../alerts/{id}/ expose the native owner/admin alert rules. The compatible project slug resolves inside the current token grant before the native project ID is used. Reads require project:read; writes require project:write plus native owner/admin authority. Lists use strict cursor pagination.
+
+MonitorIn-style fields map as follows: timespanMinutes to the rolling window, quantity, environments, uptime to the native uptime/frequency kind, and alertRecipients to native recipients. Email maps to project-team email; webhook/slack/discord/teams/googlechat/feishu/ntfy/zulip map to their native URL providers. Nonempty tagsToAdd or Zulip botEmail/apiKey/channel configuration, and nonempty email URLs, return400 because those modes are not implemented. PUT preserves omitted kind, enabled and cooldown values and cannot change the native kind.
+
+POST .../alerts/{id}/test/ queues the same native test delivery and returns one recipientType/status:queued/message:null entry per configured recipient. It never claims an external delivery succeeded synchronously.
+
 ### Native log retention
 
 This is the first retention increment, covering Sentry and OTLP logs. Error events, transactions/spans, uptime checks, completed files and releases remain separate required retention increments; temporary artifact-chunk expiry is already independent. [Public GlitchTip installation documentation](https://glitchtip.com/documentation/install/#data-retention) lists a master retention default and per-class overrides, including logs. Those configuration names are public facts; the receipt clock, bounded cleanup and shared-batch lifecycle below are GoodSentry decisions. Cold archival remains independently required and is not implemented by deleting PostgreSQL rows.

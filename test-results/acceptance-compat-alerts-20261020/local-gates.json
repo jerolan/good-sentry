@@ -1,0 +1,17 @@
+{
+  "testedAt": "2026-10-21T10:50:00Z",
+  "commands": [
+    {"command": "go test -race -tags=integration ./...", "result": "pass", "log": "integration-race.log", "server": "110.578s", "store": "cached"},
+    {"command": "targeted compatible alert HTTP contract with -race", "result": "pass", "log": "targeted-alerts-race.log"},
+    {"command": "go vet -tags=integration ./...", "result": "pass"},
+    {"command": "go mod verify", "result": "pass", "output": "all modules verified"},
+    {"command": "git diff --check", "result": "pass"}
+  ],
+  "verifiedBehavior": [
+    "Compatible alert list/create/update/delete/test use native alert rules.",
+    "Project slugs resolve within the current grant before native project IDs.",
+    "Email maps to project-team email and webhook recipients retain their provider type.",
+    "Unsupported tags and Zulip bot credentials fail explicitly.",
+    "Test responses report queued rather than synchronous external success."
+  ]
+}
