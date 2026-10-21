@@ -275,3 +275,5 @@ Native Minidump AMD64 slice is implemented and locally verified at4f660fa with s
 Official chunked DIF assembly passes sentry-cli3.8.0 and clean-image restart at2a565ae. Publish and verify exact public source/CI/image/binary. Keep native parent open for non-textual formats, architectures, CFI and archive extraction.
 
 Native AMD64/x86 plus official chunked DIF and source-map regression pass local image/race at8978f70. Publish this revision and verify matching public source, CI, Pages, registry image and exact binary before recording the partial native milestones as published. Continue full native-format coverage afterward.
+
+Native AMD64/x86 and official DIF are publicly accepted at8425893. Continue the parent with ARM64/context coverage, CFI/DWARF unwinding, PDB/dSYM/SymCache consumption and archive extraction; then seek representative native crash receipts.
