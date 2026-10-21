@@ -780,3 +780,5 @@ Public evidence: `test-results/acceptance-mcp-issues-20261020/{corrected-public-
 - [ ] Implement ScopedLogs/ScopedLog, selected-handler log:read issuance and the two tools without changing existing scope meanings/defaults or opening MCP availability.
 - [ ] Pass real Sentry/OTLP/filter/paging/isolation/capacity owners, native siblings and full race/vet/default-image/public/recovery gates.
 - [ ] Integrate token/consent UI and enabled availability only with the complete remaining MCP/OAuth parent.
+
+Log prerequisite RED evidence: the native API first rejected log:read with400. After selected-handler admission, actual PostgreSQL rejected it with api_tokens_scopes_check/23514 and the API correctly returned generic503. SPEC now owns additive migration043 preserving existing rows/known-value controls. This corrects the prior no-migration assumption; do not drop scope validation or treat HTTP-only admission as acceptance.
