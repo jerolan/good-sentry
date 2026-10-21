@@ -51,6 +51,7 @@ type Crash struct {
 	PointerSize   int
 	Modules       []Module
 	Frames        []Frame
+	stack         []memoryRange
 }
 
 type memoryRange struct {
@@ -268,6 +269,7 @@ func ParseMinidump(data []byte) (Crash, error) {
 			return Crash{}, fmt.Errorf("unsupported minidump context size %d (declared architecture %d)", len(rawContext), declaredArch)
 		}
 	}
+	crash.stack = ranges
 	crash.Frames = unwind(crash, ranges)
 	return crash, nil
 }

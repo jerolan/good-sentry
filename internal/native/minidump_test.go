@@ -337,3 +337,67 @@ func TestParseMachODSYMObjectSymbols(t *testing.T) {
 		t.Fatalf("Mach-O dSYM symbolication: %+v", frame)
 	}
 }
+
+func TestCFIUnwindsWithoutFramePointer(t *testing.T) {
+	for _, fixture := range []string{"cfi-amd64", "cfi-amd64-pie"} {
+		t.Run(fixture, func(t *testing.T) { testCFIUnwindFixture(t, fixture) })
+	}
+}
+
+func testCFIUnwindFixture(t *testing.T, fixture string) {
+	data, err := os.ReadFile("testdata/" + fixture)
+	if err != nil {
+		t.Fatal(err)
+	}
+	module, functions := ParseObjectSymbols(fixture, data)
+	if module != moduleKey(fixture) {
+		t.Fatalf("CFI module=%q", module)
+	}
+	addresses := map[string]uint64{}
+	for _, function := range functions {
+		switch function.Name {
+		case "crash_frame", "middle_frame", "outer_frame":
+			addresses[function.Name] = function.Start
+		}
+	}
+	if len(addresses) != 3 {
+		t.Fatalf("CFI fixture functions: %+v", addresses)
+	}
+	_, table := ParseObjectUnwind(fixture, data)
+	if table == nil {
+		t.Fatal("CFI fixture has no unwind table")
+	}
+	const moduleBase = uint64(0x0000000140000000)
+	const stackBase = uint64(0x0000000000200000)
+	stack := make([]byte, 32)
+	binary.LittleEndian.PutUint64(stack[0:], moduleBase+addresses["middle_frame"]+0xc)
+	binary.LittleEndian.PutUint64(stack[8:], moduleBase+addresses["outer_frame"]+0xc)
+	crash := Crash{
+		RIP: moduleBase + addresses["crash_frame"], RSP: stackBase, Arch: "amd64", PointerSize: 8,
+		Modules: []Module{{Name: fixture, Base: moduleBase, Size: 0x10000}},
+		stack:   []memoryRange{{start: stackBase, data: stack}},
+	}
+	crash.Frames = UnwindCFI(&crash, UnwindSet{module: table})
+	if len(crash.Frames) != 3 {
+		t.Fatalf("CFI frames=%+v", crash.Frames)
+	}
+	Symbolicate(&crash, SymbolSet{module: functions})
+	expected := []string{"crash_frame", "middle_frame", "outer_frame"}
+	for i, name := range expected {
+		if crash.Frames[i].Function != name {
+			t.Fatalf("CFI frame %d=%+v want %s", i, crash.Frames[i], name)
+		}
+	}
+}
+
+func TestCFIParserRejectsTruncatedSection(t *testing.T) {
+	for _, data := range [][]byte{
+		{0x10, 0x00},
+		{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+	} {
+		if table, err := parseCFISection(data, 0, true, 8); err == nil && table != nil && len(table.entries) != 0 {
+			t.Fatalf("truncated CFI produced entries: %+v", table.entries)
+		}
+	}
+}

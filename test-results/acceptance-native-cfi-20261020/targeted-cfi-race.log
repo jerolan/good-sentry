@@ -1,0 +1,20 @@
+=== RUN   TestCFIUnwindsWithoutFramePointer
+=== RUN   TestCFIUnwindsWithoutFramePointer/cfi-amd64
+=== RUN   TestCFIUnwindsWithoutFramePointer/cfi-amd64-pie
+--- PASS: TestCFIUnwindsWithoutFramePointer (0.00s)
+    --- PASS: TestCFIUnwindsWithoutFramePointer/cfi-amd64 (0.00s)
+    --- PASS: TestCFIUnwindsWithoutFramePointer/cfi-amd64-pie (0.00s)
+=== RUN   TestCFIParserRejectsTruncatedSection
+--- PASS: TestCFIParserRejectsTruncatedSection (0.00s)
+PASS
+ok  	goodsentry/internal/native	1.014s
+=== RUN   TestNativeMinidumpSymbolicationAndIngestion
+--- PASS: TestNativeMinidumpSymbolicationAndIngestion (0.47s)
+=== RUN   TestNativeELFObjectSymbolicationByDebugID
+--- PASS: TestNativeELFObjectSymbolicationByDebugID (0.42s)
+=== RUN   TestNativeMachODSYMObjectSymbolicationByDebugID
+--- PASS: TestNativeMachODSYMObjectSymbolicationByDebugID (0.41s)
+=== RUN   TestNativeCFIUnwindWithoutFramePointer
+--- PASS: TestNativeCFIUnwindWithoutFramePointer (0.42s)
+PASS
+ok  	goodsentry/internal/server	2.741s

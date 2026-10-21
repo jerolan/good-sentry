@@ -64,6 +64,7 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	symbols := native.SymbolSet{}
+	unwindTables := native.UnwindSet{}
 	for _, file := range symbolFiles {
 		name, functions := native.ParseObjectSymbols(file.Name, file.Content)
 		if len(functions) == 0 {
@@ -73,6 +74,16 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		if debugKey := native.DebugKey(file.DebugID); debugKey != "" {
 			symbols[debugKey] = append(symbols[debugKey], functions...)
 		}
+		unwindName, table := native.ParseObjectUnwind(file.Name, file.Content)
+		if table != nil {
+			unwindTables[unwindName] = table
+			if debugKey := native.DebugKey(file.DebugID); debugKey != "" {
+				unwindTables[debugKey] = table
+			}
+		}
+	}
+	if frames := native.UnwindCFI(&crash, unwindTables); len(frames) > len(crash.Frames) {
+		crash.Frames = frames
 	}
 	native.Symbolicate(&crash, symbols)
 	fields := map[string]string{}

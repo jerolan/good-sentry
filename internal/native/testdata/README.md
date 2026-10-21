@@ -4,6 +4,14 @@ elf-dwarf-amd64 and its source are original GoodSentry fixtures compiled with:
 
     gcc -g -O0 -no-pie -fno-asynchronous-unwind-tables -o elf-dwarf-amd64 elf-dwarf-source.c
 
+cfi-amd64 and cfi-source.c are original GoodSentry fixtures compiled with:
+
+    gcc -g -O1 -fomit-frame-pointer -no-pie -o cfi-amd64 cfi-source.c
+    gcc -g -O1 -fomit-frame-pointer -fPIE -pie -o cfi-amd64-pie cfi-source.c
+
+They exercise .eh_frame unwinding when RBP is zero and no function has a
+frame-pointer prologue.
+
 macho-dsym-amd64 is the decoded
 debug/macho/testdata/gcc-amd64-darwin-exec-debug.base64 fixture from Go
 1.27.2. It is a Mach-O dSYM companion file whose file-backed __DWARF

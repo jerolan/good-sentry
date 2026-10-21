@@ -1,0 +1,50 @@
+{
+  "testedAt": "2026-10-21T06:20:00Z",
+  "fixtures": [
+    {
+      "path": "internal/native/testdata/cfi-amd64",
+      "sha256": "1a719cde7e08f9bec4017aa3cf37c2b5885b23485635061602576d6e3289fb0c",
+      "kind": "ELF ET_EXEC",
+      "build": "gcc -g -O1 -fomit-frame-pointer -no-pie -o cfi-amd64 cfi-source.c"
+    },
+    {
+      "path": "internal/native/testdata/cfi-amd64-pie",
+      "sha256": "37a1283e0dee6ff5d7ead213138e28eb3b49185ca8e574179cc2c4915bd28cbc",
+      "kind": "ELF PIE",
+      "build": "gcc -g -O1 -fomit-frame-pointer -fPIE -pie -o cfi-amd64-pie cfi-source.c"
+    }
+  ],
+  "commands": [
+    {
+      "command": "go test -race -tags=integration ./...",
+      "result": "pass",
+      "log": "integration-race.log",
+      "native": "1.018s",
+      "server": "106.603s"
+    },
+    {
+      "command": "targeted CFI and native object tests with -race",
+      "result": "pass",
+      "log": "targeted-cfi-race.log"
+    },
+    {
+      "command": "go vet -tags=integration ./...",
+      "result": "pass"
+    },
+    {
+      "command": "go mod verify",
+      "result": "pass",
+      "output": "all modules verified"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "verifiedBehavior": [
+    "ET_EXEC and PIE .eh_frame tables recover a three-frame stack with RBP=0.",
+    "The HTTP Minidump path resolves crash_frame, middle_frame and outer_frame with source lines.",
+    "Truncated CFI records fail closed without producing frames.",
+    "Breakpad, ELF DWARF, Mach-O dSYM and Debug-ID regressions remain green."
+  ]
+}

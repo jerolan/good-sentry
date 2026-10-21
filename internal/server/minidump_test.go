@@ -147,7 +147,7 @@ type nativeFrame struct {
 	Line     int    `json:"lineno"`
 }
 
-func buildNativeModuleMinidump(t *testing.T, moduleName string, functionOffset uint64) []byte {
+func buildNativeModuleMinidump(t *testing.T, moduleName string, functionOffset uint64, stackData ...[]byte) []byte {
 	t.Helper()
 	const moduleBase = uint64(0x0000000140000000)
 	crashAddress := moduleBase + functionOffset
@@ -156,6 +156,9 @@ func buildNativeModuleMinidump(t *testing.T, moduleName string, functionOffset u
 	binary.LittleEndian.PutUint64(context[160:], 0x200000)
 	binary.LittleEndian.PutUint64(context[248:], crashAddress)
 	stack := make([]byte, 0x100)
+	if len(stackData) > 0 {
+		copy(stack, stackData[0])
+	}
 	modules := make([]byte, 4+108)
 	binary.LittleEndian.PutUint32(modules, 1)
 	binary.LittleEndian.PutUint64(modules[4:], moduleBase)
@@ -219,14 +222,14 @@ func buildNativeModuleMinidump(t *testing.T, moduleName string, functionOffset u
 	return buf
 }
 
-func ingestNativeObject(t *testing.T, f *resolutionHTTPFixture, object []byte, objectName, symbolType string, functionOffset uint64, expectedFunction string) nativeFrame {
+func ingestNativeObjectFrames(t *testing.T, f *resolutionHTTPFixture, object []byte, objectName, symbolType string, functionOffset uint64, expectedFunction string, stackData ...[]byte) []nativeFrame {
 	t.Helper()
 	digest := sha1.Sum(object)
 	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
 	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, objectName, symbolType, nativeTestDebugID, "x86_64", objectName, hex.EncodeToString(digest[:]), nil, nil, object); err != nil {
 		t.Fatal(err)
 	}
-	buf := buildNativeModuleMinidump(t, "C:\\test\\different.module", functionOffset)
+	buf := buildNativeModuleMinidump(t, "C:\\test\\different.module", functionOffset, stackData...)
 	body, contentType := minidumpForm(t, buf, nil)
 	req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
 	if err != nil {
@@ -276,7 +279,12 @@ func ingestNativeObject(t *testing.T, f *resolutionHTTPFixture, object []byte, o
 	if len(payload.DebugMeta.Images) != 1 || payload.DebugMeta.Images[0].DebugID != "1122334455667788AABBCCDDEEFF00111" {
 		t.Fatalf("native object debug metadata: %+v", payload.DebugMeta)
 	}
-	return payload.Exception.Values[0].Stacktrace.Frames[0]
+	return payload.Exception.Values[0].Stacktrace.Frames
+}
+
+func ingestNativeObject(t *testing.T, f *resolutionHTTPFixture, object []byte, objectName, symbolType string, functionOffset uint64, expectedFunction string) nativeFrame {
+	t.Helper()
+	return ingestNativeObjectFrames(t, f, object, objectName, symbolType, functionOffset, expectedFunction)[0]
 }
 
 func TestNativeELFObjectSymbolicationByDebugID(t *testing.T) {
@@ -359,5 +367,53 @@ func TestNativeMachODSYMObjectSymbolicationByDebugID(t *testing.T) {
 	frame := ingestNativeObject(t, f, object, "uploaded.dsym", "macho", functionOffset, "main")
 	if !strings.HasSuffix(frame.Filename, "hello.c") || frame.Line < 1 {
 		t.Fatalf("Mach-O dSYM minidump frame: %+v", frame)
+	}
+}
+
+func TestNativeCFIUnwindWithoutFramePointer(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	object, err := os.ReadFile("../native/testdata/cfi-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := elf.NewFile(bytes.NewReader(object))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var imageBase uint64
+	foundBase := false
+	for _, program := range file.Progs {
+		if program.Type == elf.PT_LOAD && program.Filesz > 0 && (!foundBase || program.Vaddr < imageBase) {
+			imageBase = program.Vaddr
+			foundBase = true
+		}
+	}
+	symbols, err := file.Symbols()
+	if err != nil {
+		t.Fatal(err)
+	}
+	addresses := map[string]uint64{}
+	for _, symbol := range symbols {
+		switch symbol.Name {
+		case "crash_frame", "middle_frame", "outer_frame":
+			addresses[symbol.Name] = symbol.Value
+		}
+	}
+	if !foundBase || imageBase == 0 || len(addresses) != 3 {
+		t.Fatalf("CFI fixture metadata: base=%#x functions=%v", imageBase, addresses)
+	}
+	const moduleBase = uint64(0x0000000140000000)
+	stack := make([]byte, 32)
+	binary.LittleEndian.PutUint64(stack[0:], moduleBase+addresses["middle_frame"]-imageBase+0xc)
+	binary.LittleEndian.PutUint64(stack[8:], moduleBase+addresses["outer_frame"]-imageBase+0xc)
+	frames := ingestNativeObjectFrames(t, f, object, "uploaded-cfi.elf", "elf", addresses["crash_frame"]-imageBase, "crash_frame", stack)
+	expected := []string{"crash_frame", "middle_frame", "outer_frame"}
+	if len(frames) != len(expected) {
+		t.Fatalf("CFI frames=%+v", frames)
+	}
+	for i, name := range expected {
+		if frames[i].Function != name || !strings.HasSuffix(frames[i].Filename, "cfi-source.c") || frames[i].Line < 1 {
+			t.Fatalf("CFI frame %d=%+v want %s", i, frames[i], name)
+		}
 	}
 }
