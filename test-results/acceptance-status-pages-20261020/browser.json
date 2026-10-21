@@ -1,0 +1,25 @@
+{
+  "browser": "Chromium",
+  "results": [
+    {
+      "width": 320,
+      "horizontalOverflow": false,
+      "consoleErrors": 0,
+      "statusPageVisible": true,
+      "publicStatus": 200,
+      "publicMonitorCount": 1,
+      "publicMonitorVisible": true,
+      "publicURLDisclosure": false
+    },
+    {
+      "width": 1440,
+      "horizontalOverflow": false,
+      "consoleErrors": 0,
+      "statusPageVisible": true,
+      "publicStatus": 200,
+      "publicMonitorCount": 1,
+      "publicMonitorVisible": true,
+      "publicURLDisclosure": false
+    }
+  ]
+}

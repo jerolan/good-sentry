@@ -510,6 +510,12 @@ This native slice remains incomplete: other Minidump CPU contexts; uncommon CFI 
 
 Transactions persist trace/span relationships, operation, endpoint, duration, status, release and environment. Provide counts, error counts, average, p50 and p95 for a selected time window, plus transaction detail and span breakdown. Logs support Sentry log envelopes and native OTLP /v1/logs, preserving typed attributes, severity and trace links. Filter by time, level, service, environment, text and trace. Retention is configurable by data class.
 
+### Uptime status pages
+
+Additive046 stores organization-owned status pages and a many-to-many selection of same-organization uptime monitors. Slugs are globally unique, stable and generated once from the trimmed display name with a bounded collision suffix. Owners/admins create, update and delete pages; current members can list them. Unknown, foreign or cross-organization monitor IDs never attach. Compatible `GET/POST /api/0/organizations/{org}/status-pages/` uses `org:read`/`org:write` or the equivalent current session role; the POST body is the public `StatusPageIn` name/isPublic shape and starts with no monitors, while native update accepts up to100 bounded monitor IDs.
+
+`GET /status/{slug}` and `GET /api/v1/public/status-pages/{slug}` expose only public pages. The public view includes the page name, selected monitor names, current status and last-check time. It never exposes monitor URLs, heartbeat keys, project IDs, environments, expected bodies or check errors. A private/nonexistent page returns404. The native Uptime UI lists pages, creates/edits name, publication and selected monitors, links to the public page and requires explicit deletion confirmation.
+
 ### Native log retention
 
 This is the first retention increment, covering Sentry and OTLP logs. Error events, transactions/spans, uptime checks, completed files and releases remain separate required retention increments; temporary artifact-chunk expiry is already independent. [Public GlitchTip installation documentation](https://glitchtip.com/documentation/install/#data-retention) lists a master retention default and per-class overrides, including logs. Those configuration names are public facts; the receipt clock, bounded cleanup and shared-batch lifecycle below are GoodSentry decisions. Cold archival remains independently required and is not implemented by deleting PostgreSQL rows.

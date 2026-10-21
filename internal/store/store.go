@@ -27,6 +27,7 @@ var (
 	ErrInvalidResetToken  = errors.New("invalid password reset token")
 	ErrInvalidInvitation  = errors.New("invalid organization invitation")
 	ErrLastOwner          = errors.New("last owner")
+	ErrInvalidStatusPage  = errors.New("invalid status page")
 )
 
 //go:embed migrations/*.sql

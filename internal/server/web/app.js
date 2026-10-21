@@ -573,9 +573,9 @@
       } else if (view === 'monitors') {
         const path = monitorPath(params.get('monitor'));
         if (!params.get('monitor')) {
-          const monitors = await request(path);
+          const [monitors, statusPages] = await Promise.all([request(path), request(statusPagePath())]);
           if (version !== state.requestVersion) return;
-          renderMonitors(main, monitors);
+          renderMonitors(main, monitors, statusPages);
         } else {
           const historyQuery = new URLSearchParams({ changes: params.get('changes') === 'false' ? 'false' : 'true', page: String(Math.max(1, parseInt(params.get('page'), 10) || 1)) });
           const historyIsLatest = historyQuery.get('changes') === 'false' && historyQuery.get('page') === '1';
@@ -1506,11 +1506,16 @@
     return id ? `${path}/${encodeURIComponent(id)}` : path;
   }
 
+  function statusPagePath(id) {
+    const path = `/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/status-pages`;
+    return id ? `${path}/${encodeURIComponent(id)}` : path;
+  }
+
   function monitorStatus(monitor) {
     return node('div', { class: 'actions', role: 'group', 'aria-label': 'Confirmed monitor status' }, badge(monitor.status || 'unknown'), !monitor.enabled ? node('span', { class: 'badge badge-sm' }, 'Paused') : null);
   }
 
-  function renderMonitors(main, result) {
+  function renderMonitors(main, result, statusPagesResult) {
     document.title = 'Uptime · GoodSentry';
     const manage = canManageMonitors();
     main.replaceChildren(pageHeader('Uptime', 'HTTP, TCP and heartbeat monitoring.', node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), manage ? button('Create monitor', () => openMonitorDialog(), 'primary') : null)));
@@ -1529,6 +1534,68 @@
       panel.append(node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, columns.map(name => node('th', { scope: 'col' }, name)))), node('tbody', {}, rows))));
     }
     main.append(panel);
+    renderStatusPages(main, statusPagesResult?.data || [], monitors, manage);
+  }
+
+  function renderStatusPages(main, pages, monitors, manage) {
+    const heading = node('div', { class: 'page-header' },
+      node('div', {}, node('h2', {}, 'Status pages'), node('p', { class: 'muted' }, 'Public service health pages built from selected uptime monitors.')),
+      node('div', { class: 'actions' }, manage ? button('Create status page', () => openStatusPageDialog(monitors), 'primary') : null));
+    const panel = node('section', { class: 'card panel', 'aria-label': 'Status pages' });
+    if (!pages.length) {
+      panel.append(empty('No status pages yet', manage ? 'Create a page, choose its monitors and publish it when ready.' : 'An organization owner or admin can configure status pages.'));
+    } else {
+      const rows = pages.map(page => node('tr', {},
+        node('td', {}, node('strong', { class: 'wrap-anywhere' }, page.name), node('div', { class: 'small muted' }, '/status/' + page.slug)),
+        node('td', {}, node('span', { class: 'badge badge-sm' }, page.isPublic ? 'Public' : 'Private')),
+        node('td', {}, String((page.monitors || []).length)),
+        node('td', {}, node('div', { class: 'actions' },
+          page.isPublic ? node('a', { class: 'btn button small', href: base + '/status/' + encodeURIComponent(page.slug), target: '_blank', rel: 'noopener' }, 'Open') : null,
+          manage ? button('Edit', () => openStatusPageDialog(monitors, page), 'small') : null))));
+      panel.append(node('div', { class: 'table-scroll' }, node('table', {},
+        node('thead', {}, node('tr', {}, ['Status page', 'Visibility', 'Monitors', 'Actions'].map(name => node('th', { scope: 'col' }, name)))),
+        node('tbody', {}, rows))));
+    }
+    main.append(node('div', { class: 'status-pages-section' }, heading, panel));
+  }
+
+  function openStatusPageDialog(monitors, page) {
+    const dialog = node('dialog', { class: 'monitor-dialog', 'aria-labelledby': 'status-page-dialog-title' });
+    const close = () => dialog.close();
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const name = field('Name', 'text', { required: true, maxlength: 200, value: page?.name || '' });
+    const isPublic = node('input', { type: 'checkbox', checked: Boolean(page?.isPublic) });
+    const selected = new Set((page?.monitors || []).map(monitor => monitor.id));
+    const monitorInputs = monitors.map(monitor => ({ id: monitor.id, input: node('input', { type: 'checkbox', checked: selected.has(monitor.id) }), name: monitor.name }));
+    const monitorChoices = monitorInputs.length
+      ? node('fieldset', { class: 'token-fieldset' }, node('legend', {}, 'Monitors'), monitorInputs.map(monitor => node('label', { class: 'checkbox-field' }, monitor.input, monitor.name)))
+      : node('p', { class: 'muted small' }, 'Create a monitor before publishing a status page.');
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, page ? 'Save status page' : 'Create status page');
+    const form = node('form', { class: 'form-stack', 'aria-label': page ? 'Edit status page' : 'Create status page' }, error, name.wrap,
+      node('label', { class: 'checkbox-field' }, isPublic, 'Publish without sign-in'), monitorChoices,
+      node('div', { class: 'dialog-actions' }, button('Cancel', close), submit));
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      submit.disabled = true;
+      error.textContent = '';
+      try {
+        await request(page ? statusPagePath(page.slug) : statusPagePath(), {
+          method: page ? 'PUT' : 'POST',
+          body: { name: name.input.value, isPublic: isPublic.checked, monitorIds: monitorInputs.filter(monitor => monitor.input.checked).map(monitor => monitor.id) },
+        });
+        dialog.close();
+        await loadRoute();
+        notify(page ? 'Status page updated.' : 'Status page created.');
+      } catch (failure) {
+        formError(error, failure);
+        submit.disabled = false;
+      }
+    });
+    dialog.append(node('header', {}, node('h2', { id: 'status-page-dialog-title' }, page ? 'Edit status page' : 'Create status page'), button('Close', close, 'small')), form);
+    document.body.append(dialog);
+    dialog.addEventListener('close', () => dialog.remove(), { once: true });
+    dialog.showModal();
+    name.input.focus();
   }
 
   function monitorConfiguration(monitor) {

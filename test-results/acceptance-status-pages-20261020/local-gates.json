@@ -1,0 +1,41 @@
+{
+  "testedAt": "2026-10-21T08:05:00Z",
+  "commands": [
+    {
+      "command": "go test -race -tags=integration ./...",
+      "result": "pass",
+      "log": "integration-race.log",
+      "server": "117.295s",
+      "store": "235.840s"
+    },
+    {
+      "command": "targeted Status Page store and HTTP tests with -race",
+      "result": "pass",
+      "log": "targeted-status-pages-race.log"
+    },
+    {
+      "command": "go vet -tags=integration ./...",
+      "result": "pass"
+    },
+    {
+      "command": "go mod verify",
+      "result": "pass",
+      "output": "all modules verified"
+    },
+    {
+      "command": "node --check internal/server/web/app.js",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "verifiedBehavior": [
+    "Status pages persist through reopen and retain same-organization monitor associations.",
+    "Native API creates, updates and deletes status pages with monitor selection.",
+    "Compatible GET/POST routes expose the OpenAPI StatusPageSchema shape.",
+    "Public HTML and JSON contain monitor names/status only, never URLs or heartbeat keys.",
+    "Private and nonexistent status pages return404."
+  ]
+}

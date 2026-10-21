@@ -140,6 +140,7 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 		mux.Handle("PUT /api/v1/organizations/{org}/monitors/{monitor}", s.auth(http.HandlerFunc(s.saveMonitor)))
 		mux.Handle("DELETE /api/v1/organizations/{org}/monitors/{monitor}", s.auth(http.HandlerFunc(s.deleteMonitor)))
 		mux.Handle("GET /api/v1/organizations/{org}/monitors/{monitor}/checks", s.auth(http.HandlerFunc(s.monitorChecks)))
+		s.registerStatusPageRoutes(mux)
 		mux.HandleFunc("POST /api/v1/heartbeat/{key}", s.heartbeat)
 		mux.HandleFunc("/api/v1/heartbeat/{key}", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Allow", "POST")
