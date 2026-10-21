@@ -3,6 +3,7 @@
 package store
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"testing"
@@ -20,7 +21,7 @@ func TestCompatibleEventLookupSnapshotDuringNativeMergeAndSplit(t *testing.T) {
 	}
 	t.Cleanup(writer.Close)
 	check := func() (string, error) {
-		result, err := f.db.CompatibleEventLookup(f.ctx, f.access, "", sourceEvent.ID)
+		result, err := f.db.CompatibleEventLookup(f.ctx, f.access, sourceEvent.ID, CompatibleEventLookupFilter{})
 		if err != nil {
 			return "", err
 		}
@@ -77,5 +78,30 @@ func TestCompatibleEventLookupSnapshotDuringNativeMergeAndSplit(t *testing.T) {
 	close(failures)
 	for err := range failures {
 		t.Error(err)
+	}
+}
+
+func TestCompatibleEventLookupUnassociatedAuthorityPrecedesAmbiguity(t *testing.T) {
+	f := resolutionStore(t)
+	stamp := time.Now().Add(-time.Hour)
+	occurrence, issue := compatibleCapture(t, f.ctx, f.db, f.project, 1, stamp, nil)
+	other, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Unassociated lookup", "go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	compatibleCapture(t, f.ctx, f.db, other, 1, stamp, map[string]any{"type": "transaction", "transaction": "Unassociated lookup", "start_timestamp": float64(stamp.Add(-time.Second).Unix())})
+	result, err := f.db.CompatibleEventLookup(f.ctx, f.access, occurrence.ID, CompatibleEventLookupFilter{})
+	if err != nil || result.Issue == nil || result.Issue.Issue.ID != issue {
+		t.Fatalf("unassociated receipt affected issue-only lookup: %+v %v", result, err)
+	}
+	if _, err := f.db.CompatibleEventLookup(f.ctx, f.access, occurrence.ID, CompatibleEventLookupFilter{IncludeUnassociated: true}); !errors.Is(err, ErrAmbiguousEvent) {
+		t.Fatalf("admitted duplicate did not require a project: %v", err)
+	}
+	if _, err := f.db.CompatibleEventLookup(f.ctx, f.access, occurrence.ID, CompatibleEventLookupFilter{Project: other.ID}); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("project selector rescued denied unassociated receipt: %v", err)
+	}
+	result, err = f.db.CompatibleEventLookup(f.ctx, f.access, occurrence.ID, CompatibleEventLookupFilter{Project: other.ID, IncludeUnassociated: true})
+	if err != nil || result.Issue != nil || result.Event.Kind != "transaction" {
+		t.Fatalf("explicit project-event authority failed: %+v %v", result, err)
 	}
 }

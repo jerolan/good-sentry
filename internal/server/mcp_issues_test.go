@@ -187,7 +187,11 @@ func TestMCPIssueInvestigation(t *testing.T) {
 	_ = mcpObject(t, f, all, "get_event", map[string]any{"event_id": latestID, "project": f.project.Slug})
 	transactionID := strings.Repeat("c", 32)
 	mcpCapture(t, f, f.project.ID, transactionID, "MCP transaction", map[string]any{"type": "transaction", "transaction": "MCP transaction", "start_timestamp": float64(time.Now().Add(-time.Second).Unix()), "timestamp": float64(time.Now().Unix())})
-	transaction := mcpObject(t, f, read, "get_event", map[string]any{"event_id": transactionID})
+	mcpExpectIssueError(t, f, read, "get_event", map[string]any{"event_id": transactionID})
+	mcpExpectIssueError(t, f, write, "get_event", map[string]any{"event_id": transactionID})
+	projectEvents := issueManagementToken(t, f, f.org.Slug, "MCP issue and project events", []string{"event:read", "project:read"}, []string{f.project.ID})
+	projectRead := mcpClient(t, f, srv, projectEvents, "2026-07-28")
+	transaction := mcpObject(t, f, projectRead, "get_event", map[string]any{"event_id": transactionID})
 	if transaction["issue"] != nil || transaction["event"].(map[string]any)["type"] != "transaction" {
 		t.Fatalf("transaction invented an issue: %+v", transaction)
 	}

@@ -16,12 +16,17 @@ type CompatibleEventWithIssue struct {
 	Issue *CompatibleIssueRecord
 }
 
+type CompatibleEventLookupFilter struct {
+	Project             string
+	IncludeUnassociated bool
+}
+
 // CompatibleEventLookup identifies a receipt inside the grant before loading
 // its payload and parent. The same snapshot owns ambiguity and the association.
-func (s *Store) CompatibleEventLookup(ctx context.Context, access ManagementAccess, projectRef, eventRef string) (CompatibleEventWithIssue, error) {
+func (s *Store) CompatibleEventLookup(ctx context.Context, access ManagementAccess, eventRef string, filter CompatibleEventLookupFilter) (CompatibleEventWithIssue, error) {
 	var result CompatibleEventWithIssue
 	reference, valid := compatibleEventReference(eventRef, false)
-	if !valid || !utf8.ValidString(projectRef) || utf8.RuneCountInString(projectRef) > 200 || strings.ContainsRune(projectRef, 0) {
+	if !valid || !utf8.ValidString(filter.Project) || utf8.RuneCountInString(filter.Project) > 200 || strings.ContainsRune(filter.Project, 0) {
 		return result, ErrInvalidEventFilter
 	}
 	tx, err := s.compatibleIssueOrganization(ctx, access)
@@ -30,8 +35,8 @@ func (s *Store) CompatibleEventLookup(ctx context.Context, access ManagementAcce
 	}
 	defer tx.Rollback(ctx)
 	var projectID int64
-	if projectRef != "" {
-		projects, err := releaseProjectReferences(ctx, tx, access, []string{projectRef})
+	if filter.Project != "" {
+		projects, err := releaseProjectReferences(ctx, tx, access, []string{filter.Project})
 		if err != nil {
 			return result, err
 		}
@@ -39,8 +44,8 @@ func (s *Store) CompatibleEventLookup(ctx context.Context, access ManagementAcce
 	}
 	rows, err := tx.Query(ctx, `SELECT e.id FROM events e JOIN projects p ON p.id=e.project_id
  WHERE p.organization_id=$1::bigint AND ($2 OR p.id=ANY($3::bigint[]))
- AND e.event_id=$4 AND ($5::bigint=0 OR p.id=$5)
- ORDER BY e.project_id,e.id LIMIT 2`, access.OrganizationID, access.AllProjects, access.ProjectIDs, reference, projectID)
+ AND e.event_id=$4 AND ($5::bigint=0 OR p.id=$5) AND ($6 OR e.issue_id IS NOT NULL)
+ ORDER BY e.project_id,e.id LIMIT 2`, access.OrganizationID, access.AllProjects, access.ProjectIDs, reference, projectID, filter.IncludeUnassociated)
 	if err != nil {
 		return result, err
 	}

@@ -203,7 +203,7 @@ func (s *Server) addMCPIssueTools(server *mcp.Server, ctx context.Context, grant
 			}
 			return nil, view, nil
 		})
-	mcp.AddTool(server, &mcp.Tool{Name: "get_event", Description: "Read an authorized event and its parent issue in one snapshot. Supply a project when an event ID occurs in multiple projects.", InputSchema: mcpIssueSchema("get_event"), OutputSchema: mcpEventOutputSchema[mcpEventResult](), Annotations: readOnly},
+	mcp.AddTool(server, &mcp.Tool{Name: "get_event", Description: "Read an authorized event and its parent issue in one snapshot. Supply a project for ambiguous IDs. Events without an issue also require project:read.", InputSchema: mcpIssueSchema("get_event"), OutputSchema: mcpEventOutputSchema[mcpEventResult](), Annotations: readOnly},
 		func(_ context.Context, _ *mcp.CallToolRequest, input mcpIssueInput) (*mcp.CallToolResult, mcpEventResult, error) {
 			var result mcpEventResult
 			access, err := mcpIssueAuthority(grant, false)
@@ -213,7 +213,8 @@ func (s *Server) addMCPIssueTools(server *mcp.Server, ctx context.Context, grant
 			if !credentialText(input.Project, 200) {
 				return nil, result, errors.New("Invalid project")
 			}
-			row, err := s.db.CompatibleEventLookup(ctx, access, input.Project, input.EventID)
+			filter := store.CompatibleEventLookupFilter{Project: input.Project, IncludeUnassociated: slices.Contains(grant.Scopes, "project:read")}
+			row, err := s.db.CompatibleEventLookup(ctx, access, input.EventID, filter)
 			if err != nil {
 				return nil, result, mcpIssueError(err)
 			}
