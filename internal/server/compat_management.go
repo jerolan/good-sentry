@@ -34,6 +34,8 @@ func (s *Server) registerCompatibleManagementRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/0/teams/{org}/{team}/projects/{$}", s.compatible("org:read", s.compatibleTeamProjects))
 	mux.Handle("POST /api/0/teams/{org}/{team}/projects/{$}", s.compatible("org:write", s.compatibleCreateTeamProject))
 	mux.Handle("GET /api/0/projects/{org}/{project}/teams/{$}", s.compatible("project:read", s.compatibleProjectTeams))
+	mux.Handle("POST /api/0/projects/{org}/{project}/teams/{team}/{$}", s.compatible("project:write", s.compatibleAttachProjectTeam))
+	mux.Handle("DELETE /api/0/projects/{org}/{project}/teams/{team}/{$}", s.compatible("project:write", s.compatibleDetachProjectTeam))
 	mux.Handle("PUT /api/0/projects/{org}/{project}/{$}", s.compatible("project:write", s.compatibleUpdateProject))
 	mux.Handle("DELETE /api/0/projects/{org}/{project}/{$}", s.compatible("project:write", s.compatibleDeleteProject))
 	mux.Handle("POST /api/0/organizations/{org}/members/{$}", s.compatible("org:write", s.compatibleCreateOrganizationMember))
@@ -622,6 +624,42 @@ func (s *Server) compatibleProjectTeams(w http.ResponseWriter, r *http.Request) 
 	page, next := pageCompatible(teams, offset, limit)
 	s.discoveryLinks(w, r, q, offset, limit, next)
 	writeJSON(w, 200, page)
+}
+
+func (s *Server) compatibleProjectTeam(w http.ResponseWriter, r *http.Request, attach bool) {
+	access, valid := s.projectWriteAccess(w, r)
+	if !valid {
+		return
+	}
+	if _, valid := discoveryNoQuery(w, r); !valid {
+		return
+	}
+	teamSlug, valid := validTeamSlugInput(w, r.PathValue("team"))
+	if !valid {
+		return
+	}
+	project, err := s.db.CompatibleSetProjectTeam(r.Context(), access, r.PathValue("project"), teamSlug, attach)
+	if errors.Is(err, store.ErrProjectTeamConflict) {
+		failure(w, 409, "Projects currently support one team relation")
+		return
+	}
+	if err != nil {
+		report(w, err)
+		return
+	}
+	status := 200
+	if attach {
+		status = 201
+	}
+	writeJSON(w, status, project)
+}
+
+func (s *Server) compatibleAttachProjectTeam(w http.ResponseWriter, r *http.Request) {
+	s.compatibleProjectTeam(w, r, true)
+}
+
+func (s *Server) compatibleDetachProjectTeam(w http.ResponseWriter, r *http.Request) {
+	s.compatibleProjectTeam(w, r, false)
 }
 
 type compatibleDSN struct {

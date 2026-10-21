@@ -115,3 +115,69 @@ func TestCreateCompatibleProjectHTTP(t *testing.T) {
 	foreignToken := issueManagementToken(t, f, "project-create-second", "Foreign project write", []string{"org:write"}, []string{secondProjectID})
 	f.request(t, http.DefaultClient, "POST", path, `{"name":"Foreign denied"}`, http.Header{"Authorization": {"Bearer " + foreignToken}}, 404)
 }
+
+func TestCompatibleProjectTeamRelationshipHTTP(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	first, err := f.db.CreateTeam(f.ctx, f.owner.ID, f.org.Slug, "First project team")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := f.db.CreateTeam(f.ctx, f.owner.ID, f.org.Slug, "Second project team")
+	if err != nil {
+		t.Fatal(err)
+	}
+	project, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Relationship project", "go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	base := "/api/0/projects/" + f.org.Slug + "/" + project.Slug + "/teams/"
+	firstPath := base + first.Slug + "/"
+	secondPath := base + second.Slug + "/"
+	csrf := http.Header{"X-CSRF-Token": {f.csrf}}
+
+	f.request(t, http.DefaultClient, "POST", firstPath, "", nil, 401)
+	insertDiscoveryMember(t, f, "project-team-member@test", "Project team member", "member")
+	memberClient, memberCSRF := loginManagementMember(t, f, "project-team-member@test")
+	f.request(t, memberClient, "POST", firstPath, "", http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
+	f.request(t, f.client, "POST", firstPath, "", nil, 403)
+	f.request(t, f.client, "POST", base+"missing/", "", csrf, 404)
+	var attached store.CompatibleOrganizationProject
+	if err := json.Unmarshal(f.request(t, f.client, "POST", firstPath, "", csrf, 201), &attached); err != nil || len(attached.Teams) != 1 || attached.Teams[0].ID != first.ID {
+		t.Fatalf("attach team HTTP: %+v %v", attached, err)
+	}
+	if err := json.Unmarshal(f.request(t, f.client, "POST", firstPath, "", csrf, 201), &attached); err != nil || len(attached.Teams) != 1 {
+		t.Fatalf("idempotent team attach HTTP: %+v %v", attached, err)
+	}
+	f.request(t, f.client, "POST", secondPath, "", csrf, 409)
+	var teams []store.CompatibleTeam
+	if err := json.Unmarshal(f.request(t, f.client, "GET", base, "", nil, 200), &teams); err != nil || len(teams) != 1 || teams[0].ID != first.ID {
+		t.Fatalf("project team relation read: %+v %v", teams, err)
+	}
+	f.request(t, f.client, "DELETE", secondPath, "", csrf, 404)
+	if err := json.Unmarshal(f.request(t, f.client, "DELETE", firstPath, "", csrf, 200), &attached); err != nil || attached.Teams == nil || len(attached.Teams) != 0 {
+		t.Fatalf("detach team HTTP: %+v %v", attached, err)
+	}
+	f.request(t, f.client, "DELETE", firstPath, "", csrf, 200)
+
+	readToken := issueManagementToken(t, f, f.org.Slug, "Project team read", []string{"project:read"}, []string{project.ID})
+	readHeaders := http.Header{"Authorization": {"Bearer " + readToken}}
+	f.request(t, http.DefaultClient, "POST", firstPath, "", readHeaders, 403)
+	writeToken := issueManagementToken(t, f, f.org.Slug, "Project team write", []string{"project:write"}, []string{project.ID})
+	writeHeaders := http.Header{"Authorization": {"Bearer " + writeToken}}
+	if err := json.Unmarshal(f.request(t, http.DefaultClient, "POST", firstPath, "", writeHeaders, 201), &attached); err != nil || len(attached.Teams) != 1 {
+		t.Fatalf("bearer team attach: %+v %v", attached, err)
+	}
+
+	var secondOrgID string
+	if err := f.sql.QueryRow(f.ctx, `INSERT INTO organizations(slug,name) VALUES('project-team-second','Project team second') RETURNING id::text`).Scan(&secondOrgID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.sql.Exec(f.ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1::bigint,$2::bigint,'admin')`, secondOrgID, f.owner.ID); err != nil {
+		t.Fatal(err)
+	}
+	foreignTeam, err := f.db.CreateTeam(f.ctx, f.owner.ID, "project-team-second", "Foreign team")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.request(t, f.client, "POST", base+foreignTeam.Slug+"/", "", csrf, 404)
+}

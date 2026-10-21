@@ -1,0 +1,17 @@
+{
+  "testedAt": "2026-10-21T12:41:37Z",
+  "commands": [
+    {"command": "go test -race -count=1 -tags=integration ./...", "result": "pass", "log": "integration-race.log", "server": "120.414s", "store": "234.452s"},
+    {"command": "targeted compatible project-team store/HTTP tests with -race", "result": "pass", "log": "targeted-project-team-race.log"},
+    {"command": "go vet -tags=integration ./...", "result": "pass", "log": "vet.log"},
+    {"command": "go mod verify", "result": "pass", "log": "mod-verify.log"},
+    {"command": "git diff --check and gofmt -l", "result": "pass"}
+  ],
+  "verifiedBehavior": [
+    "A project can attach the currently supported single team and the operation is idempotent.",
+    "Attaching a different team returns 409 without replacing the existing relation.",
+    "Detaching clears exactly the matching relation and repeated detach remains idempotent.",
+    "Missing, foreign and grant-excluded projects or teams remain hidden.",
+    "Session owner/admin, project:write Bearer, CSRF and read-only scope boundaries are enforced."
+  ]
+}

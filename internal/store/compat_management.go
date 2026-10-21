@@ -13,6 +13,7 @@ import (
 
 var ErrInvalidProjectKey = errors.New("invalid project key")
 var ErrInvalidProject = errors.New("invalid project")
+var ErrProjectTeamConflict = errors.New("project already belongs to another team")
 
 type CompatibleKeyRateLimit struct {
 	Window int `json:"window"`
@@ -202,6 +203,67 @@ func (s *Store) CreateCompatibleProject(ctx context.Context, actorID, orgRef, te
 	result.HasAccess = true
 	result.IsMember = true
 	result.Teams = []CompatibleTeamSlug{{ID: teamID, Slug: teamSlug}}
+	return result, nil
+}
+
+func (s *Store) CompatibleSetProjectTeam(ctx context.Context, access ManagementAccess, projectRef, teamSlug string, attach bool) (CompatibleOrganizationProject, error) {
+	var result CompatibleOrganizationProject
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return result, err
+	}
+	defer tx.Rollback(ctx)
+	var organizationID string
+	if err = tx.QueryRow(ctx, `SELECT id::text FROM organizations WHERE id=$1::bigint FOR SHARE`, access.OrganizationID).Scan(&organizationID); err != nil {
+		return result, dbError(err)
+	}
+	var currentTeam string
+	err = tx.QueryRow(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,COALESCE(p.team_id::text,'')
+		FROM projects p JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id=$1::bigint
+		WHERE p.organization_id=$2::bigint AND ($3 OR p.id=ANY($4::bigint[])) AND (p.slug=$5 OR p.id=$6)
+		ORDER BY (p.slug=$5) DESC LIMIT 1 FOR UPDATE OF p`,
+		access.UserID, organizationID, access.AllProjects, access.ProjectIDs, projectRef, referenceID(projectRef)).
+		Scan(&result.ID, &result.Name, &result.Slug, &result.Platform, &result.DateCreated, &currentTeam)
+	if err != nil {
+		return result, dbError(err)
+	}
+	var teamID string
+	if attach {
+		if err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug=$2 FOR SHARE`, organizationID, teamSlug).Scan(&teamID); err != nil {
+			return result, dbError(err)
+		}
+		if currentTeam != "" && currentTeam != teamID {
+			return result, ErrProjectTeamConflict
+		}
+	} else {
+		if err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug=$2`, organizationID, teamSlug).Scan(&teamID); err != nil {
+			return result, dbError(err)
+		}
+		if currentTeam != "" && currentTeam != teamID {
+			return result, ErrNotFound
+		}
+	}
+	if attach && currentTeam != teamID {
+		if _, err = tx.Exec(ctx, `UPDATE projects SET team_id=$2::bigint WHERE id=$1::bigint`, result.ID, teamID); err != nil {
+			return result, err
+		}
+	}
+	if !attach {
+		if _, err = tx.Exec(ctx, `UPDATE projects SET team_id=NULL WHERE id=$1::bigint`, result.ID); err != nil {
+			return result, err
+		}
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return result, err
+	}
+	result.DateCreated = result.DateCreated.UTC()
+	result.Features = []string{}
+	result.HasAccess = true
+	result.IsMember = true
+	result.Teams = []CompatibleTeamSlug{}
+	if attach {
+		result.Teams = append(result.Teams, CompatibleTeamSlug{ID: teamID, Slug: teamSlug})
+	}
 	return result, nil
 }
 

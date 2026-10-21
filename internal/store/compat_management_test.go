@@ -130,3 +130,47 @@ FROM projects p WHERE p.id=$1::bigint`, created.ID, owner.ID).Scan(&teamID, &mem
 		t.Fatalf("member project creation: %v", err)
 	}
 }
+
+func TestCompatibleProjectTeamAssignmentSingleRelation(t *testing.T) {
+	ctx, db, owner, org, _ := telemetryStore(t)
+	first, err := db.CreateTeam(ctx, owner.ID, org.Slug, "First team")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := db.CreateTeam(ctx, owner.ID, org.Slug, "Second team")
+	if err != nil {
+		t.Fatal(err)
+	}
+	project, err := db.CreateProject(ctx, owner.ID, org.Slug, "Unassigned project", "go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	access := ManagementAccess{UserID: owner.ID, OrganizationID: org.ID, Role: "owner", AllProjects: true}
+	attached, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, first.Slug, true)
+	if err != nil || len(attached.Teams) != 1 || attached.Teams[0].ID != first.ID {
+		t.Fatalf("attach project team: %+v %v", attached, err)
+	}
+	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, first.Slug, true); err != nil {
+		t.Fatalf("idempotent attach: %v", err)
+	}
+	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, second.Slug, true); !errors.Is(err, ErrProjectTeamConflict) {
+		t.Fatalf("second project team: %v", err)
+	}
+	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, second.Slug, false); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("detach unrelated team: %v", err)
+	}
+	detached, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, first.Slug, false)
+	if err != nil || len(detached.Teams) != 0 {
+		t.Fatalf("detach project team: %+v %v", detached, err)
+	}
+	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, first.Slug, false); err != nil {
+		t.Fatalf("idempotent detach: %v", err)
+	}
+	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, "missing", true); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("attach missing team: %v", err)
+	}
+	restricted := ManagementAccess{UserID: owner.ID, OrganizationID: org.ID, Role: "owner", ProjectIDs: []int64{referenceID(project.ID) + 1}}
+	if _, err := db.CompatibleSetProjectTeam(ctx, restricted, project.ID, first.Slug, true); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("attach inaccessible project: %v", err)
+	}
+}
