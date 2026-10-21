@@ -1,0 +1,10 @@
+=== RUN   TestProjectEnvironmentsMigration049BackfillsAndReopens
+--- PASS: TestProjectEnvironmentsMigration049BackfillsAndReopens (0.45s)
+=== RUN   TestCompatibleEnvironmentsVisibilityAndGrants
+--- PASS: TestCompatibleEnvironmentsVisibilityAndGrants (0.40s)
+PASS
+ok  	goodsentry/internal/store	1.884s
+=== RUN   TestCompatibleEnvironmentsHTTP
+--- PASS: TestCompatibleEnvironmentsHTTP (0.60s)
+PASS
+ok  	goodsentry/internal/server	1.627s
