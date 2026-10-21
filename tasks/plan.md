@@ -283,3 +283,5 @@ ARM64 Minidump context support passes local full-race and final-image DIF at3682
 Native ELF/DWARF, Mach-O dSYM, DWARF CFI and bounded ZIP debug archives are public at e744851, 0ae6c9d, 6dc6bd3 and efbb401. Continue the parent with uncommon CFI expressions/signal-frame conventions, PDB/SymCache and nested/tar archive discovery, then collect real multi-platform crash receipts.
 
 Generic OIDC sign-in is public at645f15e with verified-email linking, S256 PKCE, state/nonce protection, opt-in account creation and responsive browser acceptance. Continue with vendor-specific deployment receipts and advanced administration, independently of native format work.
+
+Public uptime status pages are accepted at b98caa2 with compatible management routes, selected monitors, privacy-safe public HTML/JSON and responsive browser coverage. Continue the remaining compatible management surface and final specification audit.
