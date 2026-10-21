@@ -1,0 +1,10 @@
+=== RUN   TestParseMachODSYMObjectSymbols
+--- PASS: TestParseMachODSYMObjectSymbols (0.00s)
+PASS
+ok  	goodsentry/internal/native	1.012s
+=== RUN   TestNativeELFObjectSymbolicationByDebugID
+--- PASS: TestNativeELFObjectSymbolicationByDebugID (0.40s)
+=== RUN   TestNativeMachODSYMObjectSymbolicationByDebugID
+--- PASS: TestNativeMachODSYMObjectSymbolicationByDebugID (0.41s)
+PASS
+ok  	goodsentry/internal/server	1.830s

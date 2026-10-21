@@ -2,7 +2,9 @@ package native
 
 import (
 	"bytes"
+	"debug/dwarf"
 	"debug/elf"
+	"debug/macho"
 	"encoding/binary"
 	"os"
 	"strings"
@@ -268,5 +270,70 @@ func TestSymbolicateByDebugID(t *testing.T) {
 	Symbolicate(&crash, symbols)
 	if crash.Frames[0].Function != "ByDebugID" {
 		t.Fatalf("debug-ID fallback: %+v", crash.Frames[0])
+	}
+}
+
+func TestParseMachODSYMObjectSymbols(t *testing.T) {
+	data, err := os.ReadFile("testdata/macho-dsym-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := macho.NewFile(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var textBase uint64
+	for _, load := range file.Loads {
+		if segment, ok := load.(*macho.Segment); ok && segment.Name == "__TEXT" {
+			textBase = segment.Addr
+			break
+		}
+	}
+	table, err := file.DWARF()
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader := table.Reader()
+	var expectedStart uint64
+	for expectedStart == 0 {
+		entry, err := reader.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if entry == nil {
+			t.Fatal("Mach-O fixture lacks main")
+		}
+		if entry.Tag != dwarf.TagSubprogram {
+			continue
+		}
+		name, _ := entry.Val(dwarf.AttrName).(string)
+		if name != "main" {
+			continue
+		}
+		ranges, err := table.Ranges(entry)
+		if err == nil && len(ranges) > 0 && ranges[0][0] >= textBase {
+			expectedStart = ranges[0][0] - textBase
+		}
+	}
+	module, functions := ParseObjectSymbols("fixture.dSYM", data)
+	if module != "fixture.dsym" {
+		t.Fatalf("Mach-O module=%q", module)
+	}
+	var mainFunction *SymbolFunction
+	for i := range functions {
+		if functions[i].Name == "main" && functions[i].Start == expectedStart {
+			mainFunction = &functions[i]
+			break
+		}
+	}
+	if mainFunction == nil {
+		t.Fatalf("Mach-O main not found at relative %#x in %d functions", expectedStart, len(functions))
+	}
+	crash := Crash{Modules: []Module{{Name: "fixture.dSYM", Base: 0x70000000, Size: 0x10000000}}}
+	crash.Frames = []Frame{{Instruction: 0x70000000 + expectedStart, Module: "fixture.dSYM"}}
+	Symbolicate(&crash, SymbolSet{module: functions})
+	frame := crash.Frames[0]
+	if frame.Function != "main" || !strings.HasSuffix(frame.File, "hello.c") || frame.Line < 1 {
+		t.Fatalf("Mach-O dSYM symbolication: %+v", frame)
 	}
 }

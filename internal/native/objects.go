@@ -96,11 +96,16 @@ func elfImageBase(file *elf.File) uint64 {
 }
 
 func machoImageBase(file *macho.File) uint64 {
+	for _, load := range file.Loads {
+		if segment, ok := load.(*macho.Segment); ok && segment.Name == "__TEXT" {
+			return segment.Addr
+		}
+	}
 	var base uint64
 	found := false
 	for _, load := range file.Loads {
 		segment, ok := load.(*macho.Segment)
-		if !ok || segment.Filesz == 0 {
+		if !ok || segment.Name == "__PAGEZERO" || segment.Memsz == 0 {
 			continue
 		}
 		if !found || segment.Addr < base {

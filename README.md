@@ -61,7 +61,7 @@ Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `
 | --- | --- |
 | Errors and feedback | Grouped issues, stack traces, tags, search, assignment, comments, triage and SDK feedback. |
 | Releases | Sentry CLI lifecycle operations, commit/deploy metadata and JavaScript source maps. |
-| Native diagnostics | Official CLI chunked DIF upload, debug-file storage, AMD64/x86/ARM64 minidump ingestion and Breakpad plus ELF/Mach-O DWARF symbolication; more native formats are in progress. |
+| Native diagnostics | Official CLI chunked DIF upload, debug-file storage, AMD64/x86/ARM64 minidump ingestion and Breakpad plus ELF/Mach-O DWARF or dSYM companion symbolication; more native formats are in progress. |
 | Performance and logs | Transactions, spans, trace waterfalls, typed logs and OTLP/HTTP log ingestion. |
 | Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors; email and webhooks with durable retries. |
 | Accounts and teams | Password changes and email recovery, member roles, teams and single-use email invitations. |
