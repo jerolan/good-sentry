@@ -1,0 +1,14 @@
+{
+  "image": "goodsentry:native-macho-20261020",
+  "imageDigest": "sha256:50f2e250b154ba0ba63632995501f56950c18263b3bc4ddca0691285028ece10",
+  "architecture": "amd64",
+  "user": "65532:65532",
+  "sizeBytes": 36640925,
+  "binarySHA256": "3efbb43acb8b49413c1399f7c7138bbc72bfe2555dfcf42429e6f8a88705b0af",
+  "binaryBytes": 22294688,
+  "health": {
+    "service": "GoodSentry",
+    "status": "ok"
+  },
+  "eventID": "e76e33d6764657bd6c356c04394fe8ad"
+}

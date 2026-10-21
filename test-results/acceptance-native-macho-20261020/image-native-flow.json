@@ -1,0 +1,24 @@
+{
+  "eventID": "e76e33d6764657bd6c356c04394fe8ad",
+  "projectID": 8,
+  "moduleName": "C:\\test\\different.module",
+  "uploadedObject": "uploaded.dsym",
+  "frame": {
+    "function": "main",
+    "filename": "/home/rsc/go/src/pkg/debug/macho/testdata/hello.c",
+    "lineno": 3,
+    "instruction_addr": "0x140000f6a",
+    "package": "C:\\test\\different.module"
+  },
+  "debugMeta": {
+    "images": [
+      {
+        "type": "symbolic",
+        "debug_id": "1122334455667788AABBCCDDEEFF00111",
+        "code_file": "C:\\test\\different.module",
+        "image_addr": "0x140000000",
+        "image_size": 65536
+      }
+    ]
+  }
+}
