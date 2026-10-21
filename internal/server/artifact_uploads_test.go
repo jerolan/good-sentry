@@ -203,15 +203,15 @@ func TestArtifactUploadsHTTPContract(t *testing.T) {
 	}
 	t.Run("authorization and exact negotiation", func(t *testing.T) {
 		type negotiation struct {
-			URL                         string
-			HashAlgorithm               string
-			ChunkSize, ChunksPerRequest int64
-			MaxRequestSize, Concurrency int64
-			Compression, Accept         []string
+			URL                                      string
+			HashAlgorithm                            string
+			ChunkSize, ChunksPerRequest              int64
+			MaxRequestSize, MaxFileSize, Concurrency int64
+			Compression, Accept                      []string
 		}
 		var actual negotiation
 		decode(t, want(t, "writer negotiation control", call("GET", chunksPath, nil, writer), 200), &actual)
-		if actual.URL != cfg.Domain+chunksPath || actual.HashAlgorithm != "sha1" || actual.ChunkSize != 524288 || actual.ChunksPerRequest != 1 || actual.MaxRequestSize != cfg.MaxBodyBytes || actual.Concurrency != 2 || !reflect.DeepEqual(actual.Compression, []string{"gzip"}) || !reflect.DeepEqual(actual.Accept, []string{"artifact_bundles"}) {
+		if actual.URL != cfg.Domain+chunksPath || actual.HashAlgorithm != "sha1" || actual.ChunkSize != 524288 || actual.ChunksPerRequest != 1 || actual.MaxRequestSize != cfg.MaxBodyBytes || actual.MaxFileSize != 64<<20 || actual.Concurrency != 2 || !reflect.DeepEqual(actual.Compression, []string{"gzip"}) || !reflect.DeepEqual(actual.Accept, []string{"debug_files", "artifact_bundles"}) {
 			t.Fatalf("negotiation=%+v", actual)
 		}
 		want(t, "owner session negotiation", request(ownerActor.client, "GET", chunksPath, nil, nil), 200)

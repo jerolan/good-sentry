@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"path"
 	"strings"
+
+	"goodsentry/internal/store"
 )
 
 func (s *Server) registerDebugFileRoutes(mux *http.ServeMux) {
@@ -132,10 +134,70 @@ func (s *Server) uploadDebugFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) assembleDebugFiles(w http.ResponseWriter, r *http.Request) {
-	if _, valid := s.artifactAccess(w, r); !valid {
+	access, valid := s.artifactAccess(w, r)
+	if !valid {
 		return
 	}
-	failure(w, http.StatusNotImplemented, "Chunked debug-file assembly is not implemented")
+	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxBodyBytes)
+	var entries map[string]struct {
+		Name    string   `json:"name"`
+		DebugID string   `json:"debug_id"`
+		Chunks  []string `json:"chunks"`
+	}
+	if !bodyJSON(w, r, &entries) || len(entries) == 0 || len(entries) > 100 {
+		if entries != nil {
+			failure(w, 400, "Provide 1 to 100 debug-file entries")
+		}
+		return
+	}
+	maximum := min(int64(64<<20), s.cfg.MaxBodyBytes)
+	type result struct {
+		State         string           `json:"state"`
+		MissingChunks []string         `json:"missingChunks"`
+		Detail        string           `json:"detail,omitempty"`
+		DIF           *store.DebugFile `json:"dif,omitempty"`
+	}
+	results := map[string]result{}
+	for checksum, entry := range entries {
+		if strings.TrimSpace(entry.Name) == "" || len(entry.Name) > 512 || len(entry.DebugID) > 128 || len(entry.Chunks) == 0 || len(entry.Chunks) > 1000 {
+			failure(w, 400, "Invalid debug-file assembly metadata")
+			return
+		}
+		if _, valid := artifactChecksum(checksum); !valid {
+			failure(w, 400, "Invalid debug-file checksum")
+			return
+		}
+		for i, chunk := range entry.Chunks {
+			value, ok := artifactChecksum(chunk)
+			if !ok {
+				failure(w, 400, "Invalid debug-file chunk checksum")
+				return
+			}
+			entry.Chunks[i] = value
+		}
+		data, missing, err := s.db.ArtifactChunkData(r.Context(), access, []string{r.PathValue("project")}, entry.Chunks, maximum)
+		if err != nil {
+			reportArtifact(w, err)
+			return
+		}
+		if len(missing) != 0 {
+			results[checksum] = result{State: "not_found", MissingChunks: missing, Detail: "Some chunks are missing"}
+			continue
+		}
+		if expected, _ := hex.DecodeString(checksum); sha1.Sum(data) != [20]byte(expected) {
+			failure(w, 400, "Assembled debug-file checksum does not match")
+			return
+		}
+		name := path.Base(strings.ReplaceAll(entry.Name, "\\", "/"))
+		symbolType := strings.TrimPrefix(strings.ToLower(path.Ext(name)), ".")
+		file, err := s.db.SaveDebugFile(r.Context(), access, r.PathValue("project"), name, symbolType, entry.DebugID, "unknown", name, checksum, nil, nil, data)
+		if err != nil {
+			report(w, err)
+			return
+		}
+		results[checksum] = result{State: "ok", MissingChunks: []string{}, DIF: &file}
+	}
+	writeJSON(w, http.StatusOK, results)
 }
 
 func (s *Server) reprocessingDummy(w http.ResponseWriter, r *http.Request) {

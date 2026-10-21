@@ -75,7 +75,7 @@ request body limit. Each browser delivery counts as a separate occurrence.
 
 Remaining work includes complete native crash symbolication, automatic repository integrations, further conditional issue policies, broader management APIs, a live GitLab receipt, social OAuth/OIDC sign-in, administration/OpenAPI and cold archival. The opt-in MCP endpoint exposes the 17 documented tools through OAuth PKCE or scoped API tokens; its tool results are backed by GoodSentry's PostgreSQL event, span and log projections rather than DuckDB. Debug-file multipart upload and listing retain bytes and metadata; chunked DIF assembly returns HTTP 501 until processing is implemented.
 
-Native Minidump ingestion currently supports AMD64 dumps with a textual Breakpad `.sym` file and basic frame-pointer stack reconstruction. Raw dumps are parsed and discarded, and symbolicated/unresolved frames become normal issues. x86/ARM64 contexts, CFI/DWARF, PDB/dSYM/SymCache and chunked DIF upload/download remain open.
+Native Minidump ingestion currently supports AMD64 dumps with a textual Breakpad `.sym` file and basic frame-pointer stack reconstruction. Raw dumps are parsed and discarded, and symbolicated/unresolved frames become normal issues. The official `sentry-cli 3.8.0` completes chunk negotiation and upload for `.sym`; x86/ARM64 contexts, CFI/DWARF, PDB/dSYM/SymCache consumption and archive extraction remain open.
 
 Slack, Discord, Microsoft Teams, Google Chat, Feishu, ntfy and Zulip formats pass real local HTTP receiver, PostgreSQL and responsive browser checks. Receipts from external provider channels remain unverified. Configure and test your intended destination before relying on it.
 

@@ -4,11 +4,15 @@ package server
 
 import (
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"testing"
+	"time"
 
 	"goodsentry/internal/store"
 )
@@ -72,7 +76,7 @@ func TestCompatibleDebugFileUploadListAndPermissions(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, f.client, "GET", base+"/files/dsyms/", "", nil, 200), &files); err != nil || len(files) != 1 || files[0].ID != file.ID {
 		t.Fatalf("debug list: %+v %v", files, err)
 	}
-	f.request(t, f.client, "POST", base+"/files/difs/assemble/", "{}", http.Header{"X-CSRF-Token": {f.csrf}}, 501)
+	f.request(t, f.client, "POST", base+"/files/difs/assemble/", "{}", http.Header{"X-CSRF-Token": {f.csrf}}, 400)
 	f.request(t, f.client, "POST", base+"/reprocessing/", "{}", http.Header{"X-CSRF-Token": {f.csrf}}, 200)
 
 	insertDiscoveryMember(t, f, "debug-member@management.test", "Debug member", "member")
@@ -86,5 +90,45 @@ func TestCompatibleDebugFileUploadListAndPermissions(t *testing.T) {
 	}
 	if err := json.Unmarshal(f.request(t, http.DefaultClient, "GET", base+"/files/dsyms/", "", http.Header{"Authorization": {"Bearer " + writeToken}}, 200), &files); err != nil || len(files) != 2 {
 		t.Fatalf("bearer list: %+v %v", files, err)
+	}
+}
+
+func TestChunkedDebugFileAssemblyState(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	base := "/api/0/projects/" + f.org.Slug + "/" + f.project.Slug
+	token := issueManagementToken(t, f, f.org.Slug, "DIF chunk reader", []string{"project:releases"}, []string{f.project.ID})
+	headers := http.Header{"Authorization": {"Bearer " + token}}
+	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nFUNC 1010 20 0 CrashFunction\n")
+	digest := sha1.Sum(symbol)
+	checksum := hex.EncodeToString(digest[:])
+	body := fmt.Sprintf(`{"%s":{"name":"test_app.sym","debug_id":"5a9832e5-2872-41c1-838e-d98914e9b7ff-1","chunks":["%s"]}}`, checksum, checksum)
+	type state struct {
+		State         string           `json:"state"`
+		MissingChunks []string         `json:"missingChunks"`
+		DIF           *store.DebugFile `json:"dif"`
+	}
+	decodeState := func(raw []byte) state {
+		t.Helper()
+		var values map[string]state
+		if err := json.Unmarshal(raw, &values); err != nil || values[checksum].State == "" {
+			t.Fatalf("assembly response: %s %v", raw, err)
+		}
+		return values[checksum]
+	}
+	first := decodeState(f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", body, headers, 200))
+	if first.State != "not_found" || len(first.MissingChunks) != 1 || first.MissingChunks[0] != checksum || first.DIF != nil {
+		t.Fatalf("missing state: %+v", first)
+	}
+	projectID, valid := occurrenceNumber(f.project.ID, 9223372036854775807)
+	if !valid {
+		t.Fatal("fixture project ID is not canonical")
+	}
+	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: false, ProjectIDs: []int64{projectID}}
+	if err := f.db.SaveArtifactChunks(f.ctx, access, []store.ArtifactChunk{{Checksum: checksum, Data: symbol}}, store.ArtifactStagingPolicy{MaxBytes: 1 << 20, TTL: time.Hour}); err != nil {
+		t.Fatal(err)
+	}
+	second := decodeState(f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", body, headers, 200))
+	if second.State != "ok" || len(second.MissingChunks) != 0 || second.DIF == nil || second.DIF.DebugID == nil || second.DIF.Size != int64(len(symbol)) {
+		t.Fatalf("assembled state: %+v", second)
 	}
 }

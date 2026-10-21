@@ -51,8 +51,8 @@ func (s *Server) artifactUploadInfo(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]any{
 		"url":           s.cfg.Domain + "/api/0/organizations/" + url.PathEscape(r.PathValue("org")) + "/chunk-upload/",
 		"hashAlgorithm": "sha1", "chunkSize": size, "chunksPerRequest": parts,
-		"maxRequestSize": s.cfg.MaxBodyBytes, "concurrency": 2,
-		"compression": []string{"gzip"}, "accept": []string{"artifact_bundles"},
+		"maxRequestSize": s.cfg.MaxBodyBytes, "maxFileSize": int64(64 << 20), "concurrency": 2,
+		"compression": []string{"gzip"}, "accept": []string{"debug_files", "artifact_bundles"},
 	})
 }
 
