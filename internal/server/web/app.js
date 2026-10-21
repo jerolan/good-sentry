@@ -695,12 +695,59 @@
     });
     const identity = node('div', { class: 'account-identity' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'muted' }, state.me.user.email));
     const emailPanel = node('section', { class: 'card panel account-panel', 'aria-label': 'Email addresses' });
+    const deletePanel = node('section', { class: 'card panel account-panel', 'aria-label': 'Delete account' });
     main.replaceChildren(
       node('div', { class: 'page-header' }, node('div', {}, node('div', { class: 'eyebrow' }, 'Your account'), node('h1', { tabindex: '-1' }, 'Account'),
         node('p', {}, 'Manage the credentials used to sign in to GoodSentry.'))),
       node('section', { class: 'card panel panel-body account-panel' }, identity,
         node('p', { class: 'small muted' }, 'Changing your password signs out every session and revokes personal API tokens in every organization. Project SDK keys keep working.'),
-        error, form), emailPanel);
+        error, form), emailPanel, deletePanel);
+
+    const deleteError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const deleteControl = button('Delete account', openDeleteAccount, 'danger');
+    deletePanel.append(
+      node('div', { class: 'panel-title' }, node('h2', {}, 'Delete account')),
+      node('div', { class: 'panel-body form-stack' },
+        node('p', { class: 'muted' }, 'Deleting your account removes your sessions, API tokens, memberships, teams, verified email addresses, linked sign-in identities and sent invitations. This cannot be undone.'),
+        node('p', { class: 'small muted' }, 'If you are the only owner of an organization, add another owner in People before deleting your account.'),
+        deleteError, deleteControl));
+
+    function openDeleteAccount() {
+      const dialog = node('dialog', { class: 'alert-dialog', 'aria-labelledby': 'delete-account-title' });
+      const dialogError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+      const typedEmail = field('Type your email address', 'email', { name: 'confirmEmail', autocomplete: 'off', required: true, maxlength: 254 });
+      const confirm = node('button', { type: 'submit', class: 'btn button danger', disabled: true }, 'Delete account permanently');
+      const form = node('form', { class: 'form-stack', 'aria-label': 'Confirm account deletion' },
+        dialogError,
+        node('p', {}, `Delete ${state.me.user.email}? Your organization data remains available to its other members.`),
+        typedEmail.wrap,
+        node('div', { class: 'dialog-actions' }, button('Cancel', () => dialog.close()), confirm));
+      typedEmail.input.addEventListener('input', () => {
+        confirm.disabled = typedEmail.input.value.trim().toLowerCase() !== state.me.user.email.toLowerCase();
+      });
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        dialogError.textContent = '';
+        confirm.disabled = true;
+        confirm.textContent = 'Deleting…';
+        try {
+          await request('/api/0/users/me/', { method: 'DELETE' });
+          dialog.close();
+          state.me = null;
+          state.requestVersion++;
+          renderAuth(false, 'Your account has been deleted.');
+        } catch (failure) {
+          formError(dialogError, failure);
+          confirm.disabled = typedEmail.input.value.trim().toLowerCase() !== state.me.user.email.toLowerCase();
+          confirm.textContent = 'Delete account permanently';
+        }
+      });
+      dialog.append(node('header', {}, node('h2', { id: 'delete-account-title' }, 'Delete account?'), button('Close', () => dialog.close(), 'small')), form);
+      dialog.addEventListener('close', () => dialog.remove());
+      document.body.append(dialog);
+      dialog.showModal();
+      typedEmail.input.focus();
+    }
 
     const emailPath = `/api/0/users/${encodeURIComponent(state.me.user.id)}/emails/`;
     const emailError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
