@@ -172,7 +172,7 @@ func (s *Store) RemoveMember(ctx context.Context, actorID, orgSlug, targetID str
 
 const teamColumns = `t.id::text,t.slug,t.name,
  (SELECT count(*) FROM team_memberships tm JOIN memberships m ON m.user_id=tm.user_id AND m.organization_id=t.organization_id WHERE tm.team_id=t.id),
- (SELECT count(*) FROM projects p WHERE p.team_id=t.id)`
+ (SELECT count(*) FROM project_teams pt WHERE pt.team_id=t.id)`
 
 func scanTeam(row interface{ Scan(...any) error }) (Team, error) {
 	var team Team
@@ -304,6 +304,11 @@ func (s *Store) DeleteTeam(ctx context.Context, actorID, orgSlug, teamID string)
 		return ErrForbidden
 	}
 	if _, err = tx.Exec(ctx, `DELETE FROM teams WHERE organization_id=$1::bigint AND id=$2::bigint`, orgID, teamID); err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `UPDATE projects p SET team_id=(SELECT min(pt.team_id) FROM project_teams pt WHERE pt.project_id=p.id)
+		WHERE p.organization_id=$1::bigint AND p.team_id IS NULL
+		AND EXISTS(SELECT 1 FROM project_teams pt WHERE pt.project_id=p.id)`, orgID); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)

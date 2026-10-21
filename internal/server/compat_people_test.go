@@ -28,9 +28,7 @@ func TestCompatiblePeopleTeamsAndProjectRelationsHTTP(t *testing.T) {
 	if err := f.db.AddTeamMember(f.ctx, f.owner.ID, f.org.Slug, onCall.ID, f.owner.ID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := f.sql.Exec(f.ctx, `UPDATE projects SET team_id=$2::bigint WHERE id=$1::bigint`, f.project.ID, onCall.ID); err != nil {
-		t.Fatal(err)
-	}
+	setFixtureProjectTeam(t, f, f.project.ID, onCall.ID)
 	orgBase := "/api/0/organizations/" + f.org.Slug
 	teamBase := "/api/0/teams/" + f.org.Slug + "/on-call"
 	projectTeams := "/api/0/projects/" + f.org.Slug + "/" + f.project.Slug + "/teams/"

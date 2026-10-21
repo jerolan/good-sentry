@@ -639,10 +639,6 @@ func (s *Server) compatibleProjectTeam(w http.ResponseWriter, r *http.Request, a
 		return
 	}
 	project, err := s.db.CompatibleSetProjectTeam(r.Context(), access, r.PathValue("project"), teamSlug, attach)
-	if errors.Is(err, store.ErrProjectTeamConflict) {
-		failure(w, 409, "Projects currently support one team relation")
-		return
-	}
 	if err != nil {
 		report(w, err)
 		return

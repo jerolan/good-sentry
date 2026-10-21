@@ -13,11 +13,35 @@ import (
 	"goodsentry/internal/store"
 )
 
-func TestCompatibleManagementOrganizationAndProjectKeysHTTP(t *testing.T) {
-	f := newResolutionHTTPFixture(t)
-	if _, err := f.sql.Exec(f.ctx, `UPDATE projects SET team_id=(SELECT id FROM teams WHERE organization_id=$1::bigint AND slug='default') WHERE id=$2::bigint`, f.org.ID, f.project.ID); err != nil {
+func setFixtureProjectTeam(t *testing.T, f *resolutionHTTPFixture, projectID, teamID string) {
+	t.Helper()
+	tx, err := f.sql.Begin(f.ctx)
+	if err != nil {
 		t.Fatal(err)
 	}
+	defer tx.Rollback(f.ctx)
+	if _, err = tx.Exec(f.ctx, `UPDATE projects SET team_id=$2::bigint WHERE id=$1::bigint`, projectID, teamID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = tx.Exec(f.ctx, `DELETE FROM project_teams WHERE project_id=$1::bigint`, projectID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = tx.Exec(f.ctx, `INSERT INTO project_teams(organization_id,project_id,team_id,created_at)
+		SELECT organization_id,id,$2::bigint,created_at FROM projects WHERE id=$1::bigint`, projectID, teamID); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Commit(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCompatibleManagementOrganizationAndProjectKeysHTTP(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	var defaultTeam string
+	if err := f.sql.QueryRow(f.ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug='default'`, f.org.ID).Scan(&defaultTeam); err != nil {
+		t.Fatal(err)
+	}
+	setFixtureProjectTeam(t, f, f.project.ID, defaultTeam)
 	keysPath := "/api/0/projects/" + f.org.Slug + "/" + f.project.Slug + "/keys/"
 	orgPath := "/api/0/organizations/" + f.org.Slug + "/"
 	f.request(t, http.DefaultClient, "GET", orgPath, "", nil, 401)

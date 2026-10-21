@@ -11,9 +11,11 @@ import (
 func TestCompatibleManagementOrganizationAndProjectKeys(t *testing.T) {
 	ctx, db, user, org, project := telemetryStore(t)
 	access := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, Role: "owner", AllProjects: true}
-	if _, err := db.pool.Exec(ctx, `UPDATE projects SET team_id=(SELECT id FROM teams WHERE organization_id=$1::bigint AND slug='default') WHERE id=$2::bigint`, org.ID, project.ID); err != nil {
+	var defaultTeam string
+	if err := db.pool.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug='default'`, org.ID).Scan(&defaultTeam); err != nil {
 		t.Fatal(err)
 	}
+	assignProjectTeam(t, ctx, db, project.ID, defaultTeam)
 
 	detail, err := db.CompatibleOrganizationDetail(ctx, user.ID, org.Slug)
 	if err != nil || detail.ID != org.ID || detail.Role != "owner" || len(detail.Projects) != 1 || len(detail.Teams) != 1 || detail.OpenMembership {
@@ -100,10 +102,13 @@ func TestCreateCompatibleProjectInTeam(t *testing.T) {
 		t.Fatalf("created project key: %+v %v", keys, err)
 	}
 	var teamID int64
+	var projectTeams int
 	var member bool
-	if err := db.pool.QueryRow(ctx, `SELECT p.team_id::bigint,EXISTS(SELECT 1 FROM team_memberships tm WHERE tm.team_id=p.team_id AND tm.user_id=$2::bigint)
-FROM projects p WHERE p.id=$1::bigint`, created.ID, owner.ID).Scan(&teamID, &member); err != nil || !member || teamID == 0 {
-		t.Fatalf("project/team membership: %d %t %v", teamID, member, err)
+	if err := db.pool.QueryRow(ctx, `SELECT p.team_id::bigint,
+(SELECT count(*) FROM project_teams pt WHERE pt.project_id=p.id),
+EXISTS(SELECT 1 FROM team_memberships tm WHERE tm.team_id=p.team_id AND tm.user_id=$2::bigint)
+FROM projects p WHERE p.id=$1::bigint`, created.ID, owner.ID).Scan(&teamID, &projectTeams, &member); err != nil || !member || teamID == 0 || projectTeams != 1 {
+		t.Fatalf("project/team membership: %d %d %t %v", teamID, projectTeams, member, err)
 	}
 
 	derived, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Web Client", "", "")
@@ -131,7 +136,7 @@ FROM projects p WHERE p.id=$1::bigint`, created.ID, owner.ID).Scan(&teamID, &mem
 	}
 }
 
-func TestCompatibleProjectTeamAssignmentSingleRelation(t *testing.T) {
+func TestCompatibleProjectTeamAssignmentMultipleRelations(t *testing.T) {
 	ctx, db, owner, org, _ := telemetryStore(t)
 	first, err := db.CreateTeam(ctx, owner.ID, org.Slug, "First team")
 	if err != nil {
@@ -153,18 +158,20 @@ func TestCompatibleProjectTeamAssignmentSingleRelation(t *testing.T) {
 	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, first.Slug, true); err != nil {
 		t.Fatalf("idempotent attach: %v", err)
 	}
-	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, second.Slug, true); !errors.Is(err, ErrProjectTeamConflict) {
-		t.Fatalf("second project team: %v", err)
-	}
-	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, second.Slug, false); !errors.Is(err, ErrNotFound) {
-		t.Fatalf("detach unrelated team: %v", err)
+	attached, err = db.CompatibleSetProjectTeam(ctx, access, project.ID, second.Slug, true)
+	if err != nil || len(attached.Teams) != 2 || attached.Teams[0].ID != first.ID || attached.Teams[1].ID != second.ID {
+		t.Fatalf("attach second project team: %+v %v", attached, err)
 	}
 	detached, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, first.Slug, false)
-	if err != nil || len(detached.Teams) != 0 {
-		t.Fatalf("detach project team: %+v %v", detached, err)
+	if err != nil || len(detached.Teams) != 1 || detached.Teams[0].ID != second.ID {
+		t.Fatalf("detach first project team: %+v %v", detached, err)
 	}
 	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, first.Slug, false); err != nil {
 		t.Fatalf("idempotent detach: %v", err)
+	}
+	detached, err = db.CompatibleSetProjectTeam(ctx, access, project.ID, second.Slug, false)
+	if err != nil || len(detached.Teams) != 0 {
+		t.Fatalf("detach final project team: %+v %v", detached, err)
 	}
 	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, "missing", true); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("attach missing team: %v", err)
@@ -172,5 +179,41 @@ func TestCompatibleProjectTeamAssignmentSingleRelation(t *testing.T) {
 	restricted := ManagementAccess{UserID: owner.ID, OrganizationID: org.ID, Role: "owner", ProjectIDs: []int64{referenceID(project.ID) + 1}}
 	if _, err := db.CompatibleSetProjectTeam(ctx, restricted, project.ID, first.Slug, true); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("attach inaccessible project: %v", err)
+	}
+	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, first.Slug, true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, second.Slug, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.DeleteTeam(ctx, owner.ID, org.Slug, first.ID); err != nil {
+		t.Fatal(err)
+	}
+	detail, err := db.CompatibleOrganizationDetail(ctx, owner.ID, org.Slug)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var afterDelete CompatibleOrganizationProject
+	for _, candidate := range detail.Projects {
+		if candidate.ID == project.ID {
+			afterDelete = candidate
+		}
+	}
+	if len(afterDelete.Teams) != 1 || afterDelete.Teams[0].ID != second.ID {
+		t.Fatalf("team deletion retained wrong associations: %+v", afterDelete.Teams)
+	}
+	var primary string
+	if err := db.pool.QueryRow(ctx, `SELECT team_id::text FROM projects WHERE id=$1::bigint`, project.ID).Scan(&primary); err != nil || primary != second.ID {
+		t.Fatalf("primary team after deletion=%q err=%v", primary, err)
+	}
+	var foreignOrg, foreignTeam string
+	if err := db.pool.QueryRow(ctx, `INSERT INTO organizations(slug,name) VALUES('project-team-foreign','Project team foreign') RETURNING id::text`).Scan(&foreignOrg); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.pool.QueryRow(ctx, `INSERT INTO teams(organization_id,slug,name) VALUES($1::bigint,'foreign','Foreign') RETURNING id::text`, foreignOrg).Scan(&foreignTeam); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `INSERT INTO project_teams(organization_id,project_id,team_id) VALUES($1::bigint,$2::bigint,$3::bigint)`, org.ID, project.ID, foreignTeam); err == nil {
+		t.Fatal("cross-organization project-team association was accepted")
 	}
 }

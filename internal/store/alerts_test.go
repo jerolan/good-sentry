@@ -184,9 +184,7 @@ func TestAlertPermissionsAssignedTeamAndDestinationSnapshots(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if _, err := db.pool.Exec(ctx, "UPDATE projects SET team_id=$2 WHERE id::text=$1", project.ID, team); err != nil {
-		t.Fatal(err)
-	}
+	assignProjectTeam(t, ctx, db, project.ID, team)
 	c := alertConfig("Assigned team")
 	c.Recipients = []notify.Recipient{{Type: "team_email"}}
 	rule, err := db.CreateAlert(ctx, owner.ID, org.Slug, project.ID, c)
@@ -254,6 +252,47 @@ func TestAlertPermissionsAssignedTeamAndDestinationSnapshots(t *testing.T) {
 	snapshot, _, err := db.AlertDelivery(ctx, owner.ID, org.Slug, project.ID, deliveries[0].ID)
 	if err != nil || snapshot.Recipient.Destination != "member@alert.test" {
 		t.Fatalf("destination snapshot changed with memberships: %+v, %v", snapshot, err)
+	}
+	if _, err := db.pool.Exec(ctx, "INSERT INTO memberships(organization_id,user_id,role) VALUES($1,$2,'member')", org.ID, member); err != nil {
+		t.Fatal(err)
+	}
+	secondTeam, err := db.CreateTeam(ctx, owner.ID, org.Slug, "Second alert team")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var secondMember string
+	if err := db.pool.QueryRow(ctx, "INSERT INTO users(email,password_hash,name) VALUES('second@alert.test',$1,'Second alert user') RETURNING id::text", []byte("already-hashed")).Scan(&secondMember); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, "INSERT INTO memberships(organization_id,user_id,role) VALUES($1,$2,'member')", org.ID, secondMember); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.AddTeamMember(ctx, owner.ID, org.Slug, secondTeam.ID, secondMember); err != nil {
+		t.Fatal(err)
+	}
+	access := ManagementAccess{UserID: owner.ID, OrganizationID: org.ID, Role: "owner", AllProjects: true}
+	if _, err := db.CompatibleSetProjectTeam(ctx, access, project.ID, secondTeam.Slug, true); err != nil {
+		t.Fatal(err)
+	}
+	multi := alertConfig("Multi-team recipients")
+	multi.Recipients = []notify.Recipient{{Type: "team_email"}}
+	multiRule, err := db.CreateAlert(ctx, owner.ID, org.Slug, project.ID, multi)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n, err := db.TestAlert(ctx, owner.ID, org.Slug, project.ID, multiRule.ID); err != nil || n != 2 {
+		t.Fatalf("multi-team recipients=%d err=%v", n, err)
+	}
+	multiDeliveries, _, err := db.AlertDeliveries(ctx, owner.ID, org.Slug, project.ID, multiRule.ID, 1)
+	if err != nil || len(multiDeliveries) != 2 {
+		t.Fatalf("multi-team deliveries=%+v err=%v", multiDeliveries, err)
+	}
+	destinations := map[string]bool{}
+	for _, delivery := range multiDeliveries {
+		destinations[delivery.Recipient.Destination] = true
+	}
+	if !destinations["member@alert.test"] || !destinations["second@alert.test"] {
+		t.Fatalf("multi-team destinations=%v", destinations)
 	}
 }
 

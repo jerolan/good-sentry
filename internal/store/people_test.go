@@ -3,10 +3,33 @@
 package store
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"testing"
 )
+
+func assignProjectTeam(t *testing.T, ctx context.Context, db *Store, projectID, teamID string) {
+	t.Helper()
+	tx, err := db.pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	if _, err = tx.Exec(ctx, `UPDATE projects SET team_id=$2::bigint WHERE id=$1::bigint`, projectID, teamID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = tx.Exec(ctx, `DELETE FROM project_teams WHERE project_id=$1::bigint`, projectID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO project_teams(organization_id,project_id,team_id,created_at)
+		SELECT organization_id,id,$2::bigint,created_at FROM projects WHERE id=$1::bigint`, projectID, teamID); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestPeopleMembershipsTeamsAndLastOwner(t *testing.T) {
 	ctx, db, owner, org, project := telemetryStore(t)
@@ -40,9 +63,7 @@ func TestPeopleMembershipsTeamsAndLastOwner(t *testing.T) {
 	if err != nil || team.Name != "On call" || team.MemberCount != 0 {
 		t.Fatalf("create team=%+v err=%v", team, err)
 	}
-	if _, err := db.pool.Exec(ctx, `UPDATE projects SET team_id=$2 WHERE id=$1::bigint`, project.ID, team.ID); err != nil {
-		t.Fatal(err)
-	}
+	assignProjectTeam(t, ctx, db, project.ID, team.ID)
 	if err := db.AddTeamMember(ctx, owner.ID, org.Slug, team.ID, member.ID); err != nil {
 		t.Fatal(err)
 	}

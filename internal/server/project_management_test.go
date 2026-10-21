@@ -148,16 +148,20 @@ func TestCompatibleProjectTeamRelationshipHTTP(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, f.client, "POST", firstPath, "", csrf, 201), &attached); err != nil || len(attached.Teams) != 1 {
 		t.Fatalf("idempotent team attach HTTP: %+v %v", attached, err)
 	}
-	f.request(t, f.client, "POST", secondPath, "", csrf, 409)
+	if err := json.Unmarshal(f.request(t, f.client, "POST", secondPath, "", csrf, 201), &attached); err != nil || len(attached.Teams) != 2 || attached.Teams[0].ID != first.ID || attached.Teams[1].ID != second.ID {
+		t.Fatalf("attach second team HTTP: %+v %v", attached, err)
+	}
 	var teams []store.CompatibleTeam
-	if err := json.Unmarshal(f.request(t, f.client, "GET", base, "", nil, 200), &teams); err != nil || len(teams) != 1 || teams[0].ID != first.ID {
+	if err := json.Unmarshal(f.request(t, f.client, "GET", base, "", nil, 200), &teams); err != nil || len(teams) != 2 || teams[0].ID != first.ID || teams[1].ID != second.ID {
 		t.Fatalf("project team relation read: %+v %v", teams, err)
 	}
-	f.request(t, f.client, "DELETE", secondPath, "", csrf, 404)
-	if err := json.Unmarshal(f.request(t, f.client, "DELETE", firstPath, "", csrf, 200), &attached); err != nil || attached.Teams == nil || len(attached.Teams) != 0 {
-		t.Fatalf("detach team HTTP: %+v %v", attached, err)
+	if err := json.Unmarshal(f.request(t, f.client, "DELETE", firstPath, "", csrf, 200), &attached); err != nil || len(attached.Teams) != 1 || attached.Teams[0].ID != second.ID {
+		t.Fatalf("detach first team HTTP: %+v %v", attached, err)
 	}
 	f.request(t, f.client, "DELETE", firstPath, "", csrf, 200)
+	if err := json.Unmarshal(f.request(t, f.client, "DELETE", secondPath, "", csrf, 200), &attached); err != nil || attached.Teams == nil || len(attached.Teams) != 0 {
+		t.Fatalf("detach final team HTTP: %+v %v", attached, err)
+	}
 
 	readToken := issueManagementToken(t, f, f.org.Slug, "Project team read", []string{"project:read"}, []string{project.ID})
 	readHeaders := http.Header{"Authorization": {"Bearer " + readToken}}

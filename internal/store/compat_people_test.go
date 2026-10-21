@@ -27,9 +27,7 @@ func TestCompatibleOrganizationPeopleTeamsAndProjects(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.pool.Exec(ctx, `UPDATE projects SET team_id=$2::bigint WHERE id=$1::bigint`, project.ID, onCall.ID); err != nil {
-		t.Fatal(err)
-	}
+	assignProjectTeam(t, ctx, db, project.ID, onCall.ID)
 
 	members, err := db.CompatibleOrganizationMembers(ctx, owner.ID, org.Slug)
 	if err != nil || len(members) != 2 || members[0].Email != "member@compat-people.test" || members[0].Role != "member" || members[0].User == nil || members[0].User.DateJoined.IsZero() || members[1].ID != owner.ID || !members[1].IsOwner || members[1].User == nil {
@@ -86,9 +84,7 @@ func TestCompatibleTeamMutationsPreserveProjectRelations(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.pool.Exec(ctx, `UPDATE projects SET team_id=$2::bigint WHERE id=$1::bigint`, project.ID, team.ID); err != nil {
-		t.Fatal(err)
-	}
+	assignProjectTeam(t, ctx, db, project.ID, team.ID)
 	if _, err := db.UpdateCompatibleTeam(ctx, owner.ID, org.Slug, "on-call", "bad slug"); !errors.Is(err, ErrInvalidTeam) {
 		t.Fatalf("invalid team slug error: %v", err)
 	}

@@ -1,0 +1,16 @@
+=== RUN   TestAlertPermissionsAssignedTeamAndDestinationSnapshots
+--- PASS: TestAlertPermissionsAssignedTeamAndDestinationSnapshots (0.48s)
+=== RUN   TestProjectTeamsMigration048PreservesLegacyRelations
+--- PASS: TestProjectTeamsMigration048PreservesLegacyRelations (0.40s)
+=== RUN   TestCompatibleProjectTeamAssignmentMultipleRelations
+--- PASS: TestCompatibleProjectTeamAssignmentMultipleRelations (0.41s)
+=== RUN   TestCompatibleOrganizationPeopleTeamsAndProjects
+--- PASS: TestCompatibleOrganizationPeopleTeamsAndProjects (0.39s)
+=== RUN   TestPeopleMembershipsTeamsAndLastOwner
+--- PASS: TestPeopleMembershipsTeamsAndLastOwner (0.44s)
+PASS
+ok  	goodsentry/internal/store	3.186s
+=== RUN   TestCompatibleProjectTeamRelationshipHTTP
+--- PASS: TestCompatibleProjectTeamRelationshipHTTP (0.58s)
+PASS
+ok  	goodsentry/internal/server	1.619s

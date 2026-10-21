@@ -210,7 +210,13 @@ func resolvedAlertRecipients(ctx context.Context, tx pgx.Tx, projectID string, c
 			continue
 		}
 		rows, err := tx.Query(ctx, `SELECT DISTINCT u.email FROM projects p
-			JOIN teams t ON t.id=COALESCE(p.team_id,(SELECT d.id FROM teams d WHERE d.organization_id=p.organization_id AND d.slug='default')) AND t.organization_id=p.organization_id
+			JOIN LATERAL (
+			 SELECT pt.team_id FROM project_teams pt WHERE pt.project_id=p.id
+			 UNION
+			 SELECT d.id FROM teams d WHERE d.organization_id=p.organization_id AND d.slug='default'
+			  AND NOT EXISTS(SELECT 1 FROM project_teams pt WHERE pt.project_id=p.id)
+			) selected ON true
+			JOIN teams t ON t.id=selected.team_id AND t.organization_id=p.organization_id
 			JOIN team_memberships tm ON tm.team_id=t.id JOIN users u ON u.id=tm.user_id
 			JOIN memberships m ON m.user_id=u.id AND m.organization_id=p.organization_id WHERE p.id=$1::bigint ORDER BY u.email`, projectID)
 		if err != nil {
