@@ -772,3 +772,11 @@ Corrected local gates pass at `8df395f0afdb1298e9cdb2b7426159e7182917f2`: comple
 MCP issue prerequisite accepted at corrected public `8df395f0afdb1298e9cdb2b7426159e7182917f2`. All 481 published blobs match the accepted source. CI39525321380 passes with fresh server 92.110 s, store 174.728 s and the image build; its complete 147,174-byte log is inspected. Image workflow39525789491 passes. Anonymous registry checks confirm amd64/arm64, UID `65532:65532`, exact source labels and shared main/latest index `sha256:7510cf1a3c9a06f20877091a29e427cee8aa8142b159387af673b31831c53d82`. The public amd64 executable exactly matches the accepted local executable: 21,016,736 bytes, SHA-256 `1ac97aea7ac261c7317614f8a37a948affdfc8a0fd8db501025028c700e8a8d1`. An actual public-image startup with enabled MCP and an unreachable database refuses MCP before attempting that connection.
 
 Public evidence: `test-results/acceptance-mcp-issues-20261020/{corrected-public-source.json,corrected-ci-public.json,corrected-ci-public.log,corrected-image-public.json,corrected-registry.json,corrected-public-pull.log,corrected-public-binary.json,corrected-public-availability-guard.log}`. Preserve the public inspection container, corrected binaries, independent 18175 checkpoint and all superseded evidence. Seven internal tools are implemented and verified; the six performance tools, two log tools, alert/monitor tools, OAuth and complete enabled-feature acceptance remain required. Keep runtime MCP activation closed and the full product goal active.
+
+## MCP log investigation prerequisite
+
+- [x] Specify explicit opt-in log authority, selected-handler availability, native query/projection reuse and configured capacity before implementation.
+- [ ] Reproduce the missing opt-in credential/tool path with real native HTTP and the official client.
+- [ ] Implement ScopedLogs/ScopedLog, selected-handler log:read issuance and the two tools without changing existing scope meanings/defaults or opening MCP availability.
+- [ ] Pass real Sentry/OTLP/filter/paging/isolation/capacity owners, native siblings and full race/vet/default-image/public/recovery gates.
+- [ ] Integrate token/consent UI and enabled availability only with the complete remaining MCP/OAuth parent.
