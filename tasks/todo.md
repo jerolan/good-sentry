@@ -792,3 +792,10 @@ The accepted local upgrade proof uses a separate version42 database and the actu
 MCP log prerequisite accepted at public `d6d75cbc6d1d7947ce7878448e5e84c6258dc7ed`: all 485 published blobs match accepted source. CI39528941186 passes with fresh server 82.176 s and store 141.559 s plus the image build; its inspected public log is 146,704 bytes. Image workflow39529296611 passes. Anonymous registry checks confirm amd64/arm64, UID `65532:65532`, exact source labels, and shared main/latest index `sha256:5dff7c3cd9dd7ce316e775edcbfa95565f0fdd5984dd086b5361603e8618e43c`. The anonymously pulled public amd64 executable matches the accepted local executable exactly: 21,074,080 bytes, SHA-256 `6f5bfb3f706ea5696c8bad0e46e8e32c847284e93850787f9bcb2ee5ebb2638d`. The actual public image refuses incomplete MCP with an unreachable database before attempting a connection.
 
 Public log evidence: `test-results/acceptance-mcp-logs-20261020/{public-source.json,public-ci.json,public-ci.log,registry.json,public-pull.log,public-binary.json,public-availability-guard.log}`. Preserve public inspection container/binaries, upgraded checkpoint18178, stopped old app18177 and every prior checkpoint. Nine of seventeen tools are now implemented. Remaining performance/alert/monitor tools, OAuth, token/consent UI, complete enabled-feature acceptance and all unrelated product parity requirements stay open; runtime MCP activation remains closed.
+
+## MCP alert and monitor inspection prerequisite
+
+- [x] Specify read-only scope/role, project intersection, page/filter and redaction contracts before implementation.
+- [ ] Reproduce missing tools with real native optimization fixtures and the official client.
+- [ ] Implement ScopedAlerts/ScopedMonitors and sanitized MCP summaries without write or capability-URL exposure.
+- [ ] Pass owning/native/full race/vet/default-image/upgrade/public/recovery gates and retain the incomplete parent gate.
