@@ -64,8 +64,8 @@ Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `
 | Native diagnostics | Official CLI chunked DIF upload, bounded ZIP debug archives, AMD64/x86/ARM64 minidump ingestion, frame-pointer and CFI-assisted unwinding, and Breakpad plus ELF/Mach-O DWARF or dSYM companion symbolication; more native formats are in progress. |
 | Performance and logs | Transactions, spans, trace waterfalls, typed logs and OTLP/HTTP log ingestion. |
 | Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors, public status pages; email and webhooks with durable retries. |
-| Accounts and teams | Password changes and email recovery, optional OIDC sign-in, member roles, teams and single-use email invitations. |
-| Integration API | Sentry-compatible discovery for users, organizations, projects, members and teams; organization and project rename/delete, member invitations, team management, project-key DSNs with fixed-window rate limits, plus scoped automation credentials. |
+| Accounts and teams | Password changes and email recovery, verified secondary sign-in addresses, optional OIDC, member roles, single-use invitations, atomic owner transfer and multi-team projects. |
+| Integration API | Sentry-compatible discovery and management for users, organizations, projects, members, teams and environments; opt-in organization creation, rename/delete, member invitation/cancellation, project-team associations, project-key DSNs with rate limits, plus scoped automation credentials. |
 | MCP | Opt-in Model Context Protocol server with 17 organization, issue, log, alert, monitor and performance tools; OAuth PKCE or scoped API tokens. |
 | Deployment | One non-root application image, PostgreSQL, automatic migrations and configurable retention. |
 
@@ -78,7 +78,7 @@ Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `
 
 ## Project status
 
-GoodSentry is in active development. **Full Sentry compatibility and GlitchTip feature parity are not complete.** Remaining work includes native crash symbolication, broader management APIs, GitLab/Grafana integrations, social OAuth/OIDC sign-in and cold archival. The [compatibility guide](docs/compatibility.md) describes tested workflows and limits; the [roadmap](tasks/todo.md) records outstanding work.
+GoodSentry is in active development. **Full Sentry compatibility and GlitchTip feature parity are not complete.** Remaining work includes broader native crash formats, remaining management routes, repository and live GitLab/Grafana receipts, social-provider setup, advanced administration, cold archival and final requirement auditing. The [website](https://jerolan.github.io/good-sentry/) shows the current interface feature by feature; the [compatibility guide](docs/compatibility.md) describes tested workflows and limits.
 
 ## Development
 
