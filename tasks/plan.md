@@ -273,3 +273,5 @@ Public8160b3 closes the four-SDK/browser/memory/docs/fuzz cross-checks. The fina
 Native Minidump AMD64 slice is implemented and locally verified at4f660fa with synthetic fixtures, real HTTP/PostgreSQL, clean image and restart. Publish, confirm exact public source/CI/image/binary, then retain the parent gap for other architectures, CFI, PDB/dSYM/SymCache and DIF assembly.
 
 Official chunked DIF assembly passes sentry-cli3.8.0 and clean-image restart at2a565ae. Publish and verify exact public source/CI/image/binary. Keep native parent open for non-textual formats, architectures, CFI and archive extraction.
+
+Native AMD64/x86 plus official chunked DIF and source-map regression pass local image/race at8978f70. Publish this revision and verify matching public source, CI, Pages, registry image and exact binary before recording the partial native milestones as published. Continue full native-format coverage afterward.
