@@ -36,4 +36,26 @@ docker compose pull
 docker compose up -d
 ```
 
+Migrations run automatically after a database lock. Back up before upgrading and keep the previous image available while validating the new application:
+
+```sh
+mkdir -p backups
+docker compose exec -T postgres pg_dump -U goodsentry -Fc goodsentry > "backups/goodsentry-$(date -u +%Y%m%dT%H%M%SZ).dump"
+docker compose pull
+docker compose up -d
+curl -fsS http://localhost:8000/readyz
+```
+
+To restore into a new empty Compose database, stop the application, recreate only the database container state, and restore through the PostgreSQL client:
+
+```sh
+docker compose stop goodsentry
+docker compose exec -T postgres dropdb -U goodsentry --if-exists goodsentry
+docker compose exec -T postgres createdb -U goodsentry goodsentry
+docker compose exec -T postgres pg_restore -U goodsentry -d goodsentry --no-owner < backups/goodsentry-TIMESTAMP.dump
+docker compose start goodsentry
+```
+
+Replace `goodsentry-TIMESTAMP.dump` with the backup to restore. This recreates the database in the current PostgreSQL container; keep a second copy outside that container for disaster recovery.
+
 For an explicit build from the checked-out source, use `GOODSENTRY_IMAGE=goodsentry:local docker compose up --build -d`. See the [development guide](development.md) for local checks.

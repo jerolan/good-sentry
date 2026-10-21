@@ -79,6 +79,18 @@ Slack, Discord, Microsoft Teams, Google Chat, Feishu, ntfy and Zulip formats pas
 
 Current-image acceptance covers official Go, Python, Node and Browser SDK errors, transactions and typed logs, plus official protobuf/JSON OTLP exporters. SSL checks verify a public CA certificate through the running scheduler. Upgrade, application restart and an independent backup restore preserve the tested rows and telemetry.
 
+## SDK compatibility
+
+| Client | Verified version | Error | Transaction | Typed logs | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Go | `sentry-go 0.50.0` | Yes | Yes | Yes | Trace ancestry/timing and child operations verified. |
+| Python | `sentry-sdk 2.72.0` | Yes | Yes | Yes | Trace correlation and typed attributes verified. |
+| Node.js | `@sentry/node 11.7.0` | Yes | Yes | Yes | Trace ancestry/timing and child operations verified. |
+| Browser | Browser SDK `11.7.0` | Yes | Yes | Yes | Official CDN bundle, cross-origin delivery and CORS verified in Chromium. |
+| CLI | `sentry-cli 3.8.0` | n/a | n/a | n/a | Info, organization listing, project listing, releases and source-map workflows verified. |
+
+Send standard Sentry envelopes to `/api/{project}/envelope/` or legacy `/api/{project}/store/`. OTLP/HTTP logs use `/v1/logs`. Change the existing SDK DSN or Sentry target URL; no GoodSentry-specific client is required for the workflows above.
+
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with `sentry-cli 3.8.0`; see [release and source-map setup](releases-and-source-maps.md). Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 
 See the [complete specification](../SPEC.md), [implementation order](../tasks/plan.md) and [task evidence](../tasks/todo.md) before relying on an unlisted capability.
