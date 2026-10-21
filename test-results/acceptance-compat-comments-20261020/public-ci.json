@@ -1,0 +1,9 @@
+{
+  "databaseId": 39573020777,
+  "workflowName": "CI",
+  "revision": "3e69caa3b7abdc01d48aa6b9478c4df1e2ff7830",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/jerolan/good-sentry/actions/runs/39573020777",
+  "note": "First attempt hit a transient PostgreSQL socket timeout; the failed job was rerun and passed."
+}

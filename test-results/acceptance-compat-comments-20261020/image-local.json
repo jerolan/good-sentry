@@ -1,0 +1,9 @@
+{
+  "image": "goodsentry:comments-20261020",
+  "imageDigest": "sha256:7150416af1253f1e779be2211dd114b95bb20034cd8a6555b7ab9919d0059257",
+  "architecture": "amd64",
+  "user": "65532:65532",
+  "sizeBytes": 37347771,
+  "binarySHA256": "846f2978615f9811202e49631fecff87530add28e49e6c91ebb08c92df296be0",
+  "binaryBytes": 22802592
+}

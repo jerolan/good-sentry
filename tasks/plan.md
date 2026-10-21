@@ -287,3 +287,5 @@ Generic OIDC sign-in is public at645f15e with verified-email linking, S256 PKCE,
 Public uptime status pages are accepted at b98caa2 with compatible management routes, selected monitors, privacy-safe public HTML/JSON and responsive browser coverage. Continue the remaining compatible management surface and final specification audit.
 
 Compatible/native project update and deletion are accepted at e3e6938 with immutable slug/creation metadata, explicit cascade semantics, role/scope checks and responsive UI. Continue auditing the remaining GlitchTip management routes and external integration receipts.
+
+Compatible issue comments are accepted at 3e69caa with shared native activity, event read/write scopes, cursor pagination and strict CommentSchema bodies. Continue the remaining issue tags/management routes and external receipts.
