@@ -309,9 +309,14 @@
       submit.disabled = true;
       submit.textContent = setup ? 'Creating workspace…' : 'Signing in…';
       try {
-        state.me = await request(setup ? '/api/v1/setup' : '/api/v1/login', {
+        const admitted = await request(setup ? '/api/v1/setup' : '/api/v1/login', {
           method: 'POST', body: { email: email.input.value, password: password.input.value, ...(setup ? { name: name.input.value, organization: organization.input.value } : {}) },
         });
+        if (!setup && admitted && admitted.twoFactorRequired) {
+          renderTwoFactorChallenge(admitted.challengeToken, email.input.value);
+          return;
+        }
+        state.me = admitted;
         await loadRoute(true);
       } catch (failure) {
         formError(error, failure);
@@ -328,6 +333,36 @@
     }
     authFrame(setup ? 'First-time setup' : 'Your workspace', setup ? 'Welcome to GoodSentry' : 'Sign in to GoodSentry',
       setup ? 'Create the first owner account and organization. Then connect your application with its project DSN.' : 'Use your account to view and manage application errors.', children, (setup ? name : email).input);
+  }
+
+  function renderTwoFactorChallenge(challengeToken, email) {
+    document.title = 'Two-factor sign-in · GoodSentry';
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const code = field('Authentication code', 'text', { name: 'code', inputmode: 'numeric', autocomplete: 'one-time-code', required: true, maxlength: 32 });
+    code.wrap.append(node('p', { class: 'help' }, 'Enter the six-digit code from your authenticator app, or one of your recovery codes.'));
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Verify and sign in');
+    const form = node('form', { class: 'form-stack' }, code.wrap, error, submit);
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      submit.disabled = true;
+      submit.textContent = 'Verifying…';
+      try {
+        state.me = await request('/api/v1/login/two-factor', { method: 'POST', body: { challengeToken, code: code.input.value } });
+        await loadRoute(true);
+      } catch (failure) {
+        formError(error, failure);
+        if (failure.status === 401) {
+          error.append(' ', button('Start over', () => renderAuth(false)));
+        }
+      } finally {
+        if (submit.isConnected) {
+          submit.disabled = false;
+          submit.textContent = 'Verify and sign in';
+        }
+      }
+    });
+    authFrame('Two-factor authentication', 'Confirm it is you', `${email} requires a second step before the workspace opens.`, form, code.input);
   }
 
   function renderResetRequest() {
@@ -746,13 +781,14 @@
     });
     const identity = node('div', { class: 'account-identity' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'muted' }, state.me.user.email));
     const emailPanel = node('section', { class: 'card panel account-panel', 'aria-label': 'Email addresses' });
+    const twoFactorPanel = node('section', { class: 'card panel account-panel', 'aria-label': 'Two-factor authentication' });
     const deletePanel = node('section', { class: 'card panel account-panel', 'aria-label': 'Delete account' });
     main.replaceChildren(
       node('div', { class: 'page-header' }, node('div', {}, node('div', { class: 'eyebrow' }, 'Your account'), node('h1', { tabindex: '-1' }, 'Account'),
         node('p', {}, 'Manage the credentials used to sign in to GoodSentry.'))),
       node('section', { class: 'card panel panel-body account-panel' }, identity,
         node('p', { class: 'small muted' }, 'Changing your password signs out every session and revokes personal API tokens in every organization. Project SDK keys keep working.'),
-        error, form), emailPanel, deletePanel);
+        error, form), emailPanel, twoFactorPanel, deletePanel);
 
     const deleteError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const deleteControl = button('Delete account', openDeleteAccount, 'danger');
@@ -878,7 +914,126 @@
       } catch (failure) { formError(emailError, failure); emailError.focus(); }
       finally { if (addEmail.isConnected) { addEmail.disabled = false; addEmail.textContent = 'Add email'; } }
     });
+    const twoFactorPath = '/api/v1/me/two-factor';
+    const twoFactorError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const twoFactorBody = node('div', { class: 'panel-body form-stack' });
+    let pendingRecoveryCodes = null;
+    twoFactorPanel.append(node('div', { class: 'panel-title' }, node('h2', {}, 'Two-factor authentication')), twoFactorBody);
+
+    function recoveryCodeList(codes) {
+      const list = node('div', { class: 'release-project-list', role: 'list' });
+      for (const code of codes) list.append(node('div', { class: 'release-project', role: 'listitem' }, node('code', { class: 'mono wrap-anywhere' }, code)));
+      return list;
+    }
+
+    function openTwoFactorPassword(title, description, action, success) {
+      const dialog = node('dialog', { class: 'alert-dialog', 'aria-labelledby': 'two-factor-password-title' });
+      const dialogError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+      const password = field('Current password', 'password', { name: 'password', autocomplete: 'current-password', required: true, maxlength: 72 });
+      const submit = node('button', { type: 'submit', class: 'btn button danger' }, title);
+      const form = node('form', { class: 'form-stack' }, node('h2', { id: 'two-factor-password-title' }, title), dialogError,
+        node('p', { class: 'muted' }, description), password.wrap, node('div', { class: 'dialog-actions' }, button('Cancel', () => dialog.close()), submit));
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        dialogError.textContent = '';
+        submit.disabled = true;
+        try {
+          const result = await action(password.input.value);
+          dialog.close();
+          notify(success);
+          if (result && result.recoveryCodes) pendingRecoveryCodes = result.recoveryCodes;
+          await loadTwoFactor();
+        } catch (failure) {
+          formError(dialogError, failure);
+        } finally {
+          submit.disabled = false;
+        }
+      });
+      dialog.append(form);
+      twoFactorPanel.append(dialog);
+      dialog.showModal();
+      password.input.focus();
+    }
+
+    function showEnrollment(enrollment) {
+      const code = field('Authentication code', 'text', { name: 'code', inputmode: 'numeric', autocomplete: 'one-time-code', required: true, maxlength: 6 });
+      const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Confirm and enable');
+      const form = node('form', { class: 'form-stack', 'aria-label': 'Confirm two-factor enrollment' }, code.wrap, submit);
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        twoFactorError.textContent = '';
+        submit.disabled = true;
+        submit.textContent = 'Confirming…';
+        try {
+          const result = await request(twoFactorPath + '/confirm', { method: 'POST', body: { code: code.input.value } });
+          pendingRecoveryCodes = result.recoveryCodes;
+          notify('Two-factor authentication enabled.');
+          await loadTwoFactor();
+        } catch (failure) {
+          formError(twoFactorError, failure);
+        } finally {
+          if (submit.isConnected) {
+            submit.disabled = false;
+            submit.textContent = 'Confirm and enable';
+          }
+        }
+      });
+      twoFactorBody.replaceChildren(twoFactorError,
+        node('p', { class: 'muted' }, 'Add this secret to your authenticator app, then confirm with the six-digit code it shows. Keep the secret until the code is accepted.'),
+        node('div', { class: 'two-factor-value' }, node('code', { class: 'mono wrap-anywhere' }, enrollment.secret), button('Copy secret', () => copyValue(enrollment.secret, 'Secret'), 'small')),
+        node('div', { class: 'two-factor-value' }, node('code', { class: 'mono wrap-anywhere' }, enrollment.otpauthUrl), button('Copy setup link', () => copyValue(enrollment.otpauthUrl, 'Setup link'), 'small')),
+        form,
+        node('div', { class: 'actions' }, button('Cancel', () => loadTwoFactor())));
+      code.input.focus();
+    }
+
+    async function startEnrollment() {
+      twoFactorError.textContent = '';
+      let enrollment;
+      try {
+        enrollment = await request(twoFactorPath, { method: 'POST' });
+      } catch (failure) {
+        formError(twoFactorError, failure);
+        return;
+      }
+      showEnrollment(enrollment);
+    }
+
+    async function loadTwoFactor() {
+      twoFactorBody.replaceChildren(node('p', { class: 'small muted' }, 'Loading two-factor settings…'));
+      let settings;
+      try {
+        settings = await request(twoFactorPath);
+      } catch (failure) {
+        twoFactorBody.replaceChildren(node('div', {}, twoFactorError, empty('Could not load two-factor settings', failure.message, button('Try again', loadTwoFactor))));
+        return;
+      }
+      twoFactorError.textContent = '';
+      const children = [twoFactorError];
+      if (pendingRecoveryCodes) {
+        children.push(node('div', { class: 'form-notice', role: 'status', tabindex: '-1' }, 'Save these recovery codes now. Each one signs you in once if you lose your authenticator. They are not shown again.'));
+        children.push(recoveryCodeList(pendingRecoveryCodes));
+        children.push(node('div', { class: 'actions' }, button('Copy recovery codes', () => copyValue(pendingRecoveryCodes.join('\n'), 'Recovery codes'))));
+        pendingRecoveryCodes = null;
+      }
+      if (settings.enabled) {
+        children.push(node('p', { class: 'muted' }, 'Two-factor authentication is on for this account.'));
+        children.push(node('p', { class: 'small muted' }, `${settings.recoveryCodesRemaining} unused recovery ${settings.recoveryCodesRemaining === 1 ? 'code' : 'codes'} remaining.`));
+        children.push(node('div', { class: 'actions' },
+          button('Regenerate recovery codes', () => openTwoFactorPassword('Regenerate recovery codes', 'Every current recovery code stops working immediately.', password => request(twoFactorPath + '/recovery-codes', { method: 'POST', body: { password } }), 'Recovery codes regenerated.')),
+          button('Disable two-factor authentication', () => openTwoFactorPassword('Disable two-factor authentication', 'Your account will sign in with a password alone.', password => request(twoFactorPath, { method: 'DELETE', body: { password } }), 'Two-factor authentication disabled.'), 'danger')));
+      } else if (settings.pending) {
+        children.push(node('p', { class: 'muted' }, 'Enrollment is not confirmed yet. Start again to get a new secret and confirm it with a code.'));
+        children.push(node('div', { class: 'actions' }, button('Start enrollment again', startEnrollment, 'primary')));
+      } else {
+        children.push(node('p', { class: 'muted' }, 'Require a time-based code from an authenticator app when you sign in. Recovery codes cover a lost device.'));
+        children.push(node('div', { class: 'actions' }, button('Enable two-factor authentication', startEnrollment, 'primary')));
+      }
+      twoFactorBody.replaceChildren(...children);
+    }
+
     loadEmails();
+    loadTwoFactor();
   }
 
   async function renderOrganizationSettings(main, version, params) {

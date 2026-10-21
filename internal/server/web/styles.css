@@ -207,6 +207,8 @@
   .account-panel { @apply max-w-[720px]; }
   .account-identity { @apply flex flex-col gap-1; }
   .account-identity strong { @apply text-lg text-ink; }
+  .two-factor-value { @apply flex flex-wrap items-start justify-between gap-3 mt-4; }
+  .two-factor-value code { @apply min-w-0; }
   .people-create { @apply max-w-[520px]; }
   .people-team { @apply overflow-hidden; }
   .people-team-detail { @apply border-t border-outline p-5; }
