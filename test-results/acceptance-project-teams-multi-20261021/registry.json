@@ -1,0 +1,23 @@
+{
+  "revision": "75cdef09a555c5475d4cfcee83da087eb0d57528",
+  "anonymous": true,
+  "index": "sha256:34e2e9cf5cd6e63b6cdf381772a04c061eec2a3786fa389dcfe94b05f82f89ce",
+  "architectures": [
+    {
+      "architecture": "amd64",
+      "digest": "sha256:63f2d620610a8ad9f8a0f26ff34a1c4f747623ff324766641cf599de91dc68e7",
+      "user": "65532:65532",
+      "revision": "75cdef09a555c5475d4cfcee83da087eb0d57528"
+    },
+    {
+      "architecture": "arm64",
+      "digest": "sha256:081ab4c82268dea625d2e33e05cc62277f9339e8ff7e7bf0b2409da2a3586410",
+      "user": "65532:65532",
+      "revision": "75cdef09a555c5475d4cfcee83da087eb0d57528"
+    }
+  ],
+  "tags": {
+    "main": "sha256:34e2e9cf5cd6e63b6cdf381772a04c061eec2a3786fa389dcfe94b05f82f89ce",
+    "latest": "sha256:34e2e9cf5cd6e63b6cdf381772a04c061eec2a3786fa389dcfe94b05f82f89ce"
+  }
+}
