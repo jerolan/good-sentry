@@ -1,0 +1,34 @@
+{
+  "revision": "1379f82",
+  "mode": "GOODSENTRY_AUTH=required",
+  "account": "stats@example.test",
+  "viewport": {
+    "desktop": "1440x1000",
+    "mobile": "390x844"
+  },
+  "steps": [
+    "account view opened",
+    "enrollment secret length 32",
+    "recovery codes shown: 10",
+    "reload kept the enabled state",
+    "challenge screen shown after the password",
+    "second-factor login reached the workspace",
+    "recovery code login reached the workspace",
+    "two-factor disabled again"
+  ],
+  "recoveryCodeCount": 10,
+  "remainingAfterReload": 10,
+  "remainingAfterRecoveryLogin": 9,
+  "overflow": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "expectedFailures": [
+    "401 GET /api/v1/me (session probe before sign-in)",
+    "404 GET /favicon.ico (index.html declares no icon)"
+  ],
+  "unexpectedConsoleErrors": [],
+  "enabledText": "Two-factor authentication\n\nTwo-factor authentication is on for this account.\n\n10 unused recovery codes remaining.\n\nRegenerate recovery codes\nDisable two-factor authentication",
+  "mobileText": "Two-factor authentication\n\nTwo-factor authentication is on for this account.\n\n9 unused recovery codes remaining.\n\nRegenerate recovery codes\nDisable two-factor authentication",
+  "disabledText": "Two-factor authentication\n\nRequire a time-based code from an authenticator app when you sign in. Recovery codes cover a lost device.\n\nEnable two-factor authentication"
+}

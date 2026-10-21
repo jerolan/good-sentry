@@ -1,0 +1,30 @@
+{
+  "tag": "ghcr.io/jerolan/good-sentry:main",
+  "indexDigest": "sha256:4c7218591cf5733c28c9a08287aebb6a0cb2e6dc36d6ef54d1d23f1d7c2286fb",
+  "platforms": {
+    "linux/amd64": "sha256:be42dd66da65b83c9648a648555e87f0c015a1fde49c57d8f28738c0ef92e810",
+    "linux/arm64": "sha256:d16935e6d0a174ea87c165e4d1aa536c4572e0441a03d17876d64d9fc8af6f5b",
+    "unknown/unknown": "sha256:a222a2203fe4d2ccb3c2bceb7eeee82bf77653fd0da2b83e295eea6c93e3cde2"
+  },
+  "labels": {
+    "org.opencontainers.image.created": "2026-10-21T22:38:47.223Z",
+    "org.opencontainers.image.description": "",
+    "org.opencontainers.image.licenses": "",
+    "org.opencontainers.image.revision": "0f5b230999c550c4c81477a8877a4fbd63860631",
+    "org.opencontainers.image.source": "https://github.com/jerolan/good-sentry",
+    "org.opencontainers.image.title": "good-sentry",
+    "org.opencontainers.image.url": "https://github.com/jerolan/good-sentry",
+    "org.opencontainers.image.version": "latest"
+  },
+  "user": "65532:65532",
+  "env": [
+    "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt",
+    "PORT=8000",
+    "UPLOAD_DIR=/data"
+  ],
+  "entrypoint": [
+    "/goodsentry"
+  ],
+  "size": 37962814
+}

@@ -1,0 +1,21 @@
+{
+  "name": "goodsentry-two-factor-public-20261021",
+  "image": "sha256:4c7218591cf5733c28c9a08287aebb6a0cb2e6dc36d6ef54d1d23f1d7c2286fb",
+  "user": "65532:65532",
+  "ports": {
+    "8000/tcp": [
+      {
+        "HostIp": "0.0.0.0",
+        "HostPort": "18219"
+      }
+    ]
+  },
+  "environment": {
+    "GOODSENTRY_AUTH": "required",
+    "GOODSENTRY_DOMAIN": "http://127.0.0.1:18219",
+    "PORT": "8000",
+    "UPLOAD_DIR": "/data"
+  },
+  "databaseSchema": "goodsentry_stats_grafana_20261021_2130",
+  "status": "running"
+}
