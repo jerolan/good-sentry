@@ -16,6 +16,11 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | --- | --- | --- |
 | `SECRET_KEY` | Required | At least 32 characters. Generate it once and keep it across restarts. |
 | `DATABASE_URL` | Supplied by Compose | PostgreSQL connection URL. |
+| `GOODSENTRY_AUTH` | `disabled` | `disabled` uses one implicit local owner without sessions. `required` enables setup, login and per-user accounts. Use `required` before exposing the service. |
+| `GOODSENTRY_DEFAULT_EMAIL` | `owner@localhost` | Implicit owner email in open mode. |
+| `GOODSENTRY_DEFAULT_NAME` | `GoodSentry Owner` | Implicit owner display name. |
+| `GOODSENTRY_DEFAULT_ORGANIZATION` | `Default Organization` | Implicit owner workspace. |
+| `GOODSENTRY_DEFAULT_PASSWORD` | Empty | Optional 12–72 byte password assigned only when the implicit owner is first created. |
 | `GOODSENTRY_IMAGE` | `ghcr.io/jerolan/good-sentry:main` | Compose application image; accepts a revision tag or immutable image digest. |
 | `GOODSENTRY_DOMAIN` | `http://localhost:8000` | Public origin and optional path prefix used for DSNs and resource links. |
 | `POSTGRES_PASSWORD` | `goodsentry-local` | Local Compose database password; replace it for your deployment. |
@@ -54,6 +59,12 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS` | `false` | Allow webhooks to reach your private network. |
 
 The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Enabling currently unavailable DuckDB, admin, OpenAPI or Valkey options fails startup rather than reporting them as available. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
+
+### Authentication mode
+
+`GOODSENTRY_AUTH=disabled` is the frictionless default. On startup GoodSentry creates or repairs the configured implicit owner, owner membership, default organization and default team using an advisory-lock transaction. Every session-authenticated request resolves to that owner without a cookie; restarting does not create duplicates or replace the existing password. `/api/v1/setup` reports `required:false`, while `/api/v1/me` returns the implicit owner and a stable CSRF token. All mutations still require same-origin and that CSRF token.
+
+This mode is a single-user administrative mode for local use or a trusted private network. Set `GOODSENTRY_AUTH=required` before public exposure to restore the existing first-owner setup, login, sessions, invitations, OIDC and per-user flows.
 
 ### OpenID Connect
 

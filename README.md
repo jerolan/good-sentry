@@ -38,9 +38,9 @@ test -f .env || printf 'SECRET_KEY=%s\n' "$(openssl rand -hex 32)" > .env
 docker compose up -d
 ```
 
-Open **http://localhost:8000**, create the first owner account and workspace, then create a project. Copy its DSN into your SDK configuration. There is no shared initial password.
+Open **http://localhost:8000**. The default open mode signs you in as the implicit local owner, so the dashboard is ready immediately. Create a project and copy its DSN into your SDK configuration.
 
-Compose pulls the public application image for amd64 or arm64. Keep `.env` across restarts; configure your public domain and database credentials before exposing the installation. See [installation details](docs/getting-started.md) and the [configuration reference](docs/configuration.md).
+Open mode is intended for local use or a trusted private network. Before exposing GoodSentry, set `GOODSENTRY_AUTH=required` in `.env` and restart Compose; the normal setup, login and account flows then take over. Compose pulls the public application image for amd64 or arm64. Keep `.env` across restarts and configure the public domain and database credentials. See [installation details](docs/getting-started.md) and the [configuration reference](docs/configuration.md).
 
 ## Connect your SDK
 
@@ -69,7 +69,7 @@ For interactive source-map setup, run `npx @sentry/wizard@8.0.1 --url http://loc
 | Accounts and teams | Password changes, email recovery, verified secondary sign-in addresses, Account-page deletion with typed confirmation, optional OIDC, member roles, single-use invitations, atomic owner transfer and multi-team projects. |
 | Integration API | Sentry-compatible discovery and management for users, organizations, projects, members, teams and environments; `sentry-wizard` handoff, current-account deletion with sole-owner protection, opt-in organization creation, organization rename/delete, member invitation/cancellation, project-team associations, project-key DSNs with rate limits, plus scoped automation credentials. |
 | MCP | Opt-in Model Context Protocol server with 17 organization, issue, log, alert, monitor and performance tools; OAuth PKCE or scoped API tokens. |
-| Deployment | One non-root application image, PostgreSQL, automatic migrations and configurable retention. |
+| Deployment | One non-root application image, PostgreSQL, automatic migrations, cookie-free local open mode and an opt-in `required` setup/login mode for public exposure. |
 
 ## Documentation
 

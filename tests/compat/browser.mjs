@@ -64,10 +64,8 @@ try {
   const setupResponse = await context.request.get(new URL('api/v1/setup', baseURL).href);
   assert.equal(setupResponse.status(), 200, 'Setup discovery responds');
   const setup = await setupResponse.json();
-  if (!setup.required && (!process.env.GOODSENTRY_TEST_EMAIL || !process.env.GOODSENTRY_TEST_PASSWORD)) {
-    throw new Error('The server is already initialized. Use an isolated empty database or supply GOODSENTRY_TEST_EMAIL and GOODSENTRY_TEST_PASSWORD.');
-  }
-  expectedAuthProbe = !setup.required;
+  const openMode = !setup.required && !process.env.GOODSENTRY_TEST_EMAIL && !process.env.GOODSENTRY_TEST_PASSWORD;
+  expectedAuthProbe = !setup.required && !openMode;
   await page.goto(baseURL.href, { waitUntil: 'networkidle' });
   if (setup.required) {
     await visible(page.getByRole('heading', { name: 'Welcome to GoodSentry', exact: true }));
@@ -81,6 +79,12 @@ try {
     assert.equal((await response).status(), 201, 'Owner setup succeeds');
     await visible(page.getByRole('heading', { level: 1, name: 'Issues', exact: true }));
     checks.push('First owner and workspace created through browser onboarding');
+  } else if (openMode) {
+    await visible(page.getByRole('navigation', { name: 'Main navigation', exact: true }));
+    await visible(page.getByRole('heading', { level: 1, name: 'Issues', exact: true }));
+    assert.equal(await page.getByRole('heading', { name: 'Sign in to GoodSentry', exact: true }).count(), 0);
+    await visible(page.getByText('Open access', { exact: true }));
+    checks.push('Open authentication enters the dashboard without a cookie or login');
   } else {
     await signIn();
     checks.push('Existing owner signed in through browser');
@@ -334,24 +338,26 @@ try {
   await page.keyboard.press('Tab');
   const focused = await page.evaluate(() => ({ tag: document.activeElement?.tagName, name: document.activeElement?.textContent?.trim() }));
   assert.ok(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(focused.tag), `Tab reaches a native control, received ${focused.tag}`);
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await signIn();
-  checks.push('Sign out and subsequent password login work');
-  const memberEmail = process.env.COMPAT_MEMBER_EMAIL;
-  const memberPassword = process.env.COMPAT_MEMBER_PASSWORD;
-  assert.equal(Boolean(memberEmail), Boolean(memberPassword), 'Provide both optional member credentials');
-  if (memberEmail && memberPassword) {
+  if (!openMode) {
     await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-    await signIn(memberEmail, memberPassword);
-    await page.getByRole('link', { name: 'Projects', exact: true }).click();
-    await visible(page.getByRole('heading', { level: 1, name: 'Projects', exact: true }));
-    await sourceMaps.locator('summary').click();
-    await visible(sourceMaps.getByRole('row').filter({ hasText: artifactName }));
-    await visible(sourceMaps.getByText('Organization owners and admins can upload source maps.', { exact: true }));
-    assert.equal(await sourceMaps.getByRole('button', { name: 'Upload source map', exact: true }).count(), 0, 'Member is not offered source-map upload controls');
-    assert.equal(await sourceMaps.locator('input[type=file]').count(), 0, 'Member is not offered a source-map file input');
-    for (const width of [320, 768, 1440]) await capture('source-map-member', width);
-    checks.push('Real organization member can inspect artifact metadata without upload controls');
+    await signIn();
+    checks.push('Sign out and subsequent password login work');
+    const memberEmail = process.env.COMPAT_MEMBER_EMAIL;
+    const memberPassword = process.env.COMPAT_MEMBER_PASSWORD;
+    assert.equal(Boolean(memberEmail), Boolean(memberPassword), 'Provide both optional member credentials');
+    if (memberEmail && memberPassword) {
+      await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+      await signIn(memberEmail, memberPassword);
+      await page.getByRole('link', { name: 'Projects', exact: true }).click();
+      await visible(page.getByRole('heading', { level: 1, name: 'Projects', exact: true }));
+      await sourceMaps.locator('summary').click();
+      await visible(sourceMaps.getByRole('row').filter({ hasText: artifactName }));
+      await visible(sourceMaps.getByText('Organization owners and admins can upload source maps.', { exact: true }));
+      assert.equal(await sourceMaps.getByRole('button', { name: 'Upload source map', exact: true }).count(), 0, 'Member is not offered source-map upload controls');
+      assert.equal(await sourceMaps.locator('input[type=file]').count(), 0, 'Member is not offered a source-map file input');
+      for (const width of [320, 768, 1440]) await capture('source-map-member', width);
+      checks.push('Real organization member can inspect artifact metadata without upload controls');
+    }
   }
   checks.push('No document overflow at 320, 768 or 1440 pixels');
   assert.deepEqual(pageErrors, [], 'No uncaught browser JavaScript errors');

@@ -108,6 +108,45 @@ func TestExplicitGoodSentryFlagOverridesAlias(t *testing.T) {
 	}
 }
 
+func TestAuthenticationModeDefaultsAndAdmission(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+	t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
+	t.Setenv("GOODSENTRY_DOMAIN", "http://localhost:8000")
+	for _, key := range []string{"GOODSENTRY_AUTH", "GOODSENTRY_DEFAULT_EMAIL", "GOODSENTRY_DEFAULT_NAME", "GOODSENTRY_DEFAULT_ORGANIZATION", "GOODSENTRY_DEFAULT_PASSWORD"} {
+		t.Setenv(key, "")
+	}
+	c, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.AuthMode != "disabled" || !c.AuthenticationDisabled() || c.DefaultEmail != "owner@localhost" || c.DefaultName != "GoodSentry Owner" || c.DefaultOrganization != "Default Organization" || c.DefaultPassword != "" {
+		t.Fatalf("open authentication defaults=%+v", c)
+	}
+	t.Setenv("GOODSENTRY_AUTH", "required")
+	t.Setenv("GOODSENTRY_DEFAULT_EMAIL", "admin@example.test")
+	t.Setenv("GOODSENTRY_DEFAULT_NAME", "Implicit Admin")
+	t.Setenv("GOODSENTRY_DEFAULT_ORGANIZATION", "Implicit Workspace")
+	t.Setenv("GOODSENTRY_DEFAULT_PASSWORD", "open-mode-password")
+	c, err = Load()
+	if err != nil || c.AuthMode != "required" || c.AuthenticationDisabled() || c.DefaultEmail != "admin@example.test" || c.DefaultName != "Implicit Admin" || c.DefaultOrganization != "Implicit Workspace" || c.DefaultPassword != "open-mode-password" {
+		t.Fatalf("required authentication config=%+v err=%v", c, err)
+	}
+	for _, tc := range []struct{ key, value, want string }{
+		{"GOODSENTRY_AUTH", "optional", "GOODSENTRY_AUTH"},
+		{"GOODSENTRY_DEFAULT_EMAIL", "not-an-email", "DEFAULT_EMAIL"},
+		{"GOODSENTRY_DEFAULT_NAME", " ", "DEFAULT_NAME"},
+		{"GOODSENTRY_DEFAULT_ORGANIZATION", " ", "DEFAULT_ORGANIZATION"},
+		{"GOODSENTRY_DEFAULT_PASSWORD", "short", "DEFAULT_PASSWORD"},
+	} {
+		t.Run(tc.key+"="+tc.value, func(t *testing.T) {
+			t.Setenv(tc.key, tc.value)
+			if _, err := Load(); err == nil || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("error=%v want=%s", err, tc.want)
+			}
+		})
+	}
+}
+
 func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
 	base := map[string]string{
 		"DATABASE_URL":                 "postgres://goodsentry:local@localhost/goodsentry",

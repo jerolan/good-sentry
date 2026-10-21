@@ -221,6 +221,16 @@ func (s *Server) validateOAuthAuthorize(r oauthAuthorize, values url.Values) str
 }
 
 func (s *Server) oauthSession(r *http.Request) (identity, bool) {
+	if s.cfg.AuthenticationDisabled() {
+		if s.defaultUserID == "" {
+			return identity{}, false
+		}
+		user, err := s.db.UserByID(r.Context(), s.defaultUserID)
+		if err != nil {
+			return identity{}, false
+		}
+		return identity{User: user, CSRF: s.openCSRF}, true
+	}
 	cookie, err := r.Cookie(sessionCookie)
 	if err != nil || len(cookie.Value) != 64 {
 		return identity{}, false

@@ -23,11 +23,13 @@ import (
 var web embed.FS
 
 type Server struct {
-	cfg     config.Config
-	db      *store.Store
-	mail    *notify.Sender
-	account *accountmail.SecretBox
-	oidc    *oidcAuth
+	cfg           config.Config
+	db            *store.Store
+	mail          *notify.Sender
+	account       *accountmail.SecretBox
+	oidc          *oidcAuth
+	defaultUserID string
+	openCSRF      string
 }
 type identity struct {
 	User store.User
@@ -40,7 +42,15 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 }
 
 func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sender, box *accountmail.SecretBox) http.Handler {
+	return NewWithAccountMailAndDefaultUser(cfg, db, sender, box, nil)
+}
+
+func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender *notify.Sender, box *accountmail.SecretBox, defaultUser *store.User) http.Handler {
 	s := &Server{cfg: cfg, db: db, mail: sender, account: box, oidc: newOIDCAuth(cfg)}
+	if cfg.AuthenticationDisabled() && defaultUser != nil {
+		s.defaultUserID = defaultUser.ID
+		s.openCSRF = s.hash("open-auth-csrf-v1:" + defaultUser.ID)
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]string{"status": "ok", "service": "GoodSentry"})

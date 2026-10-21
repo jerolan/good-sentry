@@ -135,3 +135,48 @@ func TestDurableCaptureAndTenantScope(t *testing.T) {
 		t.Fatalf("regression missing: %+v %v", detail.Issue, err)
 	}
 }
+
+func TestEnsureDefaultOwnerIsIdempotent(t *testing.T) {
+	ctx := context.Background()
+	base := os.Getenv("DATABASE_URL")
+	if base == "" {
+		t.Fatal("DATABASE_URL is required for integration tests")
+	}
+	admin, err := pgx.Connect(ctx, base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer admin.Close(ctx)
+	schema := fmt.Sprintf("goodsentry_default_owner_%d", time.Now().UnixNano())
+	if _, err = admin.Exec(ctx, "CREATE SCHEMA "+schema); err != nil {
+		t.Fatal(err)
+	}
+	defer admin.Exec(ctx, "DROP SCHEMA "+schema+" CASCADE")
+	u, _ := url.Parse(base)
+	query := u.Query()
+	query.Set("search_path", schema)
+	u.RawQuery = query.Encode()
+	db, err := Open(ctx, u.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	first, org, err := db.EnsureDefaultOwner(ctx, "owner@localhost", []byte("fixture-hash"), "GoodSentry Owner", "Default Organization")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, sameOrg, err := db.EnsureDefaultOwner(ctx, "owner@localhost", []byte("different-hash"), "Ignored Name", "Default Organization")
+	if err != nil || second.ID != first.ID || second.Name != first.Name || sameOrg.ID != org.ID || sameOrg.Slug != "default-organization" {
+		t.Fatalf("second owner=%+v org=%+v err=%v", second, sameOrg, err)
+	}
+	var users, orgs, teams, owners int
+	if err = db.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM users),(SELECT count(*) FROM organizations),(SELECT count(*) FROM teams),(SELECT count(*) FROM memberships WHERE role='owner')`).Scan(&users, &orgs, &teams, &owners); err != nil {
+		t.Fatal(err)
+	}
+	if users != 1 || orgs != 1 || teams != 1 || owners != 1 {
+		t.Fatalf("implicit rows users=%d orgs=%d teams=%d owners=%d", users, orgs, teams, owners)
+	}
+	if _, err = db.Organization(ctx, first.ID, org.Slug); err != nil {
+		t.Fatal(err)
+	}
+}

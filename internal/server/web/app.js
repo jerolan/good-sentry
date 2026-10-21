@@ -469,6 +469,7 @@
   function renderShell(view) {
     const organizations = state.me.organizations || [];
     const org = state.organization;
+    const authRequired = state.me.features?.authRequired !== false;
     const selector = node('select', { class: 'select org-select', 'aria-label': 'Organization', onchange: event => {
       navigate({ ...traceReset, org: event.target.value, issue: null, monitor: null, project: null, release: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null });
     } }, organizations.map(item => node('option', { value: item.slug }, item.name)));
@@ -500,7 +501,7 @@
     const sidebar = node('aside', { class: 'sidebar' }, brand(),
       node('div', { class: 'org-switch' }, node('p', { class: 'org-label' }, 'Organization'), selector), nav,
       node('div', { class: 'account' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'small' }, state.me.user.email),
-        node('div', { class: 'account-actions' }, accountLink, logout)));
+        node('div', { class: 'account-actions' }, accountLink, authRequired ? logout : node('span', { class: 'badge warning' }, 'Open access'))));
     const main = node('main', { id: 'main', class: 'main', tabindex: '-1' });
     app.replaceChildren(node('div', { class: 'app-shell' }, sidebar, node('div', { class: 'content' },
       node('header', { class: 'topbar' }, node('span', {}, node('strong', {}, org?.name || 'Workspace'), ' / ', viewNames[view]), node('span', { class: 'server-label' }, 'Application monitoring')), main)));
@@ -985,12 +986,12 @@
     const feedback = issueViewName(params) === 'feedback';
     const title = feedback ? 'Feedback' : 'Issues';
     document.title = `${title} · GoodSentry`;
-    main.replaceChildren(pageHeader(title, feedback ? 'Read and triage feedback from your application users.' : 'Find, investigate and triage application errors.', node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), button('Create project', openProjectDialog, 'primary'))));
+    main.replaceChildren(pageHeader(title, feedback ? 'Read and triage feedback from your application users.' : 'Find, investigate and triage application errors.', node('div', { class: 'actions' }, button('Refresh', () => loadRoute()), button('Create project', () => openProjectDialog(), 'primary'))));
     const outcome = issueDeletion?.scope === issueScope(params) ? node('div', { class: 'card panel panel-body form-stack', role: 'status', tabindex: '-1' },
       node('p', {}, issueDeletion.message), issueDeletion.bulk ? node('p', { class: 'small muted' }, 'If any selected issue was already missing, the whole request made no changes. Remaining issues can be selected again after refresh.') : null) : null;
     if (outcome) main.append(outcome);
     if (!state.projects.length) {
-      main.append(node('section', { class: 'card panel' }, empty('Connect your first application', 'Create a project to get a DSN. Set it in your existing Sentry SDK to start receiving errors.', button('Create project', openProjectDialog, 'primary'))));
+      main.append(node('section', { class: 'card panel' }, empty('Connect your first application', 'Create a project to get a DSN. Set it in your existing Sentry SDK to start receiving errors.', button('Create project', () => openProjectDialog(), 'primary'))));
       return;
     }
     const search = field(feedback ? 'Search feedback' : 'Search issues', 'search', { name: 'query', placeholder: feedback ? 'Feedback text or tags' : 'Message or exception', value: params.get('query') || '' });
@@ -1550,10 +1551,10 @@
   function renderProjects(main) {
     document.title = 'Projects · GoodSentry';
     const manage = ['owner', 'admin'].includes(state.organization.role);
-    main.replaceChildren(pageHeader('Projects', 'Each application gets its own SDK key and DSN.', button('Create project', openProjectDialog, 'primary')));
+    main.replaceChildren(pageHeader('Projects', 'Each application gets its own SDK key and DSN.', button('Create project', () => openProjectDialog(), 'primary')));
     const panel = node('section', { class: 'card panel', 'aria-label': 'Projects' });
     if (!state.projects.length) {
-      panel.append(empty('Create your first project', 'Choose a name and platform, then copy the project DSN into your Sentry SDK configuration.', button('Create project', openProjectDialog, 'primary')));
+      panel.append(empty('Create your first project', 'Choose a name and platform, then copy the project DSN into your Sentry SDK configuration.', button('Create project', () => openProjectDialog(), 'primary')));
     } else {
       const rows = state.projects.map(project => node('tr', {},
         node('td', {}, node('div', { class: 'project-name' }, project.name), node('div', { class: 'muted small mono' }, project.slug)),
@@ -2187,7 +2188,12 @@
       try {
         await request(project ? projectPath(project) : `/api/v1/organizations/${encodeURIComponent(state.organization.slug)}/projects`, { method: project ? 'PUT' : 'POST', body: { name: name.input.value.trim(), platform: platform.input.value } });
         dialog.close();
-        await loadRoute();
+        if (project) {
+          await loadRoute();
+        } else {
+          history.replaceState(null, '', routeURL({ view: 'projects', project: null, page: null }));
+          await loadRoute(true);
+        }
         notify(project ? 'Project updated.' : 'Project created. Copy its DSN to connect your application.');
       } catch (failure) { formError(error, failure); }
       finally { submit.disabled = false; submit.textContent = project ? 'Save project' : 'Create project'; }

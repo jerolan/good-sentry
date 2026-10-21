@@ -8,7 +8,7 @@ Compatibility is verified per workflow and client version. The project remains i
 
 | Capability | Verified behavior |
 | --- | --- |
-| Accounts and people | Password changes with session/token revocation, SMTP password recovery, current-account deletion from the API or Account page with typed confirmation and sole-owner recovery, member roles, teams, organization rename/delete and single-use SMTP invitations. Real browser acceptance includes no-organization account access and long invitation emails. |
+| Accounts and people | Default cookie-free open mode with an implicit owner/workspace, or `GOODSENTRY_AUTH=required` for password changes with session/token revocation, SMTP password recovery, current-account deletion from the API or Account page with typed confirmation and sole-owner recovery, member roles, teams, organization rename/delete and single-use SMTP invitations. Real browser acceptance includes open dashboard startup, required setup/login, no-organization account access and long invitation emails. |
 | Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, historical tag/environment/release search, sorting/pages, user/team assignment, editable comments and recorded triage activity with regressions. |
 | User feedback | Modern SDK submissions with optional error associations, per-submission attachments and paginated triage, plus legacy reports attached to their original error. |
 | JavaScript source maps | Official CLI injection/bundle uploads and native uploads, Debug ID or release/distribution selection, original source context and preserved minified stacks. |
@@ -20,7 +20,7 @@ Compatibility is verified per workflow and client version. The project remains i
 | Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |
 | Automation credentials | Expiring, revocable tokens limited to an organization and selected projects, one-time reveal, project metadata reads and optional release writes. |
 | Management API | Sentry-compatible API root, current user and verified secondary emails, current-account deletion with sole-owner protection, `sentry-wizard` hash/project/credential handoff, organization/project discovery and detail, opt-in organization creation plus rename/delete with responsive UI, member invitations, active-member detail/role/removal and team assignment, team reads and create/rename/delete, project creation in a team, many-to-many project-team attach/detach, organization/project environment visibility, relation reads, project-key management with DSN metadata and fixed-window Sentry-envelope/OTLP-log limits, strict pagination, session/Bearer scope isolation and instance settings/license metadata. |
-| Deployment | One non-root application image, PostgreSQL-only coordination, embedded Tailwind CSS and persistence across application restarts. |
+| Deployment | One non-root application image, PostgreSQL-only coordination, empty-volume Compose startup directly into the dashboard, required-auth setup/login mode, embedded Tailwind CSS and persistence across application restarts. |
 
 The browser workflows run at 320, 768 and 1440 pixels. PostgreSQL integration and race tests cover concurrent ingestion, duplicate retries, tenant boundaries, fenced worker leases and restart recovery. Alert acceptance uses actual local HTTP/SMTP receivers, including retries across two application replicas.
 

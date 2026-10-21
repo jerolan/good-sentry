@@ -48,6 +48,25 @@ func (s *Server) sameOrigin(r *http.Request) bool {
 
 func (s *Server) auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s.cfg.AuthenticationDisabled() {
+			if s.defaultUserID == "" {
+				failure(w, 503, "Implicit owner is unavailable")
+				return
+			}
+			if r.Method != "GET" && r.Method != "HEAD" && r.Method != "OPTIONS" {
+				if !s.sameOrigin(r) || !hmac.Equal([]byte(r.Header.Get("X-CSRF-Token")), []byte(s.openCSRF)) {
+					failure(w, 403, "Invalid CSRF token or origin")
+					return
+				}
+			}
+			user, err := s.db.UserByID(r.Context(), s.defaultUserID)
+			if err != nil {
+				report(w, err)
+				return
+			}
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), identityKey{}, identity{User: user, CSRF: s.openCSRF})))
+			return
+		}
 		cookie, err := r.Cookie(sessionCookie)
 		if err != nil || len(cookie.Value) != 64 {
 			failure(w, 401, "Sign in required")
@@ -73,6 +92,10 @@ func (s *Server) auth(next http.Handler) http.Handler {
 }
 
 func (s *Server) setupState(w http.ResponseWriter, r *http.Request) {
+	if s.cfg.AuthenticationDisabled() {
+		writeJSON(w, 200, map[string]bool{"required": false})
+		return
+	}
 	required, err := s.db.SetupRequired(r.Context())
 	if err != nil {
 		report(w, err)
@@ -81,6 +104,10 @@ func (s *Server) setupState(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]bool{"required": required})
 }
 func (s *Server) setup(w http.ResponseWriter, r *http.Request) {
+	if s.cfg.AuthenticationDisabled() {
+		failure(w, 409, "Authentication is disabled; the implicit owner already exists")
+		return
+	}
 	if !s.sameOrigin(r) {
 		failure(w, 403, "Invalid origin")
 		return
@@ -164,14 +191,16 @@ func (s *Server) sendMe(w http.ResponseWriter, r *http.Request, i identity, stat
 		report(w, err)
 		return
 	}
-	writeJSON(w, status, map[string]any{"user": i.User, "organizations": orgs, "csrfToken": i.CSRF, "features": map[string]bool{"logs": s.cfg.Logs, "uptime": s.cfg.Uptime, "alerts": true, "alertDelivery": s.cfg.AlertDelivery, "mcp": s.cfg.MCP, "oidc": s.oidc != nil, "passwordRecovery": s.mail != nil && s.account != nil}})
+	writeJSON(w, status, map[string]any{"user": i.User, "organizations": orgs, "csrfToken": i.CSRF, "features": map[string]bool{"logs": s.cfg.Logs, "uptime": s.cfg.Uptime, "alerts": true, "alertDelivery": s.cfg.AlertDelivery, "mcp": s.cfg.MCP, "oidc": s.oidc != nil, "passwordRecovery": s.mail != nil && s.account != nil, "authRequired": !s.cfg.AuthenticationDisabled()}})
 }
 func (s *Server) me(w http.ResponseWriter, r *http.Request) { s.sendMe(w, r, current(r), 200) }
 func (s *Server) logout(w http.ResponseWriter, r *http.Request) {
 	cookie, _ := r.Cookie(sessionCookie)
-	if err := s.db.RevokeSession(r.Context(), s.hash(cookie.Value)); err != nil {
-		report(w, err)
-		return
+	if cookie != nil {
+		if err := s.db.RevokeSession(r.Context(), s.hash(cookie.Value)); err != nil {
+			report(w, err)
+			return
+		}
 	}
 	s.clearSessionCookie(w)
 	writeJSON(w, 204, nil)

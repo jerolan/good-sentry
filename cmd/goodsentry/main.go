@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"goodsentry/internal/accountmail"
 	"goodsentry/internal/config"
 	"goodsentry/internal/jobs"
@@ -41,6 +42,26 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	var defaultUser *store.User
+	if cfg.AuthenticationDisabled() {
+		password := cfg.DefaultPassword
+		if password == "" {
+			password, err = accountmail.NewToken()
+			if err != nil {
+				return err
+			}
+		}
+		passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+		if err != nil {
+			return err
+		}
+		user, _, err := db.EnsureDefaultOwner(ctx, cfg.DefaultEmail, passwordHash, cfg.DefaultName, cfg.DefaultOrganization)
+		if err != nil {
+			return err
+		}
+		defaultUser = &user
+		slog.Info("Authentication disabled; using implicit owner", "email", user.Email, "organization", cfg.DefaultOrganization)
+	}
 	stopArtifactChunks := jobs.StartArtifactChunks(ctx, db, time.Duration(cfg.ArtifactChunkTTLHours)*time.Hour)
 	defer stopArtifactChunks()
 	stopTransactionSpans := jobs.StartTransactionSpans(ctx, db)
@@ -97,7 +118,7 @@ func run() error {
 		stopWorkers := jobs.StartMonitors(ctx, db, cfg.MonitorWorkers, cfg.UptimeAllowPrivate)
 		defer stopWorkers()
 	}
-	srv := &http.Server{Addr: cfg.Addr, Handler: server.NewWithAccountMail(cfg, db, sender, accountBox), ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxHeaderBytes: 1 << 20}
+	srv := &http.Server{Addr: cfg.Addr, Handler: server.NewWithAccountMailAndDefaultUser(cfg, db, sender, accountBox, defaultUser), ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxHeaderBytes: 1 << 20}
 	done := make(chan error, 1)
 	go func() {
 		slog.Info("GoodSentry listening", "address", cfg.Addr, "domain", cfg.Domain)

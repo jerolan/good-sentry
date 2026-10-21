@@ -15,7 +15,9 @@ test -f .env || printf 'SECRET_KEY=%s\n' "$(openssl rand -hex 32)" > .env
 docker compose up -d
 ```
 
-Open **http://localhost:8000**. Create the first account and organization, create a project and copy its DSN into your SDK configuration. There is no shared initial password.
+Open **http://localhost:8000**. With the default `GOODSENTRY_AUTH=disabled`, Compose creates an implicit owner and workspace and opens the dashboard without a login. Create a project and copy its DSN into your SDK configuration. Restarting preserves the same owner, workspace and projects.
+
+The implicit account defaults to `owner@localhost`, `GoodSentry Owner` and `Default Organization`; override `GOODSENTRY_DEFAULT_EMAIL`, `GOODSENTRY_DEFAULT_NAME` and `GOODSENTRY_DEFAULT_ORGANIZATION` when needed. Open mode still requires same-origin and CSRF validation for mutations and is intended only for local use or a trusted network. Set `GOODSENTRY_AUTH=required` before exposing the service. For OAuth or MCP authorization through a password login, `GOODSENTRY_DEFAULT_PASSWORD` can give the implicit owner a password of 12 to 72 bytes at first creation.
 
 Compose pulls `ghcr.io/jerolan/good-sentry:main` for amd64 or arm64 without a registry login. The runtime image contains the Go binary and embedded frontend, runs as `65532:65532` and needs one PostgreSQL container. PostgreSQL also coordinates the scheduler and delivery retries. Set `GOODSENTRY_IMAGE` in `.env` to select a `sha-<full-commit>` revision tag or pin an immutable image digest.
 

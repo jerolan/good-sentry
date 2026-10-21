@@ -26,6 +26,11 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgres://goodsentry:${POSTGRES_PASSWORD:-goodsentry-local}@postgres:5432/goodsentry}
       SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY to a random value of at least 32 characters}
       GOODSENTRY_DOMAIN: ${GOODSENTRY_DOMAIN:-${GLITCHTIP_DOMAIN:-http://localhost:${PORT:-8000}}}
+      GOODSENTRY_AUTH: ${GOODSENTRY_AUTH:-disabled}
+      GOODSENTRY_DEFAULT_EMAIL: ${GOODSENTRY_DEFAULT_EMAIL:-owner@localhost}
+      GOODSENTRY_DEFAULT_NAME: ${GOODSENTRY_DEFAULT_NAME:-GoodSentry Owner}
+      GOODSENTRY_DEFAULT_ORGANIZATION: ${GOODSENTRY_DEFAULT_ORGANIZATION:-Default Organization}
+      GOODSENTRY_DEFAULT_PASSWORD: ${GOODSENTRY_DEFAULT_PASSWORD:-}
       EMAIL_URL: ${EMAIL_URL:-consolemail://}
       DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-goodsentry@localhost}
       VALKEY_URL: ""

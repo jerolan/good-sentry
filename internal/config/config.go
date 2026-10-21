@@ -2,11 +2,13 @@ package config
 
 import (
 	"fmt"
+	"net/mail"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"goodsentry/internal/notify"
 )
@@ -14,6 +16,9 @@ import (
 type Config struct {
 	DatabaseURL, Secret, Domain, Prefix, Addr  string
 	EmailURL, FromEmail, ValkeyURL, UploadDir  string
+	AuthMode                                   string
+	DefaultEmail, DefaultName                  string
+	DefaultOrganization, DefaultPassword       string
 	Logs, Uptime, MCP, DuckDB, OpenAPI, Admin  bool
 	OrganizationCreation                       bool
 	MaxBodyBytes                               int64
@@ -39,6 +44,8 @@ type Config struct {
 	OIDCScopes                                 []string
 	OIDCAutoCreate                             bool
 }
+
+func (c Config) AuthenticationDisabled() bool { return c.AuthMode == "disabled" }
 
 // ValidateRuntimeAvailability rejects feature switches whose implementation is
 // not part of this build. Parsing a flag is not permission to claim support.
@@ -86,6 +93,27 @@ func Load() (Config, error) {
 		return c, fmt.Errorf("GOODSENTRY_DOMAIN must be an absolute http or https URL without credentials, query or fragment")
 	}
 	c.Prefix = strings.TrimRight(u.Path, "/")
+	c.AuthMode = strings.ToLower(strings.TrimSpace(value("GOODSENTRY_AUTH", "disabled")))
+	if c.AuthMode != "disabled" && c.AuthMode != "required" {
+		return c, fmt.Errorf("GOODSENTRY_AUTH must be disabled or required")
+	}
+	c.DefaultEmail = strings.ToLower(strings.TrimSpace(value("GOODSENTRY_DEFAULT_EMAIL", "owner@localhost")))
+	address, addressErr := mail.ParseAddress(c.DefaultEmail)
+	if addressErr != nil || address.Address != c.DefaultEmail || len(c.DefaultEmail) > 254 {
+		return c, fmt.Errorf("GOODSENTRY_DEFAULT_EMAIL must be a valid email address")
+	}
+	c.DefaultName = strings.TrimSpace(value("GOODSENTRY_DEFAULT_NAME", "GoodSentry Owner"))
+	if c.DefaultName == "" || len(c.DefaultName) > 120 || !utf8.ValidString(c.DefaultName) || strings.ContainsFunc(c.DefaultName, unicode.IsControl) {
+		return c, fmt.Errorf("GOODSENTRY_DEFAULT_NAME must contain 1 to 120 characters without controls")
+	}
+	c.DefaultOrganization = strings.TrimSpace(value("GOODSENTRY_DEFAULT_ORGANIZATION", "Default Organization"))
+	if c.DefaultOrganization == "" || len(c.DefaultOrganization) > 120 || !utf8.ValidString(c.DefaultOrganization) || strings.ContainsFunc(c.DefaultOrganization, unicode.IsControl) {
+		return c, fmt.Errorf("GOODSENTRY_DEFAULT_ORGANIZATION must contain 1 to 120 characters without controls")
+	}
+	c.DefaultPassword = os.Getenv("GOODSENTRY_DEFAULT_PASSWORD")
+	if c.DefaultPassword != "" && (len(c.DefaultPassword) < 12 || len(c.DefaultPassword) > 72) {
+		return c, fmt.Errorf("GOODSENTRY_DEFAULT_PASSWORD must contain 12 to 72 bytes")
+	}
 	if role := value("SERVER_ROLE", "all_in_one"); role != "all_in_one" {
 		return c, fmt.Errorf("SERVER_ROLE must be all_in_one")
 	}

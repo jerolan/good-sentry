@@ -2,7 +2,10 @@ package store
 
 import (
 	"context"
+	"errors"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type User struct {
@@ -71,6 +74,61 @@ func (s *Store) Bootstrap(ctx context.Context, email string, password []byte, na
 	if _, err = tx.Exec(ctx, "INSERT INTO team_memberships(team_id,user_id) VALUES($1,$2)", team, u.ID); err != nil {
 		return u, o, err
 	}
+	return u, o, tx.Commit(ctx)
+}
+
+// EnsureDefaultOwner creates the implicit local owner and workspace exactly
+// once. Reopening preserves the existing user, password and workspace while
+// repairing the required owner/default-team membership.
+func (s *Store) EnsureDefaultOwner(ctx context.Context, email string, passwordHash []byte, name, organization string) (User, Organization, error) {
+	var u User
+	var o Organization
+	if len(passwordHash) == 0 || name == "" || organization == "" {
+		return u, o, ErrNotFound
+	}
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return u, o, err
+	}
+	defer tx.Rollback(ctx)
+	if _, err = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(73042190)"); err != nil {
+		return u, o, err
+	}
+	err = tx.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE lower(email)=lower($1)`, email).
+		Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = tx.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3)
+			RETURNING id::text,email,name,password_hash,auth_generation`, email, passwordHash, name).
+			Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
+	}
+	if err != nil {
+		return u, o, dbError(err)
+	}
+	slug := Slug(organization)
+	err = tx.QueryRow(ctx, `SELECT id::text,slug,name FROM organizations WHERE slug=$1`, slug).Scan(&o.ID, &o.Slug, &o.Name)
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = tx.QueryRow(ctx, `INSERT INTO organizations(slug,name) VALUES($1,$2) RETURNING id::text,slug,name`, slug, organization).
+			Scan(&o.ID, &o.Slug, &o.Name)
+	}
+	if err != nil {
+		return u, o, dbError(err)
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1::bigint,$2::bigint,'owner')
+		ON CONFLICT(organization_id,user_id) DO UPDATE SET role='owner'`, o.ID, u.ID); err != nil {
+		return u, o, err
+	}
+	var teamID string
+	err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug='default'`, o.ID).Scan(&teamID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = tx.QueryRow(ctx, `INSERT INTO teams(organization_id,slug,name) VALUES($1::bigint,'default','Default') RETURNING id::text`, o.ID).Scan(&teamID)
+	}
+	if err != nil {
+		return u, o, dbError(err)
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO team_memberships(team_id,user_id) VALUES($1::bigint,$2::bigint) ON CONFLICT DO NOTHING`, teamID, u.ID); err != nil {
+		return u, o, err
+	}
+	o.Role = "owner"
 	return u, o, tx.Commit(ctx)
 }
 
