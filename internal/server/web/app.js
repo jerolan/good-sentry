@@ -8,7 +8,7 @@
   const pageSize = 25;
   const viewNames = { issues: 'Issues', feedback: 'Feedback', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', releases: 'Releases', 'api-tokens': 'API tokens', people: 'People', organization: 'Organization', account: 'Account' };
   const traceReset = { traceView: null, traceProject: null, tracePage: null, traceNode: null, traceErrorsPage: null, returnView: null };
-  const state = { me: null, organization: null, projects: [], requestVersion: 0 };
+  const state = { me: null, organization: null, projects: [], requestVersion: 0, authConfig: { oidc: { enabled: false } } };
   const commentDrafts = new Map();
   const commentEditDrafts = new Map();
   const commentEditIssueIDs = new Map();
@@ -321,6 +321,11 @@
       }
     });
     const children = node('div', {}, notice ? node('p', { class: 'form-notice', role: 'status', tabindex: '-1' }, notice) : null, error, form);
+    if (!setup && state.authConfig?.oidc?.enabled) {
+      children.append(
+        node('p', { class: 'muted small', 'aria-hidden': 'true' }, 'or'),
+        node('a', { class: 'btn button', href: base + '/auth/oidc/start' }, 'Continue with ' + (state.authConfig.oidc.name || 'single sign-on')));
+    }
     authFrame(setup ? 'First-time setup' : 'Your workspace', setup ? 'Welcome to GoodSentry' : 'Sign in to GoodSentry',
       setup ? 'Create the first owner account and organization. Then connect your application with its project DSN.' : 'Use your account to view and manage application errors.', children, (setup ? name : email).input);
   }
@@ -2813,6 +2818,15 @@
     try {
       const setup = await request('/api/v1/setup');
       if (setup.required) { renderAuth(true); return; }
+      state.authConfig = await request('/api/v1/auth/config').catch(() => ({ oidc: { enabled: false } }));
+      const authError = new URLSearchParams(location.search).get('authError');
+      if (authError) {
+        history.replaceState(null, '', routeURL({ authError: null }));
+        renderAuth(false, authError === 'no-account'
+          ? 'No GoodSentry account is linked to that verified identity. Ask an organization owner for an invitation.'
+          : 'Single sign-on could not be completed. Try again or sign in with your password.');
+        return;
+      }
       const resetToken = new URLSearchParams(location.search).get('resetToken');
       if (resetToken) {
         if (/^[0-9a-f]{64}$/.test(resetToken)) renderResetPassword(resetToken);

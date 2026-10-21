@@ -6,32 +6,37 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"goodsentry/internal/notify"
 )
 
 type Config struct {
-	DatabaseURL, Secret, Domain, Prefix, Addr string
-	EmailURL, FromEmail, ValkeyURL, UploadDir string
-	Logs, Uptime, MCP, DuckDB, OpenAPI, Admin bool
-	MaxBodyBytes                              int64
-	RetentionDays, LogRetentionDays           int
-	TransactionRetentionDays                  int
-	EventRetentionDays                        int
-	UptimeRetentionDays                       int
-	FileRetentionDays, ReleaseRetentionDays   int
-	RetentionIntervalSeconds                  int
-	MonitorWorkers                            int
-	UptimeAllowPrivate                        bool
-	AlertWorkers, AlertMaxAttempts            int
-	AlertTimeoutSeconds                       int
-	WebhookAllowPrivate                       bool
-	AlertDelivery                             bool
-	ArtifactChunkTTLHours                     int
-	ArtifactStagingMaxBytes                   int64
-	ArtifactMaxMapRecords                     int
-	IssueMaintenanceIntervalSeconds           int
-	OTLPMaxRecords, OTLPMaxNodes              int
+	DatabaseURL, Secret, Domain, Prefix, Addr  string
+	EmailURL, FromEmail, ValkeyURL, UploadDir  string
+	Logs, Uptime, MCP, DuckDB, OpenAPI, Admin  bool
+	MaxBodyBytes                               int64
+	RetentionDays, LogRetentionDays            int
+	TransactionRetentionDays                   int
+	EventRetentionDays                         int
+	UptimeRetentionDays                        int
+	FileRetentionDays, ReleaseRetentionDays    int
+	RetentionIntervalSeconds                   int
+	MonitorWorkers                             int
+	UptimeAllowPrivate                         bool
+	AlertWorkers, AlertMaxAttempts             int
+	AlertTimeoutSeconds                        int
+	WebhookAllowPrivate                        bool
+	AlertDelivery                              bool
+	ArtifactChunkTTLHours                      int
+	ArtifactStagingMaxBytes                    int64
+	ArtifactMaxMapRecords                      int
+	IssueMaintenanceIntervalSeconds            int
+	OTLPMaxRecords, OTLPMaxNodes               int
+	OIDCIssuer, OIDCClientID, OIDCClientSecret string
+	OIDCName                                   string
+	OIDCScopes                                 []string
+	OIDCAutoCreate                             bool
 }
 
 // ValidateRuntimeAvailability rejects feature switches whose implementation is
@@ -150,6 +155,42 @@ func Load() (Config, error) {
 		c.MaxBodyBytes, err = strconv.ParseInt(raw, 10, 64)
 		if err != nil || c.MaxBodyBytes < 1024 || c.MaxBodyBytes > 200<<20 {
 			return c, fmt.Errorf("MAX_BODY_BYTES must be between 1024 and 209715200")
+		}
+	}
+	c.OIDCIssuer = strings.TrimRight(strings.TrimSpace(os.Getenv("GOODSENTRY_OIDC_ISSUER")), "/")
+	c.OIDCClientID = strings.TrimSpace(os.Getenv("GOODSENTRY_OIDC_CLIENT_ID"))
+	c.OIDCClientSecret = strings.TrimSpace(os.Getenv("GOODSENTRY_OIDC_CLIENT_SECRET"))
+	c.OIDCName = strings.TrimSpace(value("GOODSENTRY_OIDC_NAME", "Single sign-on"))
+	if c.OIDCIssuer != "" || c.OIDCClientID != "" || c.OIDCClientSecret != "" {
+		issuer, err := url.Parse(c.OIDCIssuer)
+		if err != nil || issuer.Host == "" || issuer.User != nil || issuer.RawQuery != "" || issuer.Fragment != "" ||
+			(issuer.Scheme != "https" && !(issuer.Scheme == "http" && (issuer.Hostname() == "localhost" || issuer.Hostname() == "127.0.0.1" || issuer.Hostname() == "::1"))) {
+			return c, fmt.Errorf("GOODSENTRY_OIDC_ISSUER must be an absolute HTTPS URL, or HTTP on loopback")
+		}
+		if c.OIDCClientID == "" || len(c.OIDCClientID) > 256 || c.OIDCClientSecret == "" || len(c.OIDCClientSecret) > 1024 {
+			return c, fmt.Errorf("GOODSENTRY_OIDC_CLIENT_ID and GOODSENTRY_OIDC_CLIENT_SECRET are required with an issuer")
+		}
+		if c.OIDCName == "" || len(c.OIDCName) > 80 || strings.ContainsFunc(c.OIDCName, unicode.IsControl) {
+			return c, fmt.Errorf("GOODSENTRY_OIDC_NAME must be 1 to 80 characters without controls")
+		}
+		for _, scope := range strings.Fields(value("GOODSENTRY_OIDC_SCOPES", "openid profile email")) {
+			if len(scope) > 64 || strings.ContainsFunc(scope, func(r rune) bool {
+				return !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || strings.ContainsRune("._:-", r))
+			}) {
+				return c, fmt.Errorf("GOODSENTRY_OIDC_SCOPES contains an invalid scope")
+			}
+			c.OIDCScopes = append(c.OIDCScopes, scope)
+		}
+		foundOpenID := false
+		for _, scope := range c.OIDCScopes {
+			foundOpenID = foundOpenID || scope == "openid"
+		}
+		if !foundOpenID {
+			return c, fmt.Errorf("GOODSENTRY_OIDC_SCOPES must include openid")
+		}
+		c.OIDCAutoCreate, err = strconv.ParseBool(value("GOODSENTRY_OIDC_AUTO_CREATE", "false"))
+		if err != nil {
+			return c, fmt.Errorf("GOODSENTRY_OIDC_AUTO_CREATE must be true or false")
 		}
 	}
 	master := alias("GOODSENTRY_RETENTION_DAYS", "GLITCHTIP_RETENTION_DAYS", value("RETENTION_DAYS", "90"))

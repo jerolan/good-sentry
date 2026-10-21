@@ -1,0 +1,30 @@
+=== RUN   TestOIDCConfiguration
+=== RUN   TestOIDCConfiguration/disabled
+=== RUN   TestOIDCConfiguration/valid
+=== RUN   TestOIDCConfiguration/loopback_HTTP
+=== RUN   TestOIDCConfiguration/remote_HTTP
+=== RUN   TestOIDCConfiguration/missing_secret
+=== RUN   TestOIDCConfiguration/missing_openid
+=== RUN   TestOIDCConfiguration/bad_scope
+=== RUN   TestOIDCConfiguration/bad_auto_create
+--- PASS: TestOIDCConfiguration (0.00s)
+    --- PASS: TestOIDCConfiguration/disabled (0.00s)
+    --- PASS: TestOIDCConfiguration/valid (0.00s)
+    --- PASS: TestOIDCConfiguration/loopback_HTTP (0.00s)
+    --- PASS: TestOIDCConfiguration/remote_HTTP (0.00s)
+    --- PASS: TestOIDCConfiguration/missing_secret (0.00s)
+    --- PASS: TestOIDCConfiguration/missing_openid (0.00s)
+    --- PASS: TestOIDCConfiguration/bad_scope (0.00s)
+    --- PASS: TestOIDCConfiguration/bad_auto_create (0.00s)
+PASS
+ok  	goodsentry/internal/config	1.014s
+=== RUN   TestOIDCIdentityLinksAndCreatesAccounts
+--- PASS: TestOIDCIdentityLinksAndCreatesAccounts (0.51s)
+PASS
+ok  	goodsentry/internal/store	1.521s
+=== RUN   TestOIDCPKCEAccountLinkAndSession
+--- PASS: TestOIDCPKCEAccountLinkAndSession (0.46s)
+=== RUN   TestOIDCDisabledPublicConfiguration
+--- PASS: TestOIDCDisabledPublicConfiguration (0.44s)
+PASS
+ok  	goodsentry/internal/server	1.920s

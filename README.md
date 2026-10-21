@@ -64,7 +64,7 @@ Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `
 | Native diagnostics | Official CLI chunked DIF upload, bounded ZIP debug archives, AMD64/x86/ARM64 minidump ingestion, frame-pointer and CFI-assisted unwinding, and Breakpad plus ELF/Mach-O DWARF or dSYM companion symbolication; more native formats are in progress. |
 | Performance and logs | Transactions, spans, trace waterfalls, typed logs and OTLP/HTTP log ingestion. |
 | Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors; email and webhooks with durable retries. |
-| Accounts and teams | Password changes and email recovery, member roles, teams and single-use email invitations. |
+| Accounts and teams | Password changes and email recovery, optional OIDC sign-in, member roles, teams and single-use email invitations. |
 | Integration API | Sentry-compatible discovery for users, organizations, projects, members and teams; organization rename/delete, member invitations, team management, project-key DSNs with fixed-window rate limits, plus scoped automation credentials. |
 | MCP | Opt-in Model Context Protocol server with 17 organization, issue, log, alert, monitor and performance tools; OAuth PKCE or scoped API tokens. |
 | Deployment | One non-root application image, PostgreSQL, automatic migrations and configurable retention. |

@@ -27,6 +27,7 @@ type Server struct {
 	db      *store.Store
 	mail    *notify.Sender
 	account *accountmail.SecretBox
+	oidc    *oidcAuth
 }
 type identity struct {
 	User store.User
@@ -39,7 +40,7 @@ func New(cfg config.Config, db *store.Store) http.Handler {
 }
 
 func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sender, box *accountmail.SecretBox) http.Handler {
-	s := &Server{cfg: cfg, db: db, mail: sender, account: box}
+	s := &Server{cfg: cfg, db: db, mail: sender, account: box, oidc: newOIDCAuth(cfg)}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]string{"status": "ok", "service": "GoodSentry"})
@@ -94,6 +95,7 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 	s.registerCompatibleDiscoveryRoutes(mux)
 	s.registerCompatibleManagementRoutes(mux)
 	s.registerOAuthRoutes(mux)
+	s.registerOIDCRoutes(mux)
 	s.registerMCPRoutes(mux)
 	mux.Handle("GET /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.projects)))
 	mux.Handle("POST /api/v1/organizations/{org}/projects", s.auth(http.HandlerFunc(s.createProject)))

@@ -27,6 +27,12 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `ARTIFACT_MAX_MAP_RECORDS` | `1000` | Maximum maps × selected projects in one atomic assembly, from 1 to 100000. |
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
 | `GOODSENTRY_ENABLE_MCP` | `false` | Enable `/mcp`, OAuth discovery and consent for MCP clients. |
+| `GOODSENTRY_OIDC_ISSUER` | Empty | Optional OpenID Connect issuer URL. HTTPS is required except on loopback. |
+| `GOODSENTRY_OIDC_CLIENT_ID` | Empty | OIDC client identifier; required with an issuer. |
+| `GOODSENTRY_OIDC_CLIENT_SECRET` | Empty | OIDC client secret; required with an issuer and never sent to browsers. |
+| `GOODSENTRY_OIDC_NAME` | `Single sign-on` | Button label for the configured identity provider. |
+| `GOODSENTRY_OIDC_SCOPES` | `openid profile email` | Space-separated scopes; must include `openid`. |
+| `GOODSENTRY_OIDC_AUTO_CREATE` | `false` | Create an OIDC-only account when a verified email has no existing account. |
 | `GOODSENTRY_OTLP_MAX_RECORDS` | `1000` | Maximum records per OTLP log batch, from 1 to 100000. |
 | `GOODSENTRY_OTLP_MAX_NODES` | `100000` | Maximum decoded nodes per OTLP log batch, from 100 to 1000000. |
 | `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
@@ -47,6 +53,24 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS` | `false` | Allow webhooks to reach your private network. |
 
 The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Enabling currently unavailable DuckDB, admin, OpenAPI or Valkey options fails startup rather than reporting them as available. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
+
+### OpenID Connect
+
+Register this callback with your identity provider:
+
+```text
+<GOODSENTRY_DOMAIN>/auth/oidc/callback
+```
+
+Configure the issuer, client ID, client secret and a display name. GoodSentry
+discovers the provider metadata, requires the authorization-code flow with
+S256 PKCE, verifies the signed ID token, issuer, audience, nonce and expiry,
+and accepts only a verified email claim. An identity is linked once to the
+matching normalized account email; later logins use the provider subject.
+With auto-creation disabled, an unknown email must first receive an
+organization invitation. OIDC-only accounts have no local password until the
+owner completes account recovery. The provider secret and raw identity tokens
+are never sent to the browser.
 
 ## Scoped API tokens
 

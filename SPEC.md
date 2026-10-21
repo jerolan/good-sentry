@@ -142,6 +142,16 @@ Public request/accept routes are same-origin, contain no bearer authentication a
 
 Acceptance owners are pure token/MIME tests, real PostgreSQL migration/partial uniqueness/outbox/retry/replay/membership/password generation tests, actual HTTP admission, and a controlled SMTP sink plus copied image/restart and browser320/768/1024/1440 checks. Invitations are not accepted until these run; no email is treated as a user until redeemed.
 
+### OpenID Connect sign-in
+
+OIDC is disabled unless `GOODSENTRY_OIDC_ISSUER`, `GOODSENTRY_OIDC_CLIENT_ID` and `GOODSENTRY_OIDC_CLIENT_SECRET` are configured together. Issuers require HTTPS except for loopback development, discovery is bounded to ten seconds, and configured scopes must include `openid`. The callback is the configured public domain plus `/auth/oidc/callback`. The secret remains server-side.
+
+`GET /auth/oidc/start` creates random state, nonce and PKCE verifier values, stores an HMAC-authenticated HttpOnly SameSite Lax cookie for at most ten minutes, and redirects to the discovered authorization endpoint with S256 PKCE and nonce. `GET /auth/oidc/callback` requires the exact state cookie, exchanges the code with the verifier, verifies the ID token signature, issuer, audience, expiry and nonce, and accepts only a nonempty subject plus `email_verified:true` with a valid normalized email. The provider secret, authorization code, access token and raw ID token never enter browser state, URLs, logs or telemetry.
+
+Additive045 stores provider, subject, normalized email, user and login instants with unique `(provider,subject)` and `(user_id,provider)` constraints. A known subject logs in directly. Otherwise a verified email links to the existing normalized account; a second subject for the same provider returns conflict. With `GOODSENTRY_OIDC_AUTO_CREATE=true`, an unknown email creates an OIDC-only user whose stored password value is intentionally unusable until account recovery sets a real password. Failed or stale flows delete the flow cookie and redirect to the sign-in page with a generic error; no partially linked user is committed.
+
+`GET /api/v1/auth/config` exposes only whether OIDC is enabled and its display name. The sign-in screen renders a provider button using that value. Tests use a local signed-JWT OIDC provider and real PostgreSQL to cover discovery, PKCE, nonce/state, verified-email linking, repeat login, configuration while disabled, and tampered callbacks. A remote provider receipt remains required before claiming a particular vendor is deployment-verified.
+
 ## Ingestion contract
 
 Support POST /api/{project}/store/ and /api/{project}/envelope/, including deployments under a URL path prefix. Parse Sentry protocol v7 authentication from X-Sentry-Auth, query parameters and the envelope dsn header. Multiple supplied identities must agree and match the route's project. An absent or invalid SDK key returns 403. Never use management tokens as SDK credentials.

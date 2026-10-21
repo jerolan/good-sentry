@@ -330,3 +330,74 @@ func TestArtifactDeploymentOptions(t *testing.T) {
 		})
 	}
 }
+
+func TestOIDCConfiguration(t *testing.T) {
+	base := map[string]string{
+		"DATABASE_URL":      "postgres://goodsentry:local@localhost/goodsentry",
+		"SECRET_KEY":        strings.Repeat("a", 64),
+		"GOODSENTRY_DOMAIN": "https://errors.example.test",
+	}
+	for _, tc := range []struct {
+		name      string
+		env       map[string]string
+		wantError string
+	}{
+		{"disabled", nil, ""},
+		{"valid", map[string]string{
+			"GOODSENTRY_OIDC_ISSUER": "https://id.example.test/tenant/", "GOODSENTRY_OIDC_CLIENT_ID": "client",
+			"GOODSENTRY_OIDC_CLIENT_SECRET": "secret", "GOODSENTRY_OIDC_NAME": "Company SSO",
+			"GOODSENTRY_OIDC_SCOPES": "openid profile email groups", "GOODSENTRY_OIDC_AUTO_CREATE": "true",
+		}, ""},
+		{"loopback HTTP", map[string]string{
+			"GOODSENTRY_OIDC_ISSUER": "http://127.0.0.1:9000", "GOODSENTRY_OIDC_CLIENT_ID": "client",
+			"GOODSENTRY_OIDC_CLIENT_SECRET": "secret",
+		}, ""},
+		{"remote HTTP", map[string]string{
+			"GOODSENTRY_OIDC_ISSUER": "http://id.example.test", "GOODSENTRY_OIDC_CLIENT_ID": "client",
+			"GOODSENTRY_OIDC_CLIENT_SECRET": "secret",
+		}, "OIDC_ISSUER"},
+		{"missing secret", map[string]string{
+			"GOODSENTRY_OIDC_ISSUER": "https://id.example.test", "GOODSENTRY_OIDC_CLIENT_ID": "client",
+		}, "CLIENT_SECRET"},
+		{"missing openid", map[string]string{
+			"GOODSENTRY_OIDC_ISSUER": "https://id.example.test", "GOODSENTRY_OIDC_CLIENT_ID": "client",
+			"GOODSENTRY_OIDC_CLIENT_SECRET": "secret", "GOODSENTRY_OIDC_SCOPES": "profile email",
+		}, "include openid"},
+		{"bad scope", map[string]string{
+			"GOODSENTRY_OIDC_ISSUER": "https://id.example.test", "GOODSENTRY_OIDC_CLIENT_ID": "client",
+			"GOODSENTRY_OIDC_CLIENT_SECRET": "secret", "GOODSENTRY_OIDC_SCOPES": "openid bad/scope",
+		}, "invalid scope"},
+		{"bad auto create", map[string]string{
+			"GOODSENTRY_OIDC_ISSUER": "https://id.example.test", "GOODSENTRY_OIDC_CLIENT_ID": "client",
+			"GOODSENTRY_OIDC_CLIENT_SECRET": "secret", "GOODSENTRY_OIDC_AUTO_CREATE": "sometimes",
+		}, "AUTO_CREATE"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for key, value := range base {
+				t.Setenv(key, value)
+			}
+			for _, key := range []string{"GOODSENTRY_OIDC_ISSUER", "GOODSENTRY_OIDC_CLIENT_ID", "GOODSENTRY_OIDC_CLIENT_SECRET", "GOODSENTRY_OIDC_NAME", "GOODSENTRY_OIDC_SCOPES", "GOODSENTRY_OIDC_AUTO_CREATE"} {
+				t.Setenv(key, "")
+			}
+			for key, value := range tc.env {
+				t.Setenv(key, value)
+			}
+			c, err := Load()
+			if tc.wantError != "" {
+				if err == nil || !strings.Contains(err.Error(), tc.wantError) {
+					t.Fatalf("error=%v want %s", err, tc.wantError)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.name == "valid" {
+				if c.OIDCIssuer != "https://id.example.test/tenant" || c.OIDCClientID != "client" || c.OIDCName != "Company SSO" ||
+					!c.OIDCAutoCreate || strings.Join(c.OIDCScopes, " ") != "openid profile email groups" {
+					t.Fatalf("OIDC config=%+v", c)
+				}
+			}
+		})
+	}
+}
