@@ -28,6 +28,7 @@ type Server struct {
 	mail          *notify.Sender
 	account       *accountmail.SecretBox
 	oidc          *oidcAuth
+	totp          *totpBox
 	defaultUserID string
 	openCSRF      string
 }
@@ -46,7 +47,8 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 }
 
 func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender *notify.Sender, box *accountmail.SecretBox, defaultUser *store.User) http.Handler {
-	s := &Server{cfg: cfg, db: db, mail: sender, account: box, oidc: newOIDCAuth(cfg)}
+	sealer, _ := newTOTPBox(cfg.Secret)
+	s := &Server{cfg: cfg, db: db, mail: sender, account: box, oidc: newOIDCAuth(cfg), totp: sealer}
 	if cfg.AuthenticationDisabled() && defaultUser != nil {
 		s.defaultUserID = defaultUser.ID
 		s.openCSRF = s.hash("open-auth-csrf-v1:" + defaultUser.ID)
@@ -67,6 +69,7 @@ func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender
 	mux.HandleFunc("GET /api/v1/setup", s.setupState)
 	mux.HandleFunc("POST /api/v1/setup", s.setup)
 	mux.HandleFunc("POST /api/v1/login", s.login)
+	s.registerTwoFactorRoutes(mux)
 	mux.Handle("GET /api/v1/me", s.auth(http.HandlerFunc(s.me)))
 	mux.Handle("POST /api/v1/account/password", s.auth(http.HandlerFunc(s.changePassword)))
 	mux.HandleFunc("POST /api/v1/account/password/reset/request", s.requestPasswordReset)

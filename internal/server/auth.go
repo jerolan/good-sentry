@@ -154,6 +154,9 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		failure(w, 401, "Invalid email or password")
 		return
 	}
+	if !s.requireSecondFactor(w, r, u) {
+		return
+	}
 	s.startSession(w, r, u, 200)
 }
 func (s *Server) startSession(w http.ResponseWriter, r *http.Request, u store.User, status int) {
