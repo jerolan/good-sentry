@@ -1,0 +1,15 @@
+{
+  "image": "goodsentry:native-dwarf-20261020",
+  "imageDigest": "sha256:5a9150b321aa65674631f0ecb14c7bd103023d2d1f4bc5c41b30272906028408",
+  "architecture": "amd64",
+  "user": "65532:65532",
+  "sizeBytes": 36641007,
+  "containerID": "cede84e4b1057486c08526c65aba0e9d525987a22a158779b915de1eb3a7fca6",
+  "health": {
+    "service": "GoodSentry",
+    "status": "ok"
+  },
+  "binarySHA256": "783af65105d9fd1a67ae934b4ad00b7a1b12eea2cd6cd02bd042e12ccc084b72",
+  "binaryBytes": 22294688,
+  "eventID": "f87f9133953b828992b5a2d74687cbd8"
+}

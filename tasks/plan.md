@@ -280,4 +280,4 @@ Native AMD64/x86 and official DIF are publicly accepted at8425893. Continue the 
 
 ARM64 Minidump context support passes local full-race and final-image DIF at3682a21. Publish and verify exact public source/CI/image/binary, while keeping CFI/DWARF, PDB/dSYM/SymCache and real multi-platform receipts open.
 
-ARM64 native acceptance is public at3e2434c. Keep the parent open for CFI/DWARF, PDB/dSYM/SymCache, archive extraction and real receipts; next audit those remaining native consumers before implementation.
+Native ELF/DWARF object symbolication, image-relative address normalization and Debug-ID fallback are public at e744851. Continue the parent with DWARF call-frame unwinding, PDB/dSYM/SymCache and archive extraction, add a representative Mach-O receipt, then collect real multi-platform crash receipts.
