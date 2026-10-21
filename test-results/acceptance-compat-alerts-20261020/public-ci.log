@@ -1,0 +1,1250 @@
+verify	Set up job	﻿2026-10-21T10:48:05.9337570Z Current runner version: '2.338.0'
+verify	Set up job	2026-10-21T10:48:05.9363230Z ##[group]Runner Image Provisioner
+verify	Set up job	2026-10-21T10:48:05.9364236Z Hosted Compute Agent
+verify	Set up job	2026-10-21T10:48:05.9364883Z Version: 20261012.601
+verify	Set up job	2026-10-21T10:48:05.9365577Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+verify	Set up job	2026-10-21T10:48:05.9366382Z Build Date: 2026-10-12T17:48:21Z
+verify	Set up job	2026-10-21T10:48:05.9367077Z Worker ID: {a0a5d479-a52c-4ccf-a835-35d9258c4a37}
+verify	Set up job	2026-10-21T10:48:05.9367861Z Region: westus
+verify	Set up job	2026-10-21T10:48:05.9368508Z Cloud: Azure
+verify	Set up job	2026-10-21T10:48:05.9369103Z ##[endgroup]
+verify	Set up job	2026-10-21T10:48:05.9370920Z ##[group]Operating System
+verify	Set up job	2026-10-21T10:48:05.9371600Z Ubuntu
+verify	Set up job	2026-10-21T10:48:05.9372418Z 24.04.5
+verify	Set up job	2026-10-21T10:48:05.9373014Z LTS
+verify	Set up job	2026-10-21T10:48:05.9373864Z ##[endgroup]
+verify	Set up job	2026-10-21T10:48:05.9374525Z ##[group]Runner Image
+verify	Set up job	2026-10-21T10:48:05.9375130Z Image: ubuntu-24.04
+verify	Set up job	2026-10-21T10:48:05.9375742Z Version: 20261012.334.1
+verify	Set up job	2026-10-21T10:48:05.9376901Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+verify	Set up job	2026-10-21T10:48:05.9378653Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+verify	Set up job	2026-10-21T10:48:05.9379651Z ##[endgroup]
+verify	Set up job	2026-10-21T10:48:05.9380861Z ##[group]GITHUB_TOKEN Permissions
+verify	Set up job	2026-10-21T10:48:05.9383289Z Contents: read
+verify	Set up job	2026-10-21T10:48:05.9384129Z Metadata: read
+verify	Set up job	2026-10-21T10:48:05.9384698Z ##[endgroup]
+verify	Set up job	2026-10-21T10:48:05.9386765Z Secret source: Actions
+verify	Set up job	2026-10-21T10:48:05.9387839Z Cache mode: write
+verify	Set up job	2026-10-21T10:48:05.9388837Z Prepare workflow directory
+verify	Set up job	2026-10-21T10:48:05.9898180Z Prepare all required actions
+verify	Set up job	2026-10-21T10:48:05.9945022Z Getting action download info
+verify	Set up job	2026-10-21T10:48:06.3333638Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+verify	Set up job	2026-10-21T10:48:06.4541221Z Download action repository 'actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e' (SHA:b7ad1dad31e06c5925ef5d2fc7ad053ef454303e)
+verify	Set up job	2026-10-21T10:48:07.0314716Z Complete job name: verify
+verify	Initialize containers	﻿2026-10-21T10:48:07.0859514Z ##[group]Checking docker version
+verify	Initialize containers	2026-10-21T10:48:07.0872739Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+verify	Initialize containers	2026-10-21T10:48:07.1754044Z '1.48'
+verify	Initialize containers	2026-10-21T10:48:07.1766795Z Docker daemon API version: '1.48'
+verify	Initialize containers	2026-10-21T10:48:07.1767656Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+verify	Initialize containers	2026-10-21T10:48:07.1936674Z '1.48'
+verify	Initialize containers	2026-10-21T10:48:07.1950121Z Docker client API version: '1.48'
+verify	Initialize containers	2026-10-21T10:48:07.1957836Z ##[endgroup]
+verify	Initialize containers	2026-10-21T10:48:07.1962941Z ##[group]Clean up resources from previous jobs
+verify	Initialize containers	2026-10-21T10:48:07.1968558Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=8a278c"
+verify	Initialize containers	2026-10-21T10:48:07.2113849Z ##[command]/usr/bin/docker network prune --force --filter "label=8a278c"
+verify	Initialize containers	2026-10-21T10:48:07.2244873Z ##[endgroup]
+verify	Initialize containers	2026-10-21T10:48:07.2245505Z ##[group]Create local container network
+verify	Initialize containers	2026-10-21T10:48:07.2255874Z ##[command]/usr/bin/docker network create --label 8a278c github_network_4951de7939b246038ec09598786101df
+verify	Initialize containers	2026-10-21T10:48:07.2766731Z 62f3549c08656dc330204e5749ba8e277a7cb937d978e72a8aa58acd4c7d8f36
+verify	Initialize containers	2026-10-21T10:48:07.2788035Z ##[endgroup]
+verify	Initialize containers	2026-10-21T10:48:07.2813404Z ##[group]Starting postgres service container
+verify	Initialize containers	2026-10-21T10:48:07.2835369Z ##[command]/usr/bin/docker pull postgres:18
+verify	Initialize containers	2026-10-21T10:48:08.1834891Z 18: Pulling from library/postgres
+verify	Initialize containers	2026-10-21T10:48:08.4398744Z f2be67225471: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4400460Z 36f05ca1a259: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4401940Z 92accee5624e: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4403726Z 5bf0df4dfeec: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4405149Z fc259989795e: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4406064Z 33e59af3458c: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4406957Z bea9e19f5a74: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4407876Z 19f779d0bd48: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4408835Z cf9efa127f85: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4409799Z af1084bcb355: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4410792Z 40ebd398ec37: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4412124Z 00490e632b75: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4413427Z 8ed0c854313a: Pulling fs layer
+verify	Initialize containers	2026-10-21T10:48:08.4414344Z 5bf0df4dfeec: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.4415191Z 19f779d0bd48: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.4415994Z cf9efa127f85: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.4416895Z 40ebd398ec37: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.4417983Z af1084bcb355: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.4419088Z fc259989795e: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.4420203Z 33e59af3458c: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.4421343Z 00490e632b75: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.4422741Z 8ed0c854313a: Waiting
+verify	Initialize containers	2026-10-21T10:48:08.6577812Z 36f05ca1a259: Download complete
+verify	Initialize containers	2026-10-21T10:48:08.6846269Z 92accee5624e: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:08.6847033Z 92accee5624e: Download complete
+verify	Initialize containers	2026-10-21T10:48:08.7542844Z f2be67225471: Download complete
+verify	Initialize containers	2026-10-21T10:48:08.8857572Z 5bf0df4dfeec: Download complete
+verify	Initialize containers	2026-10-21T10:48:08.9386630Z fc259989795e: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:08.9388245Z fc259989795e: Download complete
+verify	Initialize containers	2026-10-21T10:48:08.9740122Z 33e59af3458c: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:08.9742140Z 33e59af3458c: Download complete
+verify	Initialize containers	2026-10-21T10:48:09.1056467Z bea9e19f5a74: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:09.1057191Z bea9e19f5a74: Download complete
+verify	Initialize containers	2026-10-21T10:48:09.1539607Z 19f779d0bd48: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:09.1540398Z 19f779d0bd48: Download complete
+verify	Initialize containers	2026-10-21T10:48:09.3343865Z af1084bcb355: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:09.3344958Z af1084bcb355: Download complete
+verify	Initialize containers	2026-10-21T10:48:09.3734981Z 40ebd398ec37: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:09.3736733Z 40ebd398ec37: Download complete
+verify	Initialize containers	2026-10-21T10:48:09.5576531Z 00490e632b75: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:09.5578551Z 00490e632b75: Download complete
+verify	Initialize containers	2026-10-21T10:48:09.5683746Z cf9efa127f85: Verifying Checksum
+verify	Initialize containers	2026-10-21T10:48:09.5684433Z cf9efa127f85: Download complete
+verify	Initialize containers	2026-10-21T10:48:09.5939503Z 8ed0c854313a: Download complete
+verify	Initialize containers	2026-10-21T10:48:09.8718265Z f2be67225471: Pull complete
+verify	Initialize containers	2026-10-21T10:48:10.1891110Z 36f05ca1a259: Pull complete
+verify	Initialize containers	2026-10-21T10:48:10.3694626Z 92accee5624e: Pull complete
+verify	Initialize containers	2026-10-21T10:48:10.4082770Z 5bf0df4dfeec: Pull complete
+verify	Initialize containers	2026-10-21T10:48:10.7098488Z fc259989795e: Pull complete
+verify	Initialize containers	2026-10-21T10:48:10.7859083Z 33e59af3458c: Pull complete
+verify	Initialize containers	2026-10-21T10:48:10.7936461Z bea9e19f5a74: Pull complete
+verify	Initialize containers	2026-10-21T10:48:10.8035856Z 19f779d0bd48: Pull complete
+verify	Initialize containers	2026-10-21T10:48:13.9019780Z cf9efa127f85: Pull complete
+verify	Initialize containers	2026-10-21T10:48:13.9153953Z af1084bcb355: Pull complete
+verify	Initialize containers	2026-10-21T10:48:13.9274950Z 40ebd398ec37: Pull complete
+verify	Initialize containers	2026-10-21T10:48:13.9363754Z 00490e632b75: Pull complete
+verify	Initialize containers	2026-10-21T10:48:13.9450406Z 8ed0c854313a: Pull complete
+verify	Initialize containers	2026-10-21T10:48:13.9491994Z Digest: sha256:1267c7e692de235fda2a50dbcdbcbca4672ea6a0298576a6bd9d07cafc319b32
+verify	Initialize containers	2026-10-21T10:48:13.9504545Z Status: Downloaded newer image for postgres:18
+verify	Initialize containers	2026-10-21T10:48:13.9514824Z docker.io/library/postgres:18
+verify	Initialize containers	2026-10-21T10:48:13.9577765Z ##[command]/usr/bin/docker create --name 0a09dde0753f4f40b7f98904a5e2500f_postgres18_972248 --label 8a278c --network github_network_4951de7939b246038ec09598786101df --network-alias postgres -p 5432:5432 --health-cmd "pg_isready -U goodsentry_ci -d goodsentry_ci" --health-interval 5s --health-timeout 3s --health-retries 20 -e "POSTGRES_USER=goodsentry_ci" -e "POSTGRES_DB=goodsentry_ci" -e "POSTGRES_HOST_AUTH_METHOD=trust" -e GITHUB_ACTIONS=true -e CI=true postgres:18
+verify	Initialize containers	2026-10-21T10:48:13.9837819Z 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Initialize containers	2026-10-21T10:48:13.9860302Z ##[command]/usr/bin/docker start 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Initialize containers	2026-10-21T10:48:14.1958707Z 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Initialize containers	2026-10-21T10:48:14.1977959Z ##[command]/usr/bin/docker ps --all --filter id=3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+verify	Initialize containers	2026-10-21T10:48:14.2112680Z 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099 Up Less than a second (health: starting)
+verify	Initialize containers	2026-10-21T10:48:14.2133390Z ##[command]/usr/bin/docker port 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Initialize containers	2026-10-21T10:48:14.2276490Z 5432/tcp -> 0.0.0.0:5432
+verify	Initialize containers	2026-10-21T10:48:14.2277401Z 5432/tcp -> [::]:5432
+verify	Initialize containers	2026-10-21T10:48:14.2327028Z ##[endgroup]
+verify	Initialize containers	2026-10-21T10:48:14.2336482Z ##[group]Waiting for all services to be ready
+verify	Initialize containers	2026-10-21T10:48:14.2349664Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Initialize containers	2026-10-21T10:48:14.2487033Z starting
+verify	Initialize containers	2026-10-21T10:48:14.2516149Z postgres service is starting, waiting 2 seconds before checking again.
+verify	Initialize containers	2026-10-21T10:48:16.2523846Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Initialize containers	2026-10-21T10:48:16.2653180Z starting
+verify	Initialize containers	2026-10-21T10:48:16.2666038Z postgres service is starting, waiting 3 seconds before checking again.
+verify	Initialize containers	2026-10-21T10:48:20.2570058Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Initialize containers	2026-10-21T10:48:20.2694854Z healthy
+verify	Initialize containers	2026-10-21T10:48:20.2709940Z postgres service is healthy.
+verify	Initialize containers	2026-10-21T10:48:20.2710686Z ##[endgroup]
+verify	Check out source	﻿2026-10-21T10:48:20.3000982Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+verify	Check out source	2026-10-21T10:48:20.3001671Z with:
+verify	Check out source	2026-10-21T10:48:20.3001896Z   persist-credentials: false
+verify	Check out source	2026-10-21T10:48:20.3002171Z   repository: jerolan/good-sentry
+verify	Check out source	2026-10-21T10:48:20.3004760Z   token: ***
+verify	Check out source	2026-10-21T10:48:20.3004963Z   ssh-strict: true
+verify	Check out source	2026-10-21T10:48:20.3005164Z   ssh-user: git
+verify	Check out source	2026-10-21T10:48:20.3005347Z   clean: true
+verify	Check out source	2026-10-21T10:48:20.3005555Z   sparse-checkout-cone-mode: true
+verify	Check out source	2026-10-21T10:48:20.3005815Z   fetch-depth: 1
+verify	Check out source	2026-10-21T10:48:20.3006014Z   fetch-tags: false
+verify	Check out source	2026-10-21T10:48:20.3006215Z   show-progress: true
+verify	Check out source	2026-10-21T10:48:20.3006427Z   lfs: false
+verify	Check out source	2026-10-21T10:48:20.3006633Z   submodules: false
+verify	Check out source	2026-10-21T10:48:20.3006846Z   set-safe-directory: true
+verify	Check out source	2026-10-21T10:48:20.3007094Z   allow-unsafe-pr-checkout: false
+verify	Check out source	2026-10-21T10:48:20.3007570Z env:
+verify	Check out source	2026-10-21T10:48:20.3007921Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+verify	Check out source	2026-10-21T10:48:20.3008353Z   GOTOOLCHAIN: local
+verify	Check out source	2026-10-21T10:48:20.3008608Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:20.4060889Z Syncing repository: jerolan/good-sentry
+verify	Check out source	2026-10-21T10:48:20.4063161Z ##[group]Getting Git version info
+verify	Check out source	2026-10-21T10:48:20.4063620Z Working directory is '/home/runner/work/good-sentry/good-sentry'
+verify	Check out source	2026-10-21T10:48:20.4064404Z [command]/usr/bin/git version
+verify	Check out source	2026-10-21T10:48:20.4147687Z git version 2.55.0
+verify	Check out source	2026-10-21T10:48:20.4170583Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:20.4183421Z Temporarily overriding HOME='/home/runner/work/_temp/591f7331-f60d-4849-8cda-676dd2089f63' before making global git config changes
+verify	Check out source	2026-10-21T10:48:20.4184980Z Adding repository directory to the temporary git global config as a safe directory
+verify	Check out source	2026-10-21T10:48:20.4189635Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/good-sentry/good-sentry
+verify	Check out source	2026-10-21T10:48:20.4247186Z Deleting the contents of '/home/runner/work/good-sentry/good-sentry'
+verify	Check out source	2026-10-21T10:48:20.4251485Z ##[group]Determining repository object format
+verify	Check out source	2026-10-21T10:48:20.4253455Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:20.4254161Z ##[group]Initializing the repository
+verify	Check out source	2026-10-21T10:48:20.4258936Z [command]/usr/bin/git init /home/runner/work/good-sentry/good-sentry
+verify	Check out source	2026-10-21T10:48:20.4424406Z hint: Using 'master' as the name for the initial branch. This default branch name
+verify	Check out source	2026-10-21T10:48:20.4425730Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+verify	Check out source	2026-10-21T10:48:20.4426860Z hint: to use in all of your new repositories, which will suppress this warning,
+verify	Check out source	2026-10-21T10:48:20.4427549Z hint: call:
+verify	Check out source	2026-10-21T10:48:20.4427860Z hint:
+verify	Check out source	2026-10-21T10:48:20.4428307Z hint: 	git config --global init.defaultBranch <name>
+verify	Check out source	2026-10-21T10:48:20.4429133Z hint:
+verify	Check out source	2026-10-21T10:48:20.4429638Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+verify	Check out source	2026-10-21T10:48:20.4430488Z hint: 'development'. The just-created branch can be renamed via this command:
+verify	Check out source	2026-10-21T10:48:20.4430974Z hint:
+verify	Check out source	2026-10-21T10:48:20.4431190Z hint: 	git branch -m <name>
+verify	Check out source	2026-10-21T10:48:20.4431437Z hint:
+verify	Check out source	2026-10-21T10:48:20.4431792Z hint: Disable this message with "git config set advice.defaultBranchName false"
+verify	Check out source	2026-10-21T10:48:20.4432983Z Initialized empty Git repository in /home/runner/work/good-sentry/good-sentry/.git/
+verify	Check out source	2026-10-21T10:48:20.4444676Z [command]/usr/bin/git remote add origin https://github.com/jerolan/good-sentry
+verify	Check out source	2026-10-21T10:48:20.4504377Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:20.4505088Z ##[group]Disabling automatic garbage collection
+verify	Check out source	2026-10-21T10:48:20.4510688Z [command]/usr/bin/git config --local gc.auto 0
+verify	Check out source	2026-10-21T10:48:20.4554175Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:20.4555191Z ##[group]Setting up auth
+verify	Check out source	2026-10-21T10:48:20.4555741Z Removing SSH command configuration
+verify	Check out source	2026-10-21T10:48:20.4562099Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+verify	Check out source	2026-10-21T10:48:20.4598043Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+verify	Check out source	2026-10-21T10:48:20.4979945Z Removing HTTP extra header
+verify	Check out source	2026-10-21T10:48:20.4986191Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify	Check out source	2026-10-21T10:48:20.5021545Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+verify	Check out source	2026-10-21T10:48:20.5241056Z Removing includeIf entries pointing to credentials config files
+verify	Check out source	2026-10-21T10:48:20.5246491Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify	Check out source	2026-10-21T10:48:20.5284504Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+verify	Check out source	2026-10-21T10:48:20.5513707Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+verify	Check out source	2026-10-21T10:48:20.5556240Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/good-sentry/good-sentry/.git.path /home/runner/work/_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config
+verify	Check out source	2026-10-21T10:48:20.5591390Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/good-sentry/good-sentry/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config
+verify	Check out source	2026-10-21T10:48:20.5629626Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config
+verify	Check out source	2026-10-21T10:48:20.5666450Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config
+verify	Check out source	2026-10-21T10:48:20.5698618Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:20.5699013Z ##[group]Fetching the repository
+verify	Check out source	2026-10-21T10:48:20.5706522Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c5e3eb8491738f68a35f038b18f98420f9e2a802:refs/remotes/origin/main
+verify	Check out source	2026-10-21T10:48:21.2173452Z From https://github.com/jerolan/good-sentry
+verify	Check out source	2026-10-21T10:48:21.2173975Z  * [new ref]         c5e3eb8491738f68a35f038b18f98420f9e2a802 -> origin/main
+verify	Check out source	2026-10-21T10:48:21.2193268Z [command]/usr/bin/git branch --list --remote origin/main
+verify	Check out source	2026-10-21T10:48:21.2214735Z   origin/main
+verify	Check out source	2026-10-21T10:48:21.2222886Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+verify	Check out source	2026-10-21T10:48:21.2250213Z c5e3eb8491738f68a35f038b18f98420f9e2a802
+verify	Check out source	2026-10-21T10:48:21.2255593Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:21.2256516Z ##[group]Determining the checkout info
+verify	Check out source	2026-10-21T10:48:21.2258052Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:21.2261406Z [command]/usr/bin/git sparse-checkout disable
+verify	Check out source	2026-10-21T10:48:21.2329522Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+verify	Check out source	2026-10-21T10:48:21.2366526Z ##[group]Checking out the ref
+verify	Check out source	2026-10-21T10:48:21.2373961Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+verify	Check out source	2026-10-21T10:48:21.3008465Z Switched to a new branch 'main'
+verify	Check out source	2026-10-21T10:48:21.3014005Z branch 'main' set up to track 'origin/main'.
+verify	Check out source	2026-10-21T10:48:21.3022950Z ##[endgroup]
+verify	Check out source	2026-10-21T10:48:21.3076985Z [command]/usr/bin/git log -1 --format=%H
+verify	Check out source	2026-10-21T10:48:21.3109109Z c5e3eb8491738f68a35f038b18f98420f9e2a802
+verify	Check out source	2026-10-21T10:48:21.3119906Z ##[group]Removing auth
+verify	Check out source	2026-10-21T10:48:21.3120633Z Removing SSH command configuration
+verify	Check out source	2026-10-21T10:48:21.3124134Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+verify	Check out source	2026-10-21T10:48:21.3163711Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+verify	Check out source	2026-10-21T10:48:21.3415771Z Removing HTTP extra header
+verify	Check out source	2026-10-21T10:48:21.3422077Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify	Check out source	2026-10-21T10:48:21.3466087Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+verify	Check out source	2026-10-21T10:48:21.3711820Z Removing includeIf entries pointing to credentials config files
+verify	Check out source	2026-10-21T10:48:21.3726123Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify	Check out source	2026-10-21T10:48:21.3757790Z includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git.path
+verify	Check out source	2026-10-21T10:48:21.3758647Z includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git/worktrees/*.path
+verify	Check out source	2026-10-21T10:48:21.3759120Z includeif.gitdir:/github/workspace/.git.path
+verify	Check out source	2026-10-21T10:48:21.3759582Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+verify	Check out source	2026-10-21T10:48:21.3768105Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git.path
+verify	Check out source	2026-10-21T10:48:21.3795100Z /home/runner/work/_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config
+verify	Check out source	2026-10-21T10:48:21.3804872Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-24692410\-b1f0\-4551\-a49d\-aff9824c42e7\.config
+verify	Check out source	2026-10-21T10:48:21.3843958Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git/worktrees/*.path
+verify	Check out source	2026-10-21T10:48:21.3874409Z /home/runner/work/_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config
+verify	Check out source	2026-10-21T10:48:21.3884476Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-24692410\-b1f0\-4551\-a49d\-aff9824c42e7\.config
+verify	Check out source	2026-10-21T10:48:21.3921150Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+verify	Check out source	2026-10-21T10:48:21.3948728Z /github/runner_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config
+verify	Check out source	2026-10-21T10:48:21.3958137Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-24692410\-b1f0\-4551\-a49d\-aff9824c42e7\.config
+verify	Check out source	2026-10-21T10:48:21.3995746Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+verify	Check out source	2026-10-21T10:48:21.4030391Z /github/runner_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config
+verify	Check out source	2026-10-21T10:48:21.4039864Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-24692410\-b1f0\-4551\-a49d\-aff9824c42e7\.config
+verify	Check out source	2026-10-21T10:48:21.4078381Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+verify	Check out source	2026-10-21T10:48:21.4303691Z Removing credentials config '/home/runner/work/_temp/git-credentials-24692410-b1f0-4551-a49d-aff9824c42e7.config'
+verify	Check out source	2026-10-21T10:48:21.4314818Z ##[endgroup]
+verify	Set up Go	﻿2026-10-21T10:48:21.4544188Z ##[group]Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+verify	Set up Go	2026-10-21T10:48:21.4544607Z with:
+verify	Set up Go	2026-10-21T10:48:21.4544797Z   go-version: 1.27.2
+verify	Set up Go	2026-10-21T10:48:21.4545030Z   cache-dependency-path: go.sum
+verify	Set up Go	2026-10-21T10:48:21.4545283Z   check-latest: false
+verify	Set up Go	2026-10-21T10:48:21.4547573Z   token: ***
+verify	Set up Go	2026-10-21T10:48:21.4547769Z   cache: true
+verify	Set up Go	2026-10-21T10:48:21.4547951Z env:
+verify	Set up Go	2026-10-21T10:48:21.4548300Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+verify	Set up Go	2026-10-21T10:48:21.4548731Z   GOTOOLCHAIN: local
+verify	Set up Go	2026-10-21T10:48:21.4548938Z ##[endgroup]
+verify	Set up Go	2026-10-21T10:48:21.5672582Z Setup go version spec 1.27.2
+verify	Set up Go	2026-10-21T10:48:21.5681210Z Attempting to download 1.27.2...
+verify	Set up Go	2026-10-21T10:48:22.1733599Z matching 1.27.2...
+verify	Set up Go	2026-10-21T10:48:22.1745887Z Acquiring 1.27.2 from https://github.com/actions/go-versions/releases/download/1.27.2-37875086547/go-1.27.2-linux-x64.tar.gz
+verify	Set up Go	2026-10-21T10:48:22.6686547Z Extracting Go...
+verify	Set up Go	2026-10-21T10:48:22.6807127Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/89889e33-49d6-4653-bd25-5964d4e76209 -f /home/runner/work/_temp/598f3f14-c719-4f93-bd99-c908a3b7f519
+verify	Set up Go	2026-10-21T10:48:24.3678127Z Successfully extracted go to /home/runner/work/_temp/89889e33-49d6-4653-bd25-5964d4e76209
+verify	Set up Go	2026-10-21T10:48:24.3679023Z Adding to the cache ...
+verify	Set up Go	2026-10-21T10:48:30.1735199Z Successfully cached go to /opt/hostedtoolcache/go/1.27.2/x64
+verify	Set up Go	2026-10-21T10:48:30.1752803Z Added go to the path
+verify	Set up Go	2026-10-21T10:48:30.1753476Z Successfully set up Go version 1.27.2
+verify	Set up Go	2026-10-21T10:48:30.1950296Z [command]/opt/hostedtoolcache/go/1.27.2/x64/bin/go env GOMODCACHE
+verify	Set up Go	2026-10-21T10:48:30.1987512Z [command]/opt/hostedtoolcache/go/1.27.2/x64/bin/go env GOCACHE
+verify	Set up Go	2026-10-21T10:48:30.2026176Z /home/runner/go/pkg/mod
+verify	Set up Go	2026-10-21T10:48:30.2044847Z /home/runner/.cache/go-build
+verify	Set up Go	2026-10-21T10:48:30.4623745Z Cache hit for: setup-go-Linux-x64-ubuntu24-go-1.27.2-460add350e3f0979fb5289beacf7db852c0fb2532223e6324bfbd7c37e725b26
+verify	Set up Go	2026-10-21T10:48:31.7383516Z Received 0 of 253802408 (0.0%), 0.0 MBs/sec
+verify	Set up Go	2026-10-21T10:48:32.7395042Z Received 134217728 of 253802408 (52.9%), 64.0 MBs/sec
+verify	Set up Go	2026-10-21T10:48:33.6353806Z Received 253802408 of 253802408 (100.0%), 83.5 MBs/sec
+verify	Set up Go	2026-10-21T10:48:33.6354912Z Cache Size: ~242 MB (253802408 B)
+verify	Set up Go	2026-10-21T10:48:33.6453083Z [command]/usr/bin/tar -xf /home/runner/work/_temp/1e827c57-3940-4018-9af1-cf1537fb1c5b/cache.tzst -P -C /home/runner/work/good-sentry/good-sentry --use-compress-program unzstd
+verify	Set up Go	2026-10-21T10:48:34.9489828Z Cache restored successfully
+verify	Set up Go	2026-10-21T10:48:34.9607605Z Cache restored from key: setup-go-Linux-x64-ubuntu24-go-1.27.2-460add350e3f0979fb5289beacf7db852c0fb2532223e6324bfbd7c37e725b26
+verify	Set up Go	2026-10-21T10:48:34.9631709Z go version go1.27.2 linux/amd64
+verify	Set up Go	2026-10-21T10:48:34.9632034Z
+verify	Set up Go	2026-10-21T10:48:34.9632747Z ##[group]go env
+verify	Set up Go	2026-10-21T10:48:34.9765846Z AR='ar'
+verify	Set up Go	2026-10-21T10:48:34.9766475Z CC='gcc'
+verify	Set up Go	2026-10-21T10:48:34.9766856Z CGO_CFLAGS='-O2 -g'
+verify	Set up Go	2026-10-21T10:48:34.9767287Z CGO_CPPFLAGS=''
+verify	Set up Go	2026-10-21T10:48:34.9767707Z CGO_CXXFLAGS='-O2 -g'
+verify	Set up Go	2026-10-21T10:48:34.9768169Z CGO_ENABLED='1'
+verify	Set up Go	2026-10-21T10:48:34.9768561Z CGO_FFLAGS='-O2 -g'
+verify	Set up Go	2026-10-21T10:48:34.9768929Z CGO_LDFLAGS='-O2 -g'
+verify	Set up Go	2026-10-21T10:48:34.9769305Z CXX='g++'
+verify	Set up Go	2026-10-21T10:48:34.9769648Z GCCGO='gccgo'
+verify	Set up Go	2026-10-21T10:48:34.9770045Z GO111MODULE=''
+verify	Set up Go	2026-10-21T10:48:34.9770414Z GOAMD64='v1'
+verify	Set up Go	2026-10-21T10:48:34.9770815Z GOARCH='amd64'
+verify	Set up Go	2026-10-21T10:48:34.9771185Z GOAUTH='netrc'
+verify	Set up Go	2026-10-21T10:48:34.9771585Z GOBIN='/home/runner/go/bin'
+verify	Set up Go	2026-10-21T10:48:34.9772085Z GOCACHE='/home/runner/.cache/go-build'
+verify	Set up Go	2026-10-21T10:48:34.9772783Z GOCACHEPROG=''
+verify	Set up Go	2026-10-21T10:48:34.9773114Z GODEBUG=''
+verify	Set up Go	2026-10-21T10:48:34.9773491Z GOENV='/home/runner/.config/go/env'
+verify	Set up Go	2026-10-21T10:48:34.9774183Z GOEXE=''
+verify	Set up Go	2026-10-21T10:48:34.9774508Z GOEXPERIMENT=''
+verify	Set up Go	2026-10-21T10:48:34.9774846Z GOFIPS140='off'
+verify	Set up Go	2026-10-21T10:48:34.9775167Z GOFLAGS=''
+verify	Set up Go	2026-10-21T10:48:34.9776254Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build3226779734=/tmp/go-build -gno-record-gcc-switches'
+verify	Set up Go	2026-10-21T10:48:34.9777641Z GOHOSTARCH='amd64'
+verify	Set up Go	2026-10-21T10:48:34.9777985Z GOHOSTOS='linux'
+verify	Set up Go	2026-10-21T10:48:34.9778335Z GOINSECURE=''
+verify	Set up Go	2026-10-21T10:48:34.9778780Z GOMOD='/home/runner/work/good-sentry/good-sentry/go.mod'
+verify	Set up Go	2026-10-21T10:48:34.9779365Z GOMODCACHE='/home/runner/go/pkg/mod'
+verify	Set up Go	2026-10-21T10:48:34.9779796Z GONOPROXY=''
+verify	Set up Go	2026-10-21T10:48:34.9780128Z GONOSUMDB=''
+verify	Set up Go	2026-10-21T10:48:34.9780449Z GOOS='linux'
+verify	Set up Go	2026-10-21T10:48:34.9780772Z GOPACKAGESDRIVER=''
+verify	Set up Go	2026-10-21T10:48:34.9781161Z GOPATH='/home/runner/go'
+verify	Set up Go	2026-10-21T10:48:34.9781533Z GOPRIVATE=''
+verify	Set up Go	2026-10-21T10:48:34.9781945Z GOPROXY='https://proxy.golang.org,direct'
+verify	Set up Go	2026-10-21T10:48:34.9782873Z GOROOT='/opt/hostedtoolcache/go/1.27.2/x64'
+verify	Set up Go	2026-10-21T10:48:34.9783534Z GOSUMDB='sum.golang.org'
+verify	Set up Go	2026-10-21T10:48:34.9783922Z GOTELEMETRY='local'
+verify	Set up Go	2026-10-21T10:48:34.9784352Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+verify	Set up Go	2026-10-21T10:48:34.9784856Z GOTMPDIR=''
+verify	Set up Go	2026-10-21T10:48:34.9785191Z GOTOOLCHAIN='local'
+verify	Set up Go	2026-10-21T10:48:34.9785723Z GOTOOLDIR='/opt/hostedtoolcache/go/1.27.2/x64/pkg/tool/linux_amd64'
+verify	Set up Go	2026-10-21T10:48:34.9786347Z GOVCS=''
+verify	Set up Go	2026-10-21T10:48:34.9786694Z GOVERSION='go1.27.2'
+verify	Set up Go	2026-10-21T10:48:34.9787103Z GOWORK=''
+verify	Set up Go	2026-10-21T10:48:34.9787466Z PKG_CONFIG='pkg-config'
+verify	Set up Go	2026-10-21T10:48:34.9787715Z
+verify	Set up Go	2026-10-21T10:48:34.9788163Z ##[endgroup]
+verify	Check formatting	﻿2026-10-21T10:48:34.9949131Z ##[group]Run unformatted=$(gofmt -l .)
+verify	Check formatting	2026-10-21T10:48:34.9949525Z [36;1munformatted=$(gofmt -l .)[0m
+verify	Check formatting	2026-10-21T10:48:34.9949817Z [36;1mif [ -n "$unformatted" ]; then[0m
+verify	Check formatting	2026-10-21T10:48:34.9950118Z [36;1m  printf '%s\n' "$unformatted"[0m
+verify	Check formatting	2026-10-21T10:48:34.9950388Z [36;1m  exit 1[0m
+verify	Check formatting	2026-10-21T10:48:34.9950596Z [36;1mfi[0m
+verify	Check formatting	2026-10-21T10:48:35.0156098Z shell: /usr/bin/bash -e {0}
+verify	Check formatting	2026-10-21T10:48:35.0156442Z env:
+verify	Check formatting	2026-10-21T10:48:35.0156946Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+verify	Check formatting	2026-10-21T10:48:35.0157530Z   GOTOOLCHAIN: local
+verify	Check formatting	2026-10-21T10:48:35.0157809Z ##[endgroup]
+verify	Vet	﻿2026-10-21T10:48:35.1906432Z ##[group]Run go vet ./...
+verify	Vet	2026-10-21T10:48:35.1906758Z [36;1mgo vet ./...[0m
+verify	Vet	2026-10-21T10:48:35.1973432Z shell: /usr/bin/bash -e {0}
+verify	Vet	2026-10-21T10:48:35.1973703Z env:
+verify	Vet	2026-10-21T10:48:35.1974072Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+verify	Vet	2026-10-21T10:48:35.1974529Z   GOTOOLCHAIN: local
+verify	Vet	2026-10-21T10:48:35.1974747Z ##[endgroup]
+verify	Run unit and PostgreSQL integration tests with race detection	﻿2026-10-21T10:48:38.5221369Z ##[group]Run go test -race -tags=integration ./...
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:38.5221796Z [36;1mgo test -race -tags=integration ./...[0m
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:38.5284345Z shell: /usr/bin/bash -e {0}
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:38.5284599Z env:
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:38.5284968Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:38.5285431Z   GOTOOLCHAIN: local
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:38.5285663Z ##[endgroup]
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:45.8757997Z ?   	goodsentry/cmd/goodsentry	[no test files]
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:45.8758880Z ok  	goodsentry/internal/accountmail	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:45.8785912Z ok  	goodsentry/internal/artifact	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:45.8821248Z ok  	goodsentry/internal/config	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:45.8829701Z ok  	goodsentry/internal/event	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:48:45.8832041Z ok  	goodsentry/internal/eventview	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:49:03.8189831Z ok  	goodsentry/internal/jobs	17.931s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:49:03.8190543Z ok  	goodsentry/internal/native	1.037s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:49:03.8191258Z ?   	goodsentry/internal/nettarget	[no test files]
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:49:03.8191868Z ok  	goodsentry/internal/notify	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:49:03.8192714Z ok  	goodsentry/internal/otlp	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:49:03.8193279Z ok  	goodsentry/internal/protocol	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:49:03.8194188Z ok  	goodsentry/internal/releaseorder	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:51:15.3667854Z ok  	goodsentry/internal/server	139.895s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:52:02.0371109Z ok  	goodsentry/internal/store	186.626s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-21T10:52:02.0371863Z ok  	goodsentry/internal/uptime	(cached)
+verify	Build application image	﻿2026-10-21T10:52:02.0715700Z ##[group]Run docker build --tag goodsentry:ci .
+verify	Build application image	2026-10-21T10:52:02.0716387Z [36;1mdocker build --tag goodsentry:ci .[0m
+verify	Build application image	2026-10-21T10:52:02.0809773Z shell: /usr/bin/bash -e {0}
+verify	Build application image	2026-10-21T10:52:02.0810207Z env:
+verify	Build application image	2026-10-21T10:52:02.0810820Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+verify	Build application image	2026-10-21T10:52:02.0811619Z   GOTOOLCHAIN: local
+verify	Build application image	2026-10-21T10:52:02.0811993Z ##[endgroup]
+verify	Build application image	2026-10-21T10:52:02.5833535Z #0 building with "default" instance using docker driver
+verify	Build application image	2026-10-21T10:52:02.5834160Z
+verify	Build application image	2026-10-21T10:52:02.5834373Z #1 [internal] load build definition from Dockerfile
+verify	Build application image	2026-10-21T10:52:02.5834886Z #1 transferring dockerfile: 1.57kB done
+verify	Build application image	2026-10-21T10:52:02.5835453Z #1 DONE 0.0s
+verify	Build application image	2026-10-21T10:52:02.5835684Z
+verify	Build application image	2026-10-21T10:52:02.5836011Z #2 [internal] load metadata for docker.io/library/golang:1.27.2
+verify	Build application image	2026-10-21T10:52:02.8173137Z #2 ...
+verify	Build application image	2026-10-21T10:52:02.8173443Z
+verify	Build application image	2026-10-21T10:52:02.8173955Z #3 [auth] library/golang:pull token for registry-1.docker.io
+verify	Build application image	2026-10-21T10:52:02.8174571Z #3 DONE 0.0s
+verify	Build application image	2026-10-21T10:52:02.9676192Z
+verify	Build application image	2026-10-21T10:52:02.9676828Z #4 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+verify	Build application image	2026-10-21T10:52:03.1314972Z #4 DONE 0.7s
+verify	Build application image	2026-10-21T10:52:03.1315372Z
+verify	Build application image	2026-10-21T10:52:03.1315674Z #2 [internal] load metadata for docker.io/library/golang:1.27.2
+verify	Build application image	2026-10-21T10:52:03.3093173Z #2 DONE 0.9s
+verify	Build application image	2026-10-21T10:52:03.4134625Z
+verify	Build application image	2026-10-21T10:52:03.4135663Z #5 [internal] load .dockerignore
+verify	Build application image	2026-10-21T10:52:03.4136777Z #5 transferring context: 200B done
+verify	Build application image	2026-10-21T10:52:03.4137270Z #5 DONE 0.0s
+verify	Build application image	2026-10-21T10:52:03.4137610Z
+verify	Build application image	2026-10-21T10:52:03.4138739Z #6 [stage-4 1/4] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+verify	Build application image	2026-10-21T10:52:03.4140780Z #6 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab 0.0s done
+verify	Build application image	2026-10-21T10:52:03.4142881Z #6 sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab 1.51kB / 1.51kB done
+verify	Build application image	2026-10-21T10:52:03.4143932Z #6 sha256:12aa113e298cbae388b298c0dc163fa1547beba948153b23eb9094e16a07a770 2.73kB / 2.73kB done
+verify	Build application image	2026-10-21T10:52:03.4145041Z #6 sha256:52dcfbabb7457ea47c82f6e13af8c8a4a1d9f7b0145142b3ecab20f2b888411d 2.67kB / 2.67kB done
+verify	Build application image	2026-10-21T10:52:03.5392875Z #6 DONE 0.1s
+verify	Build application image	2026-10-21T10:52:03.5394046Z
+verify	Build application image	2026-10-21T10:52:03.5394259Z #7 [internal] load build context
+verify	Build application image	2026-10-21T10:52:03.5394763Z #7 transferring context: 5.99MB 0.1s done
+verify	Build application image	2026-10-21T10:52:03.5395177Z #7 DONE 0.1s
+verify	Build application image	2026-10-21T10:52:03.5395385Z
+verify	Build application image	2026-10-21T10:52:03.5396229Z #8 [build 1/8] FROM docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8
+verify	Build application image	2026-10-21T10:52:03.5397934Z #8 resolve docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8 0.0s done
+verify	Build application image	2026-10-21T10:52:03.5399355Z #8 sha256:2d658507a011f1eadc0114d7a421b312b2e77d9042a24036a26e267cc9231677 2.32kB / 2.32kB done
+verify	Build application image	2026-10-21T10:52:03.5400557Z #8 sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671 34.60MB / 49.39MB 0.2s
+verify	Build application image	2026-10-21T10:52:03.5401750Z #8 sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d 3.15MB / 25.64MB 0.2s
+verify	Build application image	2026-10-21T10:52:03.5403191Z #8 sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 0B / 67.81MB 0.2s
+verify	Build application image	2026-10-21T10:52:03.5404378Z #8 sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8 9.70kB / 9.70kB done
+verify	Build application image	2026-10-21T10:52:03.5405525Z #8 sha256:99668476f0893c0b7a4f4c1b6d3913a3b966a4af7e275173e06bbf12e9bebb88 3.04kB / 3.04kB done
+verify	Build application image	2026-10-21T10:52:03.6417741Z #8 sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671 49.39MB / 49.39MB 0.3s done
+verify	Build application image	2026-10-21T10:52:03.6419791Z #8 sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d 25.64MB / 25.64MB 0.3s done
+verify	Build application image	2026-10-21T10:52:03.6423693Z #8 sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 22.02MB / 67.81MB 0.3s
+verify	Build application image	2026-10-21T10:52:03.6425213Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 0B / 102.41MB 0.3s
+verify	Build application image	2026-10-21T10:52:03.6427188Z #8 sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 0B / 71.15MB 0.3s
+verify	Build application image	2026-10-21T10:52:03.7431135Z #8 sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 61.87MB / 67.81MB 0.4s
+verify	Build application image	2026-10-21T10:52:03.7433894Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 10.49MB / 102.41MB 0.4s
+verify	Build application image	2026-10-21T10:52:03.7435987Z #8 sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 10.49MB / 71.15MB 0.4s
+verify	Build application image	2026-10-21T10:52:03.7437822Z #8 extracting sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671
+verify	Build application image	2026-10-21T10:52:03.9048072Z #8 sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 67.81MB / 67.81MB 0.4s done
+verify	Build application image	2026-10-21T10:52:03.9049835Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 44.04MB / 102.41MB 0.5s
+verify	Build application image	2026-10-21T10:52:03.9050858Z #8 sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 40.89MB / 71.15MB 0.5s
+verify	Build application image	2026-10-21T10:52:03.9052175Z #8 sha256:801401a9a8ba22fe48ef647d8eed0d6d8adc41baabf2fae9057ff38b2622f35a 0B / 127B 0.5s
+verify	Build application image	2026-10-21T10:52:04.0198845Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 89.13MB / 102.41MB 0.6s
+verify	Build application image	2026-10-21T10:52:04.0199806Z #8 sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 71.15MB / 71.15MB 0.6s done
+verify	Build application image	2026-10-21T10:52:04.0200783Z #8 sha256:801401a9a8ba22fe48ef647d8eed0d6d8adc41baabf2fae9057ff38b2622f35a 127B / 127B 0.5s done
+verify	Build application image	2026-10-21T10:52:04.0202069Z #8 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 0B / 32B 0.6s
+verify	Build application image	2026-10-21T10:52:04.1239787Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 102.41MB / 102.41MB 0.7s
+verify	Build application image	2026-10-21T10:52:04.1241687Z #8 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 32B / 32B 0.6s done
+verify	Build application image	2026-10-21T10:52:04.2292128Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 102.41MB / 102.41MB 0.7s done
+verify	Build application image	2026-10-21T10:52:04.3385586Z #8 ...
+verify	Build application image	2026-10-21T10:52:04.3385991Z
+verify	Build application image	2026-10-21T10:52:04.3387913Z #9 [tailwind-amd64 1/1] ADD --checksum=sha256:dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 /tailwindcss
+verify	Build application image	2026-10-21T10:52:04.3389088Z #9 DONE 0.9s
+verify	Build application image	2026-10-21T10:52:04.4586913Z
+verify	Build application image	2026-10-21T10:52:04.4589027Z #10 [tailwind-amd64 1/1] ADD --checksum=sha256:dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 /tailwindcss
+verify	Build application image	2026-10-21T10:52:04.4593247Z #10 DONE 0.1s
+verify	Build application image	2026-10-21T10:52:04.4594628Z
+verify	Build application image	2026-10-21T10:52:04.4596071Z #8 [build 1/8] FROM docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8
+verify	Build application image	2026-10-21T10:52:05.4715679Z #8 extracting sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671 1.7s done
+verify	Build application image	2026-10-21T10:52:05.4717080Z #8 extracting sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d
+verify	Build application image	2026-10-21T10:52:06.2425974Z #8 extracting sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d 0.6s done
+verify	Build application image	2026-10-21T10:52:07.0263520Z #8 extracting sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af
+verify	Build application image	2026-10-21T10:52:09.4344019Z #8 extracting sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 2.3s done
+verify	Build application image	2026-10-21T10:52:09.5653413Z #8 extracting sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e
+verify	Build application image	2026-10-21T10:52:11.9617953Z #8 extracting sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 2.2s done
+verify	Build application image	2026-10-21T10:52:12.2616766Z #8 extracting sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2
+verify	Build application image	2026-10-21T10:52:17.0096055Z #8 extracting sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 4.7s done
+verify	Build application image	2026-10-21T10:52:17.7014248Z #8 extracting sha256:801401a9a8ba22fe48ef647d8eed0d6d8adc41baabf2fae9057ff38b2622f35a
+verify	Build application image	2026-10-21T10:52:17.9063430Z #8 extracting sha256:801401a9a8ba22fe48ef647d8eed0d6d8adc41baabf2fae9057ff38b2622f35a done
+verify	Build application image	2026-10-21T10:52:17.9065131Z #8 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 done
+verify	Build application image	2026-10-21T10:52:17.9066294Z #8 DONE 14.4s
+verify	Build application image	2026-10-21T10:52:17.9066563Z
+verify	Build application image	2026-10-21T10:52:17.9066799Z #11 [build 2/8] WORKDIR /src
+verify	Build application image	2026-10-21T10:52:17.9067337Z #11 DONE 0.0s
+verify	Build application image	2026-10-21T10:52:17.9067575Z
+verify	Build application image	2026-10-21T10:52:17.9067741Z #12 [build 3/8] COPY go.mod go.sum ./
+verify	Build application image	2026-10-21T10:52:17.9068144Z #12 DONE 0.0s
+verify	Build application image	2026-10-21T10:52:17.9068308Z
+verify	Build application image	2026-10-21T10:52:17.9068460Z #13 [build 4/8] RUN go mod download
+verify	Build application image	2026-10-21T10:52:19.2416860Z #13 DONE 1.5s
+verify	Build application image	2026-10-21T10:52:19.3928428Z
+verify	Build application image	2026-10-21T10:52:19.3929038Z #14 [build 5/8] COPY --from=tailwind /tailwindcss /usr/local/bin/tailwindcss
+verify	Build application image	2026-10-21T10:52:19.4976031Z #14 DONE 0.3s
+verify	Build application image	2026-10-21T10:52:19.6490007Z
+verify	Build application image	2026-10-21T10:52:19.6490758Z #15 [build 6/8] RUN chmod 0755 /usr/local/bin/tailwindcss
+verify	Build application image	2026-10-21T10:52:19.7987678Z #15 DONE 0.3s
+verify	Build application image	2026-10-21T10:52:20.0240358Z
+verify	Build application image	2026-10-21T10:52:20.0240975Z #16 [build 7/8] COPY . .
+verify	Build application image	2026-10-21T10:52:20.0241488Z #16 DONE 0.1s
+verify	Build application image	2026-10-21T10:52:20.0241649Z
+verify	Build application image	2026-10-21T10:52:20.0244613Z #17 [build 8/8] RUN printf '%s\n'       'd69de07c7463bb1f41548e2688f88ee105cdadf9779fce5b3c47b3bfaa6be472  third_party/daisyui/daisyui.mjs'       'e48a35d8326d650181ca600560e8520cf6b44cf9242bbd9d45825607e641f251  third_party/daisyui/daisyui-theme.mjs'     | sha256sum -c -     && tailwindcss -i internal/server/web/styles.css -o internal/server/web/app.css --minify     && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /goodsentry ./cmd/goodsentry     && mkdir /data
+verify	Build application image	2026-10-21T10:52:20.0247593Z #17 0.126 third_party/daisyui/daisyui.mjs: OK
+verify	Build application image	2026-10-21T10:52:20.0248047Z #17 0.126 third_party/daisyui/daisyui-theme.mjs: OK
+verify	Build application image	2026-10-21T10:52:20.2573531Z #17 0.208 ≈ tailwindcss v4.3.3
+verify	Build application image	2026-10-21T10:52:20.2574138Z #17 0.208
+verify	Build application image	2026-10-21T10:52:20.3056709Z #17 0.408 Done in 199ms
+verify	Build application image	2026-10-21T10:52:45.1429065Z #17 DONE 25.2s
+verify	Build application image	2026-10-21T10:52:45.9129207Z
+verify	Build application image	2026-10-21T10:52:45.9130523Z #18 [stage-4 2/4] COPY --from=build /goodsentry /goodsentry
+verify	Build application image	2026-10-21T10:52:46.1275598Z #18 DONE 0.0s
+verify	Build application image	2026-10-21T10:52:46.1276164Z
+verify	Build application image	2026-10-21T10:52:46.1276771Z #19 [stage-4 3/4] COPY --from=build --chown=65532:65532 /data /data
+verify	Build application image	2026-10-21T10:52:46.1277611Z #19 DONE 0.0s
+verify	Build application image	2026-10-21T10:52:46.1277990Z
+verify	Build application image	2026-10-21T10:52:46.1278548Z #20 [stage-4 4/4] COPY third_party/daisyui/LICENSE /licenses/daisyui-LICENSE
+verify	Build application image	2026-10-21T10:52:46.1279409Z #20 DONE 0.0s
+verify	Build application image	2026-10-21T10:52:46.1279783Z
+verify	Build application image	2026-10-21T10:52:46.1280104Z #21 exporting to image
+verify	Build application image	2026-10-21T10:52:46.1280705Z #21 exporting layers
+verify	Build application image	2026-10-21T10:52:46.2000022Z #21 exporting layers 0.2s done
+verify	Build application image	2026-10-21T10:52:46.2180537Z #21 writing image sha256:49ce5d5f661578af6b84dd97304b9eda775ed1051566adbe110646d1771b356b done
+verify	Build application image	2026-10-21T10:52:46.2181607Z #21 naming to docker.io/library/goodsentry:ci done
+verify	Build application image	2026-10-21T10:52:46.2182868Z #21 DONE 0.2s
+verify	Post Set up Go	﻿2026-10-21T10:52:46.2400662Z Post job cleanup.
+verify	Post Set up Go	2026-10-21T10:52:46.3619423Z [command]/opt/hostedtoolcache/go/1.27.2/x64/bin/go env GOMODCACHE
+verify	Post Set up Go	2026-10-21T10:52:46.3671536Z [command]/opt/hostedtoolcache/go/1.27.2/x64/bin/go env GOCACHE
+verify	Post Set up Go	2026-10-21T10:52:46.3707641Z /home/runner/go/pkg/mod
+verify	Post Set up Go	2026-10-21T10:52:46.3731386Z /home/runner/.cache/go-build
+verify	Post Set up Go	2026-10-21T10:52:46.3738285Z Cache hit occurred on the primary key setup-go-Linux-x64-ubuntu24-go-1.27.2-460add350e3f0979fb5289beacf7db852c0fb2532223e6324bfbd7c37e725b26, not saving cache.
+verify	Post Check out source	﻿2026-10-21T10:52:46.3933984Z Post job cleanup.
+verify	Post Check out source	2026-10-21T10:52:46.4783873Z [command]/usr/bin/git version
+verify	Post Check out source	2026-10-21T10:52:46.4841681Z git version 2.55.0
+verify	Post Check out source	2026-10-21T10:52:46.4883398Z Temporarily overriding HOME='/home/runner/work/_temp/230e05de-6ab6-483c-9518-a0e6da8d4f16' before making global git config changes
+verify	Post Check out source	2026-10-21T10:52:46.4884800Z Adding repository directory to the temporary git global config as a safe directory
+verify	Post Check out source	2026-10-21T10:52:46.4889088Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/good-sentry/good-sentry
+verify	Post Check out source	2026-10-21T10:52:46.4922071Z Removing SSH command configuration
+verify	Post Check out source	2026-10-21T10:52:46.4929208Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+verify	Post Check out source	2026-10-21T10:52:46.4966663Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+verify	Post Check out source	2026-10-21T10:52:46.5214744Z Removing HTTP extra header
+verify	Post Check out source	2026-10-21T10:52:46.5220578Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+verify	Post Check out source	2026-10-21T10:52:46.5257503Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+verify	Post Check out source	2026-10-21T10:52:46.5556241Z Removing includeIf entries pointing to credentials config files
+verify	Post Check out source	2026-10-21T10:52:46.5583557Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+verify	Post Check out source	2026-10-21T10:52:46.5643679Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+verify	Stop containers	﻿2026-10-21T10:52:46.6103946Z Print service container logs: 0a09dde0753f4f40b7f98904a5e2500f_postgres18_972248
+verify	Stop containers	2026-10-21T10:52:46.6108776Z ##[command]/usr/bin/docker logs --details 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Stop containers	2026-10-21T10:52:46.6244164Z  ********************************************************************************
+verify	Stop containers	2026-10-21T10:52:46.6245061Z  The files belonging to this database system will be owned by user "postgres".
+verify	Stop containers	2026-10-21T10:52:46.6246622Z  WARNING: POSTGRES_HOST_AUTH_METHOD has been set to "trust". This will allow
+verify	Stop containers	2026-10-21T10:52:46.6247442Z  This user must also own the server process.
+verify	Stop containers	2026-10-21T10:52:46.6248652Z           anyone with access to the Postgres port to access your database without
+verify	Stop containers	2026-10-21T10:52:46.6249699Z
+verify	Stop containers	2026-10-21T10:52:46.6251444Z  The database cluster will be initialized with locale "en_US.utf8".
+verify	Stop containers	2026-10-21T10:52:46.6252513Z  The default database encoding has accordingly been set to "UTF8".
+verify	Stop containers	2026-10-21T10:52:46.6253328Z  The default text search configuration will be set to "english".
+verify	Stop containers	2026-10-21T10:52:46.6253978Z
+verify	Stop containers	2026-10-21T10:52:46.6256804Z           a password, even if POSTGRES_PASSWORD is set. See PostgreSQL
+verify	Stop containers	2026-10-21T10:52:46.6259198Z  Data page checksums are enabled.
+verify	Stop containers	2026-10-21T10:52:46.6259784Z           documentation about "trust":
+verify	Stop containers	2026-10-21T10:52:46.6260438Z           https://www.postgresql.org/docs/current/auth-trust.html
+verify	Stop containers	2026-10-21T10:52:46.6261346Z           In Docker's default configuration, this is effectively any other
+verify	Stop containers	2026-10-21T10:52:46.6262893Z           container on the same system.
+verify	Stop containers	2026-10-21T10:52:46.6263377Z
+verify	Stop containers	2026-10-21T10:52:46.6269488Z           It is not recommended to use POSTGRES_HOST_AUTH_METHOD=trust. Replace
+verify	Stop containers	2026-10-21T10:52:46.6270709Z           it with "-e POSTGRES_PASSWORD=password" instead to set a password in
+verify	Stop containers	2026-10-21T10:52:46.6271781Z           "docker run".
+verify	Stop containers	2026-10-21T10:52:46.6272766Z  ********************************************************************************
+verify	Stop containers	2026-10-21T10:52:46.6273577Z  initdb: warning: enabling "trust" authentication for local connections
+verify	Stop containers	2026-10-21T10:52:46.6275146Z  initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+verify	Stop containers	2026-10-21T10:52:46.6277608Z  2026-10-21 10:48:15.170 UTC [1] LOG:  starting PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+verify	Stop containers	2026-10-21T10:52:46.6283428Z  2026-10-21 10:48:15.171 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+verify	Stop containers	2026-10-21T10:52:46.6284757Z  2026-10-21 10:48:15.171 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+verify	Stop containers	2026-10-21T10:52:46.6285801Z  2026-10-21 10:48:15.172 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+verify	Stop containers	2026-10-21T10:52:46.6286906Z  2026-10-21 10:48:15.175 UTC [76] LOG:  database system was shut down at 2026-10-21 10:48:15 UTC
+verify	Stop containers	2026-10-21T10:52:46.6287889Z  2026-10-21 10:48:15.179 UTC [1] LOG:  database system is ready to accept connections
+verify	Stop containers	2026-10-21T10:52:46.6288764Z  2026-10-21 10:48:52.626 UTC [157] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6289695Z  2026-10-21 10:48:52.626 UTC [157] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6290632Z  2026-10-21 10:48:52.626 UTC [157] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6291587Z  	 SELECT id FROM logs WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6293872Z  	 ) DELETE FROM logs l USING expired e WHERE l.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6294593Z  2026-10-21 10:48:52.629 UTC [158] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6295487Z  2026-10-21 10:48:52.629 UTC [158] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6296374Z  2026-10-21 10:48:52.629 UTC [158] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6297262Z  	 SELECT id FROM logs WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6298136Z  	 ) DELETE FROM logs l USING expired e WHERE l.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6299091Z  2026-10-21 10:48:53.152 UTC [160] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6299947Z  2026-10-21 10:48:53.152 UTC [160] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6300811Z  2026-10-21 10:48:53.152 UTC [160] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6301667Z  	 SELECT id FROM spans WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6302808Z  	 ) DELETE FROM spans s USING expired e WHERE s.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6303470Z  2026-10-21 10:48:53.159 UTC [161] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6304382Z  2026-10-21 10:48:53.159 UTC [161] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6305262Z  2026-10-21 10:48:53.159 UTC [161] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6306132Z  	 SELECT id FROM spans WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6307014Z  	 ) DELETE FROM spans s USING expired e WHERE s.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6307706Z  2026-10-21 10:48:53.649 UTC [163] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6308636Z  2026-10-21 10:48:53.649 UTC [163] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6309682Z  2026-10-21 10:48:53.649 UTC [163] STATEMENT:  DELETE FROM events WHERE id=ANY($1::bigint[])
+verify	Stop containers	2026-10-21T10:52:46.6310397Z  2026-10-21 10:48:53.659 UTC [164] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6310930Z  2026-10-21 10:48:53.659 UTC [164] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6311525Z  2026-10-21 10:48:53.659 UTC [164] STATEMENT:  DELETE FROM events WHERE id=ANY($1::bigint[])
+verify	Stop containers	2026-10-21T10:52:46.6312025Z  2026-10-21 10:48:54.184 UTC [167] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6312809Z  2026-10-21 10:48:54.184 UTC [167] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6313339Z  2026-10-21 10:48:54.184 UTC [167] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6313914Z  	 SELECT id FROM monitor_checks WHERE completed_at<$1 ORDER BY completed_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6314494Z  	 ) DELETE FROM monitor_checks c USING expired e WHERE c.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6314933Z  2026-10-21 10:48:54.188 UTC [168] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6315455Z  2026-10-21 10:48:54.188 UTC [168] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6316207Z  2026-10-21 10:48:54.188 UTC [168] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6316765Z  	 SELECT id FROM monitor_checks WHERE completed_at<$1 ORDER BY completed_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6317340Z  	 ) DELETE FROM monitor_checks c USING expired e WHERE c.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6317757Z  2026-10-21 10:48:54.807 UTC [172] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6318250Z  2026-10-21 10:48:54.807 UTC [172] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6318763Z  2026-10-21 10:48:54.807 UTC [172] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6319340Z  	 SELECT id FROM envelope_items WHERE id=ANY($1::text[]) AND created_at<$2 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6319951Z  	 ) DELETE FROM envelope_items item USING expired e WHERE item.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6320396Z  2026-10-21 10:48:54.818 UTC [171] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6320898Z  2026-10-21 10:48:54.818 UTC [171] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6321396Z  2026-10-21 10:48:54.818 UTC [171] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6321962Z  	 SELECT id FROM envelope_items WHERE id=ANY($1::text[]) AND created_at<$2 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6322788Z  	 ) DELETE FROM envelope_items item USING expired e WHERE item.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6323360Z  2026-10-21 10:48:55.807 UTC [183] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6323857Z  2026-10-21 10:48:55.807 UTC [183] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6324349Z  2026-10-21 10:48:55.807 UTC [183] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6324770Z  	 SELECT id FROM releases WHERE id=ANY($1::bigint[]) AND created_at<$2
+verify	Stop containers	2026-10-21T10:52:46.6325165Z  	 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6325524Z  	) DELETE FROM releases r USING expired e WHERE r.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6325917Z  2026-10-21 10:48:56.731 UTC [198] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6326417Z  2026-10-21 10:48:56.731 UTC [198] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6326960Z  2026-10-21 10:48:56.731 UTC [198] STATEMENT:  DELETE FROM user_reports WHERE id IN(
+verify	Stop containers	2026-10-21T10:52:46.6327608Z  	 SELECT id FROM user_reports WHERE event_receipt_id IS NULL AND created_at<transaction_timestamp()-interval '30 minutes'
+verify	Stop containers	2026-10-21T10:52:46.6328210Z  	 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED)
+verify	Stop containers	2026-10-21T10:52:46.6328604Z  2026-10-21 10:48:56.732 UTC [194] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6329093Z  2026-10-21 10:48:56.732 UTC [194] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6329644Z  2026-10-21 10:48:56.732 UTC [194] STATEMENT:  DELETE FROM user_reports WHERE id IN(
+verify	Stop containers	2026-10-21T10:52:46.6330290Z  	 SELECT id FROM user_reports WHERE event_receipt_id IS NULL AND created_at<transaction_timestamp()-interval '30 minutes'
+verify	Stop containers	2026-10-21T10:52:46.6330874Z  	 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED)
+verify	Stop containers	2026-10-21T10:52:46.6331274Z  2026-10-21 10:49:02.332 UTC [257] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6331767Z  2026-10-21 10:49:02.332 UTC [257] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6332470Z  2026-10-21 10:49:02.332 UTC [257] STATEMENT:  WITH available AS (
+verify	Stop containers	2026-10-21T10:52:46.6333112Z  	 SELECT f.event_receipt_id FROM feedback_events f JOIN events e ON e.project_id=f.project_id AND e.event_id=f.associated_event_id
+verify	Stop containers	2026-10-21T10:52:46.6333815Z  	 WHERE f.event_receipt_id=$1 AND f.project_id=$2 AND f.association_pending AND e.id=$3
+verify	Stop containers	2026-10-21T10:52:46.6334243Z  	 FOR UPDATE OF f SKIP LOCKED)
+verify	Stop containers	2026-10-21T10:52:46.6334646Z  	 UPDATE feedback_events f SET associated_event_receipt_id=$3,association_pending=false
+verify	Stop containers	2026-10-21T10:52:46.6335267Z  	 FROM available a WHERE f.event_receipt_id=a.event_receipt_id
+verify	Stop containers	2026-10-21T10:52:46.6335679Z  2026-10-21 10:49:02.341 UTC [203] ERROR:  declared retention failure
+verify	Stop containers	2026-10-21T10:52:46.6336182Z  2026-10-21 10:49:02.341 UTC [203] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6336679Z  2026-10-21 10:49:02.341 UTC [203] STATEMENT:  WITH available AS (
+verify	Stop containers	2026-10-21T10:52:46.6337303Z  	 SELECT f.event_receipt_id FROM feedback_events f JOIN events e ON e.project_id=f.project_id AND e.event_id=f.associated_event_id
+verify	Stop containers	2026-10-21T10:52:46.6338034Z  	 WHERE f.event_receipt_id=$1 AND f.project_id=$2 AND f.association_pending AND e.id=$3
+verify	Stop containers	2026-10-21T10:52:46.6338459Z  	 FOR UPDATE OF f SKIP LOCKED)
+verify	Stop containers	2026-10-21T10:52:46.6338849Z  	 UPDATE feedback_events f SET associated_event_receipt_id=$3,association_pending=false
+verify	Stop containers	2026-10-21T10:52:46.6339339Z  	 FROM available a WHERE f.event_receipt_id=a.event_receipt_id
+verify	Stop containers	2026-10-21T10:52:46.6339926Z  2026-10-21 10:49:08.668 UTC [327] ERROR:  duplicate key value violates unique constraint "teams_organization_id_slug_key"
+verify	Stop containers	2026-10-21T10:52:46.6340649Z  2026-10-21 10:49:08.668 UTC [327] DETAIL:  Key (organization_id, slug)=(1, incident-response) already exists.
+verify	Stop containers	2026-10-21T10:52:46.6341196Z  2026-10-21 10:49:08.668 UTC [327] STATEMENT:  WITH inserted AS (
+verify	Stop containers	2026-10-21T10:52:46.6341670Z  			INSERT INTO teams(organization_id,slug,name) VALUES($1,$2,$3) RETURNING id,slug,name
+verify	Stop containers	2026-10-21T10:52:46.6342144Z  		) SELECT i.id::text,i.slug,i.name,0,0 FROM inserted i
+verify	Stop containers	2026-10-21T10:52:46.6343122Z  2026-10-21 10:49:09.182 UTC [339] ERROR:  duplicate key value violates unique constraint "organization_invitations_active_email"
+verify	Stop containers	2026-10-21T10:52:46.6343924Z  2026-10-21 10:49:09.182 UTC [339] DETAIL:  Key (organization_id, lower(email))=(1, invitee@management.test) already exists.
+verify	Stop containers	2026-10-21T10:52:46.6345209Z  2026-10-21 10:49:09.182 UTC [339] STATEMENT:  INSERT INTO organization_invitations(id,organization_id,email,role,inviter_user_id,token_hash,token_ciphertext,expires_at,status,attempts,next_attempt,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'pending',0,$9,$9,$9)
+verify	Stop containers	2026-10-21T10:52:46.6346520Z  2026-10-21 10:49:14.034 UTC [377] ERROR:  new row for relation "attachments" violates check constraint "reject_feedback_late"
+verify	Stop containers	2026-10-21T10:52:46.6347952Z  2026-10-21 10:49:14.034 UTC [377] DETAIL:  Failing row contains (cae1513c94b8a562350ba651ebdd276ebc643290e4f467544e5c77535bbf7b2a, 1, b1000000000000000000000000000011, late-feedback.bin, application/octet-stream, \x00ff01fe0200802a, 2026-10-21 10:49:14.034752+00, 5, event.attachment, f623e2c507176221dec6892c1009d69603dc1485).
+verify	Stop containers	2026-10-21T10:52:46.6349694Z  2026-10-21 10:49:14.034 UTC [377] STATEMENT:  INSERT INTO attachments(id,project_id,event_id,filename,content_type,data,attachment_type,checksum_sha1) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO NOTHING
+verify	Stop containers	2026-10-21T10:52:46.6350753Z  2026-10-21 10:49:18.458 UTC [397] ERROR:  duplicate key value violates unique constraint "organization_invitations_active_email"
+verify	Stop containers	2026-10-21T10:52:46.6351507Z  2026-10-21 10:49:18.458 UTC [397] DETAIL:  Key (organization_id, lower(email))=(1, new@invite.test) already exists.
+verify	Stop containers	2026-10-21T10:52:46.6352992Z  2026-10-21 10:49:18.458 UTC [397] STATEMENT:  INSERT INTO organization_invitations(id,organization_id,email,role,inviter_user_id,token_hash,token_ciphertext,expires_at,status,attempts,next_attempt,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'pending',0,$9,$9,$9)
+verify	Stop containers	2026-10-21T10:52:46.6354125Z  2026-10-21 10:49:20.576 UTC [433] ERROR:  invalid input syntax for type json
+verify	Stop containers	2026-10-21T10:52:46.6354598Z  2026-10-21 10:49:20.576 UTC [433] DETAIL:  The input string ended unexpectedly.
+verify	Stop containers	2026-10-21T10:52:46.6354961Z
+verify	Stop containers	2026-10-21T10:52:46.6355274Z  fixing permissions on existing directory /var/lib/postgresql/18/docker ... ok
+verify	Stop containers	2026-10-21T10:52:46.6355703Z  creating subdirectories ... ok
+verify	Stop containers	2026-10-21T10:52:46.6356020Z  selecting dynamic shared memory implementation ... posix
+verify	Stop containers	2026-10-21T10:52:46.6356369Z  selecting default "max_connections" ... 100
+verify	Stop containers	2026-10-21T10:52:46.6356824Z  selecting default "shared_buffers" ... 128MB
+verify	Stop containers	2026-10-21T10:52:46.6357117Z  selecting default time zone ... Etc/UTC
+verify	Stop containers	2026-10-21T10:52:46.6357395Z  creating configuration files ... ok
+verify	Stop containers	2026-10-21T10:52:46.6357668Z  running bootstrap script ... ok
+verify	Stop containers	2026-10-21T10:52:46.6357963Z  performing post-bootstrap initialization ... ok
+verify	Stop containers	2026-10-21T10:52:46.6358268Z  syncing data to disk ... ok
+verify	Stop containers	2026-10-21T10:52:46.6358499Z
+verify	Stop containers	2026-10-21T10:52:46.6358666Z
+verify	Stop containers	2026-10-21T10:52:46.6358891Z  Success. You can now start the database server using:
+verify	Stop containers	2026-10-21T10:52:46.6359193Z
+verify	Stop containers	2026-10-21T10:52:46.6359444Z      pg_ctl -D /var/lib/postgresql/18/docker -l logfile start
+verify	Stop containers	2026-10-21T10:52:46.6359757Z
+verify	Stop containers	2026-10-21T10:52:46.6360393Z  waiting for server to start....2026-10-21 10:48:14.848 UTC [54] LOG:  starting PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+verify	Stop containers	2026-10-21T10:52:46.6361285Z  2026-10-21 10:48:14.849 UTC [54] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+verify	Stop containers	2026-10-21T10:52:46.6361883Z  2026-10-21 10:48:14.852 UTC [60] LOG:  database system was shut down at 2026-10-21 10:48:14 UTC
+verify	Stop containers	2026-10-21T10:52:46.6362617Z  2026-10-21 10:48:14.855 UTC [54] LOG:  database system is ready to accept connections
+verify	Stop containers	2026-10-21T10:52:46.6363006Z   done
+verify	Stop containers	2026-10-21T10:52:46.6363188Z  server started
+verify	Stop containers	2026-10-21T10:52:46.6363382Z  CREATE DATABASE
+verify	Stop containers	2026-10-21T10:52:46.6363581Z
+verify	Stop containers	2026-10-21T10:52:46.6363746Z
+verify	Stop containers	2026-10-21T10:52:46.6364061Z  /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+verify	Stop containers	2026-10-21T10:52:46.6364612Z
+verify	Stop containers	2026-10-21T10:52:46.6364973Z  waiting for server to shut down...2026-10-21 10:48:15.046 UTC [54] LOG:  received fast shutdown request
+verify	Stop containers	2026-10-21T10:52:46.6365504Z  .2026-10-21 10:48:15.047 UTC [54] LOG:  aborting any active transactions
+verify	Stop containers	2026-10-21T10:52:46.6366084Z  2026-10-21 10:48:15.050 UTC [54] LOG:  background worker "logical replication launcher" (PID 63) exited with exit code 1
+verify	Stop containers	2026-10-21T10:52:46.6366641Z  2026-10-21 10:48:15.050 UTC [58] LOG:  shutting down
+verify	Stop containers	2026-10-21T10:52:46.6367029Z  2026-10-21 10:48:15.051 UTC [58] LOG:  checkpoint starting: shutdown immediate
+verify	Stop containers	2026-10-21T10:52:46.6368207Z  2026-10-21 10:48:15.067 UTC [58] LOG:  checkpoint complete: wrote 943 buffers (5.8%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.013 s, sync=0.004 s, total=0.017 s; sync files=303, longest=0.002 s, average=0.001 s; distance=4352 kB, estimate=4352 kB; lsn=0/1BA1B58, redo lsn=0/1BA1B58
+verify	Stop containers	2026-10-21T10:52:46.6369348Z  2026-10-21 10:48:15.079 UTC [54] LOG:  database system is shut down
+verify	Stop containers	2026-10-21T10:52:46.6369672Z   done
+verify	Stop containers	2026-10-21T10:52:46.6369858Z  server stopped
+verify	Stop containers	2026-10-21T10:52:46.6370058Z
+verify	Stop containers	2026-10-21T10:52:46.6370293Z  PostgreSQL init process complete; ready for start up.
+verify	Stop containers	2026-10-21T10:52:46.6370591Z
+verify	Stop containers	2026-10-21T10:52:46.6370936Z  2026-10-21 10:49:20.576 UTC [433] CONTEXT:  JSON data, line 1: {"type":
+verify	Stop containers	2026-10-21T10:52:46.6371308Z  	unnamed portal parameter $5 = '...'
+verify	Stop containers	2026-10-21T10:52:46.6371975Z  2026-10-21 10:49:20.576 UTC [433] STATEMENT:  INSERT INTO envelope_items(id,project_id,event_id,item_type,header,data) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO NOTHING
+verify	Stop containers	2026-10-21T10:52:46.6373176Z  2026-10-21 10:49:29.256 UTC [516] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6373784Z  2026-10-21 10:49:29.256 UTC [516] STATEMENT:  SELECT o.id::text,o.slug,o.name,o.created_at,m.role FROM organizations o
+verify	Stop containers	2026-10-21T10:52:46.6374396Z  			JOIN memberships m ON m.organization_id=o.id AND m.user_id=$1::bigint
+verify	Stop containers	2026-10-21T10:52:46.6374791Z  			WHERE ($2='' OR o.id::text=$2)
+verify	Stop containers	2026-10-21T10:52:46.6375168Z  			AND ($3='' OR strpos(lower(o.name),lower($3))>0 OR strpos(lower(o.slug),lower($3))>0)
+verify	Stop containers	2026-10-21T10:52:46.6375704Z  			AND (NOT $4 OR m.role='owner') ORDER BY lower(o.name),o.id LIMIT $5 OFFSET $6
+verify	Stop containers	2026-10-21T10:52:46.6376181Z  2026-10-21 10:49:30.359 UTC [523] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6376777Z  2026-10-21 10:49:30.359 UTC [523] STATEMENT:  SELECT o.id::text,o.slug,o.name,o.created_at,m.role FROM organizations o
+verify	Stop containers	2026-10-21T10:52:46.6377528Z  			JOIN memberships m ON m.organization_id=o.id AND m.user_id=$1::bigint
+verify	Stop containers	2026-10-21T10:52:46.6377906Z  			WHERE ($2='' OR o.id::text=$2)
+verify	Stop containers	2026-10-21T10:52:46.6378275Z  			AND ($3='' OR strpos(lower(o.name),lower($3))>0 OR strpos(lower(o.slug),lower($3))>0)
+verify	Stop containers	2026-10-21T10:52:46.6378768Z  			AND (NOT $4 OR m.role='owner') ORDER BY lower(o.name),o.id LIMIT $5 OFFSET $6
+verify	Stop containers	2026-10-21T10:52:46.6379385Z  2026-10-21 10:49:31.850 UTC [546] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+verify	Stop containers	2026-10-21T10:52:46.6380545Z  2026-10-21 10:49:31.850 UTC [546] DETAIL:  Failing row contains (3, 1, 1, Event reader, ef5e0d73205f33f5e0d8068a14bdedc3bc004f73974dd9dd76f3547d0d72414f, gs_6afbbada, {event:write}, f, 2026-10-21 10:49:31.844514+00, 2026-10-22 10:49:31.844514+00, null).
+verify	Stop containers	2026-10-21T10:52:46.6381628Z  2026-10-21 10:49:31.850 UTC [546] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY[$1]::text[] WHERE id=$2
+verify	Stop containers	2026-10-21T10:52:46.6382550Z  2026-10-21 10:49:31.851 UTC [546] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+verify	Stop containers	2026-10-21T10:52:46.6383716Z  2026-10-21 10:49:31.851 UTC [546] DETAIL:  Failing row contains (3, 1, 1, Event reader, ef5e0d73205f33f5e0d8068a14bdedc3bc004f73974dd9dd76f3547d0d72414f, gs_6afbbada, {event:admin}, f, 2026-10-21 10:49:31.844514+00, 2026-10-22 10:49:31.844514+00, null).
+verify	Stop containers	2026-10-21T10:52:46.6384792Z  2026-10-21 10:49:31.851 UTC [546] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY[$1]::text[] WHERE id=$2
+verify	Stop containers	2026-10-21T10:52:46.6385469Z  2026-10-21 10:49:37.745 UTC [570] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6385942Z  2026-10-21 10:49:37.745 UTC [570] STATEMENT:  SELECT pg_advisory_xact_lock($1)
+verify	Stop containers	2026-10-21T10:52:46.6386550Z  2026-10-21 10:49:40.086 UTC [593] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+verify	Stop containers	2026-10-21T10:52:46.6387785Z  2026-10-21 10:49:40.086 UTC [593] DETAIL:  Failing row contains (1, 1, 1, Established restricted credential, 5a8b2dacbf221ca954ea70acb7390a688b9e662c000d080d7d8cdaa172a5a9cf, gs_650a4b0a, {event:admin}, f, 2026-10-21 10:49:40.014652+00, 2026-11-20 10:49:40.014652+00, null).
+verify	Stop containers	2026-10-21T10:52:46.6388966Z  2026-10-21 10:49:40.086 UTC [593] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY[$2]::text[] WHERE id=$1::bigint
+verify	Stop containers	2026-10-21T10:52:46.6389682Z  2026-10-21 10:49:40.189 UTC [594] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+verify	Stop containers	2026-10-21T10:52:46.6390839Z  2026-10-21 10:49:40.189 UTC [594] DETAIL:  Failing row contains (3, 1, 1, Opt-in deletion, 595a4aec386488720250494eb6396f1e2ae4624a7f07e51bd9ae7fcd5f1a52a7, gs_2165221e, {event:delete}, f, 2026-10-21 10:49:40.183184+00, 2026-10-22 10:49:40.183184+00, null).
+verify	Stop containers	2026-10-21T10:52:46.6391941Z  2026-10-21 10:49:40.189 UTC [594] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY[$2]::text[] WHERE id=$1::bigint
+verify	Stop containers	2026-10-21T10:52:46.6393088Z  2026-10-21 10:49:45.769 UTC [642] ERROR:  update or delete on table "issues" violates foreign key constraint "issue_delete_guard_issue_id_fkey" on table "issue_delete_guard"
+verify	Stop containers	2026-10-21T10:52:46.6393940Z  2026-10-21 10:49:45.769 UTC [642] DETAIL:  Key (id)=(1) is still referenced from table "issue_delete_guard".
+verify	Stop containers	2026-10-21T10:52:46.6394618Z  2026-10-21 10:49:45.769 UTC [642] STATEMENT:  DELETE FROM issues WHERE id=ANY($1::bigint[]) OR merged_into=ANY($1::bigint[])
+verify	Stop containers	2026-10-21T10:52:46.6395230Z  2026-10-21 10:49:46.271 UTC [653] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6396164Z  2026-10-21 10:49:46.271 UTC [653] CONTEXT:  SQL statement "DELETE FROM ONLY "goodsentry_telemetry_1792579785895938426"."attachments" WHERE $1 OPERATOR(pg_catalog.=) "project_id" AND $2 OPERATOR(pg_catalog.=) "event_id""
+verify	Stop containers	2026-10-21T10:52:46.6397216Z  2026-10-21 10:49:46.271 UTC [653] STATEMENT:  DELETE FROM issues WHERE id=ANY($1::bigint[]) OR merged_into=ANY($1::bigint[])
+verify	Stop containers	2026-10-21T10:52:46.6398103Z  2026-10-21 10:49:52.807 UTC [699] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+verify	Stop containers	2026-10-21T10:52:46.6399262Z  2026-10-21 10:49:52.807 UTC [699] DETAIL:  Failing row contains (3, 1, 1, Issue writer, fdf1ddafad8bdddaed3a31c33dacdae70a50b7214fe9f21153f5be7a4877c794, gs_89ce6f64, {event:admin}, f, 2026-10-21 10:49:52.799688+00, 2026-10-22 10:49:52.799688+00, null).
+verify	Stop containers	2026-10-21T10:52:46.6400393Z  2026-10-21 10:49:52.807 UTC [699] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY['event:admin']::text[] WHERE id=$1
+verify	Stop containers	2026-10-21T10:52:46.6400938Z  2026-10-21 10:50:02.429 UTC [762] ERROR:  bigint out of range
+verify	Stop containers	2026-10-21T10:52:46.6401530Z  2026-10-21 10:50:02.429 UTC [762] STATEMENT:  UPDATE users SET password_hash=$2,auth_generation=auth_generation+1 WHERE id=$1::bigint
+verify	Stop containers	2026-10-21T10:52:46.6402156Z  2026-10-21 10:50:08.141 UTC [817] ERROR:  declared late recount failure
+verify	Stop containers	2026-10-21T10:52:46.6402878Z  2026-10-21 10:50:08.141 UTC [817] CONTEXT:  PL/pgSQL function wait_error_recount() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6403466Z  2026-10-21 10:50:08.141 UTC [817] STATEMENT:  WITH wanted AS (SELECT unnest($1::bigint[]) AS id),
+verify	Stop containers	2026-10-21T10:52:46.6404076Z  	 totals AS (SELECT w.id,count(e.id) AS n,min(e.timestamp) AS first_seen,max(e.timestamp) AS last_seen
+verify	Stop containers	2026-10-21T10:52:46.6404613Z  	 FROM wanted w LEFT JOIN events e ON e.issue_id=w.id GROUP BY w.id),
+verify	Stop containers	2026-10-21T10:52:46.6405126Z  	 latest AS (SELECT DISTINCT ON (issue_id) issue_id,title,environment,release FROM events
+verify	Stop containers	2026-10-21T10:52:46.6405659Z  	 WHERE issue_id=ANY($1::bigint[]) ORDER BY issue_id,timestamp DESC,id DESC)
+verify	Stop containers	2026-10-21T10:52:46.6406418Z  	 UPDATE issues i SET count=t.n,first_seen=COALESCE(t.first_seen,i.first_seen),last_seen=COALESCE(t.last_seen,i.last_seen),
+verify	Stop containers	2026-10-21T10:52:46.6407231Z  	 title=COALESCE(l.title,i.title),environment=COALESCE(l.environment,i.environment),release=COALESCE(l.release,i.release)
+verify	Stop containers	2026-10-21T10:52:46.6407872Z  	 FROM totals t LEFT JOIN latest l ON l.issue_id=t.id WHERE i.id=t.id
+verify	Stop containers	2026-10-21T10:52:46.6408337Z  2026-10-21 10:50:08.556 UTC [822] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6408968Z  2026-10-21 10:50:08.556 UTC [822] CONTEXT:  SQL statement "SELECT pg_advisory_xact_lock(hashtextextended(TG_TABLE_SCHEMA,8349))"
+verify	Stop containers	2026-10-21T10:52:46.6409605Z  	PL/pgSQL function wait_error_recount() line 1 at PERFORM
+verify	Stop containers	2026-10-21T10:52:46.6410073Z  2026-10-21 10:50:08.556 UTC [822] STATEMENT:  WITH wanted AS (SELECT unnest($1::bigint[]) AS id),
+verify	Stop containers	2026-10-21T10:52:46.6410667Z  	 totals AS (SELECT w.id,count(e.id) AS n,min(e.timestamp) AS first_seen,max(e.timestamp) AS last_seen
+verify	Stop containers	2026-10-21T10:52:46.6411205Z  	 FROM wanted w LEFT JOIN events e ON e.issue_id=w.id GROUP BY w.id),
+verify	Stop containers	2026-10-21T10:52:46.6411704Z  	 latest AS (SELECT DISTINCT ON (issue_id) issue_id,title,environment,release FROM events
+verify	Stop containers	2026-10-21T10:52:46.6412443Z  	 WHERE issue_id=ANY($1::bigint[]) ORDER BY issue_id,timestamp DESC,id DESC)
+verify	Stop containers	2026-10-21T10:52:46.6413102Z  	 UPDATE issues i SET count=t.n,first_seen=COALESCE(t.first_seen,i.first_seen),last_seen=COALESCE(t.last_seen,i.last_seen),
+verify	Stop containers	2026-10-21T10:52:46.6413913Z  	 title=COALESCE(l.title,i.title),environment=COALESCE(l.environment,i.environment),release=COALESCE(l.release,i.release)
+verify	Stop containers	2026-10-21T10:52:46.6414545Z  	 FROM totals t LEFT JOIN latest l ON l.issue_id=t.id WHERE i.id=t.id
+verify	Stop containers	2026-10-21T10:52:46.6414972Z  2026-10-21 10:50:10.287 UTC [74] LOG:  checkpoint starting: wal
+verify	Stop containers	2026-10-21T10:52:46.6415433Z  2026-10-21 10:50:18.321 UTC [881] ERROR:  could not obtain lock on row in relation "events"
+verify	Stop containers	2026-10-21T10:52:46.6416093Z  2026-10-21 10:50:18.321 UTC [881] STATEMENT:  SELECT id FROM events WHERE project_id=$1::bigint AND event_id=$2 FOR UPDATE NOWAIT
+verify	Stop containers	2026-10-21T10:52:46.6416741Z  2026-10-21 10:50:19.091 UTC [887] ERROR:  declared failure after prior feedback binding
+verify	Stop containers	2026-10-21T10:52:46.6417275Z  2026-10-21 10:50:19.091 UTC [887] CONTEXT:  PL/pgSQL function reject_feedback() line 4 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6417756Z  2026-10-21 10:50:19.091 UTC [887] STATEMENT:  WITH available AS (
+verify	Stop containers	2026-10-21T10:52:46.6418509Z  	 SELECT f.event_receipt_id FROM feedback_events f JOIN events e ON e.project_id=f.project_id AND e.event_id=f.associated_event_id
+verify	Stop containers	2026-10-21T10:52:46.6419209Z  	 WHERE f.event_receipt_id=$1 AND f.project_id=$2 AND f.association_pending AND e.id=$3
+verify	Stop containers	2026-10-21T10:52:46.6419629Z  	 FOR UPDATE OF f SKIP LOCKED)
+verify	Stop containers	2026-10-21T10:52:46.6420028Z  	 UPDATE feedback_events f SET associated_event_receipt_id=$3,association_pending=false
+verify	Stop containers	2026-10-21T10:52:46.6420515Z  	 FROM available a WHERE f.event_receipt_id=a.event_receipt_id
+verify	Stop containers	2026-10-21T10:52:46.6420976Z  2026-10-21 10:50:19.506 UTC [889] ERROR:  declared failure after prior feedback binding
+verify	Stop containers	2026-10-21T10:52:46.6421512Z  2026-10-21 10:50:19.506 UTC [889] CONTEXT:  PL/pgSQL function reject_feedback() line 4 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6421965Z  2026-10-21 10:50:19.506 UTC [889] STATEMENT:  commit
+verify	Stop containers	2026-10-21T10:52:46.6422751Z  2026-10-21 10:50:20.796 UTC [898] ERROR:  new row for relation "attachments" violates check constraint "reject_feedback_child"
+verify	Stop containers	2026-10-21T10:52:46.6424080Z  2026-10-21 10:50:20.796 UTC [898] DETAIL:  Failing row contains (4badd000672aa6c9be5e20a7476e8e23b9887ccdfb3bc00f89a3d4a539099e15, 1, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, fail.bin, , \x00ff, 2026-10-21 10:50:20.796435+00, 1, event.attachment, aa3e5dcdd77b153f2e59bd0d8794fde33cb4e486).
+verify	Stop containers	2026-10-21T10:52:46.6425666Z  2026-10-21 10:50:20.796 UTC [898] STATEMENT:  INSERT INTO attachments(id,project_id,event_id,filename,content_type,data,attachment_type,checksum_sha1) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO NOTHING
+verify	Stop containers	2026-10-21T10:52:46.6426846Z  2026-10-21 10:50:20.845 UTC [898] ERROR:  new row for relation "attachments" violates check constraint "reject_feedback_child"
+verify	Stop containers	2026-10-21T10:52:46.6428117Z  2026-10-21 10:50:20.845 UTC [898] DETAIL:  Failing row contains (797052e356b41641c345757b1236f9d3e710e54e61a139dfda9f7478ab1dcf60, 1, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, fail.bin, , \x01, 2026-10-21 10:50:20.845294+00, 2, event.attachment, bf8b4530d8d246dd74ac53a13471bba17941dff7).
+verify	Stop containers	2026-10-21T10:52:46.6429667Z  2026-10-21 10:50:20.845 UTC [898] STATEMENT:  INSERT INTO attachments(id,project_id,event_id,filename,content_type,data,attachment_type,checksum_sha1) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO NOTHING
+verify	Stop containers	2026-10-21T10:52:46.6430552Z  2026-10-21 10:50:29.015 UTC [1006] ERROR:  declared late file deletion failure
+verify	Stop containers	2026-10-21T10:52:46.6431083Z  2026-10-21 10:50:29.015 UTC [1006] CONTEXT:  PL/pgSQL function fail_file_retention() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6431589Z  2026-10-21 10:50:29.015 UTC [1006] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6432167Z  	 SELECT id FROM envelope_items WHERE id=ANY($1::text[]) AND created_at<$2 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6433002Z  	 ) DELETE FROM envelope_items item USING expired e WHERE item.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6433462Z  2026-10-21 10:50:29.457 UTC [1010] ERROR:  declared late file deletion failure
+verify	Stop containers	2026-10-21T10:52:46.6433992Z  2026-10-21 10:50:29.457 UTC [1010] CONTEXT:  PL/pgSQL function fail_file_retention() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6434467Z  2026-10-21 10:50:29.457 UTC [1010] STATEMENT:  commit
+verify	Stop containers	2026-10-21T10:52:46.6434900Z  2026-10-21 10:50:30.676 UTC [1025] ERROR:  private-http-fixture-post-first-insert
+verify	Stop containers	2026-10-21T10:52:46.6435475Z  2026-10-21 10:50:30.676 UTC [1025] CONTEXT:  PL/pgSQL function reject_http_otlp_later_row() line 5 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6436438Z  2026-10-21 10:50:30.676 UTC [1025] STATEMENT:  INSERT INTO logs(project_id,timestamp,trace_id,span_id,level,body,service,environment,attributes,data,item_hash,otlp_batch_id,otlp_record_index)
+verify	Stop containers	2026-10-21T10:52:46.6437260Z  	   VALUES($1,$2,$3,$4,$5,$6,$7,$8,'{}','{}',$9,$10,$11)
+verify	Stop containers	2026-10-21T10:52:46.6437821Z  2026-10-21 10:50:31.787 UTC [1039] ERROR:  duplicate key value violates unique constraint "organization_invitations_active_email"
+verify	Stop containers	2026-10-21T10:52:46.6438571Z  2026-10-21 10:50:31.787 UTC [1039] DETAIL:  Key (organization_id, lower(email))=(1, new@invite.test) already exists.
+verify	Stop containers	2026-10-21T10:52:46.6439944Z  2026-10-21 10:50:31.787 UTC [1039] STATEMENT:  INSERT INTO organization_invitations(id,organization_id,email,role,inviter_user_id,token_hash,token_ciphertext,expires_at,status,attempts,next_attempt,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'pending',0,$9,$9,$9)
+verify	Stop containers	2026-10-21T10:52:46.6441064Z  2026-10-21 10:50:38.198 UTC [1092] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6441772Z  2026-10-21 10:50:38.198 UTC [1092] STATEMENT:  SELECT pg_advisory_xact_lock_shared(hashtextextended(current_schema()||':issue-group:'||$1::text,0))
+verify	Stop containers	2026-10-21T10:52:46.6442720Z  2026-10-21 10:50:38.198 UTC [1091] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6443416Z  2026-10-21 10:50:38.198 UTC [1091] STATEMENT:  SELECT pg_advisory_xact_lock_shared(hashtextextended(current_schema()||':issue-group:'||$1::text,0))
+verify	Stop containers	2026-10-21T10:52:46.6444249Z  2026-10-21 10:50:40.263 UTC [1108] ERROR:  new row for relation "issues" violates check constraint "issues_group_older_root"
+verify	Stop containers	2026-10-21T10:52:46.6445274Z  2026-10-21 10:50:40.263 UTC [1108] DETAIL:  Failing row contains (4, 1, legacy-no-raw, Legacy no raw, error, javascript, unresolved, 7, 2026-10-21 10:50:40+00, 2026-10-21 10:50:40+00, , , null, null, 4, null, 7, error).
+verify	Stop containers	2026-10-21T10:52:46.6446206Z  2026-10-21 10:50:40.263 UTC [1108] STATEMENT:  UPDATE issues SET merged_into=id WHERE id=$1::bigint
+verify	Stop containers	2026-10-21T10:52:46.6446860Z  2026-10-21 10:50:41.074 UTC [1115] ERROR:  issue groups require same-project roots older than their direct members
+verify	Stop containers	2026-10-21T10:52:46.6447623Z  2026-10-21 10:50:41.074 UTC [1115] CONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6448302Z  2026-10-21 10:50:41.074 UTC [1115] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+verify	Stop containers	2026-10-21T10:52:46.6448825Z  	DO $$
+verify	Stop containers	2026-10-21T10:52:46.6449001Z  	BEGIN
+verify	Stop containers	2026-10-21T10:52:46.6449179Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6449494Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+verify	Stop containers	2026-10-21T10:52:46.6450043Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+verify	Stop containers	2026-10-21T10:52:46.6450479Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6450841Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+verify	Stop containers	2026-10-21T10:52:46.6451274Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6451458Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6451728Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6452187Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+verify	Stop containers	2026-10-21T10:52:46.6452916Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+verify	Stop containers	2026-10-21T10:52:46.6453359Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+verify	Stop containers	2026-10-21T10:52:46.6453708Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6454006Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+verify	Stop containers	2026-10-21T10:52:46.6454379Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6454570Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6454770Z  	  SELECT 1 FROM events e
+verify	Stop containers	2026-10-21T10:52:46.6455038Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+verify	Stop containers	2026-10-21T10:52:46.6455399Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+verify	Stop containers	2026-10-21T10:52:46.6455880Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6456499Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6456986Z  	     OR (e.original_issue_id IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6457515Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+verify	Stop containers	2026-10-21T10:52:46.6458010Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6458347Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+verify	Stop containers	2026-10-21T10:52:46.6458750Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6458929Z  	END $$;
+verify	Stop containers	2026-10-21T10:52:46.6459102Z
+verify	Stop containers	2026-10-21T10:52:46.6459562Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+verify	Stop containers	2026-10-21T10:52:46.6460040Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+verify	Stop containers	2026-10-21T10:52:46.6460542Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+verify	Stop containers	2026-10-21T10:52:46.6461096Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+verify	Stop containers	2026-10-21T10:52:46.6461587Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+verify	Stop containers	2026-10-21T10:52:46.6462151Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6463095Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6463646Z
+verify	Stop containers	2026-10-21T10:52:46.6464040Z  2026-10-21 10:50:41.647 UTC [1118] ERROR:  issue groups require same-project roots older than their direct members
+verify	Stop containers	2026-10-21T10:52:46.6464679Z  2026-10-21 10:50:41.647 UTC [1118] CONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6465362Z  2026-10-21 10:50:41.647 UTC [1118] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+verify	Stop containers	2026-10-21T10:52:46.6465885Z  	DO $$
+verify	Stop containers	2026-10-21T10:52:46.6466066Z  	BEGIN
+verify	Stop containers	2026-10-21T10:52:46.6466238Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6466544Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+verify	Stop containers	2026-10-21T10:52:46.6467084Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+verify	Stop containers	2026-10-21T10:52:46.6467682Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6468035Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+verify	Stop containers	2026-10-21T10:52:46.6468466Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6468649Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6468912Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6469362Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+verify	Stop containers	2026-10-21T10:52:46.6469852Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+verify	Stop containers	2026-10-21T10:52:46.6470278Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+verify	Stop containers	2026-10-21T10:52:46.6470622Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6470920Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+verify	Stop containers	2026-10-21T10:52:46.6471283Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6471460Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6471689Z  	  SELECT 1 FROM events e
+verify	Stop containers	2026-10-21T10:52:46.6471947Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+verify	Stop containers	2026-10-21T10:52:46.6472528Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+verify	Stop containers	2026-10-21T10:52:46.6473054Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6473686Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6474165Z  	     OR (e.original_issue_id IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6474699Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+verify	Stop containers	2026-10-21T10:52:46.6475203Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6475530Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+verify	Stop containers	2026-10-21T10:52:46.6475929Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6476108Z  	END $$;
+verify	Stop containers	2026-10-21T10:52:46.6476278Z
+verify	Stop containers	2026-10-21T10:52:46.6476595Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+verify	Stop containers	2026-10-21T10:52:46.6477082Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+verify	Stop containers	2026-10-21T10:52:46.6477592Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+verify	Stop containers	2026-10-21T10:52:46.6478132Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+verify	Stop containers	2026-10-21T10:52:46.6478631Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+verify	Stop containers	2026-10-21T10:52:46.6479200Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6480034Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6480568Z
+verify	Stop containers	2026-10-21T10:52:46.6480965Z  2026-10-21 10:50:42.252 UTC [1132] ERROR:  issue groups require same-project roots older than their direct members
+verify	Stop containers	2026-10-21T10:52:46.6481607Z  2026-10-21 10:50:42.252 UTC [1132] CONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6482505Z  2026-10-21 10:50:42.252 UTC [1132] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+verify	Stop containers	2026-10-21T10:52:46.6483053Z  	DO $$
+verify	Stop containers	2026-10-21T10:52:46.6483226Z  	BEGIN
+verify	Stop containers	2026-10-21T10:52:46.6483407Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6483704Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+verify	Stop containers	2026-10-21T10:52:46.6484245Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+verify	Stop containers	2026-10-21T10:52:46.6484684Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6485045Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+verify	Stop containers	2026-10-21T10:52:46.6485477Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6485653Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6485920Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6486374Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+verify	Stop containers	2026-10-21T10:52:46.6486854Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+verify	Stop containers	2026-10-21T10:52:46.6487290Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+verify	Stop containers	2026-10-21T10:52:46.6487762Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6488055Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+verify	Stop containers	2026-10-21T10:52:46.6488428Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6488605Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6488803Z  	  SELECT 1 FROM events e
+verify	Stop containers	2026-10-21T10:52:46.6489062Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+verify	Stop containers	2026-10-21T10:52:46.6489422Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+verify	Stop containers	2026-10-21T10:52:46.6489909Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6490524Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6491004Z  	     OR (e.original_issue_id IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6491519Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+verify	Stop containers	2026-10-21T10:52:46.6492012Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6492575Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+verify	Stop containers	2026-10-21T10:52:46.6492991Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6493167Z  	END $$;
+verify	Stop containers	2026-10-21T10:52:46.6493342Z
+verify	Stop containers	2026-10-21T10:52:46.6493656Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+verify	Stop containers	2026-10-21T10:52:46.6494131Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+verify	Stop containers	2026-10-21T10:52:46.6494648Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+verify	Stop containers	2026-10-21T10:52:46.6495184Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+verify	Stop containers	2026-10-21T10:52:46.6495672Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+verify	Stop containers	2026-10-21T10:52:46.6496311Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6497504Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6498188Z
+verify	Stop containers	2026-10-21T10:52:46.6498887Z  2026-10-21 10:50:42.682 UTC [1135] ERROR:  issue groups require same-project roots older than their direct members
+verify	Stop containers	2026-10-21T10:52:46.6499565Z  2026-10-21 10:50:42.682 UTC [1135] CONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6500247Z  2026-10-21 10:50:42.682 UTC [1135] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+verify	Stop containers	2026-10-21T10:52:46.6500939Z  	DO $$
+verify	Stop containers	2026-10-21T10:52:46.6501116Z  	BEGIN
+verify	Stop containers	2026-10-21T10:52:46.6501287Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6501582Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+verify	Stop containers	2026-10-21T10:52:46.6502119Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+verify	Stop containers	2026-10-21T10:52:46.6502807Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6503166Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+verify	Stop containers	2026-10-21T10:52:46.6503606Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6503796Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6504054Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6504524Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+verify	Stop containers	2026-10-21T10:52:46.6504999Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+verify	Stop containers	2026-10-21T10:52:46.6505427Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+verify	Stop containers	2026-10-21T10:52:46.6505783Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6506075Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+verify	Stop containers	2026-10-21T10:52:46.6506441Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6506619Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6506823Z  	  SELECT 1 FROM events e
+verify	Stop containers	2026-10-21T10:52:46.6507084Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+verify	Stop containers	2026-10-21T10:52:46.6507437Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+verify	Stop containers	2026-10-21T10:52:46.6507924Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6508673Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6509152Z  	     OR (e.original_issue_id IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6509705Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+verify	Stop containers	2026-10-21T10:52:46.6510198Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6510548Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+verify	Stop containers	2026-10-21T10:52:46.6510965Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6511141Z  	END $$;
+verify	Stop containers	2026-10-21T10:52:46.6511310Z
+verify	Stop containers	2026-10-21T10:52:46.6511627Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+verify	Stop containers	2026-10-21T10:52:46.6512113Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+verify	Stop containers	2026-10-21T10:52:46.6512890Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+verify	Stop containers	2026-10-21T10:52:46.6513438Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+verify	Stop containers	2026-10-21T10:52:46.6513944Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+verify	Stop containers	2026-10-21T10:52:46.6514509Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6515207Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6515739Z
+verify	Stop containers	2026-10-21T10:52:46.6516084Z  2026-10-21 10:50:43.226 UTC [1140] ERROR:  issue group aliases must not have active triage state
+verify	Stop containers	2026-10-21T10:52:46.6516683Z  2026-10-21 10:50:43.226 UTC [1140] CONTEXT:  PL/pgSQL function inline_code_block line 15 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6517373Z  2026-10-21 10:50:43.226 UTC [1140] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+verify	Stop containers	2026-10-21T10:52:46.6517901Z  	DO $$
+verify	Stop containers	2026-10-21T10:52:46.6518081Z  	BEGIN
+verify	Stop containers	2026-10-21T10:52:46.6518258Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6518561Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+verify	Stop containers	2026-10-21T10:52:46.6519107Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+verify	Stop containers	2026-10-21T10:52:46.6519544Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6519899Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+verify	Stop containers	2026-10-21T10:52:46.6520334Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6520520Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6520916Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6521377Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+verify	Stop containers	2026-10-21T10:52:46.6521859Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+verify	Stop containers	2026-10-21T10:52:46.6522499Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+verify	Stop containers	2026-10-21T10:52:46.6522860Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6523156Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+verify	Stop containers	2026-10-21T10:52:46.6523530Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6523719Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6523919Z  	  SELECT 1 FROM events e
+verify	Stop containers	2026-10-21T10:52:46.6524184Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+verify	Stop containers	2026-10-21T10:52:46.6524537Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+verify	Stop containers	2026-10-21T10:52:46.6525026Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6525655Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6526143Z  	     OR (e.original_issue_id IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6526666Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+verify	Stop containers	2026-10-21T10:52:46.6527168Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6527492Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+verify	Stop containers	2026-10-21T10:52:46.6527891Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6528068Z  	END $$;
+verify	Stop containers	2026-10-21T10:52:46.6528243Z
+verify	Stop containers	2026-10-21T10:52:46.6528693Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+verify	Stop containers	2026-10-21T10:52:46.6529173Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+verify	Stop containers	2026-10-21T10:52:46.6529683Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+verify	Stop containers	2026-10-21T10:52:46.6530224Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+verify	Stop containers	2026-10-21T10:52:46.6530727Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+verify	Stop containers	2026-10-21T10:52:46.6531296Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6531995Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6532757Z
+verify	Stop containers	2026-10-21T10:52:46.6533132Z  2026-10-21 10:50:43.666 UTC [1143] ERROR:  issue events have inconsistent current or original ownership
+verify	Stop containers	2026-10-21T10:52:46.6533739Z  2026-10-21 10:50:43.666 UTC [1143] CONTEXT:  PL/pgSQL function inline_code_block line 26 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6534440Z  2026-10-21 10:50:43.666 UTC [1143] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+verify	Stop containers	2026-10-21T10:52:46.6534972Z  	DO $$
+verify	Stop containers	2026-10-21T10:52:46.6535143Z  	BEGIN
+verify	Stop containers	2026-10-21T10:52:46.6535317Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6535620Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+verify	Stop containers	2026-10-21T10:52:46.6536168Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+verify	Stop containers	2026-10-21T10:52:46.6536604Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6536962Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+verify	Stop containers	2026-10-21T10:52:46.6537401Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6537581Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6537844Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6538310Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+verify	Stop containers	2026-10-21T10:52:46.6538795Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+verify	Stop containers	2026-10-21T10:52:46.6539227Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+verify	Stop containers	2026-10-21T10:52:46.6539578Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6539873Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+verify	Stop containers	2026-10-21T10:52:46.6540240Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6540424Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6540754Z  	  SELECT 1 FROM events e
+verify	Stop containers	2026-10-21T10:52:46.6541013Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+verify	Stop containers	2026-10-21T10:52:46.6541364Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+verify	Stop containers	2026-10-21T10:52:46.6541858Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6542757Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6543238Z  	     OR (e.original_issue_id IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6543772Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+verify	Stop containers	2026-10-21T10:52:46.6544266Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6544588Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+verify	Stop containers	2026-10-21T10:52:46.6544988Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6545163Z  	END $$;
+verify	Stop containers	2026-10-21T10:52:46.6545334Z
+verify	Stop containers	2026-10-21T10:52:46.6545649Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+verify	Stop containers	2026-10-21T10:52:46.6546135Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+verify	Stop containers	2026-10-21T10:52:46.6546635Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+verify	Stop containers	2026-10-21T10:52:46.6547179Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+verify	Stop containers	2026-10-21T10:52:46.6547671Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+verify	Stop containers	2026-10-21T10:52:46.6548497Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6549667Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6550211Z
+verify	Stop containers	2026-10-21T10:52:46.6550579Z  2026-10-21 10:50:44.173 UTC [1146] ERROR:  issue events have inconsistent current or original ownership
+verify	Stop containers	2026-10-21T10:52:46.6551188Z  2026-10-21 10:50:44.173 UTC [1146] CONTEXT:  PL/pgSQL function inline_code_block line 26 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6551876Z  2026-10-21 10:50:44.173 UTC [1146] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+verify	Stop containers	2026-10-21T10:52:46.6552644Z  	DO $$
+verify	Stop containers	2026-10-21T10:52:46.6552832Z  	BEGIN
+verify	Stop containers	2026-10-21T10:52:46.6553012Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6553316Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+verify	Stop containers	2026-10-21T10:52:46.6553855Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+verify	Stop containers	2026-10-21T10:52:46.6554304Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6554680Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+verify	Stop containers	2026-10-21T10:52:46.6555121Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6555306Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6555572Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6556030Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+verify	Stop containers	2026-10-21T10:52:46.6556517Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+verify	Stop containers	2026-10-21T10:52:46.6556952Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+verify	Stop containers	2026-10-21T10:52:46.6557297Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6557602Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+verify	Stop containers	2026-10-21T10:52:46.6557974Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6558154Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6558354Z  	  SELECT 1 FROM events e
+verify	Stop containers	2026-10-21T10:52:46.6558622Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+verify	Stop containers	2026-10-21T10:52:46.6558973Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+verify	Stop containers	2026-10-21T10:52:46.6559471Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6560088Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6560562Z  	     OR (e.original_issue_id IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6561078Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+verify	Stop containers	2026-10-21T10:52:46.6561734Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6562060Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+verify	Stop containers	2026-10-21T10:52:46.6562963Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6563168Z  	END $$;
+verify	Stop containers	2026-10-21T10:52:46.6563346Z
+verify	Stop containers	2026-10-21T10:52:46.6563674Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+verify	Stop containers	2026-10-21T10:52:46.6564163Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+verify	Stop containers	2026-10-21T10:52:46.6564689Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+verify	Stop containers	2026-10-21T10:52:46.6565239Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+verify	Stop containers	2026-10-21T10:52:46.6565732Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+verify	Stop containers	2026-10-21T10:52:46.6566317Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6567021Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6567546Z
+verify	Stop containers	2026-10-21T10:52:46.6568150Z  2026-10-21 10:50:44.719 UTC [1151] ERROR:  update or delete on table "issues" violates foreign key constraint "issue_hash_routes_origin_fkey" on table "issue_hash_routes"
+verify	Stop containers	2026-10-21T10:52:46.6569042Z  2026-10-21 10:50:44.719 UTC [1151] DETAIL:  Key (project_id, id)=(1, 3) is still referenced from table "issue_hash_routes".
+verify	Stop containers	2026-10-21T10:52:46.6569674Z  2026-10-21 10:50:44.719 UTC [1151] STATEMENT:  DELETE FROM issues WHERE id=$1::bigint
+verify	Stop containers	2026-10-21T10:52:46.6570541Z  2026-10-21 10:50:45.201 UTC [1155] ERROR:  issue hash route events have inconsistent current or original ownership
+verify	Stop containers	2026-10-21T10:52:46.6571178Z  2026-10-21 10:50:45.201 UTC [1155] CONTEXT:  PL/pgSQL function inline_code_block line 26 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6571861Z  2026-10-21 10:50:45.201 UTC [1155] STATEMENT:  -- Active signature routing requires the current historical groups to be valid.
+verify	Stop containers	2026-10-21T10:52:46.6572662Z  	DO $$
+verify	Stop containers	2026-10-21T10:52:46.6572843Z  	BEGIN
+verify	Stop containers	2026-10-21T10:52:46.6573017Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6573329Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+verify	Stop containers	2026-10-21T10:52:46.6573889Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+verify	Stop containers	2026-10-21T10:52:46.6574323Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6574702Z  	  RAISE EXCEPTION 'issue hash routes require same-project roots older than their direct members';
+verify	Stop containers	2026-10-21T10:52:46.6575156Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6575335Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6575601Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6576065Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+verify	Stop containers	2026-10-21T10:52:46.6576552Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+verify	Stop containers	2026-10-21T10:52:46.6576989Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+verify	Stop containers	2026-10-21T10:52:46.6577345Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6577654Z  	  RAISE EXCEPTION 'issue hash route aliases must not have active triage state';
+verify	Stop containers	2026-10-21T10:52:46.6578038Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6578218Z  	 IF EXISTS (
+verify	Stop containers	2026-10-21T10:52:46.6578425Z  	  SELECT 1 FROM events e
+verify	Stop containers	2026-10-21T10:52:46.6578689Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+verify	Stop containers	2026-10-21T10:52:46.6579046Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+verify	Stop containers	2026-10-21T10:52:46.6579527Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6580150Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+verify	Stop containers	2026-10-21T10:52:46.6580631Z  	     OR (e.original_issue_id IS NOT NULL AND
+verify	Stop containers	2026-10-21T10:52:46.6581144Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+verify	Stop containers	2026-10-21T10:52:46.6581644Z  	 ) THEN
+verify	Stop containers	2026-10-21T10:52:46.6582145Z  	  RAISE EXCEPTION 'issue hash route events have inconsistent current or original ownership';
+verify	Stop containers	2026-10-21T10:52:46.6582879Z  	 END IF;
+verify	Stop containers	2026-10-21T10:52:46.6583085Z  	END $$;
+verify	Stop containers	2026-10-21T10:52:46.6583406Z
+verify	Stop containers	2026-10-21T10:52:46.6583798Z  	CREATE TABLE issue_hash_routes (
+verify	Stop containers	2026-10-21T10:52:46.6584262Z  	 id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+verify	Stop containers	2026-10-21T10:52:46.6584735Z  	 project_id bigint NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+verify	Stop containers	2026-10-21T10:52:46.6585305Z  	 fingerprint text NOT NULL,
+verify	Stop containers	2026-10-21T10:52:46.6585680Z  	 origin_issue_id bigint,
+verify	Stop containers	2026-10-21T10:52:46.6597327Z  	 CONSTRAINT issue_hash_routes_project_fingerprint_key UNIQUE(project_id,fingerprint),
+verify	Stop containers	2026-10-21T10:52:46.6597978Z  	 CONSTRAINT issue_hash_routes_origin_fkey FOREIGN KEY(project_id,origin_issue_id)
+verify	Stop containers	2026-10-21T10:52:46.6598426Z  	  REFERENCES issues(project_id,id)
+verify	Stop containers	2026-10-21T10:52:46.6598679Z  	);
+verify	Stop containers	2026-10-21T10:52:46.6599028Z  	CREATE INDEX issue_hash_routes_origin ON issue_hash_routes(project_id,origin_issue_id,id)
+verify	Stop containers	2026-10-21T10:52:46.6599489Z  	 WHERE origin_issue_id IS NOT NULL;
+verify	Stop containers	2026-10-21T10:52:46.6599873Z  	INSERT INTO issue_hash_routes(project_id,fingerprint,origin_issue_id)
+verify	Stop containers	2026-10-21T10:52:46.6600299Z  	 SELECT project_id,fingerprint,id FROM issues;
+verify	Stop containers	2026-10-21T10:52:46.6600702Z  	ALTER TABLE issues DROP CONSTRAINT issues_project_id_fingerprint_key;
+verify	Stop containers	2026-10-21T10:52:46.6601190Z  	CREATE INDEX issues_project_fingerprint ON issues(project_id,fingerprint);
+verify	Stop containers	2026-10-21T10:52:46.6601570Z
+verify	Stop containers	2026-10-21T10:52:46.6601876Z  2026-10-21 10:50:47.749 UTC [1178] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6602977Z  2026-10-21 10:50:47.749 UTC [1178] STATEMENT:  SELECT pg_advisory_xact_lock_shared(hashtextextended(current_schema()||':issue-group:'||$1::text,0))
+verify	Stop containers	2026-10-21T10:52:46.6603726Z  2026-10-21 10:51:05.588 UTC [1304] ERROR:  could not obtain lock on row in relation "alert_rules"
+verify	Stop containers	2026-10-21T10:52:46.6604353Z  2026-10-21 10:51:05.588 UTC [1304] STATEMENT:  SELECT id FROM alert_rules WHERE id=$1::bigint FOR UPDATE NOWAIT
+verify	Stop containers	2026-10-21T10:52:46.6605069Z  2026-10-21 10:51:12.454 UTC [1361] ERROR:  new row for relation "user_reports" violates check constraint "reject_report_http"
+verify	Stop containers	2026-10-21T10:52:46.6606041Z  2026-10-21 10:51:12.454 UTC [1361] DETAIL:  Failing row contains (4, 1, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, 4, , , Late report failure, 2026-10-21 10:51:12.45417+00, 2026-10-21 10:51:12.45417+00).
+verify	Stop containers	2026-10-21T10:52:46.6607067Z  2026-10-21 10:51:12.454 UTC [1361] STATEMENT:  INSERT INTO user_reports(project_id,event_id,event_receipt_id,name,email,comments)
+verify	Stop containers	2026-10-21T10:52:46.6607724Z  	 VALUES($1::bigint,$2,$3,$4,$5,$6) ON CONFLICT(project_id,event_id) DO UPDATE
+verify	Stop containers	2026-10-21T10:52:46.6608307Z  	 SET name=EXCLUDED.name,email=EXCLUDED.email,comments=EXCLUDED.comments,updated_at=clock_timestamp()
+verify	Stop containers	2026-10-21T10:52:46.6608869Z  	 RETURNING id::text,event_id,created_at,name,email,comments
+verify	Stop containers	2026-10-21T10:52:46.6609486Z  2026-10-21 10:51:15.064 UTC [1399] ERROR:  new row for relation "monitors" violates check constraint "monitors_kind_check"
+verify	Stop containers	2026-10-21T10:52:46.6610710Z  2026-10-21 10:51:15.064 UTC [1399] DETAIL:  Failing row contains (4, 1, 1, Unknown kind after033, UNKNOWN, https://Certs.Example.test:8443/, 86400, 20, 200, , 1, t, unknown, 0, null, null, 2026-10-21 10:51:15.064119+00, 2026-10-21 10:51:15.064119+00, , , null, null, production).
+verify	Stop containers	2026-10-21T10:52:46.6611989Z  2026-10-21 10:51:15.064 UTC [1399] STATEMENT:  INSERT INTO monitors(organization_id,project_id,name,kind,url,interval_seconds,timeout_seconds,
+verify	Stop containers	2026-10-21T10:52:46.6612972Z  			expected_status,expected_body,confirmation_threshold,enabled,next_check,created_at,heartbeat_key,environment)
+verify	Stop containers	2026-10-21T10:52:46.6613596Z  			VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING id::text
+verify	Stop containers	2026-10-21T10:52:46.6614282Z  2026-10-21 10:51:18.380 UTC [1441] ERROR:  insert or update on table "otlp_log_batches" violates foreign key constraint "otlp_log_batches_project_id_fkey"
+verify	Stop containers	2026-10-21T10:52:46.6615128Z  2026-10-21 10:51:18.380 UTC [1441] DETAIL:  Key (project_id)=(9223372036854775807) is not present in table "projects".
+verify	Stop containers	2026-10-21T10:52:46.6616033Z  2026-10-21 10:51:18.380 UTC [1441] STATEMENT:  INSERT INTO otlp_log_batches(project_id,received_at,payload) VALUES($1,$2,$3) RETURNING id
+verify	Stop containers	2026-10-21T10:52:46.6616723Z  2026-10-21 10:51:18.714 UTC [1443] ERROR:  fixture later insert observed prior OTLP row
+verify	Stop containers	2026-10-21T10:52:46.6617293Z  2026-10-21 10:51:18.714 UTC [1443] CONTEXT:  PL/pgSQL function reject_otlp_fixture() line 4 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6618236Z  2026-10-21 10:51:18.714 UTC [1443] STATEMENT:  INSERT INTO logs(project_id,timestamp,trace_id,span_id,level,body,service,environment,attributes,data,item_hash,otlp_batch_id,otlp_record_index)
+verify	Stop containers	2026-10-21T10:52:46.6619048Z  	   VALUES($1,$2,$3,$4,$5,$6,$7,$8,'{}','{}',$9,$10,$11)
+verify	Stop containers	2026-10-21T10:52:46.6620183Z  2026-10-21 10:51:19.010 UTC [74] LOG:  checkpoint complete: wrote 5270 buffers (32.2%), wrote 6 SLRU buffers; 0 WAL file(s) added, 0 removed, 33 recycled; write=66.894 s, sync=0.727 s, total=68.724 s; sync files=105958, longest=0.003 s, average=0.001 s; distance=529257 kB, estimate=529257 kB; lsn=0/402CF828, redo lsn=0/2207C228
+verify	Stop containers	2026-10-21T10:52:46.6621429Z  2026-10-21 10:51:19.053 UTC [1445] ERROR:  fixture deferred commit observed complete OTLP batch
+verify	Stop containers	2026-10-21T10:52:46.6622005Z  2026-10-21 10:51:19.053 UTC [1445] CONTEXT:  PL/pgSQL function reject_otlp_fixture() line 3 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6622607Z  2026-10-21 10:51:19.053 UTC [1445] STATEMENT:  commit
+verify	Stop containers	2026-10-21T10:52:46.6623118Z  2026-10-21 10:51:19.759 UTC [1454] ERROR:  new row for relation "logs" violates check constraint "logs_otlp_reference"
+verify	Stop containers	2026-10-21T10:52:46.6624329Z  2026-10-21 10:51:19.759 UTC [1454] DETAIL:  Failing row contains (4, 1, 2026-10-21 09:51:19.627561+00, , , unknown, relational-proof, , , {}, {}, invalid021-missing-index, 2026-10-21 10:51:19.759603+00, 1, null).
+verify	Stop containers	2026-10-21T10:52:46.6625405Z  2026-10-21 10:51:19.759 UTC [1454] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+verify	Stop containers	2026-10-21T10:52:46.6626057Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+verify	Stop containers	2026-10-21T10:52:46.6626596Z  2026-10-21 10:51:19.761 UTC [1454] ERROR:  new row for relation "logs" violates check constraint "logs_otlp_reference"
+verify	Stop containers	2026-10-21T10:52:46.6627559Z  2026-10-21 10:51:19.761 UTC [1454] DETAIL:  Failing row contains (5, 1, 2026-10-21 09:51:19.627561+00, , , unknown, relational-proof, , , {}, {}, invalid021-missing-batch, 2026-10-21 10:51:19.760674+00, null, 1).
+verify	Stop containers	2026-10-21T10:52:46.6628614Z  2026-10-21 10:51:19.761 UTC [1454] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+verify	Stop containers	2026-10-21T10:52:46.6629266Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+verify	Stop containers	2026-10-21T10:52:46.6629792Z  2026-10-21 10:51:19.762 UTC [1454] ERROR:  new row for relation "logs" violates check constraint "logs_otlp_reference"
+verify	Stop containers	2026-10-21T10:52:46.6630751Z  2026-10-21 10:51:19.762 UTC [1454] DETAIL:  Failing row contains (6, 1, 2026-10-21 09:51:19.627561+00, , , unknown, relational-proof, , , {}, {}, invalid021-negative-index, 2026-10-21 10:51:19.761919+00, 1, -1).
+verify	Stop containers	2026-10-21T10:52:46.6631808Z  2026-10-21 10:51:19.762 UTC [1454] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+verify	Stop containers	2026-10-21T10:52:46.6632575Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+verify	Stop containers	2026-10-21T10:52:46.6633165Z  2026-10-21 10:51:19.763 UTC [1454] ERROR:  insert or update on table "logs" violates foreign key constraint "logs_otlp_project_batch"
+verify	Stop containers	2026-10-21T10:52:46.6633955Z  2026-10-21 10:51:19.763 UTC [1454] DETAIL:  Key (project_id, otlp_batch_id)=(1, 2) is not present in table "otlp_log_batches".
+verify	Stop containers	2026-10-21T10:52:46.6634809Z  2026-10-21 10:51:19.763 UTC [1454] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+verify	Stop containers	2026-10-21T10:52:46.6635471Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+verify	Stop containers	2026-10-21T10:52:46.6635998Z  2026-10-21 10:51:19.765 UTC [1454] ERROR:  duplicate key value violates unique constraint "logs_otlp_batch_record"
+verify	Stop containers	2026-10-21T10:52:46.6636786Z  2026-10-21 10:51:19.765 UTC [1454] DETAIL:  Key (otlp_batch_id, otlp_record_index)=(1, 0) already exists.
+verify	Stop containers	2026-10-21T10:52:46.6637552Z  2026-10-21 10:51:19.765 UTC [1454] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+verify	Stop containers	2026-10-21T10:52:46.6638194Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+verify	Stop containers	2026-10-21T10:52:46.6638568Z  2026-10-21 10:51:24.349 UTC [74] LOG:  checkpoint starting: wal
+verify	Stop containers	2026-10-21T10:52:46.6638991Z  2026-10-21 10:51:27.501 UTC [1523] ERROR:  declared later release failure
+verify	Stop containers	2026-10-21T10:52:46.6639517Z  2026-10-21 10:51:27.501 UTC [1523] CONTEXT:  PL/pgSQL function fail_release_retention() line 2 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6640027Z  2026-10-21 10:51:27.501 UTC [1523] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6640455Z  	 SELECT id FROM releases WHERE id=ANY($1::bigint[]) AND created_at<$2
+verify	Stop containers	2026-10-21T10:52:46.6640855Z  	 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6641206Z  	) DELETE FROM releases r USING expired e WHERE r.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6641611Z  2026-10-21 10:51:27.865 UTC [1532] ERROR:  declared later release failure
+verify	Stop containers	2026-10-21T10:52:46.6642130Z  2026-10-21 10:51:27.865 UTC [1532] CONTEXT:  PL/pgSQL function fail_release_retention() line 2 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6642748Z  2026-10-21 10:51:27.865 UTC [1532] STATEMENT:  commit
+verify	Stop containers	2026-10-21T10:52:46.6643133Z  2026-10-21 10:51:32.792 UTC [1580] ERROR:  declared batch deletion failure
+verify	Stop containers	2026-10-21T10:52:46.6643776Z  2026-10-21 10:51:32.792 UTC [1580] CONTEXT:  PL/pgSQL function reject_retention_batch() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6644284Z  2026-10-21 10:51:32.792 UTC [1580] STATEMENT:  WITH orphaned AS (
+verify	Stop containers	2026-10-21T10:52:46.6644634Z  	 SELECT b.id FROM otlp_log_batches b
+verify	Stop containers	2026-10-21T10:52:46.6644979Z  	 WHERE NOT EXISTS(SELECT 1 FROM logs l WHERE l.otlp_batch_id=b.id)
+verify	Stop containers	2026-10-21T10:52:46.6645372Z  	 ORDER BY b.id LIMIT 250 FOR UPDATE OF b SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6645768Z  	 ) DELETE FROM otlp_log_batches b USING orphaned o WHERE b.id=o.id
+verify	Stop containers	2026-10-21T10:52:46.6646220Z  2026-10-21 10:51:33.374 UTC [1587] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6646862Z  2026-10-21 10:51:33.374 UTC [1587] CONTEXT:  SQL statement "SELECT pg_advisory_xact_lock(hashtextextended(TG_TABLE_SCHEMA,8347))"
+verify	Stop containers	2026-10-21T10:52:46.6647480Z  	PL/pgSQL function wait_retention_batch() line 2 at PERFORM
+verify	Stop containers	2026-10-21T10:52:46.6647877Z  2026-10-21 10:51:33.374 UTC [1587] STATEMENT:  WITH orphaned AS (
+verify	Stop containers	2026-10-21T10:52:46.6648227Z  	 SELECT b.id FROM otlp_log_batches b
+verify	Stop containers	2026-10-21T10:52:46.6648575Z  	 WHERE NOT EXISTS(SELECT 1 FROM logs l WHERE l.otlp_batch_id=b.id)
+verify	Stop containers	2026-10-21T10:52:46.6648960Z  	 ORDER BY b.id LIMIT 250 FOR UPDATE OF b SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6649336Z  	 ) DELETE FROM otlp_log_batches b USING orphaned o WHERE b.id=o.id
+verify	Stop containers	2026-10-21T10:52:46.6649784Z  2026-10-21 10:51:38.117 UTC [1654] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6650443Z  2026-10-21 10:51:38.117 UTC [1654] STATEMENT:  UPDATE events SET span_projection_version=2,trace_span_id=$2,trace_parent_span_id=$3,
+verify	Stop containers	2026-10-21T10:52:46.6651067Z  			trace_op=$4,trace_status=$5,trace_start_timestamp=$6 WHERE id=$1
+verify	Stop containers	2026-10-21T10:52:46.6651522Z  2026-10-21 10:51:46.280 UTC [1708] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6652162Z  2026-10-21 10:51:46.280 UTC [1708] CONTEXT:  SQL statement "SELECT pg_advisory_xact_lock(hashtextextended(TG_TABLE_SCHEMA,8348))"
+verify	Stop containers	2026-10-21T10:52:46.6652909Z  	PL/pgSQL function wait_transaction_retention() line 2 at PERFORM
+verify	Stop containers	2026-10-21T10:52:46.6653328Z  2026-10-21 10:51:46.280 UTC [1708] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6653828Z  	 SELECT id FROM spans WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6654322Z  	 ) DELETE FROM spans s USING expired e WHERE s.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6654706Z  2026-10-21 10:51:47.142 UTC [1714] ERROR:  declared late span failure
+verify	Stop containers	2026-10-21T10:52:46.6655366Z  2026-10-21 10:51:47.142 UTC [1714] CONTEXT:  PL/pgSQL function reject_transaction_retention() line 1 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6655899Z  2026-10-21 10:51:47.142 UTC [1714] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6656399Z  	 SELECT id FROM spans WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6656888Z  	 ) DELETE FROM spans s USING expired e WHERE s.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6657533Z  2026-10-21 10:51:50.849 UTC [1752] ERROR:  insert or update on table "transaction_span_operations" violates foreign key constraint "projection_guard"
+verify	Stop containers	2026-10-21T10:52:46.6658323Z  2026-10-21 10:51:50.849 UTC [1752] DETAIL:  Key (op)=(db) is not present in table "projection_allowed_ops".
+verify	Stop containers	2026-10-21T10:52:46.6658803Z  2026-10-21 10:51:50.849 UTC [1752] STATEMENT:  commit
+verify	Stop containers	2026-10-21T10:52:46.6659425Z  2026-10-21 10:51:50.853 UTC [1752] ERROR:  insert or update on table "transaction_span_operations" violates foreign key constraint "projection_guard"
+verify	Stop containers	2026-10-21T10:52:46.6660207Z  2026-10-21 10:51:50.853 UTC [1752] DETAIL:  Key (op)=(db) is not present in table "projection_allowed_ops".
+verify	Stop containers	2026-10-21T10:52:46.6660680Z  2026-10-21 10:51:50.853 UTC [1752] STATEMENT:  commit
+verify	Stop containers	2026-10-21T10:52:46.6661070Z  2026-10-21 10:51:53.020 UTC [1768] ERROR:  declared late check deletion failure
+verify	Stop containers	2026-10-21T10:52:46.6661606Z  2026-10-21 10:51:53.020 UTC [1768] CONTEXT:  PL/pgSQL function wait_retention_check() line 2 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6662104Z  2026-10-21 10:51:53.020 UTC [1768] STATEMENT:  WITH expired AS (
+verify	Stop containers	2026-10-21T10:52:46.6662942Z  	 SELECT id FROM monitor_checks WHERE completed_at<$1 ORDER BY completed_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+verify	Stop containers	2026-10-21T10:52:46.6663517Z  	 ) DELETE FROM monitor_checks c USING expired e WHERE c.id=e.id
+verify	Stop containers	2026-10-21T10:52:46.6664117Z  2026-10-21 10:51:55.726 UTC [1797] ERROR:  new row for relation "user_reports" violates check constraint "reject_specific_report"
+verify	Stop containers	2026-10-21T10:52:46.6665111Z  2026-10-21 10:51:55.726 UTC [1797] DETAIL:  Failing row contains (5, 1, 00000000000000000000000000000004, 4, , , Reject after insert, 2026-10-21 10:51:55.726866+00, 2026-10-21 10:51:55.726866+00).
+verify	Stop containers	2026-10-21T10:52:46.6666091Z  2026-10-21 10:51:55.726 UTC [1797] STATEMENT:  INSERT INTO user_reports(project_id,event_id,event_receipt_id,name,email,comments)
+verify	Stop containers	2026-10-21T10:52:46.6666738Z  	 VALUES($1::bigint,$2,$3,$4,$5,$6) ON CONFLICT(project_id,event_id) DO UPDATE
+verify	Stop containers	2026-10-21T10:52:46.6667323Z  	 SET name=EXCLUDED.name,email=EXCLUDED.email,comments=EXCLUDED.comments,updated_at=clock_timestamp()
+verify	Stop containers	2026-10-21T10:52:46.6667899Z  	 RETURNING id::text,event_id,created_at,name,email,comments
+verify	Stop containers	2026-10-21T10:52:46.6668326Z  2026-10-21 10:51:57.328 UTC [1812] ERROR:  declared report cleanup failure
+verify	Stop containers	2026-10-21T10:52:46.6668840Z  2026-10-21 10:51:57.328 UTC [1812] CONTEXT:  PL/pgSQL function fail_user_reports() line 2 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6669382Z  2026-10-21 10:51:57.328 UTC [1812] STATEMENT:  DELETE FROM user_reports WHERE id IN(
+verify	Stop containers	2026-10-21T10:52:46.6670028Z  	 SELECT id FROM user_reports WHERE event_receipt_id IS NULL AND created_at<transaction_timestamp()-interval '30 minutes'
+verify	Stop containers	2026-10-21T10:52:46.6670619Z  	 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED)
+verify	Stop containers	2026-10-21T10:52:46.6671029Z  2026-10-21 10:51:57.688 UTC [1815] ERROR:  declared report cleanup failure
+verify	Stop containers	2026-10-21T10:52:46.6671533Z  2026-10-21 10:51:57.688 UTC [1815] CONTEXT:  PL/pgSQL function fail_user_reports() line 2 at RAISE
+verify	Stop containers	2026-10-21T10:52:46.6671994Z  2026-10-21 10:51:57.688 UTC [1815] STATEMENT:  commit
+verify	Stop containers	2026-10-21T10:52:46.6672529Z  2026-10-21 10:51:59.850 UTC [1843] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6673074Z  2026-10-21 10:51:59.850 UTC [1843] STATEMENT:  SELECT pg_advisory_xact_lock(hashtextextended($1,0))
+verify	Stop containers	2026-10-21T10:52:46.6673610Z  2026-10-21 10:52:00.432 UTC [1852] ERROR:  canceling statement due to user request
+verify	Stop containers	2026-10-21T10:52:46.6674149Z  2026-10-21 10:52:00.432 UTC [1852] STATEMENT:  SELECT pg_advisory_xact_lock(hashtextextended($1,0))
+verify	Stop containers	2026-10-21T10:52:46.6681555Z Stop and remove container: 0a09dde0753f4f40b7f98904a5e2500f_postgres18_972248
+verify	Stop containers	2026-10-21T10:52:46.6686743Z ##[command]/usr/bin/docker rm --force 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Stop containers	2026-10-21T10:52:46.8405790Z 3f03a5a74d028c7fb326dc429712387794294d0f0883f6ebcf1c9fc0eae75099
+verify	Stop containers	2026-10-21T10:52:46.8446277Z Remove container network: github_network_4951de7939b246038ec09598786101df
+verify	Stop containers	2026-10-21T10:52:46.8450608Z ##[command]/usr/bin/docker network rm github_network_4951de7939b246038ec09598786101df
+verify	Stop containers	2026-10-21T10:52:46.9407303Z github_network_4951de7939b246038ec09598786101df
+verify	Complete job	﻿2026-10-21T10:52:46.9484863Z Cleaning up orphan processes
