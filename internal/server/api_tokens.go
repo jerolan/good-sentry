@@ -4,6 +4,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -71,9 +72,13 @@ func (s *Server) createAPIToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	seen := map[string]bool{}
+	available := []string{"org:read", "org:write", "project:read", "project:releases", "project:write", "event:read", "event:write", "event:admin"}
+	if s.cfg.MCP && s.cfg.Logs {
+		available = append(available, "log:read")
+	}
 	for _, scope := range *input.Scopes {
-		if (scope != "org:read" && scope != "org:write" && scope != "project:read" && scope != "project:releases" && scope != "event:read" && scope != "event:write" && scope != "event:admin" && scope != "project:write") || seen[scope] {
-			failure(w, 400, "Scopes must be distinct implemented values: org:read, org:write, project:read, project:releases, project:write, event:read, event:write or event:admin")
+		if !slices.Contains(available, scope) || seen[scope] {
+			failure(w, 400, "Scopes must be distinct implemented values: "+strings.Join(available, ", "))
 			return
 		}
 		seen[scope] = true

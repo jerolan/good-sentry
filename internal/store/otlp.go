@@ -61,6 +61,10 @@ func (s *Store) IngestOTLP(ctx context.Context, projectID string, batch *otlp.Ba
 // that retrieves canonical data. The byte-capacity branch returns no oversized
 // OTLP payload to the application, including after a deployment limit reduction.
 func (s *Store) Log(ctx context.Context, userID, orgSlug, logID string, limits otlp.Limits) (LogDetail, error) {
+	return s.readLog(ctx, ManagementAccess{UserID: userID, AllProjects: true}, orgSlug, logID, limits)
+}
+
+func (s *Store) readLog(ctx context.Context, access ManagementAccess, orgSlug, logID string, limits otlp.Limits) (LogDetail, error) {
 	var detail LogDetail
 	var native bool
 	var payload []byte
@@ -75,7 +79,8 @@ func (s *Store) Log(ctx context.Context, userID, orgSlug, logID string, limits o
   JOIN organizations o ON o.id=p.organization_id
   JOIN memberships m ON m.organization_id=o.id AND m.user_id::text=$1
   LEFT JOIN otlp_log_batches b ON b.project_id=l.project_id AND b.id=l.otlp_batch_id
-  WHERE o.slug=$2 AND l.id::text=$3`, userID, orgSlug, logID, limits.MaxBytes).Scan(
+  WHERE (($5='' AND o.slug=$2) OR ($5<>'' AND o.id::text=$5)) AND l.id::text=$3
+  AND ($6 OR p.id=ANY($7::bigint[]))`, access.UserID, orgSlug, logID, limits.MaxBytes, access.OrganizationID, access.AllProjects, access.ProjectIDs).Scan(
 		&detail.ID, &detail.ProjectID, &detail.Timestamp, &detail.TraceID, &detail.SpanID,
 		&detail.Level, &detail.Body, &detail.Service, &detail.Environment, &detail.Attributes, &detail.Data, &native,
 		&payload, &payloadBytes, &receivedAt, &index)

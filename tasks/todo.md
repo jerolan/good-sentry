@@ -776,9 +776,11 @@ Public evidence: `test-results/acceptance-mcp-issues-20261020/{corrected-public-
 ## MCP log investigation prerequisite
 
 - [x] Specify explicit opt-in log authority, selected-handler availability, native query/projection reuse and configured capacity before implementation.
-- [ ] Reproduce the missing opt-in credential/tool path with real native HTTP and the official client.
-- [ ] Implement ScopedLogs/ScopedLog, selected-handler log:read issuance and the two tools without changing existing scope meanings/defaults or opening MCP availability.
+- [x] Reproduce the missing opt-in path: native HTTP first returned400 for log:read, then exposed PostgreSQL23514 until additive043 preserved and extended the scope CHECK. The corrected official-client owner now passes real issuance, typed Sentry/OTLP reads, isolated pages, filters and lowered capacity.
+- [x] Implement ScopedLogs/ScopedLog, selected-handler log:read issuance and both tools. Fixed organization/current membership/project intersections are in payload SQL; no existing grants/defaults are rewritten. Unknown scopes remain constrained in PostgreSQL, and the executable gate/public token form remain unchanged.
 - [ ] Pass real Sentry/OTLP/filter/paging/isolation/capacity owners, native siblings and full race/vet/default-image/public/recovery gates.
 - [ ] Integrate token/consent UI and enabled availability only with the complete remaining MCP/OAuth parent.
 
 Log prerequisite RED evidence: the native API first rejected log:read with400. After selected-handler admission, actual PostgreSQL rejected it with api_tokens_scopes_check/23514 and the API correctly returned generic503. SPEC now owns additive migration043 preserving existing rows/known-value controls. This corrects the prior no-migration assumption; do not drop scope validation or treat HTTP-only admission as acceptance.
+
+MCP log owning checks pass: complete MCP HTTP/client owners17.663 s before the added foreign/default-mode cases; focused final log owner5.395 s, and native Sentry/OTLP detail/filter/capacity siblings5.137 s. Vet, module verification, formatting and whitespace pass. Final full race/integration is running; image/version42-backup upgrade/constraint/public gates remain unexecuted. No complete MCP activation or parent parity is claimed.

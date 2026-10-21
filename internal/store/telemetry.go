@@ -113,8 +113,19 @@ func (s *Store) Logs(ctx context.Context, userID, orgSlug string, f LogFilter) (
 	if err != nil {
 		return nil, err
 	}
-	args := []any{org.ID}
-	where := "WHERE p.organization_id::text=$1 "
+	page := int64(f.Page)
+	if page < 1 {
+		page = 1
+	}
+	if page > math.MaxInt64/25 {
+		return nil, errors.New("log page is outside supported range")
+	}
+	return s.readLogs(ctx, ManagementAccess{UserID: userID, OrganizationID: org.ID, AllProjects: true}, f, (page-1)*25, 25)
+}
+
+func (s *Store) readLogs(ctx context.Context, access ManagementAccess, f LogFilter, offset int64, limit int) ([]Log, error) {
+	args := []any{access.OrganizationID, access.UserID, access.AllProjects, access.ProjectIDs}
+	where := "WHERE p.organization_id::text=$1 AND m.user_id::text=$2 AND ($3 OR p.id=ANY($4::bigint[])) "
 	traceColumn := "l.trace_id"
 	if f.CanonicalTrace && f.TraceID != "" {
 		traceColumn = "lower(l.trace_id)"
@@ -139,17 +150,11 @@ func (s *Store) Logs(ctx context.Context, userID, orgSlug string, f LogFilter) (
 		args = append(args, f.Window.Start, f.Window.End)
 		where += fmt.Sprintf("AND l.timestamp>=$%d::timestamptz AND l.timestamp<$%d::timestamptz ", len(args)-1, len(args))
 	}
-	page := int64(f.Page)
-	if page < 1 {
-		page = 1
-	}
-	if page > math.MaxInt64/25 {
-		return nil, errors.New("log page is outside supported range")
-	}
-	args = append(args, (page-1)*25)
+	args = append(args, limit, offset)
 	rows, err := s.pool.Query(ctx, `SELECT l.id::text,l.project_id::text,l.timestamp,l.trace_id,l.span_id,
-		l.level,l.body,l.service,l.environment,l.attributes,l.otlp_batch_id IS NOT NULL FROM logs l JOIN projects p ON p.id=l.project_id `+
-		where+fmt.Sprintf("ORDER BY l.timestamp DESC,l.id DESC LIMIT 25 OFFSET $%d", len(args)), args...)
+		l.level,l.body,l.service,l.environment,l.attributes,l.otlp_batch_id IS NOT NULL FROM logs l JOIN projects p ON p.id=l.project_id
+		JOIN memberships m ON m.organization_id=p.organization_id `+
+		where+fmt.Sprintf("ORDER BY l.timestamp DESC,l.id DESC LIMIT $%d OFFSET $%d", len(args)-1, len(args)), args...)
 	if err != nil {
 		return nil, err
 	}
