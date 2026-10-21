@@ -1,0 +1,8 @@
+{
+  "databaseId": 39569543608,
+  "workflowName": "CI",
+  "revision": "e3e693847f990e9aa3b5bd8816cedfa2adb8edfb",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/jerolan/good-sentry/actions/runs/39569543608"
+}

@@ -1,0 +1,10 @@
+ghcr.io/jerolan/good-sentry:main
+  index sha256:3955b9b7ab28bcb238849da1214e8986c71ed4e6ad8ef7241af9f0207a2f7b35
+  linux/amd64 sha256:fe2528f3dd62f71f3b966f548a9c165405ed5fc835c5e83f450f89790ebfc5d8
+  linux/arm64 sha256:cb02957413146f71c22233b0ae65aa1787631e3b927878b08c0dc8ef309cf2e9
+
+amd64 image: linux amd64 user=65532:65532 revision=e3e693847f990e9aa3b5bd8816cedfa2adb8edfb
+arm64 image: linux arm64 user=65532:65532 revision=e3e693847f990e9aa3b5bd8816cedfa2adb8edfb
+
+amd64 /goodsentry: 22782112 bytes sha256=5fc7b6f632ac49964665e2cd80e0982a8ac887c82fbcb46186bd82ef0586f3d2
+local-public amd64 binary comparison: identical

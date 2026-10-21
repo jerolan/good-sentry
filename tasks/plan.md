@@ -285,3 +285,5 @@ Native ELF/DWARF, Mach-O dSYM, DWARF CFI and bounded ZIP debug archives are publ
 Generic OIDC sign-in is public at645f15e with verified-email linking, S256 PKCE, state/nonce protection, opt-in account creation and responsive browser acceptance. Continue with vendor-specific deployment receipts and advanced administration, independently of native format work.
 
 Public uptime status pages are accepted at b98caa2 with compatible management routes, selected monitors, privacy-safe public HTML/JSON and responsive browser coverage. Continue the remaining compatible management surface and final specification audit.
+
+Compatible/native project update and deletion are accepted at e3e6938 with immutable slug/creation metadata, explicit cascade semantics, role/scope checks and responsive UI. Continue auditing the remaining GlitchTip management routes and external integration receipts.
