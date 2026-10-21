@@ -1,0 +1,43 @@
+{
+  "testedAt": "2026-10-21T18:42:00Z",
+  "commands": [
+    {
+      "command": "go test -race -count=1 -tags=integration ./...",
+      "result": "pass",
+      "log": "integration-race.log",
+      "server": "126.163s",
+      "store": "245.333s"
+    },
+    {
+      "command": "go vet -tags=integration ./...",
+      "result": "pass",
+      "log": "vet.log"
+    },
+    {
+      "command": "go mod verify",
+      "result": "pass"
+    },
+    {
+      "command": "node --check internal/server/web/app.js and account_deletion_browser.mjs",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "browser": {
+    "red": "red/failure.log",
+    "green": "green/report.json",
+    "regression": "account-regression/report.json",
+    "viewports": [390, 1440],
+    "verifiedBehavior": [
+      "The Delete account control is absent on the previous image and present after the source change.",
+      "The permanent action remains disabled until the account email is typed exactly.",
+      "Canceling closes the dialog and retains the authenticated session.",
+      "A sole organization owner receives 409 in the dialog and remains authenticated.",
+      "Deleting a member returns 204, shows the signed-out screen, clears the session and prevents later login.",
+      "The 390px dialog has no horizontal overflow and the existing password flow remains green."
+    ]
+  }
+}
