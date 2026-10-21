@@ -55,10 +55,35 @@
 
     <section class="capabilities wrap" aria-labelledby="capabilities-title">
       <div class="section-heading"><div><p class="eyebrow">WORKING TODAY</p><h2 id="capabilities-title">The useful details,<br>in one place.</h2></div><p>Independently implemented.<br>Verified against real clients and data.</p></div>
-      <div class="capability-grid">
-        <article><span class="feature-index mono">01 / INVESTIGATE</span><h3>Errors with context.</h3><p>Grouped issues, stack traces, breadcrumbs, editable comments and triage activity. JavaScript source maps uploaded with the CLI or native UI reveal original source locations while preserving the raw stack.</p><ul><li>Assign and resolve in a chosen or next release</li><li>Mute by time or additional error count</li><li>Filter and inspect original event context</li></ul></article>
-        <article><span class="feature-index mono">02 / CORRELATE</span><h3>More than a message.</h3><p>Transactions, standalone spans and typed logs. Choose a time window, inspect latency percentiles and follow trace IDs into related logs.</p><ul><li>Average, p50 and p95 latency</li><li>Exact service and time filters</li><li>64-bit log integers without rounding</li></ul></article>
-        <article><span class="feature-index mono">03 / RESPOND</span><h3>Know when it changes.</h3><p>HTTP, TCP and heartbeat monitors with a durable scheduler. Error-frequency and uptime rules deliver email or generic webhooks with recorded attempts.</p><ul><li>Failure and recovery history</li><li>Persistent queues and retries</li><li>Owner, admin and member roles</li></ul></article>
+      <div class="feature-showcase">
+        <article class="feature-card">
+          <figure><img src="assets/feature-issues.png" alt="GoodSentry issue list with grouped demo errors, filters and event counts" width="1440" height="1000" loading="lazy"><figcaption>Actual issue list · fictional demo data</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">01 / ERROR TRACKING</span><h3>See the signal, not just the exception.</h3><p>Grouped issues keep stack traces, breadcrumbs, tags, affected users, comments and triage history together. Search and filters stay on durable event data.</p><ul><li>Assign, resolve, ignore, merge and comment</li><li>Release and environment aware history</li><li>Exact event context and binary attachments</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-issue-detail.png" alt="GoodSentry issue detail with stack trace and event context" width="1440" height="1000" loading="lazy"><figcaption>Issue detail · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">02 / DEBUG CONTEXT</span><h3>Read the stack you actually shipped.</h3><p>JavaScript source maps, debug IDs and native symbol files connect minified or compiled frames back to useful source locations without discarding the original event.</p><ul><li>CLI and native source-map uploads</li><li>DWARF, dSYM and Breakpad symbolication</li><li>Raw JSON and attachment inspection</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-performance.png" alt="GoodSentry performance view with transaction latency and pagination" width="1440" height="1000" loading="lazy"><figcaption>Transactions · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">03 / PERFORMANCE</span><h3>Follow the slow path across a trace.</h3><p>Inspect transactions, standalone spans and child operations with latency percentiles, trace ancestry and cross-project waterfall views.</p><ul><li>Average, p50 and p95 latency</li><li>Time windows and operation filters</li><li>Linked logs and related errors</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-logs.png" alt="GoodSentry log explorer with typed attributes and filters" width="1440" height="1000" loading="lazy"><figcaption>Log explorer · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">04 / LOGS</span><h3>Typed logs, without losing the edge cases.</h3><p>Search retained Sentry and OpenTelemetry logs by service, level, environment, time or trace. Inspect attributes without rounding 64-bit integers.</p><ul><li>OTLP/HTTP protobuf and JSON</li><li>Trace-correlated log inspection</li><li>Deduplication and bounded pagination</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-uptime.png" alt="GoodSentry uptime monitor list with health and history states" width="1440" height="1000" loading="lazy"><figcaption>Uptime monitors · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">05 / UPTIME &amp; ALERTS</span><h3>Know when availability changes.</h3><p>Schedule HTTP, TCP, SSL and heartbeat checks. Error-frequency and uptime rules deliver durable email, Slack, provider webhook or generic webhook attempts.</p><ul><li>Failure thresholds and recovery history</li><li>Persistent delivery queues and retries</li><li>Provider-native alert payloads</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-people.png" alt="GoodSentry people and teams view with roles and invitations" width="1440" height="1000" loading="lazy"><figcaption>People and teams · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">06 / PEOPLE &amp; ACCESS</span><h3>Run the workspace close to the work.</h3><p>Invite members, manage owners, admins and teams, scope API tokens, attach projects to multiple teams and verify secondary sign-in emails.</p><ul><li>Owner last-guard and atomic owner transfer</li><li>Organization-contained project teams</li><li>Password recovery, OIDC and email verification</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-account.png" alt="GoodSentry account security screen" width="1440" height="1000" loading="lazy"><figcaption>Account security · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">07 / ACCOUNT SECURITY</span><h3>Credentials you can operate yourself.</h3><p>Change the password with global session and token revocation, recover access by email, add verified secondary sign-in addresses and use OIDC when configured.</p><ul><li>Single-use recovery and verification links</li><li>Primary and verified secondary email addresses</li><li>Owner-controlled API tokens and permissions</li></ul></div>
+        </article>
       </div>
     </section>
 
