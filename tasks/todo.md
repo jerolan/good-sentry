@@ -796,6 +796,10 @@ Public log evidence: `test-results/acceptance-mcp-logs-20261020/{public-source.j
 ## MCP alert and monitor inspection prerequisite
 
 - [x] Specify read-only scope/role, project intersection, page/filter and redaction contracts before implementation.
-- [ ] Reproduce missing tools with real native optimization fixtures and the official client.
-- [ ] Implement ScopedAlerts/ScopedMonitors and sanitized MCP summaries without write or capability-URL exposure.
-- [ ] Pass owning/native/full race/vet/default-image/upgrade/public/recovery gates and retain the incomplete parent gate.
+- [x] Reproduce missing tools with real native alert/monitor fixtures and the official client; discovery failed at the absent list_alerts schema before implementation.
+- [x] Implement ScopedAlerts/ScopedMonitors and sanitized MCP summaries. Alert owner/admin, project and monitor membership grants are checked with real SQL; recipients/capability URLs stay absent.
+- [ ] Pass owning/native/full race/vet/default-image/upgrade/public/recovery gates and retain the incomplete parent gate. Local implementation/full-suite/image/recovery gates pass at 1e2b0a9; matching public source, CI, image and binary gates remain pending.
+
+MCP alert/monitor local gates pass for `1e2b0a9`: full integration/race (server120.494 s, store255.929 s, jobs28.347 s), vet, module verification, formatting and whitespace. Official-client owners cover schemas/annotations, paging/filtering, selected/all projects, foreign organizations, owner-to-member role demotion, missing scopes, feature omission and membership removal. Alert output contains recipient types but no destinations/deliveries; monitor output omits heartbeatURL/key/leases. Native Sentry consumers remain green.
+
+The clean non-root image restores all 146 prior rows across 44 tables before clients at version43, passes official Node11.7.0 errors/transactions/typed logs and CLI3.8.0 discovery, then app-only restart preserves all 161 rows across 44 tables. Enabled MCP fails before database access; disabled GET/POST `/mcp` remain404. Evidence: `test-results/acceptance-mcp-alerts-monitors-20261020/{integration-race.log,image-local.log,image-default.json,availability-guard.log,restored-before-start.json,restored-after-start.json,node-sdk.log,cli,before-restart.json,after-restart.json}`. Preserve container18179/database `goodsentry_mcp_alerts_monitors_20261020` and all prior checkpoints. Public source/CI/multi-architecture image/exact binary evidence is next; eleven of seventeen tools are prepared, and MCP/OAuth activation remains closed.
