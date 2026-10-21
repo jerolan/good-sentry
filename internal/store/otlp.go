@@ -42,8 +42,8 @@ func (s *Store) IngestOTLP(ctx context.Context, projectID string, batch *otlp.Ba
 		// An OTLP record has no mandatory identity. Domain-separated batch/ordinal
 		// identity preserves identical records and replays under the SDK unique key.
 		digest := sha256.Sum256([]byte(fmt.Sprintf("goodsentry-otlp-log-v1\x00%d\x00%d", batchID, index)))
-		result, err := tx.Exec(ctx, `INSERT INTO logs(project_id,timestamp,trace_id,span_id,level,body,service,environment,attributes,data,item_hash,otlp_batch_id,otlp_record_index)
-   VALUES($1,$2,$3,$4,$5,$6,$7,$8,'{}','{}',$9,$10,$11)`, projectID, record.Timestamp, record.TraceID, record.SpanID, record.Level, record.Body, record.Service, record.Environment, hex.EncodeToString(digest[:]), batchID, index)
+		result, err := tx.Exec(ctx, `INSERT INTO logs(project_id,timestamp,trace_id,span_id,level,body,service,environment,host,attributes,data,item_hash,otlp_batch_id,otlp_record_index)
+   VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'{}','{}',$10,$11,$12)`, projectID, record.Timestamp, record.TraceID, record.SpanID, record.Level, record.Body, record.Service, record.Environment, record.Host, hex.EncodeToString(digest[:]), batchID, index)
 		if err != nil {
 			return 0, err
 		}

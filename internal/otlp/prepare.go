@@ -25,10 +25,10 @@ type Batch struct {
 
 // Record contains searchable projections; canonical typed data stays in Payload.
 type Record struct {
-	Timestamp                                          time.Time
-	Level, Body, Service, Environment, TraceID, SpanID string
-	TimestampSource                                    string
-	TraceFlags                                         uint32
+	Timestamp                                                time.Time
+	Level, Body, Service, Environment, Host, TraceID, SpanID string
+	TimestampSource                                          string
+	TraceFlags                                               uint32
 }
 
 // Selection contains only one record and its own resource/scope contexts.
@@ -112,7 +112,9 @@ type stringProjection struct {
 	value   string
 	present bool
 }
-type searchAttributes struct{ service, environmentName, environment, sentryEnvironment, recordEnvironment stringProjection }
+type searchAttributes struct {
+	service, environmentName, environment, sentryEnvironment, recordEnvironment, host stringProjection
+}
 
 func attributeStrings(attributes []*commonpb.KeyValue) searchAttributes {
 	var result searchAttributes
@@ -136,6 +138,8 @@ func attributeStrings(attributes []*commonpb.KeyValue) searchAttributes {
 			result.recordEnvironment = projected
 		case "sentry.environment":
 			result.sentryEnvironment = projected
+		case "host.name":
+			result.host = projected
 		}
 	}
 	return result
@@ -179,6 +183,7 @@ func planRecord(record *logspb.LogRecord, resource searchAttributes, receivedAt 
 	}
 	result.Service = firstString(resource.service, attributes.service)
 	result.Environment = firstString(resource.environmentName, resource.environment, attributes.sentryEnvironment, attributes.recordEnvironment)
+	result.Host = resource.host.value
 	plan := projectionPlan{record: result}
 	if record.Body != nil {
 		switch value := record.Body.Value.(type) {

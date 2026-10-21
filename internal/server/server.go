@@ -112,6 +112,7 @@ func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender
 	s.registerCompatibleEnvironmentRoutes(mux)
 	s.registerCompatiblePerformanceRoutes(mux)
 	s.registerCompatibleStatsRoutes(mux)
+	s.registerCompatibleLogRoutes(mux)
 	s.registerOAuthRoutes(mux)
 	s.registerOIDCRoutes(mux)
 	s.registerCompatibleMonitorRoutes(mux)

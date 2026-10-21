@@ -51,6 +51,7 @@ type Log struct {
 	Body        string          `json:"body"`
 	Service     string          `json:"service"`
 	Environment string          `json:"environment"`
+	Host        string          `json:"host"`
 	Attributes  json.RawMessage `json:"attributes,omitempty"`
 	Source      string          `json:"source,omitempty"`
 }
@@ -152,7 +153,7 @@ func (s *Store) readLogs(ctx context.Context, access ManagementAccess, f LogFilt
 	}
 	args = append(args, limit, offset)
 	rows, err := s.pool.Query(ctx, `SELECT l.id::text,l.project_id::text,l.timestamp,l.trace_id,l.span_id,
-		l.level,l.body,l.service,l.environment,l.attributes,l.otlp_batch_id IS NOT NULL FROM logs l JOIN projects p ON p.id=l.project_id
+		l.level,l.body,l.service,l.environment,l.host,l.attributes,l.otlp_batch_id IS NOT NULL FROM logs l JOIN projects p ON p.id=l.project_id
 		JOIN memberships m ON m.organization_id=p.organization_id `+
 		where+fmt.Sprintf("ORDER BY l.timestamp DESC,l.id DESC LIMIT $%d OFFSET $%d", len(args)-1, len(args)), args...)
 	if err != nil {
@@ -163,7 +164,7 @@ func (s *Store) readLogs(ctx context.Context, access ManagementAccess, f LogFilt
 	for rows.Next() {
 		var l Log
 		var native bool
-		if err := rows.Scan(&l.ID, &l.ProjectID, &l.Timestamp, &l.TraceID, &l.SpanID, &l.Level, &l.Body, &l.Service, &l.Environment, &l.Attributes, &native); err != nil {
+		if err := rows.Scan(&l.ID, &l.ProjectID, &l.Timestamp, &l.TraceID, &l.SpanID, &l.Level, &l.Body, &l.Service, &l.Environment, &l.Host, &l.Attributes, &native); err != nil {
 			return nil, err
 		}
 		if native {
@@ -201,9 +202,9 @@ func (s *Store) IngestLogs(ctx context.Context, projectID string, payload json.R
 	defer tx.Rollback(ctx)
 	count := 0
 	for _, l := range logs {
-		result, err := tx.Exec(ctx, `INSERT INTO logs(project_id,timestamp,trace_id,span_id,level,body,service,environment,attributes,data,item_hash)
-			VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT(project_id,item_hash) DO NOTHING`,
-			projectID, l.Timestamp, l.TraceID, l.SpanID, l.Level, l.Body, l.Service, l.Environment, l.Attributes, l.data, l.hash)
+		result, err := tx.Exec(ctx, `INSERT INTO logs(project_id,timestamp,trace_id,span_id,level,body,service,environment,host,attributes,data,item_hash)
+			VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT(project_id,item_hash) DO NOTHING`,
+			projectID, l.Timestamp, l.TraceID, l.SpanID, l.Level, l.Body, l.Service, l.Environment, l.Host, l.Attributes, l.data, l.hash)
 		if err != nil {
 			return 0, err
 		}
@@ -268,6 +269,8 @@ func parseLog(raw json.RawMessage) (storedLog, error) {
 				l.Service = value
 			case "environment":
 				l.Environment = value
+			case "host.name":
+				l.Host = value
 			}
 		}
 	}
