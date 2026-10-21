@@ -64,8 +64,8 @@ Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `
 | Native diagnostics | Official CLI chunked DIF upload, bounded ZIP debug archives, AMD64/x86/ARM64 minidump ingestion, frame-pointer and CFI-assisted unwinding, and Breakpad plus ELF/Mach-O DWARF or dSYM companion symbolication; more native formats are in progress. |
 | Performance and logs | Transactions, spans, trace waterfalls, typed logs and OTLP/HTTP log ingestion. |
 | Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors, public status pages; email and webhooks with durable retries. |
-| Accounts and teams | Password changes and email recovery, verified secondary sign-in addresses, optional OIDC, member roles, single-use invitations, atomic owner transfer and multi-team projects. |
-| Integration API | Sentry-compatible discovery and management for users, organizations, projects, members, teams and environments; opt-in organization creation, rename/delete, member invitation/cancellation, project-team associations, project-key DSNs with rate limits, plus scoped automation credentials. |
+| Accounts and teams | Password changes, email recovery, verified secondary sign-in addresses, account deletion, optional OIDC, member roles, single-use invitations, atomic owner transfer and multi-team projects. |
+| Integration API | Sentry-compatible discovery and management for users, organizations, projects, members, teams and environments; current-account deletion with sole-owner protection, opt-in organization creation, organization rename/delete, member invitation/cancellation, project-team associations, project-key DSNs with rate limits, plus scoped automation credentials. |
 | MCP | Opt-in Model Context Protocol server with 17 organization, issue, log, alert, monitor and performance tools; OAuth PKCE or scoped API tokens. |
 | Deployment | One non-root application image, PostgreSQL, automatic migrations and configurable retention. |
 

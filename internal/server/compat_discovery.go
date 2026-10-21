@@ -19,6 +19,7 @@ func (s *Server) registerCompatibleDiscoveryRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/0/users/{$}", s.compatibleAny(compatibleReadScopes, s.compatibleUsers))
 	mux.Handle("GET /api/0/users/{user}/{$}", s.compatibleAny(compatibleReadScopes, s.compatibleUser))
 	mux.Handle("PUT /api/0/users/{user}/{$}", s.auth(http.HandlerFunc(s.compatibleUpdateUser)))
+	mux.Handle("DELETE /api/0/users/{user}/{$}", s.auth(http.HandlerFunc(s.compatibleDeleteUser)))
 	mux.Handle("GET /api/0/users/{user}/emails/{$}", s.auth(http.HandlerFunc(s.compatibleUserEmails)))
 	mux.Handle("POST /api/0/users/{user}/emails/{$}", s.auth(http.HandlerFunc(s.compatibleCreateUserEmail)))
 	mux.Handle("PUT /api/0/users/{user}/emails/{$}", s.auth(http.HandlerFunc(s.compatibleSetPrimaryUserEmail)))
