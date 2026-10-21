@@ -1,0 +1,33 @@
+{
+  "index": "sha256:f9e136e6ccef6b8245c4ccd08e3f8bdea684d3af5336c9f11a5c640f8e97c16b",
+  "platforms": [
+    {
+      "architecture": "amd64",
+      "digest": "sha256:a86c0d1eeb9ce5f23a67698cfa8af080791f2175eb0dfeb33d136535d456fd38",
+      "user": "65532:65532",
+      "revision": "b8d680cbf45a01869a134f45e7c9ccd58cce80f9"
+    },
+    {
+      "architecture": "arm64",
+      "digest": "sha256:a5e1af6c4116fc7e9c39a5a6829a179f16642477cecef708c9cf01536987e07b",
+      "user": "65532:65532",
+      "revision": "b8d680cbf45a01869a134f45e7c9ccd58cce80f9"
+    }
+  ],
+  "binaries": {
+    "amd64": {
+      "sha256": "f30b7242fd5e254df933a06ed3d30a29272275528f31d4084aaffdbcd46040d2",
+      "bytes": 23040160,
+      "localSHA256": "f30b7242fd5e254df933a06ed3d30a29272275528f31d4084aaffdbcd46040d2",
+      "localBytes": 23040160,
+      "exactLocalPublic": true
+    },
+    "arm64": {
+      "sha256": "37a1cea515e5535ca833d0cc9289275ba57a80505a76bd0f628d634a8890e8c8",
+      "bytes": 21364896,
+      "localSHA256": "37a1cea515e5535ca833d0cc9289275ba57a80505a76bd0f628d634a8890e8c8",
+      "localBytes": 21364896,
+      "exactLocalPublic": true
+    }
+  }
+}

@@ -314,7 +314,7 @@ The compatible member-item route resolves pending invitation identities for owne
 
 The landing uses seven actual-product feature panels covering errors, debugging context, performance, logs, uptime/alerts, people/access and account security. It is published at bad461e; Pages and CI pass, live HTML contains all seven cards, and every screenshot returns HTTP200. Chromium140 desktop, mobile and full-page captures pass without overflow.
 
-The compatible repository registry now creates bounded manual metadata records and lists them from the existing release repository store. All-project sessions see organization repositories; restricted project tokens only see repositories linked through commits. Automatic GitLab/GitHub synchronization remains separate.
+The compatible repository registry is accepted at b8d680c: bounded manual metadata records are created and listed from the existing release repository store. All-project sessions see organization repositories; restricted project tokens only see repositories linked through commits. Exact public source, CI, anonymous image and binaries pass. Automatic GitLab/GitHub synchronization remains separate.
 
 GlitchTip set_owner is accepted at 41f7a33 as an atomic sole-owner transfer. A current owner must perform it, the target must be an active member, all other owners are demoted to admin, and the target detail is returned. Admins, missing targets, malformed IDs and queries fail without changing ownership. Full local/public race, vet, exact858-blob source, matching CI/image and Docker-built public binaries pass. Continue with the remaining account email and integration routes.
 
