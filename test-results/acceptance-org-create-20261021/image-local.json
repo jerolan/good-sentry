@@ -1,0 +1,8 @@
+{
+  "image": "goodsentry:org-create-678f956",
+  "imageID": "sha256:62dcdfcb1242b19ff69e81cccfc0383d9f585d1778a39034bac17e60b18969b9",
+  "architecture": "amd64",
+  "user": "65532:65532",
+  "binarySHA256": "56ef43a4af1ad4e62a997e6eec0d374dc74813397df6c1e8098c4fe4269f869c",
+  "binaryBytes": 22974624
+}
