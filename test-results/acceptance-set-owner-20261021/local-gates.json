@@ -1,0 +1,16 @@
+{
+  "testedAt": "2026-10-21T15:39:07Z",
+  "commands": [
+    {"command": "go test -race -count=1 -tags=integration ./...", "result": "pass", "log": "integration-race.log", "server": "122.972s", "store": "244.821s"},
+    {"command": "targeted set-owner store/HTTP tests with -race", "result": "pass", "log": "targeted-set-owner-race.log"},
+    {"command": "go vet -tags=integration ./...", "result": "pass", "log": "vet.log"},
+    {"command": "go mod verify", "result": "pass", "log": "mod-verify.log"},
+    {"command": "git diff --check and gofmt -l", "result": "pass"}
+  ],
+  "verifiedBehavior": [
+    "Only a current owner can perform set_owner; admins, members and demoted former owners fail.",
+    "The target must be an active organization member and is promoted atomically.",
+    "Exactly one owner remains after transfer and every other owner is demoted to admin.",
+    "The response is the committed target detail; malformed IDs, missing targets and query parameters are rejected."
+  ]
+}

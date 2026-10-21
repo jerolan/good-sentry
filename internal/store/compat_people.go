@@ -169,6 +169,32 @@ func (s *Store) CompatibleOrganizationInvitationMember(ctx context.Context, user
 	return item, tx.Commit(ctx)
 }
 
+func (s *Store) SetCompatibleOrganizationOwner(ctx context.Context, actorID, orgRef, memberID string) (CompatibleOrganizationUser, error) {
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return CompatibleOrganizationUser{}, err
+	}
+	defer tx.Rollback(ctx)
+	orgID, actorRole, err := manageableOrganization(ctx, tx, actorID, orgRef)
+	if err != nil {
+		return CompatibleOrganizationUser{}, err
+	}
+	if actorRole != "owner" {
+		return CompatibleOrganizationUser{}, ErrForbidden
+	}
+	if err = tx.QueryRow(ctx, `SELECT user_id::text FROM memberships WHERE organization_id=$1::bigint AND user_id=$2::bigint FOR UPDATE`, orgID, memberID).Scan(&memberID); err != nil {
+		return CompatibleOrganizationUser{}, dbError(err)
+	}
+	if _, err = tx.Exec(ctx, `UPDATE memberships SET role=CASE WHEN user_id=$2::bigint THEN 'owner' WHEN role='owner' THEN 'admin' ELSE role END
+		WHERE organization_id=$1::bigint`, orgID, memberID); err != nil {
+		return CompatibleOrganizationUser{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return CompatibleOrganizationUser{}, err
+	}
+	return s.CompatibleOrganizationMember(ctx, actorID, orgRef, memberID)
+}
+
 func (s *Store) compatibleTeamMembership(ctx context.Context, actorID, orgRef, teamSlug, memberID string, add bool) (CompatibleTeamProject, error) {
 	var result CompatibleTeamProject
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})

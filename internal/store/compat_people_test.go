@@ -176,3 +176,27 @@ func TestCompatibleOrganizationMemberDetailAndTeamMembership(t *testing.T) {
 		t.Fatalf("foreign viewer detail: %v", err)
 	}
 }
+
+func TestSetCompatibleOrganizationOwnerTransfersSingleOwner(t *testing.T) {
+	ctx, db, owner, org, _ := telemetryStore(t)
+	admin := triageMember(t, ctx, db, org, "Owner transfer admin", "admin")
+	member := triageMember(t, ctx, db, org, "Owner transfer member", "member")
+	if _, err := db.SetCompatibleOrganizationOwner(ctx, admin.ID, org.Slug, admin.ID); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("admin set owner: %v", err)
+	}
+	transferred, err := db.SetCompatibleOrganizationOwner(ctx, owner.ID, org.Slug, admin.ID)
+	if err != nil || transferred.ID != admin.ID || transferred.Role != "owner" || !transferred.IsOwner {
+		t.Fatalf("transfer owner: %+v %v", transferred, err)
+	}
+	var owners int
+	var oldOwnerRole string
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FILTER (WHERE role='owner'),max(role) FILTER (WHERE user_id=$2::bigint) FROM memberships WHERE organization_id=$1::bigint`, org.ID, owner.ID).Scan(&owners, &oldOwnerRole); err != nil || owners != 1 || oldOwnerRole != "admin" {
+		t.Fatalf("single-owner transfer owners=%d oldRole=%q err=%v", owners, oldOwnerRole, err)
+	}
+	if _, err := db.SetCompatibleOrganizationOwner(ctx, owner.ID, org.Slug, member.ID); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("former owner set owner: %v", err)
+	}
+	if _, err := db.SetCompatibleOrganizationOwner(ctx, admin.ID, org.Slug, "999999999"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("missing owner target: %v", err)
+	}
+}

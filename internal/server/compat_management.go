@@ -29,6 +29,7 @@ func (s *Server) registerCompatibleManagementRoutes(mux *http.ServeMux) {
 	mux.Handle("DELETE /api/0/organizations/{org}/members/{member}/{$}", s.compatible("org:write", s.compatibleDeleteOrganizationMember))
 	mux.Handle("POST /api/0/organizations/{org}/members/{member}/teams/{team}/{$}", s.compatible("org:write", s.compatibleAddMemberToTeam))
 	mux.Handle("DELETE /api/0/organizations/{org}/members/{member}/teams/{team}/{$}", s.compatible("org:write", s.compatibleRemoveMemberFromTeam))
+	mux.Handle("POST /api/0/organizations/{org}/members/{member}/set_owner/{$}", s.compatible("org:write", s.compatibleSetOrganizationOwner))
 	mux.Handle("GET /api/0/organizations/{org}/teams/{$}", s.compatible("org:read", s.compatibleOrganizationTeams))
 	mux.Handle("GET /api/0/teams/{org}/{team}/{$}", s.compatible("org:read", s.compatibleTeam))
 	mux.Handle("GET /api/0/teams/{org}/{team}/members/{$}", s.compatible("org:read", s.compatibleTeamMembers))
@@ -363,6 +364,25 @@ func (s *Server) compatibleRemoveMemberFromTeam(w http.ResponseWriter, r *http.R
 		return
 	}
 	writeJSON(w, 200, team)
+}
+
+func (s *Server) compatibleSetOrganizationOwner(w http.ResponseWriter, r *http.Request) {
+	if _, valid := s.orgWriteAccess(w, r); !valid {
+		return
+	}
+	if _, valid := discoveryNoQuery(w, r); !valid {
+		return
+	}
+	memberID, valid := compatibleMemberPathID(w, r)
+	if !valid {
+		return
+	}
+	member, err := s.db.SetCompatibleOrganizationOwner(r.Context(), current(r).User.ID, r.PathValue("org"), memberID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, member)
 }
 
 func (s *Server) orgWriteAccess(w http.ResponseWriter, r *http.Request) (store.ManagementAccess, bool) {
