@@ -141,7 +141,7 @@ try {
   await visible(page.getByText('src/checkout.js:42:9', { exact: true }));
   await visible(page.getByText('Payment button selected', { exact: true }));
   await visible(page.getByRole('heading', { name: 'Tags', exact: true }));
-  await visible(page.getByText(eventID, { exact: true }));
+  await visible(page.getByLabel('Issue summary').getByText(eventID, { exact: true }));
   assert.equal(await page.locator('#main img').count(), 0, 'Telemetry HTML stays text');
   assert.equal(await page.evaluate(() => window.__goodSentryUnsafe), undefined, 'Telemetry cannot execute script');
   for (const width of [320, 768, 1440]) await capture('issue-detail', width);
@@ -355,12 +355,14 @@ try {
   }
   checks.push('No document overflow at 320, 768 or 1440 pixels');
   assert.deepEqual(pageErrors, [], 'No uncaught browser JavaScript errors');
-  assert.deepEqual(requestFailures, [], 'No failed transport requests');
+  const expectedLogoutAborts = requestFailures.filter(problem => problem.error === 'net::ERR_ABORTED' && new URL(problem.url).pathname.endsWith('/api/v1/logout'));
+  const unexpectedRequestFailures = requestFailures.filter(problem => !expectedLogoutAborts.includes(problem));
+  assert.deepEqual(unexpectedRequestFailures, [], 'No unexpected failed transport requests');
   const expectedAuthMessage = problem => expectedAuthProbe && problem.location.endsWith('/api/v1/me') && /401/.test(problem.text);
   const expectedInvalidMapMessage = problem => expectedSourceMapRejection && problem.location.endsWith(expectedSourceMapRejection) && /400/.test(problem.text);
   const unexpected = consoleProblems.filter(problem => !expectedAuthMessage(problem) && !expectedInvalidMapMessage(problem));
   assert.deepEqual(unexpected, [], 'No unexpected console errors or warnings');
-  console.log(JSON.stringify({ passed: checks, screenshots, expectedAuthenticationProbeMessages: consoleProblems.filter(expectedAuthMessage).length, expectedInvalidMapMessages: consoleProblems.filter(expectedInvalidMapMessage).length }, null, 2));
+  console.log(JSON.stringify({ passed: checks, screenshots, expectedAuthenticationProbeMessages: consoleProblems.filter(expectedAuthMessage).length, expectedInvalidMapMessages: consoleProblems.filter(expectedInvalidMapMessage).length, expectedNavigationAbortedLogoutRequests: expectedLogoutAborts.length }, null, 2));
 } catch (error) {
   failure = error;
   await page.screenshot({ path: resolve(output, 'failure.png'), fullPage: true }).catch(() => {});

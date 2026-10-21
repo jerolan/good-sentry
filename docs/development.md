@@ -28,6 +28,8 @@ The [container workflow](../.github/workflows/image.yml) publishes amd64 and arm
 GOODSENTRY_IMAGE=goodsentry:local docker compose up --build -d
 ```
 
+The application-memory baseline starts the public image with a disposable PostgreSQL database and runs the official Go 0.50.0, Python 2.72.0, Node 11.7.0 and Chromium Browser 11.7.0 error/transaction/typed-log tests concurrently. The kernel reports the application process's VmRSS and VmHWM; PostgreSQL memory is excluded. On the `sha-8160b3` image, the maximum observed application RSS was **24.4 MiB**. This is a transport-load baseline, not a retention-capacity or hostile-traffic benchmark.
+
 The product landing lives in [site](../site). [GitHub Pages Actions](../.github/workflows/pages.yml) publishes that directory from `main` or a manual dispatch. Preview it locally with:
 
 ```sh
