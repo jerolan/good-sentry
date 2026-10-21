@@ -1,0 +1,26 @@
+{
+  "eventID": "46b78071a97dea6c97b05d677a658e40",
+  "projectID": 8,
+  "moduleName": "C:\\test\\different.module",
+  "uploadedObject": "uploaded-cfi.elf",
+  "frames": [
+    {
+      "function": "crash_frame",
+      "filename": "/home/dev/projects/SentryGo/internal/native/testdata/cfi-source.c",
+      "lineno": 1,
+      "instruction_addr": "0x140001106"
+    },
+    {
+      "function": "middle_frame",
+      "filename": "/home/dev/projects/SentryGo/internal/native/testdata/cfi-source.c",
+      "lineno": 2,
+      "instruction_addr": "0x140001121"
+    },
+    {
+      "function": "outer_frame",
+      "filename": "/home/dev/projects/SentryGo/internal/native/testdata/cfi-source.c",
+      "lineno": 3,
+      "instruction_addr": "0x14000112e"
+    }
+  ]
+}
