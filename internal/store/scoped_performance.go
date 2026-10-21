@@ -18,15 +18,29 @@ type TransactionFilter struct {
 
 type SpanGroupFilter struct {
 	Project, Op, Query string
+	ProjectIDs         []int64
+	Sort               string
 	Window             *TimeWindow
 	Offset, Limit      int
 }
 
 type NPlusOneFilter struct {
-	Project           string
+	Project, Op       string
+	ProjectIDs        []int64
 	Window            *TimeWindow
 	Threshold, Offset int
 	Limit             int
+}
+
+type NPlusOnePattern struct {
+	TransactionName  string  `json:"transactionName"`
+	Op               string  `json:"op"`
+	Description      string  `json:"description"`
+	TotalSpans       int64   `json:"totalSpans"`
+	TransactionCount int64   `json:"transactionCount"`
+	SpansPerTxn      float64 `json:"spansPerTxn"`
+	AvgDuration      float64 `json:"avgDuration"`
+	TotalTime        float64 `json:"totalTime"`
 }
 
 type SpanGroup struct {
@@ -75,6 +89,32 @@ func scopedProjectID(ctx context.Context, s *Store, access ManagementAccess, pro
 		return 0, err
 	}
 	return referenceID(p.ID), nil
+}
+
+func scopedProjectIDs(ctx context.Context, s *Store, access ManagementAccess, requested []int64) ([]int64, error) {
+	if len(requested) == 0 {
+		return nil, nil
+	}
+	seen := map[int64]bool{}
+	ids := make([]int64, 0, len(requested))
+	for _, id := range requested {
+		if id <= 0 || seen[id] {
+			return nil, ErrNotFound
+		}
+		seen[id] = true
+		ids = append(ids, id)
+	}
+	var permitted int
+	if err := s.pool.QueryRow(ctx, `SELECT count(*) FROM projects p
+		JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id=$2::bigint
+		WHERE p.organization_id=$1::bigint AND p.id=ANY($3::bigint[])
+		AND ($4 OR p.id=ANY($5::bigint[]))`, access.OrganizationID, access.UserID, ids, access.AllProjects, access.ProjectIDs).Scan(&permitted); err != nil {
+		return nil, err
+	}
+	if permitted != len(ids) {
+		return nil, ErrNotFound
+	}
+	return ids, nil
 }
 
 func scopedRange(args []any, column string, window *TimeWindow, defaults string) ([]any, string) {
@@ -191,6 +231,15 @@ func (s *Store) ScopedSpanGroups(ctx context.Context, access ManagementAccess, f
 		legacyWhere += fmt.Sprintf(" AND e.project_id=$%d::bigint", len(args))
 		spanWhere += fmt.Sprintf(" AND s.project_id=$%d::bigint", len(args))
 	}
+	if len(filter.ProjectIDs) > 0 {
+		projectIDs, err := scopedProjectIDs(ctx, s, access, filter.ProjectIDs)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, projectIDs)
+		legacyWhere += fmt.Sprintf(" AND e.project_id=ANY($%d::bigint[])", len(args))
+		spanWhere += fmt.Sprintf(" AND s.project_id=ANY($%d::bigint[])", len(args))
+	}
 	if filter.Op != "" {
 		args = append(args, filter.Op)
 		legacyWhere += fmt.Sprintf(" AND o.op=$%d", len(args))
@@ -200,6 +249,18 @@ func (s *Store) ScopedSpanGroups(ctx context.Context, access ManagementAccess, f
 		args = append(args, "%"+filter.Query+"%")
 		legacyWhere += fmt.Sprintf(" AND o.description ILIKE $%d", len(args))
 		spanWhere += fmt.Sprintf(" AND s.name ILIKE $%d", len(args))
+	}
+	order := `sum(duration) DESC,count(*) DESC,op COLLATE "C",name COLLATE "C"`
+	switch filter.Sort {
+	case "total_time":
+		order = `sum(duration),count(*) ,op COLLATE "C",name COLLATE "C"`
+	case "avg_duration":
+		order = `avg(duration),sum(duration) DESC,op COLLATE "C",name COLLATE "C"`
+	case "-avg_duration":
+		order = `avg(duration) DESC,sum(duration) DESC,op COLLATE "C",name COLLATE "C"`
+	case "count":
+		order = `count(*),sum(duration) DESC,op COLLATE "C",name COLLATE "C"`
+	case "-count", "", "-total_time":
 	}
 	args = append(args, filter.Limit, filter.Offset)
 	rows, err := s.pool.Query(ctx, `WITH derived AS (
@@ -215,7 +276,7 @@ func (s *Store) ScopedSpanGroups(ctx context.Context, access ManagementAccess, f
  SELECT op,name,array_agg(DISTINCT project_id::text ORDER BY project_id::text),
  count(DISTINCT trace_id),count(*),count(*) FILTER(WHERE status='error'),avg(duration),
  percentile_cont(0.95) WITHIN GROUP(ORDER BY duration),sum(duration),max(end_timestamp)
- FROM derived GROUP BY op,name ORDER BY sum(duration) DESC,count(*) DESC,op COLLATE "C",name COLLATE "C"
+	FROM derived GROUP BY op,name ORDER BY `+order+`
  LIMIT $`+fmt.Sprint(len(args)-1)+` OFFSET $`+fmt.Sprint(len(args)), args...)
 	if err != nil {
 		return nil, err
@@ -275,6 +336,76 @@ func (s *Store) DetectNPlusOne(ctx context.Context, access ManagementAccess, fil
 	for rows.Next() {
 		var item NPlusOneFinding
 		if err := rows.Scan(&item.ProjectID, &item.TraceID, &item.Transaction, &item.Op, &item.ChildOp, &item.ChildName, &item.Count, &item.AvgDuration, &item.TotalDuration, &item.FirstSeen, &item.LastSeen); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+func (s *Store) ScopedNPlusOnePatterns(ctx context.Context, access ManagementAccess, filter NPlusOneFilter) ([]NPlusOnePattern, error) {
+	if referenceID(access.UserID) == 0 || referenceID(access.OrganizationID) == 0 || filter.Offset < 0 || filter.Limit < 1 || filter.Limit > 101 || filter.Threshold < 2 || filter.Threshold > 100 {
+		return nil, ErrNotFound
+	}
+	projectID, err := scopedProjectID(ctx, s, access, filter.Project)
+	if err != nil {
+		return nil, err
+	}
+	args := []any{access.OrganizationID, access.UserID, access.AllProjects, access.ProjectIDs}
+	args, legacyWindow := scopedRange(args, "o.start_timestamp", filter.Window, "interval '24 hours'")
+	args, spanWindow := scopedRange(args, "s.start_timestamp", filter.Window, "interval '24 hours'")
+	legacyWhere, spanWhere := "", ""
+	if projectID != 0 {
+		args = append(args, projectID)
+		legacyWhere += fmt.Sprintf(" AND e.project_id=$%d::bigint", len(args))
+		spanWhere += fmt.Sprintf(" AND s.project_id=$%d::bigint", len(args))
+	}
+	if len(filter.ProjectIDs) > 0 {
+		projectIDs, err := scopedProjectIDs(ctx, s, access, filter.ProjectIDs)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, projectIDs)
+		legacyWhere += fmt.Sprintf(" AND e.project_id=ANY($%d::bigint[])", len(args))
+		spanWhere += fmt.Sprintf(" AND s.project_id=ANY($%d::bigint[])", len(args))
+	}
+	if filter.Op == "" {
+		filter.Op = "db"
+	}
+	args = append(args, filter.Op+"%")
+	legacyWhere += fmt.Sprintf(" AND o.op LIKE $%d", len(args))
+	spanWhere += fmt.Sprintf(" AND s.op LIKE $%d", len(args))
+	args = append(args, filter.Threshold, filter.Limit, filter.Offset)
+	threshold, limit, offset := len(args)-2, len(args)-1, len(args)
+	rows, err := s.pool.Query(ctx, `WITH children AS (
+ SELECT e.project_id,e.trace_id,e.transaction_name AS root_name,
+ o.op,o.description AS name,o.duration
+ FROM transaction_span_operations o JOIN events e ON e.id=o.event_id JOIN projects p ON p.id=e.project_id
+ JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND `+legacyWindow+legacyWhere+`
+ UNION ALL
+ SELECT s.project_id,s.trace_id,COALESCE(root.name,''),s.op,s.name,s.duration
+ FROM spans s JOIN projects p ON p.id=s.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
+ LEFT JOIN LATERAL (SELECT rs.name FROM spans rs WHERE rs.project_id=s.project_id AND rs.trace_id=s.trace_id AND rs.is_segment ORDER BY rs.id LIMIT 1) root ON true
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND `+spanWindow+spanWhere+`
+), repeated AS (
+ SELECT project_id,trace_id,root_name,op,name,count(*) AS span_count,sum(duration) AS total_duration
+ FROM children GROUP BY project_id,trace_id,root_name,op,name HAVING count(*)>=$`+fmt.Sprint(threshold)+`
+)
+ SELECT root_name,op,name,sum(span_count)::bigint,count(*)::bigint,avg(span_count),
+ sum(total_duration)/sum(span_count),sum(total_duration)
+ FROM repeated GROUP BY root_name,op,name
+ ORDER BY sum(span_count) DESC,sum(total_duration) DESC,root_name COLLATE "C",op COLLATE "C",name COLLATE "C"
+ LIMIT $`+fmt.Sprint(limit)+` OFFSET $`+fmt.Sprint(offset), args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []NPlusOnePattern{}
+	for rows.Next() {
+		var item NPlusOnePattern
+		if err := rows.Scan(&item.TransactionName, &item.Op, &item.Description, &item.TotalSpans, &item.TransactionCount,
+			&item.SpansPerTxn, &item.AvgDuration, &item.TotalTime); err != nil {
 			return nil, err
 		}
 		items = append(items, item)

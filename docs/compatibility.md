@@ -14,7 +14,7 @@ Compatibility is verified per workflow and client version. The project remains i
 | JavaScript source maps | Official CLI injection/bundle uploads and native uploads, Debug ID or release/distribution selection, original source context and preserved minified stacks. |
 | Debug files | Project-scoped multipart dSYM/DIF file storage and listing with exact bytes, metadata and SHA-1 deduplication. Chunked DIF assembly and native symbolication remain pending. |
 | Releases | Shared project versions, observed SDK releases, organization repository records, local commit metadata, completed deploys and compatible CLI lifecycle operations, with a responsive management UI. |
-| Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail and a cross-project trace waterfall. |
+| Performance | Legacy transactions and span v2 segments, latency and error aggregates, time windows, child-operation statistics, stored occurrence detail, a cross-project trace waterfall, and compatible organization span-group/N+1 reads with project and time filters. |
 | Logs | Typed attributes, exact 64-bit integer display, deduplication, pagination and project/text/level/environment/service/time/trace filters. Native OpenTelemetry `/v1/logs` ingestion accepts standard OTLP/HTTP exporters (binary protobuf and JSON, optional gzip) without a Sentry SDK or extra collector. |
 | Uptime | HTTP HEAD/GET/POST, TCP, SSL certificate and heartbeat monitors, failure thresholds, pause/resume, history and down/recovery transitions. |
 | Alerts | Frequency and uptime rules, environment filters, cooldown, SMTP/consolemail and generic webhooks, durable retries and delivery attempt history. |

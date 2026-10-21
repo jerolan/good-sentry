@@ -97,6 +97,7 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 	s.registerWizardRoutes(mux)
 	s.registerCompatibleManagementRoutes(mux)
 	s.registerCompatibleEnvironmentRoutes(mux)
+	s.registerCompatiblePerformanceRoutes(mux)
 	s.registerOAuthRoutes(mux)
 	s.registerOIDCRoutes(mux)
 	s.registerCompatibleMonitorRoutes(mux)
