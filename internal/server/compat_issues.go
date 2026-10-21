@@ -18,6 +18,7 @@ func (s *Server) registerCompatibleIssueRoutes(mux *http.ServeMux) {
 		mux.Handle("POST "+root+"comments/{$}", s.compatibleAny([]string{"event:write"}, s.compatibleAddIssueComment))
 		mux.Handle("PUT "+root+"comments/{comment}/{$}", s.compatibleAny([]string{"event:write"}, s.compatibleEditIssueComment))
 		mux.Handle("DELETE "+root+"comments/{comment}/{$}", s.compatibleAny([]string{"event:write"}, s.compatibleDeleteIssueComment))
+		mux.Handle("GET "+root+"tags/{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssueTags))
 	}
 	mux.Handle("GET /api/0/organizations/{org}/issues-stats/{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssueStats))
 }

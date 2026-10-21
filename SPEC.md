@@ -280,6 +280,12 @@ Acceptance requires actual official sentry-cli3.8.0 against newly issued restric
 
 POST and PUT accept only `{"data":{"text":"..."}}` and return CommentSchema with numeric comment ID, type`note`, data.text, UTC creation instant and user id/email. Text follows the native1..10000-byte UTF-8/no-NUL rule. Authors or organization owners/admins may edit/delete according to the native comment transaction; missing or foreign issues/comments return404, non-authors403. Native and compatible comments share rows, activity and deletion semantics.
 
+### Compatible issue tags
+
+`GET /api/0/issues/{issue}/tags/` and the organization-prefixed route require `event:read` or `event:write`. After the issue is validated for the current membership and Bearer project grant, tags are aggregated across the current issue and its merged aliases. Both normalized object tags and two-element array tags are supported; only string values are counted, and duplicate key/value pairs within one event count once.
+
+Each IssueTagSchema includes the exact key, a title-cased display name, distinct-value count, total pair occurrences and up to five top values ordered by count descending then value. Tags are ordered by key. The route accepts no query parameters and returns an empty array for an issue without tags.
+
 ### Compatible individual issue changes
 
 Implement the complete individual state/assignment/native-policy write slice through PUT /api/0/issues/{issue}/ and PUT /api/0/organizations/{org}/issues/{issue}/. Bulk mutation, compatible merge/hash/unmerge/delete, affected-user/window/commit conditions and other unchecked capabilities remain mandatory separate work; this child does not redefine the overall GlitchTip/Sentry baseline. Authorities: public [Sentry individual update](https://docs.sentry.io/api/events/update-an-issue/), [bulk update](https://docs.sentry.io/api/events/bulk-mutate-an-organizations-issues/) and the two public OpenAPI documents cited below. Sentry's partial-update prose and empty-object example govern over its contradictory all-fields-required schema. GT describes optional nullable status/statusDetails/assignedTo and integer merge, but does not explain null/empty/zero/false semantics. The rules below explicitly choose GoodSentry behavior where public contracts are silent, rather than claim private-server algorithms.
