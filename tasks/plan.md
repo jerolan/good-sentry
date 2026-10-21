@@ -271,3 +271,5 @@ Public8160b3 also passes the pinned four-SDK matrix, full onboarding/responsive 
 Public8160b3 closes the four-SDK/browser/memory/docs/fuzz cross-checks. The final remaining product scope is now concentrated in external-channel receipts, GitLab/Grafana and broader management/OpenAPI/admin choices, native crash/minidump symbolication, social OIDC/admin, cold archival and the final requirement audit. External receipts require accounts/credentials not present in the workspace; continue all independently verifiable work and record that prerequisite explicitly rather than claiming receipt acceptance.
 
 Native Minidump AMD64 slice is implemented and locally verified at4f660fa with synthetic fixtures, real HTTP/PostgreSQL, clean image and restart. Publish, confirm exact public source/CI/image/binary, then retain the parent gap for other architectures, CFI, PDB/dSYM/SymCache and DIF assembly.
+
+Official chunked DIF assembly passes sentry-cli3.8.0 and clean-image restart at2a565ae. Publish and verify exact public source/CI/image/binary. Keep native parent open for non-textual formats, architectures, CFI and archive extraction.
