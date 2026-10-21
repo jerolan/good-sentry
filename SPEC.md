@@ -961,6 +961,9 @@ Management API routes use /api/0 where compatible with published Sentry contract
 
 Optional MCP uses Streamable HTTP with authenticated scoped access to issues, logs, transactions, alerts and monitors. Optional cold archival uses Parquet and embedded DuckDB or another explicitly approved implementation with equivalent supported queries and local/S3 storage. Social OAuth/OIDC and advanced administration remain tracked parity requirements. Session tracking is explicitly unsupported by GlitchTip; supporting or adding it in GoodSentry must be described separately from the baseline. Session Replay and profiling are Sentry expansion work, not substitutes for unfinished GlitchTip parity.
 
+GlitchTip's public MCP guide at https://glitchtip.com/documentation/mcp/ defines `/mcp`, Streamable HTTP, API-token authentication and OAuth2 with dynamic client registration. Its 17 named tools are `list_organizations`, `list_projects`, `list_issues`, `get_issue`, `get_latest_event`, `get_event`, `update_issue`, `list_transaction_groups`, `get_transaction_group`, `list_transaction_spans`, `list_span_groups`, `detect_n_plus_one`, `get_transaction_trend`, `list_alerts`, `list_monitors`, `list_logs` and `get_log`. The guide marks four span/trend tools as requiring DuckDB. These are remaining public requirements, not implemented capability flags. Elaborate the Go argument/result contracts, per-tool credential grants, OAuth lifecycle and actual client acceptance before enabling MCP. Supporting token transport alone does not close the complete MCP capability.
+
+
 ## Commands and source layout
 
 Commands to make executable as increments land:
