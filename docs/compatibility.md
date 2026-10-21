@@ -93,7 +93,7 @@ Current-image acceptance covers official Go, Python, Node and Browser SDK errors
 
 Send standard Sentry envelopes to `/api/{project}/envelope/` or legacy `/api/{project}/store/`. OTLP/HTTP logs use `/v1/logs`. Change the existing SDK DSN or Sentry target URL; no GoodSentry-specific client is required for the workflows above.
 
-The official Sentry data source in Grafana `13.0.2` has been exercised against GoodSentry for its organization/project health check, an issue query returning ten rows and a stats panel over `/stats_v2/` that rendered hourly error counts from stored events. GitLab Error Tracking's public client contract is covered by `/api/0/projects/`, project issues, issue detail, latest event and organization repositories; a full GitLab installation-level receipt remains an external integration test.
+Grafana `13.0.2` with the official Sentry data source plugin `2.2.8` has been exercised against GoodSentry for its organization/project health check, an issue query returning ten rows and a stats panel over `/stats_v2/` that rendered hourly error counts from stored events. GitLab Error Tracking's public client contract is covered by `/api/0/projects/`, project issues, issue detail, latest event and organization repositories; a full GitLab installation-level receipt remains an external integration test.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with `sentry-cli 3.8.0`; see [release and source-map setup](releases-and-source-maps.md). Other artifact types and CLI versions need their own acceptance. The 256–512 MB memory target has not been measured under a documented workload. Current container acceptance covers Linux amd64.
 

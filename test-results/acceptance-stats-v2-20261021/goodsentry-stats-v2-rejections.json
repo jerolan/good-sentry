@@ -1,0 +1,22 @@
+[
+ {
+  "query": "category=error&field=sum(times_seen)&interval=1h&outcome=accepted&start=2026-10-21T18:35:14&end=2026-10-21T21:35:14",
+  "status": 400,
+  "body": "{\"detail\":\"Outcome and reason dimensions are not retained\"}\n"
+ },
+ {
+  "query": "category=error&field=sum(times_seen)&interval=1h&reason=ratelimited&start=2026-10-21T18:35:14&end=2026-10-21T21:35:14",
+  "status": 400,
+  "body": "{\"detail\":\"Outcome and reason dimensions are not retained\"}\n"
+ },
+ {
+  "query": "category=error&field=sum(times_seen)&interval=1h&groupBy=outcome&start=2026-10-21T18:35:14&end=2026-10-21T21:35:14",
+  "status": 400,
+  "body": "{\"detail\":\"Only category grouping is supported\"}\n"
+ },
+ {
+  "query": "category=error&field=sum(times_seen)&interval=1h&project=99&start=2026-10-21T18:35:14&end=2026-10-21T21:35:14",
+  "status": 404,
+  "body": "{\"detail\":\"Not found\"}\n"
+ }
+]

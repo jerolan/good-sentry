@@ -1,0 +1,80 @@
+{
+ "status": 200,
+ "request": {
+  "from": "2026-10-21T18:35:14.240000+00:00",
+  "to": "2026-10-21T21:35:14.240000+00:00"
+ },
+ "response": {
+  "results": {
+   "A": {
+    "status": 200,
+    "frames": [
+     {
+      "schema": {
+       "name": "Stats (A)",
+       "refId": "A",
+       "meta": {
+        "typeVersion": [
+         0,
+         0
+        ],
+        "executedQueryString": "http://172.21.0.1:18215/api/0/organizations/stats-grafana/stats_v2/?category=error&end=2026-10-21T21%3A35%3A14&field=sum%28times_seen%29&interval=1h&project=1&start=2026-10-21T18%3A35%3A14"
+       },
+       "fields": [
+        {
+         "name": "Timestamp",
+         "type": "time",
+         "typeInfo": {
+          "frame": "time.Time"
+         }
+        },
+        {
+         "name": "Sum (Quantity)",
+         "type": "number",
+         "typeInfo": {
+          "frame": "float64"
+         },
+         "labels": {
+          "Category": "error"
+         }
+        },
+        {
+         "name": "Sum (Times Seen)",
+         "type": "number",
+         "typeInfo": {
+          "frame": "float64"
+         },
+         "labels": {
+          "Category": "error"
+         }
+        }
+       ]
+      },
+      "data": {
+       "values": [
+        [
+         1792605600000,
+         1792609200000,
+         1792612800000,
+         1792616400000
+        ],
+        [
+         1,
+         1,
+         1,
+         0
+        ],
+        [
+         1,
+         1,
+         1,
+         0
+        ]
+       ]
+      }
+     }
+    ]
+   }
+  }
+ }
+}

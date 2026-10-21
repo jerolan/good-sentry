@@ -1,0 +1,41 @@
+{
+ "status": 200,
+ "url": "http://127.0.0.1:18216/api/0/organizations/stats-grafana/stats_v2/?category=error&field=sum(times_seen)&interval=1h&start=2026-10-21T18:35:14&end=2026-10-21T21:35:14&project=1",
+ "body": {
+  "start": "2026-10-21T18:00:00Z",
+  "end": "2026-10-21T22:00:00Z",
+  "intervals": [
+   "2026-10-21T18:00:00Z",
+   "2026-10-21T19:00:00Z",
+   "2026-10-21T20:00:00Z",
+   "2026-10-21T21:00:00Z"
+  ],
+  "groups": [
+   {
+    "by": {
+     "reason": "",
+     "category": "error",
+     "outcome": ""
+    },
+    "totals": {
+     "sum(times_seen)": 3,
+     "sum(quantity)": 3
+    },
+    "series": {
+     "sum(times_seen)": [
+      1,
+      1,
+      1,
+      0
+     ],
+     "sum(quantity)": [
+      1,
+      1,
+      1,
+      0
+     ]
+    }
+   }
+  ]
+ }
+}
