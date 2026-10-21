@@ -528,6 +528,12 @@ Additive046 stores organization-owned status pages and a many-to-many selection 
 
 `GET /status/{slug}` and `GET /api/v1/public/status-pages/{slug}` expose only public pages. The public view includes the page name, selected monitor names, current status and last-check time. It never exposes monitor URLs, heartbeat keys, project IDs, environments, expected bodies or check errors. A private/nonexistent page returns404. The native Uptime UI lists pages, creates/edits name, publication and selected monitors, links to the public page and requires explicit deletion confirmation.
 
+### Compatible uptime monitors
+
+When uptime is enabled, `GET/POST /api/0/organizations/{org}/monitors/`, `GET/PUT/DELETE .../monitors/{id}/` and `GET .../checks/` map the public MonitorIn/MonitorSchema onto the same native scheduler and monitor rows. Reads require `org:read` or current membership; mutations require `org:write` plus the native owner/admin rule. Monitor type aliases map Ping/HEAD, GET, POST, TCP Port, SSL and Heartbeat to native kinds; IDs, status, last change, interval, timeout, expected status/body, confirmation threshold, project identity and heartbeat endpoint are returned from live state.
+
+Lists and checks use strict cursor pagination. Checks expose start time, isUp and optional response time; native string reasons are omitted rather than coerced into the public integer union. Numeric environment IDs are rejected because GoodSentry's uptime environments are stored as names, not the public environment entity. PUT preserves omitted mutable fields and cannot change monitor kind.
+
 ### Native log retention
 
 This is the first retention increment, covering Sentry and OTLP logs. Error events, transactions/spans, uptime checks, completed files and releases remain separate required retention increments; temporary artifact-chunk expiry is already independent. [Public GlitchTip installation documentation](https://glitchtip.com/documentation/install/#data-retention) lists a master retention default and per-class overrides, including logs. Those configuration names are public facts; the receipt clock, bounded cleanup and shared-batch lifecycle below are GoodSentry decisions. Cold archival remains independently required and is not implemented by deleting PostgreSQL rows.

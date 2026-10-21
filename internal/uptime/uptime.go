@@ -42,7 +42,8 @@ func Defaults() Config {
 }
 
 type Monitor struct {
-	ID string `json:"id"`
+	ID             string `json:"id"`
+	OrganizationID string `json:"organizationId,omitempty"`
 	Config
 	Status              Status     `json:"status"`
 	ConsecutiveFailures int        `json:"consecutiveFailures"`

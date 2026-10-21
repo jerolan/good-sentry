@@ -14,14 +14,14 @@ import (
 
 const monitorColumns = `m.id::text,m.name,m.kind,m.url,COALESCE(p.slug,''),m.environment,m.interval_seconds,m.timeout_seconds,
 	m.expected_status,m.expected_body,m.confirmation_threshold,m.enabled,m.status,m.consecutive_failures,
-	m.last_check,m.last_change,m.next_check,m.created_at,m.heartbeat_key`
+	m.last_check,m.last_change,m.next_check,m.created_at,m.heartbeat_key,m.organization_id::text`
 const monitorJoin = ` FROM monitors m LEFT JOIN projects p ON p.id=m.project_id `
 const monitorCheckColumns = `id::text,started_at,completed_at,up,status,previous_status,is_change,response_time_ms,status_code,reason`
 
 func monitorFields(m *uptime.Monitor) []any {
 	return []any{&m.ID, &m.Name, &m.Type, &m.URL, &m.Project, &m.Environment, &m.IntervalSeconds, &m.TimeoutSeconds,
 		&m.ExpectedStatus, &m.ExpectedBody, &m.ConfirmationThreshold, &m.Enabled, &m.Status, &m.ConsecutiveFailures,
-		&m.LastCheck, &m.LastChange, &m.NextCheck, &m.CreatedAt, &m.HeartbeatKey}
+		&m.LastCheck, &m.LastChange, &m.NextCheck, &m.CreatedAt, &m.HeartbeatKey, &m.OrganizationID}
 }
 
 func scanMonitor(row scanner) (uptime.Monitor, error) {
@@ -196,9 +196,6 @@ func (s *Store) DeleteMonitor(ctx context.Context, userID, orgSlug, id string) e
 }
 
 func (s *Store) MonitorChecks(ctx context.Context, userID, orgSlug, id string, changesOnly bool, page int) ([]uptime.Check, bool, error) {
-	if _, err := s.Monitor(ctx, userID, orgSlug, id); err != nil {
-		return nil, false, err
-	}
 	pageNumber := int64(page)
 	if pageNumber < 1 {
 		pageNumber = 1
@@ -206,8 +203,18 @@ func (s *Store) MonitorChecks(ctx context.Context, userID, orgSlug, id string, c
 	if pageNumber > math.MaxInt64/25 {
 		return nil, false, errors.New("monitor history page is outside supported range")
 	}
+	return s.MonitorChecksPage(ctx, userID, orgSlug, id, changesOnly, int((pageNumber-1)*25), 25)
+}
+
+func (s *Store) MonitorChecksPage(ctx context.Context, userID, orgSlug, id string, changesOnly bool, offset, limit int) ([]uptime.Check, bool, error) {
+	if offset < 0 || offset > 100000000 || limit < 1 || limit > 100 {
+		return nil, false, errors.New("invalid monitor-check page")
+	}
+	if _, err := s.Monitor(ctx, userID, orgSlug, id); err != nil {
+		return nil, false, err
+	}
 	rows, err := s.pool.Query(ctx, "SELECT "+monitorCheckColumns+` FROM monitor_checks WHERE monitor_id::text=$1
-		AND (NOT $2 OR is_change) ORDER BY completed_at DESC,id DESC LIMIT 26 OFFSET $3`, id, changesOnly, (pageNumber-1)*25)
+		AND (NOT $2 OR is_change) ORDER BY completed_at DESC,id DESC LIMIT $4 OFFSET $3`, id, changesOnly, offset, limit+1)
 	if err != nil {
 		return nil, false, err
 	}
@@ -223,9 +230,9 @@ func (s *Store) MonitorChecks(ctx context.Context, userID, orgSlug, id string, c
 	if err := rows.Err(); err != nil {
 		return nil, false, err
 	}
-	more := len(items) > 25
+	more := len(items) > limit
 	if more {
-		items = items[:25]
+		items = items[:limit]
 	}
 	return items, more, nil
 }
