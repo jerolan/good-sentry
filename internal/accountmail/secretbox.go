@@ -82,3 +82,34 @@ func (s *SecretBox) Open(tokenHash string, sealed []byte) (string, error) {
 	}
 	return string(plain), nil
 }
+
+func (s *SecretBox) SealEmailVerification(tokenHash, token string) ([]byte, error) {
+	return s.sealWithPurpose("GoodSentry email verification v1:", tokenHash, token)
+}
+
+func (s *SecretBox) OpenEmailVerification(tokenHash string, sealed []byte) (string, error) {
+	return s.openWithPurpose("GoodSentry email verification v1:", tokenHash, sealed)
+}
+
+func (s *SecretBox) sealWithPurpose(purpose, tokenHash, token string) ([]byte, error) {
+	if s == nil || !validTokenHash(tokenHash) || !validToken(token) {
+		return nil, errors.New("invalid account token")
+	}
+	nonce := make([]byte, s.aead.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return nil, err
+	}
+	return s.aead.Seal(nonce, nonce, []byte(token), []byte(purpose+tokenHash)), nil
+}
+
+func (s *SecretBox) openWithPurpose(purpose, tokenHash string, sealed []byte) (string, error) {
+	if s == nil || !validTokenHash(tokenHash) || len(sealed) < s.aead.NonceSize()+s.aead.Overhead() || len(sealed) > maxSealed {
+		return "", errors.New("invalid account token")
+	}
+	nonce, ciphertext := sealed[:s.aead.NonceSize()], sealed[s.aead.NonceSize():]
+	plain, err := s.aead.Open(nil, nonce, ciphertext, []byte(purpose+tokenHash))
+	if err != nil || !validToken(string(plain)) {
+		return "", errors.New("invalid account token")
+	}
+	return string(plain), nil
+}

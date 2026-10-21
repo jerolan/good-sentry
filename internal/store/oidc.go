@@ -39,7 +39,9 @@ WHERE i.provider=$1 AND i.subject=$2`, input.Provider, input.Subject).
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return User{}, err
 	}
-	err = tx.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE lower(email)=lower($1) FOR UPDATE`, input.Email).
+	err = tx.QueryRow(ctx, `SELECT u.id::text,u.email,u.name,u.password_hash,u.auth_generation FROM users u
+		WHERE lower(u.email)=lower($1) OR EXISTS(SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower($1))
+		ORDER BY (lower(u.email)=lower($1)) DESC LIMIT 1 FOR UPDATE OF u`, input.Email).
 		Scan(&user.ID, &user.Email, &user.Name, &user.PasswordHash, &user.AuthGeneration)
 	if errors.Is(err, pgx.ErrNoRows) {
 		if !input.AutoCreate {
@@ -50,7 +52,9 @@ ON CONFLICT(email) DO NOTHING
 RETURNING id::text,email,name,password_hash,auth_generation`, input.Email, input.Password, input.Name).
 			Scan(&user.ID, &user.Email, &user.Name, &user.PasswordHash, &user.AuthGeneration)
 		if errors.Is(err, pgx.ErrNoRows) {
-			err = tx.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE lower(email)=lower($1) FOR UPDATE`, input.Email).
+			err = tx.QueryRow(ctx, `SELECT u.id::text,u.email,u.name,u.password_hash,u.auth_generation FROM users u
+				WHERE lower(u.email)=lower($1) OR EXISTS(SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower($1))
+				ORDER BY (lower(u.email)=lower($1)) DESC LIMIT 1 FOR UPDATE OF u`, input.Email).
 				Scan(&user.ID, &user.Email, &user.Name, &user.PasswordHash, &user.AuthGeneration)
 		}
 	}

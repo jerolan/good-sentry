@@ -76,7 +76,9 @@ func (s *Store) Bootstrap(ctx context.Context, email string, password []byte, na
 
 func (s *Store) UserByEmail(ctx context.Context, email string) (User, error) {
 	var u User
-	err := s.pool.QueryRow(ctx, "SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE email=$1", email).Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
+	err := s.pool.QueryRow(ctx, `SELECT u.id::text,u.email,u.name,u.password_hash,u.auth_generation FROM users u
+		WHERE lower(u.email)=lower($1) OR EXISTS(SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower($1))
+		ORDER BY (lower(u.email)=lower($1)) DESC LIMIT 1`, email).Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
 	return u, dbError(err)
 }
 

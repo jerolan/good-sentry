@@ -88,7 +88,9 @@ func (s *Store) InviteMember(ctx context.Context, actorID, orgSlug, email, role,
 		return result, ErrForbidden
 	}
 	var member bool
-	if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.organization_id=$1::bigint AND lower(u.email)=lower($2))", orgID, email).Scan(&member); err != nil {
+	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users u JOIN memberships m ON m.user_id=u.id
+		WHERE m.organization_id=$1::bigint AND (lower(u.email)=lower($2) OR EXISTS(
+		 SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower($2))))`, orgID, email).Scan(&member); err != nil {
 		return result, err
 	}
 	if member {
@@ -274,7 +276,11 @@ func (s *Store) InspectInvitation(ctx context.Context, tokenHash string) (Invita
 	if len(tokenHash) != 64 {
 		return result, ErrInvalidInvitation
 	}
-	err := s.pool.QueryRow(ctx, "SELECT i.email,o.name,o.slug,i.role,EXISTS(SELECT 1 FROM users u WHERE lower(u.email)=lower(i.email)) FROM organization_invitations i JOIN organizations o ON o.id=i.organization_id WHERE i.token_hash=$1 AND i.status='sent' AND i.expires_at>clock_timestamp()", tokenHash).Scan(&result.Email, &result.OrganizationName, &result.OrganizationSlug, &result.Role, &result.ExistingAccount)
+	err := s.pool.QueryRow(ctx, `SELECT i.email,o.name,o.slug,i.role,EXISTS(
+		SELECT 1 FROM users u WHERE lower(u.email)=lower(i.email) OR EXISTS(
+		 SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower(i.email)))
+		FROM organization_invitations i JOIN organizations o ON o.id=i.organization_id
+		WHERE i.token_hash=$1 AND i.status='sent' AND i.expires_at>clock_timestamp()`, tokenHash).Scan(&result.Email, &result.OrganizationName, &result.OrganizationSlug, &result.Role, &result.ExistingAccount)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return result, ErrInvalidInvitation
 	}

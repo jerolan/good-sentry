@@ -31,7 +31,7 @@ func TestCompatibleUserPreferencesHTTP(t *testing.T) {
 	if !strings.Contains(string(emails), `"isPrimary":true`) || !strings.Contains(string(emails), f.owner.Email) {
 		t.Fatalf("emails=%s", emails)
 	}
-	f.request(t, f.client, "POST", userPath+"emails/", "{\"email\":\"second@example.test\"}", csrf, 400)
+	f.request(t, f.client, "POST", userPath+"emails/", "{\"email\":\"second@example.test\"}", csrf, 503)
 	var notifications map[string]bool
 	if err := json.Unmarshal(f.request(t, f.client, "PUT", userPath+"notifications/", "{\"subscribeByDefault\":false}", csrf, 200), &notifications); err != nil || notifications["subscribeByDefault"] {
 		t.Fatalf("notifications=%+v err=%v", notifications, err)

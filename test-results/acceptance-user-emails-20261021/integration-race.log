@@ -1,0 +1,16 @@
+?   	goodsentry/cmd/goodsentry	[no test files]
+ok  	goodsentry/internal/accountmail	1.013s
+ok  	goodsentry/internal/artifact	4.107s
+ok  	goodsentry/internal/config	1.035s
+ok  	goodsentry/internal/event	1.072s
+ok  	goodsentry/internal/eventview	1.045s
+ok  	goodsentry/internal/jobs	24.107s
+ok  	goodsentry/internal/native	1.033s
+?   	goodsentry/internal/nettarget	[no test files]
+ok  	goodsentry/internal/notify	6.251s
+ok  	goodsentry/internal/otlp	1.065s
+ok  	goodsentry/internal/protocol	1.088s
+ok  	goodsentry/internal/releaseorder	1.017s
+ok  	goodsentry/internal/server	129.159s
+ok  	goodsentry/internal/store	256.623s
+ok  	goodsentry/internal/uptime	11.388s

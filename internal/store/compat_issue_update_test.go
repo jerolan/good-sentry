@@ -110,10 +110,8 @@ func TestCompatibleIssueUpdateAssignmentReferencesAndAtomicFailures(t *testing.T
 	if err := f.db.pool.QueryRow(f.ctx, "INSERT INTO teams(organization_id,slug,name) VALUES($1,'elsewhere','Elsewhere') RETURNING id::text", foreign.ID).Scan(&foreignTeam); err != nil {
 		t.Fatal(err)
 	}
-	one := triageMember(t, f.ctx, f.db, f.org, "Case", "member")
-	two := triageMember(t, f.ctx, f.db, f.org, "case", "member")
-	if one.Email == two.Email {
-		t.Fatal("case-fold ambiguity fixture is not distinct")
+	if _, err := f.db.pool.Exec(f.ctx, `INSERT INTO users(email,name,password_hash) VALUES(upper($1),'Fold duplicate','fixture')`, target.Email); err == nil {
+		t.Fatal("case-fold duplicate user email was accepted")
 	}
 	before := groupDatabaseSnapshot(t, f.ctx, f.db, 0)
 	for _, tc := range []struct {
@@ -122,7 +120,7 @@ func TestCompatibleIssueUpdateAssignmentReferencesAndAtomicFailures(t *testing.T
 	}{
 		{outsider.ID, ErrNotFound}, {outsider.Email, ErrNotFound}, {"team:" + foreignTeam, ErrNotFound}, {target.Name, ErrNotFound},
 		{"user:9223372036854775807", ErrNotFound}, {"team:9223372036854775807", ErrNotFound},
-		{"CASE@example.test", ErrInvalidCompatibleIssueChange}, {"01", ErrInvalidCompatibleIssueChange}, {"user:01", ErrInvalidCompatibleIssueChange}, {"team:-1", ErrInvalidCompatibleIssueChange},
+		{"01", ErrInvalidCompatibleIssueChange}, {"user:01", ErrInvalidCompatibleIssueChange}, {"team:-1", ErrInvalidCompatibleIssueChange},
 	} {
 		_, err := f.db.UpdateCompatibleIssue(f.ctx, f.access, id, CompatibleIssueChange{Status: "resolved", Assignment: &CompatibleIssueAssignment{Reference: tc.reference}})
 		if !errors.Is(err, tc.want) {

@@ -61,6 +61,7 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 	mux.Handle("POST /api/v1/account/password", s.auth(http.HandlerFunc(s.changePassword)))
 	mux.HandleFunc("POST /api/v1/account/password/reset/request", s.requestPasswordReset)
 	mux.HandleFunc("POST /api/v1/account/password/reset", s.resetPassword)
+	mux.HandleFunc("GET /account/emails/confirm", s.confirmUserEmailLink)
 	mux.Handle("GET /api/v1/organizations/{org}/members", s.auth(http.HandlerFunc(s.members)))
 	mux.Handle("PATCH /api/v1/organizations/{org}/members/{member}", s.auth(http.HandlerFunc(s.updateMemberRole)))
 	mux.Handle("DELETE /api/v1/organizations/{org}/members/{member}", s.auth(http.HandlerFunc(s.removeMember)))

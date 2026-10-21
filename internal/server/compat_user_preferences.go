@@ -1,9 +1,15 @@
 package server
 
 import (
+	"encoding/hex"
+	"errors"
 	"net/http"
+	"net/mail"
+	"net/url"
 	"strings"
+	"time"
 
+	"goodsentry/internal/notify"
 	"goodsentry/internal/store"
 )
 
@@ -54,15 +60,187 @@ func (s *Server) compatibleUserEmails(w http.ResponseWriter, r *http.Request) {
 	if !singleCurrentUser(w, r) {
 		return
 	}
-	user := current(r).User
-	writeJSON(w, 200, []map[string]any{{"email": user.Email, "isPrimary": true, "isVerified": true}})
+	emails, err := s.db.CompatibleUserEmails(r.Context(), current(r).User.ID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, emails)
 }
 
-func (s *Server) compatibleUserEmailUnsupported(w http.ResponseWriter, r *http.Request) {
+func compatibleEmailInput(w http.ResponseWriter, r *http.Request) (string, bool) {
+	var input struct {
+		Email string `json:"email"`
+	}
+	if !bodyJSON(w, r, &input) {
+		return "", false
+	}
+	email := strings.ToLower(strings.TrimSpace(input.Email))
+	address, err := mail.ParseAddress(email)
+	if err != nil || address.Address != email || len(email) > 254 {
+		failure(w, 400, "Enter a valid email address")
+		return "", false
+	}
+	return email, true
+}
+
+func (s *Server) sendEmailVerification(r *http.Request, user store.User, email, token, hash string) error {
+	if s.mail == nil || s.account == nil {
+		return errors.New("email verification is unavailable")
+	}
+	expires := time.Now().Add(24 * time.Hour)
+	verifyURL := strings.TrimRight(s.cfg.Domain, "/") + "/account/emails/confirm?token=" + url.QueryEscape(token)
+	outcome, err := s.mail.DeliverEmailVerificationMail(r.Context(), notify.EmailVerificationMail{
+		ID: hash[:32], Name: user.Name, Recipient: email, VerifyURL: verifyURL, ExpiresAt: expires,
+	})
+	if err != nil || outcome.Disposition != notify.Delivered {
+		if err != nil {
+			return err
+		}
+		return errors.New("email verification delivery failed: " + outcome.Reason)
+	}
+	return nil
+}
+
+func (s *Server) compatibleCreateUserEmail(w http.ResponseWriter, r *http.Request) {
 	if !singleCurrentUser(w, r) {
 		return
 	}
-	failure(w, 400, "Additional email verification is not implemented")
+	email, valid := compatibleEmailInput(w, r)
+	if !valid {
+		return
+	}
+	if s.mail == nil || s.account == nil {
+		failure(w, 503, "Email verification is unavailable")
+		return
+	}
+	token, err := token()
+	if err != nil {
+		failure(w, 503, "Email verification is unavailable")
+		return
+	}
+	hash := s.hash(token)
+	ciphertext, err := s.account.SealEmailVerification(hash, token)
+	if err != nil {
+		failure(w, 503, "Email verification is unavailable")
+		return
+	}
+	created, err := s.db.CreateCompatibleUserEmail(r.Context(), current(r).User.ID, email, hash, ciphertext, time.Now().Add(24*time.Hour))
+	if errors.Is(err, store.ErrInvalidEmail) {
+		failure(w, 400, "Enter a valid email address")
+		return
+	}
+	if errors.Is(err, store.ErrConflict) {
+		failure(w, 400, "Email is already in use")
+		return
+	}
+	if err != nil {
+		report(w, err)
+		return
+	}
+	if err = s.sendEmailVerification(r, current(r).User, email, token, hash); err != nil {
+		failure(w, 503, "Email verification delivery failed")
+		return
+	}
+	writeJSON(w, 201, created)
+}
+
+func (s *Server) compatibleSetPrimaryUserEmail(w http.ResponseWriter, r *http.Request) {
+	if !singleCurrentUser(w, r) {
+		return
+	}
+	email, valid := compatibleEmailInput(w, r)
+	if !valid {
+		return
+	}
+	updated, err := s.db.SetCompatiblePrimaryEmail(r.Context(), current(r).User.ID, email)
+	if errors.Is(err, store.ErrInvalidEmail) {
+		failure(w, 400, "Enter a valid email address")
+		return
+	}
+	if errors.Is(err, store.ErrConflict) {
+		failure(w, 400, "Primary email must be an existing verified email")
+		return
+	}
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, updated)
+}
+
+func (s *Server) compatibleDeleteUserEmail(w http.ResponseWriter, r *http.Request) {
+	if !singleCurrentUser(w, r) {
+		return
+	}
+	email, valid := compatibleEmailInput(w, r)
+	if !valid {
+		return
+	}
+	err := s.db.DeleteCompatibleUserEmail(r.Context(), current(r).User.ID, email)
+	if errors.Is(err, store.ErrForbidden) {
+		failure(w, 400, "The primary email cannot be removed")
+		return
+	}
+	if errors.Is(err, store.ErrInvalidEmail) {
+		failure(w, 400, "Enter a valid email address")
+		return
+	}
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 204, nil)
+}
+
+func (s *Server) compatibleConfirmUserEmail(w http.ResponseWriter, r *http.Request) {
+	if !singleCurrentUser(w, r) {
+		return
+	}
+	email, valid := compatibleEmailInput(w, r)
+	if !valid {
+		return
+	}
+	if s.mail == nil || s.account == nil {
+		failure(w, 503, "Email verification is unavailable")
+		return
+	}
+	hash, ciphertext, _, err := s.db.CompatibleUserEmailVerification(r.Context(), current(r).User.ID, email)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	token, err := s.account.OpenEmailVerification(hash, ciphertext)
+	if err != nil {
+		failure(w, 503, "Email verification is unavailable")
+		return
+	}
+	if err = s.sendEmailVerification(r, current(r).User, email, token, hash); err != nil {
+		failure(w, 503, "Email verification delivery failed")
+		return
+	}
+	writeJSON(w, 204, nil)
+}
+
+func (s *Server) confirmUserEmailLink(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	if len(token) != 64 || token != strings.ToLower(token) {
+		failure(w, 400, "Invalid or expired email verification link")
+		return
+	}
+	if _, err := hex.DecodeString(token); err != nil {
+		failure(w, 400, "Invalid or expired email verification link")
+		return
+	}
+	if _, _, err := s.db.ConfirmCompatibleUserEmail(r.Context(), s.hash(token)); err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			failure(w, 400, "Invalid or expired email verification link")
+		} else {
+			report(w, err)
+		}
+		return
+	}
+	http.Redirect(w, r, s.cfg.Prefix+"/?emailVerified=1", http.StatusSeeOther)
 }
 
 func (s *Server) compatibleUserNotifications(w http.ResponseWriter, r *http.Request) {

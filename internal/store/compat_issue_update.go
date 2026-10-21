@@ -195,7 +195,9 @@ func compatibleIssueAssignment(ctx context.Context, tx pgx.Tx, org, reference st
 		return nil, ErrInvalidCompatibleIssueChange
 	}
 	rows, err := tx.Query(ctx, `SELECT u.id::text FROM users u JOIN memberships m ON m.user_id=u.id
- WHERE m.organization_id=$1::bigint AND lower(u.email)=lower($2) ORDER BY u.id LIMIT 2 FOR SHARE OF m,u`, org, reference)
+	WHERE m.organization_id=$1::bigint AND (lower(u.email)=lower($2) OR EXISTS(
+	 SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower($2)))
+	ORDER BY u.id LIMIT 2 FOR SHARE OF m,u`, org, reference)
 	if err != nil {
 		return nil, err
 	}
