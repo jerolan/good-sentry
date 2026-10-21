@@ -66,19 +66,17 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 	symbols := native.SymbolSet{}
 	unwindTables := native.UnwindSet{}
 	for _, file := range symbolFiles {
-		name, functions := native.ParseObjectSymbols(file.Name, file.Content)
-		if len(functions) == 0 {
-			name, functions = native.ParseBreakpad(file.Name, file.Content)
-		}
-		symbols[name] = append(symbols[name], functions...)
-		if debugKey := native.DebugKey(file.DebugID); debugKey != "" {
-			symbols[debugKey] = append(symbols[debugKey], functions...)
-		}
-		unwindName, table := native.ParseObjectUnwind(file.Name, file.Content)
-		if table != nil {
-			unwindTables[unwindName] = append(unwindTables[unwindName], table)
-			if debugKey := native.DebugKey(file.DebugID); debugKey != "" {
-				unwindTables[debugKey] = append(unwindTables[debugKey], table)
+		debugKey := native.DebugKey(file.DebugID)
+		for _, object := range native.ParseDebugObjects(file.Name, file.Content) {
+			symbols[object.Name] = append(symbols[object.Name], object.Functions...)
+			if debugKey != "" {
+				symbols[debugKey] = append(symbols[debugKey], object.Functions...)
+			}
+			if object.Unwind != nil {
+				unwindTables[object.Name] = append(unwindTables[object.Name], object.Unwind)
+				if debugKey != "" {
+					unwindTables[debugKey] = append(unwindTables[debugKey], object.Unwind)
+				}
 			}
 		}
 	}

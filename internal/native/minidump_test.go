@@ -1,6 +1,7 @@
 package native
 
 import (
+	"archive/zip"
 	"bytes"
 	"debug/dwarf"
 	"debug/elf"
@@ -403,5 +404,47 @@ func TestCFIParserRejectsTruncatedSection(t *testing.T) {
 		if table, err := parseCFISection(data, 0, true, 8); err == nil && table != nil && len(table.entries) != 0 {
 			t.Fatalf("truncated CFI produced entries: %+v", table.entries)
 		}
+	}
+}
+
+func TestParseDebugArchiveObjects(t *testing.T) {
+	var archive bytes.Buffer
+	writer := zip.NewWriter(&archive)
+	for name, fixture := range map[string]string{
+		"Example.dSYM/Contents/Resources/DWARF/Example": "macho-dsym-amd64",
+		"linux/libexample.so":                           "elf-dwarf-amd64",
+	} {
+		data, err := os.ReadFile("testdata/" + fixture)
+		if err != nil {
+			t.Fatal(err)
+		}
+		entry, err := writer.Create(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := entry.Write(data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	objects := ParseDebugObjects("bundle.zip", archive.Bytes())
+	if len(objects) != 2 {
+		t.Fatalf("archive objects=%d", len(objects))
+	}
+	found := map[string]bool{}
+	for _, object := range objects {
+		for _, function := range object.Functions {
+			if function.Name == "main" || function.Name == "fixture_function" {
+				found[function.Name] = true
+			}
+		}
+	}
+	if !found["main"] || !found["fixture_function"] {
+		t.Fatalf("archive functions=%+v", found)
+	}
+	if objects := ParseDebugObjects("broken.zip", []byte{'P', 'K', 0x03, 0x04, 0}); len(objects) != 0 {
+		t.Fatalf("truncated archive objects=%+v", objects)
 	}
 }

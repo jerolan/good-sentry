@@ -1,0 +1,16 @@
+=== RUN   TestParseDebugArchiveObjects
+--- PASS: TestParseDebugArchiveObjects (0.01s)
+PASS
+ok  	goodsentry/internal/native	1.026s
+=== RUN   TestNativeMinidumpSymbolicationAndIngestion
+--- PASS: TestNativeMinidumpSymbolicationAndIngestion (0.44s)
+=== RUN   TestNativeELFObjectSymbolicationByDebugID
+--- PASS: TestNativeELFObjectSymbolicationByDebugID (0.42s)
+=== RUN   TestNativeMachODSYMObjectSymbolicationByDebugID
+--- PASS: TestNativeMachODSYMObjectSymbolicationByDebugID (0.41s)
+=== RUN   TestNativeCFIUnwindWithoutFramePointer
+--- PASS: TestNativeCFIUnwindWithoutFramePointer (0.40s)
+=== RUN   TestNativeArchiveObjectSymbolicationByDebugID
+--- PASS: TestNativeArchiveObjectSymbolicationByDebugID (0.42s)
+PASS
+ok  	goodsentry/internal/server	3.116s

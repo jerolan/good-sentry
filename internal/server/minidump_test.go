@@ -3,6 +3,7 @@
 package server
 
 import (
+	"archive/zip"
 	"bytes"
 	"crypto/sha1"
 	"debug/dwarf"
@@ -287,6 +288,25 @@ func ingestNativeObject(t *testing.T, f *resolutionHTTPFixture, object []byte, o
 	return ingestNativeObjectFrames(t, f, object, objectName, symbolType, functionOffset, expectedFunction)[0]
 }
 
+func nativeDebugArchive(t *testing.T, entries map[string][]byte) []byte {
+	t.Helper()
+	var archive bytes.Buffer
+	writer := zip.NewWriter(&archive)
+	for name, content := range entries {
+		entry, err := writer.Create(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := entry.Write(content); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return archive.Bytes()
+}
+
 func TestNativeELFObjectSymbolicationByDebugID(t *testing.T) {
 	f := newResolutionHTTPFixture(t)
 	object, err := os.ReadFile("../native/testdata/elf-dwarf-amd64")
@@ -415,5 +435,25 @@ func TestNativeCFIUnwindWithoutFramePointer(t *testing.T) {
 		if frames[i].Function != name || !strings.HasSuffix(frames[i].Filename, "cfi-source.c") || frames[i].Line < 1 {
 			t.Fatalf("CFI frame %d=%+v want %s", i, frames[i], name)
 		}
+	}
+}
+
+func TestNativeArchiveObjectSymbolicationByDebugID(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	machoObject, err := os.ReadFile("../native/testdata/macho-dsym-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	elfObject, err := os.ReadFile("../native/testdata/elf-dwarf-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	archive := nativeDebugArchive(t, map[string][]byte{
+		"Example.dSYM/Contents/Resources/DWARF/Example": machoObject,
+		"linux/libexample.so":                           elfObject,
+	})
+	frame := ingestNativeObject(t, f, archive, "bundle.zip", "dsym", 0xf6a, "main")
+	if !strings.HasSuffix(frame.Filename, "hello.c") || frame.Line < 1 {
+		t.Fatalf("archive dSYM frame: %+v", frame)
 	}
 }
