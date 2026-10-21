@@ -47,6 +47,8 @@ type Crash struct {
 	Code          uint32
 	CrashAddr     uint64
 	RIP, RSP, RBP uint64
+	Arch          string
+	PointerSize   int
 	Modules       []Module
 	Frames        []Frame
 }
@@ -130,16 +132,15 @@ func ParseMinidump(data []byte) (Crash, error) {
 	if d.err != nil {
 		return crash, d.err
 	}
+	var declaredArch uint16
 	for _, s := range streams {
 		if s.typ == streamSystemInfo && s.size >= 2 {
-			arch := binary.LittleEndian.Uint16(data[s.rva:])
-			if arch != cpuArchAMD64 {
-				return crash, fmt.Errorf("unsupported minidump architecture %d", arch)
-			}
+			declaredArch = binary.LittleEndian.Uint16(data[s.rva:])
 		}
 	}
 	var ranges []memoryRange
-	var rawContext []byte
+	var firstContext []byte
+	contexts := map[uint32][]byte{}
 	var moduleEntries []struct{ base, size, stamp, nameRVA, cvRVA, cvSize uint64 }
 	for _, s := range streams {
 		body := data[s.rva : s.rva+s.size]
@@ -162,9 +163,11 @@ func ParseMinidump(data []byte) (Crash, error) {
 				if stackSize > 0 && uint64(stackRVA)+uint64(stackSize) <= uint64(len(data)) {
 					ranges = append(ranges, memoryRange{stackStart, data[stackRVA : stackRVA+stackSize]})
 				}
-				if threadID == crash.ThreadID || crash.ThreadID == 0 && len(rawContext) == 0 {
-					if contextSize >= 256 && uint64(contextRVA)+uint64(contextSize) <= uint64(len(data)) {
-						rawContext = data[contextRVA : contextRVA+contextSize]
+				if contextSize >= 256 && uint64(contextRVA)+uint64(contextSize) <= uint64(len(data)) {
+					context := data[contextRVA : contextRVA+contextSize]
+					contexts[threadID] = context
+					if len(firstContext) == 0 {
+						firstContext = context
 					}
 				}
 			}
@@ -240,10 +243,23 @@ func ParseMinidump(data []byte) (Crash, error) {
 		}
 		crash.Modules = append(crash.Modules, Module{Name: name, Base: entry.base, Size: uint32(entry.size), Timestamp: uint32(entry.stamp), DebugID: debugID})
 	}
-	if len(rawContext) >= 256 {
+	rawContext := contexts[crash.ThreadID]
+	if len(rawContext) == 0 {
+		rawContext = firstContext
+	}
+	switch len(rawContext) {
+	case 1232:
+		crash.Arch, crash.PointerSize = "amd64", 8
 		crash.RSP = binary.LittleEndian.Uint64(rawContext[152:])
 		crash.RBP = binary.LittleEndian.Uint64(rawContext[160:])
 		crash.RIP = binary.LittleEndian.Uint64(rawContext[248:])
+	case 716:
+		crash.Arch, crash.PointerSize = "x86", 4
+		crash.RBP = uint64(binary.LittleEndian.Uint32(rawContext[180:]))
+		crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[184:]))
+		crash.RSP = uint64(binary.LittleEndian.Uint32(rawContext[196:]))
+	default:
+		return Crash{}, fmt.Errorf("unsupported minidump context size %d (declared architecture %d)", len(rawContext), declaredArch)
 	}
 	crash.Frames = unwind(crash, ranges)
 	return crash, nil
@@ -301,8 +317,8 @@ func unwind(crash Crash, ranges []memoryRange) []Frame {
 	}
 	bp := crash.RBP
 	for len(addresses) < 64 && bp != 0 {
-		next, ok1 := readQword(ranges, bp)
-		ret, ok2 := readQword(ranges, bp+8)
+		next, ok1 := readPointer(ranges, bp, crash.PointerSize)
+		ret, ok2 := readPointer(ranges, bp+uint64(crash.PointerSize), crash.PointerSize)
 		if !ok1 || !ok2 || ret == 0 || seen[ret] || next != 0 && next <= bp {
 			break
 		}
@@ -314,7 +330,7 @@ func unwind(crash Crash, ranges []memoryRange) []Frame {
 		bp = next
 	}
 	if len(addresses) == 1 {
-		if ret, ok := readQword(ranges, crash.RSP); ok && ret != 0 {
+		if ret, ok := readPointer(ranges, crash.RSP, crash.PointerSize); ok && ret != 0 {
 			addresses = append(addresses, ret)
 		}
 	}
@@ -327,6 +343,18 @@ func unwind(crash Crash, ranges []memoryRange) []Frame {
 		frames = append(frames, frame)
 	}
 	return frames
+}
+
+func readPointer(ranges []memoryRange, addr uint64, size int) (uint64, bool) {
+	if size == 8 {
+		return readQword(ranges, addr)
+	}
+	for _, r := range ranges {
+		if addr >= r.start && addr+4 <= r.start+uint64(len(r.data)) {
+			return uint64(binary.LittleEndian.Uint32(r.data[addr-r.start:])), true
+		}
+	}
+	return 0, false
 }
 
 type SymbolFunction struct {

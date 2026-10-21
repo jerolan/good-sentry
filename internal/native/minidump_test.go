@@ -90,3 +90,66 @@ func TestParseMinidumpAndBreakpadSymbols(t *testing.T) {
 		t.Fatalf("symbolication: %+v", crash.Frames[0])
 	}
 }
+
+func buildX86Minidump() []byte {
+	const moduleBase = uint32(0x00400000)
+	const stackBase = uint32(0x00200000)
+	context := make([]byte, 716)
+	binary.LittleEndian.PutUint32(context[180:], stackBase)
+	binary.LittleEndian.PutUint32(context[184:], moduleBase+0x1010)
+	binary.LittleEndian.PutUint32(context[196:], stackBase)
+	stack := make([]byte, 0x100)
+	binary.LittleEndian.PutUint32(stack[4:], moduleBase+0x1050)
+	system := make([]byte, 2)
+	binary.LittleEndian.PutUint16(system, 3)
+	modules := make([]byte, 4+108)
+	binary.LittleEndian.PutUint32(modules, 1)
+	binary.LittleEndian.PutUint64(modules[4:], uint64(moduleBase))
+	binary.LittleEndian.PutUint32(modules[12:], 0x2000)
+	threads := make([]byte, 4+48)
+	binary.LittleEndian.PutUint32(threads, 1)
+	binary.LittleEndian.PutUint32(threads[4:], 3)
+	exception := make([]byte, 32)
+	binary.LittleEndian.PutUint32(exception, 3)
+	binary.LittleEndian.PutUint32(exception[8:], 0xC000001D)
+	binary.LittleEndian.PutUint64(exception[24:], uint64(moduleBase+0x1010))
+	streams := [][]byte{system, threads, modules, exception}
+	headerSize := 32 + len(streams)*12
+	buf := make([]byte, headerSize)
+	type location struct{ typ, rva, size uint32 }
+	locations := make([]location, 0, len(streams))
+	appendData := func(data []byte) uint32 { rva := uint32(len(buf)); buf = append(buf, data...); return rva }
+	stackRVA, contextRVA := appendData(stack), appendData(context)
+	nameRVA := appendData(encodeTestUTF16("C:\\test\\test_app32.pdb"))
+	binary.LittleEndian.PutUint32(modules[4+20:], nameRVA)
+	binary.LittleEndian.PutUint64(threads[28:], uint64(stackBase))
+	binary.LittleEndian.PutUint32(threads[36:], uint32(len(stack)))
+	binary.LittleEndian.PutUint32(threads[40:], stackRVA)
+	binary.LittleEndian.PutUint32(threads[44:], uint32(len(context)))
+	binary.LittleEndian.PutUint32(threads[48:], contextRVA)
+	types := []uint32{streamSystemInfo, streamThreadList, streamModuleList, streamException}
+	for i, data := range streams {
+		locations = append(locations, location{types[i], appendData(data), uint32(len(data))})
+	}
+	binary.LittleEndian.PutUint32(buf, minidumpSignature)
+	binary.LittleEndian.PutUint16(buf[4:], minidumpVersion)
+	binary.LittleEndian.PutUint32(buf[8:], uint32(len(streams)))
+	binary.LittleEndian.PutUint32(buf[12:], 32)
+	for i, loc := range locations {
+		off := 32 + i*12
+		binary.LittleEndian.PutUint32(buf[off:], loc.typ)
+		binary.LittleEndian.PutUint32(buf[off+4:], loc.size)
+		binary.LittleEndian.PutUint32(buf[off+8:], loc.rva)
+	}
+	return buf
+}
+
+func TestParseX86MinidumpFromContextShape(t *testing.T) {
+	crash, err := ParseMinidump(buildX86Minidump())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if crash.Arch != "x86" || crash.PointerSize != 4 || crash.ThreadID != 3 || crash.RIP != 0x00401010 || len(crash.Frames) != 2 || crash.Frames[1].Instruction != 0x00401050 {
+		t.Fatalf("x86 crash: %+v", crash)
+	}
+}
