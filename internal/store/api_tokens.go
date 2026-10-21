@@ -184,6 +184,9 @@ func (s *Store) RevokeAPIToken(ctx context.Context, userID, orgSlug, id string) 
 	if err != nil {
 		return dbError(err)
 	}
+	if _, err = tx.Exec(ctx, `UPDATE oauth_refresh_tokens SET revoked_at=COALESCE(revoked_at,now()) WHERE access_token_id=$1::bigint`, found); err != nil {
+		return err
+	}
 	return tx.Commit(ctx)
 }
 

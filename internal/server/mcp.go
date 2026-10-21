@@ -34,14 +34,14 @@ func (s *Server) registerMCPRoutes(mux *http.ServeMux) {
 			parts = strings.Fields(values[0])
 		}
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") || !validAPICredential(parts[1]) {
-			w.Header().Set("WWW-Authenticate", "Bearer")
+			w.Header().Set("WWW-Authenticate", s.mcpChallenge())
 			failure(w, 401, "A valid Bearer credential is required")
 			return
 		}
 		grant, err := s.db.AuthenticateAPIToken(r.Context(), s.hash(parts[1]))
 		if err != nil {
 			if errors.Is(err, store.ErrNotFound) {
-				w.Header().Set("WWW-Authenticate", "Bearer")
+				w.Header().Set("WWW-Authenticate", s.mcpChallenge())
 				failure(w, 401, "Credential is invalid, expired or revoked")
 			} else {
 				failure(w, 503, "Database unavailable")
@@ -64,6 +64,14 @@ func (s *Server) registerMCPRoutes(mux *http.ServeMux) {
 		}, &mcp.StreamableHTTPOptions{Stateless: true, JSONResponse: true, MaxRequestBodyBytes: maximum, PropagateRequestCancellation: true})
 		handler.ServeHTTP(mcpNoStoreWriter{w}, r)
 	})
+}
+
+func (s *Server) mcpChallenge() string {
+	challenge := `Bearer resource_metadata="` + s.oauthBase() + `/.well-known/oauth-protected-resource"`
+	if scopes := strings.Join(s.oauthScopes(), " "); scopes != "" {
+		challenge += `, scope="` + scopes + `"`
+	}
+	return challenge
 }
 
 // The SDK sets transport cache headers itself; enforce the authenticated

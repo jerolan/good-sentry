@@ -73,7 +73,7 @@ request body limit. Each browser delivery counts as a separate occurrence.
 
 ## Current gaps
 
-Remaining work includes native minidump processing and crash symbolication, automatic repository integrations, further conditional issue policies, broader management APIs, live GitLab/Grafana integration, MCP, OAuth/OIDC, administration/OpenAPI and cold archival. Debug-file multipart upload and listing retain bytes and metadata; chunked DIF assembly returns HTTP 501 until processing is implemented.
+Remaining work includes native minidump processing and crash symbolication, automatic repository integrations, further conditional issue policies, broader management APIs, live GitLab/Grafana integration, social OAuth/OIDC sign-in, administration/OpenAPI and cold archival. The opt-in MCP endpoint exposes the 17 documented tools through OAuth PKCE or scoped API tokens; its tool results are backed by GoodSentry's PostgreSQL event, span and log projections rather than DuckDB. Debug-file multipart upload and listing retain bytes and metadata; chunked DIF assembly returns HTTP 501 until processing is implemented.
 
 Slack, Discord, Microsoft Teams, Google Chat, Feishu, ntfy and Zulip formats pass real local HTTP receiver, PostgreSQL and responsive browser checks. Receipts from external provider channels remain unverified. Configure and test your intended destination before relying on it.
 

@@ -42,7 +42,6 @@ func (c Config) ValidateRuntimeAvailability() error {
 		enabled   bool
 		canonical string
 	}{
-		{"MCP", c.MCP, "GOODSENTRY_ENABLE_MCP"},
 		{"DuckDB", c.DuckDB, "GOODSENTRY_ENABLE_DUCKDB"},
 		{"admin", c.Admin, "ENABLE_ADMIN"},
 		{"OpenAPI", c.OpenAPI, "ENABLE_OPENAPI"},

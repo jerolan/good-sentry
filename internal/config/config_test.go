@@ -140,7 +140,6 @@ func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
 	for _, option := range []struct {
 		key, value, want string
 	}{
-		{"GOODSENTRY_ENABLE_MCP", "true", "MCP"},
 		{"GOODSENTRY_ENABLE_DUCKDB", "true", "DuckDB"},
 		{"ENABLE_ADMIN", "true", "admin"},
 		{"ENABLE_OPENAPI", "true", "OpenAPI"},
@@ -156,6 +155,14 @@ func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
 				t.Fatalf("unavailable %s accepted: %v", option.want, err)
 			}
 		})
+	}
+	t.Setenv("GOODSENTRY_ENABLE_MCP", "true")
+	cfg, err = Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.ValidateRuntimeAvailability(); err != nil {
+		t.Fatalf("implemented MCP rejected: %v", err)
 	}
 	t.Setenv("GOODSENTRY_ENABLE_MCP", "false")
 	t.Setenv("GOODSENTRY_ENABLE_DUCKDB", "false")

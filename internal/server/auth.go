@@ -130,27 +130,33 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	s.startSession(w, r, u, 200)
 }
 func (s *Server) startSession(w http.ResponseWriter, r *http.Request, u store.User, status int) {
+	csrf, err := s.establishSession(w, r, u)
+	if err != nil {
+		if errors.Is(err, store.ErrCredentialsChanged) {
+			failure(w, 401, "Invalid email or password")
+		} else {
+			report(w, err)
+		}
+		return
+	}
+	s.sendMe(w, r, identity{User: u, CSRF: csrf}, status)
+}
+
+func (s *Server) establishSession(w http.ResponseWriter, r *http.Request, u store.User) (string, error) {
 	value, err := token()
 	if err != nil {
-		failure(w, 500, "Could not create session")
-		return
+		return "", err
 	}
 	csrf, err := token()
 	if err != nil {
-		failure(w, 500, "Could not create session")
-		return
+		return "", err
 	}
 	expires := time.Now().Add(7 * 24 * time.Hour)
 	if err = s.db.CreateSession(r.Context(), u.ID, u.AuthGeneration, s.hash(value), csrf, expires); err != nil {
-		if errors.Is(err, store.ErrCredentialsChanged) {
-			failure(w, 401, "Invalid email or password")
-			return
-		}
-		report(w, err)
-		return
+		return "", err
 	}
 	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Value: value, Path: s.cfg.Prefix + "/", HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: strings.HasPrefix(s.cfg.Domain, "https://"), Expires: expires, MaxAge: 7 * 24 * 3600})
-	s.sendMe(w, r, identity{User: u, CSRF: csrf}, status)
+	return csrf, nil
 }
 func (s *Server) sendMe(w http.ResponseWriter, r *http.Request, i identity, status int) {
 	orgs, err := s.db.Organizations(r.Context(), i.User.ID)
@@ -158,7 +164,7 @@ func (s *Server) sendMe(w http.ResponseWriter, r *http.Request, i identity, stat
 		report(w, err)
 		return
 	}
-	writeJSON(w, status, map[string]any{"user": i.User, "organizations": orgs, "csrfToken": i.CSRF, "features": map[string]bool{"logs": s.cfg.Logs, "uptime": s.cfg.Uptime, "alerts": true, "alertDelivery": s.cfg.AlertDelivery, "passwordRecovery": s.mail != nil && s.account != nil}})
+	writeJSON(w, status, map[string]any{"user": i.User, "organizations": orgs, "csrfToken": i.CSRF, "features": map[string]bool{"logs": s.cfg.Logs, "uptime": s.cfg.Uptime, "alerts": true, "alertDelivery": s.cfg.AlertDelivery, "mcp": s.cfg.MCP, "passwordRecovery": s.mail != nil && s.account != nil}})
 }
 func (s *Server) me(w http.ResponseWriter, r *http.Request) { s.sendMe(w, r, current(r), 200) }
 func (s *Server) logout(w http.ResponseWriter, r *http.Request) {

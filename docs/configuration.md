@@ -26,6 +26,7 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `ARTIFACT_STAGING_MAX_BYTES` | `268435456` | Per-organization temporary chunk quota; at least `MAX_BODY_BYTES`, from 1 MiB to 1 TiB. |
 | `ARTIFACT_MAX_MAP_RECORDS` | `1000` | Maximum maps × selected projects in one atomic assembly, from 1 to 100000. |
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
+| `GOODSENTRY_ENABLE_MCP` | `false` | Enable `/mcp`, OAuth discovery and consent for MCP clients. |
 | `GOODSENTRY_OTLP_MAX_RECORDS` | `1000` | Maximum records per OTLP log batch, from 1 to 100000. |
 | `GOODSENTRY_OTLP_MAX_NODES` | `100000` | Maximum decoded nodes per OTLP log batch, from 100 to 1000000. |
 | `GOODSENTRY_ENABLE_UPTIME` | `true` | Enable monitor routes, UI and scheduler. |
@@ -45,7 +46,7 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS` | `false` | Allow monitors to reach your private network. |
 | `GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS` | `false` | Allow webhooks to reach your private network. |
 
-The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Enabling currently unavailable MCP, DuckDB, admin, OpenAPI or Valkey options fails startup rather than reporting them as available. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
+The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Enabling currently unavailable DuckDB, admin, OpenAPI or Valkey options fails startup rather than reporting them as available. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
 
 ## Scoped API tokens
 
@@ -61,6 +62,7 @@ Choose only the scopes your automation needs:
 | `project:write` | SDK key management and fixed-window quotas; legacy feedback submission and attachment reads. |
 | `event:read` | Issues and issue events. |
 | `event:write` | Issue reads, individual/bulk changes and merging. |
+| `log:read` | Retained Sentry and OTLP logs through MCP; only available when MCP and logs are enabled. |
 | `event:admin` | Issue deletion. |
 | `project:releases` | Release management. |
 
@@ -73,3 +75,9 @@ SENTRY_URL=http://localhost:8000/ SENTRY_ORG=my-workspace sentry-cli projects li
 ```
 
 Each compatible route checks its implemented scope and current project grants. Existing tokens retain their scopes. Broader management API coverage remains pending.
+
+## MCP clients
+
+Enable the opt-in endpoint with `GOODSENTRY_ENABLE_MCP=true`, then point an OAuth-capable MCP client at `https://your-goodsentry.example/mcp`. Clients discover protected-resource and authorization-server metadata automatically, register as public PKCE clients and ask you to choose an organization and project grant. The consent screen exposes the requested scopes; access tokens expire after one hour and refresh tokens rotate after each use.
+
+Clients without OAuth can use a scoped API token as `Authorization: Bearer <token>`. A token needs `org:read`, `project:read`, `event:read`/`event:write` or `log:read` for the corresponding tools. Revoking an MCP token from **API tokens** invalidates its linked refresh grant immediately.

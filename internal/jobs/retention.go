@@ -116,6 +116,23 @@ func StartReleaseRetention(parent context.Context, db *store.Store, days int, in
 	})
 }
 
+// OAuth secret retention removes only expired or revoked credential metadata.
+func StartOAuthSecretRetention(parent context.Context, db *store.Store, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		removed, err := db.CleanupOAuthSecrets(ctx)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("OAuth secret retention pass failed", "entryPoint", "oauth_retention_worker", "operation", "cleanup_oauth_secrets")
+		} else if removed > 0 {
+			slog.Info("OAuth secret retention cleanup committed", "entryPoint", "oauth_retention_worker", "secrets", removed)
+			return true
+		}
+		return false
+	})
+}
+
 // StartProjectKeyRateCleanup bounds fixed-window quota history independently of
 // ingestion feature switches and application restarts.
 func StartProjectKeyRateCleanup(parent context.Context, db *store.Store, interval time.Duration) func() {

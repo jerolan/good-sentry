@@ -80,7 +80,7 @@ func TestMCPAdmission(t *testing.T) {
 			if res.StatusCode != tc.want || res.Header.Get("Cache-Control") != "no-store" || res.Header.Get("Mcp-Session-Id") != "" || res.Header.Get("Access-Control-Allow-Origin") != "" {
 				t.Fatalf("status=%d want=%d headers=%v body=%s", res.StatusCode, tc.want, res.Header, raw)
 			}
-			if tc.want == 401 && res.Header.Get("WWW-Authenticate") != "Bearer" || tc.want == 405 && res.Header.Get("Allow") != "POST" {
+			if tc.want == 401 && !strings.HasPrefix(res.Header.Get("WWW-Authenticate"), "Bearer resource_metadata=") || tc.want == 405 && res.Header.Get("Allow") != "POST" {
 				t.Fatalf("missing authorization/method challenge: %v", res.Header)
 			}
 		})
