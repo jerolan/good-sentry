@@ -746,3 +746,11 @@ Evidence: `test-results/acceptance-20261020/{public-source.json,ci-public.json,c
 - [ ] Elaborate and deliver every remaining MCP tool and OAuth before completing the parent capability.
 
 MCP prerequisite local verification: `go test -race -tags=integration ./...` passes, including fresh server execution (65.596 s); unchanged packages reuse prior accepted cache results. `go vet -tags=integration ./...`, `go mod verify`, formatting and diff whitespace pass. Evidence: `test-results/acceptance-mcp-20261020/integration-race.log`. Default-image and public matching-source/CI acceptance remain pending. The preceding documentation revision f488dc5 also completed public CI39520008811 successfully. The complete MCP/OAuth parent remains open.
+
+## MCP issue investigation prerequisite
+
+- [x] Specify the five tool inputs/results, inherited scopes, immediate status semantics and one-snapshot event/parent lookup before implementation.
+- [ ] Add owning PostgreSQL and official-client HTTP failing proofs for grant isolation, ambiguity, coherent parent association, query/paging and status/audit behavior.
+- [ ] Implement CompatibleEventLookup and the five tools using native event/issue projections and state transitions.
+- [ ] Complete owning/native sibling/full race/vet/default-image/public acceptance without enabling the incomplete parent feature.
+- [ ] Complete remaining performance, log, alert/monitor tools and OAuth before advertising MCP.
