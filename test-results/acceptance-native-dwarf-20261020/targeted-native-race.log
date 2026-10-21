@@ -1,0 +1,74 @@
+=== RUN   TestParseELFObjectSymbols
+--- PASS: TestParseELFObjectSymbols (0.00s)
+=== RUN   TestSymbolicateByDebugID
+--- PASS: TestSymbolicateByDebugID (0.00s)
+PASS
+ok  	goodsentry/internal/native	1.013s
+=== RUN   TestArtifactUploadsHTTPContract
+=== RUN   TestArtifactUploadsHTTPContract/authorization_and_exact_negotiation
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/empty_multipart
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/empty_chunk
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/unknown_field
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/missing_filename
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/non-hex_filename
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/normalized_traversal_filename
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/wrong_chunk_checksum
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/malformed_gzip
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/too_many_parts
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/raw_part_size
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/HTTP_body_size
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_object
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_object
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/unknown_field
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_checksum
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/bad_checksum
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_chunks
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_chunks
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/invalid_chunk_digest
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_projects
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_projects
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/invalid_version
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/dist_bytes
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/dist_NUL
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/second_JSON_value
+=== RUN   TestArtifactUploadsHTTPContract/complete_bundle_commits_only_authorized_maps
+--- PASS: TestArtifactUploadsHTTPContract (1.09s)
+    --- PASS: TestArtifactUploadsHTTPContract/authorization_and_exact_negotiation (0.02s)
+    --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls (0.19s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/empty_multipart (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/empty_chunk (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/unknown_field (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/missing_filename (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/non-hex_filename (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/normalized_traversal_filename (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/wrong_chunk_checksum (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/malformed_gzip (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/too_many_parts (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/raw_part_size (0.02s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/HTTP_body_size (0.02s)
+    --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage (0.09s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_object (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_object (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/unknown_field (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_checksum (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/bad_checksum (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_chunks (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_chunks (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/invalid_chunk_digest (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_projects (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_projects (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/invalid_version (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/dist_bytes (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/dist_NUL (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/second_JSON_value (0.00s)
+    --- PASS: TestArtifactUploadsHTTPContract/complete_bundle_commits_only_authorized_maps (0.16s)
+=== RUN   TestChunkedDebugFileAssemblyState
+--- PASS: TestChunkedDebugFileAssemblyState (0.40s)
+=== RUN   TestNativeMinidumpSymbolicationAndIngestion
+--- PASS: TestNativeMinidumpSymbolicationAndIngestion (0.38s)
+=== RUN   TestNativeELFObjectSymbolicationByDebugID
+--- PASS: TestNativeELFObjectSymbolicationByDebugID (0.40s)
+PASS
+ok  	goodsentry/internal/server	3.285s

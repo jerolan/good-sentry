@@ -1,7 +1,11 @@
 package native
 
 import (
+	"bytes"
+	"debug/elf"
 	"encoding/binary"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -204,5 +208,65 @@ func TestParseARM64Minidump(t *testing.T) {
 	}
 	if crash.Arch != "arm64" || crash.ThreadID != 9 || crash.RIP != moduleBase+0x1010 || len(crash.Frames) != 2 || crash.Frames[1].Instruction != moduleBase+0x1050 {
 		t.Fatalf("arm64 crash: %+v", crash)
+	}
+}
+
+func TestParseELFObjectSymbols(t *testing.T) {
+	data, err := os.ReadFile("testdata/elf-dwarf-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := elf.NewFile(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var imageBase uint64
+	foundBase := false
+	for _, program := range file.Progs {
+		if program.Type == elf.PT_LOAD && program.Filesz > 0 && (!foundBase || program.Vaddr < imageBase) {
+			imageBase = program.Vaddr
+			foundBase = true
+		}
+	}
+	if !foundBase || imageBase == 0 {
+		t.Fatal("ELF fixture lacks a non-zero image base")
+	}
+	symbols, err := file.Symbols()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var functionAddress uint64
+	for _, symbol := range symbols {
+		if symbol.Name == "fixture_function" && symbol.Value >= imageBase && symbol.Size > 1 {
+			functionAddress = symbol.Value
+			break
+		}
+	}
+	if functionAddress == 0 {
+		t.Fatal("ELF fixture lacks fixture_function")
+	}
+	module, functions := ParseObjectSymbols("fixture", data)
+	if module != "fixture" || len(functions) == 0 {
+		t.Fatalf("ELF DWARF symbols module=%q functions=%d", module, len(functions))
+	}
+	crash := Crash{Modules: []Module{{Name: "fixture", Base: 0x70000000, Size: 0x10000000}}}
+	crash.Frames = []Frame{{Instruction: 0x70000000 + functionAddress - imageBase, Module: "fixture"}}
+	Symbolicate(&crash, SymbolSet{module: functions})
+	frame := crash.Frames[0]
+	if frame.Function != "fixture_function" || !strings.HasSuffix(frame.File, "elf-dwarf-source.c") || frame.Line < 1 {
+		t.Fatalf("ELF image-relative symbolication: raw=%#x base=%#x frame=%+v", functionAddress, imageBase, crash.Frames[0])
+	}
+}
+
+func TestSymbolicateByDebugID(t *testing.T) {
+	crash := Crash{Modules: []Module{{Name: "C:\\bin\\app.exe", Base: 0x1000, Size: 0x1000, DebugID: "ABCD-1234"}}}
+	crash.Frames = []Frame{{Instruction: 0x1100, Module: "C:\\bin\\app.exe"}}
+	symbols := SymbolSet{
+		moduleKey("C:\\bin\\app.exe"): []SymbolFunction{{Start: 0x200, End: 0x210, Name: "WrongObject"}},
+		DebugKey("{ABCD-1234}"):       []SymbolFunction{{Start: 0x100, End: 0x110, Name: "ByDebugID"}},
+	}
+	Symbolicate(&crash, symbols)
+	if crash.Frames[0].Function != "ByDebugID" {
+		t.Fatalf("debug-ID fallback: %+v", crash.Frames[0])
 	}
 }

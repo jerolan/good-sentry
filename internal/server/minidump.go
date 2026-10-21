@@ -65,8 +65,14 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 	}
 	symbols := native.SymbolSet{}
 	for _, file := range symbolFiles {
-		name, functions := native.ParseBreakpad(file.Name, file.Content)
+		name, functions := native.ParseObjectSymbols(file.Name, file.Content)
+		if len(functions) == 0 {
+			name, functions = native.ParseBreakpad(file.Name, file.Content)
+		}
 		symbols[name] = append(symbols[name], functions...)
+		if debugKey := native.DebugKey(file.DebugID); debugKey != "" {
+			symbols[debugKey] = append(symbols[debugKey], functions...)
+		}
 	}
 	native.Symbolicate(&crash, symbols)
 	fields := map[string]string{}

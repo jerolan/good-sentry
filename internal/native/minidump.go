@@ -457,11 +457,34 @@ func Symbolicate(crash *Crash, symbols SymbolSet) {
 		}
 		offset := frame.Instruction - module.Base
 		funcs := symbols[moduleKey(frame.Module)]
+		if module.DebugID != "" {
+			funcs = append(funcs, symbols[DebugKey(module.DebugID)]...)
+		}
+		best := -1
 		for j := range funcs {
 			f := &funcs[j]
 			if offset >= f.Start && offset < f.End {
-				frame.Function, frame.File, frame.Line = f.Name, f.File, f.Line
+				if best < 0 || symbolBetter(*f, funcs[best]) {
+					best = j
+				}
 			}
 		}
+		if best >= 0 {
+			f := funcs[best]
+			frame.Function, frame.File, frame.Line = f.Name, f.File, f.Line
+		}
 	}
+}
+
+func symbolBetter(candidate, current SymbolFunction) bool {
+	candidateSource, currentSource := candidate.File != "" && candidate.Line > 0, current.File != "" && current.Line > 0
+	if candidateSource != currentSource {
+		return candidateSource
+	}
+	return candidate.End-candidate.Start < current.End-current.Start
+}
+
+func DebugKey(value string) string {
+	value = strings.ToLower(strings.TrimSpace(value))
+	return strings.NewReplacer("-", "", "{", "", "}", "").Replace(value)
 }

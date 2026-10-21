@@ -129,6 +129,7 @@ func (s *Store) SaveDebugFile(ctx context.Context, access ManagementAccess, proj
 
 type DebugSymbolFile struct {
 	Name    string
+	DebugID string
 	Content []byte
 }
 
@@ -138,10 +139,9 @@ func (s *Store) DebugSymbolFiles(ctx context.Context, projectID string) ([]Debug
 	if referenceID(projectID) == 0 {
 		return nil, ErrNotFound
 	}
-	rows, err := s.pool.Query(ctx, `SELECT object_name,content FROM (
- SELECT object_name,content,created_at,id,sum(size) OVER(ORDER BY created_at DESC,id DESC) AS running
+	rows, err := s.pool.Query(ctx, `SELECT object_name,coalesce(debug_id,''),content FROM (
+ SELECT object_name,debug_id,content,created_at,id,sum(size) OVER(ORDER BY created_at DESC,id DESC) AS running
  FROM debug_files WHERE project_id=$1::bigint
- AND (symbol_type='sym' OR right(lower(name),4)='.sym' OR right(lower(object_name),4)='.sym')
 ) bounded WHERE running<=67108864 ORDER BY created_at DESC,id DESC LIMIT 25`, projectID)
 	if err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ func (s *Store) DebugSymbolFiles(ctx context.Context, projectID string) ([]Debug
 	items := []DebugSymbolFile{}
 	for rows.Next() {
 		var item DebugSymbolFile
-		if err := rows.Scan(&item.Name, &item.Content); err != nil {
+		if err := rows.Scan(&item.Name, &item.DebugID, &item.Content); err != nil {
 			return nil, err
 		}
 		items = append(items, item)
