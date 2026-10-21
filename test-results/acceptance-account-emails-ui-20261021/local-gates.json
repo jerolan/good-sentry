@@ -1,0 +1,15 @@
+{
+  "testedAt": "2026-10-21T16:48:00Z",
+  "commands": [
+    {"command": "go test -race -count=1 -tags=integration ./...", "result": "pass", "log": "integration-race.log", "server": "128.420s", "store": "253.488s"},
+    {"command": "go vet -tags=integration ./...", "result": "pass", "log": "vet.log"},
+    {"command": "node --check internal/server/web/app.js", "result": "pass"}
+  ],
+  "verifiedBehavior": [
+    "Account lists primary, verified and pending email state.",
+    "Add, resend, make-primary and confirmed remove actions call the accepted current-user APIs.",
+    "Primary changes update the visible account identity and failures remain inline and recoverable.",
+    "Existing password and application behavior remain green under the full integration race suite."
+  ],
+  "pending": "Responsive Chromium and published-image acceptance are not yet recorded for this UI increment."
+}

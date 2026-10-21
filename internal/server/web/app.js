@@ -693,13 +693,93 @@
         }
       }
     });
+    const identity = node('div', { class: 'account-identity' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'muted' }, state.me.user.email));
+    const emailPanel = node('section', { class: 'card panel account-panel', 'aria-label': 'Email addresses' });
     main.replaceChildren(
       node('div', { class: 'page-header' }, node('div', {}, node('div', { class: 'eyebrow' }, 'Your account'), node('h1', { tabindex: '-1' }, 'Account'),
         node('p', {}, 'Manage the credentials used to sign in to GoodSentry.'))),
-      node('section', { class: 'card panel panel-body account-panel' },
-        node('div', { class: 'account-identity' }, node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'muted' }, state.me.user.email)),
+      node('section', { class: 'card panel panel-body account-panel' }, identity,
         node('p', { class: 'small muted' }, 'Changing your password signs out every session and revokes personal API tokens in every organization. Project SDK keys keep working.'),
-        error, form));
+        error, form), emailPanel);
+
+    const emailPath = `/api/0/users/${encodeURIComponent(state.me.user.id)}/emails/`;
+    const emailError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const emailInput = field('New email address', 'email', { name: 'email', autocomplete: 'email', required: true, maxlength: 254 });
+    const addEmail = node('button', { type: 'submit', class: 'btn button primary' }, 'Add email');
+    const emailForm = node('form', { class: 'form-stack', 'aria-label': 'Add email address' }, emailError, emailInput.wrap, addEmail);
+    const emailBody = node('div', { class: 'panel-body form-stack' });
+    emailPanel.append(node('div', { class: 'panel-title' }, node('h2', {}, 'Email addresses'), node('span', { class: 'badge' }, 'Password sign-in')));
+    emailPanel.append(emailBody);
+
+    function updateIdentity() {
+      identity.replaceChildren(node('strong', {}, text(state.me.user.name, state.me.user.email)), node('span', { class: 'muted' }, state.me.user.email));
+    }
+
+    async function emailAction(path, method, body, success) {
+      emailError.textContent = '';
+      try {
+        const result = await request(path, { method, body });
+        notify(success);
+        await loadEmails();
+        return result;
+      } catch (failure) {
+        formError(emailError, failure);
+        emailError.focus();
+        return null;
+      }
+    }
+
+    function openRemoveEmail(item) {
+      const dialog = node('dialog', { class: 'alert-dialog', 'aria-labelledby': 'remove-email-title' });
+      const removeError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+      const remove = node('button', { type: 'submit', class: 'btn button danger' }, 'Remove email');
+      const removeForm = node('form', { class: 'form-stack' }, node('h2', { id: 'remove-email-title' }, 'Remove email?'), removeError,
+        node('p', { class: 'wrap-anywhere' }, `Remove ${item.email} from this account?`), node('div', { class: 'dialog-actions' }, button('Cancel', () => dialog.close()), remove));
+      removeForm.addEventListener('submit', async event => {
+        event.preventDefault(); remove.disabled = true;
+        try {
+          await request(emailPath, { method: 'DELETE', body: { email: item.email } });
+          dialog.close(); notify('Email address removed.'); await loadEmails();
+        } catch (failure) { formError(removeError, failure); removeError.focus(); }
+        finally { remove.disabled = false; }
+      });
+      emailPanel.append(dialog); dialog.showModal(); remove.focus();
+    }
+
+    async function loadEmails() {
+      emailBody.replaceChildren(node('p', { class: 'small muted' }, 'Loading email addresses…'));
+      let emails;
+      try { emails = await request(emailPath); }
+      catch (failure) {
+        emailBody.replaceChildren(node('div', {}, emailError, empty('Could not load email addresses', failure.message, button('Try again', loadEmails))));
+        return;
+      }
+      emailError.textContent = '';
+      const list = node('div', { class: 'release-project-list', role: 'list' });
+      for (const item of emails) {
+        const badges = node('div', { class: 'actions' });
+        if (item.isPrimary) badges.append(node('span', { class: 'badge resolved' }, 'Primary'));
+        badges.append(node('span', { class: 'badge ' + (item.isVerified ? 'resolved' : 'warning') }, item.isVerified ? 'Verified' : 'Pending verification'));
+        const actions = node('div', { class: 'actions' });
+        if (!item.isVerified) actions.append(button('Resend verification', () => emailAction(emailPath + 'confirm/', 'POST', { email: item.email }, 'Verification email sent.')));
+        if (item.isVerified && !item.isPrimary) actions.append(button('Make primary', async () => {
+          const updated = await emailAction(emailPath, 'PUT', { email: item.email }, 'Primary email updated.');
+          if (updated) { state.me.user.email = updated.email; updateIdentity(); }
+        }));
+        if (!item.isPrimary) actions.append(button('Remove', () => openRemoveEmail(item), 'danger'));
+        list.append(node('div', { class: 'release-project', role: 'listitem' }, node('div', {}, node('strong', { class: 'wrap-anywhere' }, item.email), badges), actions));
+      }
+      emailBody.replaceChildren(emailError, list, emailForm);
+    }
+    emailForm.addEventListener('submit', async event => {
+      event.preventDefault(); emailError.textContent = ''; addEmail.disabled = true; addEmail.textContent = 'Adding…';
+      try {
+        await request(emailPath, { method: 'POST', body: { email: emailInput.input.value } });
+        emailInput.input.value = ''; notify('Verification email sent.'); await loadEmails(); emailInput.input.focus();
+      } catch (failure) { formError(emailError, failure); emailError.focus(); }
+      finally { if (addEmail.isConnected) { addEmail.disabled = false; addEmail.textContent = 'Add email'; } }
+    });
+    loadEmails();
   }
 
   async function renderOrganizationSettings(main, version, params) {
