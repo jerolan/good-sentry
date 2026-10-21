@@ -1,0 +1,16 @@
+{
+  "revision": "41f7a3345aea43e258d69052a260ab7dea9d3f84",
+  "source": {"blobs": 858, "exact": true},
+  "ci": {"run": 39627836401, "conclusion": "success"},
+  "imageWorkflow": {"run": 39628661807, "conclusion": "success"},
+  "registry": {
+    "anonymous": true,
+    "index": "sha256:6a26cfd05b49776dd7144ed993d5a2cc25255072ddd57b3e40f63a9661c94daa",
+    "main": "sha256:6a26cfd05b49776dd7144ed993d5a2cc25255072ddd57b3e40f63a9661c94daa",
+    "latest": "sha256:6a26cfd05b49776dd7144ed993d5a2cc25255072ddd57b3e40f63a9661c94daa"
+  },
+  "binaries": {
+    "amd64": {"bytes": 22986912, "sha256": "61879eef29afe4e937207dee3a630aab91a77d34f4124a96a21c6d47bb43e7fd", "exactDockerLocalPublic": true},
+    "arm64": {"bytes": 21299360, "sha256": "cf62df2cea5e779bd32d4d4a96fa1fcc376ca5278f6d6aae7f41bf361c14dae3", "exactDockerLocalPublic": true}
+  }
+}

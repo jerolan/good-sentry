@@ -1,0 +1,8 @@
+{
+  "image": "goodsentry:set-owner-41f7a33",
+  "imageID": "sha256:9eff193c6700ab1a0c6de9ea4f96aa5074228508ec813b9f4f0bd18816524436",
+  "architecture": "amd64",
+  "user": "65532:65532",
+  "binarySHA256": "61879eef29afe4e937207dee3a630aab91a77d34f4124a96a21c6d47bb43e7fd",
+  "binaryBytes": 22986912
+}
