@@ -743,6 +743,7 @@
         } catch (failure) { formError(removeError, failure); removeError.focus(); }
         finally { remove.disabled = false; }
       });
+      dialog.append(removeForm);
       emailPanel.append(dialog); dialog.showModal(); remove.focus();
     }
 
