@@ -25,10 +25,13 @@ import (
 
 const oidcFlowCookie = "goodsentry_oidc"
 
-type oidcAuth struct {
-	issuer, clientID, clientSecret, label, redirectURL string
-	scopes                                             []string
-	autoCreate                                         bool
+var oidcDefaultScopes = []string{"openid", "profile", "email"}
+
+// oidcClient is one OpenID Connect relying party: the instance-wide provider or
+// an organization-managed application.
+type oidcClient struct {
+	issuer, clientID, clientSecret, redirectURL string
+	scopes                                      []string
 
 	mu       sync.Mutex
 	provider *oidc.Provider
@@ -36,10 +39,43 @@ type oidcAuth struct {
 	verifier *oidc.IDTokenVerifier
 }
 
+func newOIDCClient(issuer, clientID, clientSecret, redirectURL string, scopes []string) *oidcClient {
+	if len(scopes) == 0 {
+		scopes = oidcDefaultScopes
+	}
+	return &oidcClient{issuer: issuer, clientID: clientID, clientSecret: clientSecret, redirectURL: redirectURL, scopes: scopes}
+}
+
+func (c *oidcClient) client(ctx context.Context) (*oauth2.Config, *oidc.IDTokenVerifier, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.provider != nil {
+		return c.oauth, c.verifier, nil
+	}
+	provider, err := oidc.NewProvider(ctx, c.issuer)
+	if err != nil {
+		return nil, nil, err
+	}
+	c.provider = provider
+	c.oauth = &oauth2.Config{
+		ClientID: c.clientID, ClientSecret: c.clientSecret,
+		Endpoint: provider.Endpoint(), RedirectURL: c.redirectURL, Scopes: c.scopes,
+	}
+	c.verifier = provider.Verifier(&oidc.Config{ClientID: c.clientID})
+	return c.oauth, c.verifier, nil
+}
+
+type oidcAuth struct {
+	*oidcClient
+	label      string
+	autoCreate bool
+}
+
 type oidcFlow struct {
 	State    string `json:"state"`
 	Nonce    string `json:"nonce"`
 	Verifier string `json:"verifier"`
+	App      string `json:"app,omitempty"`
 	Expires  int64  `json:"expires"`
 }
 
@@ -49,40 +85,25 @@ func newOIDCAuth(cfg config.Config) *oidcAuth {
 	}
 	scopes := cfg.OIDCScopes
 	if len(scopes) == 0 {
-		scopes = []string{"openid", "profile", "email"}
+		scopes = oidcDefaultScopes
 	}
 	label := cfg.OIDCName
 	if label == "" {
 		label = "Single sign-on"
 	}
 	return &oidcAuth{
-		issuer: cfg.OIDCIssuer, clientID: cfg.OIDCClientID, clientSecret: cfg.OIDCClientSecret,
-		label: label, scopes: scopes, autoCreate: cfg.OIDCAutoCreate,
-		redirectURL: cfg.Domain + "/auth/oidc/callback",
+		oidcClient: newOIDCClient(cfg.OIDCIssuer, cfg.OIDCClientID, cfg.OIDCClientSecret, cfg.Domain+"/auth/oidc/callback", scopes),
+		label:      label,
+		autoCreate: cfg.OIDCAutoCreate,
 	}
-}
-
-func (a *oidcAuth) client(ctx context.Context) (*oauth2.Config, *oidc.IDTokenVerifier, error) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	if a.provider != nil {
-		return a.oauth, a.verifier, nil
-	}
-	provider, err := oidc.NewProvider(ctx, a.issuer)
-	if err != nil {
-		return nil, nil, err
-	}
-	a.provider = provider
-	a.oauth = &oauth2.Config{
-		ClientID: a.clientID, ClientSecret: a.clientSecret,
-		Endpoint: provider.Endpoint(), RedirectURL: a.redirectURL, Scopes: a.scopes,
-	}
-	a.verifier = provider.Verifier(&oidc.Config{ClientID: a.clientID})
-	return a.oauth, a.verifier, nil
 }
 
 func (s *Server) registerOIDCRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/auth/config", s.authConfig)
+	mux.HandleFunc("GET /api/v1/organizations/{org}/sso", s.publicOrganizationSSO)
+	mux.HandleFunc("GET /login/{org}", s.socialLoginPage)
+	mux.HandleFunc("GET /auth/social/{app}/start", s.socialStart)
+	mux.HandleFunc("GET /auth/social/{app}/callback", s.socialCallback)
 	if s.oidc == nil {
 		return
 	}
@@ -101,12 +122,20 @@ func (s *Server) authConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) oidcStart(w http.ResponseWriter, r *http.Request) {
+	s.startOIDCFlow(w, r, s.oidc.oidcClient, "")
+}
+
+func (s *Server) oidcCallback(w http.ResponseWriter, r *http.Request) {
+	s.finishOIDCFlow(w, r, s.oidc.oidcClient, "", s.oidc.issuer, s.oidc.autoCreate, "")
+}
+
+func (s *Server) startOIDCFlow(w http.ResponseWriter, r *http.Request, client *oidcClient, app string) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 	ctx = oidc.ClientContext(ctx, &http.Client{Timeout: 10 * time.Second})
-	config, _, err := s.oidc.client(ctx)
+	config, _, err := client.client(ctx)
 	if err != nil {
-		slog.Error("OIDC discovery failed")
+		slog.Error("OIDC discovery failed", "app", app)
 		s.oidcRedirectError(w, r)
 		return
 	}
@@ -121,7 +150,7 @@ func (s *Server) oidcStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	verifier := oauth2.GenerateVerifier()
-	flow := oidcFlow{State: state, Nonce: nonce, Verifier: verifier, Expires: time.Now().Add(10 * time.Minute).Unix()}
+	flow := oidcFlow{State: state, Nonce: nonce, Verifier: verifier, App: app, Expires: time.Now().Add(10 * time.Minute).Unix()}
 	raw, err := json.Marshal(flow)
 	if err != nil {
 		s.oidcRedirectError(w, r)
@@ -136,10 +165,10 @@ func (s *Server) oidcStart(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, config.AuthCodeURL(state, oidc.Nonce(nonce), oauth2.S256ChallengeOption(verifier)), http.StatusFound)
 }
 
-func (s *Server) oidcCallback(w http.ResponseWriter, r *http.Request) {
+func (s *Server) finishOIDCFlow(w http.ResponseWriter, r *http.Request, client *oidcClient, app, provider string, autoCreate bool, organizationID string) {
 	flow, ok := s.readOIDCFlow(r)
 	s.clearOIDCFlow(w)
-	if !ok {
+	if !ok || flow.App != app {
 		s.oidcRedirectError(w, r)
 		return
 	}
@@ -155,15 +184,15 @@ func (s *Server) oidcCallback(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
 	ctx = oidc.ClientContext(ctx, &http.Client{Timeout: 12 * time.Second})
-	config, verifier, err := s.oidc.client(ctx)
+	config, verifier, err := client.client(ctx)
 	if err != nil {
-		slog.Error("OIDC discovery failed during callback")
+		slog.Error("OIDC discovery failed during callback", "app", app)
 		s.oidcRedirectError(w, r)
 		return
 	}
 	exchange, err := config.Exchange(ctx, code, oauth2.VerifierOption(flow.Verifier))
 	if err != nil {
-		slog.Error("OIDC code exchange failed")
+		slog.Error("OIDC code exchange failed", "app", app)
 		s.oidcRedirectError(w, r)
 		return
 	}
@@ -174,7 +203,7 @@ func (s *Server) oidcCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	idToken, err := verifier.Verify(ctx, rawIDToken)
 	if err != nil || !hmac.Equal([]byte(idToken.Nonce), []byte(flow.Nonce)) {
-		slog.Error("OIDC ID token verification failed")
+		slog.Error("OIDC ID token verification failed", "app", app)
 		s.oidcRedirectError(w, r)
 		return
 	}
@@ -207,25 +236,113 @@ func (s *Server) oidcCallback(w http.ResponseWriter, r *http.Request) {
 		s.oidcRedirectError(w, r)
 		return
 	}
-	user, err := s.db.LoginOIDC(r.Context(), store.OIDCIdentity{
-		Provider: s.oidc.issuer, Subject: claims.Subject, Email: email, Name: name,
-		Password: []byte("oidc-only:" + sentinel), AutoCreate: s.oidc.autoCreate,
-	})
+	identity := store.OIDCIdentity{
+		Provider: provider, Subject: claims.Subject, Email: email, Name: name,
+		Password: []byte("oidc-only:" + sentinel), AutoCreate: autoCreate,
+	}
+	var user store.User
+	if organizationID != "" {
+		user, err = s.db.LoginSocialApp(r.Context(), organizationID, identity)
+	} else {
+		user, err = s.db.LoginOIDC(r.Context(), identity)
+	}
 	if errors.Is(err, store.ErrNotFound) {
 		s.oidcRedirectErrorCode(w, r, "no-account")
 		return
 	}
 	if err != nil {
-		slog.Error("OIDC account linking failed")
+		slog.Error("OIDC account linking failed", "app", app)
 		s.oidcRedirectError(w, r)
 		return
 	}
 	if _, err = s.establishSession(w, r, user); err != nil {
-		slog.Error("OIDC session creation failed")
+		slog.Error("OIDC session creation failed", "app", app)
 		s.oidcRedirectError(w, r)
 		return
 	}
 	http.Redirect(w, r, s.cfg.Prefix+"/", http.StatusSeeOther)
+}
+
+// socialApp resolves a public application by its stable provider identity.
+func (s *Server) socialApp(r *http.Request) (store.SocialApp, *oidcClient, bool) {
+	app, err := s.db.SocialAppByProviderID(r.Context(), r.PathValue("app"))
+	if err != nil {
+		return store.SocialApp{}, nil, false
+	}
+	secret, err := s.social.open(app.ClientSecret)
+	if err != nil {
+		slog.Error("social application secret is unreadable", "app", app.ProviderID)
+		return store.SocialApp{}, nil, false
+	}
+	client := newOIDCClient(app.ServerURL, app.ClientID, string(secret), s.socialCallbackURL(app.ProviderID), oidcDefaultScopes)
+	return app, client, true
+}
+
+func (s *Server) socialStart(w http.ResponseWriter, r *http.Request) {
+	app, client, ok := s.socialApp(r)
+	if !ok {
+		s.oidcRedirectError(w, r)
+		return
+	}
+	s.startOIDCFlow(w, r, client, app.ProviderID)
+}
+
+func (s *Server) socialCallback(w http.ResponseWriter, r *http.Request) {
+	app, client, ok := s.socialApp(r)
+	if !ok {
+		s.oidcRedirectError(w, r)
+		return
+	}
+	s.finishOIDCFlow(w, r, client, app.ProviderID, "social:"+app.ProviderID, true, app.OrganizationID)
+}
+
+// socialLoginPage sends a visitor to the workspace sign-in view focused on one
+// organization's applications.
+type publicSSOApp struct {
+	Name     string `json:"name"`
+	Brand    string `json:"brand"`
+	StartURL string `json:"startUrl"`
+}
+
+func (s *Server) socialLoginPage(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("org")
+	if slug == "" {
+		http.NotFound(w, r)
+		return
+	}
+	if _, _, err := s.db.PublicOrganizationApps(r.Context(), slug); err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			http.NotFound(w, r)
+			return
+		}
+		report(w, err)
+		return
+	}
+	http.Redirect(w, r, s.cfg.Prefix+"/?sso="+url.QueryEscape(slug), http.StatusFound)
+}
+
+func (s *Server) publicOrganizationSSO(w http.ResponseWriter, r *http.Request) {
+	if r.URL.RawQuery != "" {
+		failure(w, 400, "SSO discovery accepts no query parameters")
+		return
+	}
+	organization, apps, err := s.db.PublicOrganizationApps(r.Context(), r.PathValue("org"))
+	if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			failure(w, 404, "Not found")
+			return
+		}
+		report(w, err)
+		return
+	}
+	views := make([]publicSSOApp, 0, len(apps))
+	for _, app := range apps {
+		views = append(views, publicSSOApp{Name: app.Name, Brand: app.Brand, StartURL: s.socialStartURL(app.ProviderID)})
+	}
+	writeJSON(w, 200, map[string]any{
+		"organization": map[string]string{"slug": organization.Slug, "name": organization.Name},
+		"apps":         views,
+	})
 }
 
 func (s *Server) readOIDCFlow(r *http.Request) (oidcFlow, bool) {

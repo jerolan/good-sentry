@@ -29,6 +29,7 @@ type Server struct {
 	account       *accountmail.SecretBox
 	oidc          *oidcAuth
 	totp          *totpBox
+	social        *secretSealer
 	defaultUserID string
 	openCSRF      string
 }
@@ -48,7 +49,8 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 
 func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender *notify.Sender, box *accountmail.SecretBox, defaultUser *store.User) http.Handler {
 	sealer, _ := newTOTPBox(cfg.Secret)
-	s := &Server{cfg: cfg, db: db, mail: sender, account: box, oidc: newOIDCAuth(cfg), totp: sealer}
+	socialSealer, _ := newSecretSealer(cfg.Secret, "GoodSentry social apps v1", 191)
+	s := &Server{cfg: cfg, db: db, mail: sender, account: box, oidc: newOIDCAuth(cfg), totp: sealer, social: socialSealer}
 	if cfg.AuthenticationDisabled() && defaultUser != nil {
 		s.defaultUserID = defaultUser.ID
 		s.openCSRF = s.hash("open-auth-csrf-v1:" + defaultUser.ID)
@@ -115,6 +117,7 @@ func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender
 	s.registerCompatibleLogRoutes(mux)
 	s.registerOAuthRoutes(mux)
 	s.registerOIDCRoutes(mux)
+	s.registerSocialAppRoutes(mux)
 	s.registerCompatibleMonitorRoutes(mux)
 	s.registerCompatibleAlertRoutes(mux)
 	s.registerMCPRoutes(mux)

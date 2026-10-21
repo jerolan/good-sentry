@@ -331,6 +331,27 @@
         node('p', { class: 'muted small', 'aria-hidden': 'true' }, 'or'),
         node('a', { class: 'btn button', href: base + '/auth/oidc/start' }, 'Continue with ' + (state.authConfig.oidc.name || 'single sign-on')));
     }
+    const ssoWorkspace = setup ? null : new URLSearchParams(location.search).get('sso');
+    if (ssoWorkspace) {
+      const sso = node('div', { class: 'form-stack', 'aria-label': 'Workspace single sign-on' },
+        node('p', { class: 'small muted' }, 'Loading workspace single sign-on…'));
+      children.append(sso);
+      request('/api/v1/organizations/' + encodeURIComponent(ssoWorkspace) + '/sso')
+        .then(result => {
+          if (!sso.isConnected) return;
+          const apps = result.apps || [];
+          if (!apps.length) {
+            sso.replaceChildren(node('p', { class: 'small muted' }, `No single sign-on applications are configured for ${result.organization.name}.`));
+            return;
+          }
+          sso.replaceChildren(
+            node('p', { class: 'small muted' }, `Continue to ${result.organization.name} with its identity provider, or sign in with a password below.`),
+            ...apps.map(app => node('a', { class: 'btn button', href: app.startUrl }, 'Continue with ' + app.name)));
+        })
+        .catch(failure => {
+          if (sso.isConnected) sso.replaceChildren(node('p', { class: 'form-error' }, failure.message));
+        });
+    }
     authFrame(setup ? 'First-time setup' : 'Your workspace', setup ? 'Welcome to GoodSentry' : 'Sign in to GoodSentry',
       setup ? 'Create the first owner account and organization. Then connect your application with its project DSN.' : 'Use your account to view and manage application errors.', children, (setup ? name : email).input);
   }
@@ -1081,6 +1102,116 @@
       node('div', { class: 'panel-title' }, node('h2', {}, 'Workspace details')),
       node('div', { class: 'panel-body form-stack' }, details, form));
     main.append(renamePanel);
+    const ssoPanel = node('section', { class: 'card panel', 'aria-label': 'Single sign-on applications' });
+    const ssoBody = node('div', { class: 'panel-body form-stack' });
+    ssoPanel.append(node('div', { class: 'panel-title' }, node('h2', {}, 'Single sign-on'), node('span', { class: 'badge' }, 'OpenID Connect')), ssoBody);
+    main.append(ssoPanel);
+    const ssoPath = `/api/0/organizations/${encodeURIComponent(org.slug)}/social-apps/`;
+    const ssoError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const manageSSO = ['owner', 'admin'].includes(org.role);
+
+    function openSSODialog(app) {
+      const editing = Boolean(app);
+      const dialog = node('dialog', { class: 'alert-dialog', 'aria-labelledby': 'sso-dialog-title' });
+      const dialogError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+      const name = field('Application name', 'text', { name: 'name', required: true, maxlength: 40, value: app?.name || '' });
+      const clientID = field('Client ID', 'text', { name: 'clientID', required: true, maxlength: 191, value: app?.clientID || '' });
+      const clientSecret = field(editing ? 'New client secret (optional)' : 'Client secret', 'password', { name: 'clientSecret', autocomplete: 'new-password', maxlength: 191, ...(editing ? {} : { required: true }) });
+      const provider = selectField('Provider', [['openid_connect', 'OpenID Connect'], ['google', 'Google']], app?.brand || 'openid_connect', {});
+      const serverURL = field('Issuer URL', 'url', { name: 'serverUrl', maxlength: 500, placeholder: 'https://issuer.example.com', value: app?.serverUrl || '' });
+      const submit = node('button', { type: 'submit', class: 'btn button primary' }, editing ? 'Save application' : 'Add application');
+      const form = node('form', { class: 'form-stack', 'aria-label': editing ? 'Edit single sign-on application' : 'Add single sign-on application' },
+        node('h2', { id: 'sso-dialog-title' }, editing ? 'Edit single sign-on application' : 'Add single sign-on application'),
+        dialogError, name.wrap, clientID.wrap, clientSecret.wrap, editing ? null : provider.wrap, serverURL.wrap,
+        node('p', { class: 'small muted' }, editing
+          ? 'Leave the secret or issuer URL empty to keep the stored value.'
+          : 'The issuer URL must be https. Copy the callback URL shown after saving into your identity provider. The Google preset defaults to https://accounts.google.com.'),
+        node('div', { class: 'dialog-actions' }, button('Cancel', () => dialog.close()), submit));
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        dialogError.textContent = '';
+        submit.disabled = true;
+        submit.textContent = 'Saving…';
+        const body = { name: name.input.value, clientID: clientID.input.value };
+        if (clientSecret.input.value) body.clientSecret = clientSecret.input.value;
+        if (serverURL.input.value.trim()) body.serverUrl = serverURL.input.value.trim();
+        if (!editing) body.provider = provider.input.value;
+        try {
+          await request(editing ? ssoPath + encodeURIComponent(app.id) + '/' : ssoPath, { method: editing ? 'PUT' : 'POST', body });
+          dialog.close();
+          notify(editing ? 'Application updated.' : 'Application added.');
+          await loadSSO();
+        } catch (failure) {
+          formError(dialogError, failure);
+        } finally {
+          submit.disabled = false;
+          submit.textContent = editing ? 'Save application' : 'Add application';
+        }
+      });
+      dialog.append(form);
+      ssoPanel.append(dialog);
+      dialog.showModal();
+      name.input.focus();
+    }
+
+    function openDeleteSSO(app) {
+      const dialog = node('dialog', { class: 'alert-dialog', 'aria-labelledby': 'delete-sso-title' });
+      const deleteError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+      const remove = node('button', { type: 'submit', class: 'btn button danger' }, 'Delete application');
+      const form = node('form', { class: 'form-stack' }, node('h2', { id: 'delete-sso-title' }, 'Delete application?'), deleteError,
+        node('p', { class: 'wrap-anywhere' }, `Delete ${app.name}? People who only sign in through this application lose that path.`),
+        node('div', { class: 'dialog-actions' }, button('Cancel', () => dialog.close()), remove));
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        deleteError.textContent = '';
+        remove.disabled = true;
+        try {
+          await request(ssoPath + encodeURIComponent(app.id) + '/', { method: 'DELETE' });
+          dialog.close();
+          notify('Application deleted.');
+          await loadSSO();
+        } catch (failure) {
+          formError(deleteError, failure);
+        } finally {
+          remove.disabled = false;
+        }
+      });
+      dialog.append(form);
+      ssoPanel.append(dialog);
+      dialog.showModal();
+      remove.focus();
+    }
+
+    async function loadSSO() {
+      ssoBody.replaceChildren(node('p', { class: 'small muted' }, 'Loading single sign-on applications…'));
+      let apps;
+      try {
+        apps = await request(ssoPath);
+      } catch (failure) {
+        ssoBody.replaceChildren(node('div', {}, ssoError, empty('Could not load single sign-on applications', failure.message, button('Try again', loadSSO))));
+        return;
+      }
+      ssoError.textContent = '';
+      const children = [ssoError,
+        node('p', { class: 'muted' }, 'Let people sign in to this workspace with your identity provider. Register each callback URL at the provider, then share the login link.')];
+      const loginLink = apps.length ? apps[0].loginUrl : location.origin + base + '/login/' + encodeURIComponent(org.slug);
+      if (!apps.length) children.push(node('p', { class: 'small muted' }, 'No applications configured yet.'));
+      for (const app of apps) {
+        const actions = node('div', { class: 'actions' }, button('Copy callback', () => copyValue(app.callbackUrl, 'Callback URL')));
+        if (manageSSO) actions.append(button('Edit', () => openSSODialog(app)), button('Delete', () => openDeleteSSO(app), 'danger'));
+        children.push(node('div', { class: 'release-project', role: 'listitem' },
+          node('div', {}, node('strong', {}, app.name),
+            node('span', { class: 'badge' }, app.brand === 'google' ? 'Google' : 'OpenID Connect'),
+            node('div', { class: 'small muted mono wrap-anywhere' }, app.callbackUrl)),
+          actions));
+      }
+      children.push(node('div', { class: 'actions' },
+        button('Copy login link', () => copyValue(loginLink, 'Login link')),
+        manageSSO ? button('Add application', () => openSSODialog(), 'primary') : null));
+      ssoBody.replaceChildren(...children);
+    }
+    loadSSO();
+
     const deletePanel = node('section', { class: 'card panel', 'aria-label': 'Delete organization' },
       node('div', { class: 'panel-title' }, node('h2', {}, 'Delete organization')),
       node('div', { class: 'panel-body form-stack' },

@@ -1,12 +1,9 @@
 package server
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha1"
-	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base32"
 	"encoding/binary"
@@ -32,44 +29,36 @@ const (
 
 var errInvalidTOTPSecret = errors.New("invalid two-factor secret")
 
-// totpBox seals the per-account TOTP secret at rest with AES-256-GCM under a key
-// derived from SECRET_KEY.
-type totpBox struct{ aead cipher.AEAD }
+// totpBox seals the per-account TOTP secret at rest. The purpose label is both
+// the key-derivation prefix and the associated data, so previously sealed
+// secrets stay readable.
+type totpBox struct{ sealer *secretSealer }
 
 func newTOTPBox(secret string) (*totpBox, error) {
-	if len(secret) < 32 {
-		return nil, errors.New("two-factor secret must contain at least 32 characters")
-	}
-	key := sha256.Sum256([]byte("GoodSentry two-factor v1\x00" + secret))
-	block, err := aes.NewCipher(key[:])
+	sealer, err := newSecretSealer(secret, "GoodSentry two-factor v1", 64)
 	if err != nil {
 		return nil, err
 	}
-	aead, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-	return &totpBox{aead: aead}, nil
+	return &totpBox{sealer: sealer}, nil
 }
 
 func (b *totpBox) seal(plain []byte) ([]byte, error) {
-	if b == nil || len(plain) == 0 || len(plain) > 64 {
+	if b == nil {
 		return nil, errInvalidTOTPSecret
 	}
-	nonce := make([]byte, b.aead.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return nil, err
+	sealed, err := b.sealer.seal(plain)
+	if err != nil {
+		return nil, errInvalidTOTPSecret
 	}
-	return b.aead.Seal(nonce, nonce, plain, []byte("GoodSentry two-factor v1")), nil
+	return sealed, nil
 }
 
 func (b *totpBox) open(sealed []byte) ([]byte, error) {
-	if b == nil || len(sealed) < b.aead.NonceSize()+b.aead.Overhead() || len(sealed) > maxSealedTOTP {
+	if b == nil {
 		return nil, errInvalidTOTPSecret
 	}
-	nonce, ciphertext := sealed[:b.aead.NonceSize()], sealed[b.aead.NonceSize():]
-	plain, err := b.aead.Open(nil, nonce, ciphertext, []byte("GoodSentry two-factor v1"))
-	if err != nil || len(plain) == 0 || len(plain) > 64 {
+	plain, err := b.sealer.open(sealed)
+	if err != nil {
 		return nil, errInvalidTOTPSecret
 	}
 	return plain, nil

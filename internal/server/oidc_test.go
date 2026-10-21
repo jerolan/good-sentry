@@ -25,16 +25,17 @@ import (
 )
 
 type oidcTestProvider struct {
-	core         *oidctest.Server
-	key          *rsa.PrivateKey
-	clientID     string
-	clientSecret string
-	email        string
-	name         string
-	issuer       string
-	mu           sync.Mutex
-	nonce        string
-	challenge    string
+	core           *oidctest.Server
+	key            *rsa.PrivateKey
+	clientID       string
+	clientSecret   string
+	email          string
+	name           string
+	issuer         string
+	callbackSuffix string
+	mu             sync.Mutex
+	nonce          string
+	challenge      string
 }
 
 func (p *oidcTestProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +48,11 @@ func (p *oidcTestProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		redirect := r.URL.Query().Get("redirect_uri")
 		target, err := url.Parse(redirect)
-		if err != nil || target.Scheme != "http" || !strings.HasSuffix(target.Path, "/auth/oidc/callback") {
+		suffix := p.callbackSuffix
+		if suffix == "" {
+			suffix = "/auth/oidc/callback"
+		}
+		if err != nil || target.Scheme != "http" || !strings.HasSuffix(target.Path, suffix) {
 			http.Error(w, "invalid redirect", http.StatusBadRequest)
 			return
 		}
@@ -94,6 +99,12 @@ func (p *oidcTestProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func newOIDCTestProvider(t *testing.T, email, name string) *httptest.Server {
 	t.Helper()
+	_, server := newOIDCTestProviderFull(t, email, name)
+	return server
+}
+
+func newOIDCTestProviderFull(t *testing.T, email, name string) (*oidcTestProvider, *httptest.Server) {
+	t.Helper()
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		t.Fatal(err)
@@ -107,7 +118,7 @@ func newOIDCTestProvider(t *testing.T, email, name string) *httptest.Server {
 	provider.issuer = server.URL
 	provider.core.SetIssuer(server.URL)
 	t.Cleanup(server.Close)
-	return server
+	return provider, server
 }
 
 func TestOIDCPKCEAccountLinkAndSession(t *testing.T) {

@@ -83,3 +83,19 @@ WHERE i.provider=$1 AND i.subject=$2`, input.Provider, input.Subject).
 	}
 	return user, tx.Commit(ctx)
 }
+
+// LoginSocialApp links an organization application identity and ensures the
+// signed-in account is an active member of the application's organization. The
+// identity provider for the organization vouches for that membership.
+func (s *Store) LoginSocialApp(ctx context.Context, organizationID string, input OIDCIdentity) (User, error) {
+	user, err := s.LoginOIDC(ctx, input)
+	if err != nil {
+		return User{}, err
+	}
+	if _, err = s.pool.Exec(ctx, `INSERT INTO memberships(organization_id,user_id,role)
+		SELECT $1::bigint,id,'member' FROM users WHERE id=$2::bigint
+		ON CONFLICT(organization_id,user_id) DO NOTHING`, organizationID, user.ID); err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
