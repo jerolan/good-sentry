@@ -1,0 +1,16 @@
+{
+  "url": "https://jerolan.github.io/good-sentry/",
+  "browser": "Chromium 140.0.7339.16 headless",
+  "screenshots": [
+    "live-1440.png",
+    "live-390.png",
+    "live-full-1440.png"
+  ],
+  "checks": [
+    "Desktop viewport renders the hero and primary product screenshot without clipping.",
+    "Mobile 390px layout reflows to one column without horizontal overflow.",
+    "Full desktop capture shows seven alternating feature panels and their real screenshots.",
+    "Quickstart, status, footer and all feature copy remain visible in document order."
+  ],
+  "result": "pass"
+}
