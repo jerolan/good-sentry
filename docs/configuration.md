@@ -27,6 +27,7 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `ARTIFACT_MAX_MAP_RECORDS` | `1000` | Maximum maps × selected projects in one atomic assembly, from 1 to 100000. |
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
 | `GOODSENTRY_ENABLE_MCP` | `false` | Enable `/mcp`, OAuth discovery and consent for MCP clients. |
+| `GOODSENTRY_ENABLE_ORGANIZATION_CREATION` | `false` | Allow owners/admins to create additional organizations through the compatible API. `ENABLE_ORGANIZATION_CREATION` is accepted as a GlitchTip-compatible alias. |
 | `GOODSENTRY_OIDC_ISSUER` | Empty | Optional OpenID Connect issuer URL. HTTPS is required except on loopback. |
 | `GOODSENTRY_OIDC_CLIENT_ID` | Empty | OIDC client identifier; required with an issuer. |
 | `GOODSENTRY_OIDC_CLIENT_SECRET` | Empty | OIDC client secret; required with an issuer and never sent to browsers. |
@@ -81,9 +82,9 @@ Choose only the scopes your automation needs:
 | Scope | Supported operations |
 | --- | --- |
 | `org:read` | Organization, people, team and authorized-project discovery. |
-| `org:write` | Member invitations, team changes and organization rename/delete. |
+| `org:write` | Member invitations, team changes, organization rename/delete and additional organization creation when enabled. |
 | `project:read` | Project metadata/events, event attachments and legacy user reports. |
-| `project:write` | SDK key management and fixed-window quotas; legacy feedback submission and attachment reads. |
+| `project:write` | SDK key management, fixed-window quotas and environment visibility; legacy feedback submission and attachment reads. |
 | `event:read` | Issues and issue events. |
 | `event:write` | Issue reads, individual/bulk changes and merging. |
 | `log:read` | Retained Sentry and OTLP logs through MCP; only available when MCP and logs are enabled. |

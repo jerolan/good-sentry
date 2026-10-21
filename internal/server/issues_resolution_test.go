@@ -43,6 +43,10 @@ type resolutionHTTPFixture struct {
 }
 
 func newResolutionHTTPFixture(t *testing.T) *resolutionHTTPFixture {
+	return newResolutionHTTPFixtureWithConfig(t, nil)
+}
+
+func newResolutionHTTPFixtureWithConfig(t *testing.T, configure func(*config.Config)) *resolutionHTTPFixture {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	t.Cleanup(cancel)
@@ -102,6 +106,9 @@ func newResolutionHTTPFixture(t *testing.T) *resolutionHTTPFixture {
 		t.Fatal(err)
 	}
 	cfg := config.Config{Domain: "https://public.example.test/good", Prefix: "/good", Secret: strings.Repeat("r", 64), MaxBodyBytes: 1 << 20}
+	if configure != nil {
+		configure(&cfg)
+	}
 	srv := httptest.NewServer(New(cfg, db))
 	t.Cleanup(srv.Close)
 	jar, err := cookiejar.New(nil)

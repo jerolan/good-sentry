@@ -15,6 +15,7 @@ type Config struct {
 	DatabaseURL, Secret, Domain, Prefix, Addr  string
 	EmailURL, FromEmail, ValkeyURL, UploadDir  string
 	Logs, Uptime, MCP, DuckDB, OpenAPI, Admin  bool
+	OrganizationCreation                       bool
 	MaxBodyBytes                               int64
 	RetentionDays, LogRetentionDays            int
 	TransactionRetentionDays                   int
@@ -99,6 +100,7 @@ func Load() (Config, error) {
 		{"GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS", "", false, &c.WebhookAllowPrivate},
 		{"GOODSENTRY_ENABLE_MCP", "GLITCHTIP_ENABLE_MCP", false, &c.MCP},
 		{"GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB", false, &c.DuckDB},
+		{"GOODSENTRY_ENABLE_ORGANIZATION_CREATION", "ENABLE_ORGANIZATION_CREATION", false, &c.OrganizationCreation},
 		{"ENABLE_OPENAPI", "", false, &c.OpenAPI}, {"ENABLE_ADMIN", "", false, &c.Admin},
 	} {
 		v, err := strconv.ParseBool(alias(flag.name, flag.legacy, strconv.FormatBool(flag.def)))

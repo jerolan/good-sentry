@@ -110,19 +110,20 @@ func TestExplicitGoodSentryFlagOverridesAlias(t *testing.T) {
 
 func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
 	base := map[string]string{
-		"DATABASE_URL":             "postgres://goodsentry:local@localhost/goodsentry",
-		"SECRET_KEY":               strings.Repeat("a", 64),
-		"GOODSENTRY_DOMAIN":        "http://localhost:8000",
-		"SERVER_ROLE":              "all_in_one",
-		"VALKEY_URL":               "",
-		"GLITCHTIP_ENABLE_LOGS":    "false",
-		"GLITCHTIP_ENABLE_UPTIME":  "false",
-		"GLITCHTIP_ENABLE_MCP":     "true",
-		"GLITCHTIP_ENABLE_DUCKDB":  "true",
-		"GOODSENTRY_ENABLE_MCP":    "false",
-		"GOODSENTRY_ENABLE_DUCKDB": "false",
-		"ENABLE_ADMIN":             "false",
-		"ENABLE_OPENAPI":           "false",
+		"DATABASE_URL":                 "postgres://goodsentry:local@localhost/goodsentry",
+		"SECRET_KEY":                   strings.Repeat("a", 64),
+		"GOODSENTRY_DOMAIN":            "http://localhost:8000",
+		"SERVER_ROLE":                  "all_in_one",
+		"VALKEY_URL":                   "",
+		"GLITCHTIP_ENABLE_LOGS":        "false",
+		"GLITCHTIP_ENABLE_UPTIME":      "false",
+		"GLITCHTIP_ENABLE_MCP":         "true",
+		"GLITCHTIP_ENABLE_DUCKDB":      "true",
+		"GOODSENTRY_ENABLE_MCP":        "false",
+		"GOODSENTRY_ENABLE_DUCKDB":     "false",
+		"ENABLE_ORGANIZATION_CREATION": "false",
+		"ENABLE_ADMIN":                 "false",
+		"ENABLE_OPENAPI":               "false",
 	}
 	for key, value := range base {
 		t.Setenv(key, value)
@@ -131,7 +132,7 @@ func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Logs || cfg.Uptime || cfg.MCP || cfg.DuckDB || cfg.Admin || cfg.OpenAPI || cfg.ValkeyURL != "" {
+	if cfg.Logs || cfg.Uptime || cfg.MCP || cfg.DuckDB || cfg.Admin || cfg.OpenAPI || cfg.OrganizationCreation || cfg.ValkeyURL != "" {
 		t.Fatalf("alias precedence/runtime flags=%+v", cfg)
 	}
 	if err := cfg.ValidateRuntimeAvailability(); err != nil {
@@ -163,6 +164,16 @@ func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
 	}
 	if err := cfg.ValidateRuntimeAvailability(); err != nil {
 		t.Fatalf("implemented MCP rejected: %v", err)
+	}
+	t.Setenv("ENABLE_ORGANIZATION_CREATION", "true")
+	cfg, err = Load()
+	if err != nil || !cfg.OrganizationCreation {
+		t.Fatalf("organization creation flag not loaded: %+v %v", cfg, err)
+	}
+	t.Setenv("GOODSENTRY_ENABLE_ORGANIZATION_CREATION", "false")
+	cfg, err = Load()
+	if err != nil || cfg.OrganizationCreation {
+		t.Fatalf("organization creation precedence: %+v %v", cfg, err)
 	}
 	t.Setenv("GOODSENTRY_ENABLE_MCP", "false")
 	t.Setenv("GOODSENTRY_ENABLE_DUCKDB", "false")

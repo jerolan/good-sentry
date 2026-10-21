@@ -1,0 +1,18 @@
+{
+  "testedAt": "2026-10-21T14:56:39Z",
+  "commands": [
+    {"command": "go test -race -count=1 -tags=integration ./...", "result": "pass", "log": "integration-race.log", "server": "124.472s", "store": "242.877s"},
+    {"command": "go test -race -count=1 ./internal/config", "result": "pass", "log": "config-race.log"},
+    {"command": "targeted compatible organization creation store/HTTP tests with -race", "result": "pass", "log": "targeted-org-create-race.log"},
+    {"command": "go vet -tags=integration ./...", "result": "pass", "log": "vet.log"},
+    {"command": "go mod verify", "result": "pass", "log": "mod-verify.log"},
+    {"command": "git diff --check and gofmt -l", "result": "pass"}
+  ],
+  "verifiedBehavior": [
+    "The GoodSentry organization-creation flag defaults false, accepts the GlitchTip alias and respects explicit GoodSentry precedence.",
+    "Disabled creation returns 403 before an organization write.",
+    "Owner/admin sessions and source-organization org:write Bearer credentials create an organization with one owner membership and default team atomically.",
+    "Member, read-only token, malformed-name/body, duplicate-slug and missing-authority cases fail without leaking broader authority.",
+    "The 201 OrganizationDetailSchema exposes the new owner access, no projects and the joined default team."
+  ]
+}

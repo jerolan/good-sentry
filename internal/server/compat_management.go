@@ -14,6 +14,7 @@ import (
 )
 
 func (s *Server) registerCompatibleManagementRoutes(mux *http.ServeMux) {
+	mux.Handle("POST /api/0/organizations/{$}", s.compatible("org:write", s.compatibleCreateOrganization))
 	mux.Handle("GET /api/0/organizations/{org}/{$}", s.compatible("org:read", s.compatibleOrganizationDetail))
 	mux.Handle("PUT /api/0/organizations/{org}/{$}", s.compatible("org:write", s.compatibleUpdateOrganization))
 	mux.Handle("DELETE /api/0/organizations/{org}/{$}", s.compatible("org:write", s.compatibleDeleteOrganization))
@@ -42,6 +43,33 @@ func (s *Server) registerCompatibleManagementRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/0/organizations/{org}/teams/{$}", s.compatible("org:write", s.compatibleCreateTeam))
 	mux.Handle("PUT /api/0/teams/{org}/{team}/{$}", s.compatible("org:write", s.compatibleUpdateTeam))
 	mux.Handle("DELETE /api/0/teams/{org}/{team}/{$}", s.compatible("org:write", s.compatibleDeleteTeam))
+}
+
+func (s *Server) compatibleCreateOrganization(w http.ResponseWriter, r *http.Request) {
+	if !s.cfg.OrganizationCreation {
+		failure(w, 403, "Organization creation is disabled; set ENABLE_ORGANIZATION_CREATION=true")
+		return
+	}
+	var input struct {
+		Name string `json:"name"`
+	}
+	if !bodyJSON(w, r, &input) {
+		return
+	}
+	authorizationOrg := ""
+	if grant, ok := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); ok {
+		authorizationOrg = grant.OrganizationID
+	}
+	organization, err := s.db.CreateCompatibleOrganization(r.Context(), current(r).User.ID, authorizationOrg, input.Name)
+	if errors.Is(err, store.ErrInvalidOrganization) {
+		failure(w, 400, "Organization name must contain 1 to 200 characters without controls")
+		return
+	}
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 201, organization)
 }
 
 func (s *Server) projectWriteAccess(w http.ResponseWriter, r *http.Request) (store.ManagementAccess, bool) {

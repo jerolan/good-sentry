@@ -1,0 +1,8 @@
+=== RUN   TestCreateCompatibleOrganizationOwnershipTeamAndAuthority
+--- PASS: TestCreateCompatibleOrganizationOwnershipTeamAndAuthority (0.35s)
+PASS
+ok  	goodsentry/internal/store	1.371s
+=== RUN   TestCreateCompatibleOrganizationHTTP
+--- PASS: TestCreateCompatibleOrganizationHTTP (0.89s)
+PASS
+ok  	goodsentry/internal/server	1.911s
