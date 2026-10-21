@@ -153,3 +153,56 @@ func TestParseX86MinidumpFromContextShape(t *testing.T) {
 		t.Fatalf("x86 crash: %+v", crash)
 	}
 }
+
+func TestParseARM64Minidump(t *testing.T) {
+	const moduleBase = uint64(0x0000000100000000)
+	const stackBase = uint64(0x000000016f000000)
+	context := make([]byte, 912)
+	binary.LittleEndian.PutUint64(context[240:], stackBase)
+	binary.LittleEndian.PutUint64(context[264:], moduleBase+0x1010)
+	binary.LittleEndian.PutUint64(context[256:], stackBase)
+	stack := make([]byte, 0x100)
+	binary.LittleEndian.PutUint64(stack[8:], moduleBase+0x1050)
+	system := make([]byte, 2)
+	binary.LittleEndian.PutUint16(system, 12)
+	modules := make([]byte, 4+108)
+	binary.LittleEndian.PutUint32(modules, 1)
+	binary.LittleEndian.PutUint64(modules[4:], moduleBase)
+	binary.LittleEndian.PutUint32(modules[12:], 0x2000)
+	threads := make([]byte, 4+48)
+	binary.LittleEndian.PutUint32(threads, 1)
+	binary.LittleEndian.PutUint32(threads[4:], 9)
+	exception := make([]byte, 32)
+	binary.LittleEndian.PutUint32(exception, 9)
+	binary.LittleEndian.PutUint32(exception[8:], 0xC0000005)
+	binary.LittleEndian.PutUint64(exception[24:], moduleBase+0x1010)
+	data := [][]byte{system, threads, modules, exception}
+	types := []uint32{streamSystemInfo, streamThreadList, streamModuleList, streamException}
+	buf := make([]byte, 32+len(data)*12)
+	appendData := func(value []byte) uint32 { rva := uint32(len(buf)); buf = append(buf, value...); return rva }
+	stackRVA, contextRVA := appendData(stack), appendData(context)
+	nameRVA := appendData(encodeTestUTF16("C:\\test\\test_arm64.pdb"))
+	binary.LittleEndian.PutUint32(modules[4+20:], nameRVA)
+	binary.LittleEndian.PutUint64(threads[28:], stackBase)
+	binary.LittleEndian.PutUint32(threads[36:], uint32(len(stack)))
+	binary.LittleEndian.PutUint32(threads[40:], stackRVA)
+	binary.LittleEndian.PutUint32(threads[44:], uint32(len(context)))
+	binary.LittleEndian.PutUint32(threads[48:], contextRVA)
+	binary.LittleEndian.PutUint32(buf, minidumpSignature)
+	binary.LittleEndian.PutUint16(buf[4:], minidumpVersion)
+	binary.LittleEndian.PutUint32(buf[8:], uint32(len(data)))
+	binary.LittleEndian.PutUint32(buf[12:], 32)
+	for i, value := range data {
+		off := 32 + i*12
+		binary.LittleEndian.PutUint32(buf[off:], types[i])
+		binary.LittleEndian.PutUint32(buf[off+4:], uint32(len(value)))
+		binary.LittleEndian.PutUint32(buf[off+8:], appendData(value))
+	}
+	crash, err := ParseMinidump(buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if crash.Arch != "arm64" || crash.ThreadID != 9 || crash.RIP != moduleBase+0x1010 || len(crash.Frames) != 2 || crash.Frames[1].Instruction != moduleBase+0x1050 {
+		t.Fatalf("arm64 crash: %+v", crash)
+	}
+}

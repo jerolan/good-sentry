@@ -259,7 +259,14 @@ func ParseMinidump(data []byte) (Crash, error) {
 		crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[184:]))
 		crash.RSP = uint64(binary.LittleEndian.Uint32(rawContext[196:]))
 	default:
-		return Crash{}, fmt.Errorf("unsupported minidump context size %d (declared architecture %d)", len(rawContext), declaredArch)
+		if declaredArch == 12 && len(rawContext) >= 272 {
+			crash.Arch, crash.PointerSize = "arm64", 8
+			crash.RBP = binary.LittleEndian.Uint64(rawContext[240:])
+			crash.RSP = binary.LittleEndian.Uint64(rawContext[256:])
+			crash.RIP = binary.LittleEndian.Uint64(rawContext[264:])
+		} else {
+			return Crash{}, fmt.Errorf("unsupported minidump context size %d (declared architecture %d)", len(rawContext), declaredArch)
+		}
 	}
 	crash.Frames = unwind(crash, ranges)
 	return crash, nil
