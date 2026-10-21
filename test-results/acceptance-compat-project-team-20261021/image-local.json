@@ -1,0 +1,8 @@
+{
+  "image": "goodsentry:compat-project-team-06f012b",
+  "imageID": "sha256:18cdc23e72d7fc17d7394a89198d19f57ab8982ba7b956f3653041ffb3183dff",
+  "architecture": "amd64",
+  "user": "65532:65532",
+  "binarySHA256": "a6b2eec9ab44db9a4d78be3c08568e5a22e06145ebff389cf1bbb97d7fccc209",
+  "binaryBytes": 22929568
+}
