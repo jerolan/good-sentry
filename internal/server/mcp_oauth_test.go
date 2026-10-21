@@ -58,7 +58,7 @@ func oauthJSON(t *testing.T, client *http.Client, target, body string) (*http.Re
 
 func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 	f := newResolutionHTTPFixture(t)
-	cfg := config.Config{MCP: true, Logs: true, Domain: "https://public.example.test/good", Prefix: "/good", Secret: strings.Repeat("r", 64), MaxBodyBytes: 1 << 20}
+	cfg := config.Config{MCP: true, Logs: true, Uptime: true, Domain: "https://public.example.test/good", Prefix: "/good", Secret: strings.Repeat("r", 64), MaxBodyBytes: 1 << 20}
 	srv := httptest.NewServer(New(cfg, f.db))
 	t.Cleanup(srv.Close)
 	f.server = srv
@@ -173,6 +173,11 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 	}
 	clientSession := mcpClient(t, f, srv, issued.AccessToken, "2026-07-28")
 	_ = mcpWorkspaceCall(t, f, clientSession, "list_organizations", map[string]any{})
+	_ = mcpWorkspaceCall(t, f, clientSession, "list_projects", map[string]any{"organization": f.org.ID})
+	_ = mcpWorkspaceCall(t, f, clientSession, "list_logs", map[string]any{"organization": f.org.ID})
+	_ = mcpWorkspaceCall(t, f, clientSession, "list_transaction_groups", map[string]any{"organization": f.org.ID})
+	_ = mcpWorkspaceCall(t, f, clientSession, "list_alerts", map[string]any{"organization": f.org.ID})
+	_ = mcpWorkspaceCall(t, f, clientSession, "list_monitors", map[string]any{"organization": f.org.ID})
 	// Code replay fails without issuing a second grant.
 	res, _ = oauthForm(t, noRedirect, base+"/oauth/token", tokenForm)
 	if res.StatusCode != http.StatusBadRequest {
