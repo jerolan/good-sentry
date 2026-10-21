@@ -1,0 +1,45 @@
+{
+  "testedAt": "2026-10-21T21:05:00Z",
+  "commands": [
+    {
+      "command": "go test -race -count=1 -tags=integration ./...",
+      "result": "pass",
+      "log": "integration-race.log",
+      "server": "134.515s",
+      "store": "261.836s"
+    },
+    {
+      "command": "focused implicit-owner and open-auth HTTP tests with -race",
+      "result": "pass",
+      "log": "targeted-open-auth-race.log"
+    },
+    {
+      "command": "go vet -tags=integration ./...",
+      "result": "pass",
+      "log": "vet.log"
+    },
+    {
+      "command": "go mod verify and production build",
+      "result": "pass"
+    },
+    {
+      "command": "gofmt, git diff --check and Node syntax",
+      "result": "pass"
+    }
+  ],
+  "browser": {
+    "local": "local/report.json",
+    "composeOpen": "compose/report.json",
+    "composeOpenFull": "compose-browser/report.json",
+    "composeRequiredFull": "required-browser/report.json"
+  },
+  "verifiedBehavior": [
+    "Empty-volume Compose enters the dashboard without a cookie or login.",
+    "The implicit owner, organization and default team are created once and survive restart unchanged.",
+    "Open setup reports required:false while /api/v1/me returns the owner and stable CSRF token.",
+    "Open mutations reject missing and foreign-origin CSRF and accept the same-origin token.",
+    "The complete browser workflow passes in open mode at 320/768/1440.",
+    "A fresh required-mode Compose instance retains setup, login, logout and the complete browser workflow.",
+    "Creating a project now navigates to Projects so the DSN is immediately visible."
+  ]
+}
