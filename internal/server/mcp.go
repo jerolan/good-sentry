@@ -159,6 +159,7 @@ func (s *Server) mcpWorkspaceServer(httpContext context.Context, grant store.API
 	})
 	s.addMCPIssueTools(server, httpContext, grant)
 	s.addMCPAlertMonitorTools(server, httpContext, grant)
+	s.addMCPPerformanceTools(server, httpContext, grant)
 	if s.cfg.Logs {
 		s.addMCPLogTools(server, httpContext, grant)
 	}
