@@ -147,12 +147,8 @@ func (s *Server) mcpWorkspaceServer(httpContext context.Context, grant store.API
 		if !credentialText(input.Query, 200) || !credentialText(input.Organization, 200) {
 			return nil, result, errors.New("Invalid query or organization")
 		}
-		organizations, err := s.db.CompatibleOrganizations(httpContext, grant.User.ID, grant.OrganizationID, "", false, "name", 0, 1)
-		if err != nil {
-			return nil, result, errors.New("Projects unavailable")
-		}
-		if len(organizations) != 1 || input.Organization != organizations[0].ID && input.Organization != organizations[0].Slug {
-			return nil, result, errors.New("Organization not found")
+		if err := s.mcpOrganization(httpContext, grant, input.Organization); err != nil {
+			return nil, result, err
 		}
 		access := store.ManagementAccess{UserID: grant.User.ID, OrganizationID: grant.OrganizationID, AllProjects: grant.AllProjects, ProjectIDs: grant.ProjectIDs, ReadOnly: true}
 		rows, err := s.db.ManagementProjects(httpContext, access, input.Query, (input.Page-1)*input.Limit, input.Limit)
@@ -161,5 +157,6 @@ func (s *Server) mcpWorkspaceServer(httpContext context.Context, grant store.API
 		}
 		return nil, mcpWorkspacePage(rows, input), nil
 	})
+	s.addMCPIssueTools(server, httpContext, grant)
 	return server
 }
