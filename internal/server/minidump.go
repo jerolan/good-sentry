@@ -76,9 +76,9 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		}
 		unwindName, table := native.ParseObjectUnwind(file.Name, file.Content)
 		if table != nil {
-			unwindTables[unwindName] = table
+			unwindTables[unwindName] = append(unwindTables[unwindName], table)
 			if debugKey := native.DebugKey(file.DebugID); debugKey != "" {
-				unwindTables[debugKey] = table
+				unwindTables[debugKey] = append(unwindTables[debugKey], table)
 			}
 		}
 	}

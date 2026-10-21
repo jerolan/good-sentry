@@ -377,9 +377,13 @@ func testCFIUnwindFixture(t *testing.T, fixture string) {
 		Modules: []Module{{Name: fixture, Base: moduleBase, Size: 0x10000}},
 		stack:   []memoryRange{{start: stackBase, data: stack}},
 	}
-	crash.Frames = UnwindCFI(&crash, UnwindSet{module: table})
+	crash.Frames = UnwindCFI(&crash, UnwindSet{module: []*UnwindTable{table}})
 	if len(crash.Frames) != 3 {
 		t.Fatalf("CFI frames=%+v", crash.Frames)
+	}
+	crash.Frames = UnwindCFI(&crash, UnwindSet{module: []*UnwindTable{{}, table}})
+	if len(crash.Frames) != 3 {
+		t.Fatalf("CFI skipped non-matching table: %+v", crash.Frames)
 	}
 	Symbolicate(&crash, SymbolSet{module: functions})
 	expected := []string{"crash_frame", "middle_frame", "outer_frame"}

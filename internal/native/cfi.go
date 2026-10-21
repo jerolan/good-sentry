@@ -19,7 +19,7 @@ const (
 	cfiRuleUndefined
 )
 
-type UnwindSet map[string]*UnwindTable
+type UnwindSet map[string][]*UnwindTable
 
 type UnwindTable struct {
 	entries []cfiFDE
@@ -640,15 +640,22 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		if module == nil {
 			break
 		}
-		table := tables[moduleKey(module.Name)]
-		if table == nil && module.DebugID != "" {
-			table = tables[DebugKey(module.DebugID)]
-		}
-		if table == nil || lookupPC < module.Base {
+		if lookupPC < module.Base {
 			break
 		}
-		rules, cie, ok := table.rulesAt(lookupPC - module.Base)
-		if !ok {
+		candidates := tables[moduleKey(module.Name)]
+		if module.DebugID != "" {
+			candidates = append(candidates, tables[DebugKey(module.DebugID)]...)
+		}
+		var rules cfiState
+		var cie cfiCIE
+		found := false
+		for _, table := range candidates {
+			if rules, cie, found = table.rulesAt(lookupPC - module.Base); found {
+				break
+			}
+		}
+		if !found {
 			break
 		}
 		cfa, ok := evaluateCFA(rules, registers, crash.stack, crash.PointerSize)
