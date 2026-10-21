@@ -36,24 +36,31 @@ func (s *Store) IssueComments(ctx context.Context, userID, id string, page int) 
 	if err != nil {
 		return nil, 0, err
 	}
+	return s.IssueCommentsPage(ctx, userID, id, offset, 25)
+}
+
+func (s *Store) IssueCommentsPage(ctx context.Context, userID, id string, offset, limit int) ([]Comment, int, error) {
+	if offset < 0 || offset > 100000000 || limit < 1 || limit > 100 {
+		return nil, 0, ErrInvalidIssueChange
+	}
 	tx, issue, _, role, err := s.issueTransaction(ctx, userID, id, false)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer tx.Rollback(ctx)
-	items, total, err := readIssueComments(ctx, tx, userID, role, issue.ID, offset)
+	items, total, err := readIssueComments(ctx, tx, userID, role, issue.ID, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}
 	return items, total, tx.Commit(ctx)
 }
 
-func readIssueComments(ctx context.Context, tx pgx.Tx, userID, role, id string, offset int) ([]Comment, int, error) {
+func readIssueComments(ctx context.Context, tx pgx.Tx, userID, role, id string, offset, limit int) ([]Comment, int, error) {
 	var total int
 	if err := tx.QueryRow(ctx, `SELECT count(*) FROM comments WHERE issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint)`, id).Scan(&total); err != nil {
 		return nil, 0, err
 	}
-	rows, err := tx.Query(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint) ORDER BY c.id DESC LIMIT 25 OFFSET $2`, id, offset)
+	rows, err := tx.Query(ctx, "SELECT "+commentColumns+` FROM comments c JOIN users u ON u.id=c.user_id WHERE c.issue_id IN (SELECT id FROM issues WHERE id=$1::bigint OR merged_into=$1::bigint) ORDER BY c.id DESC LIMIT $3 OFFSET $2`, id, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -47,7 +47,7 @@ func (s *Store) IssueDetail(ctx context.Context, userID, id string) (IssueDetail
 	if len(detail.Events) > 0 {
 		detail.Event = detail.Events[0].Data
 	}
-	detail.Comments, detail.CommentTotal, err = readIssueComments(ctx, tx, userID, role, issue.ID, 0)
+	detail.Comments, detail.CommentTotal, err = readIssueComments(ctx, tx, userID, role, issue.ID, 0, 25)
 	if err != nil {
 		return detail, err
 	}
