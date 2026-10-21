@@ -803,3 +803,10 @@ Public log evidence: `test-results/acceptance-mcp-logs-20261020/{public-source.j
 MCP alert/monitor local gates pass for `1e2b0a9`: full integration/race (server120.494 s, store255.929 s, jobs28.347 s), vet, module verification, formatting and whitespace. Official-client owners cover schemas/annotations, paging/filtering, selected/all projects, foreign organizations, owner-to-member role demotion, missing scopes, feature omission and membership removal. Alert output contains recipient types but no destinations/deliveries; monitor output omits heartbeatURL/key/leases. Native Sentry consumers remain green.
 
 The clean non-root image restores all 146 prior rows across 44 tables before clients at version43, passes official Node11.7.0 errors/transactions/typed logs and CLI3.8.0 discovery, then app-only restart preserves all 161 rows across 44 tables. Enabled MCP fails before database access; disabled GET/POST `/mcp` remain404. Evidence: `test-results/acceptance-mcp-alerts-monitors-20261020/{integration-race.log,image-local.log,image-default.json,availability-guard.log,restored-before-start.json,restored-after-start.json,node-sdk.log,cli,before-restart.json,after-restart.json}`. Preserve container18179/database `goodsentry_mcp_alerts_monitors_20261020` and all prior checkpoints. Public source/CI/multi-architecture image/exact binary evidence is next; eleven of seventeen tools are prepared, and MCP/OAuth activation remains closed.
+
+## MCP performance investigation prerequisite
+
+- [x] Specify six PostgreSQL-backed tool contracts, selected-project/time semantics, ambiguity and N+1 meaning before implementation.
+- [ ] Add a real official-client/PostgreSQL failing owner with transactions, indexed children and multiple UTC days.
+- [ ] Implement scoped group/span/trend/N+1 providers and all six read tools without a new scope or migration.
+- [ ] Pass owning/native/full race/vet/default-image/upgrade/public/binary gates; all six prepared tools remain behind the incomplete MCP gate.
