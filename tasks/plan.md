@@ -281,3 +281,5 @@ Native AMD64/x86 and official DIF are publicly accepted at8425893. Continue the 
 ARM64 Minidump context support passes local full-race and final-image DIF at3682a21. Publish and verify exact public source/CI/image/binary, while keeping CFI/DWARF, PDB/dSYM/SymCache and real multi-platform receipts open.
 
 Native ELF/DWARF, Mach-O dSYM, DWARF CFI and bounded ZIP debug archives are public at e744851, 0ae6c9d, 6dc6bd3 and efbb401. Continue the parent with uncommon CFI expressions/signal-frame conventions, PDB/SymCache and nested/tar archive discovery, then collect real multi-platform crash receipts.
+
+Generic OIDC sign-in is public at645f15e with verified-email linking, S256 PKCE, state/nonce protection, opt-in account creation and responsive browser acceptance. Continue with vendor-specific deployment receipts and advanced administration, independently of native format work.
