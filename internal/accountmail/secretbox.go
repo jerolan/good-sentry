@@ -91,6 +91,14 @@ func (s *SecretBox) OpenEmailVerification(tokenHash string, sealed []byte) (stri
 	return s.openWithPurpose("GoodSentry email verification v1:", tokenHash, sealed)
 }
 
+func (s *SecretBox) SealWizardToken(transferHash, token string) ([]byte, error) {
+	return s.sealWithPurpose("GoodSentry wizard transfer v1:", transferHash, token)
+}
+
+func (s *SecretBox) OpenWizardToken(transferHash string, sealed []byte) (string, error) {
+	return s.openWithPurpose("GoodSentry wizard transfer v1:", transferHash, sealed)
+}
+
 func (s *SecretBox) sealWithPurpose(purpose, tokenHash, token string) ([]byte, error) {
 	if s == nil || !validTokenHash(tokenHash) || !validToken(token) {
 		return nil, errors.New("invalid account token")

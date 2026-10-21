@@ -41,3 +41,25 @@ func TestSecretBoxRoundTripAndIntegrity(t *testing.T) {
 		t.Fatal("short secret accepted")
 	}
 }
+
+func TestSecretBoxWizardPurposeIsolation(t *testing.T) {
+	box, err := NewSecretBox(strings.Repeat("w", 64))
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := NewToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash := strings.Repeat("1", 64)
+	sealed, err := box.SealWizardToken(hash, token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if opened, err := box.OpenWizardToken(hash, sealed); err != nil || opened != token {
+		t.Fatalf("wizard round trip=%q err=%v", opened, err)
+	}
+	if _, err := box.OpenEmailVerification(hash, sealed); err == nil {
+		t.Fatal("wizard ciphertext accepted as email verification")
+	}
+}

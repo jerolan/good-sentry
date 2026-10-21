@@ -426,6 +426,46 @@
     authFrame('Workspace invitation', `Join ${invitation.organizationName}`, invitation.existingAccount ? 'Use your existing account password to accept.' : 'Choose your name and a password for the new account.', node('div', {}, details, form), invitation.existingAccount ? password.input : name.input);
   }
 
+  function renderWizard(hash) {
+    document.title = 'Connect Sentry Wizard · GoodSentry';
+    const organizations = (state.me.organizations || []).filter(item => ['owner', 'admin'].includes(item.role));
+    if (!organizations.length) {
+      authFrame('Sentry setup', 'Organization permission required',
+        'Sentry Wizard needs an owner or admin who can issue a source-map credential.',
+        node('div', { class: 'form-stack' }, node('p', { class: 'muted' }, 'Ask an organization owner or admin to run the wizard.'),
+          node('a', { class: 'btn button', href: routeURL({ wizard: null, view: null }) }, 'Open dashboard')));
+      return;
+    }
+    const requested = new URLSearchParams(location.search).get('org');
+    const selected = organizations.some(item => item.slug === requested) ? requested : organizations[0].slug;
+    const organization = selectField('Organization', organizations.map(item => [item.slug, item.name]), selected, { required: true });
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const submit = node('button', { type: 'submit', class: 'btn button primary' }, 'Connect sentry-wizard');
+    const form = node('form', { class: 'form-stack', 'aria-label': 'Connect Sentry Wizard' }, organization.wrap, error, submit);
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      submit.disabled = true;
+      submit.textContent = 'Connecting…';
+      try {
+        await request('/api/0/wizard-set-token/', { method: 'POST', body: { hash, organization: organization.input.value } });
+        const organizationName = organizations.find(item => item.slug === organization.input.value)?.name || organization.input.value;
+        authFrame('Sentry setup', 'Sentry Wizard is connected',
+          `Return to your terminal. ${organizationName} setup data is available to the wizard for ten minutes.`,
+          node('div', { class: 'form-stack' },
+            node('p', { class: 'form-notice', role: 'status' }, 'The terminal should finish setup automatically.'),
+            node('a', { class: 'btn button', href: routeURL({ wizard: null, view: null }) }, 'Open dashboard')));
+      } catch (failure) {
+        formError(error, failure);
+        submit.disabled = false;
+        submit.textContent = 'Connect sentry-wizard';
+      }
+    });
+    authFrame('Sentry setup', 'Connect Sentry Wizard',
+      'Choose the organization this project belongs to. GoodSentry will issue a short-lived source-map credential for the wizard.',
+      form, organization.input);
+  }
+
   function renderShell(view) {
     const organizations = state.me.organizations || [];
     const org = state.organization;
@@ -486,6 +526,16 @@
     if (!state.me) return;
     const version = ++state.requestVersion;
     const params = new URLSearchParams(location.search);
+    const wizard = params.get('wizard');
+    if (wizard) {
+      if (/^[0-9a-f]{64}$/.test(wizard)) {
+        renderWizard(wizard);
+      } else {
+        history.replaceState(null, '', routeURL({ wizard: null, view: null }));
+        renderAuth(false, 'This wizard link is invalid or expired. Start sentry-wizard again.');
+      }
+      return;
+    }
     state.organization = state.me.organizations?.find(item => item.slug === params.get('org')) || state.me.organizations?.[0] || null;
     const requestedView = params.get('view');
     let view = Object.prototype.hasOwnProperty.call(viewNames, requestedView) ? requestedView : 'issues';

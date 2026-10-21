@@ -55,6 +55,8 @@ Sentry.captureException(new Error("Hello from GoodSentry"));
 
 Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `11.7.0` clients have verified error, transaction and typed-log workflows. See [SDK compatibility](docs/compatibility.md#sdk-compatibility) for the tested scope, settings and limits.
 
+For interactive source-map setup, run `npx @sentry/wizard@8.0.1 --url http://localhost:8000/` and approve the short-lived handoff in the browser. The wizard receives a project DSN and a temporary credential with release-upload access.
+
 ## Features
 
 | Capability | Available workflows |
@@ -65,7 +67,7 @@ Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `
 | Performance and logs | Transactions, spans, trace waterfalls, typed logs and OTLP/HTTP log ingestion. |
 | Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors, public status pages; email and webhooks with durable retries. |
 | Accounts and teams | Password changes, email recovery, verified secondary sign-in addresses, Account-page deletion with typed confirmation, optional OIDC, member roles, single-use invitations, atomic owner transfer and multi-team projects. |
-| Integration API | Sentry-compatible discovery and management for users, organizations, projects, members, teams and environments; current-account deletion with sole-owner protection, opt-in organization creation, organization rename/delete, member invitation/cancellation, project-team associations, project-key DSNs with rate limits, plus scoped automation credentials. |
+| Integration API | Sentry-compatible discovery and management for users, organizations, projects, members, teams and environments; `sentry-wizard` handoff, current-account deletion with sole-owner protection, opt-in organization creation, organization rename/delete, member invitation/cancellation, project-team associations, project-key DSNs with rate limits, plus scoped automation credentials. |
 | MCP | Opt-in Model Context Protocol server with 17 organization, issue, log, alert, monitor and performance tools; OAuth PKCE or scoped API tokens. |
 | Deployment | One non-root application image, PostgreSQL, automatic migrations and configurable retention. |
 

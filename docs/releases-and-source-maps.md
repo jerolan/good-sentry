@@ -4,6 +4,8 @@
 
 Use the official Sentry CLI or the native interface for the workflows documented here. See [API tokens](configuration.md#scoped-api-tokens) for credential setup.
 
+To configure a new project interactively, run `npx @sentry/wizard@8.0.1 --url http://localhost:8000/`. Open the link printed by sentry-wizard, sign in, choose the organization and select **Connect sentry-wizard**. GoodSentry then exposes the selected project DSN and a temporary `project:releases` credential for ten minutes. The hash is consumed after the CLI reads it; the issued credential expires after one day. Review `.sentryclirc` before sharing or committing a project that contains it.
+
 ## Release automation
 
 In **API tokens**, create a token with `org:read`, `project:read` and the optional `project:releases` permission. Choose the projects it may access. A shared release can be changed only when the token covers every associated project.
