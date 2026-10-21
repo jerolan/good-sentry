@@ -3,11 +3,17 @@ package store
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"sort"
+	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/jackc/pgx/v5"
 )
+
+var ErrInvalidRepository = errors.New("invalid repository")
 
 func releaseCommitRows(ctx context.Context, tx pgx.Tx, id string, offset, limit int) ([]ReleaseCommit, error) {
 	rows, err := tx.Query(ctx, `SELECT commit_id,repository,message,author_name,author_email,created_at,patch_set,data
@@ -160,8 +166,8 @@ func (s *Store) ReleaseRepositories(ctx context.Context, access ManagementAccess
 	}
 	defer tx.Rollback(ctx)
 	where := ` FROM release_repositories repo WHERE repo.organization_id=$1::bigint AND ($4='' OR strpos(lower(repo.name),lower($4))>0)
-		AND EXISTS(SELECT 1 FROM release_commits c JOIN release_projects rp ON rp.release_id=c.release_id
-		WHERE c.repository_id=repo.id AND ($2 OR rp.project_id=ANY($3::bigint[])))`
+		AND ($2 OR EXISTS(SELECT 1 FROM release_commits c JOIN release_projects rp ON rp.release_id=c.release_id
+		WHERE c.repository_id=repo.id AND rp.project_id=ANY($3::bigint[])))`
 	args := []any{access.OrganizationID, access.AllProjects, access.ProjectIDs, query}
 	rows, err := tx.Query(ctx, `SELECT repo.id::text,repo.name,repo.created_at,repo.url`+where+` ORDER BY repo.id LIMIT $5 OFFSET $6`, append(args, limit+1, offset)...)
 	if err != nil {
@@ -193,6 +199,37 @@ func (s *Store) ReleaseRepositories(ctx context.Context, access ManagementAccess
 		}
 	}
 	return result, tx.Commit(ctx)
+}
+
+func (s *Store) CreateReleaseRepository(ctx context.Context, access ManagementAccess, name, repositoryURL string) (ReleaseRepository, error) {
+	var result ReleaseRepository
+	if name == "" || utf8.RuneCountInString(name) > 200 || !utf8.ValidString(name) || strings.ContainsFunc(name, unicode.IsControl) || len(repositoryURL) > 2048 || !utf8.ValidString(repositoryURL) || strings.ContainsFunc(repositoryURL, unicode.IsControl) {
+		return result, ErrInvalidRepository
+	}
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return result, err
+	}
+	defer tx.Rollback(ctx)
+	var orgID string
+	if err = tx.QueryRow(ctx, `SELECT organization_id::text FROM memberships WHERE user_id=$1::bigint AND organization_id=$2::bigint FOR SHARE`, access.UserID, access.OrganizationID).Scan(&orgID); err != nil {
+		return result, dbError(err)
+	}
+	var url *string
+	if repositoryURL != "" {
+		url = &repositoryURL
+	}
+	if err = tx.QueryRow(ctx, `INSERT INTO release_repositories(organization_id,name,url) VALUES($1::bigint,$2,$3)
+		RETURNING id::text,name,created_at,url`, orgID, name, url).Scan(&result.ID, &result.Name, &result.DateCreated, &result.URL); err != nil {
+		return result, dbError(err)
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return result, err
+	}
+	result.DateCreated = result.DateCreated.UTC()
+	result.Status = "active"
+	result.Provider = ReleaseRepositoryProvider{ID: "manual", Name: "Manual repository"}
+	return result, nil
 }
 
 func (s *Store) PreviousReleaseWithCommits(ctx context.Context, access ManagementAccess, version ReleaseVersion) (Release, error) {

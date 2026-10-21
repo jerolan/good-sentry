@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"goodsentry/internal/store"
 )
@@ -24,6 +25,7 @@ func (s *Server) registerReleaseRoutes(mux *http.ServeMux) {
 	mux.Handle("POST "+root+"deploys/{$}", s.compatible("project:releases", s.createReleaseDeploy))
 	mux.Handle("GET "+root+"previous-with-commits/{$}", s.compatibleAny(read, s.previousReleaseWithCommits))
 	mux.Handle("GET /api/0/organizations/{org}/repos/{$}", s.compatible("org:read", s.releaseRepositories))
+	mux.Handle("POST /api/0/organizations/{org}/repos/{$}", s.compatible("org:write", s.createReleaseRepository))
 	mux.Handle("GET /api/v1/organizations/{org}/releases", s.auth(http.HandlerFunc(s.nativeReleases)))
 	mux.Handle("GET /api/v1/organizations/{org}/releases/{version}/commits", s.auth(http.HandlerFunc(s.nativeReleaseCommits)))
 	mux.Handle("GET /api/v1/organizations/{org}/releases/{version}/deploys", s.auth(http.HandlerFunc(s.nativeReleaseDeploys)))
@@ -423,4 +425,32 @@ func (s *Server) releaseRepositories(w http.ResponseWriter, r *http.Request) {
 	}
 	s.releaseLinks(w, r, paging, result.HasPrevious, result.HasMore)
 	writeJSON(w, 200, result.Data)
+}
+
+func (s *Server) createReleaseRepository(w http.ResponseWriter, r *http.Request) {
+	access, valid := s.orgWriteAccess(w, r)
+	if !valid {
+		return
+	}
+	var input struct {
+		Name     string          `json:"name"`
+		URL      string          `json:"url"`
+		Provider json.RawMessage `json:"provider"`
+	}
+	if !bodyJSON(w, r, &input) {
+		return
+	}
+	if _, valid := discoveryNoQuery(w, r); !valid {
+		return
+	}
+	repository, err := s.db.CreateReleaseRepository(r.Context(), access, strings.TrimSpace(input.Name), strings.TrimSpace(input.URL))
+	if errors.Is(err, store.ErrInvalidRepository) {
+		failure(w, 400, "Repository name must contain 1 to 200 characters without controls")
+		return
+	}
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 201, repository)
 }

@@ -152,7 +152,7 @@ func TestReleaseCommitRawOrderRepositoriesAndPreviousHead(t *testing.T) {
 		t.Fatalf("cleared commits = %+v, error=%v", cleared, err)
 	}
 	repos, err = reopened.ReleaseRepositories(ctx, access, "", 0, 100)
-	if err != nil || len(repos.Data) != 0 {
+	if err != nil || len(repos.Data) != 2 || repos.Data[0].Name != "manual/repo" || repos.Data[1].Name != "other/repo" {
 		t.Fatalf("unreferenced repositories listed = %+v, error=%v", repos, err)
 	}
 	if _, err := reopened.PreviousReleaseWithCommits(ctx, access, newer.Version); !errors.Is(err, ErrNotFound) {
