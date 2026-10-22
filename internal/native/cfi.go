@@ -37,6 +37,7 @@ type cfiCIE struct {
 	returnReg       uint32
 	encoding        byte
 	augmentation    string
+	signalFrame     bool
 	addrSize        int
 	initialLocation uint64
 	initial         cfiState
@@ -296,7 +297,7 @@ func parseCFISection(data []byte, sectionAddr uint64, isEH bool, pointerSize int
 		off += 4
 		isCIE := isEH && id == 0 || !isEH && id == 0xffffffff
 		if isCIE {
-			cie, err := parseCFIECIE(data[off:recordEnd], pointerSize)
+			cie, err := parseCFIECIE(data[off:recordEnd], pointerSize, isEH)
 			if err != nil {
 				return nil, err
 			}
@@ -326,7 +327,7 @@ func parseCFISection(data []byte, sectionAddr uint64, isEH bool, pointerSize int
 	return table, nil
 }
 
-func parseCFIECIE(data []byte, pointerSize int) (cfiCIE, error) {
+func parseCFIECIE(data []byte, pointerSize int, isEH bool) (cfiCIE, error) {
 	cursor := cfiCursor{data: data}
 	var cie cfiCIE
 	cie.addrSize = pointerSize
@@ -371,7 +372,9 @@ func parseCFIECIE(data []byte, pointerSize int) (cfiCIE, error) {
 				}
 			case 'L':
 				_ = cursor.byte()
-			case 'S', 'B':
+			case 'S':
+				cie.signalFrame = isEH
+			case 'B':
 			default:
 				return cfiCIE{}, errors.New("unsupported CIE augmentation")
 			}
@@ -675,7 +678,10 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		}
 		seen[returnAddress] = true
 		pc = returnAddress
-		lookupPC = returnAddress - 1
+		lookupPC = returnAddress
+		if !cie.signalFrame {
+			lookupPC--
+		}
 		registers[pcRegister] = returnAddress
 		registers[spRegister] = nextSP
 		registers[fpRegister] = nextFP

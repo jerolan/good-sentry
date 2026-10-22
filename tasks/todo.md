@@ -178,6 +178,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Local evidence (2026-10-22): native parser race, PDB-specific HTTP/PostgreSQL race, integration-tag vet and trim-path build pass. The exact public image digest starts ready, reports `/api/v1/setup` as `required:false`, serves the implicit owner without a cookie and preserves owner/organization id `1` after an app-only restart.
     - Public evidence: source commit `b83966049fe75012ce83922cc88827f69a716c64` matches `main`. CI `39828700505` passes formatting, vet, all unit/PostgreSQL integration race tests and image build. Container workflow `39829491246` publishes `linux/amd64` and `linux/arm64`; `main` and `latest` share OCI index digest `sha256:a5f798f90c61a1ed2e8d777a7d6cff192b22f6c1bf8d2f15f87b9fb82a18fcc2`.
 
+  - [ ] Honor DWARF CIE `S` signal-frame return-address lookup.
+    - Contract: recognize the `S` marker in sized `.eh_frame` CIE augmentation and use the return address restored from that FDE unchanged for the next FDE lookup. Ordinary CIEs retain return-address-minus-one. Do not infer platform-specific signal-context register layouts.
+    - Acceptance: a parser test recognizes `zRS`; an `UnwindCFI` outcome test proves a signal-restored PC at the exact start of the next FDE unwinds into that frame, while ordinary lookup behavior remains unchanged.
+    - Verify: `go test -race ./internal/native`, `go test -race -tags=integration ./internal/server -run 'Minidump|Native' -count=1`, `go vet -tags=integration ./...`, and `go build -trimpath ./cmd/goodsentry`. Exact-source CI and public-image acceptance remain part of parent closure.
+    - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
+    - Local evidence (2026-10-22): the regression test failed before the change because the exact-start FDE was missed, then passed with the normal-frame minus-one case. `go test -race ./internal/native`, `go vet -tags=integration ./...`, and the trim-path application build pass. PostgreSQL/image acceptance was not run because `DATABASE_URL` is unset and the sandbox denies access to the Docker socket. Remote CI/publication remains open; `gh run list` cannot connect to GitHub and `gh auth status` reports an invalid token.
+
 For each item above: add a consumer-facing test at the owning boundary, verify the actual UI/API outcome with stored data, inspect the diff and commit a single coherent increment. Do not mark a mapped-stack task complete based only on an upload response.
 
 ## Observability and operations

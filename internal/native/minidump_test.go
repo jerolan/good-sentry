@@ -348,6 +348,66 @@ func TestCFIUnwindsWithoutFramePointer(t *testing.T) {
 	}
 }
 
+func TestCFISignalFrameUsesUnadjustedReturnAddress(t *testing.T) {
+	table, err := parseCFISection(signalFrameCFISection(), 0, true, 8)
+	if err != nil || table == nil || len(table.entries) != 3 {
+		t.Fatalf("parse signal-frame CFI: table=%+v err=%v", table, err)
+	}
+	if !table.entries[0].cie.signalFrame || table.entries[1].cie.signalFrame || table.entries[2].cie.signalFrame {
+		t.Fatalf("CIE signal-frame markers were not preserved: %+v", table.entries)
+	}
+	const stackBase = uint64(0x3000)
+	stack := make([]byte, 32)
+	binary.LittleEndian.PutUint64(stack, 0x2000)
+	binary.LittleEndian.PutUint64(stack[8:], 0x3000)
+	crash := Crash{
+		RIP: 0x1001, RSP: stackBase, Arch: "amd64", PointerSize: 8,
+		Modules: []Module{{Name: "signal-frame", Base: 0, Size: 0x3000}},
+		stack:   []memoryRange{{start: stackBase, data: stack}},
+	}
+	frames := UnwindCFI(&crash, UnwindSet{"signal-frame": {table}})
+	if len(frames) != 3 || frames[1].Instruction != 0x2000 || frames[2].Instruction != 0x3000 {
+		t.Fatalf("signal/ordinary return addresses selected the wrong FDEs: %+v", frames)
+	}
+}
+
+func signalFrameCFISection() []byte {
+	var section bytes.Buffer
+	appendRecord := func(record []byte) int {
+		start := section.Len()
+		_ = binary.Write(&section, binary.LittleEndian, uint32(len(record)))
+		_, _ = section.Write(record)
+		return start
+	}
+	appendCIE := func(augmentation string) int {
+		var record bytes.Buffer
+		_ = binary.Write(&record, binary.LittleEndian, uint32(0))
+		_ = record.WriteByte(1)
+		_, _ = record.WriteString(augmentation + "\x00")
+		_, _ = record.Write([]byte{1, 0x78, 16}) // code alignment, data alignment, return register
+		if augmentation[0] == 'z' {
+			_, _ = record.Write([]byte{1, 0}) // augmentation length and FDE pointer encoding
+		}
+		_, _ = record.Write([]byte{0x0c, 7, 8, 0x05, 16, 1}) // CFA = rsp + 8; RA = [CFA - 8]
+		return appendRecord(record.Bytes())
+	}
+	appendFDE := func(cieOffset int, start uint64) {
+		var record bytes.Buffer
+		idOffset := section.Len() + 4
+		_ = binary.Write(&record, binary.LittleEndian, uint32(idOffset-cieOffset))
+		_ = binary.Write(&record, binary.LittleEndian, start)
+		_ = binary.Write(&record, binary.LittleEndian, uint64(0x100))
+		_ = record.WriteByte(0) // empty FDE augmentation
+		appendRecord(record.Bytes())
+	}
+	signalCIE := appendCIE("zRS")
+	appendFDE(signalCIE, 0x1000)
+	regularCIE := appendCIE("zR")
+	appendFDE(regularCIE, 0x2000)
+	appendFDE(regularCIE, 0x2f00)
+	return section.Bytes()
+}
+
 func testCFIUnwindFixture(t *testing.T, fixture string) {
 	data, err := os.ReadFile("testdata/" + fixture)
 	if err != nil {
