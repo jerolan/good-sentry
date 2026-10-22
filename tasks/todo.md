@@ -199,6 +199,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
     - Local evidence (2026-10-22): the new test failed before the fix because four-byte expressions were read as eight-byte addresses. Four- and eight-byte values now decode exactly, and a truncated operand is rejected. Native race, integration-tag vet and trim-path build pass.
 
+  - [x] Honor terminal `DW_OP_stack_value` in CFI rules.
+    - Contract: `DW_CFA_expression` returns an immediate register value when its final opcode is `DW_OP_stack_value`; otherwise its expression yields a captured-memory address. `DW_CFA_val_expression` uses the result directly. Empty or nonterminal stack-value opcodes stop evaluation.
+    - Acceptance: register-rule tests distinguish immediate values from memory addresses, cover val_expression, and reject empty/nonterminal stack-value expressions.
+    - Verify: `go test -race ./internal/native`, `go vet -tags=integration ./...`, and `go build -trimpath ./cmd/goodsentry`. Exact-source CI and public-image acceptance remain part of parent closure.
+    - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
+    - Local evidence (2026-10-22): the regression failed before the fix because an immediate CFI value was treated as an address, and an interior stack-value opcode was accepted. Tests now prove immediate `DW_CFA_expression`, address-based `DW_CFA_expression`, direct `DW_CFA_val_expression`, and rejection of empty/nonterminal markers.
+
 For each item above: add a consumer-facing test at the owning boundary, verify the actual UI/API outcome with stored data, inspect the diff and commit a single coherent increment. Do not mark a mapped-stack task complete based only on an upload response.
 
 ## Observability and operations

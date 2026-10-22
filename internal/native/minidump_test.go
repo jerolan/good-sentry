@@ -479,6 +479,38 @@ func TestCFIExpressionAddressUsesTargetWidth(t *testing.T) {
 	}
 }
 
+func TestCFIRegisterExpressionsHonorStackValue(t *testing.T) {
+	stack := make([]byte, 16)
+	binary.LittleEndian.PutUint64(stack, 0x5678)
+	ranges := []memoryRange{{start: 0x1000, data: stack}}
+	registers := map[uint32]uint64{0: 0x123456, 1: 0x1000}
+	for _, test := range []struct {
+		name string
+		rule cfiRegisterRule
+		want uint64
+	}{
+		{name: "expression value", rule: cfiRegisterRule{kind: cfiRuleExpression, expr: []byte{0x90, 0, 0x9f}}, want: 0x123456},
+		{name: "expression address", rule: cfiRegisterRule{kind: cfiRuleExpression, expr: []byte{0x90, 1}}, want: 0x5678},
+		{name: "value expression", rule: cfiRegisterRule{kind: cfiRuleValueExpression, expr: []byte{0x90, 0, 0x9f}}, want: 0x123456},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			state := cfiState{regs: map[uint32]cfiRegisterRule{16: test.rule}}
+			got, ok := evaluateRegisterRule(16, state, 0, registers, ranges, 8)
+			if !ok || got != test.want {
+				t.Fatalf("register expression = %#x, %v; want %#x", got, ok, test.want)
+			}
+		})
+	}
+
+	badRanges := []memoryRange{{start: 0, data: []byte{0x99, 0, 0, 0, 0, 0, 0, 0}}}
+	for _, expression := range [][]byte{{0x9f}, {0x90, 0, 0x9f, 0x30}} {
+		state := cfiState{regs: map[uint32]cfiRegisterRule{16: {kind: cfiRuleExpression, expr: expression}}}
+		if _, ok := evaluateRegisterRule(16, state, 0, registers, badRanges, 8); ok {
+			t.Fatalf("empty or nonterminal stack value expression %x was accepted", expression)
+		}
+	}
+}
+
 func testCFIUnwindFixture(t *testing.T, fixture string) {
 	data, err := os.ReadFile("testdata/" + fixture)
 	if err != nil {

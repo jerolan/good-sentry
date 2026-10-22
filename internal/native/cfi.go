@@ -57,6 +57,11 @@ type cfiRegisterRule struct {
 	expr  []byte
 }
 
+type cfiExpressionResult struct {
+	value      uint64
+	stackValue bool
+}
+
 type cfiState struct {
 	cfa  cfiCFARule
 	regs map[uint32]cfiRegisterRule
@@ -691,7 +696,8 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 
 func evaluateCFA(state cfiState, registers map[uint32]uint64, ranges []memoryRange, pointerSize int) (uint64, bool) {
 	if state.cfa.useExpr {
-		return evaluateCFIExpression(state.cfa.expr, registers, 0, ranges, pointerSize)
+		result, ok := evaluateCFIExpressionResult(state.cfa.expr, registers, 0, ranges, pointerSize)
+		return result.value, ok
 	}
 	register, ok := registers[state.cfa.register]
 	if !ok {
@@ -717,13 +723,17 @@ func evaluateRegisterRule(register uint32, state cfiState, cfa uint64, registers
 		value, ok := registers[rule.reg]
 		return value, ok
 	case cfiRuleExpression:
-		address, ok := evaluateCFIExpression(rule.expr, registers, cfa, ranges, pointerSize)
+		result, ok := evaluateCFIExpressionResult(rule.expr, registers, cfa, ranges, pointerSize)
 		if !ok {
 			return 0, false
 		}
-		return readPointer(ranges, address, pointerSize)
+		if result.stackValue {
+			return result.value, true
+		}
+		return readPointer(ranges, result.value, pointerSize)
 	case cfiRuleValueExpression:
-		return evaluateCFIExpression(rule.expr, registers, cfa, ranges, pointerSize)
+		result, ok := evaluateCFIExpressionResult(rule.expr, registers, cfa, ranges, pointerSize)
+		return result.value, ok
 	default:
 		return 0, false
 	}
@@ -755,6 +765,18 @@ func readCFIValue(ranges []memoryRange, address uint64, size, pointerSize int) (
 		return value, true
 	}
 	return 0, false
+}
+
+func evaluateCFIExpressionResult(expression []byte, registers map[uint32]uint64, cfa uint64, ranges []memoryRange, pointerSize int) (cfiExpressionResult, bool) {
+	stackValue := len(expression) > 0 && expression[len(expression)-1] == 0x9f
+	if stackValue {
+		expression = expression[:len(expression)-1]
+		if len(expression) == 0 {
+			return cfiExpressionResult{}, false
+		}
+	}
+	value, ok := evaluateCFIExpression(expression, registers, cfa, ranges, pointerSize)
+	return cfiExpressionResult{value: value, stackValue: stackValue}, ok
 }
 
 func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa uint64, ranges []memoryRange, pointerSize int) (uint64, bool) {
@@ -926,7 +948,6 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 			if !push(cfa) {
 				return 0, false
 			}
-		case 0x9f:
 		default:
 			return 0, false
 		}

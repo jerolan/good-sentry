@@ -296,6 +296,8 @@ Fix CFI memory dereference expressions against DWARF 5. `DW_OP_deref` reads the 
 
 Decode `DW_OP_addr` using the CFI target's address size. Verify four- and eight-byte operands through the expression evaluator, including the exact resulting address, and preserve rejection of truncated operands.
 
+Honor a terminal `DW_OP_stack_value` in CFI expressions. For `DW_CFA_expression`, use a marked result directly and dereference an unmarked result as an address; `DW_CFA_val_expression` already produces a direct value. Reject nonterminal or empty stack-value expressions. Test the register-rule outcome against captured memory.
+
 Compatible/native project update and deletion are accepted at e3e6938 with immutable slug/creation metadata, explicit cascade semantics, role/scope checks and responsive UI. Continue auditing the remaining GlitchTip management routes and external integration receipts.
 
 Compatible issue comments are accepted at 3e69caa with shared native activity, event read/write scopes, cursor pagination and strict CommentSchema bodies. Continue the remaining issue tags/management routes and external receipts.
