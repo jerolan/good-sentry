@@ -290,7 +290,7 @@ Generic OIDC sign-in is public at645f15e with verified-email linking, S256 PKCE,
 
 Public uptime status pages are accepted at b98caa2 with compatible management routes, selected monitors, privacy-safe public HTML/JSON and responsive browser coverage. Continue the remaining compatible management surface and final specification audit.
 
-The native CFI increment handles the standard `S` signal-frame CIE marker. Parse it only from the sized `.eh_frame` augmentation, then use a return address restored by that FDE unchanged for the next FDE lookup. Preserve the existing minus-one lookup for ordinary frames. Verify the parser marker and a signal-frame-to-exact-FDE stack walk with deterministic native tests; retain platform-specific signal register recovery and real crash receipts as open parent work.
+DWARF CFI signal-frame return-address lookup is accepted at `582c22ab704f8884401bc3188687faf5a587acc9`. The sized `.eh_frame` CIE parser recognizes `S`; a restored signal-frame PC looks up its exact FDE start while ordinary frames retain return-address-minus-one. The native race suite, PostgreSQL integration/race CI `39852760898`, vet, build and published amd64/arm64 image `39853558056` pass. Platform-specific signal-context register recovery and real crash receipts remain open.
 
 Fix CFI memory dereference expressions against DWARF 5. `DW_OP_deref` reads the target pointer width; `DW_OP_deref_size` consumes and validates its one-byte size operand and zero-extends that many captured bytes. Test valid widths and malformed or unavailable reads at the expression evaluator, while keeping unknown operations bounded failures.
 
