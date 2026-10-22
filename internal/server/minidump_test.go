@@ -24,6 +24,7 @@ import (
 
 	"goodsentry/internal/store"
 	"goodsentry/internal/testfixture/nativepdb"
+	"goodsentry/internal/testfixture/nativesymcache"
 )
 
 func minidumpForm(t *testing.T, content []byte, extra map[string]string) (*bytes.Buffer, string) {
@@ -212,6 +213,78 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 			}
 			if !test.wantSymbol && (frame.Filename != "" || frame.Line != 0) {
 				t.Fatalf("mismatched PDB identity returned source line: %+v", frame)
+			}
+		})
+	}
+}
+
+func TestNativeSymCacheSymbolicationUsesEmbeddedDebugID(t *testing.T) {
+	const embeddedID = "00112233445566778899AABBCCDDEEFF1"
+	for _, test := range []struct {
+		name       string
+		moduleID   string
+		wantSymbol bool
+	}{
+		{name: "matching module identity", moduleID: embeddedID, wantSymbol: true},
+		{name: "mismatched module identity", moduleID: "00112233445566778899AABBCCDDEEFF2"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			f := newResolutionHTTPFixture(t)
+			cache := nativesymcache.Build(9, 0).Data
+			digest := sha1.Sum(cache)
+			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+			if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "symbols.symcache", "symcache", embeddedID, "x86_64", "crash.exe", hex.EncodeToString(digest[:]), nil, nil, cache); err != nil {
+				t.Fatal(err)
+			}
+
+			minidump := buildNativeModuleMinidump(t, "C:\\test\\renamed.exe", test.moduleID, 0x1015)
+			body, contentType := minidumpForm(t, minidump, nil)
+			req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Content-Type", contentType)
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer res.Body.Close()
+			var accepted struct {
+				ID string `json:"id"`
+			}
+			if err := json.NewDecoder(res.Body).Decode(&accepted); err != nil || res.StatusCode != http.StatusOK || accepted.ID == "" {
+				t.Fatalf("SymCache minidump response=%d %+v %v", res.StatusCode, accepted, err)
+			}
+
+			events, err := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 10})
+			if err != nil || len(events) == 0 {
+				t.Fatalf("stored SymCache minidump event: %d %v", len(events), err)
+			}
+			var payload struct {
+				Exception struct {
+					Values []struct {
+						Stacktrace struct {
+							Frames []nativeFrame `json:"frames"`
+						} `json:"stacktrace"`
+					} `json:"values"`
+				} `json:"exception"`
+			}
+			if err := json.Unmarshal(events[0].Data, &payload); err != nil {
+				t.Fatal(err)
+			}
+			if len(payload.Exception.Values) != 1 || len(payload.Exception.Values[0].Stacktrace.Frames) == 0 {
+				t.Fatalf("SymCache minidump frames: %+v", payload.Exception)
+			}
+			frame := payload.Exception.Values[0].Stacktrace.Frames[0]
+			gotSymbol := frame.Function == "CrashFunction"
+			if gotSymbol != test.wantSymbol {
+				t.Fatalf("SymCache symbolication=%+v, want symbol=%t", frame, test.wantSymbol)
+			}
+			if test.wantSymbol && (frame.Filename != `C:\project\src\crash.c` || frame.Line != 42) {
+				t.Fatalf("SymCache source line=%+v, want C:\\project\\src\\crash.c:42", frame)
+			}
+			if !test.wantSymbol && (frame.Filename != "" || frame.Line != 0) {
+				t.Fatalf("mismatched SymCache identity returned source line: %+v", frame)
 			}
 		})
 	}

@@ -191,6 +191,9 @@ func parseDebugObject(name string, data []byte) (DebugObject, bool) {
 	if isDebugArchive(data) {
 		return DebugObject{}, false
 	}
+	if debugID, functions, ok := parseSymCache(data); ok {
+		return DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}, true
+	}
 	if debugID, functions, ok := parsePDBSymbols(data); ok {
 		return DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}, true
 	}
