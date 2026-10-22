@@ -185,6 +185,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
     - Local evidence (2026-10-22): the regression test failed before the change because the exact-start FDE was missed, then passed with the normal-frame minus-one case. `go test -race ./internal/native`, `go vet -tags=integration ./...`, and the trim-path application build pass. PostgreSQL/image acceptance was not run because `DATABASE_URL` is unset and the sandbox denies access to the Docker socket. Remote CI/publication remains open; `gh run list` cannot connect to GitHub and `gh auth status` reports an invalid token.
 
+  - [x] Read DWARF dereference expressions with their declared widths.
+    - Contract: `DW_OP_deref` reads one target pointer; `DW_OP_deref_size` consumes a one-byte size operand in 1..pointerSize, reads only captured bytes and zero-extends them. Invalid widths, truncated operands and addresses outside captured memory stop evaluation.
+    - Acceptance: expression tests cover `DW_OP_deref`, every valid width from 1 through pointerSize for four- and eight-byte pointers, invalid zero/oversized/truncated sizes, unavailable memory, and the actual returned value.
+    - Verify: `go test -race ./internal/native`, `go vet -tags=integration ./...`, and `go build -trimpath ./cmd/goodsentry`. Exact-source CI and public-image acceptance remain part of parent closure.
+    - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
+    - Local evidence (2026-10-22): the regression test failed before the fix because `DW_OP_deref` stopped evaluation and a missing `DW_OP_deref_size` operand was accepted. All widths from one byte through pointerSize now return the expected zero-extended values; invalid widths, truncated operands and reads beyond captured memory stop. Native race, integration-tag vet and trim-path build pass.
+
 For each item above: add a consumer-facing test at the owning boundary, verify the actual UI/API outcome with stored data, inspect the diff and commit a single coherent increment. Do not mark a mapped-stack task complete based only on an upload response.
 
 ## Observability and operations

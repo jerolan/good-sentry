@@ -408,6 +408,55 @@ func signalFrameCFISection() []byte {
 	return section.Bytes()
 }
 
+func TestCFIExpressionDereferenceRespectsSizeOperands(t *testing.T) {
+	data := []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}
+	ranges := []memoryRange{{start: 0x1000, data: data}}
+	for _, pointerSize := range []int{4, 8} {
+		t.Run(fmt.Sprintf("pointer-%d", pointerSize), func(t *testing.T) {
+			registers := map[uint32]uint64{0: 0x1000}
+			wantDereference := uint64(0)
+			for i := 0; i < pointerSize; i++ {
+				wantDereference |= uint64(data[i]) << (8 * i)
+			}
+			got, ok := evaluateCFIExpression([]byte{0x90, 0, 0x06}, registers, 0, ranges, pointerSize)
+			if !ok || got != wantDereference {
+				t.Fatalf("DW_OP_deref = %#x, %v; want %#x", got, ok, wantDereference)
+			}
+			for size := 1; size <= pointerSize; size++ {
+				var want uint64
+				for i := 0; i < size; i++ {
+					want |= uint64(data[i]) << (8 * i)
+				}
+				expression := []byte{0x90, 0, 0x94, byte(size)}
+				got, ok := evaluateCFIExpression(expression, registers, 0, ranges, pointerSize)
+				if !ok || got != want {
+					t.Fatalf("DW_OP_deref_size %d = %#x, %v; want %#x", size, got, ok, want)
+				}
+			}
+		})
+	}
+
+	for _, test := range []struct {
+		name        string
+		expression  []byte
+		pointerSize int
+		address     uint64
+	}{
+		{name: "missing size operand", expression: []byte{0x90, 0, 0x94}, pointerSize: 8, address: 0x1000},
+		{name: "zero size", expression: []byte{0x90, 0, 0x94, 0}, pointerSize: 8, address: 0x1000},
+		{name: "larger than pointer", expression: []byte{0x90, 0, 0x94, 9}, pointerSize: 8, address: 0x1000},
+		{name: "larger than four-byte pointer", expression: []byte{0x90, 0, 0x94, 5}, pointerSize: 4, address: 0x1000},
+		{name: "outside captured memory", expression: []byte{0x90, 0, 0x94, 2}, pointerSize: 8, address: 0x1007},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			registers := map[uint32]uint64{0: test.address}
+			if _, ok := evaluateCFIExpression(test.expression, registers, 0, ranges, test.pointerSize); ok {
+				t.Fatalf("invalid dereference expression %x was accepted", test.expression)
+			}
+		})
+	}
+}
+
 func testCFIUnwindFixture(t *testing.T, fixture string) {
 	data, err := os.ReadFile("testdata/" + fixture)
 	if err != nil {

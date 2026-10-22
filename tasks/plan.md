@@ -292,6 +292,8 @@ Public uptime status pages are accepted at b98caa2 with compatible management ro
 
 The native CFI increment handles the standard `S` signal-frame CIE marker. Parse it only from the sized `.eh_frame` augmentation, then use a return address restored by that FDE unchanged for the next FDE lookup. Preserve the existing minus-one lookup for ordinary frames. Verify the parser marker and a signal-frame-to-exact-FDE stack walk with deterministic native tests; retain platform-specific signal register recovery and real crash receipts as open parent work.
 
+Fix CFI memory dereference expressions against DWARF 5. `DW_OP_deref` reads the target pointer width; `DW_OP_deref_size` consumes and validates its one-byte size operand and zero-extends that many captured bytes. Test valid widths and malformed or unavailable reads at the expression evaluator, while keeping unknown operations bounded failures.
+
 Compatible/native project update and deletion are accepted at e3e6938 with immutable slug/creation metadata, explicit cascade semantics, role/scope checks and responsive UI. Continue auditing the remaining GlitchTip management routes and external integration receipts.
 
 Compatible issue comments are accepted at 3e69caa with shared native activity, event read/write scopes, cursor pagination and strict CommentSchema bodies. Continue the remaining issue tags/management routes and external receipts.

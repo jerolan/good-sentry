@@ -736,6 +736,27 @@ func addSigned(value uint64, offset int64) uint64 {
 	return value - uint64(-offset)
 }
 
+func readCFIValue(ranges []memoryRange, address uint64, size, pointerSize int) (uint64, bool) {
+	if (pointerSize != 4 && pointerSize != 8) || size < 1 || size > pointerSize {
+		return 0, false
+	}
+	for _, memory := range ranges {
+		if address < memory.start {
+			continue
+		}
+		offset := address - memory.start
+		if offset > uint64(len(memory.data)) || uint64(size) > uint64(len(memory.data))-offset {
+			continue
+		}
+		var value uint64
+		for i, b := range memory.data[int(offset) : int(offset)+size] {
+			value |= uint64(b) << (8 * i)
+		}
+		return value, true
+	}
+	return 0, false
+}
+
 func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa uint64, ranges []memoryRange, pointerSize int) (uint64, bool) {
 	stack := make([]uint64, 0, 8)
 	cursor := cfiCursor{data: expression}
@@ -887,7 +908,17 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 			if !ok {
 				return 0, false
 			}
-			value, ok := readPointer(ranges, address, pointerSize)
+			size := int(cursor.byte())
+			value, ok := readCFIValue(ranges, address, size, pointerSize)
+			if cursor.err != nil || !ok || !push(value) {
+				return 0, false
+			}
+		case 0x06:
+			address, ok := pop()
+			if !ok {
+				return 0, false
+			}
+			value, ok := readCFIValue(ranges, address, pointerSize, pointerSize)
 			if !ok || !push(value) {
 				return 0, false
 			}
