@@ -60,3 +60,32 @@ func (s *Store) SubmitDSNUserReport(ctx context.Context, orgRef, projectRef, key
 	}
 	return commitUserReport(ctx, tx, projectID, input)
 }
+
+// ValidEmbedKey binds a DSN public key to the project identity carried by the
+// embed URL before any page or report is served.
+func (s *Store) ValidEmbedKey(ctx context.Context, key, projectID string) (bool, error) {
+	if key == "" || referenceID(projectID) == 0 {
+		return false, nil
+	}
+	var valid bool
+	err := s.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_keys k
+		JOIN projects p ON p.id=k.project_id
+		WHERE k.public_key=$1 AND k.enabled AND p.id::text=$2)`, key, projectID).Scan(&valid)
+	return valid, err
+}
+
+// SubmitEmbeddedUserReport resolves the DSN's organization/project and reuses
+// the receipt and project gates owned by SubmitDSNUserReport.
+func (s *Store) SubmitEmbeddedUserReport(ctx context.Context, key, projectID string, input UserReportInput) (UserReport, error) {
+	if key == "" || referenceID(projectID) == 0 {
+		return UserReport{}, ErrNotFound
+	}
+	var orgSlug, projectSlug string
+	err := s.pool.QueryRow(ctx, `SELECT o.slug,p.slug FROM project_keys k
+		JOIN projects p ON p.id=k.project_id JOIN organizations o ON o.id=p.organization_id
+		WHERE k.public_key=$1 AND k.enabled AND p.id::text=$2`, key, projectID).Scan(&orgSlug, &projectSlug)
+	if err != nil {
+		return UserReport{}, dbError(err)
+	}
+	return s.SubmitDSNUserReport(ctx, orgSlug, projectSlug, key, input)
+}

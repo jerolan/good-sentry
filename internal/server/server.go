@@ -96,6 +96,8 @@ func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender
 	mux.HandleFunc("POST /api/v1/invitations/accept", s.acceptInvitation)
 	mux.HandleFunc("GET /api/0/accept/{invitation}/{token}/{$}", s.compatibleInvitation)
 	mux.HandleFunc("POST /api/0/accept/{invitation}/{token}/{$}", s.compatibleAcceptInvitation)
+	mux.HandleFunc("GET /api/embed/error-page/{$}", s.embedErrorPage)
+	mux.HandleFunc("POST /api/embed/error-page/{$}", s.embedErrorPage)
 	mux.Handle("POST /api/v1/logout", s.auth(http.HandlerFunc(s.logout)))
 	mux.Handle("GET /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.apiTokens)))
 	mux.Handle("POST /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.createAPIToken)))
