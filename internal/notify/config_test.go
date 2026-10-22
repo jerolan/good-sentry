@@ -131,7 +131,7 @@ func TestConfigSlackValidate(t *testing.T) {
 }
 
 func TestConfigProviderWebhooksValidate(t *testing.T) {
-	providers := []string{"discord", "teams", "googlechat", "feishu", "ntfy", "zulip"}
+	providers := []string{"discord", "teams", "googlechat", "feishu", "ntfy", "zulip", "mattermost"}
 	for _, destination := range []string{
 		"https://hooks.example.test/services/fixture-token?key=fixture-value",
 		"http://hooks.example.test:8080/channel",

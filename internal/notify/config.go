@@ -88,7 +88,7 @@ func validateRecipient(recipient Recipient, allowTeam bool) error {
 		if !bareEmail(recipient.Destination) {
 			return errors.New("email destination must be a bare valid address")
 		}
-	case "webhook", "slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip":
+	case "webhook", "slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip", "mattermost":
 		if utf8.RuneCountInString(recipient.Destination) > 2000 || !validHTTPAddress(recipient.Destination, false) {
 			return errors.New("provider webhook destination must be an absolute HTTP or HTTPS URL of at most 2000 characters without credentials or fragment")
 		}

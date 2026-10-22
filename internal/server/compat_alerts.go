@@ -111,7 +111,7 @@ func compatibleAlertConfig(input compatibleAlertInput, existing *notify.Rule) (n
 					return notify.Config{}, errors.New("email recipient URLs are not implemented; use project team email")
 				}
 				config.Recipients = append(config.Recipients, notify.Recipient{Type: "team_email"})
-			case "webhook", "slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip":
+			case "webhook", "slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip", "mattermost":
 				if recipient.URL == nil || strings.TrimSpace(*recipient.URL) == "" {
 					return notify.Config{}, errors.New("webhook recipients require a URL")
 				}

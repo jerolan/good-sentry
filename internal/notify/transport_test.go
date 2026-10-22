@@ -183,7 +183,7 @@ func TestProviderWebhookDelivery(t *testing.T) {
 			if err := json.Unmarshal(body, &object); err != nil {
 				t.Errorf("%s JSON body: %v", provider, err)
 			}
-			if key := map[string]string{"slack": "blocks", "discord": "content", "teams": "sections", "googlechat": "text", "feishu": "msg_type", "zulip": "text"}[provider]; key != "" {
+			if key := map[string]string{"slack": "blocks", "discord": "content", "teams": "sections", "googlechat": "text", "feishu": "msg_type", "zulip": "text", "mattermost": "text"}[provider]; key != "" {
 				if _, present := object[key]; !present {
 					t.Errorf("%s body lacks %s: %s", provider, key, body)
 				}
@@ -198,6 +198,8 @@ func TestProviderWebhookDelivery(t *testing.T) {
 			io.WriteString(w, `{"result":"success","msg":""}`)
 		case "slack":
 			io.WriteString(w, "ok")
+		case "mattermost":
+			io.WriteString(w, "ok")
 		default:
 			io.WriteString(w, `{"ok":true}`)
 		}
@@ -210,7 +212,7 @@ func TestProviderWebhookDelivery(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer sender.Close()
-	for _, provider := range []string{"slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip"} {
+	for _, provider := range []string{"slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip", "mattermost"} {
 		t.Run(provider, func(t *testing.T) {
 			d := delivery(Recipient{Type: provider, Destination: server.URL + "/" + provider})
 			d.Payload.Count, d.Payload.WindowMinutes = 7, 5

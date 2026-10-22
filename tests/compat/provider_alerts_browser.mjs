@@ -27,6 +27,7 @@ const providers = [
   ['feishu', 'Feishu / Lark bot', 'Feishu / Lark bot URL', 'Use a custom bot webhook URL without request signing. Keep it secret.'],
   ['ntfy', 'ntfy topic URL', 'ntfy topic URL', 'Use the topic URL, including its secret topic name.'],
   ['zulip', 'Zulip Slack-compatible webhook', 'Zulip webhook URL', 'Use Zulip\'s Slack-compatible incoming webhook URL. Keep it secret.'],
+  ['mattermost', 'Mattermost incoming webhook', 'Mattermost webhook URL', 'Use the incoming webhook URL from Mattermost. Keep it secret.'],
 ];
 
 async function capture(name) {
@@ -85,7 +86,7 @@ try {
   assert.match(await dialog.innerText(), /Provider URLs create native channel messages; generic webhooks receive GoodSentry JSON/);
   await capture('provider-alert-create');
   await page.setViewportSize({ width: 320, height: 1000 });
-  const lastDestination = dialog.getByLabel('Zulip webhook URL 7', { exact: true });
+  const lastDestination = dialog.getByLabel('Mattermost webhook URL 8', { exact: true });
   await lastDestination.scrollIntoViewIfNeeded();
   assert.equal(await lastDestination.isVisible(), true);
   const dialogMetrics = await dialog.evaluate(element => ({ scrollHeight: element.scrollHeight, clientHeight: element.clientHeight }));
@@ -103,12 +104,12 @@ try {
   await page.getByRole('region', { name: 'Selected alert rule' }).getByRole('heading', { name: rule.name, exact: true }).waitFor();
   const ruleText = await page.getByRole('region', { name: 'Selected alert rule' }).innerText();
   for (const [type] of providers) assert.match(ruleText, new RegExp(`${type}: https://hooks\\.example\\.test/${type}/${runID}`));
-  checks.push('Create dialog exposes seven provider choices with distinct URLs, help and accessible labels');
+  checks.push('Create dialog exposes eight provider choices with distinct URLs, help and accessible labels');
   await page.reload({ waitUntil: 'networkidle' });
   await page.getByRole('region', { name: 'Selected alert rule' }).getByRole('heading', { name: rule.name, exact: true }).waitFor();
   assert.equal(await page.getByLabel('Alert project', { exact: true }).inputValue(), project.slug);
   assert.equal(await page.getByLabel('Alert rule', { exact: true }).inputValue(), rule.id);
-  checks.push('Real rule roundtrip preserves project, rule and all seven recipients through reload');
+  checks.push('Real rule roundtrip preserves project, rule and all eight recipients through reload');
   await capture('provider-alert-rule');
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(requestFailures, []);

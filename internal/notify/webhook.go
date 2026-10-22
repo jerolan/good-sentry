@@ -53,6 +53,8 @@ func webhookRequestFor(kind string, payload Payload) (providerMessage, error) {
 		return ntfyMessage(payload)
 	case "zulip":
 		return zulipMessage(payload)
+	case "mattermost":
+		return mattermostMessage(payload)
 	default:
 		return providerMessage{}, errors.New("unsupported webhook provider")
 	}
@@ -105,6 +107,8 @@ func webhookOutcome(ctx context.Context, kind string, response *http.Response) O
 			return feishuOutcome(ctx, response)
 		case "zulip":
 			return zulipOutcome(ctx, response)
+		case "mattermost":
+			return mattermostOutcome(ctx, response)
 		}
 		outcome.Disposition, outcome.Reason = Delivered, "accepted"
 	case response.StatusCode == 408 || response.StatusCode == 425 || response.StatusCode == 429 || response.StatusCode >= 500 && response.StatusCode < 600:

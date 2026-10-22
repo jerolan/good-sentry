@@ -186,7 +186,7 @@ export function createAlertsUI({ state, node, request, navigate, routeLink, butt
     }
     function addRecipient(recipient) {
       const index = ++recipientNumber;
-      const type = selectField(`Recipient type ${index}`, [['team_email', 'Project team email'], ['email', 'Email address'], ['webhook', 'Generic webhook (JSON)'], ['slack', 'Slack incoming webhook'], ['discord', 'Discord webhook'], ['teams', 'Microsoft Teams webhook'], ['googlechat', 'Google Chat webhook'], ['feishu', 'Feishu / Lark bot'], ['ntfy', 'ntfy topic URL'], ['zulip', 'Zulip Slack-compatible webhook']], recipient.type);
+      const type = selectField(`Recipient type ${index}`, [['team_email', 'Project team email'], ['email', 'Email address'], ['webhook', 'Generic webhook (JSON)'], ['slack', 'Slack incoming webhook'], ['discord', 'Discord webhook'], ['teams', 'Microsoft Teams webhook'], ['googlechat', 'Google Chat webhook'], ['feishu', 'Feishu / Lark bot'], ['ntfy', 'ntfy topic URL'], ['zulip', 'Zulip Slack-compatible webhook'], ['mattermost', 'Mattermost incoming webhook']], recipient.type);
       const destination = field(`Destination ${index}`, 'text', { value: recipient.destination || '', maxlength: 4000, autocomplete: 'off' });
       const providerHelp = node('p', { class: 'small' });
       destination.wrap.append(providerHelp);
@@ -205,6 +205,7 @@ export function createAlertsUI({ state, node, request, navigate, routeLink, butt
           googlechat: ['Google Chat webhook URL', 'Use the space\'s Google Chat webhook URL. Keep it secret.'],
           feishu: ['Feishu / Lark bot URL', 'Use a custom bot webhook URL without request signing. Keep it secret.'],
           ntfy: ['ntfy topic URL', 'Use the topic URL, including its secret topic name.'],
+          mattermost: ['Mattermost webhook URL', 'Use the incoming webhook URL from Mattermost. Keep it secret.'],
           zulip: ['Zulip webhook URL', 'Use Zulip\'s Slack-compatible incoming webhook URL. Keep it secret.'],
         };
         const provider = providers[type.input.value];

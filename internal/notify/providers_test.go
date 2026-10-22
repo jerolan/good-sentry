@@ -101,6 +101,60 @@ func TestProviderMessages(t *testing.T) {
 	})
 }
 
+func TestMattermostWebhookMessageEscapesTelemetryAndKeepsResource(t *testing.T) {
+	payload := slackPayload("error_frequency")
+	payload.Rule.Name = "*Fallos* @channel"
+	payload.URL = "https://errors.example/base/organizations/org/issues/issue-1?next=a%28b%29"
+	message := providerMessageFor(t, "mattermost", payload)
+	if message.ContentType != "application/json" {
+		t.Fatalf("Mattermost content type: %q", message.ContentType)
+	}
+	object := decodeProviderObject(t, message)
+	text, ok := object["text"].(string)
+	if !ok || !strings.HasPrefix(text, "GoodSentry\\: \\*Fallos\\* @\u200bchannel\nProject\\: App") {
+		t.Fatalf("Mattermost Markdown or mention defanging: %#v", object)
+	}
+	if strings.Contains(text, "@channel") || !strings.Contains(text, "[View in GoodSentry](https://errors.example/base/organizations/org/issues/issue-1?next=a%28b%29)") {
+		t.Fatalf("Mattermost mention or generated resource link: %q", text)
+	}
+	if got := utf8.RuneCountInString(text); got > 4000 {
+		t.Fatalf("Mattermost text exceeds 4000 runes: %d", got)
+	}
+}
+
+func TestMattermostWebhookMessageContextsAndBounds(t *testing.T) {
+	for _, tc := range []struct{ kind, context string }{
+		{"error_frequency", "7 events in 5 minutes"},
+		{"uptime_down", "Status\\: up \\-\\> down"},
+		{"uptime_recovered", "Status\\: down \\-\\> up"},
+		{"test", "Test notification"},
+	} {
+		t.Run(tc.kind, func(t *testing.T) {
+			payload := slackPayload(tc.kind)
+			message := providerMessageFor(t, "mattermost", payload)
+			text := decodeProviderObject(t, message)["text"].(string)
+			if !strings.Contains(text, tc.context) || !strings.Contains(text, "[View in GoodSentry](") {
+				t.Fatalf("Mattermost %s context or link missing: %q", tc.kind, text)
+			}
+		})
+	}
+	t.Run("truncates summary and preserves generated link", func(t *testing.T) {
+		payload := slackPayload("error_frequency")
+		payload.Issue.Name = strings.Repeat("*", 5000)
+		text := decodeProviderObject(t, providerMessageFor(t, "mattermost", payload))["text"].(string)
+		if utf8.RuneCountInString(text) != 4000 || !strings.Contains(text, "…\n[View in GoodSentry](") {
+			t.Fatalf("Mattermost truncation lost bound, ellipsis or link: runes=%d", utf8.RuneCountInString(text))
+		}
+	})
+	t.Run("rejects a resource link that cannot fit", func(t *testing.T) {
+		payload := slackPayload("test")
+		payload.URL = "https://errors.example/" + strings.Repeat("x", 4100)
+		if _, err := webhookRequestFor("mattermost", payload); err == nil {
+			t.Fatal("overlong Mattermost resource URL was accepted")
+		}
+	})
+}
+
 func TestProviderMessageContexts(t *testing.T) {
 	for _, tc := range []struct{ kind, detail string }{
 		{"error_frequency", "7 events in 5 minutes"},
@@ -307,6 +361,41 @@ func TestZulipAcknowledgment(t *testing.T) {
 	outcome := webhookOutcome(context.Background(), "zulip", providerAckResponse(200, strings.Repeat(" ", providerAckBodyLimit+1)))
 	if outcome.Disposition != Permanent || outcome.Reason != "zulip_response" {
 		t.Fatalf("Zulip oversized acknowledgment: %+v", outcome)
+	}
+}
+
+func TestMattermostAcknowledgment(t *testing.T) {
+	for _, tc := range []struct {
+		name, body, reason string
+		status, want       int
+		disposition        Disposition
+	}{
+		{name: "success", status: 200, body: "ok", want: 200, disposition: Delivered, reason: "accepted"},
+		{name: "surrounding whitespace", status: 200, body: " \nok\t ", want: 200, disposition: Delivered, reason: "accepted"},
+		{name: "wrong acknowledgment", status: 200, body: "OK", want: 200, disposition: Permanent, reason: "mattermost_response"},
+		{name: "created", status: 201, body: "ok", want: 201, disposition: Permanent, reason: "mattermost_response"},
+		{name: "no content", status: 204, body: "", want: 204, disposition: Permanent, reason: "mattermost_response"},
+		{name: "throttled", status: 429, body: "ok", want: 429, disposition: Retry, reason: "http_status"},
+		{name: "unavailable", status: 503, body: "ok", want: 503, disposition: Retry, reason: "http_status"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			outcome := webhookOutcome(context.Background(), "mattermost", providerAckResponse(tc.status, tc.body))
+			if outcome.Disposition != tc.disposition || outcome.Reason != tc.reason || outcome.StatusCode == nil || *outcome.StatusCode != tc.want || outcome.RetryAfter != 0 {
+				t.Fatalf("Mattermost outcome: %+v", outcome)
+			}
+		})
+	}
+	outcome := webhookOutcome(context.Background(), "mattermost", providerAckResponse(200, strings.Repeat("x", 4097)))
+	if outcome.Disposition != Permanent || outcome.Reason != "mattermost_response" {
+		t.Fatalf("Mattermost oversized acknowledgment: %+v", outcome)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Nanosecond)
+	defer cancel()
+	<-ctx.Done()
+	reader := &webhookReader{reader: strings.NewReader("ok"), err: context.DeadlineExceeded}
+	response := &http.Response{StatusCode: 200, Header: make(http.Header), Body: io.NopCloser(reader)}
+	if outcome := webhookOutcome(ctx, "mattermost", response); outcome.Disposition != Retry || outcome.Reason != "timeout" {
+		t.Fatalf("Mattermost acknowledgment deadline classification: %+v", outcome)
 	}
 }
 

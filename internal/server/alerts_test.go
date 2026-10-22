@@ -103,7 +103,7 @@ func verifyAlertWorkflow(t *testing.T, request func(string, string, string, stri
 	if code != 200 || len(list["data"].([]any)) != 2 {
 		t.Fatalf("deleting alert lost delivery audit=%d %+v", code, list)
 	}
-	providers := []string{"slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip"}
+	providers := []string{"slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip", "mattermost"}
 	providerRecipients := make([]string, 0, len(providers))
 	for _, provider := range providers {
 		providerRecipients = append(providerRecipients, fmt.Sprintf(`{"type":%q,"destination":%q}`, provider, "https://hooks.example.invalid/"+provider))

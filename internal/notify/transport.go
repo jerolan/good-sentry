@@ -123,7 +123,7 @@ func safeIdentity(value string) bool {
 
 func isWebhookRecipient(kind string) bool {
 	switch kind {
-	case "webhook", "slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip":
+	case "webhook", "slack", "discord", "teams", "googlechat", "feishu", "ntfy", "zulip", "mattermost":
 		return true
 	default:
 		return false
