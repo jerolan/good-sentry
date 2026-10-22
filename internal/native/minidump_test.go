@@ -543,6 +543,67 @@ func TestCFIExpressionBranchControl(t *testing.T) {
 	}
 }
 
+func TestCFIExpressionShiftOperations(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		pointerSize int
+		pushValue   []byte
+		wantLeft    uint64
+		wantLogical uint64
+	}{
+		{name: "32-bit", pointerSize: 4, pushValue: []byte{0x0c, 3, 0, 0, 0}, wantLeft: 12, wantLogical: 1},
+		{name: "64-bit", pointerSize: 8, pushValue: []byte{0x0e, 3, 0, 0, 0, 0, 0, 0, 0}, wantLeft: 12, wantLogical: 1},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			left := append(append([]byte(nil), test.pushValue...), 0x32, 0x24) // value 3, shift by 2
+			if got, ok := evaluateCFIExpression(left, nil, 0, nil, test.pointerSize); !ok || got != test.wantLeft {
+				t.Fatalf("DW_OP_shl = %#x, %v; want %#x", got, ok, test.wantLeft)
+			}
+			logical := append(append([]byte(nil), test.pushValue...), 0x31, 0x25) // value 3, shift by 1
+			if got, ok := evaluateCFIExpression(logical, nil, 0, nil, test.pointerSize); !ok || got != test.wantLogical {
+				t.Fatalf("DW_OP_shr = %#x, %v; want %#x", got, ok, test.wantLogical)
+			}
+		})
+	}
+	for _, pointerSize := range []int{4, 8} {
+		if got, ok := evaluateCFIExpression([]byte{0x31, 0x30, 0x24}, nil, 0, nil, pointerSize); !ok || got != 1 {
+			t.Fatalf("zero shift for pointerSize %d = %#x, %v; want 1", pointerSize, got, ok)
+		}
+	}
+
+	for _, test := range []struct {
+		name        string
+		pointerSize int
+		pushValue   []byte
+	}{
+		{name: "32-bit", pointerSize: 4, pushValue: []byte{0x0d, 0xf8, 0xff, 0xff, 0xff}},
+		{name: "64-bit", pointerSize: 8, pushValue: []byte{0x0f, 0xf8, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}},
+	} {
+		t.Run("arithmetic-"+test.name, func(t *testing.T) {
+			expression := append(append([]byte(nil), test.pushValue...), 0x31, 0x26) // value -8, shift by 1
+			if got, ok := evaluateCFIExpression(expression, nil, 0, nil, test.pointerSize); !ok || got != ^uint64(3) {
+				t.Fatalf("DW_OP_shra = %#x, %v; want %#x", got, ok, ^uint64(3))
+			}
+		})
+	}
+
+	for _, test := range []struct {
+		name        string
+		expression  []byte
+		pointerSize int
+	}{
+		{name: "64-bit count", expression: []byte{0x33, 0x10, 64, 0x24}, pointerSize: 8},
+		{name: "32-bit count", expression: []byte{0x33, 0x10, 64, 0x25}, pointerSize: 4},
+		{name: "stack underflow", expression: []byte{0x24}, pointerSize: 8},
+	} {
+		t.Run("invalid-"+test.name, func(t *testing.T) {
+			if _, ok := evaluateCFIExpression(test.expression, nil, 0, nil, test.pointerSize); ok {
+				t.Fatalf("invalid expression %x was accepted", test.expression)
+			}
+		})
+	}
+}
+
 func TestCFIExpressionDereferenceRespectsSizeOperands(t *testing.T) {
 	data := []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}
 	ranges := []memoryRange{{start: 0x1000, data: data}}

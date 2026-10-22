@@ -369,3 +369,5 @@ Opt-in OpenAPI and administration are public at f391fbf. GET /api/openapi.json i
 ARM32 context coverage: accept the public Crashpad and Breakpad layouts by declared CPU architecture, reconstruct the top frame plus a validated r11 chain or LR fallback, and preserve unknown-context fail-closed behavior. Verify with synthetic and malformed context cases, the native race suite, vet and build; keep ARM32 CFI register restoration open.
 
 Complete DWARF CFI expression control flow: evaluate `DW_OP_skip` and `DW_OP_bra` using signed relative offsets, accept only validated opcode boundaries, and cap execution at 4,096 operations. Verify branches, malformed targets, truncation and loops with native race tests, vet and build.
+
+Support bounded DWARF shift expressions (`DW_OP_shl`, `DW_OP_shr`, `DW_OP_shra`) with standard operand ordering and fail-closed invalid counts/underflow. Verify 32-bit and 64-bit target CFI expressions, native race tests, vet and build.

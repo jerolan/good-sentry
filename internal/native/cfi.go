@@ -916,6 +916,23 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 			if !ok || !push(value+cursor.uleb()) {
 				return 0, false
 			}
+		case 0x24, 0x25, 0x26:
+			shift, ok1 := pop()
+			value, ok2 := pop()
+			if !ok1 || !ok2 || shift >= 64 {
+				return 0, false
+			}
+			switch opcode {
+			case 0x24:
+				value <<= shift
+			case 0x25:
+				value >>= shift
+			case 0x26:
+				value = uint64(int64(value) >> shift)
+			}
+			if !push(value) {
+				return 0, false
+			}
 		case 0x27:
 			right, ok1 := pop()
 			left, ok2 := pop()
@@ -1011,7 +1028,7 @@ func cfiExpressionBoundaries(expression []byte, pointerSize int) (map[int]struct
 				_ = cursor.sleb()
 			case 0x94:
 				_ = cursor.byte()
-			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x1a, 0x1c, 0x1e, 0x21, 0x22, 0x27, 0x9c:
+			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x1a, 0x1c, 0x1e, 0x21, 0x22, 0x24, 0x25, 0x26, 0x27, 0x9c:
 			default:
 				return nil, false
 			}

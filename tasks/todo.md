@@ -211,6 +211,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Sources: [DWARF 5](https://dwarfstd.org/doc/DWARF5.pdf).
     - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
     - Local evidence (2026-10-22): RED showed forward `DW_OP_skip` returned the skipped literal and malformed targets were accepted; signed forward skip and taken/untaken `DW_OP_bra` now pass, while operand-entry/out-of-range targets, truncation and an infinite loop fail closed. `go test -race ./internal/native`, `go vet -tags=integration ./...`, trim-path build and `git diff --check` pass.
+  - [x] Evaluate DWARF shift expressions with explicit bounds.
+    - Contract: support `DW_OP_shl`, `DW_OP_shr` and `DW_OP_shra` with the former top entry as shift count and former second entry as value; counts of 64 or more and stack underflow stop evaluation.
+    - Acceptance: cover left, logical right and arithmetic right shifts for four- and eight-byte target CFI, zero shift, invalid large shift counts and operand underflow.
+    - Verify: `go test -race ./internal/native`, integration-tag vet, trim-path build and `git diff --check`; exact-source CI/public-image acceptance remain part of parent closure.
+    - Sources: [DWARF 5](https://dwarfstd.org/doc/DWARF5.pdf).
+    - Local evidence (2026-10-22): RED showed all three shift operations were rejected. The evaluator now handles left, logical-right and arithmetic-right shifts, plus zero shift; counts >=64 and underflow fail closed. Four-/eight-byte target cases pass `go test -race ./internal/native`; integration-tag vet, trim-path build and `git diff --check` pass.
+    - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
   - [x] Honor terminal `DW_OP_stack_value` in CFI rules.
     - Contract: `DW_CFA_expression` returns an immediate register value when its final opcode is `DW_OP_stack_value`; otherwise its expression yields a captured-memory address. `DW_CFA_val_expression` uses the result directly. Empty or nonterminal stack-value opcodes stop evaluation.
     - Acceptance: register-rule tests distinguish immediate values from memory addresses, cover val_expression, and reject empty/nonterminal stack-value expressions.
