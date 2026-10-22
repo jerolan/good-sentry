@@ -204,6 +204,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
     - Local evidence (2026-10-22): the new test failed before the fix because four-byte expressions were read as eight-byte addresses. Four- and eight-byte values now decode exactly, and a truncated operand is rejected. Native race, integration-tag vet and trim-path build pass.
 
+  - [x] Evaluate DWARF expression branches with bounded, validated control flow.
+    - Contract: implement signed 16-bit `DW_OP_skip` and `DW_OP_bra` offsets from the byte after each operand; accept only expression opcode boundaries or the end position; stop after 4,096 executed operations so loops cannot run without bound. Malformed targets and truncated operands stop unwinding.
+    - Acceptance: tests cover forward skip, taken and untaken branches, branch into an operand, out-of-range targets, truncated operands and an infinite loop.
+    - Verify: `go test -race ./internal/native`, integration-tag vet, trim-path build and `git diff --check`; exact-source CI/public image remain part of parent acceptance.
+    - Sources: [DWARF 5](https://dwarfstd.org/doc/DWARF5.pdf).
+    - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
+    - Local evidence (2026-10-22): RED showed forward `DW_OP_skip` returned the skipped literal and malformed targets were accepted; signed forward skip and taken/untaken `DW_OP_bra` now pass, while operand-entry/out-of-range targets, truncation and an infinite loop fail closed. `go test -race ./internal/native`, `go vet -tags=integration ./...`, trim-path build and `git diff --check` pass.
   - [x] Honor terminal `DW_OP_stack_value` in CFI rules.
     - Contract: `DW_CFA_expression` returns an immediate register value when its final opcode is `DW_OP_stack_value`; otherwise its expression yields a captured-memory address. `DW_CFA_val_expression` uses the result directly. Empty or nonterminal stack-value opcodes stop evaluation.
     - Acceptance: register-rule tests distinguish immediate values from memory addresses, cover val_expression, and reject empty/nonterminal stack-value expressions.

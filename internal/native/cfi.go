@@ -19,6 +19,8 @@ const (
 	cfiRuleUndefined
 )
 
+const maxCFIExpressionSteps = 4096
+
 type UnwindSet map[string][]*UnwindTable
 
 type UnwindTable struct {
@@ -780,6 +782,10 @@ func evaluateCFIExpressionResult(expression []byte, registers map[uint32]uint64,
 }
 
 func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa uint64, ranges []memoryRange, pointerSize int) (uint64, bool) {
+	boundaries, ok := cfiExpressionBoundaries(expression, pointerSize)
+	if !ok {
+		return 0, false
+	}
 	stack := make([]uint64, 0, 8)
 	cursor := cfiCursor{data: expression}
 	push := func(value uint64) bool {
@@ -797,7 +803,12 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 		stack = stack[:len(stack)-1]
 		return value, true
 	}
+	steps := 0
 	for cursor.off < len(expression) {
+		steps++
+		if steps > maxCFIExpressionSteps {
+			return 0, false
+		}
 		opcode := cursor.byte()
 		switch {
 		case opcode >= 0x30 && opcode <= 0x4f:
@@ -911,8 +922,16 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 			if !ok1 || !ok2 || !push(left^right) {
 				return 0, false
 			}
+		case 0x28:
+			offset := int16(cursor.u16())
+			condition, ok := pop()
+			if !ok || condition != 0 && !jumpCFIExpression(&cursor, offset, boundaries) {
+				return 0, false
+			}
 		case 0x2f:
-			_ = cursor.u16()
+			if !jumpCFIExpression(&cursor, int16(cursor.u16()), boundaries) {
+				return 0, false
+			}
 		case 0x90:
 			register := uint32(cursor.uleb())
 			value, ok := registers[register]
@@ -956,4 +975,60 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 		}
 	}
 	return pop()
+}
+
+func cfiExpressionBoundaries(expression []byte, pointerSize int) (map[int]struct{}, bool) {
+	if pointerSize != 4 && pointerSize != 8 {
+		return nil, false
+	}
+	boundaries := map[int]struct{}{0: {}}
+	cursor := cfiCursor{data: expression}
+	for cursor.off < len(expression) {
+		opcode := cursor.byte()
+		switch {
+		case opcode >= 0x30 && opcode <= 0x6f:
+		case opcode >= 0x70 && opcode <= 0x8f:
+			_ = cursor.sleb()
+		default:
+			switch opcode {
+			case 0x03:
+				_ = cursor.uintN(pointerSize)
+			case 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f:
+				sizes := []int{1, 1, 2, 2, 4, 4, 8, 8}
+				_ = cursor.uintN(sizes[opcode-0x08])
+			case 0x10:
+				_ = cursor.uleb()
+			case 0x11:
+				_ = cursor.sleb()
+			case 0x15:
+				_ = cursor.byte()
+			case 0x23, 0x90:
+				_ = cursor.uleb()
+			case 0x28, 0x2f:
+				_ = cursor.u16()
+			case 0x92:
+				_ = cursor.uleb()
+				_ = cursor.sleb()
+			case 0x94:
+				_ = cursor.byte()
+			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x1a, 0x1c, 0x1e, 0x21, 0x22, 0x27, 0x9c:
+			default:
+				return nil, false
+			}
+		}
+		if cursor.err != nil {
+			return nil, false
+		}
+		boundaries[cursor.off] = struct{}{}
+	}
+	return boundaries, true
+}
+
+func jumpCFIExpression(cursor *cfiCursor, offset int16, boundaries map[int]struct{}) bool {
+	target := cursor.off + int(offset)
+	if _, ok := boundaries[target]; !ok {
+		return false
+	}
+	cursor.off = target
+	return true
 }

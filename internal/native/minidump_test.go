@@ -507,6 +507,42 @@ func signalFrameCFISection() []byte {
 	return section.Bytes()
 }
 
+func TestCFIExpressionBranchControl(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		expression []byte
+		want       uint64
+	}{
+		{name: "forward skip", expression: []byte{0x30, 0x2f, 1, 0, 0x31}, want: 0},
+		{name: "branch not taken", expression: []byte{0x30, 0x28, 4, 0, 0x31, 0x2f, 1, 0, 0x32}, want: 1},
+		{name: "branch taken", expression: []byte{0x31, 0x28, 4, 0, 0x31, 0x2f, 1, 0, 0x32}, want: 2},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			got, ok := evaluateCFIExpression(test.expression, nil, 0, nil, 8)
+			if !ok || got != test.want {
+				t.Fatalf("expression %x = %#x, %v; want %#x", test.expression, got, ok, test.want)
+			}
+		})
+	}
+
+	for _, test := range []struct {
+		name       string
+		expression []byte
+	}{
+		{name: "branch into operand", expression: []byte{0x30, 0x2f, 0xff, 0xff, 0x31}},
+		{name: "branch out of range", expression: []byte{0x30, 0x2f, 0x7f, 0}},
+		{name: "truncated skip operand", expression: []byte{0x30, 0x2f, 0}},
+		{name: "truncated branch operand", expression: []byte{0x31, 0x28, 0}},
+		{name: "unbounded loop", expression: []byte{0x31, 0x2f, 0xfc, 0xff}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if _, ok := evaluateCFIExpression(test.expression, nil, 0, nil, 8); ok {
+				t.Fatalf("invalid expression %x was accepted", test.expression)
+			}
+		})
+	}
+}
+
 func TestCFIExpressionDereferenceRespectsSizeOperands(t *testing.T) {
 	data := []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}
 	ranges := []memoryRange{{start: 0x1000, data: data}}
