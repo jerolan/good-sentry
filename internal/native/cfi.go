@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"sort"
+	"strings"
 )
 
 const (
@@ -22,6 +23,7 @@ const (
 const (
 	maxCFIExpressionSteps = 4096
 	minSignedCFIValue     = -1 << 63
+	arm32AddressSpace     = uint64(1) << 32
 )
 
 type UnwindSet map[string][]*UnwindTable
@@ -29,6 +31,18 @@ type UnwindSet map[string][]*UnwindTable
 type UnwindTable struct {
 	architecture string
 	entries      []cfiFDE
+	arm32EHABI   []arm32EHABIFDE
+}
+
+type arm32EHABIFDE struct {
+	start, end uint64
+	program    []byte
+	cantUnwind bool
+}
+
+type arm32EHABIExtabSection struct {
+	start, end uint64
+	data       []byte
 }
 
 type cfiFDE struct {
@@ -230,10 +244,19 @@ func ParseObjectUnwind(name string, data []byte) (string, *UnwindTable) {
 				table, _ = parseCFISection(content, section.Addr, section.Name == ".eh_frame", pointerSize)
 			}
 		}
-		if table != nil {
-			if file.Class == elf.ELFCLASS32 && file.Data == elf.ELFDATA2LSB && file.Machine == elf.EM_ARM {
+		if file.Class == elf.ELFCLASS32 && file.Data == elf.ELFDATA2LSB && file.Machine == elf.EM_ARM {
+			ehabi := parseARM32EHABI(file)
+			if len(ehabi) > 0 {
+				if table == nil {
+					table = &UnwindTable{}
+				}
+				table.arm32EHABI = ehabi
+			}
+			if table != nil {
 				table.architecture = "arm"
 			}
+		}
+		if table != nil {
 			table.normalize(base)
 		}
 	} else if len(data) >= 4 && isMachOMagic(data[:4]) {
@@ -256,7 +279,7 @@ func ParseObjectUnwind(name string, data []byte) (string, *UnwindTable) {
 			table.normalize(base)
 		}
 	}
-	if table == nil || len(table.entries) == 0 {
+	if table == nil || (len(table.entries) == 0 && len(table.arm32EHABI) == 0) {
 		return key, nil
 	}
 	return key, table
@@ -274,6 +297,207 @@ func (t *UnwindTable) normalize(base uint64) {
 	}
 	sort.SliceStable(result, func(i, j int) bool { return result[i].start < result[j].start })
 	t.entries = result
+	ehabi := t.arm32EHABI[:0]
+	for _, entry := range t.arm32EHABI {
+		if entry.start < base || entry.end <= base {
+			continue
+		}
+		entry.start -= base
+		entry.end -= base
+		ehabi = append(ehabi, entry)
+	}
+	sort.SliceStable(ehabi, func(i, j int) bool { return ehabi[i].start < ehabi[j].start })
+	t.arm32EHABI = ehabi
+}
+
+func parseARM32EHABI(file *elf.File) []arm32EHABIFDE {
+	const (
+		armExidxSectionType    = elf.SectionType(0x70000001)
+		shfLinkOrder           = elf.SectionFlag(0x80)
+		maxExidxEntries        = 262_144
+		maxEHABIOperationBytes = 16 << 20
+	)
+	extabSections, ok := loadARM32ExtabSections(file)
+	if !ok {
+		return nil
+	}
+	var entries []arm32EHABIFDE
+	totalEntries, totalOperationBytes := 0, 0
+	for _, indexSection := range file.Sections {
+		if indexSection.Type != armExidxSectionType && !strings.HasPrefix(indexSection.Name, ".ARM.exidx") {
+			continue
+		}
+		if indexSection.Type != armExidxSectionType || indexSection.Flags&shfLinkOrder == 0 || uint64(indexSection.Link) >= uint64(len(file.Sections)) {
+			return nil
+		}
+		codeSection := file.Sections[indexSection.Link]
+		if codeSection.Type != elf.SHT_PROGBITS || codeSection.Flags&elf.SHF_EXECINSTR == 0 || codeSection.Size == 0 || codeSection.Addr > ^uint64(0)-codeSection.Size {
+			return nil
+		}
+		codeEnd := codeSection.Addr + codeSection.Size
+		if codeEnd > arm32AddressSpace {
+			return nil
+		}
+		indexData, err := indexSection.Data()
+		if err != nil || len(indexData) == 0 || len(indexData)%8 != 0 || len(indexData)/8 > maxExidxEntries-totalEntries || indexSection.Addr > ^uint64(0)-uint64(len(indexData)) {
+			return nil
+		}
+		if indexSection.Addr+uint64(len(indexData)) > arm32AddressSpace {
+			return nil
+		}
+		totalEntries += len(indexData) / 8
+		fragment := make([]arm32EHABIFDE, 0, len(indexData)/8)
+		for offset := 0; offset < len(indexData); offset += 8 {
+			place := indexSection.Addr + uint64(offset)
+			functionOffset := binary.LittleEndian.Uint32(indexData[offset:])
+			if functionOffset&0x80000000 != 0 {
+				return nil
+			}
+			functionStart, ok := arm32ResolvePrel31(place, functionOffset)
+			if !ok || functionStart >= arm32AddressSpace {
+				return nil
+			}
+			functionStart &^= 1 // The low bit records Thumb state, not the function address.
+			if functionStart < codeSection.Addr || functionStart >= codeEnd || (len(fragment) > 0 && functionStart <= fragment[len(fragment)-1].start) {
+				return nil
+			}
+			entry := binary.LittleEndian.Uint32(indexData[offset+4:])
+			unwind := arm32EHABIFDE{start: functionStart}
+			switch {
+			case entry == 1:
+				unwind.cantUnwind = true
+			case entry&0x80000000 != 0:
+				unwind.program, ok = parseARM32CompactEHABI(entry, nil, true)
+				if !ok {
+					return nil
+				}
+			default:
+				extabAddress, valid := arm32ResolvePrel31(place+4, entry)
+				if !valid {
+					return nil
+				}
+				unwind.program, ok = parseARM32Extab(extabSections, extabAddress)
+				if !ok {
+					return nil
+				}
+			}
+			totalOperationBytes += len(unwind.program)
+			if totalOperationBytes > maxEHABIOperationBytes {
+				return nil
+			}
+			fragment = append(fragment, unwind)
+		}
+		for i := range fragment {
+			fragment[i].end = codeEnd
+			if i+1 < len(fragment) {
+				fragment[i].end = fragment[i+1].start
+			}
+		}
+		entries = append(entries, fragment...)
+	}
+	if len(entries) == 0 {
+		return nil
+	}
+	sort.Slice(entries, func(i, j int) bool { return entries[i].start < entries[j].start })
+	for i := 1; i < len(entries); i++ {
+		if entries[i].start < entries[i-1].end {
+			return nil
+		}
+	}
+	return entries
+}
+
+func arm32ResolvePrel31(place uint64, encoded uint32) (uint64, bool) {
+	offset := int64(encoded & 0x7fffffff)
+	if offset&(1<<30) != 0 {
+		offset -= 1 << 31
+	}
+	if offset < 0 {
+		distance := uint64(-offset)
+		if distance > place {
+			return 0, false
+		}
+		return place - distance, true
+	}
+	distance := uint64(offset)
+	if place > ^uint64(0)-distance {
+		return 0, false
+	}
+	return place + distance, true
+}
+
+func loadARM32ExtabSections(file *elf.File) ([]arm32EHABIExtabSection, bool) {
+	var sections []arm32EHABIExtabSection
+	for _, section := range file.Sections {
+		if !strings.HasPrefix(section.Name, ".ARM.extab") {
+			continue
+		}
+		if section.Type != elf.SHT_PROGBITS || section.Addr > ^uint64(0)-section.Size || section.Addr+section.Size > arm32AddressSpace {
+			return nil, false
+		}
+		data, err := section.Data()
+		if err != nil || uint64(len(data)) != section.Size {
+			return nil, false
+		}
+		if len(data) == 0 {
+			continue
+		}
+		sections = append(sections, arm32EHABIExtabSection{start: section.Addr, end: section.Addr + section.Size, data: data})
+	}
+	sort.Slice(sections, func(i, j int) bool { return sections[i].start < sections[j].start })
+	for i := 1; i < len(sections); i++ {
+		if sections[i].start < sections[i-1].end {
+			return nil, false
+		}
+	}
+	return sections, true
+}
+
+func parseARM32Extab(sections []arm32EHABIExtabSection, address uint64) ([]byte, bool) {
+	if address&3 != 0 {
+		return nil, false
+	}
+	index := sort.Search(len(sections), func(i int) bool { return sections[i].start > address }) - 1
+	if index < 0 {
+		return nil, false
+	}
+	section := sections[index]
+	if address < section.start || address > section.end || section.end-address < 4 {
+		return nil, false
+	}
+	offset := address - section.start
+	if offset > uint64(len(section.data)) || uint64(len(section.data))-offset < 4 {
+		return nil, false
+	}
+	word := binary.LittleEndian.Uint32(section.data[offset:])
+	program, ok := parseARM32CompactEHABI(word, section.data[offset+4:], false)
+	return program, ok
+}
+
+func parseARM32CompactEHABI(word uint32, extra []byte, inline bool) ([]byte, bool) {
+	if word&0x80000000 == 0 {
+		return nil, false // Generic personality entries are outside this subset.
+	}
+	personality := (word >> 24) & 0x0f
+	if personality == 0 {
+		return []byte{byte(word >> 16), byte(word >> 8), byte(word)}, true
+	}
+	if inline || (personality != 1 && personality != 2) {
+		return nil, false
+	}
+	additionalWords := int((word >> 16) & 0xff)
+	if additionalWords > len(extra)/4 {
+		return nil, false
+	}
+	program := []byte{byte(word >> 8), byte(word)}
+	program = append(program, make([]byte, additionalWords*4)...)
+	for i := 0; i < additionalWords; i++ {
+		chunk := extra[i*4 : i*4+4]
+		for j := 0; j < 4; j++ {
+			program[2+i*4+j] = chunk[3-j]
+		}
+	}
+	return program, true
 }
 
 func parseCFISection(data []byte, sectionAddr uint64, isEH bool, pointerSize int) (*UnwindTable, error) {
@@ -632,6 +856,14 @@ func (t *UnwindTable) rulesAt(address uint64) (cfiState, cfiCIE, bool) {
 	return state, cie, true
 }
 
+func (t *UnwindTable) arm32EHABIAt(address uint64) (*arm32EHABIFDE, bool) {
+	index := sort.Search(len(t.arm32EHABI), func(i int) bool { return t.arm32EHABI[i].start > address }) - 1
+	if index < 0 || address >= t.arm32EHABI[index].end {
+		return nil, false
+	}
+	return &t.arm32EHABI[index], true
+}
+
 func applyCFIInstructionsWithLocation(instructions []byte, initial cfiState, cie cfiCIE, target, start uint64) (cfiState, error) {
 	cie.initialLocation = start
 	return applyCFIInstructions(instructions, initial, cie, target, true)
@@ -680,6 +912,7 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		}
 		var rules cfiState
 		var cie cfiCIE
+		var ehabi *arm32EHABIFDE
 		found := false
 		for _, table := range candidates {
 			if table == nil || (crash.Arch == "arm" && table.architecture != "arm") || (table.architecture != "" && table.architecture != crash.Arch) {
@@ -689,14 +922,38 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 				break
 			}
 		}
+		if !found && crash.Arch == "arm" {
+			for _, table := range candidates {
+				if table == nil || table.architecture != "arm" {
+					continue
+				}
+				if ehabi, found = table.arm32EHABIAt(lookupPC - module.Base); found {
+					break
+				}
+			}
+		}
 		if !found {
 			break
+		}
+		frame := Frame{Instruction: pc, Module: module.Name}
+		if ehabi != nil {
+			frames = append(frames, frame)
+			if ehabi.cantUnwind {
+				break
+			}
+			nextRegisters, nextSP, returnAddress, ok := unwindARM32EHABI(ehabi.program, registers, crash.stack)
+			if !ok || nextSP <= registers[spRegister] || returnAddress == 0 || seen[returnAddress] {
+				break
+			}
+			seen[returnAddress] = true
+			pc, lookupPC = returnAddress, returnAddress-1
+			registers = nextRegisters
+			continue
 		}
 		cfa, ok := evaluateCFA(rules, registers, crash.stack, crash.PointerSize)
 		if !ok {
 			break
 		}
-		frame := Frame{Instruction: pc, Module: module.Name}
 		frames = append(frames, frame)
 		returnAddress, ok := evaluateRegisterRule(cie.returnReg, rules, cfa, registers, crash.stack, crash.PointerSize)
 		if !ok || returnAddress == 0 || seen[returnAddress] {
@@ -730,6 +987,161 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		}
 	}
 	return frames
+}
+
+func unwindARM32EHABI(program []byte, registers map[uint32]uint64, memory []memoryRange) (map[uint32]uint64, uint64, uint64, bool) {
+	const maxOperations = 256
+	const maxRegister = arm32AddressSpace - 1
+	nextRegisters := make(map[uint32]uint64, len(registers))
+	for register, value := range registers {
+		nextRegisters[register] = value
+	}
+	vsp, ok := nextRegisters[13]
+	if !ok || vsp > maxRegister {
+		return nil, 0, 0, false
+	}
+	pcRestored := false
+	popMask := func(mask uint16, firstRegister uint32) bool {
+		if mask == 0 {
+			return false
+		}
+		var restoredSP uint64
+		hasRestoredSP := false
+		for bit := uint32(0); bit < 16; bit++ {
+			if mask&(1<<bit) == 0 {
+				continue
+			}
+			register := firstRegister + bit
+			if register > 15 || vsp > maxRegister-4 {
+				return false
+			}
+			value, ok := readPointer(memory, vsp, 4)
+			if !ok || value > maxRegister {
+				return false
+			}
+			vsp += 4
+			if register == 13 {
+				restoredSP, hasRestoredSP = value, true
+			} else {
+				nextRegisters[register] = value
+			}
+			if register == 15 {
+				pcRestored = true
+			}
+		}
+		if hasRestoredSP {
+			vsp = restoredSP // The ABI delays SP writeback until the whole pop instruction completes.
+		}
+		return true
+	}
+	finished := false
+	for offset, steps := 0, 0; offset < len(program); steps++ {
+		if steps >= maxOperations {
+			return nil, 0, 0, false
+		}
+		instruction := program[offset]
+		offset++
+		switch {
+		case instruction < 0x40:
+			delta := (uint64(instruction&0x3f) << 2) + 4
+			if vsp > maxRegister-delta {
+				return nil, 0, 0, false
+			}
+			vsp += delta
+		case instruction < 0x80:
+			delta := (uint64(instruction&0x3f) << 2) + 4
+			if delta > vsp {
+				return nil, 0, 0, false
+			}
+			vsp -= delta
+		case instruction&0xf0 == 0x80:
+			if offset >= len(program) {
+				return nil, 0, 0, false
+			}
+			mask := uint16(instruction&0x0f)<<8 | uint16(program[offset])
+			offset++
+			if !popMask(mask, 4) {
+				return nil, 0, 0, false
+			}
+		case instruction < 0xa0:
+			register := uint32(instruction & 0x0f)
+			if register == 13 || register == 15 {
+				return nil, 0, 0, false
+			}
+			vsp, ok = nextRegisters[register]
+			if !ok || vsp > maxRegister {
+				return nil, 0, 0, false
+			}
+		case instruction < 0xb0:
+			count := uint32(instruction&0x07) + 1
+			mask := uint16((1 << count) - 1)
+			if instruction&0x08 != 0 {
+				mask |= 1 << 10 // r14 follows the compact r4-rN range.
+			}
+			if !popMask(mask, 4) {
+				return nil, 0, 0, false
+			}
+		case instruction == 0xb0:
+			if !pcRestored {
+				linkRegister, ok := nextRegisters[14]
+				if !ok {
+					return nil, 0, 0, false
+				}
+				nextRegisters[15] = linkRegister
+				pcRestored = true
+			}
+			finished = true
+		case instruction == 0xb1:
+			if offset >= len(program) {
+				return nil, 0, 0, false
+			}
+			mask := program[offset]
+			offset++
+			if mask&0xf0 != 0 || !popMask(uint16(mask), 0) {
+				return nil, 0, 0, false
+			}
+		case instruction == 0xb2:
+			value, consumed, ok := decodeARM32EHABIULEB(program[offset:])
+			if !ok {
+				return nil, 0, 0, false
+			}
+			offset += consumed
+			delta := uint64(0x204) + (uint64(value) << 2)
+			if delta > maxRegister || vsp > maxRegister-delta {
+				return nil, 0, 0, false
+			}
+			vsp += delta
+		default:
+			return nil, 0, 0, false
+		}
+		if finished {
+			break
+		}
+	}
+	if !pcRestored {
+		linkRegister, ok := nextRegisters[14]
+		if !ok {
+			return nil, 0, 0, false
+		}
+		nextRegisters[15] = linkRegister
+	}
+	nextRegisters[13] = vsp
+	return nextRegisters, vsp, nextRegisters[15], true
+}
+
+func decodeARM32EHABIULEB(data []byte) (uint32, int, bool) {
+	var value uint64
+	for i := 0; i < 5 && i < len(data); i++ {
+		current := data[i]
+		value |= uint64(current&0x7f) << (7 * i)
+		if current&0x80 == 0 {
+			if value > uint64(^uint32(0)) {
+				return 0, 0, false
+			}
+			return uint32(value), i + 1, true
+		}
+	}
+	return 0, 0, false
 }
 
 func arm32DefaultCFIRegisters(initial cfiState) cfiState {

@@ -260,6 +260,283 @@ func TestARM32CFIUnwindsUsingRestoredRegisters(t *testing.T) {
 	}
 }
 
+func TestARM32EHABIUnwindsInlineAndExtabTables(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		object []byte
+	}{
+		{name: "inline compact entry", object: buildARM32EHABIELF(false, 0x808400b0)},
+		{name: "extab long entry", object: buildARM32EHABIELF(true, 0x81008400)},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			data := buildARM32Minidump(368)
+			threadRVA := minidumpStreamRVA(data, streamThreadList)
+			stackRVA := binary.LittleEndian.Uint32(data[threadRVA+40:])
+			binary.LittleEndian.PutUint32(data[stackRVA:], 0x00401104)
+			crash, err := ParseMinidump(data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, table := ParseObjectUnwind("arm32-ehabi.so", test.object)
+			if table == nil {
+				t.Fatal("ARM32 EHABI table was not parsed")
+			}
+			entry, ok := table.arm32EHABIAt(0x1010)
+			if !ok {
+				t.Fatal("ARM32 EHABI function entry was not found")
+			}
+			restored, callerSP, returnAddress, ok := unwindARM32EHABI(entry.program, crash.registers, crash.stack)
+			if !ok || callerSP != 0x00200004 || returnAddress != 0x00401104 || restored[14] != returnAddress || restored[15] != returnAddress {
+				t.Fatalf("ARM32 EHABI caller state = regs[%d]=%#x regs[%d]=%#x SP=%#x PC=%#x ok=%v", 14, restored[14], 15, restored[15], callerSP, returnAddress, ok)
+			}
+			frames := UnwindCFI(&crash, UnwindSet{"test_app32.pdb": {table}})
+			want := []uint64{0x00401010, 0x00401104}
+			if len(frames) != len(want) {
+				t.Fatalf("ARM32 EHABI frames = %+v; want instruction addresses %x", frames, want)
+			}
+			for i := range want {
+				if frames[i].Instruction != want[i] {
+					t.Fatalf("ARM32 EHABI frame %d = %#x; want %#x", i, frames[i].Instruction, want[i])
+				}
+			}
+		})
+	}
+}
+
+func TestARM32EHABIFailsClosed(t *testing.T) {
+	t.Run("unavailable restore memory", func(t *testing.T) {
+		data := buildARM32Minidump(368)
+		crash, err := ParseMinidump(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		crash.RSP = 0x00300000
+		crash.registers[13] = crash.RSP
+		_, table := ParseObjectUnwind("arm32-ehabi.so", buildARM32EHABIELF(false, 0x808400b0))
+		frames := UnwindCFI(&crash, UnwindSet{"test_app32.pdb": {table}})
+		if len(frames) != 1 || frames[0].Instruction != crash.RIP {
+			t.Fatalf("unavailable EHABI restore produced frames %+v", frames)
+		}
+	})
+
+	t.Run("malformed index section", func(t *testing.T) {
+		object := buildARM32EHABIELF(false, 0x808400b0)
+		file, err := elf.NewFile(bytes.NewReader(object))
+		if err != nil {
+			t.Fatal(err)
+		}
+		index := file.Section(".ARM.exidx")
+		if index == nil {
+			t.Fatal("fixture has no .ARM.exidx section")
+		}
+		sectionHeaders := binary.LittleEndian.Uint32(object[32:])
+		binary.LittleEndian.PutUint32(object[int(sectionHeaders)+2*40+20:], 7)
+		if _, table := ParseObjectUnwind("arm32-ehabi.so", object); table != nil {
+			t.Fatal("truncated .ARM.exidx section produced an unwind table")
+		}
+	})
+
+	t.Run("unsupported instruction", func(t *testing.T) {
+		data := buildARM32Minidump(368)
+		crash, err := ParseMinidump(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, table := ParseObjectUnwind("arm32-ehabi.so", buildARM32EHABIELF(false, 0x80b30000))
+		if table == nil {
+			t.Fatal("valid EHABI table was not parsed")
+		}
+		frames := UnwindCFI(&crash, UnwindSet{"test_app32.pdb": {table}})
+		if len(frames) != 1 || frames[0].Instruction != crash.RIP {
+			t.Fatalf("unsupported EHABI instruction produced frames %+v", frames)
+		}
+	})
+
+	t.Run("function prel31 outside executable section", func(t *testing.T) {
+		object := buildARM32EHABIELF(false, 0x808400b0)
+		file, err := elf.NewFile(bytes.NewReader(object))
+		if err != nil {
+			t.Fatal(err)
+		}
+		index := file.Section(".ARM.exidx")
+		binary.LittleEndian.PutUint32(object[index.Offset:], arm32TestPrel31(index.Addr, 0x5000))
+		if _, table := ParseObjectUnwind("arm32-ehabi.so", object); table != nil {
+			t.Fatal("out-of-range function prel31 produced an unwind table")
+		}
+	})
+
+	t.Run("unsorted function entries", func(t *testing.T) {
+		object := buildARM32EHABIELF(false, 0x808400b0)
+		file, err := elf.NewFile(bytes.NewReader(object))
+		if err != nil {
+			t.Fatal(err)
+		}
+		index := file.Section(".ARM.exidx")
+		binary.LittleEndian.PutUint32(object[index.Offset+8:], arm32TestPrel31(index.Addr+8, 0x1000))
+		if _, table := ParseObjectUnwind("arm32-ehabi.so", object); table != nil {
+			t.Fatal("unsorted .ARM.exidx entries produced an unwind table")
+		}
+	})
+
+	t.Run("function prel31 high bit", func(t *testing.T) {
+		object := buildARM32EHABIELF(false, 0x808400b0)
+		file, err := elf.NewFile(bytes.NewReader(object))
+		if err != nil {
+			t.Fatal(err)
+		}
+		index := file.Section(".ARM.exidx")
+		binary.LittleEndian.PutUint32(object[index.Offset:], binary.LittleEndian.Uint32(object[index.Offset:])|0x80000000)
+		if _, table := ParseObjectUnwind("arm32-ehabi.so", object); table != nil {
+			t.Fatal("invalid high-bit function prel31 produced an unwind table")
+		}
+	})
+
+	t.Run("generic personality", func(t *testing.T) {
+		object := buildARM32EHABIELF(true, 0x00008400)
+		if _, table := ParseObjectUnwind("arm32-ehabi.so", object); table != nil {
+			t.Fatal("generic personality produced an unwind table")
+		}
+	})
+
+	t.Run("reserved compact personality", func(t *testing.T) {
+		object := buildARM32EHABIELF(true, 0x83840000)
+		if _, table := ParseObjectUnwind("arm32-ehabi.so", object); table != nil {
+			t.Fatal("reserved compact personality produced an unwind table")
+		}
+	})
+
+	t.Run("overlong ULEB operand", func(t *testing.T) {
+		data := buildARM32Minidump(368)
+		crash, err := ParseMinidump(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		object := buildARM32EHABIELF(true, 0x810200b2, 0x80808080, 0x80000000)
+		_, table := ParseObjectUnwind("arm32-ehabi.so", object)
+		if table == nil {
+			t.Fatal("valid compact table was not parsed")
+		}
+		frames := UnwindCFI(&crash, UnwindSet{"test_app32.pdb": {table}})
+		if len(frames) != 1 || frames[0].Instruction != crash.RIP {
+			t.Fatalf("overlong ULEB operand produced frames %+v", frames)
+		}
+	})
+}
+
+func TestARM32EHABIVSPAndCoreRegisterOperations(t *testing.T) {
+	for _, test := range []struct {
+		name         string
+		program      []byte
+		stackPointer uint64
+		framePointer uint64
+		memoryOffset uint64
+		stackValues  []uint32
+		wantNextSP   uint64
+		wantR0       uint64
+		wantR4       uint64
+		wantReturnPC uint64
+	}{
+		{name: "positive vsp adjustment", program: []byte{0x01, 0x84, 0x00, 0xb0}, stackPointer: 0x00200000, memoryOffset: 8, stackValues: []uint32{0x00401104}, wantNextSP: 0x0020000c, wantReturnPC: 0x00401104},
+		{name: "negative vsp adjustment", program: []byte{0x41, 0x84, 0x00, 0xb0}, stackPointer: 0x00200010, memoryOffset: 8, stackValues: []uint32{0x00401108}, wantNextSP: 0x0020000c, wantReturnPC: 0x00401108},
+		{name: "vsp from r4", program: []byte{0x94, 0x84, 0x00, 0xb0}, stackPointer: 0x00200000, framePointer: 0x00200008, memoryOffset: 8, stackValues: []uint32{0x0040110c}, wantNextSP: 0x0020000c, wantR4: 0x00200008, wantReturnPC: 0x0040110c},
+		{name: "pop r4 and lr", program: []byte{0x84, 0x01, 0xb0}, stackPointer: 0x00200000, stackValues: []uint32{0x44556677, 0x00401110}, wantNextSP: 0x00200008, wantR4: 0x44556677, wantReturnPC: 0x00401110},
+		{name: "pop low register", program: []byte{0xb1, 0x01, 0xb0}, stackPointer: 0x00200000, stackValues: []uint32{0x11223344}, wantNextSP: 0x00200004, wantR0: 0x11223344, wantReturnPC: 0x00401050},
+		{name: "large vsp adjustment", program: []byte{0xb2, 0x00, 0x84, 0x00, 0xb0}, stackPointer: 0x00200000, memoryOffset: 0x204, stackValues: []uint32{0x00401114}, wantNextSP: 0x00200208, wantReturnPC: 0x00401114},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			registers := map[uint32]uint64{13: test.stackPointer, 14: 0x00401050}
+			if test.framePointer != 0 {
+				registers[4] = test.framePointer
+			}
+			memory := memoryRange{start: 0x00200000, data: make([]byte, 0x500)}
+			for i, value := range test.stackValues {
+				binary.LittleEndian.PutUint32(memory.data[int(test.memoryOffset)+i*4:], value)
+			}
+			next, nextSP, returnPC, ok := unwindARM32EHABI(test.program, registers, []memoryRange{memory})
+			if !ok || nextSP != test.wantNextSP || next[13] != test.wantNextSP || returnPC != test.wantReturnPC || next[15] != test.wantReturnPC || next[0] != test.wantR0 || next[4] != test.wantR4 {
+				t.Fatalf("EHABI state: r0=%#x r4=%#x SP=%#x PC=%#x ok=%v", next[0], next[4], nextSP, returnPC, ok)
+			}
+		})
+	}
+}
+
+func buildARM32EHABIELF(useExtab bool, firstEntry uint32, extabTail ...uint32) []byte {
+	const (
+		textAddress  = uint32(0x1000)
+		textSize     = uint32(0x300)
+		exidxAddress = uint32(0x2000)
+		extabAddress = uint32(0x3000)
+	)
+	sectionNames := []byte("\x00.text\x00.ARM.exidx\x00.ARM.extab\x00.shstrtab\x00")
+	nameOffset := func(name string) uint32 {
+		return uint32(bytes.Index(sectionNames, append([]byte(name), 0)))
+	}
+	textData := make([]byte, textSize)
+	indexData := make([]byte, 16)
+	binary.LittleEndian.PutUint32(indexData, arm32TestPrel31(uint64(exidxAddress), uint64(textAddress)))
+	if useExtab {
+		binary.LittleEndian.PutUint32(indexData[4:], arm32TestPrel31(uint64(exidxAddress+4), uint64(extabAddress)))
+	} else {
+		binary.LittleEndian.PutUint32(indexData[4:], firstEntry)
+	}
+	binary.LittleEndian.PutUint32(indexData[8:], arm32TestPrel31(uint64(exidxAddress+8), uint64(textAddress+0x100)))
+	binary.LittleEndian.PutUint32(indexData[12:], 1) // EXIDX_CANTUNWIND
+	var extabData []byte
+	if useExtab {
+		extabData = make([]byte, 4+4*len(extabTail))
+		binary.LittleEndian.PutUint32(extabData, firstEntry)
+		for i, word := range extabTail {
+			binary.LittleEndian.PutUint32(extabData[4+i*4:], word)
+		}
+	}
+
+	const (
+		elfHeaderSize     = 52
+		sectionHeaderSize = 40
+	)
+	shstrOffset := elfHeaderSize
+	textOffset := (shstrOffset + len(sectionNames) + 3) &^ 3
+	indexOffset := textOffset + len(textData)
+	extabOffset := indexOffset + len(indexData)
+	sectionTableOffset := (extabOffset + len(extabData) + 3) &^ 3
+	data := make([]byte, sectionTableOffset+5*sectionHeaderSize)
+	copy(data[shstrOffset:], sectionNames)
+	copy(data[textOffset:], textData)
+	copy(data[indexOffset:], indexData)
+	copy(data[extabOffset:], extabData)
+	copy(data[:4], []byte{0x7f, 'E', 'L', 'F'})
+	data[4], data[5], data[6] = byte(elf.ELFCLASS32), byte(elf.ELFDATA2LSB), 1
+	binary.LittleEndian.PutUint16(data[16:], uint16(elf.ET_EXEC))
+	binary.LittleEndian.PutUint16(data[18:], uint16(elf.EM_ARM))
+	binary.LittleEndian.PutUint32(data[20:], 1)
+	binary.LittleEndian.PutUint32(data[32:], uint32(sectionTableOffset))
+	binary.LittleEndian.PutUint16(data[40:], elfHeaderSize)
+	binary.LittleEndian.PutUint16(data[46:], sectionHeaderSize)
+	binary.LittleEndian.PutUint16(data[48:], 5)
+	binary.LittleEndian.PutUint16(data[50:], 4)
+	writeSection := func(index int, name, kind, flags, address, offset, size, link, alignment, entrySize uint32) {
+		start := sectionTableOffset + index*sectionHeaderSize
+		binary.LittleEndian.PutUint32(data[start:], name)
+		binary.LittleEndian.PutUint32(data[start+4:], kind)
+		binary.LittleEndian.PutUint32(data[start+8:], flags)
+		binary.LittleEndian.PutUint32(data[start+12:], address)
+		binary.LittleEndian.PutUint32(data[start+16:], offset)
+		binary.LittleEndian.PutUint32(data[start+20:], size)
+		binary.LittleEndian.PutUint32(data[start+24:], link)
+		binary.LittleEndian.PutUint32(data[start+32:], alignment)
+		binary.LittleEndian.PutUint32(data[start+36:], entrySize)
+	}
+	writeSection(1, nameOffset(".text"), uint32(elf.SHT_PROGBITS), uint32(elf.SHF_ALLOC|elf.SHF_EXECINSTR), textAddress, uint32(textOffset), uint32(len(textData)), 0, 4, 0)
+	writeSection(2, nameOffset(".ARM.exidx"), 0x70000001, uint32(elf.SHF_ALLOC)|0x80, exidxAddress, uint32(indexOffset), uint32(len(indexData)), 1, 4, 8)
+	writeSection(3, nameOffset(".ARM.extab"), uint32(elf.SHT_PROGBITS), uint32(elf.SHF_ALLOC), extabAddress, uint32(extabOffset), uint32(len(extabData)), 0, 4, 0)
+	writeSection(4, nameOffset(".shstrtab"), uint32(elf.SHT_STRTAB), 0, 0, uint32(shstrOffset), uint32(len(sectionNames)), 0, 1, 0)
+	return data
+}
+
+func arm32TestPrel31(place, target uint64) uint32 {
+	return uint32(int64(target)-int64(place)) & 0x7fffffff
+}
+
 func buildARM32ELFWithCFI(savedR4Offset int64) []byte {
 	var section bytes.Buffer
 	appendRecord := func(record []byte) int {

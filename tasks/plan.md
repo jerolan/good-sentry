@@ -378,4 +378,6 @@ Implement the accepted signed truncated-remainder semantics for `DW_OP_mod`; rej
 
 Complete DWARF stack-manipulation operations with `DW_OP_rot` and `DW_OP_nop`. Verify rotation order, stack preservation and underflow with native race tests, vet and build.
 
-Restore ARM32 CFI state from Minidump registers r0-r15. Apply ARM ABI defaults for missing CIE rules, carry recovered register values into each caller frame, and keep `.ARM.exidx`/EHABI plus VFP restoration unsupported. Verify a multi-frame unwind whose later CFA depends on a register restored by the previous frame.
+Restore ARM32 CFI state from Minidump registers r0-r15. Apply ARM ABI defaults for missing CIE rules and carry recovered register values into each caller frame. Verify a multi-frame unwind whose later CFA depends on a register restored by the previous frame.
+
+Add bounded little-endian ARM32 ELF EHABI support alongside DWARF CFI. Parse linked `.ARM.exidx`/`.ARM.extab` entries and compact personalities 0-2, then execute only the specified integer-register/VSP operations. Cap inputs at 262,144 index entries, 16MiB of decoded operations and 256 operations per frame. Ignore exception descriptors and fail closed for generic personalities, reserved instructions and unsupported register classes. Verify compact inline and extab chains, CANTUNWIND, malformed bounds, captured-memory limits, native race tests, vet and build.
