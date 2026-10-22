@@ -14,6 +14,11 @@ const (
 	maxPDBProcedures      = 200_000
 	maxPDBSymbolRecords   = 1_000_000
 	maxPDBProcedureName   = 4096
+	maxPDBC13Subsections  = 65_536
+	maxPDBSourceLines     = 1_000_000
+	maxPDBSourceFiles     = 65_536
+	maxPDBLineMappings    = 1_000_000
+	maxPDBNamedCapacity   = 65_536
 	pdbHeaderSize         = 32
 	pdbStreamAbsent       = ^uint32(0)
 	pdbModuleStreamAbsent = ^uint16(0)
@@ -93,7 +98,7 @@ func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
 		}
 	}
 	moduleData := dbi[moduleStart : moduleStart+moduleSize]
-	functions, ok := parsePDBModules(msf, moduleData, sections)
+	functions, ok := parsePDBModules(msf, moduleData, sections, info)
 	if !ok || len(functions) == 0 {
 		return "", nil, false
 	}
@@ -246,9 +251,11 @@ func pdbDBISubstreamSizes(dbi []byte) (module, contribution, sectionMap, source,
 	return sizes[0], sizes[1], sizes[2], sizes[3], sizes[4], sizes[5], sizes[6], true
 }
 
-func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection) ([]SymbolFunction, bool) {
+func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, pdbInfo []byte) ([]SymbolFunction, bool) {
 	var functions []SymbolFunction
 	modules, procedures, records := 0, 0, 0
+	sourceLines := 0
+	sourceFiles, lineMappings := 0, 0
 	for offset := 0; offset < len(moduleInfo); {
 		if len(moduleInfo)-offset < 64 || modules == maxPDBModules {
 			return nil, false
@@ -256,6 +263,8 @@ func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection) 
 		modules++
 		moduleStreamIndex := binary.LittleEndian.Uint16(moduleInfo[offset+34:])
 		symbolBytes := binary.LittleEndian.Uint32(moduleInfo[offset+36:])
+		c11Bytes := binary.LittleEndian.Uint32(moduleInfo[offset+40:])
+		c13Bytes := binary.LittleEndian.Uint32(moduleInfo[offset+44:])
 		nameStart := offset + 64
 		nameEnd := bytes.IndexByte(moduleInfo[nameStart:], 0)
 		if nameEnd < 0 {
@@ -273,20 +282,493 @@ func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection) 
 		}
 		offset = next
 		if moduleStreamIndex == pdbModuleStreamAbsent {
-			if symbolBytes != 0 {
+			if symbolBytes != 0 || c11Bytes != 0 || c13Bytes != 0 {
 				return nil, false
 			}
 			continue
 		}
 		moduleStream, ok := msf.readStream(moduleStreamIndex)
-		if !ok || symbolBytes < 4 || uint64(symbolBytes) > uint64(len(moduleStream)) || !knownCodeViewSignature(binary.LittleEndian.Uint32(moduleStream)) {
+		streamEnd := uint64(symbolBytes) + uint64(c11Bytes) + uint64(c13Bytes)
+		if !ok || symbolBytes < 4 || streamEnd > uint64(len(moduleStream)) || (c11Bytes != 0 && c13Bytes != 0) || !knownCodeViewSignature(binary.LittleEndian.Uint32(moduleStream)) {
 			return nil, false
 		}
+		moduleFunctionsStart := len(functions)
 		if !parsePDBModuleSymbols(moduleStream[4:symbolBytes], sections, &functions, &procedures, &records) {
 			return nil, false
 		}
+		if c13Bytes > 0 {
+			c13Start := uint64(symbolBytes) + uint64(c11Bytes)
+			c13End := c13Start + uint64(c13Bytes)
+			lines, ok := parsePDBC13(moduleStream[c13Start:c13End], msf, pdbInfo, sections, functions[moduleFunctionsStart:], &sourceLines, &sourceFiles, &lineMappings)
+			if !ok {
+				return nil, false
+			}
+			functions = append(functions, lines...)
+		}
 	}
 	return functions, true
+}
+
+type pdbC13Line struct {
+	offset uint32
+	line   int
+	file   string
+}
+
+func parsePDBC13(data []byte, msf *pdbMSFFile, pdbInfo []byte, sections []pdbSection, functions []SymbolFunction, sourceLineCount, sourceFileCount, lineMappingCount *int) ([]SymbolFunction, bool) {
+	if len(data)%4 != 0 {
+		return nil, false
+	}
+	var lineSubsections [][]byte
+	var checksumData []byte
+	var localStringTable []byte
+	checksumSeen, stringTableSeen := false, false
+	subsections := 0
+	for offset := 0; offset < len(data); {
+		if len(data)-offset < 8 || subsections == maxPDBC13Subsections {
+			return nil, false
+		}
+		subsections++
+		rawKind := binary.LittleEndian.Uint32(data[offset:])
+		size := binary.LittleEndian.Uint32(data[offset+4:])
+		start := uint64(offset) + 8
+		end := start + uint64(size)
+		paddedEnd := (end + 3) &^ uint64(3)
+		if end > uint64(len(data)) || paddedEnd > uint64(len(data)) {
+			return nil, false
+		}
+		if rawKind&0x80000000 == 0 {
+			payload := data[start:end]
+			switch rawKind {
+			case 0xf2: // DEBUG_S_LINES
+				lineSubsections = append(lineSubsections, payload)
+			case 0xf3: // DEBUG_S_STRINGTABLE
+				if stringTableSeen {
+					return nil, false
+				}
+				stringTableSeen, localStringTable = true, payload
+			case 0xf4: // DEBUG_S_FILECHKSMS
+				if checksumSeen {
+					return nil, false
+				}
+				checksumSeen, checksumData = true, payload
+			}
+		}
+		offset = int(paddedEnd)
+	}
+
+	if !checksumSeen {
+		if len(lineSubsections) != 0 {
+			return nil, false
+		}
+		if stringTableSeen && !validPDBStringTable(localStringTable) {
+			return nil, false
+		}
+		return nil, true
+	}
+	stringTable := localStringTable
+	if stringTableSeen {
+		if !validPDBStringTable(stringTable) {
+			return nil, false
+		}
+	} else {
+		var ok bool
+		stringTable, ok = pdbGlobalStringTable(msf, pdbInfo)
+		if !ok {
+			return nil, false
+		}
+	}
+	checksums, ok := parsePDBC13Checksums(checksumData, stringTable, sourceFileCount)
+	if !ok {
+		return nil, false
+	}
+	index := newPDBFunctionIndex(functions)
+	var sourceFunctions []SymbolFunction
+	for _, subsection := range lineSubsections {
+		lines, ok := parsePDBC13Lines(subsection, checksums, sections, index, sourceLineCount, lineMappingCount)
+		if !ok {
+			return nil, false
+		}
+		sourceFunctions = append(sourceFunctions, lines...)
+	}
+	return sourceFunctions, true
+}
+
+func parsePDBC13Checksums(data, stringTable []byte, sourceFileCount *int) (map[uint32]string, bool) {
+	checksums := make(map[uint32]string)
+	for offset := 0; offset < len(data); {
+		if len(data)-offset < 6 || *sourceFileCount == maxPDBSourceFiles {
+			return nil, false
+		}
+		fileNameOffset := binary.LittleEndian.Uint32(data[offset:])
+		checksumSize, checksumKind := int(data[offset+4]), data[offset+5]
+		expectedSize := -1
+		switch checksumKind {
+		case 0:
+			expectedSize = 0
+		case 1:
+			expectedSize = 16
+		case 2:
+			expectedSize = 20
+		case 3:
+			expectedSize = 32
+		default:
+			return nil, false
+		}
+		if checksumSize != expectedSize {
+			return nil, false
+		}
+		end := uint64(offset) + 6 + uint64(checksumSize)
+		paddedEnd := (end + 3) &^ uint64(3)
+		if paddedEnd > uint64(len(data)) {
+			return nil, false
+		}
+		name, ok := pdbStringAt(stringTable, fileNameOffset)
+		if !ok {
+			return nil, false
+		}
+		checksums[uint32(offset)] = name
+		*sourceFileCount = *sourceFileCount + 1
+		offset = int(paddedEnd)
+	}
+	return checksums, true
+}
+
+type pdbFunctionNode struct {
+	function SymbolFunction
+	maxEnd   uint64
+	left     *pdbFunctionNode
+	right    *pdbFunctionNode
+}
+
+type pdbFunctionIndex struct {
+	root *pdbFunctionNode
+}
+
+func newPDBFunctionIndex(functions []SymbolFunction) *pdbFunctionIndex {
+	ordered := append([]SymbolFunction(nil), functions...)
+	sort.Slice(ordered, func(i, j int) bool {
+		if ordered[i].Start != ordered[j].Start {
+			return ordered[i].Start < ordered[j].Start
+		}
+		if ordered[i].End != ordered[j].End {
+			return ordered[i].End < ordered[j].End
+		}
+		return ordered[i].Name < ordered[j].Name
+	})
+	return &pdbFunctionIndex{root: buildPDBFunctionTree(ordered)}
+}
+
+func buildPDBFunctionTree(functions []SymbolFunction) *pdbFunctionNode {
+	if len(functions) == 0 {
+		return nil
+	}
+	middle := len(functions) / 2
+	node := &pdbFunctionNode{function: functions[middle]}
+	node.left = buildPDBFunctionTree(functions[:middle])
+	node.right = buildPDBFunctionTree(functions[middle+1:])
+	node.maxEnd = node.function.End
+	if node.left != nil {
+		node.maxEnd = max(node.maxEnd, node.left.maxEnd)
+	}
+	if node.right != nil {
+		node.maxEnd = max(node.maxEnd, node.right.maxEnd)
+	}
+	return node
+}
+
+func (index *pdbFunctionIndex) overlaps(start, end uint64) []SymbolFunction {
+	var matches []SymbolFunction
+	queryPDBFunctionTree(index.root, start, end, &matches)
+	return matches
+}
+
+func queryPDBFunctionTree(node *pdbFunctionNode, start, end uint64, matches *[]SymbolFunction) {
+	if node == nil || node.maxEnd <= start {
+		return
+	}
+	queryPDBFunctionTree(node.left, start, end, matches)
+	if node.function.Start < end && node.function.End > start {
+		*matches = append(*matches, node.function)
+	}
+	if node.function.Start < end {
+		queryPDBFunctionTree(node.right, start, end, matches)
+	}
+}
+
+func parsePDBC13Lines(data []byte, checksums map[uint32]string, sections []pdbSection, functions *pdbFunctionIndex, sourceLineCount, lineMappingCount *int) ([]SymbolFunction, bool) {
+	if len(data) < 12 {
+		return nil, false
+	}
+	sectionOffset := binary.LittleEndian.Uint32(data)
+	segment := binary.LittleEndian.Uint16(data[4:])
+	flags := binary.LittleEndian.Uint16(data[6:])
+	codeSize := binary.LittleEndian.Uint32(data[8:])
+	if segment == 0 || int(segment) > len(sections) || flags&^uint16(1) != 0 || codeSize == 0 {
+		return nil, false
+	}
+	section := sections[segment-1]
+	sectionSize := max(section.virtualSize, section.rawSize)
+	if section.flags&0x20000000 == 0 || sectionOffset >= sectionSize || codeSize > sectionSize-sectionOffset {
+		return nil, false
+	}
+	hasColumns := flags&1 != 0
+	var sourceFunctions []SymbolFunction
+	for offset := 12; offset < len(data); {
+		if len(data)-offset < 12 {
+			return nil, false
+		}
+		nameIndex := binary.LittleEndian.Uint32(data[offset:])
+		lineCount := binary.LittleEndian.Uint32(data[offset+4:])
+		blockSize := binary.LittleEndian.Uint32(data[offset+8:])
+		lineRecordSize := uint64(8)
+		if hasColumns {
+			lineRecordSize += 4
+		}
+		required := uint64(12) + uint64(lineCount)*lineRecordSize
+		if blockSize < 12 || blockSize%4 != 0 || uint64(blockSize) > uint64(len(data)-offset) || required > uint64(blockSize) || uint64(*sourceLineCount)+uint64(lineCount) > maxPDBSourceLines {
+			return nil, false
+		}
+		file, exists := checksums[nameIndex]
+		if !exists {
+			return nil, false
+		}
+		*sourceLineCount += int(lineCount)
+		lineOffset := offset + 12
+		var previous uint32
+		lines := make([]pdbC13Line, 0, lineCount)
+		for i := uint32(0); i < lineCount; i++ {
+			entry := data[lineOffset:]
+			codeOffset := binary.LittleEndian.Uint32(entry)
+			lineInfo := binary.LittleEndian.Uint32(entry[4:])
+			if codeOffset >= codeSize || (i != 0 && codeOffset < previous) {
+				return nil, false
+			}
+			previous = codeOffset
+			lineNumber := int(lineInfo & 0x00ffffff)
+			lines = append(lines, pdbC13Line{offset: codeOffset, line: lineNumber, file: file})
+			lineOffset += 8
+		}
+		if hasColumns {
+			columnsEnd := lineOffset + int(lineCount)*4
+			for columnOffset := lineOffset; columnOffset < columnsEnd; columnOffset += 4 {
+				_ = binary.LittleEndian.Uint16(data[columnOffset:])
+				_ = binary.LittleEndian.Uint16(data[columnOffset+2:])
+			}
+		}
+		mapped, ok := pdbC13FunctionsForLines(lines, codeSize, section, sectionOffset, functions, lineMappingCount)
+		if !ok {
+			return nil, false
+		}
+		sourceFunctions = append(sourceFunctions, mapped...)
+		offset += int(blockSize)
+	}
+	return sourceFunctions, true
+}
+
+func pdbC13FunctionsForLines(lines []pdbC13Line, codeSize uint32, section pdbSection, sectionOffset uint32, functions *pdbFunctionIndex, lineMappingCount *int) ([]SymbolFunction, bool) {
+	if len(lines) == 0 {
+		return nil, true
+	}
+	lineEnds := make([]uint32, len(lines))
+	for i := len(lines) - 1; i >= 0; i-- {
+		lineEnds[i] = codeSize
+		if i+1 < len(lines) {
+			if lines[i+1].offset > lines[i].offset {
+				lineEnds[i] = lines[i+1].offset
+			} else {
+				lineEnds[i] = lineEnds[i+1]
+			}
+		}
+	}
+	var sourceFunctions []SymbolFunction
+	for i, line := range lines {
+		endOffset := lineEnds[i]
+		if line.line <= 0 || endOffset <= line.offset {
+			continue
+		}
+		lineStart := uint64(section.virtualAddr) + uint64(sectionOffset) + uint64(line.offset)
+		lineEnd := uint64(section.virtualAddr) + uint64(sectionOffset) + uint64(endOffset)
+		matches := functions.overlaps(lineStart, lineEnd)
+		if len(matches) > maxPDBLineMappings-*lineMappingCount {
+			return nil, false
+		}
+		*lineMappingCount += len(matches)
+		for _, function := range matches {
+			start := max(lineStart, function.Start)
+			end := min(lineEnd, function.End)
+			if start < end {
+				sourceFunctions = append(sourceFunctions, SymbolFunction{Start: start, End: end, Name: function.Name, File: line.file, Line: line.line})
+			}
+		}
+	}
+	return sourceFunctions, true
+}
+
+func pdbGlobalStringTable(msf *pdbMSFFile, pdbInfo []byte) ([]byte, bool) {
+	streamIndex, ok := pdbNamedStreamIndex(pdbInfo, msf)
+	if !ok {
+		return nil, false
+	}
+	stream, ok := msf.readStream(streamIndex)
+	if !ok || len(stream) < 16 || binary.LittleEndian.Uint32(stream) != 0xeffeeffe {
+		return nil, false
+	}
+	hashVersion := binary.LittleEndian.Uint32(stream[4:])
+	if hashVersion != 1 && hashVersion != 2 {
+		return nil, false
+	}
+	stringBytes := binary.LittleEndian.Uint32(stream[8:])
+	stringsEnd := uint64(12) + uint64(stringBytes)
+	if stringsEnd+8 > uint64(len(stream)) {
+		return nil, false
+	}
+	strings := stream[12:stringsEnd]
+	hashCount := binary.LittleEndian.Uint32(stream[stringsEnd:])
+	hashEnd := stringsEnd + 4 + uint64(hashCount)*4
+	if hashCount > maxPDBSourceLines || hashEnd+4 != uint64(len(stream)) || !validPDBStringTable(strings) {
+		return nil, false
+	}
+	for offset := stringsEnd + 4; offset < hashEnd; offset += 4 {
+		id := binary.LittleEndian.Uint32(stream[offset:])
+		if id != 0 {
+			if _, ok := pdbStringAt(strings, id); !ok {
+				return nil, false
+			}
+		}
+	}
+	if binary.LittleEndian.Uint32(stream[hashEnd:]) > maxPDBSourceLines {
+		return nil, false
+	}
+	return strings, true
+}
+
+func pdbNamedStreamIndex(info []byte, msf *pdbMSFFile) (uint16, bool) {
+	if len(info) < 32 {
+		return 0, false
+	}
+	stringBytes := binary.LittleEndian.Uint32(info[28:])
+	stringsStart := uint64(32)
+	stringsEnd := stringsStart + uint64(stringBytes)
+	if stringsEnd+8 > uint64(len(info)) {
+		return 0, false
+	}
+	strings := info[stringsStart:stringsEnd]
+	position := int(stringsEnd)
+	size, ok := readPDBU32(info, &position)
+	if !ok {
+		return 0, false
+	}
+	capacity, ok := readPDBU32(info, &position)
+	if !ok || size > maxPDBStreams || capacity == 0 || capacity > maxPDBNamedCapacity || size > capacity {
+		return 0, false
+	}
+	present, ok := readPDBBitVector(info, &position, capacity)
+	if !ok {
+		return 0, false
+	}
+	deleted, ok := readPDBBitVector(info, &position, capacity)
+	if !ok {
+		return 0, false
+	}
+	presentCount := 0
+	for bucket := uint32(0); bucket < capacity; bucket++ {
+		isPresent := pdbBit(present, bucket)
+		isDeleted := pdbBit(deleted, bucket)
+		if isPresent && isDeleted {
+			return 0, false
+		}
+		if isPresent {
+			presentCount++
+		}
+	}
+	if uint32(presentCount) != size || uint64(position)+uint64(size)*8 > uint64(len(info)) {
+		return 0, false
+	}
+	var namesIndex uint32
+	found := false
+	for bucket := uint32(0); bucket < capacity; bucket++ {
+		if !pdbBit(present, bucket) {
+			continue
+		}
+		nameOffset := binary.LittleEndian.Uint32(info[position:])
+		streamIndex := binary.LittleEndian.Uint32(info[position+4:])
+		position += 8
+		name, ok := pdbStringAt(strings, nameOffset)
+		if !ok || streamIndex >= uint32(len(msf.streams)) || msf.streams[streamIndex].absent {
+			return 0, false
+		}
+		if name == "/names" {
+			if found {
+				return 0, false
+			}
+			namesIndex, found = streamIndex, true
+		}
+	}
+	if (len(info)-position)%4 != 0 || !found || namesIndex > 0xffff {
+		return 0, false
+	}
+	return uint16(namesIndex), true
+}
+
+func readPDBBitVector(data []byte, position *int, capacity uint32) ([]uint32, bool) {
+	count, ok := readPDBU32(data, position)
+	maxWords := (uint64(capacity) + 31) / 32
+	if !ok || uint64(count) > maxWords || uint64(*position)+uint64(count)*4 > uint64(len(data)) {
+		return nil, false
+	}
+	words := make([]uint32, count)
+	for i := range words {
+		words[i] = binary.LittleEndian.Uint32(data[*position:])
+		*position += 4
+	}
+	if len(words) > 0 && uint64(len(words)) == maxWords && capacity%32 != 0 {
+		validMask := uint32(1)<<(capacity%32) - 1
+		if words[len(words)-1]&^validMask != 0 {
+			return nil, false
+		}
+	}
+	return words, true
+}
+
+func pdbBit(words []uint32, index uint32) bool {
+	word := index / 32
+	return int(word) < len(words) && words[word]&(uint32(1)<<(index%32)) != 0
+}
+
+func readPDBU32(data []byte, position *int) (uint32, bool) {
+	if *position < 0 || len(data)-*position < 4 {
+		return 0, false
+	}
+	value := binary.LittleEndian.Uint32(data[*position:])
+	*position += 4
+	return value, true
+}
+
+func validPDBStringTable(data []byte) bool {
+	if len(data) == 0 || data[0] != 0 {
+		return false
+	}
+	for offset := 0; offset < len(data); {
+		end := bytes.IndexByte(data[offset:], 0)
+		if end < 0 {
+			return false
+		}
+		offset += end + 1
+	}
+	return true
+}
+
+func pdbStringAt(table []byte, offset uint32) (string, bool) {
+	if uint64(offset) >= uint64(len(table)) || (offset > 0 && table[offset-1] != 0) {
+		return "", false
+	}
+	value := table[offset:]
+	end := bytes.IndexByte(value, 0)
+	if end <= 0 || end > maxPDBProcedureName {
+		return "", false
+	}
+	return string(value[:end]), true
 }
 
 func parsePDBModuleSymbols(data []byte, sections []pdbSection, functions *[]SymbolFunction, procedures, records *int) bool {

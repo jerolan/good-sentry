@@ -157,7 +157,7 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
-			pdb := nativepdb.Minimal().Data
+			pdb := nativepdb.WithSourceLines(false).Data
 			digest := sha1.Sum(pdb)
 			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
 			if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "crash.pdb", "pdb", test.uploadedID, "x86_64", "crash.exe", hex.EncodeToString(digest[:]), nil, nil, pdb); err != nil {
@@ -202,9 +202,16 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 			if len(payload.Exception.Values) != 1 || len(payload.Exception.Values[0].Stacktrace.Frames) == 0 {
 				t.Fatalf("PDB minidump frames: %+v", payload.Exception)
 			}
-			gotSymbol := payload.Exception.Values[0].Stacktrace.Frames[0].Function == "CrashFunction"
+			frame := payload.Exception.Values[0].Stacktrace.Frames[0]
+			gotSymbol := frame.Function == "CrashFunction"
 			if gotSymbol != test.wantSymbol {
-				t.Fatalf("PDB symbolication=%+v, want symbol=%t", payload.Exception.Values[0].Stacktrace.Frames[0], test.wantSymbol)
+				t.Fatalf("PDB symbolication=%+v, want symbol=%t", frame, test.wantSymbol)
+			}
+			if test.wantSymbol && (frame.Filename != `C:\src\crash.cc` || frame.Line != 42) {
+				t.Fatalf("PDB source line=%+v, want C:\\src\\crash.cc:42", frame)
+			}
+			if !test.wantSymbol && (frame.Filename != "" || frame.Line != 0) {
+				t.Fatalf("mismatched PDB identity returned source line: %+v", frame)
 			}
 		})
 	}
