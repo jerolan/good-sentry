@@ -47,6 +47,8 @@ type APITokenGrant struct {
 	AllProjects    bool
 	ProjectIDs     []int64
 	Scopes         []string
+	// ScopesMask carries a compatible account token's published bit mask.
+	ScopesMask int64
 }
 
 const apiTokenColumns = `t.id::text,t.name,t.prefix,t.scopes,t.all_projects,t.user_id::text,

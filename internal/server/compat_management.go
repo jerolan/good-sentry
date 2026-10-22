@@ -131,7 +131,7 @@ func (s *Server) compatibleOrganizationDetail(w http.ResponseWriter, r *http.Req
 		report(w, err)
 		return
 	}
-	if grant, ok := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); ok && grant.OrganizationID != detail.ID {
+	if grant, ok := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); ok && grant.OrganizationID != "" && grant.OrganizationID != detail.ID {
 		failure(w, 404, "Not found")
 		return
 	}

@@ -193,7 +193,7 @@ func (s *Server) compatibleWizardSetToken(w http.ResponseWriter, r *http.Request
 	}
 	userID := current(r).User.ID
 	organization := input.Organization
-	if grant, ok := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); ok {
+	if grant, ok := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); ok && grant.OrganizationID != "" {
 		bound, err := s.db.ManagementOrganization(r.Context(), userID, grant.OrganizationID)
 		if err != nil {
 			report(w, err)

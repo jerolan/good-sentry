@@ -30,6 +30,7 @@ type Server struct {
 	oidc          *oidcAuth
 	totp          *totpBox
 	social        *secretSealer
+	userTokens    *secretSealer
 	defaultUserID string
 	openCSRF      string
 }
@@ -50,7 +51,8 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender *notify.Sender, box *accountmail.SecretBox, defaultUser *store.User) http.Handler {
 	sealer, _ := newTOTPBox(cfg.Secret)
 	socialSealer, _ := newSecretSealer(cfg.Secret, "GoodSentry social apps v1", 191)
-	s := &Server{cfg: cfg, db: db, mail: sender, account: box, oidc: newOIDCAuth(cfg), totp: sealer, social: socialSealer}
+	userTokenSealer, _ := newSecretSealer(cfg.Secret, "GoodSentry user tokens v1", 32)
+	s := &Server{cfg: cfg, db: db, mail: sender, account: box, oidc: newOIDCAuth(cfg), totp: sealer, social: socialSealer, userTokens: userTokenSealer}
 	if cfg.AuthenticationDisabled() && defaultUser != nil {
 		s.defaultUserID = defaultUser.ID
 		s.openCSRF = s.hash("open-auth-csrf-v1:" + defaultUser.ID)
@@ -96,6 +98,11 @@ func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender
 	mux.Handle("GET /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.apiTokens)))
 	mux.Handle("POST /api/v1/organizations/{org}/api-tokens", s.auth(http.HandlerFunc(s.createAPIToken)))
 	mux.Handle("DELETE /api/v1/organizations/{org}/api-tokens/{token}", s.auth(http.HandlerFunc(s.revokeAPIToken)))
+	mux.Handle("GET /api/0/api-tokens/{$}", http.HandlerFunc(s.userAPITokens))
+	mux.Handle("POST /api/0/api-tokens/{$}", http.HandlerFunc(s.createUserAPIToken))
+	mux.Handle("DELETE /api/0/api-tokens/{token_id}/{$}", http.HandlerFunc(s.deleteUserAPIToken))
+	mux.Handle("GET /api/0/generate-recovery-codes/{$}", s.recoveryRoute(s.generateRecoveryCodes))
+	mux.Handle("POST /api/0/generate-recovery-codes/{$}", s.recoveryRoute(s.consumeRecoveryCode))
 	mux.Handle("GET /api/0/organizations/{org}/projects/{$}", s.compatible("org:read", s.compatibleProjects))
 	mux.Handle("GET /api/0/projects/{org}/{project}/{$}", s.compatible("project:read", s.compatibleProject))
 	s.registerCompatibleEventRoutes(mux)
