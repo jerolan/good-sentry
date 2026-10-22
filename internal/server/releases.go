@@ -18,6 +18,9 @@ func (s *Server) registerReleaseRoutes(mux *http.ServeMux) {
 		mux.Handle("PUT "+root+"{version}/{$}", s.compatible("project:releases", s.updateRelease))
 		mux.Handle("DELETE "+root+"{version}/{$}", s.compatible("project:releases", s.deleteRelease))
 		mux.Handle("GET "+root+"{version}/commits/{$}", s.compatibleAny(read, s.compatibleReleaseCommits))
+		mux.Handle("GET "+root+"{version}/files/{$}", s.compatible("project:releases", s.compatibleReleaseFiles))
+		mux.Handle("GET "+root+"{version}/files/{file}/{$}", s.compatible("project:releases", s.compatibleReleaseFile))
+		mux.Handle("DELETE "+root+"{version}/files/{file}/{$}", s.compatible("project:releases", s.compatibleDeleteReleaseFile))
 	}
 	root := "/api/0/organizations/{org}/releases/{version}/"
 	mux.Handle("POST "+root+"commits/{$}", s.compatible("project:releases", s.replaceReleaseCommits))

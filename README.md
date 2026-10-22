@@ -62,7 +62,7 @@ For interactive source-map setup, run `npx @sentry/wizard@8.0.1 --url http://loc
 | Capability | Available workflows |
 | --- | --- |
 | Errors and feedback | Grouped issues, stack traces, tags, search, assignment, comments, triage and SDK feedback. |
-| Releases | Sentry CLI lifecycle operations, commit/deploy metadata and JavaScript source maps. |
+| Releases | Sentry CLI lifecycle operations, commit/deploy metadata, JavaScript source maps and compatible release-file list/detail/delete. |
 | Native diagnostics | Official CLI chunked DIF upload, bounded ZIP debug archives, AMD64/x86/ARM64 minidump ingestion, frame-pointer and CFI-assisted unwinding, and Breakpad plus ELF/Mach-O DWARF or dSYM companion symbolication; more native formats are in progress. |
 | Performance and logs | Transactions, spans, trace waterfalls, compatible transaction-group/detail/trend/span, N+1, Grafana `stats_v2` and compatible log list/detail/resource/stat reads, typed logs and OTLP/HTTP log ingestion. |
 | Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors, public status pages; email and webhooks with durable retries. |
