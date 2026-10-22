@@ -22,6 +22,7 @@ const (
 	streamException   = 6
 	streamMemory64    = 9
 	streamSystemInfo  = 7
+	cpuArchARM        = 5
 	cpuArchAMD64      = 9
 )
 
@@ -42,16 +43,16 @@ type Frame struct {
 }
 
 type Crash struct {
-	PID           uint32
-	ThreadID      uint32
-	Code          uint32
-	CrashAddr     uint64
-	RIP, RSP, RBP uint64
-	Arch          string
-	PointerSize   int
-	Modules       []Module
-	Frames        []Frame
-	stack         []memoryRange
+	PID               uint32
+	ThreadID          uint32
+	Code              uint32
+	CrashAddr         uint64
+	RIP, RSP, RBP, LR uint64
+	Arch              string
+	PointerSize       int
+	Modules           []Module
+	Frames            []Frame
+	stack             []memoryRange
 }
 
 type memoryRange struct {
@@ -260,7 +261,14 @@ func ParseMinidump(data []byte) (Crash, error) {
 		crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[184:]))
 		crash.RSP = uint64(binary.LittleEndian.Uint32(rawContext[196:]))
 	default:
-		if declaredArch == 12 && len(rawContext) >= 272 {
+		if declaredArch == cpuArchARM && len(rawContext) == 368 {
+			// Crashpad and Breakpad ARM32 contexts share the general-register offsets.
+			crash.Arch, crash.PointerSize = "arm", 4
+			crash.RBP = uint64(binary.LittleEndian.Uint32(rawContext[48:]))
+			crash.RSP = uint64(binary.LittleEndian.Uint32(rawContext[56:]))
+			crash.LR = uint64(binary.LittleEndian.Uint32(rawContext[60:]))
+			crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[64:]))
+		} else if declaredArch == 12 && len(rawContext) >= 272 {
 			crash.Arch, crash.PointerSize = "arm64", 8
 			crash.RBP = binary.LittleEndian.Uint64(rawContext[240:])
 			crash.RSP = binary.LittleEndian.Uint64(rawContext[256:])
@@ -339,8 +347,12 @@ func unwind(crash Crash, ranges []memoryRange) []Frame {
 		bp = next
 	}
 	if len(addresses) == 1 {
-		if ret, ok := readPointer(ranges, crash.RSP, crash.PointerSize); ok && ret != 0 {
-			addresses = append(addresses, ret)
+		if crash.Arch == "arm" && crash.LR != 0 && !seen[crash.LR] {
+			addresses = append(addresses, crash.LR)
+		} else if crash.Arch != "arm" {
+			if ret, ok := readPointer(ranges, crash.RSP, crash.PointerSize); ok && ret != 0 && !seen[ret] {
+				addresses = append(addresses, ret)
+			}
 		}
 	}
 	frames := make([]Frame, 0, len(addresses))

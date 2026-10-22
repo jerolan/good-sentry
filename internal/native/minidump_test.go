@@ -164,6 +164,105 @@ func TestParseX86MinidumpFromContextShape(t *testing.T) {
 	}
 }
 
+func buildARM32Minidump(contextSize int) []byte {
+	data := buildX86Minidump()
+	systemRVA := minidumpStreamRVA(data, streamSystemInfo)
+	threadRVA := minidumpStreamRVA(data, streamThreadList)
+	binary.LittleEndian.PutUint16(data[systemRVA:], cpuArchARM)
+	context := make([]byte, contextSize)
+	if contextSize >= 68 {
+		binary.LittleEndian.PutUint32(context[48:], 0x00200000) // r11, frame pointer
+		binary.LittleEndian.PutUint32(context[56:], 0x00200000) // r13, stack pointer
+		binary.LittleEndian.PutUint32(context[60:], 0x00401050) // r14, link register
+		binary.LittleEndian.PutUint32(context[64:], 0x00401010) // r15, program counter
+	}
+	contextRVA := uint32(len(data))
+	data = append(data, context...)
+	binary.LittleEndian.PutUint32(data[threadRVA+44:], uint32(len(context)))
+	binary.LittleEndian.PutUint32(data[threadRVA+48:], contextRVA)
+	return data
+}
+
+func minidumpStreamRVA(data []byte, streamType uint32) uint32 {
+	count := binary.LittleEndian.Uint32(data[8:])
+	directory := binary.LittleEndian.Uint32(data[12:])
+	for i := uint32(0); i < count; i++ {
+		entry := directory + i*12
+		if binary.LittleEndian.Uint32(data[entry:]) == streamType {
+			return binary.LittleEndian.Uint32(data[entry+8:])
+		}
+	}
+	return 0
+}
+
+func TestParseARM32MinidumpContext(t *testing.T) {
+	crash, err := ParseMinidump(buildARM32Minidump(368))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if crash.Arch != "arm" || crash.PointerSize != 4 || crash.RIP != 0x00401010 || crash.RSP != 0x00200000 || crash.RBP != 0x00200000 || crash.LR != 0x00401050 {
+		t.Fatalf("ARM32 crash context: %+v", crash)
+	}
+	if len(crash.Frames) != 2 || crash.Frames[1].Instruction != 0x00401050 {
+		t.Fatalf("ARM32 frame-pointer chain: %+v", crash.Frames)
+	}
+}
+
+func TestParseARM32MinidumpUsesLinkRegisterWithoutFramePointer(t *testing.T) {
+	data := buildARM32Minidump(368)
+	threadRVA := minidumpStreamRVA(data, streamThreadList)
+	stackRVA := binary.LittleEndian.Uint32(data[threadRVA+40:])
+	binary.LittleEndian.PutUint32(data[stackRVA:], 0x00401060)
+	contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+	binary.LittleEndian.PutUint32(data[contextRVA+48:], 0)
+	crash, err := ParseMinidump(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(crash.Frames) != 2 || crash.Frames[1].Instruction != crash.LR {
+		t.Fatalf("ARM32 link-register fallback: %+v, LR %#x", crash.Frames, crash.LR)
+	}
+}
+
+func TestParseARM32MinidumpDoesNotGuessFromStackPointer(t *testing.T) {
+	data := buildARM32Minidump(368)
+	threadRVA := minidumpStreamRVA(data, streamThreadList)
+	stackRVA := binary.LittleEndian.Uint32(data[threadRVA+40:])
+	binary.LittleEndian.PutUint32(data[stackRVA:], 0x00401060)
+	contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+	binary.LittleEndian.PutUint32(data[contextRVA+48:], 0)
+	binary.LittleEndian.PutUint32(data[contextRVA+60:], 0)
+	crash, err := ParseMinidump(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(crash.Frames) != 1 {
+		t.Fatalf("ARM32 stack-pointer guess: %+v", crash.Frames)
+	}
+}
+
+func TestParseARM32MinidumpRejectsUnsupportedContextShape(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		data []byte
+	}{
+		{name: "truncated context", data: buildARM32Minidump(360)},
+		{name: "unpadded context", data: buildARM32Minidump(364)},
+		{name: "architecture mismatch", data: func() []byte {
+			data := buildARM32Minidump(368)
+			systemRVA := minidumpStreamRVA(data, streamSystemInfo)
+			binary.LittleEndian.PutUint16(data[systemRVA:], cpuArchAMD64)
+			return data
+		}()},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if _, err := ParseMinidump(test.data); err == nil {
+				t.Fatal("unsupported ARM32 context was accepted")
+			}
+		})
+	}
+}
+
 func TestParseARM64Minidump(t *testing.T) {
 	const moduleBase = uint64(0x0000000100000000)
 	const stackBase = uint64(0x000000016f000000)
