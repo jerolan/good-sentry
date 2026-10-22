@@ -912,6 +912,16 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 			if !push(uint64(signedDividend / signedDivisor)) {
 				return 0, false
 			}
+		case 0x1d:
+			divisor, ok1 := pop()
+			dividend, ok2 := pop()
+			signedDivisor, signedDividend := int64(divisor), int64(dividend)
+			if !ok1 || !ok2 || signedDivisor == 0 || signedDividend == minSignedCFIValue && signedDivisor == -1 {
+				return 0, false
+			}
+			if !push(uint64(signedDividend % signedDivisor)) {
+				return 0, false
+			}
 		case 0x1c:
 			right, ok1 := pop()
 			left, ok2 := pop()
@@ -1087,7 +1097,7 @@ func cfiExpressionBoundaries(expression []byte, pointerSize int) (map[int]struct
 				_ = cursor.sleb()
 			case 0x94:
 				_ = cursor.byte()
-			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x19, 0x1a, 0x1b, 0x1c, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x27, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x9c:
+			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x27, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x9c:
 			default:
 				return nil, false
 			}
