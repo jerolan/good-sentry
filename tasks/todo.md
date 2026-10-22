@@ -192,6 +192,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
     - Local evidence (2026-10-22): the regression test failed before the fix because `DW_OP_deref` stopped evaluation and a missing `DW_OP_deref_size` operand was accepted. All widths from one byte through pointerSize now return the expected zero-extended values; invalid widths, truncated operands and reads beyond captured memory stop. Native race, integration-tag vet and trim-path build pass.
 
+  - [x] Decode `DW_OP_addr` at the target address width.
+    - Contract: consume four bytes for a four-byte CFI target and eight bytes for an eight-byte target; malformed or truncated operands stop expression evaluation.
+    - Acceptance: expression tests verify the exact address for both widths and reject a truncated four-byte address.
+    - Verify: `go test -race ./internal/native`, `go vet -tags=integration ./...`, and `go build -trimpath ./cmd/goodsentry`. Exact-source CI and public-image acceptance remain part of parent closure.
+    - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
+    - Local evidence (2026-10-22): the new test failed before the fix because four-byte expressions were read as eight-byte addresses. Four- and eight-byte values now decode exactly, and a truncated operand is rejected. Native race, integration-tag vet and trim-path build pass.
+
 For each item above: add a consumer-facing test at the owning boundary, verify the actual UI/API outcome with stored data, inspect the diff and commit a single coherent increment. Do not mark a mapped-stack task complete based only on an upload response.
 
 ## Observability and operations

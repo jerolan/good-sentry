@@ -457,6 +457,28 @@ func TestCFIExpressionDereferenceRespectsSizeOperands(t *testing.T) {
 	}
 }
 
+func TestCFIExpressionAddressUsesTargetWidth(t *testing.T) {
+	for _, test := range []struct {
+		pointerSize int
+		address     uint64
+	}{
+		{pointerSize: 4, address: 0x12345678},
+		{pointerSize: 8, address: 0x0123456789abcdef},
+	} {
+		expression := []byte{0x03}
+		for i := 0; i < test.pointerSize; i++ {
+			expression = append(expression, byte(test.address>>(8*i)))
+		}
+		got, ok := evaluateCFIExpression(expression, nil, 0, nil, test.pointerSize)
+		if !ok || got != test.address {
+			t.Errorf("DW_OP_addr with pointerSize=%d = %#x, %v; want %#x", test.pointerSize, got, ok, test.address)
+		}
+	}
+	if _, ok := evaluateCFIExpression([]byte{0x03, 0x78, 0x56, 0x34}, nil, 0, nil, 4); ok {
+		t.Fatal("truncated four-byte DW_OP_addr was accepted")
+	}
+}
+
 func testCFIUnwindFixture(t *testing.T, fixture string) {
 	data, err := os.ReadFile("testdata/" + fixture)
 	if err != nil {

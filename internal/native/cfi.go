@@ -798,7 +798,7 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 		}
 		switch opcode {
 		case 0x03:
-			if !push(cursor.uintN(8)) {
+			if !push(cursor.uintN(pointerSize)) {
 				return 0, false
 			}
 		case 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f:
