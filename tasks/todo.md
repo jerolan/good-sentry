@@ -218,6 +218,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Sources: [DWARF 5](https://dwarfstd.org/doc/DWARF5.pdf).
     - Local evidence (2026-10-22): RED showed all three shift operations were rejected. The evaluator now handles left, logical-right and arithmetic-right shifts, plus zero shift; counts >=64 and underflow fail closed. Four-/eight-byte target cases pass `go test -race ./internal/native`; integration-tag vet, trim-path build and `git diff --check` pass.
     - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
+  - [x] Evaluate bounded signed arithmetic and comparisons in DWARF expressions.
+    - Contract: support `DW_OP_abs`, `DW_OP_neg`, `DW_OP_not`, signed `DW_OP_div`, and signed `DW_OP_eq/ge/gt/le/lt/ne`; division by zero and signed minimum overflow stop evaluation.
+    - Acceptance: verify unary and binary operand ordering, negative values, all six comparison outcomes, zero divisors, minimum signed overflow and stack underflow.
+    - Verify: `go test -race ./internal/native`, integration-tag vet, trim-path build and `git diff --check`; exact-source CI/public-image acceptance remain part of parent closure.
+    - Sources: [DWARF 5](https://dwarfstd.org/doc/DWARF5.pdf).
+    - Local evidence (2026-10-22): RED showed the evaluator rejected all requested operations. Signed abs/neg/division, bitwise complement and all six signed comparisons now pass, including negative operands; zero division, signed-min overflow and stack underflow fail closed. Native race, integration-tag vet, trim-path build and `git diff --check` pass.
+    - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
   - [x] Honor terminal `DW_OP_stack_value` in CFI rules.
     - Contract: `DW_CFA_expression` returns an immediate register value when its final opcode is `DW_OP_stack_value`; otherwise its expression yields a captured-memory address. `DW_CFA_val_expression` uses the result directly. Empty or nonterminal stack-value opcodes stop evaluation.
     - Acceptance: register-rule tests distinguish immediate values from memory addresses, cover val_expression, and reject empty/nonterminal stack-value expressions.

@@ -19,7 +19,10 @@ const (
 	cfiRuleUndefined
 )
 
-const maxCFIExpressionSteps = 4096
+const (
+	maxCFIExpressionSteps = 4096
+	minSignedCFIValue     = -1 << 63
+)
 
 type UnwindSet map[string][]*UnwindTable
 
@@ -881,10 +884,32 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 				return 0, false
 			}
 			stack[len(stack)-1], stack[len(stack)-2] = stack[len(stack)-2], stack[len(stack)-1]
+		case 0x19, 0x1f:
+			value, ok := pop()
+			if !ok || value == 1<<63 {
+				return 0, false
+			}
+			signed := int64(value)
+			if opcode == 0x1f || signed < 0 {
+				signed = -signed
+			}
+			if !push(uint64(signed)) {
+				return 0, false
+			}
 		case 0x1a:
 			right, ok1 := pop()
 			left, ok2 := pop()
 			if !ok1 || !ok2 || !push(left&right) {
+				return 0, false
+			}
+		case 0x1b:
+			divisor, ok1 := pop()
+			dividend, ok2 := pop()
+			signedDivisor, signedDividend := int64(divisor), int64(dividend)
+			if !ok1 || !ok2 || signedDivisor == 0 || signedDividend == minSignedCFIValue && signedDivisor == -1 {
+				return 0, false
+			}
+			if !push(uint64(signedDividend / signedDivisor)) {
 				return 0, false
 			}
 		case 0x1c:
@@ -939,6 +964,11 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 			if !ok1 || !ok2 || !push(left^right) {
 				return 0, false
 			}
+		case 0x20:
+			value, ok := pop()
+			if !ok || !push(^value) {
+				return 0, false
+			}
 		case 0x28:
 			offset := int16(cursor.u16())
 			condition, ok := pop()
@@ -947,6 +977,35 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 			}
 		case 0x2f:
 			if !jumpCFIExpression(&cursor, int16(cursor.u16()), boundaries) {
+				return 0, false
+			}
+		case 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e:
+			right, ok1 := pop()
+			left, ok2 := pop()
+			if !ok1 || !ok2 {
+				return 0, false
+			}
+			leftSigned, rightSigned := int64(left), int64(right)
+			comparison := false
+			switch opcode {
+			case 0x29:
+				comparison = left == right
+			case 0x2a:
+				comparison = leftSigned >= rightSigned
+			case 0x2b:
+				comparison = leftSigned > rightSigned
+			case 0x2c:
+				comparison = leftSigned <= rightSigned
+			case 0x2d:
+				comparison = leftSigned < rightSigned
+			case 0x2e:
+				comparison = left != right
+			}
+			if comparison {
+				if !push(1) {
+					return 0, false
+				}
+			} else if !push(0) {
 				return 0, false
 			}
 		case 0x90:
@@ -1028,7 +1087,7 @@ func cfiExpressionBoundaries(expression []byte, pointerSize int) (map[int]struct
 				_ = cursor.sleb()
 			case 0x94:
 				_ = cursor.byte()
-			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x1a, 0x1c, 0x1e, 0x21, 0x22, 0x24, 0x25, 0x26, 0x27, 0x9c:
+			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x19, 0x1a, 0x1b, 0x1c, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x27, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x9c:
 			default:
 				return nil, false
 			}

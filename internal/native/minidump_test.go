@@ -604,6 +604,52 @@ func TestCFIExpressionShiftOperations(t *testing.T) {
 	}
 }
 
+func TestCFIExpressionSignedArithmetic(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		expression []byte
+		want       uint64
+	}{
+		{name: "absolute value", expression: []byte{0x09, 0xf8, 0x19}, want: 8},
+		{name: "negation", expression: []byte{0x09, 0xf8, 0x1f}, want: 8},
+		{name: "bitwise complement", expression: []byte{0x30, 0x20}, want: ^uint64(0)},
+		{name: "signed division", expression: []byte{0x09, 0xf8, 0x32, 0x1b}, want: ^uint64(3)},
+		{name: "equal", expression: []byte{0x09, 0xff, 0x09, 0xff, 0x29}, want: 1},
+		{name: "greater-or-equal is signed", expression: []byte{0x09, 0xff, 0x09, 1, 0x2a}, want: 0},
+		{name: "greater than", expression: []byte{0x09, 1, 0x09, 0xff, 0x2b}, want: 1},
+		{name: "less-or-equal", expression: []byte{0x09, 0xff, 0x09, 1, 0x2c}, want: 1},
+		{name: "less than is signed", expression: []byte{0x09, 0xff, 0x09, 1, 0x2d}, want: 1},
+		{name: "not equal", expression: []byte{0x09, 0xff, 0x09, 1, 0x2e}, want: 1},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			got, ok := evaluateCFIExpression(test.expression, nil, 0, nil, 8)
+			if !ok || got != test.want {
+				t.Fatalf("expression %x = %#x, %v; want %#x", test.expression, got, ok, test.want)
+			}
+		})
+	}
+
+	minInt64 := []byte{0x0f, 0, 0, 0, 0, 0, 0, 0, 0x80}
+	for _, test := range []struct {
+		name       string
+		expression []byte
+	}{
+		{name: "division by zero", expression: []byte{0x09, 0xf8, 0x30, 0x1b}},
+		{name: "division overflow", expression: append(append(append([]byte(nil), minInt64...), 0x09, 0xff), 0x1b)},
+		{name: "absolute overflow", expression: append(append([]byte(nil), minInt64...), 0x19)},
+		{name: "negation overflow", expression: append(append([]byte(nil), minInt64...), 0x1f)},
+		{name: "unary underflow", expression: []byte{0x19}},
+		{name: "binary underflow", expression: []byte{0x1b}},
+		{name: "comparison underflow", expression: []byte{0x29}},
+	} {
+		t.Run("invalid-"+test.name, func(t *testing.T) {
+			if _, ok := evaluateCFIExpression(test.expression, nil, 0, nil, 8); ok {
+				t.Fatalf("invalid expression %x was accepted", test.expression)
+			}
+		})
+	}
+}
+
 func TestCFIExpressionDereferenceRespectsSizeOperands(t *testing.T) {
 	data := []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}
 	ranges := []memoryRange{{start: 0x1000, data: data}}

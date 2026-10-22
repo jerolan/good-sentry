@@ -371,3 +371,5 @@ ARM32 context coverage: accept the public Crashpad and Breakpad layouts by decla
 Complete DWARF CFI expression control flow: evaluate `DW_OP_skip` and `DW_OP_bra` using signed relative offsets, accept only validated opcode boundaries, and cap execution at 4,096 operations. Verify branches, malformed targets, truncation and loops with native race tests, vet and build.
 
 Support bounded DWARF shift expressions (`DW_OP_shl`, `DW_OP_shr`, `DW_OP_shra`) with standard operand ordering and fail-closed invalid counts/underflow. Verify 32-bit and 64-bit target CFI expressions, native race tests, vet and build.
+
+Complete selected common signed DWARF integer expressions: absolute value, negation, bitwise complement, signed division and signed comparisons. Reject division by zero, signed overflow and operand underflow; verify native race tests, vet and build.
