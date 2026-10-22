@@ -225,6 +225,10 @@
   .error-state .button { @apply justify-self-start; }
   .table-scroll { @apply overflow-auto; }
   table { @apply w-full border-collapse text-left; }
+  .api-docs-table { table-layout: fixed; }
+  .api-docs-table th:first-child,
+  .api-docs-table td:first-child { width: 5.75rem; }
+  .api-docs-table td { overflow-wrap: anywhere; }
   th { @apply bg-[#fbfcfd] text-muted text-xs tracking-[.015em] font-medium whitespace-nowrap; }
   th,td { @apply px-[1.25rem] py-[.85rem] border-b border-outline align-top; }
   tr:last-child td { @apply border-b-0; }

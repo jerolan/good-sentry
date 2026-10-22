@@ -6,7 +6,7 @@
   const configuredBase = document.querySelector('meta[name="goodsentry-base"]')?.content || '';
   const base = configuredBase === '__GOODSENTRY_BASE__' ? '' : configuredBase.replace(/\/$/, '');
   const pageSize = 25;
-  const viewNames = { issues: 'Issues', feedback: 'Feedback', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', releases: 'Releases', 'api-tokens': 'API tokens', people: 'People', organization: 'Organization', account: 'Account' };
+  const viewNames = { issues: 'Issues', feedback: 'Feedback', projects: 'Projects', transactions: 'Transactions', logs: 'Logs', monitors: 'Uptime', alerts: 'Alerts', releases: 'Releases', 'api-tokens': 'API tokens', people: 'People', organization: 'Organization', admin: 'Administration', account: 'Account' };
   const traceReset = { traceView: null, traceProject: null, tracePage: null, traceNode: null, traceErrorsPage: null, returnView: null };
   const state = { me: null, organization: null, projects: [], requestVersion: 0, authConfig: { oidc: { enabled: false } } };
   const commentDrafts = new Map();
@@ -256,6 +256,7 @@
       'api-tokens': 'M14 7a5 5 0 1 0 3 9l4-4-3-3-2 2M7 7h.01',
       releases: 'M20 12l-8 8L3 11V3h8l9 9ZM7 7h.01',
       account: 'M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
+      admin: 'M12 3 4 7v5c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V7l-8-4Zm-2 6v6m4-6v6',
       people: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
       organization: 'M3 21h18M5 21V7l7-4 7 4v14M9 10h1m4 0h1M9 14h1m4 0h1M9 18h1m4 0h1',
     };
@@ -532,13 +533,14 @@
     if (org) selector.value = org.slug;
     const currentParams = new URLSearchParams(location.search);
     const nav = node('nav', { class: 'nav', 'aria-label': 'Main navigation' },
-      ['issues', 'feedback', 'transactions', 'logs', 'monitors', 'alerts', 'releases', 'projects', 'api-tokens', 'people', 'organization']
+      ['issues', 'feedback', 'transactions', 'logs', 'monitors', 'alerts', 'releases', 'projects', 'api-tokens', 'people', 'organization', 'admin']
         .filter(section => section !== 'monitors' || state.me.features?.uptime === true)
         .filter(section => section !== 'logs' || state.me.features?.logs !== false)
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .filter(section => section !== 'api-tokens' || ['owner', 'admin'].includes(org?.role))
         .filter(section => section !== 'people' || ['owner', 'admin'].includes(org?.role))
         .filter(section => section !== 'organization' || ['owner', 'admin'].includes(org?.role))
+        .filter(section => section !== 'admin' || (state.me.features?.admin === true && ['owner', 'admin'].includes(org?.role)))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
           { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, release: null, level: null, trace: null, service: null, window: null, start: null, end: null,
@@ -614,7 +616,7 @@
       main.append(node('div', { class: 'card panel no-org' }, empty('No organization access', 'Your account does not belong to an organization. Contact your workspace owner to request access.')));
       return;
     }
-    if ((view === 'monitors' && state.me.features?.uptime !== true) || (view === 'logs' && state.me.features?.logs === false)) {
+    if ((view === 'monitors' && state.me.features?.uptime !== true) || (view === 'logs' && state.me.features?.logs === false) || (view === 'admin' && state.me.features?.admin !== true)) {
       main.append(pageHeader(viewNames[view], `${viewNames[view]} is disabled on this server.`));
       return;
     }
@@ -667,6 +669,10 @@
         await peopleUI.render(main, params, () => version === state.requestVersion);
       } else if (view === 'organization') {
         await renderOrganizationSettings(main, version, params);
+      } else if (view === 'admin') {
+        const overview = await request('/api/v1/admin/overview');
+        if (version !== state.requestVersion) return;
+        renderAdmin(main, overview);
       } else if (view === 'releases') {
         const { createReleasesUI } = await import('./releases.js');
         if (version !== state.requestVersion) return;
@@ -755,6 +761,42 @@
         else errorState(main, error, () => loadRoute(focus));
       }
     }
+  }
+
+  function renderAdmin(main, overview) {
+    document.title = 'Administration · GoodSentry';
+    const instance = overview.instance || {};
+    const organizations = overview.organizations || [];
+    const featureNames = { logs: 'Logs', uptime: 'Uptime', mcp: 'MCP', openapi: 'OpenAPI', admin: 'Administration', alerts: 'Alerts', alertDelivery: 'Alert delivery' };
+    const retentionNames = { events: 'Events', logs: 'Logs', transactions: 'Transactions and spans', uptime: 'Uptime checks', files: 'Files and attachments', releases: 'Release metadata' };
+    const stat = (label, value) => node('div', { class: 'stat' }, node('dt', {}, label), node('dd', {}, value));
+    const organizationRows = organizations.map(organization => node('tr', {},
+      node('td', {}, node('strong', {}, organization.name), node('div', { class: 'small muted mono' }, organization.slug)),
+      node('td', {}, badge(organization.role)),
+      node('td', { class: 'nowrap' }, number(organization.projects)),
+      node('td', { class: 'nowrap' }, number(organization.members)),
+      node('td', { class: 'nowrap' }, number(organization.issues)),
+      node('td', { class: 'nowrap' }, number(organization.events)),
+      node('td', { class: 'nowrap' }, number(organization.logs))));
+    const features = Object.entries(overview.features || {}).map(([name, enabled]) =>
+      node('span', { class: `badge ${enabled ? 'resolved' : 'ignored'}` }, `${featureNames[name] || name}: ${enabled ? 'on' : 'off'}`));
+    const retention = Object.entries(overview.retention || {}).map(([name, days]) =>
+      node('tr', {}, node('td', {}, retentionNames[name] || name), node('td', { class: 'nowrap' }, `${number(days)} days`)));
+    main.replaceChildren(
+      pageHeader('Administration', 'Operational summary for organizations where you currently have owner or admin authority.', button('Refresh', () => loadRoute())),
+      node('section', { class: 'card panel' },
+        node('div', { class: 'panel-title' }, node('h2', {}, 'Instance'), node('span', { class: 'badge' }, instance.goVersion || 'Go')),
+        node('dl', { class: 'stat-list' }, stat('Service', instance.name || 'GoodSentry'), stat('Version', instance.version || 'Unknown'), stat('Authentication', instance.authMode || 'Unknown')),
+        node('div', { class: 'panel-body form-stack' }, node('p', { class: 'small muted' }, `${instance.database || 'Database state unavailable'}. Open mode is intended for local use or a trusted private network; enable GOODSENTRY_AUTH=required before public exposure.`))),
+      node('section', { class: 'card panel' },
+        node('div', { class: 'panel-title' }, node('h2', {}, 'Managed organizations'), node('span', { class: 'small muted' }, `${number(organizations.length)} visible`)),
+        node('div', { class: 'table-scroll' }, node('table', {},
+          node('thead', {}, node('tr', {}, ['Organization', 'Your role', 'Projects', 'Members', 'Issues', 'Events', 'Logs'].map(name => node('th', { scope: 'col' }, name)))),
+          node('tbody', {}, organizationRows)))),
+      node('section', { class: 'card panel panel-body form-stack' },
+        node('h2', {}, 'Capabilities'), node('div', { class: 'actions' }, features),
+        node('h2', {}, 'Retention'),
+        node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, node('th', { scope: 'col' }, 'Data'), node('th', { scope: 'col' }, 'Lifetime'))), node('tbody', {}, retention)))));
   }
 
   function renderAccount(main) {

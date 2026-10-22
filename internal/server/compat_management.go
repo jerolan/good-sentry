@@ -13,7 +13,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleManagementRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleManagementRoutes(mux *routeMux) {
 	mux.Handle("POST /api/0/organizations/{$}", s.compatible("org:write", s.compatibleCreateOrganization))
 	mux.Handle("GET /api/0/organizations/{org}/{$}", s.compatible("org:read", s.compatibleOrganizationDetail))
 	mux.Handle("PUT /api/0/organizations/{org}/{$}", s.compatible("org:write", s.compatibleUpdateOrganization))

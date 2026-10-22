@@ -9,7 +9,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerFeedbackRoutes(mux *http.ServeMux) {
+func (s *Server) registerFeedbackRoutes(mux *routeMux) {
 	mux.Handle("GET /api/v1/issues/{issue}/feedback", s.auth(http.HandlerFunc(s.issueFeedback)))
 	mux.Handle("GET /api/v1/issues/{issue}/feedback/{feedbackEventID}/associated-event", s.auth(http.HandlerFunc(s.feedbackAssociatedEvent)))
 }

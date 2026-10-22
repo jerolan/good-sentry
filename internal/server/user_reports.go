@@ -9,7 +9,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerUserReportRoutes(mux *http.ServeMux) {
+func (s *Server) registerUserReportRoutes(mux *routeMux) {
 	mux.Handle("GET /api/0/projects/{org}/{project}/user-feedback/{$}", s.compatible("project:read", s.compatibleUserReports))
 	mux.HandleFunc("POST /api/0/projects/{org}/{project}/user-feedback/{$}", s.submitUserReport)
 	mux.HandleFunc("OPTIONS /api/0/projects/{org}/{project}/user-feedback/{$}", s.preflight)

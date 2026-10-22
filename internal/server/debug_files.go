@@ -12,7 +12,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerDebugFileRoutes(mux *http.ServeMux) {
+func (s *Server) registerDebugFileRoutes(mux *routeMux) {
 	root := "/api/0/projects/{org}/{project}/files/"
 	mux.Handle("GET "+root+"dsyms/{$}", s.compatible("project:releases", s.debugFiles))
 	mux.Handle("POST "+root+"dsyms/{$}", s.compatible("project:releases", s.uploadDebugFile))

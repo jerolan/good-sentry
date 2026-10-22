@@ -56,8 +56,6 @@ func (c Config) ValidateRuntimeAvailability() error {
 		canonical string
 	}{
 		{"DuckDB", c.DuckDB, "GOODSENTRY_ENABLE_DUCKDB"},
-		{"admin", c.Admin, "ENABLE_ADMIN"},
-		{"OpenAPI", c.OpenAPI, "ENABLE_OPENAPI"},
 	} {
 		if feature.enabled {
 			return fmt.Errorf("%s is not implemented; set %s=false", feature.name, feature.canonical)

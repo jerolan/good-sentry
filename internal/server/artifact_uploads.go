@@ -18,7 +18,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerArtifactRoutes(mux *http.ServeMux) {
+func (s *Server) registerArtifactRoutes(mux *routeMux) {
 	root := "/api/0/organizations/{org}/"
 	mux.Handle("GET "+root+"chunk-upload/{$}", s.compatible("project:releases", s.artifactUploadInfo))
 	mux.Handle("POST "+root+"chunk-upload/{$}", s.compatible("project:releases", s.uploadArtifactChunks))

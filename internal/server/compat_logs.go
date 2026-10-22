@@ -28,7 +28,7 @@ var compatibleLogSeverity = map[string]int{"trace": 1, "debug": 5, "info": 9, "w
 
 var compatibleLogLevelOrder = []string{"fatal", "error", "warning", "info", "debug", "trace"}
 
-func (s *Server) registerCompatibleLogRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleLogRoutes(mux *routeMux) {
 	root := "/api/0/organizations/{org}/logs/"
 	scopes := []string{"event:read", "event:write"}
 	mux.Handle("GET "+root+"{$}", s.compatibleAny(scopes, s.compatibleLogList))

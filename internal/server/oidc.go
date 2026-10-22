@@ -98,7 +98,7 @@ func newOIDCAuth(cfg config.Config) *oidcAuth {
 	}
 }
 
-func (s *Server) registerOIDCRoutes(mux *http.ServeMux) {
+func (s *Server) registerOIDCRoutes(mux *routeMux) {
 	mux.HandleFunc("GET /api/v1/auth/config", s.authConfig)
 	mux.HandleFunc("GET /api/v1/organizations/{org}/sso", s.publicOrganizationSSO)
 	mux.HandleFunc("GET /login/{org}", s.socialLoginPage)

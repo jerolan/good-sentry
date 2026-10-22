@@ -43,7 +43,7 @@ type socialAppInput struct {
 	ServerURL    *string `json:"serverUrl"`
 }
 
-func (s *Server) registerSocialAppRoutes(mux *http.ServeMux) {
+func (s *Server) registerSocialAppRoutes(mux *routeMux) {
 	root := "/api/0/organizations/{org}/social-apps/"
 	mux.Handle("GET "+root+"{$}", s.compatible("org:read", s.compatibleSocialApps))
 	mux.Handle("POST "+root+"{$}", s.compatible("org:write", s.compatibleCreateSocialApp))

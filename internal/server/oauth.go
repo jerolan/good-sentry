@@ -57,7 +57,7 @@ func (s *Server) oauthScopes() []string {
 	return scopes
 }
 
-func (s *Server) registerOAuthRoutes(mux *http.ServeMux) {
+func (s *Server) registerOAuthRoutes(mux *routeMux) {
 	metadata := []string{"/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp", "/.well-known/oauth-authorization-server"}
 	if !s.cfg.MCP {
 		for _, path := range append(metadata, "/oauth/register", "/oauth/authorize", "/oauth/login", "/oauth/token", "/oauth/revoke") {

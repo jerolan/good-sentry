@@ -12,7 +12,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func (s *Server) registerMCPRoutes(mux *http.ServeMux) {
+func (s *Server) registerMCPRoutes(mux *routeMux) {
 	if !s.cfg.MCP {
 		mux.HandleFunc("/mcp", http.NotFound)
 		return

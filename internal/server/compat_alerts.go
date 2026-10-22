@@ -127,7 +127,7 @@ func compatibleAlertConfig(input compatibleAlertInput, existing *notify.Rule) (n
 	return config, nil
 }
 
-func (s *Server) registerCompatibleAlertRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleAlertRoutes(mux *routeMux) {
 	mux.Handle("GET /api/0/projects/{org}/{project}/alerts/{$}", s.compatible("project:read", s.compatibleAlerts))
 	mux.Handle("POST /api/0/projects/{org}/{project}/alerts/{$}", s.compatible("project:write", s.compatibleSaveAlert))
 	mux.Handle("PUT /api/0/projects/{org}/{project}/alerts/{alert}/{$}", s.compatible("project:write", s.compatibleSaveAlert))

@@ -32,6 +32,8 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `ARTIFACT_MAX_MAP_RECORDS` | `1000` | Maximum maps × selected projects in one atomic assembly, from 1 to 100000. |
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
 | `GOODSENTRY_ENABLE_MCP` | `false` | Enable `/mcp`, OAuth discovery and consent for MCP clients. |
+| `ENABLE_OPENAPI` | `false` | Serve the generated OpenAPI document at `/api/openapi.json` and its endpoint matrix at `/api/docs/`. |
+| `ENABLE_ADMIN` | `false` | Enable the read-only Administration view and `/api/v1/admin/overview` for organization owners and admins. |
 | `GOODSENTRY_ENABLE_ORGANIZATION_CREATION` | `false` | Allow owners/admins to create additional organizations through the compatible API. `ENABLE_ORGANIZATION_CREATION` is accepted as a GlitchTip-compatible alias. |
 | `GOODSENTRY_OIDC_ISSUER` | Empty | Optional OpenID Connect issuer URL. HTTPS is required except on loopback. |
 | `GOODSENTRY_OIDC_CLIENT_ID` | Empty | OIDC client identifier; required with an issuer. |
@@ -58,7 +60,13 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS` | `false` | Allow monitors to reach your private network. |
 | `GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS` | `false` | Allow webhooks to reach your private network. |
 
-The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Enabling currently unavailable DuckDB, admin, OpenAPI or Valkey options fails startup rather than reporting them as available. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
+The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Enabling the unavailable DuckDB or Valkey options fails startup rather than reporting them as available. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
+
+### API documentation and administration
+
+Set `ENABLE_OPENAPI=true` to publish the API reference. `/api/openapi.json` is generated at process startup from the routes that build actually registered, and `/api/docs/` presents the same data as a browsable method/path matrix. Routes for optional features appear only when those features are enabled. The document uses the configured `GOODSENTRY_DOMAIN` as its server URL and describes each route family's authentication boundary without exposing credentials.
+
+Set `ENABLE_ADMIN=true` to add **Administration** to the sidebar. Owners and admins see non-secret operational totals for the organizations they manage, enabled capabilities and effective retention. The server rechecks the current role on every request, so a demoted account loses access immediately. This is GoodSentry's own read-only operations view, not Django admin.
 
 ### Authentication mode
 

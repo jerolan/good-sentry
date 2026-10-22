@@ -147,7 +147,7 @@ func TestAuthenticationModeDefaultsAndAdmission(t *testing.T) {
 	}
 }
 
-func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
+func TestFeatureAliasesAndRuntimeOptions(t *testing.T) {
 	base := map[string]string{
 		"DATABASE_URL":                 "postgres://goodsentry:local@localhost/goodsentry",
 		"SECRET_KEY":                   strings.Repeat("a", 64),
@@ -181,8 +181,6 @@ func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
 		key, value, want string
 	}{
 		{"GOODSENTRY_ENABLE_DUCKDB", "true", "DuckDB"},
-		{"ENABLE_ADMIN", "true", "admin"},
-		{"ENABLE_OPENAPI", "true", "OpenAPI"},
 	} {
 		t.Run(option.key, func(t *testing.T) {
 			t.Setenv(option.key, option.value)
@@ -193,6 +191,21 @@ func TestFeatureAliasesAndUnavailableRuntimeOptions(t *testing.T) {
 			err = cfg.ValidateRuntimeAvailability()
 			if err == nil || !strings.Contains(err.Error(), option.want) {
 				t.Fatalf("unavailable %s accepted: %v", option.want, err)
+			}
+		})
+	}
+	for _, key := range []string{"ENABLE_ADMIN", "ENABLE_OPENAPI"} {
+		t.Run(key, func(t *testing.T) {
+			t.Setenv(key, "true")
+			cfg, err := Load()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := cfg.ValidateRuntimeAvailability(); err != nil {
+				t.Fatalf("implemented %s rejected: %v", key, err)
+			}
+			if key == "ENABLE_ADMIN" && !cfg.Admin || key == "ENABLE_OPENAPI" && !cfg.OpenAPI {
+				t.Fatalf("%s was not retained: %+v", key, cfg)
 			}
 		})
 	}

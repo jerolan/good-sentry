@@ -13,7 +13,7 @@ import (
 
 const compatiblePerformanceLimit = 100
 
-func (s *Server) registerCompatiblePerformanceRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatiblePerformanceRoutes(mux *routeMux) {
 	read := []string{"event:read", "event:write"}
 	mux.Handle("GET /api/0/organizations/{org}/transaction-groups/{$}", s.compatibleAny(read, s.compatibleTransactionGroups))
 	mux.Handle("GET /api/0/organizations/{org}/transaction-groups/{id}/{$}", s.compatibleAny(read, s.compatibleTransactionGroup))

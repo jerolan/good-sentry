@@ -8,7 +8,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleIssueRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleIssueRoutes(mux *routeMux) {
 	for _, root := range []string{"/api/0/organizations/{org}/issues/", "/api/0/projects/{org}/{project}/issues/"} {
 		mux.Handle("GET "+root+"{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssues))
 	}

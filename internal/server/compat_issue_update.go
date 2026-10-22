@@ -7,7 +7,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleIssueWriteRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleIssueWriteRoutes(mux *routeMux) {
 	s.registerCompatibleIssueBulkRoutes(mux)
 	s.registerCompatibleIssueHashRoutes(mux)
 	for _, path := range []string{"/api/0/issues/{issue}/", "/api/0/organizations/{org}/issues/{issue}/"} {

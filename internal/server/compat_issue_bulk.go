@@ -7,7 +7,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleIssueBulkRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleIssueBulkRoutes(mux *routeMux) {
 	for _, path := range []string{"/api/0/projects/{org}/{project}/issues/", "/api/0/organizations/{org}/issues/"} {
 		mux.Handle("PUT "+path+"{$}", s.compatible("event:write", s.compatibleIssueBulkUpdate))
 	}

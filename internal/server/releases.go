@@ -9,7 +9,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerReleaseRoutes(mux *http.ServeMux) {
+func (s *Server) registerReleaseRoutes(mux *routeMux) {
 	read := []string{"project:read", "project:releases"}
 	for _, root := range []string{"/api/0/organizations/{org}/releases/", "/api/0/projects/{org}/{project}/releases/"} {
 		mux.Handle("GET "+root+"{$}", s.compatibleAny(read, s.compatibleReleases))

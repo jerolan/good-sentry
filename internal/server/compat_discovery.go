@@ -14,7 +14,7 @@ const compatibleDiscoveryVersion = "0.0.0-dev"
 
 var compatibleReadScopes = []string{"org:read", "org:write", "project:read", "project:releases", "project:write", "event:read", "event:write", "event:admin"}
 
-func (s *Server) registerCompatibleDiscoveryRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleDiscoveryRoutes(mux *routeMux) {
 	mux.Handle("GET /api/0/{$}", s.compatibleAny(compatibleReadScopes, s.compatibleAPIRoot))
 	mux.Handle("GET /api/0/users/{$}", s.compatibleAny(compatibleReadScopes, s.compatibleUsers))
 	mux.Handle("GET /api/0/users/{user}/{$}", s.compatibleAny(compatibleReadScopes, s.compatibleUser))

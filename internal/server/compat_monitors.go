@@ -12,7 +12,7 @@ import (
 	"goodsentry/internal/uptime"
 )
 
-func (s *Server) registerCompatibleMonitorRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleMonitorRoutes(mux *routeMux) {
 	if !s.cfg.Uptime {
 		return
 	}

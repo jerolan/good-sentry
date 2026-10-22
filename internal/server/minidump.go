@@ -13,7 +13,7 @@ import (
 	"goodsentry/internal/protocol"
 )
 
-func (s *Server) registerMinidumpRoutes(mux *http.ServeMux) {
+func (s *Server) registerMinidumpRoutes(mux *routeMux) {
 	mux.HandleFunc("POST /api/{project}/minidump/", s.minidump)
 	mux.HandleFunc("OPTIONS /api/{project}/minidump/", s.preflight)
 }

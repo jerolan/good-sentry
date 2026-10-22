@@ -57,7 +57,7 @@ func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender
 		s.defaultUserID = defaultUser.ID
 		s.openCSRF = s.hash("open-auth-csrf-v1:" + defaultUser.ID)
 	}
-	mux := http.NewServeMux()
+	mux := newRouteMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]string{"status": "ok", "service": "GoodSentry"})
 	})
@@ -190,6 +190,12 @@ func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender
 	mux.HandleFunc("OPTIONS /api/{project}/store/", s.preflight)
 	s.registerSecurityReportRoutes(mux)
 	s.registerMinidumpRoutes(mux)
+	if cfg.Admin {
+		s.registerAdminRoutes(mux)
+	}
+	if cfg.OpenAPI {
+		s.registerOpenAPIRoutes(mux)
+	}
 	mux.HandleFunc("/", s.assets)
 	var handler http.Handler = mux
 	if cfg.Prefix != "" {

@@ -12,7 +12,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleEventRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleEventRoutes(mux *routeMux) {
 	for _, route := range []struct{ root, scope string }{
 		{"/api/0/projects/{org}/{project}/events/", "project:read"},
 		{"/api/0/issues/{issue}/events/", "event:read"},

@@ -18,7 +18,7 @@ const (
 	recoveryCodeHashPrefix = "totp-recovery:"
 )
 
-func (s *Server) registerTwoFactorRoutes(mux *http.ServeMux) {
+func (s *Server) registerTwoFactorRoutes(mux *routeMux) {
 	mux.HandleFunc("POST /api/v1/login/two-factor", s.loginTwoFactor)
 	mux.Handle("GET /api/v1/me/two-factor", s.auth(http.HandlerFunc(s.twoFactorState)))
 	mux.Handle("POST /api/v1/me/two-factor", s.auth(http.HandlerFunc(s.startTwoFactor)))

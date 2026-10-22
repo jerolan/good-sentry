@@ -7,7 +7,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleEnvironmentRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleEnvironmentRoutes(mux *routeMux) {
 	mux.Handle("GET /api/0/organizations/{org}/environments/{$}", s.compatible("org:read", s.compatibleOrganizationEnvironments))
 	mux.Handle("GET /api/0/projects/{org}/{project}/environments/{$}", s.compatible("project:read", s.compatibleProjectEnvironments))
 	mux.Handle("GET /api/0/projects/{org}/{project}/environments/{name}/{$}", s.compatible("project:read", s.compatibleProjectEnvironment))

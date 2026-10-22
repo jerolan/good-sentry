@@ -30,7 +30,7 @@ type publicStatusView struct {
 	Monitors                     []publicStatusMonitor
 }
 
-func (s *Server) registerStatusPageRoutes(mux *http.ServeMux) {
+func (s *Server) registerStatusPageRoutes(mux *routeMux) {
 	if !s.cfg.Uptime {
 		return
 	}

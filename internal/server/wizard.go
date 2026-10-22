@@ -19,7 +19,7 @@ import (
 
 const wizardTransferTTL = 10 * time.Minute
 
-func (s *Server) registerWizardRoutes(mux *http.ServeMux) {
+func (s *Server) registerWizardRoutes(mux *routeMux) {
 	mux.HandleFunc("GET /api/0/wizard/{$}", s.compatibleWizardCreate)
 	mux.HandleFunc("GET /api/0/wizard/{hash}/{$}", s.compatibleWizardRead)
 	mux.HandleFunc("DELETE /api/0/wizard/{hash}/{$}", s.compatibleWizardDelete)

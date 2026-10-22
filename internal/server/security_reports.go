@@ -15,7 +15,7 @@ import (
 
 // Public Sentry client-key URLs expose both names. These routes intentionally
 // require an exact terminal slash, like the SDK's existing ingestion routes.
-func (s *Server) registerSecurityReportRoutes(mux *http.ServeMux) {
+func (s *Server) registerSecurityReportRoutes(mux *routeMux) {
 	for _, route := range []string{"security", "csp-report"} {
 		pattern := "/api/{project}/" + route + "/{$}"
 		mux.HandleFunc("POST "+pattern, s.securityReports)

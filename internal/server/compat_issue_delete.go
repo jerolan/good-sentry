@@ -7,7 +7,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleIssueDeleteRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleIssueDeleteRoutes(mux *routeMux) {
 	for _, path := range []string{"/api/0/issues/{issue}/", "/api/0/organizations/{org}/issues/{issue}/"} {
 		mux.Handle("DELETE "+path+"{$}", s.compatible("event:admin", s.compatibleIssueDelete))
 	}

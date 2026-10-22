@@ -13,7 +13,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleIssueHashRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleIssueHashRoutes(mux *routeMux) {
 	const path = "/api/0/organizations/{org}/issues/{issue}/hashes/{$}"
 	mux.Handle("GET "+path, s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssueHashes))
 	mux.Handle("DELETE "+path, s.compatible("event:write", s.compatibleIssueHashReset))

@@ -11,7 +11,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleAttachmentRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleAttachmentRoutes(mux *routeMux) {
 	root := "/api/0/projects/{org}/{project}/events/{event}/attachments/"
 	scopes := []string{"project:read", "project:write"}
 	mux.Handle("GET "+root+"{$}", s.compatibleAny(scopes, s.compatibleAttachments))

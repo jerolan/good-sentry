@@ -9,7 +9,7 @@ import (
 	"goodsentry/internal/store"
 )
 
-func (s *Server) registerCompatibleStatsRoutes(mux *http.ServeMux) {
+func (s *Server) registerCompatibleStatsRoutes(mux *routeMux) {
 	mux.Handle("GET /api/0/organizations/{org}/stats_v2/{$}", s.compatibleAny([]string{"org:read", "event:read", "event:write"}, s.compatibleStatsV2))
 }
 
