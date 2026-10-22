@@ -14,13 +14,16 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
 	"goodsentry/internal/store"
+	"goodsentry/internal/testfixture/nativepdb"
 )
 
 func minidumpForm(t *testing.T, content []byte, extra map[string]string) (*bytes.Buffer, string) {
@@ -142,6 +145,71 @@ func TestNativeMinidumpSymbolicationAndIngestion(t *testing.T) {
 	}
 }
 
+func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
+	const embeddedID = "5A9832E5287241C1838ED98914E9B7FF1"
+	for _, test := range []struct {
+		name       string
+		uploadedID string
+		wantSymbol bool
+	}{
+		{name: "matching identity", uploadedID: embeddedID, wantSymbol: true},
+		{name: "mismatched uploaded identity", uploadedID: "5A9832E5287241C1838ED98914E9B7FF2"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			f := newResolutionHTTPFixture(t)
+			pdb := nativepdb.Minimal().Data
+			digest := sha1.Sum(pdb)
+			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+			if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "crash.pdb", "pdb", test.uploadedID, "x86_64", "crash.exe", hex.EncodeToString(digest[:]), nil, nil, pdb); err != nil {
+				t.Fatal(err)
+			}
+
+			minidump := buildNativeModuleMinidump(t, "C:\\test\\crash.exe", embeddedID, 0x1015)
+			body, contentType := minidumpForm(t, minidump, nil)
+			req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Content-Type", contentType)
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer res.Body.Close()
+			var accepted struct {
+				ID string `json:"id"`
+			}
+			if err := json.NewDecoder(res.Body).Decode(&accepted); err != nil || res.StatusCode != http.StatusOK || accepted.ID == "" {
+				t.Fatalf("PDB minidump response=%d %+v %v", res.StatusCode, accepted, err)
+			}
+
+			events, err := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 10})
+			if err != nil || len(events) == 0 {
+				t.Fatalf("stored PDB minidump event: %d %v", len(events), err)
+			}
+			var payload struct {
+				Exception struct {
+					Values []struct {
+						Stacktrace struct {
+							Frames []nativeFrame `json:"frames"`
+						} `json:"stacktrace"`
+					} `json:"values"`
+				} `json:"exception"`
+			}
+			if err := json.Unmarshal(events[0].Data, &payload); err != nil {
+				t.Fatal(err)
+			}
+			if len(payload.Exception.Values) != 1 || len(payload.Exception.Values[0].Stacktrace.Frames) == 0 {
+				t.Fatalf("PDB minidump frames: %+v", payload.Exception)
+			}
+			gotSymbol := payload.Exception.Values[0].Stacktrace.Frames[0].Function == "CrashFunction"
+			if gotSymbol != test.wantSymbol {
+				t.Fatalf("PDB symbolication=%+v, want symbol=%t", payload.Exception.Values[0].Stacktrace.Frames[0], test.wantSymbol)
+			}
+		})
+	}
+}
+
 const nativeTestDebugID = "11223344-5566-7788-aabb-ccddeeff00111"
 
 type nativeFrame struct {
@@ -150,7 +218,7 @@ type nativeFrame struct {
 	Line     int    `json:"lineno"`
 }
 
-func buildNativeModuleMinidump(t *testing.T, moduleName string, functionOffset uint64, stackData ...[]byte) []byte {
+func buildNativeModuleMinidump(t *testing.T, moduleName, debugID string, functionOffset uint64, stackData ...[]byte) []byte {
 	t.Helper()
 	const moduleBase = uint64(0x0000000140000000)
 	crashAddress := moduleBase + functionOffset
@@ -196,11 +264,9 @@ func buildNativeModuleMinidump(t *testing.T, moduleName string, functionOffset u
 	binary.LittleEndian.PutUint32(modules[4+20:], appendData(encodeUTF16(moduleName)))
 	codeView := make([]byte, 24)
 	copy(codeView, "RSDS")
-	binary.LittleEndian.PutUint32(codeView[4:], 0x11223344)
-	binary.LittleEndian.PutUint16(codeView[8:], 0x5566)
-	binary.LittleEndian.PutUint16(codeView[10:], 0x7788)
-	binary.LittleEndian.PutUint64(codeView[12:], 0xaabbccddeeff0011)
-	binary.LittleEndian.PutUint32(codeView[20:], 1)
+	if err := setCodeViewDebugID(codeView, debugID); err != nil {
+		t.Fatal(err)
+	}
 	binary.LittleEndian.PutUint32(modules[4+80:], appendData(codeView))
 	binary.LittleEndian.PutUint64(threads[28:], 0x200000)
 	binary.LittleEndian.PutUint32(threads[36:], uint32(len(stack)))
@@ -225,6 +291,33 @@ func buildNativeModuleMinidump(t *testing.T, moduleName string, functionOffset u
 	return buf
 }
 
+func setCodeViewDebugID(codeView []byte, debugID string) error {
+	debugID = strings.ToUpper(strings.NewReplacer("-", "", "{", "", "}", "").Replace(debugID))
+	if len(debugID) < 33 || len(debugID) > 40 {
+		return fmt.Errorf("invalid fixture debug ID %q", debugID)
+	}
+	fields := []struct {
+		start, end int
+		bits       int
+	}{
+		{0, 8, 32}, {8, 12, 16}, {12, 16, 16}, {16, 32, 64}, {32, len(debugID), 32},
+	}
+	values := make([]uint64, len(fields))
+	for i, field := range fields {
+		value, err := strconv.ParseUint(debugID[field.start:field.end], 16, field.bits)
+		if err != nil {
+			return err
+		}
+		values[i] = value
+	}
+	binary.LittleEndian.PutUint32(codeView[4:], uint32(values[0]))
+	binary.LittleEndian.PutUint16(codeView[8:], uint16(values[1]))
+	binary.LittleEndian.PutUint16(codeView[10:], uint16(values[2]))
+	binary.LittleEndian.PutUint64(codeView[12:], values[3])
+	binary.LittleEndian.PutUint32(codeView[20:], uint32(values[4]))
+	return nil
+}
+
 func ingestNativeObjectFrames(t *testing.T, f *resolutionHTTPFixture, object []byte, objectName, symbolType string, functionOffset uint64, expectedFunction string, stackData ...[]byte) []nativeFrame {
 	t.Helper()
 	digest := sha1.Sum(object)
@@ -232,7 +325,7 @@ func ingestNativeObjectFrames(t *testing.T, f *resolutionHTTPFixture, object []b
 	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, objectName, symbolType, nativeTestDebugID, "x86_64", objectName, hex.EncodeToString(digest[:]), nil, nil, object); err != nil {
 		t.Fatal(err)
 	}
-	buf := buildNativeModuleMinidump(t, "C:\\test\\different.module", functionOffset, stackData...)
+	buf := buildNativeModuleMinidump(t, "C:\\test\\different.module", nativeTestDebugID, functionOffset, stackData...)
 	body, contentType := minidumpForm(t, buf, nil)
 	req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
 	if err != nil {

@@ -68,14 +68,23 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 	for _, file := range symbolFiles {
 		debugKey := native.DebugKey(file.DebugID)
 		for _, object := range native.ParseDebugObjects(file.Name, file.Content) {
-			symbols[object.Name] = append(symbols[object.Name], object.Functions...)
-			if debugKey != "" {
-				symbols[debugKey] = append(symbols[debugKey], object.Functions...)
+			if object.DebugID != "" && debugKey != "" && object.DebugID != debugKey {
+				continue
+			}
+			if object.DebugID == "" {
+				symbols[object.Name] = append(symbols[object.Name], object.Functions...)
+			}
+			objectDebugKey := object.DebugID
+			if objectDebugKey == "" {
+				objectDebugKey = debugKey
+			}
+			if objectDebugKey != "" {
+				symbols[objectDebugKey] = append(symbols[objectDebugKey], object.Functions...)
 			}
 			if object.Unwind != nil {
 				unwindTables[object.Name] = append(unwindTables[object.Name], object.Unwind)
-				if debugKey != "" {
-					unwindTables[debugKey] = append(unwindTables[debugKey], object.Unwind)
+				if objectDebugKey != "" {
+					unwindTables[objectDebugKey] = append(unwindTables[objectDebugKey], object.Unwind)
 				}
 			}
 		}

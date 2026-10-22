@@ -17,6 +17,7 @@ const (
 
 type DebugObject struct {
 	Name      string
+	DebugID   string
 	Functions []SymbolFunction
 	Unwind    *UnwindTable
 }
@@ -189,6 +190,9 @@ func parseDebugArchive(name string, data []byte) []DebugObject {
 func parseDebugObject(name string, data []byte) (DebugObject, bool) {
 	if isDebugArchive(data) {
 		return DebugObject{}, false
+	}
+	if debugID, functions, ok := parsePDBSymbols(data); ok {
+		return DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}, true
 	}
 	key, functions := ParseObjectSymbols(name, data)
 	_, unwind := ParseObjectUnwind(name, data)
