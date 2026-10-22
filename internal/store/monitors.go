@@ -14,14 +14,14 @@ import (
 
 const monitorColumns = `m.id::text,m.name,m.kind,m.url,COALESCE(p.slug,''),m.environment,m.interval_seconds,m.timeout_seconds,
 	m.expected_status,m.expected_body,m.confirmation_threshold,m.enabled,m.status,m.consecutive_failures,
-	m.last_check,m.last_change,m.next_check,m.created_at,m.heartbeat_key,m.organization_id::text`
+	m.last_check,m.last_change,m.next_check,m.created_at,m.heartbeat_key,m.endpoint_id::text,m.organization_id::text`
 const monitorJoin = ` FROM monitors m LEFT JOIN projects p ON p.id=m.project_id `
 const monitorCheckColumns = `id::text,started_at,completed_at,up,status,previous_status,is_change,response_time_ms,status_code,reason`
 
 func monitorFields(m *uptime.Monitor) []any {
 	return []any{&m.ID, &m.Name, &m.Type, &m.URL, &m.Project, &m.Environment, &m.IntervalSeconds, &m.TimeoutSeconds,
 		&m.ExpectedStatus, &m.ExpectedBody, &m.ConfirmationThreshold, &m.Enabled, &m.Status, &m.ConsecutiveFailures,
-		&m.LastCheck, &m.LastChange, &m.NextCheck, &m.CreatedAt, &m.HeartbeatKey, &m.OrganizationID}
+		&m.LastCheck, &m.LastChange, &m.NextCheck, &m.CreatedAt, &m.HeartbeatKey, &m.EndpointID, &m.OrganizationID}
 }
 
 func scanMonitor(row scanner) (uptime.Monitor, error) {
@@ -320,6 +320,22 @@ func (s *Store) Heartbeat(ctx context.Context, key string) (uptime.Check, error)
 		return uptime.Check{}, err
 	}
 	return check, tx.Commit(ctx)
+}
+
+// CompatibleHeartbeat resolves the public organization/endpoint identity and
+// records a heartbeat through the same enabled-monitor transaction.
+func (s *Store) CompatibleHeartbeat(ctx context.Context, orgSlug, endpointID string) (uptime.Check, error) {
+	if endpointID == "" {
+		return uptime.Check{}, ErrNotFound
+	}
+	var key string
+	err := s.pool.QueryRow(ctx, `SELECT m.heartbeat_key FROM monitors m
+		JOIN organizations o ON o.id=m.organization_id
+		WHERE o.slug=$1 AND m.endpoint_id::text=$2 AND m.kind='heartbeat' AND m.enabled`, orgSlug, endpointID).Scan(&key)
+	if err != nil {
+		return uptime.Check{}, dbError(err)
+	}
+	return s.Heartbeat(ctx, key)
 }
 
 func completeMonitorCheck(ctx context.Context, tx pgx.Tx, m uptime.Monitor, started, completed time.Time, result uptime.Result) (uptime.Check, error) {

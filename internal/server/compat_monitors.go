@@ -2,7 +2,9 @@ package server
 
 import (
 	"errors"
+	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -20,6 +22,7 @@ func (s *Server) registerCompatibleMonitorRoutes(mux *http.ServeMux) {
 	mux.Handle("PUT /api/0/organizations/{org}/monitors/{monitor}/{$}", s.compatible("org:write", s.compatibleSaveMonitor))
 	mux.Handle("DELETE /api/0/organizations/{org}/monitors/{monitor}/{$}", s.compatible("org:write", s.compatibleDeleteMonitor))
 	mux.Handle("GET /api/0/organizations/{org}/monitors/{monitor}/checks/{$}", s.compatible("org:read", s.compatibleMonitorChecks))
+	mux.HandleFunc("POST /api/0/organizations/{org}/heartbeat_check/{endpoint}/{$}", s.compatibleHeartbeatCheck)
 }
 
 type compatibleMonitorInput struct {
@@ -73,7 +76,7 @@ func compatibleMonitorType(kind uptime.Kind) string {
 	}
 }
 
-func monitorWire(monitor uptime.Monitor) map[string]any {
+func (s *Server) monitorWire(monitor uptime.Monitor, orgSlug string) map[string]any {
 	isUp := any(nil)
 	if monitor.Status == uptime.Up {
 		isUp = true
@@ -82,6 +85,10 @@ func monitorWire(monitor uptime.Monitor) map[string]any {
 	}
 	organizationID, _ := strconv.ParseInt(monitor.OrganizationID, 10, 64)
 	monitorID, _ := strconv.ParseInt(monitor.ID, 10, 64)
+	heartbeatEndpoint := monitor.HeartbeatURL
+	if monitor.Type == uptime.Heartbeat && monitor.EndpointID != "" {
+		heartbeatEndpoint = s.cfg.Domain + "/api/0/organizations/" + url.PathEscape(orgSlug) + "/heartbeat_check/" + monitor.EndpointID + "/"
+	}
 	return map[string]any{
 		"id": monitorID, "name": monitor.Name, "url": monitor.URL,
 		"monitorType": compatibleMonitorType(monitor.Type), "projectID": monitor.Project,
@@ -90,8 +97,25 @@ func monitorWire(monitor uptime.Monitor) map[string]any {
 		"created": monitor.CreatedAt, "expectedStatus": monitor.ExpectedStatus,
 		"expectedBody": monitor.ExpectedBody, "interval": monitor.IntervalSeconds,
 		"timeout": monitor.TimeoutSeconds, "confirmationThreshold": monitor.ConfirmationThreshold,
-		"heartbeatEndpoint": monitor.HeartbeatURL, "checks": []any{},
+		"endpointId": monitor.EndpointID, "heartbeatEndpoint": heartbeatEndpoint, "checks": []any{},
 	}
+}
+
+func (s *Server) compatibleHeartbeatCheck(w http.ResponseWriter, r *http.Request) {
+	if r.URL.RawQuery != "" {
+		failure(w, 400, "Heartbeat check accepts no query parameters")
+		return
+	}
+	if _, err := io.Copy(io.Discard, http.MaxBytesReader(w, r.Body, 1024)); err != nil {
+		failure(w, 413, "Heartbeat body must be at most 1024 bytes")
+		return
+	}
+	check, err := s.db.CompatibleHeartbeat(r.Context(), r.PathValue("org"), r.PathValue("endpoint"))
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, map[string]any{"isUp": check.Up, "reason": nil, "startCheck": check.StartedAt.UTC()})
 }
 
 func (s *Server) compatibleMonitors(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +139,7 @@ func (s *Server) compatibleMonitors(w http.ResponseWriter, r *http.Request) {
 	result := make([]map[string]any, 0, len(page))
 	for _, monitor := range page {
 		s.monitorURL(&monitor)
-		result = append(result, monitorWire(monitor))
+		result = append(result, s.monitorWire(monitor, r.PathValue("org")))
 	}
 	s.discoveryLinks(w, r, q, offset, limit, more)
 	writeJSON(w, 200, result)
@@ -134,7 +158,7 @@ func (s *Server) compatibleMonitor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.monitorURL(&monitor)
-	writeJSON(w, 200, monitorWire(monitor))
+	writeJSON(w, 200, s.monitorWire(monitor, r.PathValue("org")))
 }
 
 func (s *Server) compatibleSaveMonitor(w http.ResponseWriter, r *http.Request) {
@@ -231,7 +255,7 @@ func (s *Server) compatibleSaveMonitor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.monitorURL(&monitor)
-	writeJSON(w, status, monitorWire(monitor))
+	writeJSON(w, status, s.monitorWire(monitor, r.PathValue("org")))
 }
 
 func (s *Server) compatibleDeleteMonitor(w http.ResponseWriter, r *http.Request) {

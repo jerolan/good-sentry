@@ -53,6 +53,7 @@ type Monitor struct {
 	CreatedAt           time.Time  `json:"createdAt"`
 	HeartbeatURL        string     `json:"heartbeatURL,omitempty"`
 	HeartbeatKey        string     `json:"-"`
+	EndpointID          string     `json:"endpointId,omitempty"`
 }
 
 type Lease struct {

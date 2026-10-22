@@ -586,6 +586,8 @@ When uptime is enabled, `GET/POST /api/0/organizations/{org}/monitors/`, `GET/PU
 
 Lists and checks use strict cursor pagination. Checks expose start time, isUp and optional response time; native string reasons are omitted rather than coerced into the public integer union. Numeric environment IDs are rejected because GoodSentry's uptime environments are stored as names, not the public environment entity. PUT preserves omitted mutable fields and cannot change monitor kind.
 
+Additive057 gives every monitor a stable UUID endpoint identity and a unique index without rewriting prior monitor or check rows. Compatible monitor JSON exposes `endpointId`; heartbeat monitors expose `heartbeatEndpoint` as the absolute compatible URL `POST /api/0/organizations/{org}/heartbeat_check/{endpoint}/`. That route is public and capability-based, accepts no query parameters, drains at most1024 request bytes, records one up check through the native enabled-heartbeat transaction and returns `{isUp:true, reason:null, startCheck}` in the public check shape. Unknown, foreign or disabled endpoints return404; an oversized body returns413. The native `/api/v1/heartbeat/{key}` capability remains unchanged.
+
 ### Compatible project alerts
 
 GET/POST /api/0/projects/{org}/{project}/alerts/ and PUT/DELETE .../alerts/{id}/ expose the native owner/admin alert rules. The compatible project slug resolves inside the current token grant before the native project ID is used. Reads require project:read; writes require project:write plus native owner/admin authority. Lists use strict cursor pagination.
