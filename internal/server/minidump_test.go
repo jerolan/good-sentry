@@ -3,8 +3,10 @@
 package server
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"crypto/sha1"
 	"debug/dwarf"
 	"debug/elf"
@@ -307,6 +309,37 @@ func nativeDebugArchive(t *testing.T, entries map[string][]byte) []byte {
 	return archive.Bytes()
 }
 
+func nativeTARDebugArchive(t *testing.T, entries map[string][]byte) []byte {
+	t.Helper()
+	var archive bytes.Buffer
+	writer := tar.NewWriter(&archive)
+	for name, content := range entries {
+		if err := writer.WriteHeader(&tar.Header{Name: name, Mode: 0600, Size: int64(len(content)), Typeflag: tar.TypeReg, Format: tar.FormatGNU}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := writer.Write(content); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return archive.Bytes()
+}
+
+func nativeGzipDebugArchive(t *testing.T, data []byte) []byte {
+	t.Helper()
+	var compressed bytes.Buffer
+	writer := gzip.NewWriter(&compressed)
+	if _, err := writer.Write(data); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return compressed.Bytes()
+}
+
 func TestNativeELFObjectSymbolicationByDebugID(t *testing.T) {
 	f := newResolutionHTTPFixture(t)
 	object, err := os.ReadFile("../native/testdata/elf-dwarf-amd64")
@@ -439,7 +472,6 @@ func TestNativeCFIUnwindWithoutFramePointer(t *testing.T) {
 }
 
 func TestNativeArchiveObjectSymbolicationByDebugID(t *testing.T) {
-	f := newResolutionHTTPFixture(t)
 	machoObject, err := os.ReadFile("../native/testdata/macho-dsym-amd64")
 	if err != nil {
 		t.Fatal(err)
@@ -448,12 +480,28 @@ func TestNativeArchiveObjectSymbolicationByDebugID(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	archive := nativeDebugArchive(t, map[string][]byte{
+	entries := map[string][]byte{
 		"Example.dSYM/Contents/Resources/DWARF/Example": machoObject,
 		"linux/libexample.so":                           elfObject,
-	})
-	frame := ingestNativeObject(t, f, archive, "bundle.zip", "dsym", 0xf6a, "main")
-	if !strings.HasSuffix(frame.Filename, "hello.c") || frame.Line < 1 {
-		t.Fatalf("archive dSYM frame: %+v", frame)
+	}
+	formats := []struct {
+		name  string
+		build func(*testing.T, map[string][]byte) []byte
+	}{
+		{name: "zip", build: nativeDebugArchive},
+		{name: "tar", build: nativeTARDebugArchive},
+		{name: "tar.gz", build: func(t *testing.T, entries map[string][]byte) []byte {
+			return nativeGzipDebugArchive(t, nativeTARDebugArchive(t, entries))
+		}},
+	}
+	for _, format := range formats {
+		t.Run(format.name, func(t *testing.T) {
+			f := newResolutionHTTPFixture(t)
+			archive := format.build(t, entries)
+			frame := ingestNativeObject(t, f, archive, "bundle."+format.name, "dsym", 0xf6a, "main")
+			if !strings.HasSuffix(frame.Filename, "hello.c") || frame.Line < 1 {
+				t.Fatalf("archive dSYM frame: %+v", frame)
+			}
+		})
 	}
 }

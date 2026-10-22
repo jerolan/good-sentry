@@ -1,12 +1,15 @@
 package native
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"debug/dwarf"
 	"debug/elf"
 	"debug/macho"
 	"encoding/binary"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -447,4 +450,205 @@ func TestParseDebugArchiveObjects(t *testing.T) {
 	if objects := ParseDebugObjects("broken.zip", []byte{'P', 'K', 0x03, 0x04, 0}); len(objects) != 0 {
 		t.Fatalf("truncated archive objects=%+v", objects)
 	}
+}
+
+func TestParseTARDebugArchivesAndSymbolicate(t *testing.T) {
+	elfObject, err := os.ReadFile("testdata/elf-dwarf-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	machoObject, err := os.ReadFile("testdata/macho-dsym-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	breakpad := []byte("MODULE windows x86_64 ABCDEF0123456789 test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 CrashFunction\n1010 20 42 1\n")
+	tarFormats := []struct {
+		name   string
+		format tar.Format
+	}{{"ustar", tar.FormatUSTAR}, {"pax", tar.FormatPAX}, {"gnu", tar.FormatGNU}}
+	compressions := []struct {
+		name string
+		gzip bool
+	}{{"tar", false}, {"tar.gz", true}}
+	for _, archiveFormat := range tarFormats {
+		elfName := "linux/libexample.so"
+		if archiveFormat.format != tar.FormatUSTAR {
+			elfName = strings.Repeat("d", 120) + "/libexample.so"
+		}
+		archive := buildTestTAR(t, archiveFormat.format, []testTARFile{
+			{Name: "symbols/test_app.sym", Data: breakpad},
+			{Name: "Example.dSYM/Contents/Resources/DWARF/Example", Data: machoObject},
+			{Name: elfName, Data: elfObject},
+		})
+		for _, compression := range compressions {
+			t.Run(archiveFormat.name+"/"+compression.name, func(t *testing.T) {
+				data := archive
+				if compression.gzip {
+					var compressed bytes.Buffer
+					writer := gzip.NewWriter(&compressed)
+					if _, err := writer.Write(archive); err != nil {
+						t.Fatal(err)
+					}
+					if err := writer.Close(); err != nil {
+						t.Fatal(err)
+					}
+					data = compressed.Bytes()
+				}
+				objects := ParseDebugObjects("symbols."+compression.name, data)
+				if len(objects) != 3 {
+					t.Fatalf("archive objects=%d", len(objects))
+				}
+				found := map[string]bool{}
+				symbols := SymbolSet{}
+				for _, object := range objects {
+					for _, function := range object.Functions {
+						found[function.Name] = true
+					}
+					symbols[object.Name] = append(symbols[object.Name], object.Functions...)
+				}
+				if !found["CrashFunction"] || !found["main"] || !found["fixture_function"] {
+					t.Fatalf("archive functions=%+v", found)
+				}
+				crash, err := ParseMinidump(buildAMD64Minidump())
+				if err != nil {
+					t.Fatal(err)
+				}
+				Symbolicate(&crash, symbols)
+				if frame := crash.Frames[0]; frame.Function != "CrashFunction" || frame.File != "C:\\src\\crash.cc" || frame.Line != 42 {
+					t.Fatalf("archive symbolication: %+v", frame)
+				}
+			})
+		}
+	}
+}
+
+func TestParseTARDebugArchivesRejectPartialSymbols(t *testing.T) {
+	symbol := []byte("MODULE windows x86_64 ABCDEF0123456789 test_app.pdb\nFUNC 1010 20 0 CrashFunction\n")
+	complete := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "test_app.sym", Data: symbol}})
+	truncated := complete[:512+len(symbol)/2]
+	if objects := ParseDebugObjects("broken.tar", truncated); len(objects) != 0 {
+		t.Fatalf("truncated archive returned symbols: %+v", objects)
+	}
+	for _, missingEndBlocks := range []int{1, 2} {
+		truncated = complete[:len(complete)-missingEndBlocks*512]
+		if objects := ParseDebugObjects("missing-end-blocks.tar", truncated); len(objects) != 0 {
+			t.Fatalf("archive missing %d end blocks returned symbols: %+v", missingEndBlocks, objects)
+		}
+		var compressed bytes.Buffer
+		gzipWriter := gzip.NewWriter(&compressed)
+		if _, err := gzipWriter.Write(truncated); err != nil {
+			t.Fatal(err)
+		}
+		if err := gzipWriter.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if objects := ParseDebugObjects("missing-end-blocks.tar.gz", compressed.Bytes()); len(objects) != 0 {
+			t.Fatalf("gzip archive missing %d end blocks returned symbols: %+v", missingEndBlocks, objects)
+		}
+	}
+	withTrailingData := append(append([]byte(nil), complete...), []byte("not tar padding")...)
+	if objects := ParseDebugObjects("trailing-data.tar", withTrailingData); len(objects) != 0 {
+		t.Fatalf("archive with non-zero trailing data returned symbols: %+v", objects)
+	}
+	var trailingCompressed bytes.Buffer
+	trailingWriter := gzip.NewWriter(&trailingCompressed)
+	if _, err := trailingWriter.Write(withTrailingData); err != nil {
+		t.Fatal(err)
+	}
+	if err := trailingWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if objects := ParseDebugObjects("trailing-data.tar.gz", trailingCompressed.Bytes()); len(objects) != 0 {
+		t.Fatalf("gzip archive with non-zero trailing data returned symbols: %+v", objects)
+	}
+
+	var oversized bytes.Buffer
+	writer := tar.NewWriter(&oversized)
+	if err := writer.WriteHeader(&tar.Header{Name: "test_app.sym", Mode: 0600, Size: int64(len(symbol)), Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := writer.Write(symbol); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.WriteHeader(&tar.Header{Name: "too-large.sym", Mode: 0600, Size: maxDebugArchiveBytes + 1, Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	if objects := ParseDebugObjects("oversized.tar", oversized.Bytes()); len(objects) != 0 {
+		t.Fatalf("over-budget archive returned partial symbols: %+v", objects)
+	}
+
+	var tooMany bytes.Buffer
+	writer = tar.NewWriter(&tooMany)
+	if err := writer.WriteHeader(&tar.Header{Name: "test_app.sym", Mode: 0600, Size: int64(len(symbol)), Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := writer.Write(symbol); err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < maxDebugArchiveEntries; i++ {
+		if err := writer.WriteHeader(&tar.Header{Name: fmt.Sprintf("dir-%03d", i), Mode: 0700, Typeflag: tar.TypeDir}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if objects := ParseDebugObjects("too-many.tar", tooMany.Bytes()); len(objects) != 0 {
+		t.Fatalf("over-entry-limit archive returned partial symbols: %+v", objects)
+	}
+
+	var links bytes.Buffer
+	writer = tar.NewWriter(&links)
+	if err := writer.WriteHeader(&tar.Header{Name: "test_app.sym", Linkname: "../test_app.sym", Mode: 0600, Typeflag: tar.TypeSymlink}); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if objects := ParseDebugObjects("links.tar", links.Bytes()); len(objects) != 0 {
+		t.Fatalf("non-regular entry returned symbols: %+v", objects)
+	}
+
+	nested := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "test_app.sym", Data: symbol}})
+	outer := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "nested.tar", Data: nested}})
+	if objects := ParseDebugObjects("outer.tar", outer); len(objects) != 0 {
+		t.Fatalf("nested archive returned symbols: %+v", objects)
+	}
+
+	var compressed bytes.Buffer
+	writerGzip := gzip.NewWriter(&compressed)
+	if _, err := writerGzip.Write(complete); err != nil {
+		t.Fatal(err)
+	}
+	if err := writerGzip.Close(); err != nil {
+		t.Fatal(err)
+	}
+	corrupt := append([]byte(nil), compressed.Bytes()...)
+	corrupt[len(corrupt)-8] ^= 0xff
+	if objects := ParseDebugObjects("broken.tar.gz", corrupt); len(objects) != 0 {
+		t.Fatalf("checksum-invalid archive returned partial symbols: %+v", objects)
+	}
+}
+
+type testTARFile struct {
+	Name string
+	Data []byte
+}
+
+func buildTestTAR(t *testing.T, format tar.Format, files []testTARFile) []byte {
+	t.Helper()
+	var archive bytes.Buffer
+	writer := tar.NewWriter(&archive)
+	for _, file := range files {
+		if err := writer.WriteHeader(&tar.Header{Name: file.Name, Mode: 0600, Size: int64(len(file.Data)), Typeflag: tar.TypeReg, Format: format}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := writer.Write(file.Data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return archive.Bytes()
 }
