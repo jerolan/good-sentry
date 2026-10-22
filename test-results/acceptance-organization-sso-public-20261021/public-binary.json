@@ -1,0 +1,6 @@
+{
+ "binary_sha256": "5420f06515b08909e3467e04202c1cf90cd82d2be52abb25ceafd118df2fdab3",
+ "bytes": 23396512,
+ "local_rebuild_match": true,
+ "note": "local CGO_ENABLED=0 -trimpath -buildvcs=false -ldflags='-s -w' Go 1.27.2 matches image amd64 binary; image context excludes .git so no VCS stamp"
+}

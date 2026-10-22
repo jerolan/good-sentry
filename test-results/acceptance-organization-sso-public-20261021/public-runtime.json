@@ -1,0 +1,37 @@
+{
+ "container": "goodsentry-sso-public-20261021",
+ "port": "127.0.0.1:18217",
+ "schema": "goodsentry_sso_public_20261021",
+ "setup": {
+  "org": "sso-public",
+  "role": "owner",
+  "http": 201
+ },
+ "app": {
+  "id": 1,
+  "provider": "openid_connect",
+  "providerID": "sso-public-5b28fb",
+  "http": 201
+ },
+ "discovery": {
+  "http": 200,
+  "apps": 1
+ },
+ "login_page": {
+  "http": 302,
+  "to": "/?sso=sso-public"
+ },
+ "start_fake_issuer": {
+  "http": 303,
+  "to": "?authError=failed",
+  "reason": "issuer https://issuer.example.test unreachable; server log: OIDC discovery failed app=sso-public-5b28fb (designed)"
+ },
+ "callback_bogus": {
+  "http": 303,
+  "to": "?authError=failed"
+ },
+ "absent_org": {
+  "http": 404
+ },
+ "roundtrip_note": "full start/callback roundtrip proven in-process by TestSocialAppSignInCreatesOrganizationMember with a synthetic IdP (see integration-race.log)"
+}

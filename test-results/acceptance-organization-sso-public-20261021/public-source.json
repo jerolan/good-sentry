@@ -1,0 +1,6 @@
+{
+ "sha": "d8b36c9df3676add9afd178ba9196340e0096015",
+ "blobs": 1292,
+ "match": true,
+ "note": "recursive GitHub tree paths+SHAs equal local git ls-tree -r HEAD"
+}

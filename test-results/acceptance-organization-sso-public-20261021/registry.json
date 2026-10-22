@@ -1,0 +1,9 @@
+{
+ "image": "ghcr.io/jerolan/good-sentry:main",
+ "digest": "sha256:9c711ecacbc38bc66b3cea34a060c661a8ec837f4ec25ddd288be381d1305503",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "extra": "2 unknown manifests (provenance/SBOM attestations)"
+}
