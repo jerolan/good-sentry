@@ -377,3 +377,5 @@ Complete selected common signed DWARF integer expressions: absolute value, negat
 Implement the accepted signed truncated-remainder semantics for `DW_OP_mod`; reject zero divisors and signed overflow. Verify negative operands, exact division, underflow, native race tests, vet and build.
 
 Complete DWARF stack-manipulation operations with `DW_OP_rot` and `DW_OP_nop`. Verify rotation order, stack preservation and underflow with native race tests, vet and build.
+
+Restore ARM32 CFI state from Minidump registers r0-r15. Apply ARM ABI defaults for missing CIE rules, carry recovered register values into each caller frame, and keep `.ARM.exidx`/EHABI plus VFP restoration unsupported. Verify a multi-frame unwind whose later CFA depends on a register restored by the previous frame.

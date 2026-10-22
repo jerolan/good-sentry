@@ -27,7 +27,8 @@ const (
 type UnwindSet map[string][]*UnwindTable
 
 type UnwindTable struct {
-	entries []cfiFDE
+	architecture string
+	entries      []cfiFDE
 }
 
 type cfiFDE struct {
@@ -230,6 +231,9 @@ func ParseObjectUnwind(name string, data []byte) (string, *UnwindTable) {
 			}
 		}
 		if table != nil {
+			if file.Class == elf.ELFCLASS32 && file.Data == elf.ELFDATA2LSB && file.Machine == elf.EM_ARM {
+				table.architecture = "arm"
+			}
 			table.normalize(base)
 		}
 	} else if len(data) >= 4 && isMachOMagic(data[:4]) {
@@ -618,7 +622,10 @@ func (t *UnwindTable) rulesAt(address uint64) (cfiState, cfiCIE, bool) {
 	}
 	entry := t.entries[index]
 	cie := entry.cie
-	state, err := applyCFIInstructionsWithLocation(entry.instructions, entry.cie.initial, cie, address, entry.start)
+	if t.architecture == "arm" {
+		cie.initial = arm32DefaultCFIRegisters(cie.initial)
+	}
+	state, err := applyCFIInstructionsWithLocation(entry.instructions, cie.initial, cie, address, entry.start)
 	if err != nil {
 		return cfiState{}, cfiCIE{}, false
 	}
@@ -638,6 +645,11 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 	switch crash.Arch {
 	case "x86":
 		pcRegister, spRegister, fpRegister = 8, 4, 5
+	case "arm":
+		if crash.PointerSize != 4 || len(crash.registers) != 16 {
+			return nil
+		}
+		pcRegister, spRegister, fpRegister = 15, 13, 11
 	case "arm64":
 		pcRegister, spRegister, fpRegister = 32, 31, 29
 	case "amd64":
@@ -645,6 +657,12 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		return nil
 	}
 	registers := map[uint32]uint64{pcRegister: crash.RIP, spRegister: crash.RSP, fpRegister: crash.RBP}
+	if crash.Arch == "arm" {
+		registers = make(map[uint32]uint64, len(crash.registers))
+		for register, value := range crash.registers {
+			registers[register] = value
+		}
+	}
 	pc, lookupPC := crash.RIP, crash.RIP
 	seen := map[uint64]bool{crash.RIP: true}
 	frames := make([]Frame, 0, 32)
@@ -664,6 +682,9 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		var cie cfiCIE
 		found := false
 		for _, table := range candidates {
+			if table == nil || (crash.Arch == "arm" && table.architecture != "arm") || (table.architecture != "" && table.architecture != crash.Arch) {
+				continue
+			}
 			if rules, cie, found = table.rulesAt(lookupPC - module.Base); found {
 				break
 			}
@@ -681,7 +702,6 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		if !ok || returnAddress == 0 || seen[returnAddress] {
 			break
 		}
-		nextFP, _ := evaluateRegisterRule(fpRegister, rules, cfa, registers, crash.stack, crash.PointerSize)
 		nextSP := cfa
 		if nextSP <= registers[spRegister] {
 			break
@@ -692,11 +712,40 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		if !cie.signalFrame {
 			lookupPC--
 		}
-		registers[pcRegister] = returnAddress
-		registers[spRegister] = nextSP
-		registers[fpRegister] = nextFP
+		if crash.Arch == "arm" {
+			nextRegisters := make(map[uint32]uint64, len(rules.regs)+2)
+			for register := range rules.regs {
+				if value, ok := evaluateRegisterRule(register, rules, cfa, registers, crash.stack, crash.PointerSize); ok {
+					nextRegisters[register] = value
+				}
+			}
+			registers = nextRegisters
+			registers[spRegister] = nextSP
+			registers[pcRegister] = returnAddress
+		} else {
+			nextFP, _ := evaluateRegisterRule(fpRegister, rules, cfa, registers, crash.stack, crash.PointerSize)
+			registers[pcRegister] = returnAddress
+			registers[spRegister] = nextSP
+			registers[fpRegister] = nextFP
+		}
 	}
 	return frames
+}
+
+func arm32DefaultCFIRegisters(initial cfiState) cfiState {
+	initial = initial.clone()
+	for register := uint32(0); register < 16; register++ {
+		if _, exists := initial.regs[register]; exists {
+			continue
+		}
+		rule := cfiRuleUndefined
+		switch register {
+		case 4, 5, 6, 7, 8, 10, 11, 13:
+			rule = cfiRuleSame
+		}
+		initial.regs[register] = cfiRegisterRule{kind: uint8(rule)}
+	}
+	return initial
 }
 
 func evaluateCFA(state cfiState, registers map[uint32]uint64, ranges []memoryRange, pointerSize int) (uint64, bool) {

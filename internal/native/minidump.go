@@ -52,6 +52,7 @@ type Crash struct {
 	PointerSize       int
 	Modules           []Module
 	Frames            []Frame
+	registers         map[uint32]uint64
 	stack             []memoryRange
 }
 
@@ -264,6 +265,10 @@ func ParseMinidump(data []byte) (Crash, error) {
 		if declaredArch == cpuArchARM && len(rawContext) == 368 {
 			// Crashpad and Breakpad ARM32 contexts share the general-register offsets.
 			crash.Arch, crash.PointerSize = "arm", 4
+			crash.registers = make(map[uint32]uint64, 16)
+			for register := uint32(0); register < 16; register++ {
+				crash.registers[register] = uint64(binary.LittleEndian.Uint32(rawContext[4+4*register:]))
+			}
 			crash.RBP = uint64(binary.LittleEndian.Uint32(rawContext[48:]))
 			crash.RSP = uint64(binary.LittleEndian.Uint32(rawContext[56:]))
 			crash.LR = uint64(binary.LittleEndian.Uint32(rawContext[60:]))

@@ -171,6 +171,9 @@ func buildARM32Minidump(contextSize int) []byte {
 	binary.LittleEndian.PutUint16(data[systemRVA:], cpuArchARM)
 	context := make([]byte, contextSize)
 	if contextSize >= 68 {
+		for register := uint32(0); register < 16; register++ {
+			binary.LittleEndian.PutUint32(context[4+4*register:], 0x1000+register)
+		}
 		binary.LittleEndian.PutUint32(context[48:], 0x00200000) // r11, frame pointer
 		binary.LittleEndian.PutUint32(context[56:], 0x00200000) // r13, stack pointer
 		binary.LittleEndian.PutUint32(context[60:], 0x00401050) // r14, link register
@@ -206,6 +209,131 @@ func TestParseARM32MinidumpContext(t *testing.T) {
 	if len(crash.Frames) != 2 || crash.Frames[1].Instruction != 0x00401050 {
 		t.Fatalf("ARM32 frame-pointer chain: %+v", crash.Frames)
 	}
+	for register := uint32(0); register < 11; register++ {
+		if got, want := crash.registers[register], uint64(0x1000+register); got != want {
+			t.Fatalf("ARM32 r%d = %#x; want %#x", register, got, want)
+		}
+	}
+	for register, want := range map[uint32]uint64{11: 0x00200000, 12: 0x100c, 13: 0x00200000, 14: 0x00401050, 15: 0x00401010} {
+		if got := crash.registers[register]; got != want {
+			t.Fatalf("ARM32 r%d = %#x; want %#x", register, got, want)
+		}
+	}
+}
+
+func TestARM32CFIUnwindsUsingRestoredRegisters(t *testing.T) {
+	data := buildARM32Minidump(368)
+	threadRVA := minidumpStreamRVA(data, streamThreadList)
+	stackRVA := binary.LittleEndian.Uint32(data[threadRVA+40:])
+	binary.LittleEndian.PutUint32(data[stackRVA:], 0x00200020)    // caller r4
+	binary.LittleEndian.PutUint32(data[stackRVA+4:], 0x00401100)  // first return address
+	binary.LittleEndian.PutUint32(data[stackRVA+28:], 0x00401200) // second return address
+	binary.LittleEndian.PutUint32(data[stackRVA+32:], 0)          // end of captured chain
+	crash, err := ParseMinidump(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, test := range []struct {
+		name          string
+		savedR4Offset int64
+		want          []uint64
+	}{
+		{name: "restore callee-saved r4", savedR4Offset: -8, want: []uint64{0x00401010, 0x00401100, 0x00401200}},
+		{name: "unavailable saved r4 stops", savedR4Offset: -256, want: []uint64{0x00401010}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			_, table := ParseObjectUnwind("test_app32.pdb", buildARM32ELFWithCFI(test.savedR4Offset))
+			if table == nil {
+				t.Fatal("ARM32 ELF CFI was not parsed")
+			}
+			frames := UnwindCFI(&crash, UnwindSet{"test_app32.pdb": {table}})
+			if len(frames) != len(test.want) {
+				t.Fatalf("ARM32 CFI frames = %+v; want instruction addresses %x", frames, test.want)
+			}
+			for i := range test.want {
+				if frames[i].Instruction != test.want[i] {
+					t.Fatalf("ARM32 CFI frame %d = %#x; want %#x", i, frames[i].Instruction, test.want[i])
+				}
+			}
+		})
+	}
+}
+
+func buildARM32ELFWithCFI(savedR4Offset int64) []byte {
+	var section bytes.Buffer
+	appendRecord := func(record []byte) int {
+		start := section.Len()
+		var length [4]byte
+		binary.LittleEndian.PutUint32(length[:], uint32(len(record)))
+		section.Write(length[:])
+		section.Write(record)
+		return start
+	}
+	appendCIE := func(cfaRegister, cfaOffset byte, r4OffsetFactor byte) int {
+		var record bytes.Buffer
+		var cieID [4]byte
+		binary.LittleEndian.PutUint32(cieID[:], 0xffffffff)
+		record.Write(cieID[:])
+		record.Write([]byte{1, 0, 1, 0x7c, 14}) // version, augmentation, code/data alignment, return register
+		record.Write([]byte{0x0c, cfaRegister, cfaOffset})
+		record.Write([]byte{0x05, 14, 1}) // r14 is saved at CFA-4
+		if r4OffsetFactor != 0 {
+			record.Write([]byte{0x05, 4, r4OffsetFactor})
+		}
+		return appendRecord(record.Bytes())
+	}
+	appendFDE := func(cieOffset int, start uint32) {
+		var record bytes.Buffer
+		var field [4]byte
+		for _, value := range []uint32{uint32(cieOffset), start, 0x20} {
+			binary.LittleEndian.PutUint32(field[:], value)
+			record.Write(field[:])
+		}
+		appendRecord(record.Bytes())
+	}
+	first := appendCIE(13, 8, byte(-savedR4Offset/4))
+	appendFDE(first, 0x1000)
+	second := appendCIE(4, 0, 0) // r4 defaults to same-value under the ARM ABI
+	appendFDE(second, 0x10f0)
+	third := appendCIE(13, 4, 0)
+	appendFDE(third, 0x11f0)
+	return buildARM32ELFWithSection(section.Bytes())
+}
+
+func buildARM32ELFWithSection(sectionData []byte) []byte {
+	const (
+		elfHeaderSize     = 52
+		sectionHeaderSize = 40
+	)
+	sectionNames := []byte("\x00.shstrtab\x00.debug_frame\x00")
+	sectionNamesOffset := elfHeaderSize
+	sectionDataOffset := (sectionNamesOffset + len(sectionNames) + 3) &^ 3
+	sectionTableOffset := (sectionDataOffset + len(sectionData) + 3) &^ 3
+	data := make([]byte, sectionTableOffset+3*sectionHeaderSize)
+	copy(data[sectionNamesOffset:], sectionNames)
+	copy(data[sectionDataOffset:], sectionData)
+	copy(data[:4], []byte{0x7f, 'E', 'L', 'F'})
+	data[4], data[5], data[6] = byte(elf.ELFCLASS32), byte(elf.ELFDATA2LSB), 1
+	binary.LittleEndian.PutUint16(data[16:], uint16(elf.ET_REL))
+	binary.LittleEndian.PutUint16(data[18:], uint16(elf.EM_ARM))
+	binary.LittleEndian.PutUint32(data[20:], 1)
+	binary.LittleEndian.PutUint32(data[32:], uint32(sectionTableOffset))
+	binary.LittleEndian.PutUint16(data[40:], elfHeaderSize)
+	binary.LittleEndian.PutUint16(data[46:], sectionHeaderSize)
+	binary.LittleEndian.PutUint16(data[48:], 3)
+	binary.LittleEndian.PutUint16(data[50:], 1)
+	writeSection := func(index int, name, kind, offset, size, alignment uint32) {
+		start := sectionTableOffset + index*sectionHeaderSize
+		binary.LittleEndian.PutUint32(data[start:], name)
+		binary.LittleEndian.PutUint32(data[start+4:], kind)
+		binary.LittleEndian.PutUint32(data[start+16:], offset)
+		binary.LittleEndian.PutUint32(data[start+20:], size)
+		binary.LittleEndian.PutUint32(data[start+32:], alignment)
+	}
+	writeSection(1, 1, uint32(elf.SHT_STRTAB), uint32(sectionNamesOffset), uint32(len(sectionNames)), 1)
+	writeSection(2, 11, uint32(elf.SHT_PROGBITS), uint32(sectionDataOffset), uint32(len(sectionData)), 4)
+	return data
 }
 
 func TestParseARM32MinidumpUsesLinkRegisterWithoutFramePointer(t *testing.T) {
