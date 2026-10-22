@@ -329,7 +329,14 @@ func (s *Store) AcceptInvitation(ctx context.Context, tokenHash, existingUserID 
 			return user, org, ErrInvalidInvitation
 		}
 		if !strings.EqualFold(user.Email, email) {
-			return user, org, ErrInvalidInvitation
+			var verified bool
+			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM user_emails
+				WHERE user_id=$1::bigint AND is_verified AND lower(email)=lower($2))`, existingUserID, email).Scan(&verified); err != nil {
+				return user, org, err
+			}
+			if !verified {
+				return user, org, ErrInvalidInvitation
+			}
 		}
 	} else {
 		if err = tx.QueryRow(ctx, "INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3) RETURNING id::text,email,name,auth_generation", email, passwordHash, newName).Scan(&user.ID, &user.Email, &user.Name, &user.AuthGeneration); err != nil {

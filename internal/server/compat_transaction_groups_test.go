@@ -18,7 +18,13 @@ func TestCompatibleTransactionGroupsDetailTrendAndSpansHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	base := time.Now().UTC().Add(-2 * time.Hour).Truncate(time.Second)
+	// Keep the synthetic transactions inside one UTC day and within the
+	// routes' default 24-hour lookup window regardless of the wall clock.
+	now := time.Now().UTC()
+	base := now.Truncate(24 * time.Hour).Add(time.Hour)
+	if base.After(now) {
+		base = base.Add(-24 * time.Hour)
+	}
 	for index := 0; index < 5; index++ {
 		mcpPerformanceTransaction(t, f, f.project.ID, 600+index, 800+index, "GET /compat/groups", "http.server", base.Add(time.Duration(index)*time.Minute), 100, 6)
 	}

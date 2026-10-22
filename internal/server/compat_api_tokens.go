@@ -34,6 +34,13 @@ type compatibleUserToken struct {
 // belong to. Any bearer credential answers Unauthorized, and mutations keep the
 // same-origin CSRF requirement.
 func (s *Server) compatibleAccount(w http.ResponseWriter, r *http.Request) (store.User, bool) {
+	return s.compatibleAccountWithCSRF(w, r, true)
+}
+
+// compatibleAccountWithCSRF resolves the signed-in account. The invitation
+// acceptance route is token-authoritative and same-origin checked, so it skips
+// the CSRF header while retaining the session/account resolution.
+func (s *Server) compatibleAccountWithCSRF(w http.ResponseWriter, r *http.Request, requireCSRF bool) (store.User, bool) {
 	if len(r.Header.Values("Authorization")) > 0 {
 		failure(w, 401, "Unauthorized")
 		return store.User{}, false
@@ -64,7 +71,7 @@ func (s *Server) compatibleAccount(w http.ResponseWriter, r *http.Request) (stor
 		}
 		user, csrf = u, value
 	}
-	if r.Method != http.MethodGet && r.Method != http.MethodHead && r.Method != http.MethodOptions {
+	if requireCSRF && r.Method != http.MethodGet && r.Method != http.MethodHead && r.Method != http.MethodOptions {
 		if !s.sameOrigin(r) || !hmac.Equal([]byte(r.Header.Get("X-CSRF-Token")), []byte(csrf)) {
 			failure(w, 403, "CSRF check Failed")
 			return store.User{}, false
