@@ -375,3 +375,5 @@ Support bounded DWARF shift expressions (`DW_OP_shl`, `DW_OP_shr`, `DW_OP_shra`)
 Complete selected common signed DWARF integer expressions: absolute value, negation, bitwise complement, signed division and signed comparisons. Reject division by zero, signed overflow and operand underflow; verify native race tests, vet and build.
 
 Implement the accepted signed truncated-remainder semantics for `DW_OP_mod`; reject zero divisors and signed overflow. Verify negative operands, exact division, underflow, native race tests, vet and build.
+
+Complete DWARF stack-manipulation operations with `DW_OP_rot` and `DW_OP_nop`. Verify rotation order, stack preservation and underflow with native race tests, vet and build.

@@ -685,6 +685,38 @@ func TestCFIExpressionModulo(t *testing.T) {
 	}
 }
 
+func TestCFIExpressionStackManipulation(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		expression []byte
+		want       uint64
+	}{
+		{name: "rotate top three", expression: []byte{0x31, 0x32, 0x33, 0x17, 0x13, 0x13}, want: 3},
+		{name: "nop preserves value", expression: []byte{0x37, 0x96}, want: 7},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			got, ok := evaluateCFIExpression(test.expression, nil, 0, nil, 8)
+			if !ok || got != test.want {
+				t.Fatalf("expression %x = %#x, %v; want %#x", test.expression, got, ok, test.want)
+			}
+		})
+	}
+
+	for _, test := range []struct {
+		name       string
+		expression []byte
+	}{
+		{name: "empty stack", expression: []byte{0x17}},
+		{name: "two values", expression: []byte{0x31, 0x32, 0x17}},
+	} {
+		t.Run("invalid-"+test.name, func(t *testing.T) {
+			if _, ok := evaluateCFIExpression(test.expression, nil, 0, nil, 8); ok {
+				t.Fatalf("invalid expression %x was accepted", test.expression)
+			}
+		})
+	}
+}
+
 func TestCFIExpressionDereferenceRespectsSizeOperands(t *testing.T) {
 	data := []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}
 	ranges := []memoryRange{{start: 0x1000, data: data}}

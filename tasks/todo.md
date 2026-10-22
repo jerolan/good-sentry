@@ -232,6 +232,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Source: [accepted DWARF clarification](https://dwarfstd.org/issues/250924.2.html).
     - Local evidence (2026-10-22): RED showed `DW_OP_mod` was unsupported. Truncated signed remainders for negative numerators/denominators and exact division now pass; zero divisor, signed-min overflow and underflow fail closed. Native race, integration-tag vet, trim-path build and `git diff --check` pass.
     - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
+  - [x] Complete DWARF stack rotation and no-op operators.
+    - Contract: `DW_OP_rot` rotates the top three values in the standard order; `DW_OP_nop` leaves all values unchanged. Rotation with fewer than three values stops evaluation.
+    - Acceptance: verify the three-value rotation result, nop preservation, underflow, and continued rejection of unsupported opcodes.
+    - Verify: `go test -race ./internal/native`, integration-tag vet, trim-path build and `git diff --check`; exact-source CI/public-image acceptance remain part of parent closure.
+    - Source: [DWARF 5 operations](https://dwarfstd.org/doc/DWARF5.pdf).
+    - Local evidence (2026-10-22): the focused regression failed before implementation because both operations were unsupported, then passed for the standard three-value rotation, no-op preservation and underflow rejection. Native race tests, integration-tag vet, trim-path build and `git diff --check` pass.
+    - Files: `SPEC.md`, `tasks/plan.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
   - [x] Honor terminal `DW_OP_stack_value` in CFI rules.
     - Contract: `DW_CFA_expression` returns an immediate register value when its final opcode is `DW_OP_stack_value`; otherwise its expression yields a captured-memory address. `DW_CFA_val_expression` uses the result directly. Empty or nonterminal stack-value opcodes stop evaluation.
     - Acceptance: register-rule tests distinguish immediate values from memory addresses, cover val_expression, and reject empty/nonterminal stack-value expressions.
