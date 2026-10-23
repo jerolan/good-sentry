@@ -106,30 +106,50 @@ func (s *Store) IngestSpans(ctx context.Context, projectID string, payload json.
 }
 
 func (s *Store) Spans(ctx context.Context, userID, orgSlug, projectID, traceID string) ([]Span, error) {
-	org, err := s.Organization(ctx, userID, orgSlug)
-	if err != nil {
-		return nil, err
-	}
-	rows, err := s.pool.Query(ctx, `SELECT s.id::text,s.project_id::text,s.trace_id,s.span_id,s.parent_span_id,s.name,
-		s.status,s.is_segment,s.start_timestamp,s.end_timestamp,s.duration,s.op,s.environment,s.release,s.attributes,s.data
-		FROM spans s JOIN projects p ON p.id=s.project_id
-		WHERE p.organization_id::text=$1 AND ($2='' OR s.project_id::text=$2) AND ($3='' OR s.trace_id=$3)
-		ORDER BY s.start_timestamp,s.id LIMIT 1000`, org.ID, projectID, traceID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Span{}
-	for rows.Next() {
-		var span Span
-		if err := rows.Scan(&span.ID, &span.ProjectID, &span.TraceID, &span.SpanID, &span.ParentSpanID, &span.Name,
-			&span.Status, &span.IsSegment, &span.StartTimestamp, &span.EndTimestamp, &span.Duration, &span.Op,
-			&span.Environment, &span.Release, &span.Attributes, &span.RawSpan); err != nil {
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]Span, error) {
+		var orgID string
+		if err := read.tx.QueryRow(ctx, `SELECT o.id::text FROM organizations o
+			JOIN memberships m ON m.organization_id=o.id
+			WHERE m.user_id::text=$1 AND o.slug=$2`, userID, orgSlug).Scan(&orgID); err != nil {
+			return nil, dbError(err)
+		}
+		organizationID, err := strconv.ParseInt(orgID, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("parse organization ID: %w", err)
+		}
+		selector := spanArchiveSelector{OrganizationID: organizationID, TraceID: traceID}
+		if projectID != "" {
+			parsedProjectID, err := strconv.ParseInt(projectID, 10, 64)
+			if err != nil || parsedProjectID <= 0 {
+				selector.RestrictProjectIDs = true
+			} else {
+				selector.ProjectID = parsedProjectID
+			}
+		}
+		if err := read.Load(ctx, selector); err != nil {
 			return nil, err
 		}
-		items = append(items, span)
-	}
-	return items, rows.Err()
+		rows, err := read.tx.Query(ctx, `SELECT s.id::text,s.project_id::text,s.trace_id,s.span_id,s.parent_span_id,s.name,
+			s.status,s.is_segment,s.start_timestamp,s.end_timestamp,s.duration,s.op,s.environment,s.release,s.attributes,s.data
+			FROM spans s JOIN projects p ON p.id=s.project_id
+			WHERE p.organization_id::text=$1 AND ($2='' OR s.project_id::text=$2) AND ($3='' OR s.trace_id=$3)
+			ORDER BY s.start_timestamp,s.id LIMIT 1000`, orgID, projectID, traceID)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		items := []Span{}
+		for rows.Next() {
+			var span Span
+			if err := rows.Scan(&span.ID, &span.ProjectID, &span.TraceID, &span.SpanID, &span.ParentSpanID, &span.Name,
+				&span.Status, &span.IsSegment, &span.StartTimestamp, &span.EndTimestamp, &span.Duration, &span.Op,
+				&span.Environment, &span.Release, &span.Attributes, &span.RawSpan); err != nil {
+				return nil, err
+			}
+			items = append(items, span)
+		}
+		return items, rows.Err()
+	})
 }
 
 func parseSpans(raw json.RawMessage, expectedCount int) ([]Span, error) {
