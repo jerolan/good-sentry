@@ -171,4 +171,14 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	if err != nil || len(patterns) != 1 || patterns[0].TotalSpans != 2 || patterns[0].TransactionCount != 1 {
 		t.Fatalf("N+1 patterns include archived children: %+v err=%v", patterns, err)
 	}
+	compatibleGroups, err := db.CompatibleTransactionGroups(ctx, access, CompatibleTransactionFilter{
+		ProjectIDs: []int64{projectID}, Transaction: "GET /checkout", Op: "http.server", Window: window, Limit: 10,
+	})
+	if err != nil || len(compatibleGroups) != 1 || compatibleGroups[0].Count != 1 || compatibleGroups[0].ID <= 0 {
+		t.Fatalf("compatible transaction groups include archived segment: %+v err=%v", compatibleGroups, err)
+	}
+	identity, err := db.CompatibleTransactionGroupIdentity(ctx, access, compatibleGroups[0].ID)
+	if err != nil || identity.ProjectID != projectID || identity.Transaction != "GET /checkout" || identity.Op != "http.server" {
+		t.Fatalf("compatible group identity after read retry boundary: %+v err=%v", identity, err)
+	}
 }

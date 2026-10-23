@@ -132,23 +132,38 @@ func (s *Store) CompatibleTransactionGroups(ctx context.Context, access Manageme
 		return nil, err
 	}
 	args = append(args, filter.Limit, filter.Offset)
-	rows, err := s.pool.Query(ctx, query+fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args)), args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []CompatibleTransactionGroup{}
-	for rows.Next() {
-		var item CompatibleTransactionGroup
-		var project string
-		if err = rows.Scan(&project, &item.Transaction, &item.Op, &item.Method, &item.Count, &item.ErrorCount,
-			&item.AvgDuration, &item.P50, &item.P95, &item.FirstSeen, &item.LastSeen); err != nil {
+	items, err := withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]CompatibleTransactionGroup, error) {
+		selector := spanArchiveSelector{ProjectIDs: filter.ProjectIDs, RestrictProjectIDs: len(filter.ProjectIDs) > 0}
+		isSegment := true
+		selector.IsSegment = &isSegment
+		if filter.Window != nil {
+			selector.TimeColumn, selector.Start, selector.End = "end_timestamp", &filter.Window.Start, &filter.Window.End
+		}
+		if err := read.loadAccessSpans(ctx, access, selector); err != nil {
 			return nil, err
 		}
-		item.ProjectID, _ = strconv.ParseInt(project, 10, 64)
-		items = append(items, item)
-	}
-	if err = rows.Err(); err != nil {
+		rows, err := read.tx.Query(ctx, query+fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args)), args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		items := []CompatibleTransactionGroup{}
+		for rows.Next() {
+			var item CompatibleTransactionGroup
+			var project string
+			if err = rows.Scan(&project, &item.Transaction, &item.Op, &item.Method, &item.Count, &item.ErrorCount,
+				&item.AvgDuration, &item.P50, &item.P95, &item.FirstSeen, &item.LastSeen); err != nil {
+				return nil, err
+			}
+			item.ProjectID, _ = strconv.ParseInt(project, 10, 64)
+			items = append(items, item)
+		}
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+		return items, nil
+	})
+	if err != nil {
 		return nil, err
 	}
 	if err = s.assignCompatibleTransactionGroupIDs(ctx, items); err != nil {
