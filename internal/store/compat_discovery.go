@@ -127,7 +127,7 @@ func (s *Store) CompatibleOrganizations(ctx context.Context, userID, organizatio
 }
 
 func (s *Store) CompatibleProjectsAcrossOrganizations(ctx context.Context, userID, organizationID string, allProjects bool, projectIDs []int64, offset, limit int) ([]CompatibleProject, error) {
-	rows, err := s.pool.Query(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,
+	rows, err := s.pool.Query(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,p.event_throttle_rate,
 		o.id::text,o.slug,o.name,o.created_at
 		FROM projects p JOIN organizations o ON o.id=p.organization_id
 		JOIN memberships m ON m.organization_id=o.id AND m.user_id=$1::bigint
@@ -143,11 +143,12 @@ func (s *Store) CompatibleProjectsAcrossOrganizations(ctx context.Context, userI
 		var created time.Time
 		var orgID, orgSlug, orgName string
 		var orgCreated time.Time
-		if err := rows.Scan(&projectID, &name, &slug, &platform, &created, &orgID, &orgSlug, &orgName, &orgCreated); err != nil {
+		var eventThrottleRate int
+		if err := rows.Scan(&projectID, &name, &slug, &platform, &created, &eventThrottleRate, &orgID, &orgSlug, &orgName, &orgCreated); err != nil {
 			return nil, err
 		}
 		result = append(result, CompatibleProject{
-			ID: projectID, Name: name, Slug: slug, Platform: platform, DateCreated: created.UTC(),
+			ID: projectID, Name: name, Slug: slug, Platform: platform, DateCreated: created.UTC(), EventThrottleRate: eventThrottleRate,
 			Organization: discoveryOrganization(orgID, orgSlug, orgName, orgCreated),
 			Features:     []string{}, HasAccess: true, IsMember: true,
 		})

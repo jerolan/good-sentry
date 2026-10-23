@@ -44,13 +44,17 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		failure(w, 403, "Invalid SDK authentication")
 		return
 	}
-	ok, err := s.db.ValidKey(r.Context(), project, key)
+	ok, eventThrottleRate, err := s.db.ValidKeyWithEventThrottle(r.Context(), project, key)
 	if err != nil {
 		report(w, err)
 		return
 	}
 	if !ok {
 		failure(w, 403, "Invalid SDK authentication")
+		return
+	}
+	if shouldThrottleProjectEvent(eventThrottleRate) {
+		rejectProjectThrottle(w)
 		return
 	}
 	if charge := ingestRateCharge(env); charge > 0 {

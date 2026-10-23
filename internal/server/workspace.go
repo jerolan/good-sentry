@@ -74,7 +74,7 @@ func (s *Server) updateProject(w http.ResponseWriter, r *http.Request) {
 	if !bodyJSON(w, r, &input) {
 		return
 	}
-	project, err := s.db.UpdateManagementProject(r.Context(), access, r.PathValue("project"), input.Name, input.Platform)
+	project, err := s.db.UpdateManagementProject(r.Context(), access, r.PathValue("project"), input.Name, input.Platform, nil)
 	if err != nil {
 		report(w, err)
 		return

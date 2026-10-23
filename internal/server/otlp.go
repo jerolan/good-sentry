@@ -121,7 +121,7 @@ func (s *Server) otlpLogs(w http.ResponseWriter, r *http.Request) {
 		failOTLP(w, encoding, http.StatusForbidden)
 		return
 	}
-	projectID, err := s.db.ProjectForPublicKey(r.Context(), key)
+	projectID, eventThrottleRate, err := s.db.ProjectForPublicKeyWithEventThrottle(r.Context(), key)
 	if err != nil {
 		status := http.StatusServiceUnavailable
 		if errors.Is(err, store.ErrNotFound) {
@@ -132,6 +132,11 @@ func (s *Server) otlpLogs(w http.ResponseWriter, r *http.Request) {
 	}
 	if !s.cfg.Logs {
 		failOTLP(w, encoding, http.StatusNotFound)
+		return
+	}
+	if shouldThrottleProjectEvent(eventThrottleRate) {
+		setProjectThrottleHeaders(w)
+		failOTLP(w, encoding, http.StatusTooManyRequests)
 		return
 	}
 	contentEncoding, encodingFields := otlpHeader(r.Header, "Content-Encoding")

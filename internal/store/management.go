@@ -20,11 +20,12 @@ type ManagementAccess struct {
 }
 
 type ManagementProject struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Slug        string    `json:"slug"`
-	Platform    string    `json:"platform"`
-	DateCreated time.Time `json:"dateCreated"`
+	ID                string    `json:"id"`
+	Name              string    `json:"name"`
+	Slug              string    `json:"slug"`
+	Platform          string    `json:"platform"`
+	DateCreated       time.Time `json:"dateCreated"`
+	EventThrottleRate int       `json:"eventThrottleRate"`
 }
 
 func referenceID(value string) int64 {
@@ -52,7 +53,7 @@ func (s *Store) ManagementProjects(ctx context.Context, access ManagementAccess,
 	if !member {
 		return nil, ErrNotFound
 	}
-	rows, err := s.pool.Query(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at FROM projects p
+	rows, err := s.pool.Query(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,p.event_throttle_rate FROM projects p
 		JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id=$1::bigint
 		WHERE p.organization_id=$2::bigint AND ($3 OR p.id=ANY($4::bigint[]))
 		AND ($5='' OR strpos(lower(p.name),lower($5))>0 OR strpos(lower(p.slug),lower($5))>0)
@@ -64,7 +65,7 @@ func (s *Store) ManagementProjects(ctx context.Context, access ManagementAccess,
 	result := []ManagementProject{}
 	for rows.Next() {
 		var p ManagementProject
-		if err := rows.Scan(&p.ID, &p.Name, &p.Slug, &p.Platform, &p.DateCreated); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Slug, &p.Platform, &p.DateCreated, &p.EventThrottleRate); err != nil {
 			return nil, err
 		}
 		result = append(result, p)
@@ -74,12 +75,12 @@ func (s *Store) ManagementProjects(ctx context.Context, access ManagementAccess,
 
 func (s *Store) ManagementProject(ctx context.Context, access ManagementAccess, project string) (ManagementProject, error) {
 	var p ManagementProject
-	err := s.pool.QueryRow(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at FROM projects p
+	err := s.pool.QueryRow(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,p.event_throttle_rate FROM projects p
 		JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id=$1::bigint
 		WHERE p.organization_id=$2::bigint AND ($3 OR p.id=ANY($4::bigint[]))
 		AND (p.slug=$5 OR p.id=$6) ORDER BY (p.slug=$5) DESC LIMIT 1`,
 		access.UserID, access.OrganizationID, access.AllProjects, access.ProjectIDs, project, referenceID(project)).
-		Scan(&p.ID, &p.Name, &p.Slug, &p.Platform, &p.DateCreated)
+		Scan(&p.ID, &p.Name, &p.Slug, &p.Platform, &p.DateCreated, &p.EventThrottleRate)
 	return p, dbError(err)
 }
 
@@ -87,21 +88,21 @@ func validProjectName(name string) bool {
 	return name != "" && utf8.ValidString(name) && len(name) <= 120 && !strings.ContainsFunc(name, unicode.IsControl)
 }
 
-func (s *Store) UpdateManagementProject(ctx context.Context, access ManagementAccess, project, name, platform string) (ManagementProject, error) {
+func (s *Store) UpdateManagementProject(ctx context.Context, access ManagementAccess, project, name, platform string, eventThrottleRate *int) (ManagementProject, error) {
 	current, err := s.ManagementProject(ctx, access, project)
 	if err != nil {
 		return ManagementProject{}, err
 	}
 	name = strings.TrimSpace(name)
 	platform = strings.TrimSpace(platform)
-	if !validProjectName(name) || len(platform) > 80 || strings.ContainsFunc(platform, unicode.IsControl) {
+	if !validProjectName(name) || len(platform) > 80 || strings.ContainsFunc(platform, unicode.IsControl) || eventThrottleRate != nil && (*eventThrottleRate < 0 || *eventThrottleRate > 100) {
 		return ManagementProject{}, errors.New("invalid project name or platform")
 	}
 	if platform == "" {
 		platform = "other"
 	}
-	if _, err = s.pool.Exec(ctx, `UPDATE projects SET name=$2,platform=$3
-WHERE id::text=$1 AND organization_id=$4::bigint`, current.ID, name, platform, access.OrganizationID); err != nil {
+	if _, err = s.pool.Exec(ctx, `UPDATE projects SET name=$2,platform=$3,event_throttle_rate=COALESCE($4,event_throttle_rate)
+WHERE id::text=$1 AND organization_id=$5::bigint`, current.ID, name, platform, eventThrottleRate, access.OrganizationID); err != nil {
 		return ManagementProject{}, err
 	}
 	return s.ManagementProject(ctx, access, current.ID)

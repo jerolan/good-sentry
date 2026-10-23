@@ -103,7 +103,7 @@ func (s *Store) CompatibleOrganizationDetail(ctx context.Context, userID, refere
 	detail.Access = compatibleOrganizationAccess(role)
 	detail.OpenMembership = false
 	detail.Projects = []CompatibleOrganizationProject{}
-	rows, err := s.pool.Query(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,
+	rows, err := s.pool.Query(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,p.event_throttle_rate,
 		COALESCE(array_agg(t.id::text ORDER BY lower(t.slug),t.id) FILTER (WHERE t.id IS NOT NULL),ARRAY[]::text[]),
 		COALESCE(array_agg(t.slug ORDER BY lower(t.slug),t.id) FILTER (WHERE t.id IS NOT NULL),ARRAY[]::text[])
 		FROM projects p
@@ -116,7 +116,7 @@ func (s *Store) CompatibleOrganizationDetail(ctx context.Context, userID, refere
 	for rows.Next() {
 		var project CompatibleOrganizationProject
 		var teamIDs, teamSlugs []string
-		if err = rows.Scan(&project.ID, &project.Name, &project.Slug, &project.Platform, &project.DateCreated, &teamIDs, &teamSlugs); err != nil {
+		if err = rows.Scan(&project.ID, &project.Name, &project.Slug, &project.Platform, &project.DateCreated, &project.EventThrottleRate, &teamIDs, &teamSlugs); err != nil {
 			rows.Close()
 			return detail, err
 		}
@@ -156,14 +156,14 @@ func (s *Store) CompatibleOrganizationDetail(ctx context.Context, userID, refere
 	return detail, rows.Err()
 }
 
-func (s *Store) CreateCompatibleProject(ctx context.Context, actorID, orgRef, teamSlug, name, projectSlug, platform string) (CompatibleOrganizationProject, error) {
+func (s *Store) CreateCompatibleProject(ctx context.Context, actorID, orgRef, teamSlug, name, projectSlug, platform string, eventThrottleRate int) (CompatibleOrganizationProject, error) {
 	var result CompatibleOrganizationProject
 	name = strings.TrimSpace(name)
 	platform = strings.TrimSpace(platform)
 	if projectSlug == "" {
 		projectSlug = Slug(name)
 	}
-	if !validCompatibleProjectName(name) || !validCompatibleProjectSlug(projectSlug) || len(platform) > 80 || !utf8.ValidString(platform) || strings.ContainsFunc(platform, unicode.IsControl) {
+	if !validCompatibleProjectName(name) || !validCompatibleProjectSlug(projectSlug) || len(platform) > 80 || !utf8.ValidString(platform) || strings.ContainsFunc(platform, unicode.IsControl) || eventThrottleRate < 0 || eventThrottleRate > 100 {
 		return result, ErrInvalidProject
 	}
 	if platform == "" {
@@ -186,9 +186,9 @@ func (s *Store) CreateCompatibleProject(ctx context.Context, actorID, orgRef, te
 	if err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug=$2 FOR SHARE`, orgID, teamSlug).Scan(&teamID); err != nil {
 		return result, dbError(err)
 	}
-	err = tx.QueryRow(ctx, `INSERT INTO projects(organization_id,team_id,name,slug,platform) VALUES($1::bigint,$2::bigint,$3,$4,$5)
-		RETURNING id::text,name,slug,platform,created_at`, orgID, teamID, name, projectSlug, platform).
-		Scan(&result.ID, &result.Name, &result.Slug, &result.Platform, &result.DateCreated)
+	err = tx.QueryRow(ctx, `INSERT INTO projects(organization_id,team_id,name,slug,platform,event_throttle_rate) VALUES($1::bigint,$2::bigint,$3,$4,$5,$6)
+		RETURNING id::text,name,slug,platform,created_at,event_throttle_rate`, orgID, teamID, name, projectSlug, platform, eventThrottleRate).
+		Scan(&result.ID, &result.Name, &result.Slug, &result.Platform, &result.DateCreated, &result.EventThrottleRate)
 	if err != nil {
 		return result, dbError(err)
 	}
@@ -225,12 +225,12 @@ func (s *Store) CompatibleSetProjectTeam(ctx context.Context, access ManagementA
 		return result, dbError(err)
 	}
 	var primaryTeam string
-	err = tx.QueryRow(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,COALESCE(p.team_id::text,'')
+	err = tx.QueryRow(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,p.event_throttle_rate,COALESCE(p.team_id::text,'')
 		FROM projects p JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id=$1::bigint
 		WHERE p.organization_id=$2::bigint AND ($3 OR p.id=ANY($4::bigint[])) AND (p.slug=$5 OR p.id=$6)
 		ORDER BY (p.slug=$5) DESC LIMIT 1 FOR UPDATE OF p`,
 		access.UserID, organizationID, access.AllProjects, access.ProjectIDs, projectRef, referenceID(projectRef)).
-		Scan(&result.ID, &result.Name, &result.Slug, &result.Platform, &result.DateCreated, &primaryTeam)
+		Scan(&result.ID, &result.Name, &result.Slug, &result.Platform, &result.DateCreated, &result.EventThrottleRate, &primaryTeam)
 	if err != nil {
 		return result, dbError(err)
 	}

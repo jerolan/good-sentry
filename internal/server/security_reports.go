@@ -51,13 +51,17 @@ func (s *Server) securityReports(w http.ResponseWriter, r *http.Request) {
 		failure(w, 400, "Invalid security report metadata")
 		return
 	}
-	valid, err := s.db.ValidKey(r.Context(), r.PathValue("project"), key)
+	valid, eventThrottleRate, err := s.db.ValidKeyWithEventThrottle(r.Context(), r.PathValue("project"), key)
 	if err != nil {
 		report(w, err)
 		return
 	}
 	if !valid {
 		failure(w, 403, "Invalid security report public key authentication")
+		return
+	}
+	if shouldThrottleProjectEvent(eventThrottleRate) {
+		rejectProjectThrottle(w)
 		return
 	}
 	media, parameters, err := mime.ParseMediaType(r.Header.Get("Content-Type"))

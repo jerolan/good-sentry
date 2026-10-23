@@ -92,8 +92,8 @@ func TestCreateCompatibleProjectInTeam(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	created, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Checkout API", "checkout-api", "go")
-	if err != nil || created.ID == "" || created.Name != "Checkout API" || created.Slug != "checkout-api" || created.Platform != "go" || len(created.Teams) != 1 || created.Teams[0].ID != team.ID {
+	created, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Checkout API", "checkout-api", "go", 42)
+	if err != nil || created.ID == "" || created.Name != "Checkout API" || created.Slug != "checkout-api" || created.Platform != "go" || created.EventThrottleRate != 42 || len(created.Teams) != 1 || created.Teams[0].ID != team.ID {
 		t.Fatalf("create compatible project: %+v %v", created, err)
 	}
 	access := ManagementAccess{UserID: owner.ID, OrganizationID: org.ID, Role: "owner", AllProjects: true}
@@ -111,17 +111,20 @@ FROM projects p WHERE p.id=$1::bigint`, created.ID, owner.ID).Scan(&teamID, &pro
 		t.Fatalf("project/team membership: %d %d %t %v", teamID, projectTeams, member, err)
 	}
 
-	derived, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Web Client", "", "")
+	derived, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Web Client", "", "", 0)
 	if err != nil || derived.Slug != "web-client" || derived.Platform != "other" {
 		t.Fatalf("derive project slug/platform: %+v %v", derived, err)
 	}
-	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Duplicate", "checkout-api", "go"); !errors.Is(err, ErrConflict) {
+	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Duplicate", "checkout-api", "go", 0); !errors.Is(err, ErrConflict) {
 		t.Fatalf("duplicate project slug: %v", err)
 	}
-	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Invalid", "Bad Slug", "go"); !errors.Is(err, ErrInvalidProject) {
+	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Invalid", "Bad Slug", "go", 0); !errors.Is(err, ErrInvalidProject) {
 		t.Fatalf("invalid project slug: %v", err)
 	}
-	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, "missing", "Missing team", "missing-team", "go"); !errors.Is(err, ErrNotFound) {
+	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, team.Slug, "Invalid rate", "invalid-rate", "go", 101); !errors.Is(err, ErrInvalidProject) {
+		t.Fatalf("invalid project throttle: %v", err)
+	}
+	if _, err := db.CreateCompatibleProject(ctx, owner.ID, org.Slug, "missing", "Missing team", "missing-team", "go", 0); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("missing project team: %v", err)
 	}
 	var memberID string
@@ -131,7 +134,7 @@ FROM projects p WHERE p.id=$1::bigint`, created.ID, owner.ID).Scan(&teamID, &pro
 	if _, err := db.pool.Exec(ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1::bigint,$2::bigint,'member')`, org.ID, memberID); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.CreateCompatibleProject(ctx, memberID, org.Slug, team.Slug, "Forbidden", "forbidden", "go"); !errors.Is(err, ErrForbidden) {
+	if _, err := db.CreateCompatibleProject(ctx, memberID, org.Slug, team.Slug, "Forbidden", "forbidden", "go", 0); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("member project creation: %v", err)
 	}
 }

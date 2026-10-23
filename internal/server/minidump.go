@@ -25,13 +25,17 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		failure(w, http.StatusForbidden, "Invalid SDK authentication")
 		return
 	}
-	valid, err := s.db.ValidKey(r.Context(), r.PathValue("project"), key)
+	valid, eventThrottleRate, err := s.db.ValidKeyWithEventThrottle(r.Context(), r.PathValue("project"), key)
 	if err != nil {
 		report(w, err)
 		return
 	}
 	if !valid {
 		failure(w, http.StatusForbidden, "Invalid SDK authentication")
+		return
+	}
+	if shouldThrottleProjectEvent(eventThrottleRate) {
+		rejectProjectThrottle(w)
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxBodyBytes)

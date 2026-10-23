@@ -98,11 +98,11 @@ func (s *Server) compatibleUpdateProject(w http.ResponseWriter, r *http.Request)
 	if !bodyJSON(w, r, &input) {
 		return
 	}
-	if input.EventThrottleRate != nil && *input.EventThrottleRate != 0 {
-		failure(w, 400, "Project event throttling is not implemented")
+	if input.EventThrottleRate != nil && (*input.EventThrottleRate < 0 || *input.EventThrottleRate > 100) {
+		failure(w, 400, "eventThrottleRate must be between 0 and 100")
 		return
 	}
-	project, err := s.db.UpdateManagementProject(r.Context(), access, r.PathValue("project"), input.Name, input.Platform)
+	project, err := s.db.UpdateManagementProject(r.Context(), access, r.PathValue("project"), input.Name, input.Platform, input.EventThrottleRate)
 	if err != nil {
 		report(w, err)
 		return
@@ -658,8 +658,8 @@ func (s *Server) compatibleCreateTeamProject(w http.ResponseWriter, r *http.Requ
 	if !bodyJSON(w, r, &input) {
 		return
 	}
-	if input.EventThrottleRate != nil && *input.EventThrottleRate != 0 {
-		failure(w, 400, "Per-project event throttling is not supported")
+	if input.EventThrottleRate != nil && (*input.EventThrottleRate < 0 || *input.EventThrottleRate > 100) {
+		failure(w, 400, "eventThrottleRate must be between 0 and 100")
 		return
 	}
 	var projectSlug, platform string
@@ -669,7 +669,11 @@ func (s *Server) compatibleCreateTeamProject(w http.ResponseWriter, r *http.Requ
 	if input.Platform != nil {
 		platform = *input.Platform
 	}
-	project, err := s.db.CreateCompatibleProject(r.Context(), current(r).User.ID, r.PathValue("org"), teamSlug, input.Name, projectSlug, platform)
+	eventThrottleRate := 0
+	if input.EventThrottleRate != nil {
+		eventThrottleRate = *input.EventThrottleRate
+	}
+	project, err := s.db.CreateCompatibleProject(r.Context(), current(r).User.ID, r.PathValue("org"), teamSlug, input.Name, projectSlug, platform, eventThrottleRate)
 	if errors.Is(err, store.ErrInvalidProject) {
 		failure(w, 400, "Project name, slug or platform is invalid")
 		return

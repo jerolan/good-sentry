@@ -33,10 +33,17 @@ func TestProjectUpdateAndDeleteHTTP(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, f.client, "GET", compatible, "", nil, 200), &compatibleProject); err != nil || compatibleProject["name"] != "Renamed project" {
 		t.Fatalf("compatible project read=%+v err=%v", compatibleProject, err)
 	}
-	if err := json.Unmarshal(f.request(t, f.client, "PUT", compatible, `{"name":"Compatible rename","platform":"node","eventThrottleRate":0}`, csrf, 200), &compatibleProject); err != nil || compatibleProject["name"] != "Compatible rename" {
+	if compatibleProject["eventThrottleRate"] != float64(0) {
+		t.Fatalf("new project throttle default=%+v", compatibleProject)
+	}
+	if err := json.Unmarshal(f.request(t, f.client, "PUT", compatible, `{"name":"Compatible rename","platform":"node","eventThrottleRate":37}`, csrf, 200), &compatibleProject); err != nil || compatibleProject["name"] != "Compatible rename" || compatibleProject["eventThrottleRate"] != float64(37) {
 		t.Fatalf("compatible project update=%+v err=%v", compatibleProject, err)
 	}
-	f.request(t, f.client, "PUT", compatible, `{"name":"Unsupported","eventThrottleRate":10}`, csrf, 400)
+	if err := json.Unmarshal(f.request(t, f.client, "GET", compatible, "", nil, 200), &compatibleProject); err != nil || compatibleProject["eventThrottleRate"] != float64(37) {
+		t.Fatalf("compatible project throttle persistence=%+v err=%v", compatibleProject, err)
+	}
+	f.request(t, f.client, "PUT", compatible, `{"name":"Invalid rate","platform":"node","eventThrottleRate":-1}`, csrf, 400)
+	f.request(t, f.client, "PUT", compatible, `{"name":"Invalid rate","platform":"node","eventThrottleRate":101}`, csrf, 400)
 	f.request(t, f.client, "DELETE", native, "", csrf, 204)
 	f.request(t, f.client, "GET", compatible, "", nil, 404)
 
@@ -67,7 +74,8 @@ func TestCreateCompatibleProjectHTTP(t *testing.T) {
 		`{}`,
 		`{"name":"` + strings.Repeat("x", 65) + `"}`,
 		`{"name":"bad\u0000name"}`,
-		`{"name":"Valid","eventThrottleRate":1}`,
+		`{"name":"Valid","eventThrottleRate":-1}`,
+		`{"name":"Valid","eventThrottleRate":101}`,
 		`{"name":"Valid","slug":"Bad Slug"}`,
 		`{"name":"Valid","unknown":true}`,
 		`{"name":"Valid"} {}`,
@@ -78,11 +86,16 @@ func TestCreateCompatibleProjectHTTP(t *testing.T) {
 	f.request(t, f.client, "POST", "/api/0/teams/"+f.org.Slug+"/missing/projects/", `{"name":"Missing"}`, csrf, 404)
 
 	var created store.CompatibleOrganizationProject
-	if err := json.Unmarshal(f.request(t, f.client, "POST", path, `{"name":"Checkout API","slug":"checkout-api","platform":"go","eventThrottleRate":0}`, csrf, 201), &created); err != nil || created.ID == "" || created.Name != "Checkout API" || created.Slug != "checkout-api" || created.Platform != "go" || len(created.Teams) != 1 || created.Teams[0].ID != team.ID || !created.IsMember || !created.HasAccess {
+	createdBody := f.request(t, f.client, "POST", path, `{"name":"Checkout API","slug":"checkout-api","platform":"go","eventThrottleRate":42}`, csrf, 201)
+	var createdFields map[string]any
+	if err := json.Unmarshal(createdBody, &created); err != nil || json.Unmarshal(createdBody, &createdFields) != nil || created.ID == "" || created.Name != "Checkout API" || created.Slug != "checkout-api" || created.Platform != "go" || createdFields["eventThrottleRate"] != float64(42) || len(created.Teams) != 1 || created.Teams[0].ID != team.ID || !created.IsMember || !created.HasAccess {
 		t.Fatalf("create project HTTP: %+v %v", created, err)
 	}
 	f.request(t, f.client, "POST", path, `{"name":"Duplicate","slug":"checkout-api"}`, csrf, 409)
-	f.request(t, f.client, "GET", "/api/0/projects/"+f.org.Slug+"/checkout-api/", "", nil, 200)
+	var readback map[string]any
+	if err := json.Unmarshal(f.request(t, f.client, "GET", "/api/0/projects/"+f.org.Slug+"/checkout-api/", "", nil, 200), &readback); err != nil || readback["eventThrottleRate"] != float64(42) {
+		t.Fatalf("created project throttle readback=%+v err=%v", readback, err)
+	}
 	var keys []compatibleProjectKeyView
 	if err := json.Unmarshal(f.request(t, f.client, "GET", "/api/0/projects/"+f.org.Slug+"/checkout-api/keys/", "", nil, 200), &keys); err != nil || len(keys) != 1 || keys[0].Public == "" || keys[0].ProjectID == 0 {
 		t.Fatalf("created project DSN: %+v %v", keys, err)

@@ -77,12 +77,13 @@ Open work:
 
 - Automatic repository integrations, further conditional issue policies and broader management API acceptance.
 - An installation-level GitLab receipt, real alert-provider and external identity-provider receipts, and representative native crash receipts.
-- Advanced administration, compatible member `teamRoles`/`manager`, WebAuthn second factors and nonzero project throttling.
+- Advanced administration, compatible member `teamRoles`/`manager` and WebAuthn second factors.
 
 Available capabilities and limits:
 
 - Local or S3-compatible Parquet cold span storage retains the existing transaction/span deadline and requires the same backend on restart.
 - Pending invitations can be inspected and canceled through the member-item route; GlitchTip `set_owner` transfer is supported. Verified secondary emails work through the API and Account UI. TOTP is optional per account through the API and Account UI.
+- Project `eventThrottleRate` accepts0..100 and samples each authenticated Sentry or OTLP intake request once. Rejected requests return429 with `Retry-After` and `X-Sentry-Rate-Limits`; organization-level event throttling remains unsupported.
 - Projects can belong to multiple teams, and team-email alerts expand across every association. The opt-in MCP endpoint exposes 17 documented tools through OAuth PKCE or scoped API tokens; results use PostgreSQL projections and the configured archive backend for cold spans, not DuckDB.
 - `ENABLE_OPENAPI` serves generated API documentation. `ENABLE_ADMIN` adds a read-only owner/admin operations view. Both are opt-in and follow the routes enabled in the running build.
 

@@ -236,9 +236,28 @@ func (s *Store) ValidKey(ctx context.Context, projectID, key string) (bool, erro
 	return ok, err
 }
 
+func (s *Store) ValidKeyWithEventThrottle(ctx context.Context, projectID, key string) (bool, int, error) {
+	var ok bool
+	var eventThrottleRate int
+	err := s.pool.QueryRow(ctx, `SELECT
+		COALESCE((SELECT event_throttle_rate FROM projects WHERE id::text=$1),0),
+		EXISTS(SELECT 1 FROM project_keys WHERE project_id::text=$1 AND public_key=$2 AND enabled)`, projectID, key).
+		Scan(&eventThrottleRate, &ok)
+	return ok, eventThrottleRate, err
+}
+
 // ProjectForPublicKey resolves an enabled SDK public key to its sole project.
 func (s *Store) ProjectForPublicKey(ctx context.Context, key string) (string, error) {
 	var projectID string
 	err := s.pool.QueryRow(ctx, "SELECT project_id::text FROM project_keys WHERE public_key=$1 AND enabled", key).Scan(&projectID)
 	return projectID, dbError(err)
+}
+
+func (s *Store) ProjectForPublicKeyWithEventThrottle(ctx context.Context, key string) (string, int, error) {
+	var projectID string
+	var eventThrottleRate int
+	err := s.pool.QueryRow(ctx, `SELECT p.id::text,p.event_throttle_rate FROM projects p
+		JOIN project_keys k ON k.project_id=p.id AND k.enabled WHERE k.public_key=$1`, key).
+		Scan(&projectID, &eventThrottleRate)
+	return projectID, eventThrottleRate, dbError(err)
 }
