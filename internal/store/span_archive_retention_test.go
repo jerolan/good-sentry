@@ -64,16 +64,19 @@ func TestSpanArchivePreservesReceiptLifetimeAndDeletedProjectCleanup(t *testing.
 	var projectRef int64
 	var key string
 	var objectSize int64
+	var indexComplete bool
+	var catalogRows int
 	var minCreated, maxCreated time.Time
 	if err := db.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM spans),(SELECT count(*) FROM span_archive_objects),
  (SELECT row_count FROM span_archive_objects),(SELECT project_id FROM span_archive_objects),
  (SELECT object_key FROM span_archive_objects),(SELECT object_size_bytes FROM span_archive_objects),
- (SELECT min_created_at FROM span_archive_objects),(SELECT max_created_at FROM span_archive_objects)`).Scan(
-		&hot, &manifests, &rowCount, &projectRef, &key, &objectSize, &minCreated, &maxCreated); err != nil {
+	 (SELECT min_created_at FROM span_archive_objects),(SELECT max_created_at FROM span_archive_objects),
+	 (SELECT index_complete FROM span_archive_objects),(SELECT count(*) FROM span_archive_rows)`).Scan(
+		&hot, &manifests, &rowCount, &projectRef, &key, &objectSize, &minCreated, &maxCreated, &indexComplete, &catalogRows); err != nil {
 		t.Fatal(err)
 	}
-	if hot != 1 || manifests != 1 || rowCount != 2 || projectRef != projectID || objectSize <= 0 {
-		t.Fatalf("hot/manifests/rows/project/size=%d/%d/%d/%v/%d", hot, manifests, rowCount, projectRef, objectSize)
+	if hot != 1 || manifests != 1 || rowCount != 2 || projectRef != projectID || objectSize <= 0 || !indexComplete || catalogRows != rowCount {
+		t.Fatalf("hot/manifests/rows/project/size/index/catalog=%d/%d/%d/%v/%d/%v/%d", hot, manifests, rowCount, projectRef, objectSize, indexComplete, catalogRows)
 	}
 	var expiredPresent int
 	if err := db.pool.QueryRow(ctx, "SELECT count(*) FROM spans WHERE id::text=$1", expiredID).Scan(&expiredPresent); err != nil || expiredPresent != 0 {
@@ -206,6 +209,40 @@ func TestSpanArchiveFailuresRollbackAndRetryTheSameObject(t *testing.T) {
 		t.Fatalf("deterministic retry changed object bytes: err=%v", err)
 	}
 	assertSpanArchiveState(t, ctx, db, rowIDs[0], false, 1)
+}
+
+func TestIngestSpansPreservesAStillRetainedArchivedIdentity(t *testing.T) {
+	ctx, db, _, _, project := telemetryStore(t)
+	objects, err := spanarchive.NewLocalObjects(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	options := SpanArchiveOptions{Backend: "local", AfterDays: 5, Objects: objects}
+	if err := db.EnableSpanArchive(ctx, options, 30); err != nil {
+		t.Fatal(err)
+	}
+	payload := spanBatch(t, spanFixture("0000000000000021", true, 1_700_000_000, 1_700_000_001))
+	if count, err := db.IngestSpans(ctx, project.ID, payload, 1); err != nil || count != 1 {
+		t.Fatalf("initial span ingest=%d err=%v", count, err)
+	}
+	if _, err := db.pool.Exec(ctx, "UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id='0000000000000021'"); err != nil {
+		t.Fatal(err)
+	}
+	_, moved, _, err := db.CleanupTransactionsWithArchive(ctx, 30, options)
+	if err != nil || moved != 1 {
+		t.Fatalf("archive eligible span moved=%d err=%v", moved, err)
+	}
+	if count, err := db.IngestSpans(ctx, project.ID, payload, 1); err != nil || count != 0 {
+		t.Fatalf("duplicate cold identity ingest=%d err=%v", count, err)
+	}
+	var hot, cold int
+	if err := db.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM spans WHERE span_id='0000000000000021'),
+	 (SELECT count(*) FROM span_archive_rows WHERE span_id='0000000000000021')`).Scan(&hot, &cold); err != nil {
+		t.Fatal(err)
+	}
+	if hot != 0 || cold != 1 {
+		t.Fatalf("duplicate created hot/cold rows=%d/%d", hot, cold)
+	}
 }
 
 func TestSpanArchiveSkipsLockedRowsCancelsAndSerializesMaintainers(t *testing.T) {

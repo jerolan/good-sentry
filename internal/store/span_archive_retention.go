@@ -27,25 +27,27 @@ func archiveOneSpanCohort(ctx context.Context, tx pgx.Tx, retainFrom, archiveBef
 	var projectID int64
 	err := tx.QueryRow(ctx, `SELECT project_id FROM spans
  WHERE created_at >= $1 AND created_at < $2 AND `+spanArchiveInputBytes+` <= $3
- ORDER BY created_at,id LIMIT 1 FOR UPDATE SKIP LOCKED`, retainFrom, archiveBefore, spanarchive.MaxInputBytes).Scan(&projectID)
+ ORDER BY created_at,id LIMIT 1`, retainFrom, archiveBefore, spanarchive.MaxInputBytes).Scan(&projectID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return 0, nil
 	}
 	if err != nil {
 		return 0, fmt.Errorf("select span archive project: %w", err)
 	}
-	candidates, err := tx.Query(ctx, `SELECT id,`+spanArchiveInputBytes+` AS estimated_bytes FROM spans
+	candidates, err := tx.Query(ctx, `SELECT id,trace_id,span_id,`+spanArchiveInputBytes+` AS estimated_bytes FROM spans
  WHERE project_id=$1 AND created_at >= $2 AND created_at < $3 AND `+spanArchiveInputBytes+` <= $4
  ORDER BY created_at,id LIMIT $5`, projectID, retainFrom, archiveBefore, spanarchive.MaxInputBytes, spanarchive.MaxRows)
 	if err != nil {
 		return 0, fmt.Errorf("select span archive cohort: %w", err)
 	}
 	ids := make([]int64, 0, spanarchive.MaxRows)
+	identities := make([]spanArchiveIdentity, 0, spanarchive.MaxRows)
 	var inputBytes int64
 	for candidates.Next() {
 		var id int64
+		var traceID, spanID string
 		var estimatedBytes int64
-		if err := candidates.Scan(&id, &estimatedBytes); err != nil {
+		if err := candidates.Scan(&id, &traceID, &spanID, &estimatedBytes); err != nil {
 			candidates.Close()
 			return 0, fmt.Errorf("read span archive cohort: %w", err)
 		}
@@ -53,6 +55,7 @@ func archiveOneSpanCohort(ctx context.Context, tx pgx.Tx, retainFrom, archiveBef
 			break
 		}
 		ids = append(ids, id)
+		identities = append(identities, spanArchiveIdentity{projectID: projectID, traceID: traceID, spanID: spanID})
 		inputBytes += estimatedBytes
 	}
 	if err := candidates.Err(); err != nil {
@@ -63,10 +66,14 @@ func archiveOneSpanCohort(ctx context.Context, tx pgx.Tx, retainFrom, archiveBef
 	if len(ids) == 0 {
 		return 0, nil
 	}
+	if err := lockSpanArchiveIdentities(ctx, tx, identities); err != nil {
+		return 0, fmt.Errorf("lock span archive cohort identities: %w", err)
+	}
 	rows, err := tx.Query(ctx, `SELECT id,project_id,trace_id,span_id,parent_span_id,name,status,is_segment,
  start_timestamp,end_timestamp,duration,op,environment,release,attributes,data,created_at
- FROM spans WHERE project_id=$1 AND id=ANY($2::bigint[])
- ORDER BY created_at,id FOR UPDATE SKIP LOCKED`, projectID, ids)
+ FROM spans WHERE project_id=$1 AND id=ANY($2::bigint[]) AND created_at >= $3 AND created_at < $4
+ AND `+spanArchiveInputBytes+` <= $5
+ ORDER BY created_at,id FOR UPDATE SKIP LOCKED`, projectID, ids, retainFrom, archiveBefore, spanarchive.MaxInputBytes)
 	if err != nil {
 		return 0, fmt.Errorf("lock span archive cohort: %w", err)
 	}
@@ -148,11 +155,21 @@ func archiveOneSpanCohort(ctx context.Context, tx pgx.Tx, retainFrom, archiveBef
 			maxEnd = end
 		}
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO span_archive_objects(project_id,backend,object_key,row_count,object_size_bytes,
- min_created_at,max_created_at,min_start_timestamp,max_start_timestamp,min_end_timestamp,max_end_timestamp)
- VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, projectID, options.Backend, key, len(spans), len(body),
-		minCreated, maxCreated, minStart, maxStart, minEnd, maxEnd); err != nil {
+	var objectID int64
+	if err := tx.QueryRow(ctx, `INSERT INTO span_archive_objects(project_id,backend,object_key,row_count,object_size_bytes,
+ min_created_at,max_created_at,min_start_timestamp,max_start_timestamp,min_end_timestamp,max_end_timestamp,index_complete)
+ VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true) RETURNING id`, projectID, options.Backend, key, len(spans), len(body),
+		minCreated, maxCreated, minStart, maxStart, minEnd, maxEnd).Scan(&objectID); err != nil {
 		return 0, fmt.Errorf("insert span archive manifest: %w", err)
+	}
+	for _, span := range spans {
+		if _, err := tx.Exec(ctx, `INSERT INTO span_archive_rows(archive_object_id,span_row_id,project_id,trace_id,span_id,
+		 start_timestamp,end_timestamp,created_at,is_segment,environment,release)
+		 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, objectID, span.ID, span.ProjectID, span.TraceID, span.SpanID,
+			time.UnixMicro(span.StartTimestamp), time.UnixMicro(span.EndTimestamp), time.UnixMicro(span.CreatedAt),
+			span.IsSegment, span.Environment, span.Release); err != nil {
+			return 0, fmt.Errorf("index span %d in archive manifest: %w", span.ID, err)
+		}
 	}
 	deleted, err := tx.Exec(ctx, `DELETE FROM spans WHERE project_id=$1 AND id=ANY($2::bigint[])`, projectID, ids)
 	if err != nil {

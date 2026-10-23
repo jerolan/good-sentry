@@ -11,6 +11,34 @@ import (
 	"goodsentry/internal/spanarchive"
 )
 
+// EnableSpanArchive finishes any required index backfill before publishing the
+// immutable read/ingest configuration to the rest of the process.
+func (s *Store) EnableSpanArchive(ctx context.Context, options SpanArchiveOptions, retentionDays int) error {
+	if retentionDays < 1 || options.AfterDays < 1 || options.AfterDays > retentionDays {
+		return errors.New("span archive thresholds must be within transaction retention")
+	}
+	if err := s.BackfillSpanArchive(ctx, options); err != nil {
+		return err
+	}
+	configured := options
+	s.spanArchive = &configured
+	s.spanArchiveRetentionDays = retentionDays
+	return nil
+}
+
+// RequireSpanArchiveDisabled prevents startup from hiding objects left by an
+// earlier archive-enabled deployment.
+func (s *Store) RequireSpanArchiveDisabled(ctx context.Context) error {
+	var objects int64
+	if err := s.pool.QueryRow(ctx, "SELECT count(*) FROM span_archive_objects").Scan(&objects); err != nil {
+		return fmt.Errorf("check disabled archive state: %w", err)
+	}
+	if objects != 0 {
+		return fmt.Errorf("cannot disable span archival while %d archive objects remain", objects)
+	}
+	return nil
+}
+
 // BackfillSpanArchive makes every ready manifest searchable before archive
 // reads or identity checks are enabled. Each object is indexed in its own
 // transaction so startup recovery remains bounded and retryable.

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -45,9 +46,35 @@ func (s *Store) IngestSpans(ctx context.Context, projectID string, payload json.
 		return 0, err
 	}
 	defer tx.Rollback(ctx)
+	projectNumber, err := strconv.ParseInt(projectID, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid span project ID: %w", err)
+	}
+	identities := make([]spanArchiveIdentity, 0, len(spans))
+	for _, span := range spans {
+		identities = append(identities, spanArchiveIdentity{projectID: projectNumber, traceID: span.TraceID, spanID: span.SpanID})
+	}
+	if err := lockSpanArchiveIdentities(ctx, tx, identities); err != nil {
+		return 0, err
+	}
 	count := 0
 	freshReleases := map[string]struct{}{}
 	for _, span := range spans {
+		if s.spanArchiveRetentionDays > 0 {
+			var archived bool
+			if err := tx.QueryRow(ctx, `SELECT EXISTS (
+			 SELECT 1 FROM span_archive_rows r
+			 JOIN span_archive_objects o ON o.id=r.archive_object_id
+			 WHERE r.project_id=$1 AND r.trace_id=$2 AND r.span_id=$3
+			 AND r.created_at>=transaction_timestamp()-($4::integer*interval '24 hours')
+			 AND o.state='ready' AND o.index_complete)`, projectNumber, span.TraceID, span.SpanID,
+				s.spanArchiveRetentionDays).Scan(&archived); err != nil {
+				return 0, err
+			}
+			if archived {
+				continue
+			}
+		}
 		result, err := tx.Exec(ctx, `INSERT INTO spans(project_id,trace_id,span_id,parent_span_id,name,status,is_segment,
 			start_timestamp,end_timestamp,duration,op,environment,release,attributes,data)
 			VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)

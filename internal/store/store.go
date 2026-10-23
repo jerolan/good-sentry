@@ -33,7 +33,11 @@ var (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
-type Store struct{ pool *pgxpool.Pool }
+type Store struct {
+	pool                     *pgxpool.Pool
+	spanArchive              *SpanArchiveOptions
+	spanArchiveRetentionDays int
+}
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {
 	cfg, err := pgxpool.ParseConfig(databaseURL)
