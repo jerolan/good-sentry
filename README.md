@@ -29,18 +29,17 @@ GoodSentry is an independent Go implementation of Sentry-compatible error tracki
 
 ## Quickstart
 
-You need Git, Docker with Compose, and OpenSSL. On Windows, use a WSL2 distribution integrated with Docker Desktop.
+You need Git and Docker with Compose. On Windows, use a WSL2 distribution integrated with Docker Desktop.
 
 ```sh
 git clone https://github.com/jerolan/good-sentry.git
 cd good-sentry
-test -f .env || printf 'SECRET_KEY=%s\n' "$(openssl rand -hex 32)" > .env
 docker compose up -d
 ```
 
 Open **http://localhost:8000**. The default open mode signs you in as the implicit local owner, so the dashboard is ready immediately. Create a project and copy its DSN into your SDK configuration.
 
-Open mode is intended for local use or a trusted private network. Before exposing GoodSentry, set `GOODSENTRY_AUTH=required` in `.env` and restart Compose; the normal setup, login and account flows then take over. Compose pulls the public application image for amd64 or arm64. Keep `.env` across restarts and configure the public domain and database credentials. See [installation details](docs/getting-started.md) and the [configuration reference](docs/configuration.md).
+Open mode is intended for local use or a trusted private network. With no `.env`, GoodSentry generates and keeps a random application key in its uploads volume. Before exposing it, configure a persistent `SECRET_KEY` and set `GOODSENTRY_AUTH=required` in `.env`, then restart Compose; the normal setup, login and account flows take over. Compose pulls the public application image for amd64 or arm64. See [installation details](docs/getting-started.md) and the [configuration reference](docs/configuration.md).
 
 ## Connect your SDK
 

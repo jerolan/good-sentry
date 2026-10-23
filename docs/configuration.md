@@ -2,7 +2,7 @@
 
 [Documentation](README.md) · [Project home](../README.md)
 
-The tables below describe application process settings. Compose supplies the local database connection and loads optional settings from `.env`. Keep the same `SECRET_KEY` across restarts.
+The tables below describe application process settings. Compose supplies the local database connection and loads optional settings from `.env`. Keep a configured `SECRET_KEY` stable across restarts and replicas.
 
 
 
@@ -14,7 +14,7 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SECRET_KEY` | Required | At least 32 characters. Generate it once and keep it across restarts. |
+| `SECRET_KEY` | Generated for open local mode | At least 32 characters. If omitted with `GOODSENTRY_AUTH=disabled`, GoodSentry creates a random key in `UPLOAD_DIR/.goodsentry-secret`; `required` mode needs an explicit configured key. |
 | `DATABASE_URL` | Supplied by Compose | PostgreSQL connection URL. |
 | `GOODSENTRY_AUTH` | `disabled` | `disabled` uses one implicit local owner without sessions. `required` enables setup, login and per-user accounts. Use `required` before exposing the service. |
 | `GOODSENTRY_DEFAULT_EMAIL` | `owner@localhost` | Implicit owner email in open mode. |
@@ -86,9 +86,9 @@ Set `ENABLE_ADMIN=true` to add **Administration** to the sidebar. Owners and adm
 
 ### Authentication mode
 
-`GOODSENTRY_AUTH=disabled` is the frictionless default. On startup GoodSentry creates or repairs the configured implicit owner, owner membership, default organization and default team using an advisory-lock transaction. Every session-authenticated request resolves to that owner without a cookie; restarting does not create duplicates or replace the existing password. `/api/v1/setup` reports `required:false`, while `/api/v1/me` returns the implicit owner and a stable CSRF token. All mutations still require same-origin and that CSRF token.
+`GOODSENTRY_AUTH=disabled` is the frictionless default. When `SECRET_KEY` is absent, the first startup writes 32 cryptographically random bytes as lowercase hex to `UPLOAD_DIR/.goodsentry-secret` with `0600` permissions. The key remains stable while the uploads volume is preserved. On startup GoodSentry creates or repairs the configured implicit owner, owner membership, default organization and default team using an advisory-lock transaction. Every session-authenticated request resolves to that owner without a cookie; restarting does not create duplicates or replace the existing password. `/api/v1/setup` reports `required:false`, while `/api/v1/me` returns the implicit owner and a stable CSRF token. All mutations still require same-origin and that CSRF token.
 
-This mode is a single-user administrative mode for local use or a trusted private network. Set `GOODSENTRY_AUTH=required` before public exposure to restore the existing first-owner setup, login, sessions, invitations, OIDC and per-user flows.
+This mode is a single-user administrative mode for local use or a trusted private network. Before exposing the service, set `GOODSENTRY_AUTH=required` and provide a persistent `SECRET_KEY` of at least 32 characters. Required mode will fail startup without it and restores the existing first-owner setup, login, sessions, invitations, OIDC and per-user flows. Replicated app instances must share the same configured key.
 
 ### OpenID Connect
 

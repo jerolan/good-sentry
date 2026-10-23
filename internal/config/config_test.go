@@ -1,13 +1,13 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
-// These cases protect deployment input and migration aliases. A malformed boolean,
-// ignored explicit override, or insecure secret must fail before opening a port.
-// There was no existing configuration coverage and no production test seam is used.
+// These cases protect deployment input and migration aliases before startup.
 func TestDeploymentConfiguration(t *testing.T) {
 	for _, tc := range []struct {
 		name      string
@@ -99,6 +99,63 @@ func TestDeploymentConfiguration(t *testing.T) {
 				t.Fatalf("wrong deployment configuration: domain=%s prefix=%s logs=%v", c.Domain, c.Prefix, c.Logs)
 			}
 		})
+	}
+}
+
+func TestOpenModeGeneratesAndReusesPersistentSecret(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+	t.Setenv("SECRET_KEY", "")
+	t.Setenv("GOODSENTRY_AUTH", "")
+	t.Setenv("UPLOAD_DIR", t.TempDir())
+
+	first, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first.AuthMode != "disabled" || len(first.Secret) != 64 {
+		t.Fatalf("generated secret length = %d; want 64 hex characters", len(first.Secret))
+	}
+	secretPath := filepath.Join(first.UploadDir, ".goodsentry-secret")
+	data, err := os.ReadFile(secretPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != first.Secret {
+		t.Fatal("persisted secret does not match the loaded key")
+	}
+	info, err := os.Stat(secretPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm() != 0o600 {
+		t.Fatalf("secret file permissions = %v; want 0600", info.Mode().Perm())
+	}
+
+	second, err := Load()
+	if err != nil || second.Secret != first.Secret {
+		t.Fatalf("restart did not reuse the persisted secret: %v", err)
+	}
+}
+
+func TestRequiredAuthNeedsExplicitSecret(t *testing.T) {
+	uploadDir := t.TempDir()
+	t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+	t.Setenv("SECRET_KEY", "")
+	t.Setenv("GOODSENTRY_AUTH", "required")
+	t.Setenv("UPLOAD_DIR", uploadDir)
+
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "SECRET_KEY is required") {
+		t.Fatalf("required auth without a configured key = %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(uploadDir, ".goodsentry-secret")); !os.IsNotExist(err) {
+		t.Fatalf("required auth generated a local key: stat error = %v", err)
+	}
+
+	configured := strings.Repeat("b", 64)
+	t.Setenv("SECRET_KEY", configured)
+	cfg, err := Load()
+	if err != nil || cfg.Secret != configured || cfg.AuthMode != "required" {
+		t.Fatalf("required auth did not accept the configured key: %v", err)
 	}
 }
 

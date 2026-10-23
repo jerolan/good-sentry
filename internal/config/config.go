@@ -75,8 +75,9 @@ func Load() (Config, error) {
 	if err != nil || (u.Scheme != "postgres" && u.Scheme != "postgresql") || u.Host == "" {
 		return c, fmt.Errorf("DATABASE_URL must be a PostgreSQL URL")
 	}
-	if len(c.Secret) < 32 || strings.Contains(strings.ToLower(c.Secret), "change_me") {
-		return c, fmt.Errorf("SECRET_KEY must contain at least 32 characters and cannot be a placeholder")
+	c.AuthMode = strings.ToLower(strings.TrimSpace(value("GOODSENTRY_AUTH", "disabled")))
+	if c.AuthMode != "disabled" && c.AuthMode != "required" {
+		return c, fmt.Errorf("GOODSENTRY_AUTH must be disabled or required")
 	}
 	c.Domain = strings.TrimRight(alias("GOODSENTRY_DOMAIN", "GLITCHTIP_DOMAIN", "http://localhost:"+strconv.Itoa(port)), "/")
 	u, err = url.Parse(c.Domain)
@@ -103,10 +104,6 @@ func Load() (Config, error) {
 		if endpointErr != nil || (endpoint.Scheme != "http" && endpoint.Scheme != "https") || endpoint.Host == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
 			return c, fmt.Errorf("GOODSENTRY_ARCHIVE_S3_ENDPOINT must be an absolute http or https URL without credentials, query or fragment")
 		}
-	}
-	c.AuthMode = strings.ToLower(strings.TrimSpace(value("GOODSENTRY_AUTH", "disabled")))
-	if c.AuthMode != "disabled" && c.AuthMode != "required" {
-		return c, fmt.Errorf("GOODSENTRY_AUTH must be disabled or required")
 	}
 	c.DefaultEmail = strings.ToLower(strings.TrimSpace(value("GOODSENTRY_DEFAULT_EMAIL", "owner@localhost")))
 	address, addressErr := mail.ParseAddress(c.DefaultEmail)
@@ -295,6 +292,10 @@ func Load() (Config, error) {
 	}
 	if c.ArtifactStagingMaxBytes < 1<<20 || c.ArtifactStagingMaxBytes > 1<<40 || c.ArtifactStagingMaxBytes < c.MaxBodyBytes {
 		return c, fmt.Errorf("ARTIFACT_STAGING_MAX_BYTES must be between 1048576 and 1099511627776 and at least MAX_BODY_BYTES")
+	}
+	c.Secret, err = loadSecret(c.Secret, c.AuthMode, c.UploadDir)
+	if err != nil {
+		return c, err
 	}
 	return c, nil
 }

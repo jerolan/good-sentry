@@ -24,7 +24,7 @@ services:
     environment:
       PORT: "8000"
       DATABASE_URL: ${DATABASE_URL:-postgres://goodsentry:${POSTGRES_PASSWORD:-goodsentry-local}@postgres:5432/goodsentry}
-      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY to a random value of at least 32 characters}
+      SECRET_KEY: ${SECRET_KEY:-}
       GOODSENTRY_DOMAIN: ${GOODSENTRY_DOMAIN:-${GLITCHTIP_DOMAIN:-http://localhost:${PORT:-8000}}}
       GOODSENTRY_AUTH: ${GOODSENTRY_AUTH:-disabled}
       GOODSENTRY_DEFAULT_EMAIL: ${GOODSENTRY_DEFAULT_EMAIL:-owner@localhost}
