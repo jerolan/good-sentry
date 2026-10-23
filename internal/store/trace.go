@@ -31,11 +31,44 @@ func (s *Store) traceRead(ctx context.Context, userID, orgSlug, projectID string
 }
 
 func (s *Store) Trace(ctx context.Context, userID, orgSlug, traceID, projectID string, page int, logsEnabled bool) (TraceDetail, error) {
-	tx, orgID, err := s.traceRead(ctx, userID, orgSlug, projectID)
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (TraceDetail, error) {
+		orgID, err := s.traceArchiveScope(ctx, read, userID, orgSlug, projectID)
+		if err != nil {
+			return TraceDetail{}, err
+		}
+		selector := spanArchiveSelector{OrganizationID: orgID, TraceID: strings.ToLower(traceID)}
+		if projectID != "" {
+			selector.ProjectID, err = strconv.ParseInt(projectID, 10, 64)
+			if err != nil {
+				return TraceDetail{}, err
+			}
+		}
+		if err := read.Load(ctx, selector); err != nil {
+			return TraceDetail{}, err
+		}
+		return s.traceWithRead(ctx, read.tx, orgID, traceID, projectID, page, logsEnabled)
+	})
+}
+
+func (s *Store) traceArchiveScope(ctx context.Context, read *spanArchiveRead, userID, orgSlug, projectID string) (int64, error) {
+	orgID, err := read.organizationID(ctx, userID, orgSlug)
 	if err != nil {
-		return TraceDetail{}, err
+		return 0, err
 	}
-	defer tx.Rollback(ctx)
+	if projectID != "" {
+		var exists bool
+		if err := read.tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM projects WHERE organization_id=$1 AND id=$2::bigint)", orgID, projectID).Scan(&exists); err != nil {
+			return 0, err
+		}
+		if !exists {
+			return 0, ErrNotFound
+		}
+	}
+	return orgID, nil
+}
+
+func (s *Store) traceWithRead(ctx context.Context, tx pgx.Tx, organizationID int64, traceID, projectID string, page int, logsEnabled bool) (TraceDetail, error) {
+	orgID := strconv.FormatInt(organizationID, 10)
 	traceID = strings.ToLower(traceID)
 	args := []any{orgID, traceID, projectID}
 	var pending bool
@@ -148,9 +181,6 @@ func (s *Store) Trace(ctx context.Context, userID, orgSlug, traceID, projectID s
 		result.Data = append(result.Data, item)
 	}
 	result.HasMore = last < int64(len(order))
-	if err := tx.Commit(ctx); err != nil {
-		return TraceDetail{}, err
-	}
 	return result, nil
 }
 

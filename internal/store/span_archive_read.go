@@ -41,6 +41,14 @@ type spanArchiveRead struct {
 	hotRelation string
 }
 
+func (r *spanArchiveRead) organizationID(ctx context.Context, userID, orgSlug string) (int64, error) {
+	var id int64
+	err := r.tx.QueryRow(ctx, `SELECT o.id FROM organizations o
+		JOIN memberships m ON m.organization_id=o.id
+		WHERE m.user_id::text=$1 AND o.slug=$2`, userID, orgSlug).Scan(&id)
+	return id, dbError(err)
+}
+
 func withSpanArchiveRead[T any](ctx context.Context, s *Store, read func(*spanArchiveRead) (T, error)) (T, error) {
 	var zero T
 	for attempt := range spanArchiveReadAttempts {

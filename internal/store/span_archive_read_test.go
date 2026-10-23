@@ -67,6 +67,33 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	if err := json.Unmarshal(spans[0].RawSpan, &publicRaw); err != nil || publicRaw["future"] == nil {
 		t.Fatalf("public span reader lost original payload: %s, %v", spans[0].RawSpan, err)
 	}
+	var archivedRootID string
+	if err := db.pool.QueryRow(ctx, `SELECT span_row_id::text FROM span_archive_rows
+		WHERE project_id=$1 AND trace_id=$2 AND span_id=$3`, projectID,
+		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "0000000000000041").Scan(&archivedRootID); err != nil {
+		t.Fatal(err)
+	}
+	detail, err := db.TransactionDetail(ctx, user.ID, org.Slug, "span", archivedRootID, 1)
+	if err != nil || detail.SpanCount != 2 || len(detail.Spans) != 2 || detail.Spans[0].SpanID != "0000000000000041" {
+		t.Fatalf("transaction detail cold root and hot children: %+v err=%v", detail, err)
+	}
+	trace, err := db.Trace(ctx, user.ID, org.Slug, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", project.ID, 1, false)
+	if err != nil || trace.NodeCount != 2 || len(trace.Data) != 2 {
+		t.Fatalf("trace graph hot+cold nodes: %+v err=%v", trace, err)
+	}
+	var archivedNode string
+	for _, node := range trace.Data {
+		if node.Source == "span" && node.RecordID == archivedRootID {
+			archivedNode = node.ID
+		}
+	}
+	if archivedNode == "" {
+		t.Fatalf("trace graph omitted archived span row %s: %+v", archivedRootID, trace.Data)
+	}
+	rawNode, err := db.TraceNodeData(ctx, user.ID, org.Slug, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", archivedNode, project.ID)
+	if err != nil || !json.Valid(rawNode.Data) {
+		t.Fatalf("archived trace raw data: %+v err=%v", rawNode, err)
+	}
 
 	count, err = withSpanArchiveRead(ctx, db, func(read *spanArchiveRead) (int, error) {
 		windowStart := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
