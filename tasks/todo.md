@@ -427,6 +427,8 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
     - Focused HTTP/store integration checks prove omitted `isActive` preserves state, deactivated keys reject envelopes, and reactivation restores ingestion.
   - [x] Add responsive Projects SDK-key management for copyable DSNs, label/rate-limit editing, activation, deactivation and confirmed deletion.
     - Chromium passes at320/768/1440 with no page or console errors; real HTTP-backed browser flow verifies key create/edit/status/delete, DSN path/key shape and forward/backward pagination. Evidence: `tests/compat/project_keys_browser.mjs`.
+  - [x] Define the SDK-key rotation workflow with overlapping keys and a reversible rollback window.
+    - `docs/compatibility.md` documents create, DSN cutover, ingestion confirmation, old-key deactivation/reactivation and final deletion. Existing key API/browser acceptance covers these operations; Sentry documents the matching create, `isActive` update and delete endpoints.
   - [x] Add additive041 per-key fixed-window usage, accept positive rateLimit configuration and enforce it on Sentry envelope ingestion.
     - Real PostgreSQL covers atomic charge/denial, unlimited keys, short-window reset,041 preservation/reopen and bounded14-day cleanup. Real HTTP covers key rateLimit create/validation, envelope200-to429 with Retry-After/X-Sentry-Rate-Limits, OTLP protobuf429/google.rpc.Status code8 and successful empty exports. Maximum window is604800 seconds; count is capped at1000000000. Evidence: goal-compat-rate-limit/* and otlp-rate.log.
   - [x] Add compatible organization-member, team, team-member, team-project and project-team read routes with pending-invitation privacy and token organization/project isolation.

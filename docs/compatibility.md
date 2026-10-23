@@ -53,6 +53,18 @@ Sentry.init({
 Sentry.captureException(new Error("Hello from GoodSentry"));
 ```
 
+### Rotate a project key
+
+Create a replacement SDK key and copy its DSN into the application. Confirm that
+new events arrive, then deactivate the previous key. Keep it disabled while a
+rollback may still be needed; reactivate it to roll back, or delete it when the
+cutover is final. Keys are replaced by creating a new key rather than changing
+one in place. GoodSentry's DSN uses the public key and leaves `dsn.secret`
+empty. This workflow uses the documented Sentry [create](https://docs.sentry.io/api/projects/create-a-new-client-key/),
+[active-state update](https://docs.sentry.io/api/projects/update-a-client-key/)
+and [delete](https://docs.sentry.io/api/projects/delete-a-client-key/)
+operations.
+
 These checks establish the listed workflows for those versions. Node SDK `11.7.0` also passes binary attachments with native metadata, pagination and byte-exact downloads for organization owners and members. Additional envelope types and other SDK versions need their own verification. Unknown envelope items are retained and reported through `unsupportedItems`; retention alone does not implement their functionality.
 
 ## Browser security reports
@@ -77,9 +89,9 @@ request body limit. Each browser delivery counts as a separate occurrence.
 
 Open work:
 
-- Automatic repository integrations, further conditional issue policies and broader management API acceptance.
+- Automatic repository integrations and additional conditional issue policies.
 - Real alert-provider and external identity-provider receipts, and representative native crash receipts.
-- Advanced administration, compatible member `teamRoles`/`manager` and WebAuthn second factors.
+- Advanced administration and WebAuthn second factors.
 
 Available capabilities and limits:
 
