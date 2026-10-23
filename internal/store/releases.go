@@ -418,56 +418,68 @@ func (s *Store) DeleteRelease(ctx context.Context, access ManagementAccess, vers
 
 func (s *Store) Releases(ctx context.Context, access ManagementAccess, filter ReleaseFilter) (ReleasePage, error) {
 	result := ReleasePage{Data: []Release{}}
-	tx, role, err := s.releaseTransaction(ctx, access, false)
-	if err != nil {
-		return result, err
-	}
-	defer tx.Rollback(ctx)
-	projects := []int64{}
-	if len(filter.ProjectRefs) > 0 && !(len(filter.ProjectRefs) == 1 && filter.ProjectRefs[0] == "-1") {
-		projects, err = releaseProjectReferences(ctx, tx, access, filter.ProjectRefs)
-		if err != nil {
-			return result, err
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (ReleasePage, error) {
+		var role string
+		if err := read.tx.QueryRow(ctx, `SELECT role FROM memberships WHERE organization_id=$1::bigint AND user_id=$2::bigint`, access.OrganizationID, access.UserID).Scan(&role); err != nil {
+			return result, dbError(err)
 		}
-	}
-	where := ` FROM releases r WHERE r.organization_id=$1::bigint AND ($5='' OR strpos(lower(r.version),lower($5))>0)
+		projects := []int64{}
+		if len(filter.ProjectRefs) > 0 && !(len(filter.ProjectRefs) == 1 && filter.ProjectRefs[0] == "-1") {
+			var err error
+			projects, err = releaseProjectReferences(ctx, read.tx, access, filter.ProjectRefs)
+			if err != nil {
+				return result, err
+			}
+		}
+		where := ` FROM releases r WHERE r.organization_id=$1::bigint AND ($5='' OR strpos(lower(r.version),lower($5))>0)
 		AND EXISTS(SELECT 1 FROM release_projects rp WHERE rp.release_id=r.id AND ($2 OR rp.project_id=ANY($3::bigint[]))
 		AND (cardinality($4::bigint[])=0 OR rp.project_id=ANY($4::bigint[]))
 		AND (cardinality($6::text[])=0
 		OR EXISTS(SELECT 1 FROM events e WHERE e.project_id=rp.project_id AND e.release=r.version AND e.environment=ANY($6::text[]))
 		OR EXISTS(SELECT 1 FROM spans s WHERE s.project_id=rp.project_id AND s.release=r.version AND s.environment=ANY($6::text[]))
 		OR EXISTS(SELECT 1 FROM release_deploys d JOIN release_deploy_projects dp ON dp.deploy_id=d.id WHERE d.release_id=r.id AND dp.project_id=rp.project_id AND d.environment=ANY($6::text[]))))`
-	environments := filter.Environments
-	if environments == nil {
-		environments = []string{}
-	}
-	args := []any{access.OrganizationID, access.AllProjects, access.ProjectIDs, projects, filter.Query, environments}
-	rows, err := tx.Query(ctx, `SELECT r.id::text`+where+` ORDER BY r.created_at DESC,r.id DESC LIMIT $7 OFFSET $8`, append(args, filter.Limit+1, filter.Offset)...)
-	if err != nil {
-		return result, err
-	}
-	ids, err := pgx.CollectRows(rows, pgx.RowTo[string])
-	if err != nil {
-		return result, err
-	}
-	if len(ids) > filter.Limit {
-		result.HasMore = true
-		ids = ids[:filter.Limit]
-	}
-	if filter.Offset > 0 {
-		err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1`+where+` ORDER BY r.created_at DESC,r.id DESC LIMIT 1 OFFSET $7)`, append(args, max(0, filter.Offset-filter.Limit))...).Scan(&result.HasPrevious)
+		environments := filter.Environments
+		if environments == nil {
+			environments = []string{}
+		}
+		if len(environments) > 0 {
+			selector := spanArchiveSelector{Environments: environments}
+			if len(projects) > 0 {
+				selector.ProjectIDs = projects
+				selector.RestrictProjectIDs = true
+			}
+			if err := read.loadAccessSpans(ctx, access, selector); err != nil {
+				return result, err
+			}
+		}
+		args := []any{access.OrganizationID, access.AllProjects, access.ProjectIDs, projects, filter.Query, environments}
+		rows, err := read.tx.Query(ctx, `SELECT r.id::text`+where+` ORDER BY r.created_at DESC,r.id DESC LIMIT $7 OFFSET $8`, append(args, filter.Limit+1, filter.Offset)...)
 		if err != nil {
 			return result, err
 		}
-	}
-	for _, id := range ids {
-		r, err := loadRelease(ctx, tx, access, role, id)
+		ids, err := pgx.CollectRows(rows, pgx.RowTo[string])
 		if err != nil {
 			return result, err
 		}
-		result.Data = append(result.Data, r)
-	}
-	return result, tx.Commit(ctx)
+		if len(ids) > filter.Limit {
+			result.HasMore = true
+			ids = ids[:filter.Limit]
+		}
+		if filter.Offset > 0 {
+			err = read.tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1`+where+` ORDER BY r.created_at DESC,r.id DESC LIMIT 1 OFFSET $7)`, append(args, max(0, filter.Offset-filter.Limit))...).Scan(&result.HasPrevious)
+			if err != nil {
+				return result, err
+			}
+		}
+		for _, id := range ids {
+			release, err := loadRelease(ctx, read.tx, access, role, id)
+			if err != nil {
+				return result, err
+			}
+			result.Data = append(result.Data, release)
+		}
+		return result, nil
+	})
 }
 
 // observeRelease never changes metadata on an existing observed release.

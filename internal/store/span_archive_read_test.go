@@ -26,6 +26,8 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 		t.Fatal(err)
 	}
 	root := spanFixture("0000000000000041", true, 1_700_000_000, 1_700_000_001)
+	root["attributes"].(map[string]any)["sentry.environment"] = map[string]any{"type": "string", "value": "cold-production"}
+	root["attributes"].(map[string]any)["sentry.release"] = map[string]any{"type": "string", "value": "cold-checkout@2"}
 	child := spanFixture("0000000000000042", false, 1_700_000_002, 1_700_000_003)
 	childTwo := spanFixture("0000000000000043", false, 1_700_000_002.5, 1_700_000_003.5)
 	child["name"] = "SELECT cart"
@@ -36,6 +38,10 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	childTwo["attributes"].(map[string]any)["sentry.segment.id"] = map[string]any{"type": "string", "value": "0000000000000041"}
 	if count, err := db.IngestSpans(ctx, project.ID, spanBatch(t, root, child, childTwo), 3); err != nil || count != 3 {
 		t.Fatalf("initial hot spans=%d err=%v", count, err)
+	}
+	access := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, Role: "owner", AllProjects: true}
+	if _, _, err := db.CreateRelease(ctx, access, ReleaseCreate{Version: "cold-checkout@2", Projects: []string{project.ID}}); err != nil {
+		t.Fatalf("create release for cold span: %v", err)
 	}
 	if _, err := db.pool.Exec(ctx, "UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id=$1", "0000000000000041"); err != nil {
 		t.Fatal(err)
@@ -89,7 +95,6 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	if err != nil || len(groups) != 1 || groups[0].Count != 1 || groups[0].LatestSample.ID != archivedRootID || groups[0].LatestSample.Source != "span" {
 		t.Fatalf("transaction groups include archived segment: %+v err=%v", groups, err)
 	}
-	access := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, AllProjects: true}
 	stats, err := db.StatsV2(ctx, access, "transaction", []int64{projectID}, window.Start, window.End, "1d")
 	if err != nil || len(stats.Groups) != 1 || stats.Groups[0].Totals.SumTimesSeen != 1 {
 		t.Fatalf("transaction stats include archived segment: %+v err=%v", stats, err)
@@ -106,6 +111,25 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	}
 	if archivedNode == "" {
 		t.Fatalf("trace graph omitted archived span row %s: %+v", archivedRootID, trace.Data)
+	}
+	projectEnvironments, err := db.CompatibleProjectEnvironments(ctx, access, project.ID, "visible", 0, 100)
+	if err != nil || len(projectEnvironments) != 2 || projectEnvironments[0].Name != "cold-production" || projectEnvironments[1].Name != "production" {
+		t.Fatalf("project environment discovery includes cold spans: %+v err=%v", projectEnvironments, err)
+	}
+	organizationEnvironments, err := db.CompatibleOrganizationEnvironments(ctx, access, "visible", 0, 100)
+	if err != nil || len(organizationEnvironments) != 2 || organizationEnvironments[0].Name != "cold-production" || organizationEnvironments[1].Name != "production" {
+		t.Fatalf("organization environment discovery includes cold spans: %+v err=%v", organizationEnvironments, err)
+	}
+	if _, err := db.SetCompatibleProjectEnvironmentVisibility(ctx, access, project.ID, "cold-production", true); err != nil {
+		t.Fatalf("set visibility for cold environment: %v", err)
+	}
+	projectEnvironments, err = db.CompatibleProjectEnvironments(ctx, access, project.ID, "visible", 0, 100)
+	if err != nil || len(projectEnvironments) != 1 || projectEnvironments[0].Name != "production" {
+		t.Fatalf("hidden cold environment remains visible: %+v err=%v", projectEnvironments, err)
+	}
+	releases, err := db.Releases(ctx, access, ReleaseFilter{Environments: []string{"cold-production"}, Limit: 25})
+	if err != nil || len(releases.Data) != 1 || releases.Data[0].Version != "cold-checkout@2" {
+		t.Fatalf("release environment filter includes cold spans: %+v err=%v", releases, err)
 	}
 	rawNode, err := db.TraceNodeData(ctx, user.ID, org.Slug, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", archivedNode, project.ID)
 	if err != nil || !json.Valid(rawNode.Data) {

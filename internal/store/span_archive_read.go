@@ -25,6 +25,7 @@ type spanArchiveSelector struct {
 	Release            string
 	Environment        string
 	Environments       []string
+	RequireEnvironment bool
 	TimeColumn         string
 	Start              *time.Time
 	End                *time.Time
@@ -46,6 +47,16 @@ func (r *spanArchiveRead) organizationID(ctx context.Context, userID, orgSlug st
 	err := r.tx.QueryRow(ctx, `SELECT o.id FROM organizations o
 		JOIN memberships m ON m.organization_id=o.id
 		WHERE m.user_id::text=$1 AND o.slug=$2`, userID, orgSlug).Scan(&id)
+	return id, dbError(err)
+}
+
+func (r *spanArchiveRead) managementProjectID(ctx context.Context, access ManagementAccess, reference string) (int64, error) {
+	var id int64
+	err := r.tx.QueryRow(ctx, `SELECT p.id FROM projects p
+		JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id=$1::bigint
+		WHERE p.organization_id=$2::bigint AND ($3 OR p.id=ANY($4::bigint[]))
+		AND (p.slug=$5 OR p.id=$6) ORDER BY (p.slug=$5) DESC LIMIT 1`,
+		access.UserID, access.OrganizationID, access.AllProjects, access.ProjectIDs, reference, referenceID(reference)).Scan(&id)
 	return id, dbError(err)
 }
 
@@ -255,6 +266,9 @@ func (r *spanArchiveRead) selectorPredicate(selector spanArchiveSelector) (strin
 	}
 	if len(selector.Environments) > 0 {
 		add("r.environment=ANY($%d::text[])", selector.Environments)
+	}
+	if selector.RequireEnvironment {
+		conditions = append(conditions, "r.environment<>''")
 	}
 	if selector.Start != nil || selector.End != nil {
 		column := ""
