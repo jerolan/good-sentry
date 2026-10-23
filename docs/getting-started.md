@@ -42,22 +42,33 @@ Migrations run automatically after a database lock. Back up before upgrading and
 
 ```sh
 mkdir -p backups
-docker compose exec -T postgres pg_dump -U goodsentry -Fc goodsentry > "backups/goodsentry-$(date -u +%Y%m%dT%H%M%SZ).dump"
+docker compose stop goodsentry
+STAMP=$(date -u +%Y%m%dT%H%M%SZ)
+docker compose exec -T postgres pg_dump -U goodsentry -Fc goodsentry > "backups/goodsentry-$STAMP.dump"
+APP_CONTAINER=$(docker compose ps -a -q goodsentry)
+docker run --rm --volumes-from "$APP_CONTAINER":ro -v "$PWD/backups:/backups" busybox:1.36 \
+  tar -C /data -czf "/backups/uploads-$STAMP.tar.gz" .
 docker compose pull
 docker compose up -d
 curl -fsS http://localhost:8000/readyz
 ```
 
-To restore into a new empty Compose database, stop the application, recreate only the database container state, and restore through the PostgreSQL client:
+The PostgreSQL dump and uploads archive must come from the same stopped-app backup. The uploads volume contains local Parquet objects under `/data/archive` as well as attachments and source maps. Keep both backup files outside Docker. With the S3 backend, preserve the bucket objects separately and restore the same bucket, region, endpoint and prefix before starting GoodSentry.
+
+To restore into a new empty Compose database and uploads volume, start PostgreSQL, create (but do not start) the application container to allocate its named volume, restore the files, then restore the database:
 
 ```sh
-docker compose stop goodsentry
+docker compose up -d postgres
+docker compose create goodsentry
+APP_CONTAINER=$(docker compose ps -a -q goodsentry)
+docker run --rm --volumes-from "$APP_CONTAINER" -v "$PWD/backups:/backups:ro" busybox:1.36 \
+  tar -C /data -xzf /backups/uploads-TIMESTAMP.tar.gz
 docker compose exec -T postgres dropdb -U goodsentry --if-exists goodsentry
 docker compose exec -T postgres createdb -U goodsentry goodsentry
 docker compose exec -T postgres pg_restore -U goodsentry -d goodsentry --no-owner < backups/goodsentry-TIMESTAMP.dump
 docker compose start goodsentry
 ```
 
-Replace `goodsentry-TIMESTAMP.dump` with the backup to restore. This recreates the database in the current PostgreSQL container; keep a second copy outside that container for disaster recovery.
+Replace both `TIMESTAMP` values with the matching backup pair. This restores PostgreSQL metadata and the corresponding local Parquet objects; keep a second copy outside the host for disaster recovery.
 
 For an explicit build from the checked-out source, use `GOODSENTRY_IMAGE=goodsentry:local docker compose up --build -d`. See the [development guide](development.md) for local checks.

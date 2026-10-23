@@ -72,7 +72,7 @@ The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed a
 
 ### Cold span storage
 
-Cold archival is off by default. Set `GOODSENTRY_ENABLE_ARCHIVE=true` to store spans as Parquet in the local archive directory or an S3-compatible bucket. Compose uses `/data/archive` inside its existing persistent application volume. For S3, set the bucket and region; the AWS SDK uses its standard credential chain. Compose passes `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` and `AWS_REGION` from `.env` when supplied.
+Cold archival is off by default. Set `GOODSENTRY_ENABLE_ARCHIVE=true` to store spans as Parquet in the local archive directory or an S3-compatible bucket. Compose uses `/data/archive` inside its existing persistent application volume. For S3, set the bucket and region; the AWS SDK uses its standard credential chain. Compose passes `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` and `AWS_REGION` from `.env` when supplied. Back up bucket objects independently from PostgreSQL, and restore them with the same bucket, region, endpoint and prefix.
 
 `GOODSENTRY_ARCHIVE_AFTER_DAYS` controls when a span moves to object storage. If unset, it uses half of the configured transaction/span lifetime, capped at 30 days and with a one-day minimum. Archived spans remain available through the same project, trace, performance, environment and release views. They expire at the existing `GOODSENTRY_TRANSACTION_RETENTION_DAYS` deadline; archival does not extend retention.
 
