@@ -55,6 +55,8 @@ Sentry.captureException(new Error("Hello from GoodSentry"));
 
 Official Go `0.50.0`, Python `2.72.0`, Node.js `11.7.0` and Browser JavaScript `11.7.0` clients have verified error, transaction and typed-log workflows. See [SDK compatibility](docs/compatibility.md#sdk-compatibility) for the tested scope, settings and limits.
 
+Try a runnable client app in [examples/sentry-go](examples/sentry-go/README.md). It uses the official Go SDK and sends an exception to the DSN you copied from GoodSentry.
+
 For interactive source-map setup, run `npx @sentry/wizard@8.0.1 --url http://localhost:8000/` and approve the short-lived handoff in the browser. The wizard receives a project DSN and a temporary credential with release-upload access.
 
 ## Features
@@ -81,7 +83,7 @@ For interactive source-map setup, run `npx @sentry/wizard@8.0.1 --url http://loc
 
 ## Project status
 
-GoodSentry is in active development. **Full Sentry compatibility and GlitchTip feature parity are not complete.** Remaining work includes broader native crash formats, remaining management routes, repository and live GitLab/Grafana receipts, social-provider setup, advanced administration and final requirement auditing. The [website](https://jerolan.github.io/good-sentry/) shows the current interface feature by feature; the [compatibility guide](docs/compatibility.md) describes tested workflows and limits.
+GoodSentry is in active development. **Full Sentry compatibility and GlitchTip feature parity are not complete.** Remaining work includes broader native crash formats, remaining management routes, repository integrations, social-provider setup, advanced administration and final requirement auditing. The [website](https://jerolan.github.io/good-sentry/) shows the current interface feature by feature; the [compatibility guide](docs/compatibility.md) describes tested workflows and limits.
 
 ## Development
 

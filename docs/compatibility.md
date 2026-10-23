@@ -35,6 +35,8 @@ The following pinned official clients have passed error, transaction and typed-l
 | Node.js | `11.7.0` |
 | Browser JavaScript | `11.7.0` |
 
+For a runnable example, see the [Sentry Go demo app](../examples/sentry-go/README.md). It uses the official Go SDK and sends an exception through a project DSN.
+
 The Go and Node checks also verify occurrence context, child-operation metrics and trace parent relationships, depth, timing and selected raw records against data emitted by each SDK.
 
 For an existing integration, start by changing its DSN. Keep the SDK's usual sampling and log settings. For example, with the verified Node SDK:
@@ -76,7 +78,7 @@ request body limit. Each browser delivery counts as a separate occurrence.
 Open work:
 
 - Automatic repository integrations, further conditional issue policies and broader management API acceptance.
-- An installation-level GitLab receipt, real alert-provider and external identity-provider receipts, and representative native crash receipts.
+- Real alert-provider and external identity-provider receipts, and representative native crash receipts.
 - Advanced administration, compatible member `teamRoles`/`manager` and WebAuthn second factors.
 
 Available capabilities and limits:
@@ -105,7 +107,7 @@ Current-image acceptance covers official Go, Python, Node and Browser SDK errors
 
 Send standard Sentry envelopes to `/api/{project}/envelope/` or legacy `/api/{project}/store/`. OTLP/HTTP logs use `/v1/logs`. Change the existing SDK DSN or Sentry target URL; no GoodSentry-specific client is required for the workflows above.
 
-Grafana `13.0.2` with the official Sentry data source plugin `2.2.8` has been exercised against GoodSentry for its organization/project health check, an issue query returning ten rows and a stats panel over `/stats_v2/` that rendered hourly error counts from stored events. GitLab Error Tracking's public client contract is covered by `/api/0/projects/`, project issues, issue detail, latest event and organization repositories; a full GitLab installation-level receipt remains an external integration test.
+Grafana `13.0.2` with the official Sentry data source plugin `2.2.8` has been exercised against GoodSentry for its organization/project health check, an issue query returning ten rows and a stats panel over `/stats_v2/` that rendered hourly error counts from stored events.
 
 The verified modern upload protocol is the JavaScript SYSB v2 artifact-bundle workflow with `sentry-cli 3.8.0`; see [release and source-map setup](releases-and-source-maps.md). Other artifact types and CLI versions need their own acceptance. Concurrent official Go, Python, Node and browser SDK traffic measured 24.367 MiB maximum application RSS, with PostgreSQL excluded. The public image is built for Linux amd64 and arm64; clean Compose runtime and restart acceptance ran on amd64.
 
