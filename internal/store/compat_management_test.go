@@ -43,7 +43,7 @@ func TestCompatibleManagementOrganizationAndProjectKeys(t *testing.T) {
 	if created.Public == initial.Public {
 		t.Fatal("new project key reused the existing public key")
 	}
-	updated, err := db.UpdateCompatibleProjectKey(ctx, access, project.ID, created.ID, "CI updated", nil)
+	updated, err := db.UpdateCompatibleProjectKey(ctx, access, project.ID, created.ID, "CI updated", nil, nil)
 	if err != nil || updated.ID != created.ID || updated.Label != "CI updated" || updated.Public != created.Public {
 		t.Fatalf("update project key: %+v %v", updated, err)
 	}

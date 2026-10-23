@@ -27,7 +27,7 @@ type CompatibleProjectKey struct {
 	ProjectID   int64                   `json:"projectID"`
 	DateCreated time.Time               `json:"dateCreated"`
 	RateLimit   *CompatibleKeyRateLimit `json:"rateLimit"`
-	Enabled     bool                    `json:"-"`
+	Enabled     bool                    `json:"isActive"`
 }
 
 type CompatibleOrganizationProject struct {
@@ -385,7 +385,7 @@ func (s *Store) CreateCompatibleProjectKey(ctx context.Context, access Managemen
 		public, referenceID(project.ID), label, window, count))
 }
 
-func (s *Store) UpdateCompatibleProjectKey(ctx context.Context, access ManagementAccess, projectRef, keyID, label string, rate *CompatibleKeyRateLimit) (CompatibleProjectKey, error) {
+func (s *Store) UpdateCompatibleProjectKey(ctx context.Context, access ManagementAccess, projectRef, keyID, label string, rate *CompatibleKeyRateLimit, enabled *bool) (CompatibleProjectKey, error) {
 	if !validKeyUUID(keyID) {
 		return CompatibleProjectKey{}, ErrNotFound
 	}
@@ -400,9 +400,9 @@ func (s *Store) UpdateCompatibleProjectKey(ctx context.Context, access Managemen
 	if rate != nil {
 		window, count = &rate.Window, &rate.Count
 	}
-	return scanCompatibleProjectKey(s.pool.QueryRow(ctx, `UPDATE project_keys SET label=$3,rate_limit_window=$4,rate_limit_count=$5,updated_at=clock_timestamp()
-		WHERE project_id=$1::bigint AND api_id::text=$2 RETURNING `+compatibleProjectKeyColumns,
-		referenceID(project.ID), keyID, label, window, count))
+	return scanCompatibleProjectKey(s.pool.QueryRow(ctx, `UPDATE project_keys SET label=$3,rate_limit_window=$4,rate_limit_count=$5,
+		enabled=COALESCE($6,enabled),updated_at=clock_timestamp() WHERE project_id=$1::bigint AND api_id::text=$2 RETURNING `+compatibleProjectKeyColumns,
+		referenceID(project.ID), keyID, label, window, count, enabled))
 }
 
 func (s *Store) DeleteCompatibleProjectKey(ctx context.Context, access ManagementAccess, projectRef, keyID string) error {

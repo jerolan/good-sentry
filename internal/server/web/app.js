@@ -23,6 +23,7 @@
   let notificationTimer;
   let alertsUI;
   let releasesUI;
+  let projectKeysUI;
   let hashesUI;
   let reportsUI;
   let feedbackUI;
@@ -582,6 +583,7 @@
 
   async function loadRoute(focus = false) {
     releasesUI?.closeDialogs();
+    projectKeysUI?.closeDialogs();
     if (!state.me) return;
     const version = ++state.requestVersion;
     const params = new URLSearchParams(location.search);
@@ -1890,6 +1892,7 @@
         node('td', {}, node('div', { class: 'dsn' }, node('code', {}, project.dsn), button('Copy', () => copyValue(project.dsn), 'small'))),
         node('td', {}, node('div', { class: 'actions' },
           routeLink('View issues', { view: 'issues', project: project.id, query: null, status: null, environment: null, release: null, page: null }, { class: 'btn button small' }),
+          button('Manage SDK keys', () => { void openProjectKeys(project); }, 'small'),
           manage ? button('Edit', () => openProjectDialog(project), 'small') : null,
           manage ? button('Delete', () => confirmProjectDelete(project), 'danger small') : null))));
       const columns = ['Project', 'Platform', 'DSN', ''].map((name, index) => node('th', { scope: 'col', ...(index === 3 ? { 'aria-label': 'Actions' } : {}) }, name));
@@ -1899,6 +1902,16 @@
       main.append(node('p', { class: 'muted small connection-help' }, 'Use the DSN with your existing Sentry SDK. Keep the SDK configuration in your application; GoodSentry receives events at the project address.'));
     }
     main.append(panel);
+  }
+
+  async function openProjectKeys(project) {
+    try {
+      const { createProjectKeysUI } = await import('./project_keys.js');
+      projectKeysUI ||= createProjectKeysUI({ state, node, request, button, field, date, number, copyValue, formError, notify });
+      projectKeysUI.open(project);
+    } catch (error) {
+      notify(`Could not open SDK keys: ${error.message}`);
+    }
   }
 
   function projectPath(project) {

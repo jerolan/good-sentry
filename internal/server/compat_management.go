@@ -908,6 +908,13 @@ type compatibleProjectKeyInput struct {
 	RateLimit *store.CompatibleKeyRateLimit `json:"rateLimit"`
 }
 
+type compatibleProjectKeyUpdateInput struct {
+	Name      *string                       `json:"name"`
+	Label     *string                       `json:"label"`
+	RateLimit *store.CompatibleKeyRateLimit `json:"rateLimit"`
+	IsActive  *bool                         `json:"isActive"`
+}
+
 func keyLabel(w http.ResponseWriter, input compatibleProjectKeyInput) (string, *store.CompatibleKeyRateLimit, bool) {
 	if input.Name != nil && input.Label != nil && *input.Name != *input.Label {
 		failure(w, 400, "name and label must agree")
@@ -956,15 +963,15 @@ func (s *Server) compatibleUpdateProjectKey(w http.ResponseWriter, r *http.Reque
 	if !valid {
 		return
 	}
-	var input compatibleProjectKeyInput
+	var input compatibleProjectKeyUpdateInput
 	if !bodyJSON(w, r, &input) {
 		return
 	}
-	label, rate, valid := keyLabel(w, input)
+	label, rate, valid := keyLabel(w, compatibleProjectKeyInput{Name: input.Name, Label: input.Label, RateLimit: input.RateLimit})
 	if !valid {
 		return
 	}
-	key, err := s.db.UpdateCompatibleProjectKey(r.Context(), access, r.PathValue("project"), r.PathValue("key"), label, rate)
+	key, err := s.db.UpdateCompatibleProjectKey(r.Context(), access, r.PathValue("project"), r.PathValue("key"), label, rate, input.IsActive)
 	if err != nil {
 		s.keyInputError(w, err)
 		return

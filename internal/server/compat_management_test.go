@@ -56,7 +56,7 @@ func TestCompatibleManagementOrganizationAndProjectKeysHTTP(t *testing.T) {
 	}
 
 	var keys []compatibleProjectKeyView
-	if err := json.Unmarshal(f.request(t, f.client, "GET", keysPath, "", nil, 200), &keys); err != nil || len(keys) != 1 || keys[0].ID == "" || keys[0].Public == "" || keys[0].DSN.Public != keys[0].Public || keys[0].DSN.Secret != "" || !strings.Contains(keys[0].DSN.CSP, "/good/api/"+f.project.ID+"/security/?sentry_key=") {
+	if err := json.Unmarshal(f.request(t, f.client, "GET", keysPath, "", nil, 200), &keys); err != nil || len(keys) != 1 || keys[0].ID == "" || keys[0].Public == "" || !keys[0].Enabled || keys[0].DSN.Public != keys[0].Public || keys[0].DSN.Secret != "" || !strings.Contains(keys[0].DSN.CSP, "/good/api/"+f.project.ID+"/security/?sentry_key=") {
 		t.Fatalf("project key list/DSN: %+v %v", keys, err)
 	}
 	first := keys[0]
@@ -78,6 +78,7 @@ func TestCompatibleManagementOrganizationAndProjectKeysHTTP(t *testing.T) {
 	for _, body := range []string{
 		`{"name":"one","label":"two"}`,
 		`{"name":"` + strings.Repeat("x", 201) + `"}`,
+		`{"name":"inactive at creation","isActive":false}`,
 		`{"name":"x","unknown":true}`,
 	} {
 		f.request(t, f.client, "POST", keysPath, body, http.Header{"X-CSRF-Token": {f.csrf}}, 400)
@@ -86,6 +87,18 @@ func TestCompatibleManagementOrganizationAndProjectKeysHTTP(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, f.client, "PUT", keysPath+created.ID+"/", `{"label":"CI updated"}`, http.Header{"X-CSRF-Token": {f.csrf}}, 200), &updated); err != nil || updated.ID != created.ID || updated.Label != "CI updated" || updated.Public != created.Public {
 		t.Fatalf("update key HTTP: %+v %v", updated, err)
 	}
+	if err := json.Unmarshal(f.request(t, f.client, "PUT", keysPath+created.ID+"/", `{"isActive":false}`, http.Header{"X-CSRF-Token": {f.csrf}}, 200), &updated); err != nil || updated.Enabled {
+		t.Fatalf("deactivate key HTTP: %+v %v", updated, err)
+	}
+	if err := json.Unmarshal(f.request(t, f.client, "PUT", keysPath+created.ID+"/", `{"label":"CI inactive"}`, http.Header{"X-CSRF-Token": {f.csrf}}, 200), &updated); err != nil || updated.Enabled || updated.Label != "CI inactive" {
+		t.Fatalf("omitted isActive did not preserve inactive state: %+v %v", updated, err)
+	}
+	inactiveEnvelope := "{}\n{\"type\":\"event\"}\n" + `{"event_id":"e0000000000000000000000000000001","message":"inactive key rejection"}`
+	f.request(t, http.DefaultClient, "POST", "/api/"+f.project.ID+"/envelope/?sentry_version=7&sentry_key="+created.Public, inactiveEnvelope, nil, 403)
+	if err := json.Unmarshal(f.request(t, f.client, "PUT", keysPath+created.ID+"/", `{"label":"CI restored","isActive":true}`, http.Header{"X-CSRF-Token": {f.csrf}}, 200), &updated); err != nil || !updated.Enabled || updated.Label != "CI restored" {
+		t.Fatalf("reactivate key HTTP: %+v %v", updated, err)
+	}
+	f.request(t, http.DefaultClient, "POST", "/api/"+f.project.ID+"/envelope/?sentry_version=7&sentry_key="+created.Public, inactiveEnvelope, nil, 200)
 	if err := json.Unmarshal(f.request(t, f.client, "GET", keysPath+"?limit=1", "", nil, 200), &keys); err != nil || len(keys) != 1 {
 		t.Fatalf("key page: %+v %v", keys, err)
 	}
@@ -134,7 +147,7 @@ func TestCompatibleManagementOrganizationAndProjectKeysHTTP(t *testing.T) {
 	}
 	f.request(t, http.DefaultClient, "PUT", keysPath+bearerKey.ID+"/", `{"name":"Bearer updated"}`, writeHeaders, 200)
 	f.request(t, http.DefaultClient, "DELETE", keysPath+bearerKey.ID+"/", "", writeHeaders, 204)
-	if err := json.Unmarshal(f.request(t, f.client, "GET", keysPath+created.ID+"/", "", nil, 200), &single); err != nil || single.Label != "CI updated" {
+	if err := json.Unmarshal(f.request(t, f.client, "GET", keysPath+created.ID+"/", "", nil, 200), &single); err != nil || single.Label != "CI restored" {
 		t.Fatalf("owner detail after bearer operations: %+v %v", single, err)
 	}
 	if code, _ := rawStatus(t, f, f.client, "DELETE", keysPath+created.ID+"/", http.Header{"X-CSRF-Token": {f.csrf}}); code != 204 {

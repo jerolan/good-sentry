@@ -422,6 +422,10 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
   - [ ] Complete broader management API acceptance.
   - [x] Add additive039 team creation instants and project-key UUID/label metadata, compatible organization detail, and project-key list/create/update/delete with DSN output.
     - Real PostgreSQL covers039 preservation/reopen, deterministic UUID/team-clock backfill, relation/access DTOs, key CRUD and active/inactive filters. Real HTTP covers owner/admin/member controls, project:read/project:write Bearer scopes, strict inputs/queries, DSN shape, pagination links, cross-organization isolation and deletion. Evidence: goal-compat-management/{store-migration.log,store-crud.log,http-management.log,full-suite.log}.
+  - [x] Expose Sentry `isActive` on project-key DTOs and support activation through PUT.
+    - Focused HTTP/store integration checks prove omitted `isActive` preserves state, deactivated keys reject envelopes, and reactivation restores ingestion.
+  - [x] Add responsive Projects SDK-key management for copyable DSNs, label/rate-limit editing, activation, deactivation and confirmed deletion.
+    - Chromium passes at320/768/1440 with no page or console errors; real HTTP-backed browser flow verifies key create/edit/status/delete, DSN path/key shape and forward/backward pagination. Evidence: `tests/compat/project_keys_browser.mjs`.
   - [x] Add additive041 per-key fixed-window usage, accept positive rateLimit configuration and enforce it on Sentry envelope ingestion.
     - Real PostgreSQL covers atomic charge/denial, unlimited keys, short-window reset,041 preservation/reopen and bounded14-day cleanup. Real HTTP covers key rateLimit create/validation, envelope200-to429 with Retry-After/X-Sentry-Rate-Limits, OTLP protobuf429/google.rpc.Status code8 and successful empty exports. Maximum window is604800 seconds; count is capped at1000000000. Evidence: goal-compat-rate-limit/* and otlp-rate.log.
   - [x] Add compatible organization-member, team, team-member, team-project and project-team read routes with pending-invitation privacy and token organization/project isolation.

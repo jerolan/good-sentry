@@ -14,7 +14,7 @@ func TestProjectKeyRateAdmissionAndWindowReset(t *testing.T) {
 	if err != nil || len(keys) != 1 {
 		t.Fatalf("initial key: %+v %v", keys, err)
 	}
-	limited, err := db.UpdateCompatibleProjectKey(ctx, access, project.ID, keys[0].ID, "limited", &CompatibleKeyRateLimit{Window: 60, Count: 3})
+	limited, err := db.UpdateCompatibleProjectKey(ctx, access, project.ID, keys[0].ID, "limited", &CompatibleKeyRateLimit{Window: 60, Count: 3}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

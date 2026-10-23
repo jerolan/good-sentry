@@ -9,6 +9,7 @@
 @source "./alerts.js";
 @source "./releases.js";
 @source "./people.js";
+@source "./project_keys.js";
 
 @plugin "../../../third_party/daisyui/daisyui.mjs" {
   themes: false;
@@ -488,6 +489,24 @@
   .release-raw pre { @apply max-w-[560px] max-h-[360px] overflow-auto p-3 bg-surface-subtle rounded-md text-xs; }
   .release-dialog { @apply max-w-[760px]; }
   .release-dialog textarea { @apply font-mono text-xs; }
+  .project-keys-dialog { @apply w-[calc(100%-2rem)] max-w-[1080px] max-h-[calc(100%-2rem)] overflow-auto p-0; }
+  .sdk-key-content { @apply p-5 grid gap-5 min-w-0; }
+  .sdk-key-fields { @apply grid grid-cols-3 gap-4; }
+  .sdk-key-table { @apply min-w-[1000px]; }
+  .sdk-key-table-scroll { @apply max-w-full; }
+  .sdk-key-name { @apply min-w-[180px] max-w-[260px] wrap-anywhere; }
+  .sdk-key-dsn { @apply min-w-[280px] max-w-[420px]; }
+  .sdk-key-dsn code { @apply block wrap-anywhere mb-2; }
+  .sdk-key-actions { @apply min-w-[240px] flex-wrap; }
+  .sdk-key-created { @apply mx-5 mt-5 p-4 rounded-md border border-[#d9ede5] bg-[#f6fbf9] grid gap-2 min-w-0; }
+  .sdk-key-created[hidden] { display: none; }
+  .sdk-key-created-value { @apply flex flex-wrap items-center gap-3 min-w-0; }
+  .sdk-key-created-value code { @apply min-w-0 wrap-anywhere; }
+  .sdk-key-form { @apply border-t border-outline pt-5; }
+  .sdk-key-pagination { @apply border-t border-outline pt-4; }
+  .sdk-key-confirmation { @apply p-4 rounded-md border border-[#edc9c8] bg-danger-soft grid gap-3; }
+  .sdk-key-confirmation p { @apply m-0; }
+  .sdk-key-empty { @apply py-8; }
   .monitor-confirmation { @apply p-4 mb-5 rounded-md border border-[#edc9c8] bg-danger-soft flex flex-col gap-3 wrap-anywhere; }
   .button.danger { @apply text-white bg-danger border-danger; }
   @media(min-width:1500px) {
@@ -503,6 +522,14 @@
     }
     .main { @apply p-6; }
     .topbar { @apply px-6 py-4; }
+  }
+  @media(max-width:640px) {
+    .sdk-key-content { @apply p-4; }
+    .sdk-key-fields { @apply grid-cols-1; }
+    .sdk-key-actions { @apply min-w-[220px]; }
+    .sdk-key-created { @apply mx-4 mt-4; }
+    .project-keys-dialog header { @apply gap-2; }
+    .project-keys-dialog header h2 { @apply min-w-0 wrap-anywhere; }
   }
   @media(max-width:900px) {
     .transaction-summary { @apply grid-cols-1; }
