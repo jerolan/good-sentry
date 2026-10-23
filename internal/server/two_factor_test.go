@@ -203,8 +203,8 @@ func TestTwoFactorEnrollmentAndLoginHTTP(t *testing.T) {
 	f.request(t, direct, "GET", "/api/v1/me", "", nil, 200)
 }
 
-func TestTwoFactorOpenModeIgnoresChallenges(t *testing.T) {
-	f := newResolutionHTTPFixtureWithConfig(t, func(cfg *config.Config) { cfg.AuthMode = "disabled" })
+func TestTwoFactorStateAvailableWithoutSessionInOpenMode(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
 	f.server.Close()
 	cfg := config.Config{Domain: "https://public.example.test/good", Prefix: "/good", Secret: strings.Repeat("r", 64), MaxBodyBytes: 1 << 20, AuthMode: "disabled"}
 	owner := f.owner
