@@ -318,6 +318,8 @@ Compatible issue comments are accepted at 3e69caa with shared native activity, e
 
 Compatible issue tags are accepted at f07647d with merged-alias aggregation, object/array normalization and exact source/image/binary publication. Continue the remaining compatible monitors/alerts and administration routes.
 
+Close the issue-tag list query gap: admit optional `key` on both compatible route aliases, apply exact case-sensitive equality, and keep unknown/repeated/malformed queries rejected. Extend the existing HTTP owner and publish after focused PostgreSQL integration verification.
+
 Compatible uptime monitors are accepted at 82148dd with native scheduler reuse, cursor pages, type aliases and owner/admin mutation authority. Continue compatible alerts and the remaining management routes.
 
 Compatible project alerts are accepted at c5e3eb8 with native rule reuse, recipient conversion, test acknowledgement and exact publication. Continue user/notification management, administration flags and external receipts.

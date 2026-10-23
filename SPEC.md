@@ -320,7 +320,7 @@ POST and PUT accept only `{"data":{"text":"..."}}` and return CommentSchema with
 
 `GET /api/0/issues/{issue}/tags/` and the organization-prefixed route require `event:read` or `event:write`. After the issue is validated for the current membership and Bearer project grant, tags are aggregated across the current issue and its merged aliases. Both normalized object tags and two-element array tags are supported; only string values are counted, and duplicate key/value pairs within one event count once.
 
-Each IssueTagSchema includes the exact key, a title-cased display name, distinct-value count, total pair occurrences and up to five top values ordered by count descending then value. Tags are ordered by key. The route accepts no query parameters and returns an empty array for an issue without tags.
+Each IssueTagSchema includes the exact key, a title-cased display name, distinct-value count, total pair occurrences and up to five top values ordered by count descending then value. Tags are ordered by key. Optional `key` filters the returned list by exact, case-sensitive key equality without changing aggregation. An absent key returns all tags; an empty or unmatched key returns `[]`. Unknown or repeated query parameters and malformed query encoding return400. Both route aliases use the same behavior. The route returns an empty array for an issue without tags.
 
 ### Compatible user preferences
 
