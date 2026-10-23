@@ -11,6 +11,7 @@ import (
 
 	"goodsentry/internal/event"
 	"goodsentry/internal/jobs"
+	"goodsentry/internal/spanarchive"
 	"goodsentry/internal/store"
 	"goodsentry/internal/uptime"
 )
@@ -22,6 +23,55 @@ import (
 func TestRetentionWorkersDrainRetryAndStop(t *testing.T) {
 	for _, class := range []string{"logs", "transactions", "events", "uptime", "files", "releases", "pending_reports", "feedback_associations"} {
 		t.Run(class, func(t *testing.T) { retentionWorkerLifecycle(t, class) })
+	}
+}
+
+func TestTransactionRetentionWorkerArchivesSpans(t *testing.T) {
+	f := newResolutionWorkerFixture(t)
+	project, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Cold archive worker", "go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.admin.Exec(f.ctx, `INSERT INTO spans(project_id,trace_id,span_id,name,status,is_segment,
+ start_timestamp,end_timestamp,duration,data,created_at)
+ VALUES($1,'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','00000000000000ab','archive worker','ok',true,
+ now(),now(),0,'{"source":"worker"}',now()-interval '10 days')`, project.ID); err != nil {
+		t.Fatal(err)
+	}
+	objects, err := spanarchive.NewLocalObjects(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	stop := jobs.StartTransactionRetentionWithArchive(f.ctx, f.db, 30, time.Hour, store.SpanArchiveOptions{
+		Backend: "local", AfterDays: 5, Objects: objects,
+	})
+	deadline := time.Now().Add(5 * time.Second)
+	var hot, manifests int
+	for time.Now().Before(deadline) {
+		if err := f.admin.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM spans),(SELECT count(*) FROM span_archive_objects)`).Scan(&hot, &manifests); err != nil {
+			stop()
+			t.Fatal(err)
+		}
+		if hot == 0 && manifests == 1 {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	stop()
+	if hot != 0 || manifests != 1 {
+		t.Fatalf("worker hot spans/manifests=%d/%d", hot, manifests)
+	}
+	var key string
+	if err := f.admin.QueryRow(f.ctx, "SELECT object_key FROM span_archive_objects").Scan(&key); err != nil {
+		t.Fatal(err)
+	}
+	body, err := objects.Get(f.ctx, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows, err := spanarchive.Decode(body)
+	if err != nil || len(rows) != 1 || rows[0].Name != "archive worker" {
+		t.Fatalf("worker archive rows=%+v err=%v", rows, err)
 	}
 }
 

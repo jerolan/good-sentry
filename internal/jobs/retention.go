@@ -33,15 +33,29 @@ func StartLogRetention(parent context.Context, db *store.Store, days int, interv
 // StartTransactionRetention shares the log worker's backlog and cancellation
 // lifecycle. Ingestion feature switches do not disable expiry of stored rows.
 func StartTransactionRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
+	return startTransactionRetention(parent, db, days, interval, nil)
+}
+
+func StartTransactionRetentionWithArchive(parent context.Context, db *store.Store, days int, interval time.Duration, archive store.SpanArchiveOptions) func() {
+	return startTransactionRetention(parent, db, days, interval, &archive)
+}
+
+func startTransactionRetention(parent context.Context, db *store.Store, days int, interval time.Duration, archive *store.SpanArchiveOptions) func() {
 	return startRetention(parent, interval, func(ctx context.Context) bool {
-		transactions, spans, err := db.CleanupTransactions(ctx, days)
+		var transactions, spans, objects int64
+		var err error
+		if archive == nil {
+			transactions, spans, err = db.CleanupTransactions(ctx, days)
+		} else {
+			transactions, spans, objects, err = db.CleanupTransactionsWithArchive(ctx, days, *archive)
+		}
 		if ctx.Err() != nil {
 			return false
 		}
 		if err != nil {
 			slog.Error("Transaction retention pass failed", "entryPoint", "transaction_retention_worker", "operation", "cleanup_transactions")
-		} else if transactions > 0 || spans > 0 {
-			slog.Info("Transaction retention cleanup committed", "entryPoint", "transaction_retention_worker", "transactions", transactions, "spans", spans)
+		} else if transactions > 0 || spans > 0 || objects > 0 {
+			slog.Info("Transaction retention cleanup committed", "entryPoint", "transaction_retention_worker", "transactions", transactions, "spans", spans, "archiveObjects", objects)
 			return true
 		}
 		return false

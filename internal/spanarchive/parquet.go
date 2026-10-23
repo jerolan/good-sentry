@@ -13,6 +13,7 @@ import (
 const (
 	MaxRows        = 250
 	MaxObjectBytes = 64 << 20
+	MaxInputBytes  = MaxObjectBytes - (1 << 20)
 )
 
 var ErrObjectTooLarge = errors.New("span archive object exceeds 64 MiB")
@@ -72,7 +73,7 @@ func Encode(rows []Span) ([]byte, error) {
 		}
 		inputBytes += len(row.TraceID) + len(row.SpanID) + len(row.ParentSpanID) + len(row.Name) +
 			len(row.Status) + len(row.Op) + len(row.Environment) + len(row.Release) + len(row.Attributes) + len(row.Data)
-		if inputBytes > MaxObjectBytes {
+		if inputBytes > MaxInputBytes {
 			return nil, ErrObjectTooLarge
 		}
 	}
