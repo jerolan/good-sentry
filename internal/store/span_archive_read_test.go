@@ -27,6 +27,9 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	}
 	root := spanFixture("0000000000000041", true, 1_700_000_000, 1_700_000_001)
 	child := spanFixture("0000000000000042", false, 1_700_000_002, 1_700_000_003)
+	child["name"] = "SELECT cart"
+	child["attributes"].(map[string]any)["sentry.op"] = map[string]any{"type": "string", "value": "db"}
+	child["attributes"].(map[string]any)["sentry.segment.id"] = map[string]any{"type": "string", "value": "0000000000000041"}
 	if count, err := db.IngestSpans(ctx, project.ID, spanBatch(t, root, child), 2); err != nil || count != 2 {
 		t.Fatalf("initial hot spans=%d err=%v", count, err)
 	}
@@ -129,5 +132,17 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	})
 	if err != nil || count != 2 {
 		t.Fatalf("trace expansion rows=%d err=%v", count, err)
+	}
+	if _, err := db.pool.Exec(ctx, "UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id=$1", "0000000000000042"); err != nil {
+		t.Fatal(err)
+	}
+	_, moved, _, err = db.CleanupTransactionsWithArchive(ctx, 30, options)
+	if err != nil || moved != 1 {
+		t.Fatalf("archive trace child moved=%d err=%v", moved, err)
+	}
+	spanGroups, err := db.TransactionSpanGroups(ctx, user.ID, org.Slug, "span", archivedRootID, "", window, 1)
+	if err != nil || spanGroups.TransactionCount != 1 || spanGroups.SpanCount != 1 || spanGroups.GroupCount != 1 || len(spanGroups.Data) != 1 ||
+		spanGroups.Data[0].Op != "db" || spanGroups.Data[0].Description != "SELECT cart" || spanGroups.Data[0].Count != 1 {
+		t.Fatalf("transaction span groups include archived root and child: %+v err=%v", spanGroups, err)
 	}
 }

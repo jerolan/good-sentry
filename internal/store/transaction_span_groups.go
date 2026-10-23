@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -70,15 +71,17 @@ func (s *Store) TransactionSpanGroups(ctx context.Context, userID, orgSlug, sour
 	if err != nil || rowID <= 0 || strconv.FormatInt(rowID, 10) != id {
 		return TransactionSpanGroups{}, ErrNotFound
 	}
-	org, err := s.Organization(ctx, userID, orgSlug)
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (TransactionSpanGroups, error) {
+		return s.transactionSpanGroupsWithRead(ctx, read, userID, orgSlug, source, id, rowID, projectID, window, page)
+	})
+}
+
+func (s *Store) transactionSpanGroupsWithRead(ctx context.Context, read *spanArchiveRead, userID, orgSlug, source, id string, rowID int64, projectID string, window *TimeWindow, page int) (TransactionSpanGroups, error) {
+	orgID, err := read.organizationID(ctx, userID, orgSlug)
 	if err != nil {
 		return TransactionSpanGroups{}, err
 	}
-	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
-	if err != nil {
-		return TransactionSpanGroups{}, err
-	}
-	defer tx.Rollback(ctx)
+	tx := read.tx
 	result := TransactionSpanGroups{
 		Sample: TransactionReference{Source: source, ID: id},
 		Page:   max(page, 1), PageSize: 50, Data: []TransactionSpanGroup{},
@@ -86,18 +89,21 @@ func (s *Store) TransactionSpanGroups(ctx context.Context, userID, orgSlug, sour
 	if source == "event" {
 		err = tx.QueryRow(ctx, `SELECT e.project_id::text,e.transaction_name,COALESCE(e.data#>>'{contexts,trace,op}','')
 			FROM events e JOIN projects p ON p.id=e.project_id
-			WHERE p.organization_id=$1::bigint AND e.id=$2 AND e.kind='transaction'`, org.ID, rowID).Scan(
+			WHERE p.organization_id=$1::bigint AND e.id=$2 AND e.kind='transaction'`, orgID, rowID).Scan(
 			&result.Sample.ProjectID, &result.Transaction, &result.Op)
 	} else {
+		if err := read.Load(ctx, spanArchiveSelector{OrganizationID: orgID, SpanRowID: rowID}); err != nil {
+			return TransactionSpanGroups{}, err
+		}
 		err = tx.QueryRow(ctx, `SELECT s.project_id::text,s.name,s.op
 			FROM spans s JOIN projects p ON p.id=s.project_id
-			WHERE p.organization_id=$1::bigint AND s.id=$2 AND s.is_segment`, org.ID, rowID).Scan(
+			WHERE p.organization_id=$1::bigint AND s.id=$2 AND s.is_segment`, orgID, rowID).Scan(
 			&result.Sample.ProjectID, &result.Transaction, &result.Op)
 	}
 	if err != nil {
 		return TransactionSpanGroups{}, dbError(err)
 	}
-	args := []any{org.ID, result.Transaction, result.Op}
+	args := []any{orgID, result.Transaction, result.Op}
 	eventFilter := "e.timestamp>=now()-interval '24 hours' AND e.timestamp<=now()"
 	spanFilter := "s.end_timestamp>=now()-interval '24 hours' AND s.end_timestamp<=now()"
 	if window != nil {
@@ -109,6 +115,26 @@ func (s *Store) TransactionSpanGroups(ctx context.Context, userID, orgSlug, sour
 		args = append(args, projectID)
 		eventFilter += fmt.Sprintf(" AND e.project_id=$%d::bigint", len(args))
 		spanFilter += fmt.Sprintf(" AND s.project_id=$%d::bigint", len(args))
+	}
+	start, end, err := read.windowBounds(ctx, window, 24*time.Hour)
+	if err != nil {
+		return TransactionSpanGroups{}, err
+	}
+	isSegment := true
+	selector := spanArchiveSelector{OrganizationID: orgID, TimeColumn: "end_timestamp", Start: &start, End: &end, IsSegment: &isSegment}
+	if projectID != "" {
+		selectedProject, parseErr := strconv.ParseInt(projectID, 10, 64)
+		if parseErr != nil {
+			return TransactionSpanGroups{}, parseErr
+		}
+		if selectedProject > 0 {
+			selector.ProjectID = selectedProject
+		} else {
+			selector.RestrictProjectIDs = true
+		}
+	}
+	if err := read.Load(ctx, selector); err != nil {
+		return TransactionSpanGroups{}, err
 	}
 	roots := `WITH legacy_roots AS (
 		SELECT e.id,e.span_projection_version FROM events e JOIN projects p ON p.id=e.project_id
@@ -126,6 +152,14 @@ func (s *Store) TransactionSpanGroups(ctx context.Context, userID, orgSlug, sour
 	}
 	if pending {
 		return TransactionSpanGroups{}, ErrSpanProjectionPending
+	}
+	seedQuery := `SELECT s.project_id,s.trace_id FROM spans s JOIN projects p ON p.id=s.project_id
+		WHERE p.organization_id=$1::bigint AND s.is_segment AND s.name=$2 AND s.op=$3 AND ` + spanFilter
+	if err := read.AddTraceSeeds(ctx, seedQuery, args...); err != nil {
+		return TransactionSpanGroups{}, err
+	}
+	if err := read.LoadSeededTraces(ctx); err != nil {
+		return TransactionSpanGroups{}, err
 	}
 	offset := int64(result.Page-1) * int64(result.PageSize)
 	args = append(args, offset)
@@ -170,9 +204,6 @@ func (s *Store) TransactionSpanGroups(ctx context.Context, userID, orgSlug, sour
 		return TransactionSpanGroups{}, err
 	}
 	result.HasMore = offset+int64(len(result.Data)) < result.GroupCount
-	if err := tx.Commit(ctx); err != nil {
-		return TransactionSpanGroups{}, err
-	}
 	return result, nil
 }
 
