@@ -490,6 +490,7 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - [ ] Audit every specification requirement against current artifact/runtime evidence; only then complete the goal.
   - [x] Reconcile the public README, compatibility guide, release guide and landing page with accepted native-debug and cold-span-archive evidence. Commit `3fb588b` passed exact-source CI `39914660976` (formatting, vet, PostgreSQL integration/race suite and image build), and Pages deployment `39914661053` succeeded. The complete requirement-by-requirement audit remains open.
   - [x] Reconcile the management API status in `SPEC.md` with route, OpenAPI and optional administration acceptance. Exact-source CI [40023245722](https://github.com/jerolan/good-sentry/actions/runs/40023245722) passed on `55530603a1cd4d37ab50017a20775fad1ec9a1fa`; route coverage uses GoodSentry's local HTTP/PostgreSQL contracts.
+  - [x] Reconcile MCP and OIDC status in `SPEC.md` with accepted evidence. MCP's 17 tools, OAuth, default-off behavior, version42→44 upgrade and published image are accepted at public `8160b3` (CI [39538713048](https://github.com/jerolan/good-sentry/actions/runs/39538713048), image [39539169221](https://github.com/jerolan/good-sentry/actions/runs/39539169221)). Generic OIDC and organization-managed apps pass synthetic-IdP/browser acceptance; vendor-specific providers, external identity-provider receipts and administration beyond the read-only overview remain open.
 
 ## Evidence log
 
