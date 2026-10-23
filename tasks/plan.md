@@ -318,7 +318,7 @@ Compatible issue comments are accepted at 3e69caa with shared native activity, e
 
 Compatible issue tags are accepted at f07647d with merged-alias aggregation, object/array normalization and exact source/image/binary publication. Continue the remaining compatible monitors/alerts and administration routes.
 
-Close the issue-tag list query gap: admit optional `key` on both compatible route aliases, apply exact case-sensitive equality, and keep unknown/repeated/malformed queries rejected. Extend the existing HTTP owner and publish after focused PostgreSQL integration verification.
+Optional issue-tag key filtering is accepted at `e088d8e`: both compatible route aliases apply exact case-sensitive matching and retain strict query admission. The existing HTTP aggregation owner verifies encoded, empty, unmatched and malformed/repeated cases; CI `39976040595` and image publication `39977008284` pass. Continue the remaining compatible monitors/alerts and administration routes.
 
 Compatible uptime monitors are accepted at 82148dd with native scheduler reuse, cursor pages, type aliases and owner/admin mutation authority. Continue compatible alerts and the remaining management routes.
 
