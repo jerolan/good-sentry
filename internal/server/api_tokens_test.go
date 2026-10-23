@@ -332,6 +332,18 @@ func TestAPITokenHTTPContract(t *testing.T) {
 	for _, value := range []string{"", "0", "-1", "01", "+1", "1.0", "101", "10000000000000000000000"} {
 		want("invalid per_page "+value, request(http.DefaultClient, "GET", listPath+"?per_page="+url.QueryEscape(value), "", "", bearer(all.Token)), 400)
 	}
+	for _, value := range []string{"", "0", "-1", "01", "+1", "1.0", "101", "10000000000000000000000"} {
+		want("invalid limit "+value, request(http.DefaultClient, "GET", listPath+"?limit="+url.QueryEscape(value), "", "", bearer(all.Token)), 400)
+	}
+	want("conflicting project page-size aliases", request(http.DefaultClient, "GET", listPath+"?limit=1&per_page=2", "", "", bearer(all.Token)), 400)
+	want("repeated limit", request(http.DefaultClient, "GET", listPath+"?limit=1&limit=2", "", "", bearer(all.Token)), 400)
+	want("repeated per_page", request(http.DefaultClient, "GET", listPath+"?per_page=1&per_page=2", "", "", bearer(all.Token)), 400)
+	pageAliases := want("agreeing project page-size aliases", request(http.DefaultClient, "GET", listPath+"?limit=2&per_page=2", "", "", bearer(all.Token)), 200)
+	var aliasedPage []projectMetadata
+	decode(pageAliases.raw, &aliasedPage)
+	if len(aliasedPage) != 2 || aliasedPage[0].ID != projects[0].ID || aliasedPage[1].ID != projects[1].ID {
+		t.Fatal("agreeing page-size aliases did not apply the requested limit")
+	}
 	for _, value := range []string{"", "0", "-1", "01", "+1", "1000001"} {
 		want("invalid credential page "+value, request(ownerActor.client, "GET", management+"?page="+url.QueryEscape(value), "", "", nil), 400)
 	}
@@ -348,7 +360,7 @@ func TestAPITokenHTTPContract(t *testing.T) {
 	if empty := readProjects(listPath+"?query=no-matching-project", bearer(all.Token)); len(empty) != 0 {
 		t.Fatal("authorized unmatched query must return an empty array")
 	}
-	for _, parameter := range []string{"per_page", "cursor", "query"} {
+	for _, parameter := range []string{"limit", "per_page", "cursor", "query"} {
 		r := request(http.DefaultClient, "GET", listPath+"?"+parameter+"=%GG", "", "", bearer(all.Token))
 		if r.status != 400 {
 			t.Errorf("raw malformed %s encoding=%d want=400", parameter, r.status)
@@ -363,7 +375,7 @@ func TestAPITokenHTTPContract(t *testing.T) {
 		Results string
 		Cursor  string
 	}
-	links := func(header string) map[string]link {
+	links := func(header, pageSizeParameter, pageSize string) map[string]link {
 		t.Helper()
 		result := map[string]link{}
 		for _, entry := range strings.Split(header, ",") {
@@ -382,8 +394,12 @@ func TestAPITokenHTTPContract(t *testing.T) {
 					attributes[key] = strings.Trim(value, `"`)
 				}
 			}
-			if u.Scheme != "http" || u.Host != "public.example.test" || u.Path != cfg.Prefix+listPath || u.Query().Get("query") != "fIlTeR %" || u.Query().Get("per_page") != "2" || u.Query().Get("cursor") != attributes["cursor"] {
+			query := u.Query()
+			if u.Scheme != "http" || u.Host != "public.example.test" || u.Path != cfg.Prefix+listPath || query.Get("query") != "fIlTeR %" || query.Get(pageSizeParameter) != pageSize || query.Get("cursor") != attributes["cursor"] {
 				t.Fatalf("Link lost public origin/prefix or original query/size: %s", header)
+			}
+			if pageSizeParameter == "limit" && query.Has("per_page") {
+				t.Fatalf("limit Link added the per_page alias: %s", header)
 			}
 			result[attributes["rel"]] = link{u, attributes["results"], attributes["cursor"]}
 		}
@@ -401,7 +417,7 @@ func TestAPITokenHTTPContract(t *testing.T) {
 	if len(page) != 2 || page[0].ID != projects[0].ID || page[1].ID != projects[1].ID {
 		t.Fatal("first page did not apply literal case-insensitive filtering and numeric ordering")
 	}
-	firstLinks := links(first.header.Get("Link"))
+	firstLinks := links(first.header.Get("Link"), "per_page", "2")
 	if firstLinks["previous"].Results != "false" || firstLinks["next"].Results != "true" || firstLinks["next"].Cursor != cursor("offset:2") {
 		t.Fatal("first page Link results/cursor do not describe the filtered result")
 	}
@@ -410,7 +426,7 @@ func TestAPITokenHTTPContract(t *testing.T) {
 	if len(page) != 1 || page[0].ID != projects[2].ID {
 		t.Fatal("next Link did not continue the filtered authorized result")
 	}
-	secondLinks := links(second.header.Get("Link"))
+	secondLinks := links(second.header.Get("Link"), "per_page", "2")
 	if secondLinks["previous"].Results != "true" || secondLinks["next"].Results != "false" || secondLinks["previous"].Cursor != cursor("offset:0") {
 		t.Fatal("last page Link results/cursor are incorrect")
 	}
@@ -419,13 +435,28 @@ func TestAPITokenHTTPContract(t *testing.T) {
 		t.Fatal("previous Link did not return the first page")
 	}
 	maximum := want("maximum allowed project cursor", request(http.DefaultClient, "GET", listPath+"?query="+url.QueryEscape("fIlTeR %")+"&per_page=2&cursor="+cursor("offset:100000000"), "", "", bearer(all.Token)), 200)
-	maximumNext := links(maximum.header.Get("Link"))["next"]
+	maximumNext := links(maximum.header.Get("Link"), "per_page", "2")["next"]
 	if maximumNext.Results != "false" {
 		t.Fatal("maximum offset must not advertise more filtered results")
 	}
 	afterMaximum := readProjects(strings.TrimPrefix(maximumNext.URL.RequestURI(), cfg.Prefix), bearer(all.Token))
 	if len(afterMaximum) != 0 {
 		t.Fatal("following the maximum-offset next Link must remain a valid empty page")
+	}
+
+	limited := want("limit first page", request(http.DefaultClient, "GET", listPath+"?query="+url.QueryEscape("fIlTeR %")+"&limit=1", "", "", bearer(all.Token)), 200)
+	decode(limited.raw, &page)
+	if len(page) != 1 || page[0].ID != projects[0].ID {
+		t.Fatal("limit=1 did not reduce the organization project page")
+	}
+	limitLinks := links(limited.header.Get("Link"), "limit", "1")
+	if limitLinks["next"].Cursor != cursor("offset:1") || limitLinks["next"].Results != "true" {
+		t.Fatal("limit Link did not retain page size and next offset")
+	}
+	limitedNext := want("follow limit Link", request(http.DefaultClient, "GET", strings.TrimPrefix(limitLinks["next"].URL.RequestURI(), cfg.Prefix), "", "", bearer(all.Token)), 200)
+	decode(limitedNext.raw, &page)
+	if len(page) != 1 || page[0].ID != projects[1].ID {
+		t.Fatal("following the limit Link did not preserve its page size and cursor")
 	}
 
 	for range 26 {

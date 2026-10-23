@@ -320,6 +320,8 @@ Compatible issue tags are accepted at f07647d with merged-alias aggregation, obj
 
 Optional issue-tag key filtering is accepted at `e088d8e`: both compatible route aliases apply exact case-sensitive matching and retain strict query admission. The existing HTTP aggregation owner verifies encoded, empty, unmatched and malformed/repeated cases; CI `39976040595` and image publication `39977008284` pass. Continue the remaining compatible monitors/alerts and administration routes.
 
+Close the compatible organization-project pagination parameter gap: support OpenAPI `limit` beside GoodSentry's existing `per_page`, reject malformed/repeated/conflicting page-size values, preserve the supplied alias in `Link`, and retain the existing cursor/access semantics.
+
 Compatible uptime monitors are accepted at 82148dd with native scheduler reuse, cursor pages, type aliases and owner/admin mutation authority. Continue compatible alerts and the remaining management routes.
 
 Compatible project alerts are accepted at c5e3eb8 with native rule reuse, recipient conversion, test acknowledgement and exact publication. Continue user/notification management, administration flags and external receipts.

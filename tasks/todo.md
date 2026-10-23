@@ -372,6 +372,7 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
   - [x] Add session/CSRF-protected credential management and bearer/scope/header/prefix transport boundaries without widening native or SDK authentication.
   - [x] Deliver the responsive one-time-secret creation/list/revoke UI with real owner/member, pagination, input retention and safe text acceptance.
   - [x] Verify actual issued credentials with pinned sentry-cli project listing, revoked rejection, PostgreSQL/race checks and final-image restart/remote CI. Release/write consumers and the remaining account capabilities stay required.
+  - [ ] Add the OpenAPI `limit` alias to `GET /api/0/organizations/{org}/projects/` while preserving `per_page`, current cursor and access behavior. Same-valued aliases are allowed; conflicting or repeated page-size values and malformed numbers are rejected. Extend the project pagination HTTP owner to verify `limit` and the alias in emitted/followed links.
   - [x] Implement and verify generation-bound session/API-token issuance and upgrade preservation before password mutation. Additive035 and real stale-generation owners pass.
   - [x] Implement authenticated own-password change and Account UI, with atomic all-session/personal-token revocation and actual concurrency/HTTP/browser/image acceptance.
   - [x] Deliver account email, single-use password recovery, invitations and team/membership management with separate account authorization.

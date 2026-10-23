@@ -42,13 +42,29 @@ func (s *Server) compatibleProjects(w http.ResponseWriter, r *http.Request) {
 		failure(w, 400, "Query must contain at most 200 characters without controls")
 		return
 	}
+	if len(q["limit"]) > 1 || len(q["per_page"]) > 1 {
+		failure(w, 400, "Pagination parameters must not repeat")
+		return
+	}
 	limit := int64(100)
+	if q.Has("limit") {
+		limit, valid = occurrenceNumber(q.Get("limit"), 100)
+		if !valid {
+			failure(w, 400, "limit must be a positive decimal integer up to 100")
+			return
+		}
+	}
 	if q.Has("per_page") {
-		limit, valid = occurrenceNumber(q.Get("per_page"), 100)
+		perPage, valid := occurrenceNumber(q.Get("per_page"), 100)
 		if !valid {
 			failure(w, 400, "per_page must be a positive decimal integer up to 100")
 			return
 		}
+		if q.Has("limit") && perPage != limit {
+			failure(w, 400, "limit and per_page must agree")
+			return
+		}
+		limit = perPage
 	}
 	offset, valid := readProjectCursor(q.Get("cursor"))
 	if !valid {
@@ -77,6 +93,10 @@ func (s *Server) compatibleProjects(w http.ResponseWriter, r *http.Request) {
 		hasPrevious = len(before) > 0
 	}
 	links := make([]string, 0, 2)
+	pageSizeParameter := "per_page"
+	if q.Has("limit") {
+		pageSizeParameter = "limit"
+	}
 	for _, link := range []struct {
 		relation string
 		offset   int
@@ -84,7 +104,7 @@ func (s *Server) compatibleProjects(w http.ResponseWriter, r *http.Request) {
 	}{{"previous", previous, hasPrevious}, {"next", min(maxProjectOffset, nextOffset), next}} {
 		cursor := projectCursor(link.offset)
 		q.Set("cursor", cursor)
-		q.Set("per_page", strconv.FormatInt(limit, 10))
+		q.Set(pageSizeParameter, strconv.FormatInt(limit, 10))
 		public := strings.TrimRight(s.cfg.Domain, "/") + "/api/0/organizations/" + url.PathEscape(r.PathValue("org")) + "/projects/?" + q.Encode()
 		links = append(links, fmt.Sprintf(`<%s>; rel="%s"; results="%t"; cursor="%s"`, public, link.relation, link.results, cursor))
 	}
