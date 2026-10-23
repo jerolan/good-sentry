@@ -45,7 +45,7 @@ prefix before making an HTTP request.
 
 Optional `--release` and `--dist` values must match your SDK configuration. An upload with `--release` does not create release metadata; a separate release command or fresh SDK capture does. The release/dist workflow without injection also passes when the artifact URL prefix matches the emitted filename. Incorrect version/distribution selectors remain unmapped.
 
-Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. Temporary staging has a configurable quota and expiry, with automatic cleanup in the Go process. Native debug-file and minidump uploads remain pending.
+Chunks persist in PostgreSQL so interrupted uploads can resume after a restart. Temporary staging has a configurable quota and expiry, with automatic cleanup in the Go process. Verified native debug-file upload and Minidump symbolication support, including its limits, is listed in [compatibility status](compatibility.md#what-works-today).
 
 ## Event attachments
 

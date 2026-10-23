@@ -63,7 +63,7 @@ For interactive source-map setup, run `npx @sentry/wizard@8.0.1 --url http://loc
 | --- | --- |
 | Errors and feedback | Grouped issues, stack traces, tags, search, assignment, comments, triage, SDK feedback and a DSN-bound embed error page. |
 | Releases | Sentry CLI lifecycle operations, commit/deploy metadata, JavaScript source maps and compatible release-file list/detail/delete. |
-| Native diagnostics | Official CLI chunked DIF upload, bounded ZIP/TAR/TAR.GZ debug archives, AMD64/x86/ARM64 minidump ingestion, frame-pointer and CFI-assisted unwinding, and Breakpad plus ELF/Mach-O DWARF or dSYM companion symbolication; more native formats are in progress. |
+| Native diagnostics | Official CLI chunked DIF upload, bounded ZIP/TAR/gzip-TAR debug archives, AMD64/x86/ARM32/ARM64 Minidump symbolication, and frame-pointer, DWARF CFI and ARM EHABI unwinding. Supported symbols include Breakpad, ELF/DWARF, Mach-O/dSYM, classic PDB and SymCache v7-v9; real crash-provider receipts remain open. |
 | Performance and logs | Transactions, spans, trace waterfalls, compatible transaction-group/detail/trend/span, N+1, Grafana `stats_v2` and compatible log list/detail/resource/stat reads, typed logs and OTLP/HTTP log ingestion. |
 | Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors with compatible heartbeat endpoints, public status pages; email and webhooks with durable retries. |
 | Cold span storage | Optional local or S3-compatible Parquet archive; old spans remain queryable and expire on the same transaction-retention deadline. |
