@@ -5,6 +5,7 @@ package store
 import (
 	"encoding/json"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -204,5 +205,104 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	identity, err := db.CompatibleTransactionGroupIdentity(ctx, access, compatibleGroups[0].ID)
 	if err != nil || identity.ProjectID != projectID || identity.Transaction != "GET /checkout" || identity.Op != "http.server" {
 		t.Fatalf("compatible group identity after read retry boundary: %+v err=%v", identity, err)
+	}
+}
+
+func TestSpanArchiveReadRetriesWhenExpiryMarksASelectedManifest(t *testing.T) {
+	ctx, db, _, _, project := telemetryStore(t)
+	projectID, err := strconv.ParseInt(project.ID, 10, 64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	objects, err := spanarchive.NewLocalObjects(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	options := SpanArchiveOptions{Backend: "local", AfterDays: 5, Objects: objects}
+	if err := db.EnableSpanArchive(ctx, options, 30); err != nil {
+		t.Fatal(err)
+	}
+	payload := spanBatch(t, spanFixture("0000000000000061", true, 1_700_000_000, 1_700_000_001))
+	if count, err := db.IngestSpans(ctx, project.ID, payload, 1); err != nil || count != 1 {
+		t.Fatalf("initial span ingest=%d err=%v", count, err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id='0000000000000061'`); err != nil {
+		t.Fatal(err)
+	}
+	if _, moved, _, err := db.CleanupTransactionsWithArchive(ctx, 30, options); err != nil || moved != 1 {
+		t.Fatalf("archive span moved=%d err=%v", moved, err)
+	}
+	firstSnapshotReady := make(chan struct{})
+	continueFirstRead := make(chan struct{})
+	type readResult struct {
+		rows     int
+		attempts int
+		err      error
+	}
+	result := make(chan readResult, 1)
+	expiryDone := make(chan error, 1)
+	deleteGate := &gatedSpanArchiveDelete{Objects: objects, started: make(chan struct{}), proceed: make(chan struct{})}
+	var continueOnce, deleteOnce sync.Once
+	continueRead := func() { continueOnce.Do(func() { close(continueFirstRead) }) }
+	releaseDelete := func() { deleteOnce.Do(func() { close(deleteGate.proceed) }) }
+	readFinished, expiryStarted, expiryFinished := false, false, false
+	go func() {
+		attempts := 0
+		rows, err := withSpanArchiveRead(ctx, db, func(read *spanArchiveRead) (int, error) {
+			attempts++
+			if attempts == 1 {
+				close(firstSnapshotReady)
+				<-continueFirstRead
+			}
+			if err := read.Load(ctx, spanArchiveSelector{ProjectID: projectID, TraceID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}); err != nil {
+				return 0, err
+			}
+			var count int
+			if err := read.tx.QueryRow(ctx, `SELECT count(*) FROM spans WHERE project_id=$1 AND span_id='0000000000000061'`, projectID).Scan(&count); err != nil {
+				return 0, err
+			}
+			return count, nil
+		})
+		result <- readResult{rows: rows, attempts: attempts, err: err}
+	}()
+	defer func() {
+		continueRead()
+		releaseDelete()
+		if !readFinished {
+			<-result
+		}
+		if expiryStarted && !expiryFinished {
+			<-expiryDone
+		}
+	}()
+
+	select {
+	case <-firstSnapshotReady:
+	case <-ctx.Done():
+		t.Fatalf("archive reader did not establish its snapshot: %v", ctx.Err())
+	}
+	expiryOptions := options
+	expiryOptions.Objects = deleteGate
+	expiryStarted = true
+	go func() {
+		_, _, _, err := db.CleanupTransactionsWithArchive(ctx, 5, expiryOptions)
+		expiryDone <- err
+	}()
+	select {
+	case <-deleteGate.started:
+	case <-ctx.Done():
+		t.Fatalf("expiry did not reach object deletion: %v", ctx.Err())
+	}
+	continueRead()
+	read := <-result
+	readFinished = true
+	if read.err != nil || read.attempts != 2 || read.rows != 0 {
+		t.Fatalf("stale archive snapshot result rows=%d attempts=%d err=%v", read.rows, read.attempts, read.err)
+	}
+	releaseDelete()
+	expiryErr := <-expiryDone
+	expiryFinished = true
+	if expiryErr != nil {
+		t.Fatalf("complete archive expiry: %v", expiryErr)
 	}
 }

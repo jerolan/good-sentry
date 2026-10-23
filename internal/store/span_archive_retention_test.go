@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"net/url"
 	"os"
 	"reflect"
 	"strconv"
@@ -256,6 +258,147 @@ func TestIngestSpansPreservesAStillRetainedArchivedIdentity(t *testing.T) {
 	}
 }
 
+func TestSpanArchiveSerializesConcurrentIngestOfTheSameIdentity(t *testing.T) {
+	ctx, db, _, _, project := telemetryStore(t)
+	databaseURL, err := url.Parse(db.pool.Config().ConnString())
+	if err != nil {
+		t.Fatal(err)
+	}
+	query := databaseURL.Query()
+	query.Set("application_name", "goodsentry-span-archive-race")
+	databaseURL.RawQuery = query.Encode()
+	ingester, err := Open(ctx, databaseURL.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ingester.Close()
+	objects, err := spanarchive.NewLocalObjects(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	baseOptions := SpanArchiveOptions{Backend: "local", AfterDays: 5, Objects: objects}
+	if err := db.EnableSpanArchive(ctx, baseOptions, 30); err != nil {
+		t.Fatal(err)
+	}
+	if err := ingester.EnableSpanArchive(ctx, baseOptions, 30); err != nil {
+		t.Fatal(err)
+	}
+	payload := spanBatch(t, spanFixture("0000000000000071", true, 1_700_000_000, 1_700_000_001))
+	if count, err := db.IngestSpans(ctx, project.ID, payload, 1); err != nil || count != 1 {
+		t.Fatalf("initial span ingest=%d err=%v", count, err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id='0000000000000071'`); err != nil {
+		t.Fatal(err)
+	}
+	var projectID int64
+	if err := db.pool.QueryRow(ctx, `SELECT id FROM projects WHERE id=$1::bigint`, project.ID).Scan(&projectID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, fmt.Sprintf(`CREATE SEQUENCE span_archive_ingest_visits START WITH 1;
+ CREATE FUNCTION observe_span_archive_duplicate_ingest() RETURNS trigger LANGUAGE plpgsql AS $$
+ BEGIN
+  IF NEW.project_id=%d AND NEW.trace_id='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' AND NEW.span_id='0000000000000071' THEN
+   PERFORM nextval('span_archive_ingest_visits');
+  END IF;
+  RETURN NEW;
+ END $$;
+ CREATE TRIGGER observe_span_archive_duplicate_ingest BEFORE INSERT ON spans
+ FOR EACH ROW EXECUTE FUNCTION observe_span_archive_duplicate_ingest()`, projectID)); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_, _ = db.pool.Exec(context.Background(), `DROP TRIGGER IF EXISTS observe_span_archive_duplicate_ingest ON spans;
+ DROP FUNCTION IF EXISTS observe_span_archive_duplicate_ingest(); DROP SEQUENCE IF EXISTS span_archive_ingest_visits`)
+	})
+
+	gate := &gatedSpanArchivePut{Objects: objects, started: make(chan struct{}), proceed: make(chan struct{})}
+	options := baseOptions
+	options.Objects = gate
+	archiveResult := make(chan error, 1)
+	go func() {
+		_, moved, _, err := db.CleanupTransactionsWithArchive(ctx, 30, options)
+		if err == nil && moved != 1 {
+			err = fmt.Errorf("archive moved %d spans, want 1", moved)
+		}
+		archiveResult <- err
+	}()
+	var releaseOnce sync.Once
+	releaseArchive := func() { releaseOnce.Do(func() { close(gate.proceed) }) }
+	ingestResult := make(chan error, 1)
+	archiveFinished, ingestStarted, ingestFinished := false, false, false
+	defer func() {
+		releaseArchive()
+		if !archiveFinished {
+			<-archiveResult
+		}
+		if ingestStarted && !ingestFinished {
+			<-ingestResult
+		}
+	}()
+	select {
+	case <-gate.started:
+	case <-ctx.Done():
+		t.Fatalf("archive never reached object upload: %v", ctx.Err())
+	}
+
+	go func() {
+		count, err := ingester.IngestSpans(ctx, project.ID, payload, 1)
+		if err == nil && count != 0 {
+			err = fmt.Errorf("duplicate ingest accepted %d spans", count)
+		}
+		ingestResult <- err
+	}()
+	ingestStarted = true
+
+	deadline := time.NewTimer(5 * time.Second)
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer deadline.Stop()
+	defer ticker.Stop()
+	for {
+		var waiting bool
+		if err := db.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity
+ WHERE datname=current_database() AND application_name='goodsentry-span-archive-race' AND wait_event_type='Lock')`).Scan(&waiting); err != nil {
+			t.Fatal(err)
+		}
+		if waiting {
+			break
+		}
+		select {
+		case <-deadline.C:
+			t.Fatal("duplicate ingest did not overlap the in-flight archive lock")
+		case <-ticker.C:
+		case <-ctx.Done():
+			t.Fatalf("wait for in-flight identity lock: %v", ctx.Err())
+		}
+	}
+	var triggerCalls int64
+	if err := db.pool.QueryRow(ctx, `SELECT CASE WHEN is_called THEN last_value ELSE 0 END FROM span_archive_ingest_visits`).Scan(&triggerCalls); err != nil {
+		t.Fatal(err)
+	}
+	releaseArchive()
+	archiveErr := <-archiveResult
+	archiveFinished = true
+	ingestErr := <-ingestResult
+	ingestFinished = true
+	if archiveErr != nil {
+		t.Fatal(archiveErr)
+	}
+	if ingestErr != nil {
+		t.Fatal(ingestErr)
+	}
+	if triggerCalls != 0 {
+		t.Fatalf("duplicate ingest passed the cold identity gate while archive was in flight (trigger calls=%d)", triggerCalls)
+	}
+	var hot, cold int
+	if err := db.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM spans WHERE span_id='0000000000000071'),
+ (SELECT count(*) FROM span_archive_rows WHERE span_id='0000000000000071')`).Scan(&hot, &cold); err != nil {
+		t.Fatal(err)
+	}
+	if hot != 0 || cold != 1 {
+		t.Fatalf("in-flight archive and duplicate ingest left hot/cold identities=%d/%d", hot, cold)
+	}
+}
+
 func TestSpanArchiveCleanupRecoversAfterObjectOrManifestDeleteFailure(t *testing.T) {
 	ctx, db, _, _, project := telemetryStore(t)
 	objects, err := spanarchive.NewLocalObjects(t.TempDir())
@@ -442,6 +585,40 @@ func (failDeleteSpanArchive) Delete(context.Context, string) error {
 type blockingSpanArchivePut struct {
 	started chan struct{}
 	once    sync.Once
+}
+
+type gatedSpanArchivePut struct {
+	spanarchive.Objects
+	started chan struct{}
+	proceed chan struct{}
+	once    sync.Once
+}
+
+type gatedSpanArchiveDelete struct {
+	spanarchive.Objects
+	started chan struct{}
+	proceed chan struct{}
+	once    sync.Once
+}
+
+func (g *gatedSpanArchiveDelete) Delete(ctx context.Context, key string) error {
+	g.once.Do(func() { close(g.started) })
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-g.proceed:
+		return g.Objects.Delete(ctx, key)
+	}
+}
+
+func (b *gatedSpanArchivePut) Put(ctx context.Context, key string, data []byte) error {
+	b.once.Do(func() { close(b.started) })
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-b.proceed:
+		return b.Objects.Put(ctx, key, data)
+	}
 }
 
 func (b *blockingSpanArchivePut) Put(ctx context.Context, _ string, _ []byte) error {
