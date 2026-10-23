@@ -5,6 +5,7 @@ import (
 	"net/mail"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode"
@@ -14,35 +15,38 @@ import (
 )
 
 type Config struct {
-	DatabaseURL, Secret, Domain, Prefix, Addr  string
-	EmailURL, FromEmail, ValkeyURL, UploadDir  string
-	AuthMode                                   string
-	DefaultEmail, DefaultName                  string
-	DefaultOrganization, DefaultPassword       string
-	Logs, Uptime, MCP, DuckDB, OpenAPI, Admin  bool
-	OrganizationCreation                       bool
-	MaxBodyBytes                               int64
-	RetentionDays, LogRetentionDays            int
-	TransactionRetentionDays                   int
-	EventRetentionDays                         int
-	UptimeRetentionDays                        int
-	FileRetentionDays, ReleaseRetentionDays    int
-	RetentionIntervalSeconds                   int
-	MonitorWorkers                             int
-	UptimeAllowPrivate                         bool
-	AlertWorkers, AlertMaxAttempts             int
-	AlertTimeoutSeconds                        int
-	WebhookAllowPrivate                        bool
-	AlertDelivery                              bool
-	ArtifactChunkTTLHours                      int
-	ArtifactStagingMaxBytes                    int64
-	ArtifactMaxMapRecords                      int
-	IssueMaintenanceIntervalSeconds            int
-	OTLPMaxRecords, OTLPMaxNodes               int
-	OIDCIssuer, OIDCClientID, OIDCClientSecret string
-	OIDCName                                   string
-	OIDCScopes                                 []string
-	OIDCAutoCreate                             bool
+	DatabaseURL, Secret, Domain, Prefix, Addr                    string
+	EmailURL, FromEmail, ValkeyURL, UploadDir                    string
+	AuthMode                                                     string
+	DefaultEmail, DefaultName                                    string
+	DefaultOrganization, DefaultPassword                         string
+	Logs, Uptime, MCP, ArchiveEnabled, OpenAPI, Admin            bool
+	ArchiveBackend, ArchiveDir, ArchiveS3Bucket, ArchiveS3Region string
+	ArchiveS3Endpoint, ArchiveS3Prefix                           string
+	ArchiveAfterDays                                             int
+	OrganizationCreation                                         bool
+	MaxBodyBytes                                                 int64
+	RetentionDays, LogRetentionDays                              int
+	TransactionRetentionDays                                     int
+	EventRetentionDays                                           int
+	UptimeRetentionDays                                          int
+	FileRetentionDays, ReleaseRetentionDays                      int
+	RetentionIntervalSeconds                                     int
+	MonitorWorkers                                               int
+	UptimeAllowPrivate                                           bool
+	AlertWorkers, AlertMaxAttempts                               int
+	AlertTimeoutSeconds                                          int
+	WebhookAllowPrivate                                          bool
+	AlertDelivery                                                bool
+	ArtifactChunkTTLHours                                        int
+	ArtifactStagingMaxBytes                                      int64
+	ArtifactMaxMapRecords                                        int
+	IssueMaintenanceIntervalSeconds                              int
+	OTLPMaxRecords, OTLPMaxNodes                                 int
+	OIDCIssuer, OIDCClientID, OIDCClientSecret                   string
+	OIDCName                                                     string
+	OIDCScopes                                                   []string
+	OIDCAutoCreate                                               bool
 }
 
 func (c Config) AuthenticationDisabled() bool { return c.AuthMode == "disabled" }
@@ -55,7 +59,7 @@ func (c Config) ValidateRuntimeAvailability() error {
 		enabled   bool
 		canonical string
 	}{
-		{"DuckDB", c.DuckDB, "GOODSENTRY_ENABLE_DUCKDB"},
+		{"cold span archive", c.ArchiveEnabled, "GOODSENTRY_ENABLE_ARCHIVE"},
 	} {
 		if feature.enabled {
 			return fmt.Errorf("%s is not implemented; set %s=false", feature.name, feature.canonical)
@@ -91,6 +95,26 @@ func Load() (Config, error) {
 		return c, fmt.Errorf("GOODSENTRY_DOMAIN must be an absolute http or https URL without credentials, query or fragment")
 	}
 	c.Prefix = strings.TrimRight(u.Path, "/")
+	archiveFlag := firstSet("GOODSENTRY_ENABLE_ARCHIVE", "GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB")
+	c.ArchiveEnabled, err = strconv.ParseBool(archiveFlag)
+	if err != nil {
+		return c, fmt.Errorf("GOODSENTRY_ENABLE_ARCHIVE must be true or false")
+	}
+	c.ArchiveBackend = strings.ToLower(strings.TrimSpace(value("GOODSENTRY_ARCHIVE_BACKEND", "local")))
+	if c.ArchiveBackend != "local" && c.ArchiveBackend != "s3" {
+		return c, fmt.Errorf("GOODSENTRY_ARCHIVE_BACKEND must be local or s3")
+	}
+	c.ArchiveDir = value("GOODSENTRY_ARCHIVE_DIR", filepath.Join(c.UploadDir, "archive"))
+	c.ArchiveS3Bucket = strings.TrimSpace(os.Getenv("GOODSENTRY_ARCHIVE_S3_BUCKET"))
+	c.ArchiveS3Region = strings.TrimSpace(value("GOODSENTRY_ARCHIVE_S3_REGION", value("AWS_REGION", "")))
+	c.ArchiveS3Endpoint = strings.TrimSpace(os.Getenv("GOODSENTRY_ARCHIVE_S3_ENDPOINT"))
+	c.ArchiveS3Prefix = strings.Trim(strings.TrimSpace(os.Getenv("GOODSENTRY_ARCHIVE_S3_PREFIX")), "/")
+	if c.ArchiveS3Endpoint != "" {
+		endpoint, endpointErr := url.Parse(c.ArchiveS3Endpoint)
+		if endpointErr != nil || (endpoint.Scheme != "http" && endpoint.Scheme != "https") || endpoint.Host == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
+			return c, fmt.Errorf("GOODSENTRY_ARCHIVE_S3_ENDPOINT must be an absolute http or https URL without credentials, query or fragment")
+		}
+	}
 	c.AuthMode = strings.ToLower(strings.TrimSpace(value("GOODSENTRY_AUTH", "disabled")))
 	if c.AuthMode != "disabled" && c.AuthMode != "required" {
 		return c, fmt.Errorf("GOODSENTRY_AUTH must be disabled or required")
@@ -125,7 +149,6 @@ func Load() (Config, error) {
 		{"GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS", "GLITCHTIP_UPTIME_ALLOW_PRIVATE_IPS", false, &c.UptimeAllowPrivate},
 		{"GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS", "", false, &c.WebhookAllowPrivate},
 		{"GOODSENTRY_ENABLE_MCP", "GLITCHTIP_ENABLE_MCP", false, &c.MCP},
-		{"GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB", false, &c.DuckDB},
 		{"GOODSENTRY_ENABLE_ORGANIZATION_CREATION", "ENABLE_ORGANIZATION_CREATION", false, &c.OrganizationCreation},
 		{"ENABLE_OPENAPI", "", false, &c.OpenAPI}, {"ENABLE_ADMIN", "", false, &c.Admin},
 	} {
@@ -236,6 +259,25 @@ func Load() (Config, error) {
 	if err != nil || c.TransactionRetentionDays < 1 || c.TransactionRetentionDays > 3650 {
 		return c, fmt.Errorf("GOODSENTRY_TRANSACTION_RETENTION_DAYS / GLITCHTIP_TRANSACTION_RETENTION_DAYS must be between 1 and 3650")
 	}
+	archiveAfterDefault := c.TransactionRetentionDays / 2
+	if archiveAfterDefault < 1 {
+		archiveAfterDefault = 1
+	}
+	if archiveAfterDefault > 30 {
+		archiveAfterDefault = 30
+	}
+	c.ArchiveAfterDays = archiveAfterDefault
+	if raw := strings.TrimSpace(os.Getenv("GOODSENTRY_ARCHIVE_AFTER_DAYS")); raw != "" {
+		c.ArchiveAfterDays, err = strconv.Atoi(raw)
+		if err != nil || c.ArchiveAfterDays < 1 || c.ArchiveAfterDays > c.TransactionRetentionDays {
+			return c, fmt.Errorf("GOODSENTRY_ARCHIVE_AFTER_DAYS must be between 1 and GOODSENTRY_TRANSACTION_RETENTION_DAYS")
+		}
+	}
+	if c.ArchiveEnabled && c.ArchiveBackend == "s3" {
+		if c.ArchiveS3Bucket == "" || c.ArchiveS3Region == "" {
+			return c, fmt.Errorf("GOODSENTRY_ARCHIVE_S3_BUCKET and GOODSENTRY_ARCHIVE_S3_REGION are required for the s3 archive backend")
+		}
+	}
 	events := alias("GOODSENTRY_EVENT_RETENTION_DAYS", "GLITCHTIP_EVENT_RETENTION_DAYS", strconv.Itoa(c.RetentionDays))
 	c.EventRetentionDays, err = strconv.Atoi(events)
 	if err != nil || c.EventRetentionDays < 1 || c.EventRetentionDays > 3650 {
@@ -285,4 +327,13 @@ func alias(name, legacy, fallback string) string {
 		}
 	}
 	return fallback
+}
+
+func firstSet(names ...string) string {
+	for _, name := range names {
+		if value := os.Getenv(name); value != "" {
+			return value
+		}
+	}
+	return "false"
 }

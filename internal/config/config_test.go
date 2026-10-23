@@ -66,6 +66,12 @@ func TestDeploymentConfiguration(t *testing.T) {
 		{"no release retention", map[string]string{"GOODSENTRY_RELEASE_RETENTION_DAYS": "0"}, "RELEASE_RETENTION_DAYS"},
 		{"excessive legacy release retention", map[string]string{"GLITCHTIP_RELEASE_RETENTION_DAYS": "3651"}, "RELEASE_RETENTION_DAYS"},
 		{"fractional release retention", map[string]string{"GOODSENTRY_RELEASE_RETENTION_DAYS": "1.5"}, "RELEASE_RETENTION_DAYS"},
+		{"invalid archive flag", map[string]string{"GOODSENTRY_ENABLE_ARCHIVE": "sometimes"}, "GOODSENTRY_ENABLE_ARCHIVE"},
+		{"invalid archive backend", map[string]string{"GOODSENTRY_ARCHIVE_BACKEND": "postgres"}, "GOODSENTRY_ARCHIVE_BACKEND"},
+		{"archive threshold is positive", map[string]string{"GOODSENTRY_ARCHIVE_AFTER_DAYS": "0"}, "GOODSENTRY_ARCHIVE_AFTER_DAYS"},
+		{"archive threshold cannot outlive spans", map[string]string{"GOODSENTRY_TRANSACTION_RETENTION_DAYS": "7", "GOODSENTRY_ARCHIVE_AFTER_DAYS": "8"}, "GOODSENTRY_ARCHIVE_AFTER_DAYS"},
+		{"s3 requires bucket and region", map[string]string{"GOODSENTRY_ENABLE_ARCHIVE": "true", "GOODSENTRY_ARCHIVE_BACKEND": "s3"}, "GOODSENTRY_ARCHIVE_S3_BUCKET"},
+		{"archive endpoint must be absolute http", map[string]string{"GOODSENTRY_ARCHIVE_S3_ENDPOINT": "ftp://s3.example.test", "GOODSENTRY_ARCHIVE_BACKEND": "s3", "GOODSENTRY_ENABLE_ARCHIVE": "true", "GOODSENTRY_ARCHIVE_S3_BUCKET": "goodsentry", "GOODSENTRY_ARCHIVE_S3_REGION": "us-east-1"}, "GOODSENTRY_ARCHIVE_S3_ENDPOINT"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
@@ -73,6 +79,9 @@ func TestDeploymentConfiguration(t *testing.T) {
 			t.Setenv("GOODSENTRY_DOMAIN", "https://errors.example.com/monitoring/")
 			t.Setenv("GLITCHTIP_ENABLE_LOGS", "False")
 			t.Setenv("GOODSENTRY_ENABLE_LOGS", "")
+			for _, key := range []string{"GOODSENTRY_ENABLE_ARCHIVE", "GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB", "GOODSENTRY_ARCHIVE_BACKEND", "GOODSENTRY_ARCHIVE_DIR", "GOODSENTRY_ARCHIVE_AFTER_DAYS", "GOODSENTRY_ARCHIVE_S3_BUCKET", "GOODSENTRY_ARCHIVE_S3_REGION", "GOODSENTRY_ARCHIVE_S3_ENDPOINT", "GOODSENTRY_ARCHIVE_S3_PREFIX", "AWS_REGION"} {
+				t.Setenv(key, "")
+			}
 			for k, v := range tc.env {
 				t.Setenv(k, v)
 			}
@@ -90,6 +99,66 @@ func TestDeploymentConfiguration(t *testing.T) {
 				t.Fatalf("wrong deployment configuration: domain=%s prefix=%s logs=%v", c.Domain, c.Prefix, c.Logs)
 			}
 		})
+	}
+}
+
+func TestArchiveConfigurationAliasesDefaultsAndReadinessGate(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+	t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
+	t.Setenv("GOODSENTRY_DOMAIN", "http://localhost:8000")
+	for _, key := range []string{"GOODSENTRY_ENABLE_ARCHIVE", "GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB", "GOODSENTRY_ARCHIVE_BACKEND", "GOODSENTRY_ARCHIVE_DIR", "GOODSENTRY_ARCHIVE_AFTER_DAYS", "GOODSENTRY_ARCHIVE_S3_BUCKET", "GOODSENTRY_ARCHIVE_S3_REGION", "GOODSENTRY_ARCHIVE_S3_ENDPOINT", "GOODSENTRY_ARCHIVE_S3_PREFIX", "AWS_REGION", "GOODSENTRY_TRANSACTION_RETENTION_DAYS"} {
+		t.Setenv(key, "")
+	}
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.ArchiveEnabled || cfg.ArchiveBackend != "local" || cfg.ArchiveDir != "uploads/archive" || cfg.ArchiveAfterDays != 30 {
+		t.Fatalf("archive defaults=%+v", cfg)
+	}
+	if err := cfg.ValidateRuntimeAvailability(); err != nil {
+		t.Fatalf("disabled archive affected PostgreSQL-only mode: %v", err)
+	}
+
+	t.Setenv("GOODSENTRY_TRANSACTION_RETENTION_DAYS", "20")
+	cfg, err = Load()
+	if err != nil || cfg.ArchiveAfterDays != 10 {
+		t.Fatalf("derived archive threshold=%d err=%v", cfg.ArchiveAfterDays, err)
+	}
+	t.Setenv("GOODSENTRY_ARCHIVE_AFTER_DAYS", "7")
+	cfg, err = Load()
+	if err != nil || cfg.ArchiveAfterDays != 7 {
+		t.Fatalf("explicit archive threshold=%d err=%v", cfg.ArchiveAfterDays, err)
+	}
+
+	t.Setenv("GLITCHTIP_ENABLE_DUCKDB", "true")
+	cfg, err = Load()
+	if err != nil || !cfg.ArchiveEnabled {
+		t.Fatalf("GlitchTip archive alias=%v err=%v", cfg.ArchiveEnabled, err)
+	}
+	t.Setenv("GOODSENTRY_ENABLE_DUCKDB", "false")
+	cfg, err = Load()
+	if err != nil || cfg.ArchiveEnabled {
+		t.Fatalf("GoodSentry compatibility alias precedence=%v err=%v", cfg.ArchiveEnabled, err)
+	}
+	t.Setenv("GOODSENTRY_ENABLE_ARCHIVE", "true")
+	cfg, err = Load()
+	if err != nil || !cfg.ArchiveEnabled {
+		t.Fatalf("canonical archive flag precedence=%v err=%v", cfg.ArchiveEnabled, err)
+	}
+	if err := cfg.ValidateRuntimeAvailability(); err == nil || !strings.Contains(err.Error(), "cold span archive") {
+		t.Fatalf("incomplete archive passed the startup gate: %v", err)
+	}
+
+	t.Setenv("GOODSENTRY_ARCHIVE_BACKEND", "s3")
+	t.Setenv("GOODSENTRY_ARCHIVE_S3_BUCKET", "goodsentry-archive")
+	t.Setenv("AWS_REGION", "us-east-1")
+	t.Setenv("GOODSENTRY_ARCHIVE_S3_ENDPOINT", "http://minio.example.test:9000")
+	t.Setenv("GOODSENTRY_ARCHIVE_S3_PREFIX", "/telemetry/archive/")
+	cfg, err = Load()
+	if err != nil || cfg.ArchiveBackend != "s3" || cfg.ArchiveS3Region != "us-east-1" || cfg.ArchiveS3Prefix != "telemetry/archive" {
+		t.Fatalf("S3 archive configuration=%+v err=%v", cfg, err)
 	}
 }
 
@@ -159,6 +228,7 @@ func TestFeatureAliasesAndRuntimeOptions(t *testing.T) {
 		"GLITCHTIP_ENABLE_MCP":         "true",
 		"GLITCHTIP_ENABLE_DUCKDB":      "true",
 		"GOODSENTRY_ENABLE_MCP":        "false",
+		"GOODSENTRY_ENABLE_ARCHIVE":    "",
 		"GOODSENTRY_ENABLE_DUCKDB":     "false",
 		"ENABLE_ORGANIZATION_CREATION": "false",
 		"ENABLE_ADMIN":                 "false",
@@ -171,7 +241,7 @@ func TestFeatureAliasesAndRuntimeOptions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Logs || cfg.Uptime || cfg.MCP || cfg.DuckDB || cfg.Admin || cfg.OpenAPI || cfg.OrganizationCreation || cfg.ValkeyURL != "" {
+	if cfg.Logs || cfg.Uptime || cfg.MCP || cfg.ArchiveEnabled || cfg.Admin || cfg.OpenAPI || cfg.OrganizationCreation || cfg.ValkeyURL != "" {
 		t.Fatalf("alias precedence/runtime flags=%+v", cfg)
 	}
 	if err := cfg.ValidateRuntimeAvailability(); err != nil {
@@ -180,7 +250,7 @@ func TestFeatureAliasesAndRuntimeOptions(t *testing.T) {
 	for _, option := range []struct {
 		key, value, want string
 	}{
-		{"GOODSENTRY_ENABLE_DUCKDB", "true", "DuckDB"},
+		{"GOODSENTRY_ENABLE_DUCKDB", "true", "cold span archive"},
 	} {
 		t.Run(option.key, func(t *testing.T) {
 			t.Setenv(option.key, option.value)
