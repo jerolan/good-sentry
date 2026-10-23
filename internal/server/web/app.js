@@ -538,8 +538,8 @@
         .filter(section => section !== 'logs' || state.me.features?.logs !== false)
         .filter(section => section !== 'alerts' || (state.me.features?.alerts === true && ['owner', 'admin'].includes(org?.role)))
         .filter(section => section !== 'api-tokens' || ['owner', 'admin'].includes(org?.role))
-        .filter(section => section !== 'people' || ['owner', 'admin'].includes(org?.role))
-        .filter(section => section !== 'organization' || ['owner', 'admin'].includes(org?.role))
+        .filter(section => section !== 'people' || ['owner', 'manager', 'admin'].includes(org?.role))
+        .filter(section => section !== 'organization' || ['owner', 'manager', 'admin'].includes(org?.role))
         .filter(section => section !== 'admin' || (state.me.features?.admin === true && ['owner', 'admin'].includes(org?.role)))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
@@ -625,9 +625,9 @@
         node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner or admin to manage API tokens.')));
       return;
     }
-    if (view === 'people' && !['owner', 'admin'].includes(state.organization.role)) {
-      main.append(pageHeader('People and teams', 'Organization owners and admins manage members and teams.'),
-        node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner or admin to manage people and teams.')));
+    if (view === 'people' && !['owner', 'manager', 'admin'].includes(state.organization.role)) {
+      main.append(pageHeader('People and teams', 'Organization owners, managers and admins manage members and teams.'),
+        node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner, manager or admin to manage people and teams.')));
       return;
     }
     loading(main, isIssueView(view) && params.get('issue') ? 'Loading issue…' : `Loading ${viewNames[view].toLowerCase()}…`);

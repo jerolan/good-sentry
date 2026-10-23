@@ -106,6 +106,21 @@ func TestCompatibleManagementOrganizationAndProjectKeysHTTP(t *testing.T) {
 	f.request(t, memberClient, "POST", keysPath, `{"name":"Member key"}`, http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
 	f.request(t, memberClient, "PUT", keysPath+created.ID+"/", `{"label":"Member edit"}`, http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
 	f.request(t, memberClient, "DELETE", keysPath+created.ID+"/", "", http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
+	managerID := insertDiscoveryMember(t, f, "manager@management.test", "Management manager", "member")
+	managerPath := orgPath + "members/" + managerID + "/"
+	f.request(t, f.client, "PUT", managerPath, `{"orgRole":"manager"}`, http.Header{"X-CSRF-Token": {f.csrf}}, 200)
+	managerClient, managerCSRF := loginManagementMember(t, f, "manager@management.test")
+	managerHeaders := http.Header{"X-CSRF-Token": {managerCSRF}}
+	if err := json.Unmarshal(f.request(t, managerClient, "GET", orgPath, "", nil, 200), &memberDetail); err != nil || !contains(memberDetail.Access, "org:write") || !contains(memberDetail.Access, "member:write") || !contains(memberDetail.Access, "team:write") || !contains(memberDetail.Access, "project:write") {
+		t.Fatalf("manager organization access: %+v %v", memberDetail.Access, err)
+	}
+	var managerKey compatibleProjectKeyView
+	if err := json.Unmarshal(f.request(t, managerClient, "POST", keysPath, `{"name":"Manager key"}`, managerHeaders, 201), &managerKey); err != nil || managerKey.ID == "" {
+		t.Fatalf("manager key create: %+v %v", managerKey, err)
+	}
+	f.request(t, managerClient, "PUT", keysPath+managerKey.ID+"/", `{"label":"Manager updated"}`, managerHeaders, 200)
+	f.request(t, managerClient, "DELETE", keysPath+managerKey.ID+"/", "", managerHeaders, 204)
+	f.request(t, managerClient, "PUT", "/api/0/projects/"+f.org.Slug+"/"+f.project.Slug+"/", `{"name":"Manager project","platform":"go"}`, managerHeaders, 200)
 
 	readToken := issueManagementToken(t, f, f.org.Slug, "Read key", []string{"project:read"}, []string{f.project.ID})
 	readHeaders := http.Header{"Authorization": {"Bearer " + readToken}}

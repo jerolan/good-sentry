@@ -71,8 +71,12 @@ func invitationFrom(tx pgx.Tx, ctx context.Context, where string, args ...any) (
 }
 
 func (s *Store) InviteMember(ctx context.Context, actorID, orgSlug, email, role, tokenHash string, ciphertext []byte, lifetime time.Duration) (Invitation, error) {
+	return s.InviteMemberWithTeams(ctx, actorID, orgSlug, email, role, nil, tokenHash, ciphertext, lifetime)
+}
+
+func (s *Store) InviteMemberWithTeams(ctx context.Context, actorID, orgSlug, email, role string, teamSlugs []string, tokenHash string, ciphertext []byte, lifetime time.Duration) (Invitation, error) {
 	var result Invitation
-	if !validResetInput(tokenHash, ciphertext) || lifetime != 7*24*time.Hour || role != "owner" && role != "admin" && role != "member" {
+	if !validResetInput(tokenHash, ciphertext) || lifetime != 7*24*time.Hour || role != "owner" && role != "manager" && role != "admin" && role != "member" {
 		return result, errors.New("invalid organization invitation")
 	}
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
@@ -84,8 +88,35 @@ func (s *Store) InviteMember(ctx context.Context, actorID, orgSlug, email, role,
 	if err != nil {
 		return result, err
 	}
-	if role == "owner" && actorRole != "owner" {
+	if role == "owner" && actorRole != "owner" || role == "manager" && actorRole != "owner" && actorRole != "manager" {
 		return result, ErrForbidden
+	}
+	assignedTeams := []string{}
+	if len(teamSlugs) > 0 {
+		rows, queryErr := tx.Query(ctx, `SELECT t.id::text,EXISTS(SELECT 1 FROM team_memberships tm
+			WHERE tm.team_id=t.id AND tm.user_id=$3::bigint) FROM teams t
+			WHERE t.organization_id=$1::bigint AND t.slug=ANY($2::text[]) ORDER BY t.id`, orgID, teamSlugs, actorID)
+		if queryErr != nil {
+			return result, queryErr
+		}
+		for rows.Next() {
+			var teamID string
+			var actorOnTeam bool
+			if queryErr = rows.Scan(&teamID, &actorOnTeam); queryErr != nil {
+				rows.Close()
+				return result, queryErr
+			}
+			if actorRole == "admin" && !actorOnTeam {
+				rows.Close()
+				return result, ErrForbidden
+			}
+			assignedTeams = append(assignedTeams, teamID)
+		}
+		if queryErr = rows.Err(); queryErr != nil {
+			rows.Close()
+			return result, queryErr
+		}
+		rows.Close()
 	}
 	var member bool
 	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users u JOIN memberships m ON m.user_id=u.id
@@ -111,6 +142,11 @@ func (s *Store) InviteMember(ctx context.Context, actorID, orgSlug, email, role,
 	if err != nil {
 		return result, err
 	}
+	for _, teamID := range assignedTeams {
+		if _, err = tx.Exec(ctx, `INSERT INTO organization_invitation_teams(invitation_id,team_id) VALUES($1,$2::bigint)`, id, teamID); err != nil {
+			return result, err
+		}
+	}
 	return result, tx.Commit(ctx)
 }
 
@@ -124,7 +160,7 @@ func (s *Store) Invitations(ctx context.Context, userID, orgSlug string) ([]Invi
 	if err != nil {
 		return nil, err
 	}
-	if role != "owner" && role != "admin" {
+	if role != "owner" && role != "manager" && role != "admin" {
 		return nil, ErrForbidden
 	}
 	rows, err := tx.Query(ctx, "SELECT "+invitationColumns+" FROM organization_invitations i JOIN organizations o ON o.id=i.organization_id JOIN users u ON u.id=i.inviter_user_id WHERE i.organization_id=$1::bigint AND i.status IN ('pending','processing','sent','failed') ORDER BY i.created_at DESC,i.id DESC", orgID)
@@ -298,8 +334,8 @@ func (s *Store) AcceptInvitation(ctx context.Context, tokenHash, existingUserID 
 		return user, org, err
 	}
 	defer tx.Rollback(ctx)
-	var orgID, email, role string
-	if err = tx.QueryRow(ctx, "SELECT organization_id::text,email,role FROM organization_invitations WHERE token_hash=$1", tokenHash).Scan(&orgID, &email, &role); err != nil {
+	var invitationID, orgID, email, role string
+	if err = tx.QueryRow(ctx, "SELECT id,organization_id::text,email,role FROM organization_invitations WHERE token_hash=$1", tokenHash).Scan(&invitationID, &orgID, &email, &role); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return user, org, ErrInvalidInvitation
 		}
@@ -345,6 +381,15 @@ func (s *Store) AcceptInvitation(ctx context.Context, tokenHash, existingUserID 
 	}
 	if _, err = tx.Exec(ctx, "INSERT INTO memberships(organization_id,user_id,role) VALUES($1::bigint,$2::bigint,$3)", orgID, user.ID, role); err != nil {
 		return user, org, dbError(err)
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO team_memberships(team_id,user_id)
+		SELECT iit.team_id,$2::bigint FROM organization_invitation_teams iit
+		JOIN teams t ON t.id=iit.team_id AND t.organization_id=$3::bigint
+		WHERE iit.invitation_id=$1 ON CONFLICT DO NOTHING`, invitationID, user.ID, orgID); err != nil {
+		return user, org, err
+	}
+	if _, err = tx.Exec(ctx, `DELETE FROM organization_invitation_teams WHERE invitation_id=$1`, invitationID); err != nil {
+		return user, org, err
 	}
 	org.Role = role
 	if _, err = tx.Exec(ctx, "UPDATE organization_invitations SET status='accepted',accepted_at=clock_timestamp(),updated_at=clock_timestamp(),lease_token='',lease_expires_at=NULL WHERE token_hash=$1", tokenHash); err != nil {

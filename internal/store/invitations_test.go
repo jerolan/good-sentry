@@ -60,6 +60,53 @@ func TestInvitationMigration037PreservesPriorRowsAndReopens(t *testing.T) {
 	}
 }
 
+func TestManagerInvitationTeamsMigrationPreservesStateAndReopens(t *testing.T) {
+	ctx, db, owner, org, project := telemetryStore(t)
+	if err := db.CreateSession(ctx, owner.ID, owner.AuthGeneration, "before062-session", "before062-csrf", time.Now().Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	_, tokenHash, prefix := apiTokenCredentials("before062-token")
+	if _, err := db.CreateAPIToken(ctx, owner.ID, owner.AuthGeneration, org.Slug,
+		APITokenInput{Name: "Before062", Scopes: []string{"project:read"}, ProjectIDs: []int64{apiTokenProjectID(t, project.ID)}, ExpiresInDays: 1}, tokenHash, prefix); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `DROP TABLE organization_invitation_teams;
+		ALTER TABLE memberships DROP CONSTRAINT memberships_role_check;
+		ALTER TABLE memberships ADD CONSTRAINT memberships_role_check CHECK (role IN ('owner','admin','member'));
+		ALTER TABLE organization_invitations DROP CONSTRAINT organization_invitations_role_check;
+		ALTER TABLE organization_invitations ADD CONSTRAINT organization_invitations_role_check CHECK (role IN ('owner','admin','member'));
+		DELETE FROM schema_migrations WHERE version=62`); err != nil {
+		t.Fatal(err)
+	}
+	before := groupDatabaseSnapshot(t, ctx, db, 61)
+	databaseURL := db.pool.Config().ConnString()
+	db.Close()
+	reopened, err := Open(ctx, databaseURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(reopened.Close)
+	after := groupDatabaseSnapshot(t, ctx, reopened, 61)
+	delete(after, "organization_invitation_teams")
+	if !reflect.DeepEqual(before, after) {
+		t.Fatal("062 rewrote prior users, organization, projects, credentials or receipts")
+	}
+	if user, csrf, err := reopened.Session(ctx, "before062-session"); err != nil || user.ID != owner.ID || csrf != "before062-csrf" {
+		t.Fatalf("prior session changed: %+v %q %v", user, csrf, err)
+	}
+	if grant, err := reopened.AuthenticateAPIToken(ctx, tokenHash); err != nil || grant.User.ID != owner.ID {
+		t.Fatalf("prior token changed: %+v %v", grant, err)
+	}
+	var receipt string
+	if err := reopened.pool.QueryRow(ctx, `SELECT checksum FROM schema_migrations WHERE version=62`).Scan(&receipt); err != nil {
+		t.Fatal(err)
+	}
+	body, err := migrations.ReadFile("migrations/062_manager_invitation_teams.sql")
+	if err != nil || receipt != fmt.Sprintf("%x", sha256.Sum256(body)) {
+		t.Fatalf("062 checksum receipt differs: %q %v", receipt, err)
+	}
+}
+
 func TestInvitationDeliveryAcceptanceReplayAndCancellation(t *testing.T) {
 	ctx, db, owner, org, _ := telemetryStore(t)
 	admin := triageMember(t, ctx, db, org, "Invite admin", "admin")
@@ -91,6 +138,9 @@ func TestInvitationDeliveryAcceptanceReplayAndCancellation(t *testing.T) {
 	}
 	if _, err := db.InviteMember(ctx, admin.ID, org.Slug, "owner@invite.test", "owner", strings.Repeat("d", 64), mustInviteCipher(t, box, strings.Repeat("d", 64), strings.Repeat("d", 64)), 7*24*time.Hour); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("admin owner invite=%v", err)
+	}
+	if _, err := db.InviteMember(ctx, admin.ID, org.Slug, "manager@invite.test", "manager", strings.Repeat("c", 64), mustInviteCipher(t, box, strings.Repeat("c", 64), strings.Repeat("c", 64)), 7*24*time.Hour); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("admin manager invite=%v", err)
 	}
 	list, err := db.Invitations(ctx, owner.ID, org.Slug)
 	if err != nil || len(list) != 1 || list[0].ID != item.ID {
@@ -151,6 +201,15 @@ func TestInvitationDeliveryAcceptanceReplayAndCancellation(t *testing.T) {
 	}
 	if _, err := db.InspectInvitation(ctx, hash3); !errors.Is(err, ErrInvalidInvitation) {
 		t.Fatalf("canceled inspect=%v", err)
+	}
+	if _, err := db.UpdateMemberRole(ctx, owner.ID, org.Slug, admin.ID, "manager"); err != nil {
+		t.Fatalf("promote invitation manager=%v", err)
+	}
+	managerHash := strings.Repeat("b", 64)
+	managerInvite, err := db.InviteMember(ctx, admin.ID, org.Slug, "invited-manager@invite.test", "manager", managerHash,
+		mustInviteCipher(t, box, managerHash, strings.Repeat("c", 64)), 7*24*time.Hour)
+	if err != nil || managerInvite.Role != "manager" {
+		t.Fatalf("manager invite=%+v err=%v", managerInvite, err)
 	}
 }
 

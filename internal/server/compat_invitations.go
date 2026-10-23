@@ -26,7 +26,7 @@ func pendingCompatibleInvitation(item store.CompatibleInvitation, accept bool) c
 		OrgUser: compatibleInvitationOrgUser{
 			CompatibleOrganizationUser: store.CompatibleOrganizationUser{
 				ID: item.ID, Role: item.Role, RoleName: invitationRoleName(item.Role), DateCreated: item.CreatedAt.UTC(),
-				Email: item.Email, Pending: true, IsOwner: item.Role == "owner", Teams: []string{},
+				Email: item.Email, Pending: true, IsOwner: item.Role == "owner", Teams: item.Teams,
 			},
 			Organization: item.Organization,
 		},

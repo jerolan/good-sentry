@@ -138,11 +138,17 @@ func TestPeopleAndTeamHTTPContract(t *testing.T) {
 		t.Fatalf("create team=%d %+v", code, team)
 	}
 	teamID := team["id"].(string)
-	if code, _ := request(ownerClient, "PATCH", basePath+"/members/"+memberID, `{"role":"admin"}`, csrf); code != 200 {
-		t.Fatalf("promote member=%d", code)
+	if code, updated := request(ownerClient, "PATCH", basePath+"/members/"+memberID, `{"role":"manager"}`, csrf); code != 200 || updated["role"] != "manager" {
+		t.Fatalf("promote member to manager=%d %+v", code, updated)
 	}
-	if code, _ := request(adminClient, "PATCH", basePath+"/members/"+memberID, `{"role":"owner"}`, adminCSRF); code != 403 {
-		t.Fatalf("admin promoted self=%d", code)
+	if code, _ := request(adminClient, "PATCH", basePath+"/members/"+memberID, `{"role":"member"}`, adminCSRF); code != 403 {
+		t.Fatalf("admin changed manager=%d", code)
+	}
+	if code, _ := request(adminClient, "PATCH", basePath+"/members/"+adminID, `{"role":"manager"}`, adminCSRF); code != 403 {
+		t.Fatalf("admin granted manager=%d", code)
+	}
+	if code, _ := request(adminClient, "DELETE", basePath+"/members/"+memberID, "", adminCSRF); code != 403 {
+		t.Fatalf("admin removed manager=%d", code)
 	}
 	if code, _ := request(adminClient, "PATCH", basePath+"/members/"+owner["id"].(string), `{"role":"member"}`, adminCSRF); code != 403 {
 		t.Fatalf("admin changed owner=%d", code)
@@ -151,7 +157,13 @@ func TestPeopleAndTeamHTTPContract(t *testing.T) {
 		t.Fatalf("last owner demotion=%d", code)
 	}
 	if code, _ := request(ownerClient, "POST", basePath+"/teams/"+teamID+"/members/"+memberID, "", csrf); code != 204 {
-		t.Fatalf("add team member=%d", code)
+		t.Fatalf("owner add team member=%d", code)
+	}
+	if code, _ := request(memberClient, "PATCH", basePath+"/members/"+adminID, `{"role":"member"}`, memberCSRF); code != 200 {
+		t.Fatalf("manager updated non-owner role=%d", code)
+	}
+	if code, _ := request(ownerClient, "PATCH", basePath+"/members/"+adminID, `{"role":"admin"}`, csrf); code != 200 {
+		t.Fatalf("owner restored admin role=%d", code)
 	}
 	if code, detail := request(memberClient, "GET", basePath+"/teams/"+teamID, "", ""); code != 200 || len(detail["members"].([]any)) != 1 {
 		t.Fatalf("team detail=%d %+v", code, detail)

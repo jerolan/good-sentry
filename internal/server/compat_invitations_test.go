@@ -38,7 +38,7 @@ func compatibleInvitationHash(value string) string {
 	return hex.EncodeToString(mac.Sum(nil))
 }
 
-func createSentInvitation(t *testing.T, f *resolutionHTTPFixture, email, role string) (store.Invitation, string) {
+func createSentInvitation(t *testing.T, f *resolutionHTTPFixture, email, role string, teamSlugs ...string) (store.Invitation, string) {
 	t.Helper()
 	tokenBytes := sha256.Sum256([]byte(email))
 	token := hex.EncodeToString(tokenBytes[:])
@@ -51,7 +51,7 @@ func createSentInvitation(t *testing.T, f *resolutionHTTPFixture, email, role st
 	if err != nil {
 		t.Fatal(err)
 	}
-	item, err := f.db.InviteMember(f.ctx, f.owner.ID, f.org.Slug, email, role, hash, ciphertext, 7*24*time.Hour)
+	item, err := f.db.InviteMemberWithTeams(f.ctx, f.owner.ID, f.org.Slug, email, role, teamSlugs, hash, ciphertext, 7*24*time.Hour)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,13 +63,17 @@ func createSentInvitation(t *testing.T, f *resolutionHTTPFixture, email, role st
 
 func TestCompatibleInvitationHTTPAcceptance(t *testing.T) {
 	f := newResolutionHTTPFixture(t)
-	item, token := createSentInvitation(t, f, "compat-http@example.test", "member")
+	onCall, err := f.db.CreateTeam(f.ctx, f.owner.ID, f.org.Slug, "On call")
+	if err != nil {
+		t.Fatal(err)
+	}
+	item, token := createSentInvitation(t, f, "compat-http@example.test", "member", onCall.Slug)
 	path := "/api/0/accept/" + item.ID + "/" + token + "/"
 	var pending compatibleInvitationWire
 	if err := json.Unmarshal(f.request(t, http.DefaultClient, "GET", path, "", nil, 200), &pending); err != nil {
 		t.Fatal(err)
 	}
-	if pending.AcceptInvite || pending.OrgUser.ID != item.ID || pending.OrgUser.Email != item.Email || pending.OrgUser.Role != "member" || !pending.OrgUser.Pending || pending.OrgUser.User != nil || pending.OrgUser.Teams == nil || pending.OrgUser.Organization.Slug != f.org.Slug {
+	if pending.AcceptInvite || pending.OrgUser.ID != item.ID || pending.OrgUser.Email != item.Email || pending.OrgUser.Role != "member" || !pending.OrgUser.Pending || pending.OrgUser.User != nil || len(pending.OrgUser.Teams) != 1 || pending.OrgUser.Teams[0] != onCall.Slug || pending.OrgUser.Organization.Slug != f.org.Slug {
 		t.Fatalf("pending invitation=%+v", pending)
 	}
 	f.request(t, http.DefaultClient, "GET", "/api/0/accept/"+strings.Repeat("0", 32)+"/"+token+"/", "", nil, 403)
@@ -91,7 +95,7 @@ func TestCompatibleInvitationHTTPAcceptance(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, invitee, "POST", path, `{"acceptInvite":true}`, nil, 200), &accepted); err != nil {
 		t.Fatal(err)
 	}
-	if !accepted.AcceptInvite || accepted.OrgUser.ID != inviteeID || accepted.OrgUser.Pending || accepted.OrgUser.User == nil || accepted.OrgUser.User.Email != "compat-http@example.test" || accepted.OrgUser.Organization.Slug != f.org.Slug {
+	if !accepted.AcceptInvite || accepted.OrgUser.ID != inviteeID || accepted.OrgUser.Pending || accepted.OrgUser.User == nil || accepted.OrgUser.User.Email != "compat-http@example.test" || accepted.OrgUser.Organization.Slug != f.org.Slug || len(accepted.OrgUser.Teams) != 1 || accepted.OrgUser.Teams[0] != onCall.Slug {
 		t.Fatalf("accepted=%+v", accepted)
 	}
 	f.request(t, invitee, "POST", path, `{"acceptInvite":true}`, nil, 403)

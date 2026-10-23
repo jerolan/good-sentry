@@ -58,10 +58,28 @@ func manageableOrganization(ctx context.Context, tx pgx.Tx, userID, slug string)
 	if err != nil {
 		return "", "", err
 	}
-	if role != "owner" && role != "admin" {
+	if role != "owner" && role != "manager" && role != "admin" {
 		return "", "", ErrForbidden
 	}
 	return orgID, role, nil
+}
+
+func authorizeTeamMembershipChange(ctx context.Context, tx pgx.Tx, actorID, actorRole, teamID string) error {
+	if actorRole == "owner" || actorRole == "manager" {
+		return nil
+	}
+	if actorRole != "admin" {
+		return ErrForbidden
+	}
+	var memberID string
+	if err := tx.QueryRow(ctx, `SELECT user_id::text FROM team_memberships
+		WHERE team_id=$1::bigint AND user_id=$2::bigint FOR SHARE`, teamID, actorID).Scan(&memberID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrForbidden
+		}
+		return err
+	}
+	return nil
 }
 
 func (s *Store) Members(ctx context.Context, userID, orgSlug string) ([]Member, error) {
@@ -96,7 +114,7 @@ func (s *Store) Members(ctx context.Context, userID, orgSlug string) ([]Member, 
 
 func (s *Store) UpdateMemberRole(ctx context.Context, actorID, orgSlug, targetID, role string) (Member, error) {
 	var result Member
-	if role != "owner" && role != "admin" && role != "member" {
+	if role != "owner" && role != "manager" && role != "admin" && role != "member" {
 		return result, errors.New("invalid membership role")
 	}
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
@@ -113,6 +131,12 @@ func (s *Store) UpdateMemberRole(ctx context.Context, actorID, orgSlug, targetID
 		return result, dbError(err)
 	}
 	if targetRole == "owner" && actorRole != "owner" || role == "owner" && actorRole != "owner" {
+		return result, ErrForbidden
+	}
+	if actorRole == "admin" && (targetRole == "manager" || role == "manager") {
+		return result, ErrForbidden
+	}
+	if role == "manager" && actorRole != "owner" && actorRole != "manager" {
 		return result, ErrForbidden
 	}
 	if targetRole == "owner" && role != "owner" {
@@ -150,6 +174,9 @@ func (s *Store) RemoveMember(ctx context.Context, actorID, orgSlug, targetID str
 		return dbError(err)
 	}
 	if targetRole == "owner" && actorRole != "owner" {
+		return ErrForbidden
+	}
+	if targetRole == "manager" && actorRole == "admin" {
 		return ErrForbidden
 	}
 	if targetRole == "owner" {
@@ -320,7 +347,7 @@ func (s *Store) AddTeamMember(ctx context.Context, actorID, orgSlug, teamID, use
 		return err
 	}
 	defer tx.Rollback(ctx)
-	orgID, _, err := manageableOrganization(ctx, tx, actorID, orgSlug)
+	orgID, actorRole, err := manageableOrganization(ctx, tx, actorID, orgSlug)
 	if err != nil {
 		return err
 	}
@@ -330,6 +357,9 @@ func (s *Store) AddTeamMember(ctx context.Context, actorID, orgSlug, teamID, use
 	var team string
 	if err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND id=$2::bigint FOR SHARE`, orgID, teamID).Scan(&team); err != nil {
 		return dbError(err)
+	}
+	if err = authorizeTeamMembershipChange(ctx, tx, actorID, actorRole, team); err != nil {
+		return err
 	}
 	if _, err = tx.Exec(ctx, `INSERT INTO team_memberships(team_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING`, team, userID); err != nil {
 		return err
@@ -343,13 +373,19 @@ func (s *Store) RemoveTeamMember(ctx context.Context, actorID, orgSlug, teamID, 
 		return err
 	}
 	defer tx.Rollback(ctx)
-	orgID, _, err := manageableOrganization(ctx, tx, actorID, orgSlug)
+	orgID, actorRole, err := manageableOrganization(ctx, tx, actorID, orgSlug)
 	if err != nil {
 		return err
 	}
 	var team string
 	if err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND id=$2::bigint FOR SHARE`, orgID, teamID).Scan(&team); err != nil {
 		return dbError(err)
+	}
+	if err = tx.QueryRow(ctx, `SELECT user_id::text FROM memberships WHERE organization_id=$1::bigint AND user_id=$2::bigint FOR SHARE`, orgID, userID).Scan(&userID); err != nil {
+		return dbError(err)
+	}
+	if err = authorizeTeamMembershipChange(ctx, tx, actorID, actorRole, team); err != nil {
+		return err
 	}
 	if _, err = tx.Exec(ctx, `DELETE FROM team_memberships WHERE team_id=$1::bigint AND user_id=$2::bigint`, team, userID); err != nil {
 		return err

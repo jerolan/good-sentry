@@ -15,6 +15,7 @@ import (
 type CompatibleInvitation struct {
 	Invitation
 	Organization CompatibleOrganization
+	Teams        []string
 }
 
 func validCompatibleInvitationID(value string) bool {
@@ -44,6 +45,13 @@ func (s *Store) CompatibleInvitation(ctx context.Context, invitationID, tokenHas
 		return result, ErrInvalidInvitation
 	}
 	if err != nil {
+		return result, err
+	}
+	result.Teams = []string{}
+	if err = tx.QueryRow(ctx, `SELECT COALESCE(array_agg(t.slug ORDER BY lower(t.slug),t.id)
+		FILTER (WHERE t.id IS NOT NULL),ARRAY[]::text[]) FROM organization_invitation_teams iit
+		JOIN teams t ON t.id=iit.team_id AND t.organization_id=$2::bigint
+		WHERE iit.invitation_id=$1`, invitationID, result.OrganizationID).Scan(&result.Teams); err != nil {
 		return result, err
 	}
 	var slug, name string

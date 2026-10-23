@@ -81,7 +81,7 @@ type CompatibleOrganizationDetail struct {
 
 func compatibleOrganizationAccess(role string) []string {
 	access := []string{"org:read", "member:read", "team:read", "project:read", "project:releases", "event:read", "event:write"}
-	if role == "owner" || role == "admin" {
+	if role == "owner" || role == "manager" || role == "admin" {
 		access = append(access, "org:write", "member:write", "team:write", "project:write", "event:admin")
 	}
 	return access

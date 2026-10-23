@@ -43,8 +43,8 @@ func (s *Server) updateMemberRole(w http.ResponseWriter, r *http.Request) {
 	if !bodyJSON(w, r, &input) {
 		return
 	}
-	if input.Role != "owner" && input.Role != "admin" && input.Role != "member" {
-		failure(w, 400, "Role must be owner, admin or member")
+	if input.Role != "owner" && input.Role != "manager" && input.Role != "admin" && input.Role != "member" {
+		failure(w, 400, "Role must be owner, manager, admin or member")
 		return
 	}
 	member, err := s.db.UpdateMemberRole(r.Context(), current(r).User.ID, r.PathValue("org"), id, input.Role)

@@ -143,30 +143,60 @@ func TestCompatibleOrganizationMemberManagementHTTP(t *testing.T) {
 	f.request(t, f.client, "POST", teamMemberBase, "", nil, 403)
 
 	for _, body := range []string{
-		`{"orgRole":"manager"}`,
-		`{"orgRole":"member","teamRoles":[{"teamSlug":"on-call","role":"contributor"}]}`,
+		`{"orgRole":"member","teamRoles":[{}]}`,
+		`{"orgRole":"member","teamRoles":[{"teamSlug":7}]}`,
+		`{"orgRole":"member","teamRoles":[{"teamSlug":"on-call","role":7}]}`,
+		`{"orgRole":"member","teamRoles":[{"teamSlug":"on-call","unknown":true}]}`,
 		`{"orgRole":"member","unknown":true}`,
 		`{"orgRole":"member"} {}`,
 	} {
 		f.request(t, f.client, "PUT", memberBase, body, csrf, 400)
 	}
+	if err := json.Unmarshal(f.request(t, f.client, "PUT", memberBase, `{"orgRole":"manager","teamRoles":[{"teamSlug":"on-call","role":"contributor"}]}`, csrf, 200), &detail); err != nil || detail.Role != "manager" || len(detail.Teams) != 0 {
+		t.Fatalf("manager update accepts but ignores active teamRoles: %+v %v", detail, err)
+	}
+	if err := json.Unmarshal(f.request(t, f.client, "PUT", memberBase, `{"orgRole":"member"}`, csrf, 200), &detail); err != nil || detail.Role != "member" {
+		t.Fatalf("restore member role: %+v %v", detail, err)
+	}
 	f.request(t, f.client, "PUT", orgBase+"/members/"+f.owner.ID+"/", `{"orgRole":"member"}`, csrf, 409)
 	f.request(t, f.client, "DELETE", orgBase+"/members/"+f.owner.ID+"/", "", csrf, 409)
 
+	adminID := insertDiscoveryMember(t, f, "admin@compat-member-http.test", "Compat admin", "admin")
+	adminClient, adminCSRF := loginManagementMember(t, f, "admin@compat-member-http.test")
+	adminHeaders := http.Header{"X-CSRF-Token": {adminCSRF}}
+	f.request(t, adminClient, "POST", teamMemberBase, "", adminHeaders, 403)
+	f.request(t, f.client, "POST", orgBase+"/members/"+adminID+"/teams/"+onCall.Slug+"/", "", csrf, 201)
 	var team store.CompatibleTeamProject
-	if err := json.Unmarshal(f.request(t, f.client, "POST", teamMemberBase, "", csrf, 201), &team); err != nil || team.ID != onCall.ID || team.MemberCount != 1 {
+	if err := json.Unmarshal(f.request(t, adminClient, "POST", teamMemberBase, "", adminHeaders, 201), &team); err != nil || team.MemberCount != 2 {
+		t.Fatalf("admin changed membership on joined team: %+v %v", team, err)
+	}
+	defaultTeam, err := f.db.CompatibleTeam(f.ctx, f.owner.ID, f.org.Slug, "default")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.request(t, adminClient, "POST", orgBase+"/members/"+memberID+"/teams/default/", "", adminHeaders, 403)
+	managerID := insertDiscoveryMember(t, f, "manager@compat-member-http.test", "Compat manager", "member")
+	managerBase := orgBase + "/members/" + managerID + "/"
+	f.request(t, f.client, "PUT", managerBase, `{"orgRole":"manager"}`, csrf, 200)
+	managerClient, managerCSRF := loginManagementMember(t, f, "manager@compat-member-http.test")
+	managerHeaders := http.Header{"X-CSRF-Token": {managerCSRF}}
+	if err := json.Unmarshal(f.request(t, managerClient, "POST", orgBase+"/members/"+adminID+"/teams/default/", "", managerHeaders, 201), &team); err != nil || team.ID != defaultTeam.ID {
+		t.Fatalf("manager changed membership on another team: %+v %v", team, err)
+	}
+
+	if err := json.Unmarshal(f.request(t, f.client, "POST", teamMemberBase, "", csrf, 201), &team); err != nil || team.ID != onCall.ID || team.MemberCount != 2 {
 		t.Fatalf("add member to team HTTP: %+v %v", team, err)
 	}
-	if err := json.Unmarshal(f.request(t, f.client, "POST", teamMemberBase, "", csrf, 201), &team); err != nil || team.MemberCount != 1 {
+	if err := json.Unmarshal(f.request(t, f.client, "POST", teamMemberBase, "", csrf, 201), &team); err != nil || team.MemberCount != 2 {
 		t.Fatalf("idempotent add member HTTP: %+v %v", team, err)
 	}
 	if err := json.Unmarshal(f.request(t, f.client, "GET", memberBase, "", nil, 200), &detail); err != nil || len(detail.Teams) != 1 || detail.Teams[0] != onCall.Slug {
 		t.Fatalf("detail after team add: %+v %v", detail, err)
 	}
-	if err := json.Unmarshal(f.request(t, f.client, "DELETE", teamMemberBase, "", csrf, 200), &team); err != nil || team.MemberCount != 0 {
+	if err := json.Unmarshal(f.request(t, f.client, "DELETE", teamMemberBase, "", csrf, 200), &team); err != nil || team.MemberCount != 1 {
 		t.Fatalf("remove member from team HTTP: %+v %v", team, err)
 	}
-	if err := json.Unmarshal(f.request(t, f.client, "DELETE", teamMemberBase, "", csrf, 200), &team); err != nil || team.MemberCount != 0 {
+	if err := json.Unmarshal(f.request(t, f.client, "DELETE", teamMemberBase, "", csrf, 200), &team); err != nil || team.MemberCount != 1 {
 		t.Fatalf("idempotent remove member HTTP: %+v %v", team, err)
 	}
 	f.request(t, f.client, "POST", memberBase+"teams/missing/", "", csrf, 404)
@@ -185,7 +215,7 @@ func TestCompatibleOrganizationMemberManagementHTTP(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, http.DefaultClient, "PUT", memberBase, `{"orgRole":"member"}`, writeHeaders, 200), &detail); err != nil || detail.Role != "member" {
 		t.Fatalf("org write role restore: %+v %v", detail, err)
 	}
-	if err := json.Unmarshal(f.request(t, http.DefaultClient, "POST", teamMemberBase, "", writeHeaders, 201), &team); err != nil || team.MemberCount != 1 {
+	if err := json.Unmarshal(f.request(t, http.DefaultClient, "POST", teamMemberBase, "", writeHeaders, 201), &team); err != nil || team.MemberCount != 2 {
 		t.Fatalf("org write team add: %+v %v", team, err)
 	}
 	var secondOrgID, secondProjectID string
@@ -207,7 +237,7 @@ func TestCompatibleOrganizationMemberManagementHTTP(t *testing.T) {
 	f.request(t, f.client, "DELETE", memberBase, "", csrf, 204)
 	f.request(t, f.client, "GET", memberBase, "", nil, 404)
 	f.request(t, memberClient, "GET", orgBase+"/", "", nil, 404)
-	if err := json.Unmarshal(f.request(t, f.client, "GET", "/api/0/teams/"+f.org.Slug+"/on-call/", "", nil, 200), &team); err != nil || team.MemberCount != 0 {
+	if err := json.Unmarshal(f.request(t, f.client, "GET", "/api/0/teams/"+f.org.Slug+"/on-call/", "", nil, 200), &team); err != nil || team.MemberCount != 1 {
 		t.Fatalf("team member cascade: %+v %v", team, err)
 	}
 }

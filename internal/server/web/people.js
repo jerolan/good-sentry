@@ -13,12 +13,12 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
   return {
     async render(main, _params, alive) {
       const org = state.organization.slug;
-      const canManage = ['owner', 'admin'].includes(state.organization.role);
+      const canManage = ['owner', 'manager', 'admin'].includes(state.organization.role);
       const operationError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
 
       if (!canManage) {
-        main.replaceChildren(pageHeader('People and teams', 'Organization owners and admins manage members and teams.'),
-          node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner or admin to manage people and teams.')));
+        main.replaceChildren(pageHeader('People and teams', 'Organization owners, managers and admins manage members and teams.'),
+          node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner, manager or admin to manage people and teams.')));
         return;
       }
 
@@ -55,14 +55,15 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
       function draw(members, teams, invitations, teamDetail) {
         operationError.textContent = '';
         const memberRows = members.map(member => {
-          const roleOptions = state.organization.role === 'owner' ? ['owner', 'admin', 'member'] : ['admin', 'member'];
-          const protectedOwner = state.organization.role !== 'owner' && member.role === 'owner';
-          if (protectedOwner) {
-            return node('tr', {}, node('td', {}, node('strong', {}, memberLabel(member)), node('div', { class: 'small muted' }, member.email)), node('td', {}, member.role), node('td', { class: 'small muted' }, 'Only an owner can change this owner.'));
+          const actorRole = state.organization.role;
+          const roleOptions = actorRole === 'owner' ? ['owner', 'manager', 'admin', 'member'] : actorRole === 'manager' ? ['manager', 'admin', 'member'] : ['admin', 'member'];
+          const protectedRole = (member.role === 'owner' && actorRole !== 'owner') || (member.role === 'manager' && actorRole === 'admin');
+          if (protectedRole) {
+            const reason = member.role === 'owner' ? 'Only an owner can change this owner.' : 'Only an owner or manager can change this manager.';
+            return node('tr', {}, node('td', {}, node('strong', {}, memberLabel(member)), node('div', { class: 'small muted' }, member.email)), node('td', {}, member.role), node('td', { class: 'small muted' }, reason));
           }
           const role = node('select', { class: 'select', 'aria-label': `Role for ${memberLabel(member)}` }, roleOptions.map(value => node('option', { value }, value)));
           role.value = member.role;
-          role.disabled = protectedOwner;
           const save = button('Save role', async () => {
             save.disabled = true;
             try {
@@ -71,8 +72,8 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
               await load();
             } catch (error) { formError(operationError, error); save.disabled = false; }
           }, 'small');
-          save.disabled = protectedOwner || member.role === role.value;
-          role.addEventListener('change', () => { save.disabled = protectedOwner || member.role === role.value; });
+          save.disabled = member.role === role.value;
+          role.addEventListener('change', () => { save.disabled = member.role === role.value; });
           const actions = node('div', { class: 'actions' }, role, save);
           actions.append(button('Remove', () => {
             const warning = node('div', { class: 'form-stack' }, node('p', {}, `Remove ${memberLabel(member)} from this organization? Their organization tokens, assignments and team memberships will be removed.`), operationError);
@@ -94,7 +95,7 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
           memberRows.length ? node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, ['Member', 'Current role', 'Manage'].map(label => node('th', { scope: 'col' }, label)))), node('tbody', {}, memberRows))) : node('p', { class: 'panel-body muted' }, 'No organization members.'));
 
         const inviteEmail = field('Email', 'email', { required: true, maxlength: 254, autocomplete: 'off' });
-        const inviteRoles = state.organization.role === 'owner' ? ['member', 'admin', 'owner'] : ['member', 'admin'];
+        const inviteRoles = state.organization.role === 'owner' ? ['member', 'admin', 'manager', 'owner'] : state.organization.role === 'manager' ? ['member', 'admin', 'manager'] : ['member', 'admin'];
         const inviteRole = node('select', { class: 'select', 'aria-label': 'Invitation role' }, inviteRoles.map(role => node('option', { value: role }, role)));
         const inviteError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
         const inviteSubmit = node('button', { type: 'submit', class: 'btn button primary' }, 'Send invitation');
@@ -160,6 +161,8 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
         }, 'small');
         const memberIDs = new Set(detail.members.map(member => member.id));
         const available = members.filter(member => !memberIDs.has(member.id));
+        const actorRole = state.organization.role;
+        const mayChangeMembership = actorRole === 'owner' || actorRole === 'manager' || detail.members.some(member => member.id === state.me.user.id);
         const add = node('select', { class: 'select', 'aria-label': 'Member to add' }, available.map(member => node('option', { value: member.id }, `${memberLabel(member)} · ${member.email}`)));
         const addButton = button('Add member', async () => {
           if (!add.value) return;
@@ -170,15 +173,15 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
             await load();
           } catch (failure) { formError(error, failure); addButton.disabled = false; }
         }, 'small');
-        addButton.disabled = available.length === 0;
+        addButton.disabled = available.length === 0 || !mayChangeMembership;
         const memberRows = detail.members.map(member => node('tr', {}, node('td', {}, node('strong', {}, memberLabel(member)), node('div', { class: 'small muted' }, member.email)),
-          node('td', {}, button('Remove', async () => {
+          node('td', {}, mayChangeMembership ? button('Remove', async () => {
             try {
               await request(`${teamPath(org, team.id)}/members/${encodeURIComponent(member.id)}`, { method: 'DELETE' });
               notify('Team member removed.');
               await load();
             } catch (failure) { formError(error, failure); }
-          }, 'small danger'))));
+          }, 'small danger') : node('span', { class: 'small muted' }, 'Only team members can change assignments.'))));
         const editor = node('div', { class: 'form-stack people-team-detail' });
         const deleteTeam = button('Delete team', () => {
           const warning = node('div', { class: 'form-stack' }, node('p', {}, 'Delete this team? Project associations are removed; project data is kept.'), error);
@@ -195,7 +198,7 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
         deleteTeam.disabled = team.slug === 'default';
         editor.append(
           node('div', { class: 'people-team-header' }, node('div', { class: 'people-inline-form' }, rename.wrap, saveName), deleteTeam), error,
-          node('div', { class: 'people-add' }, available.length ? node('div', { class: 'people-inline-form' }, add, addButton) : node('p', { class: 'small muted' }, 'Every organization member is already in this team.')),
+          node('div', { class: 'people-add' }, !mayChangeMembership ? node('p', { class: 'small muted' }, 'Join this team or ask a manager to change its membership.') : available.length ? node('div', { class: 'people-inline-form' }, add, addButton) : node('p', { class: 'small muted' }, 'Every organization member is already in this team.')),
           memberRows.length ? node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, ['Team member', 'Manage'].map(label => node('th', { scope: 'col' }, label)))), node('tbody', {}, memberRows))) : node('p', { class: 'muted' }, 'This team has no members.'));
         return editor;
       }

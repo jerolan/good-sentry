@@ -93,3 +93,85 @@ func TestCompatibleInvitationAcceptsExistingAndVerifiedSecondaryAccounts(t *test
 		t.Fatalf("secondary acceptance=%+v %+v err=%v", accepted, invitedOrg, err)
 	}
 }
+
+func TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance(t *testing.T) {
+	ctx, db, owner, org, _ := telemetryStore(t)
+	admin := triageMember(t, ctx, db, org, "Invitation admin", "admin")
+	onCall, err := db.CreateTeam(ctx, owner.ID, org.Slug, "On call")
+	if err != nil {
+		t.Fatal(err)
+	}
+	doomed, err := db.CreateTeam(ctx, owner.ID, org.Slug, "Temporary")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var foreignOrgID string
+	if err = db.pool.QueryRow(ctx, `INSERT INTO organizations(slug,name) VALUES('invitation-team-foreign','Foreign') RETURNING id::text`).Scan(&foreignOrgID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.pool.Exec(ctx, `INSERT INTO teams(organization_id,slug,name) VALUES($1::bigint,'foreign-team','Foreign team')`, foreignOrgID); err != nil {
+		t.Fatal(err)
+	}
+
+	issue := func(actorID, email string, role string, slugs []string, seed int) (Invitation, string, error) {
+		hash := fmt.Sprintf("%064x", seed)
+		item, inviteErr := db.InviteMemberWithTeams(ctx, actorID, org.Slug, email, role, slugs, hash,
+			bytes.Repeat([]byte{byte(seed)}, 92), 7*24*time.Hour)
+		if inviteErr == nil {
+			_, inviteErr = db.pool.Exec(ctx, `UPDATE organization_invitations SET status='sent',sent_at=clock_timestamp() WHERE id=$1`, item.ID)
+		}
+		return item, hash, inviteErr
+	}
+	if _, _, err = issue(admin.ID, "unjoined-team@invite.test", "member", []string{onCall.Slug}, 4301); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("admin assigned an unjoined team: %v", err)
+	}
+	if err = db.AddTeamMember(ctx, owner.ID, org.Slug, onCall.ID, admin.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err = issue(admin.ID, "other-unjoined-team@invite.test", "member", []string{onCall.Slug, doomed.Slug}, 4302); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("admin assigned another unjoined team: %v", err)
+	}
+	item, hash, err := issue(admin.ID, "assigned@invite.test", "member", []string{onCall.Slug, onCall.Slug, "missing-team", "foreign-team"}, 4303)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pending CompatibleOrganizationUser
+	pending, err = db.CompatibleOrganizationInvitationMember(ctx, owner.ID, org.Slug, item.ID)
+	if err != nil || !pending.Pending || len(pending.Teams) != 1 || pending.Teams[0] != onCall.Slug {
+		t.Fatalf("pending team assignments=%+v err=%v", pending, err)
+	}
+	if _, err = db.UpdateCompatibleTeam(ctx, owner.ID, org.Slug, onCall.Slug, "incident-response"); err != nil {
+		t.Fatal(err)
+	}
+	pending, err = db.CompatibleOrganizationInvitationMember(ctx, owner.ID, org.Slug, item.ID)
+	if err != nil || len(pending.Teams) != 1 || pending.Teams[0] != "incident-response" {
+		t.Fatalf("renamed pending team assignment=%+v err=%v", pending, err)
+	}
+	accepted, acceptedOrg, err := db.AcceptInvitation(ctx, hash, "", 0, "Assigned invitee", []byte("password-hash"))
+	if err != nil || acceptedOrg.ID != org.ID || acceptedOrg.Role != "member" {
+		t.Fatalf("assigned invitation acceptance=%+v org=%+v err=%v", accepted, acceptedOrg, err)
+	}
+	var assigned int
+	if err = db.pool.QueryRow(ctx, `SELECT count(*) FROM team_memberships tm JOIN teams t ON t.id=tm.team_id
+		WHERE tm.user_id=$1::bigint AND t.id=$2::bigint AND t.slug='incident-response'`, accepted.ID, onCall.ID).Scan(&assigned); err != nil || assigned != 1 {
+		t.Fatalf("accepted team assignment count=%d err=%v", assigned, err)
+	}
+	var retainedInviteAssignments int
+	if err = db.pool.QueryRow(ctx, `SELECT count(*) FROM organization_invitation_teams WHERE invitation_id=$1`, item.ID).Scan(&retainedInviteAssignments); err != nil || retainedInviteAssignments != 0 {
+		t.Fatalf("consumed invitation retained assignments=%d err=%v", retainedInviteAssignments, err)
+	}
+
+	doomedInvite, doomedHash, err := issue(owner.ID, "deleted-team@invite.test", "member", []string{doomed.Slug}, 4304)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = db.DeleteTeam(ctx, owner.ID, org.Slug, doomed.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err = db.AcceptInvitation(ctx, doomedHash, "", 0, "Deleted team invitee", []byte("password-hash")); err != nil {
+		t.Fatalf("accept after assigned team deletion: %v", err)
+	}
+	if _, err = db.CompatibleInvitation(ctx, doomedInvite.ID, doomedHash); !errors.Is(err, ErrInvalidInvitation) {
+		t.Fatalf("consumed deleted-team invitation remained valid: %v", err)
+	}
+}

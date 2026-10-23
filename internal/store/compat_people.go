@@ -31,6 +31,8 @@ func roleDisplay(role string) string {
 	switch role {
 	case "owner":
 		return "Owner"
+	case "manager":
+		return "Manager"
 	case "admin":
 		return "Admin"
 	default:
@@ -80,23 +82,26 @@ func (s *Store) CompatibleOrganizationMembers(ctx context.Context, userID, orgRe
 		return nil, err
 	}
 	rows.Close()
-	if role == "owner" || role == "admin" {
-		rows, err = tx.Query(ctx, `SELECT i.id,i.email,i.role,i.created_at FROM organization_invitations i
+	if role == "owner" || role == "manager" || role == "admin" {
+		rows, err = tx.Query(ctx, `SELECT i.id,i.email,i.role,i.created_at,
+			COALESCE(array_agg(t.slug ORDER BY lower(t.slug),t.id) FILTER (WHERE t.id IS NOT NULL),ARRAY[]::text[])
+			FROM organization_invitations i
+			LEFT JOIN organization_invitation_teams iit ON iit.invitation_id=i.id
+			LEFT JOIN teams t ON t.id=iit.team_id AND t.organization_id=i.organization_id
 			WHERE i.organization_id=$1::bigint AND i.status IN ('pending','processing','sent','failed')
-			ORDER BY i.created_at DESC,i.id DESC`, orgID)
+			GROUP BY i.id,i.email,i.role,i.created_at ORDER BY i.created_at DESC,i.id DESC`, orgID)
 		if err != nil {
 			return nil, err
 		}
 		defer rows.Close()
 		for rows.Next() {
 			var item CompatibleOrganizationUser
-			if err = rows.Scan(&item.ID, &item.Email, &item.Role, &item.DateCreated); err != nil {
+			if err = rows.Scan(&item.ID, &item.Email, &item.Role, &item.DateCreated, &item.Teams); err != nil {
 				return nil, err
 			}
 			item.DateCreated = item.DateCreated.UTC()
 			item.RoleName = roleDisplay(item.Role)
 			item.Pending = true
-			item.Teams = []string{}
 			result = append(result, item)
 		}
 		if err = rows.Err(); err != nil {
@@ -152,12 +157,17 @@ func (s *Store) CompatibleOrganizationInvitationMember(ctx context.Context, user
 	if err != nil {
 		return item, err
 	}
-	if role != "owner" && role != "admin" {
+	if role != "owner" && role != "manager" && role != "admin" {
 		return item, ErrNotFound
 	}
-	err = tx.QueryRow(ctx, `SELECT id,email,role,created_at FROM organization_invitations
-		WHERE organization_id=$1::bigint AND id=$2 AND status IN ('pending','processing','sent','failed')`, orgID, invitationID).
-		Scan(&item.ID, &item.Email, &item.Role, &item.DateCreated)
+	err = tx.QueryRow(ctx, `SELECT i.id,i.email,i.role,i.created_at,
+		COALESCE(array_agg(t.slug ORDER BY lower(t.slug),t.id) FILTER (WHERE t.id IS NOT NULL),ARRAY[]::text[])
+		FROM organization_invitations i
+		LEFT JOIN organization_invitation_teams iit ON iit.invitation_id=i.id
+		LEFT JOIN teams t ON t.id=iit.team_id AND t.organization_id=i.organization_id
+		WHERE i.organization_id=$1::bigint AND i.id=$2 AND i.status IN ('pending','processing','sent','failed')
+		GROUP BY i.id,i.email,i.role,i.created_at`, orgID, invitationID).
+		Scan(&item.ID, &item.Email, &item.Role, &item.DateCreated, &item.Teams)
 	if err != nil {
 		return item, dbError(err)
 	}
@@ -165,7 +175,6 @@ func (s *Store) CompatibleOrganizationInvitationMember(ctx context.Context, user
 	item.RoleName = roleDisplay(item.Role)
 	item.Pending = true
 	item.IsOwner = item.Role == "owner"
-	item.Teams = []string{}
 	return item, tx.Commit(ctx)
 }
 
@@ -202,7 +211,7 @@ func (s *Store) compatibleTeamMembership(ctx context.Context, actorID, orgRef, t
 		return result, err
 	}
 	defer tx.Rollback(ctx)
-	orgID, _, err := manageableOrganization(ctx, tx, actorID, orgRef)
+	orgID, actorRole, err := manageableOrganization(ctx, tx, actorID, orgRef)
 	if err != nil {
 		return result, err
 	}
@@ -212,6 +221,9 @@ func (s *Store) compatibleTeamMembership(ctx context.Context, actorID, orgRef, t
 	var teamID string
 	if err = tx.QueryRow(ctx, `SELECT id::text FROM teams WHERE organization_id=$1::bigint AND slug=$2 FOR SHARE`, orgID, teamSlug).Scan(&teamID); err != nil {
 		return result, dbError(err)
+	}
+	if err = authorizeTeamMembershipChange(ctx, tx, actorID, actorRole, teamID); err != nil {
+		return result, err
 	}
 	if add {
 		_, err = tx.Exec(ctx, `INSERT INTO team_memberships(team_id,user_id) VALUES($1::bigint,$2::bigint) ON CONFLICT DO NOTHING`, teamID, memberID)

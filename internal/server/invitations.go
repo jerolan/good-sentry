@@ -54,8 +54,8 @@ func (s *Server) createInvitation(w http.ResponseWriter, r *http.Request) {
 		failure(w, 400, "Invite a valid email address")
 		return
 	}
-	if input.Role != "owner" && input.Role != "admin" && input.Role != "member" {
-		failure(w, 400, "Invitation role must be owner, admin or member")
+	if input.Role != "owner" && input.Role != "manager" && input.Role != "admin" && input.Role != "member" {
+		failure(w, 400, "Invitation role must be owner, manager, admin or member")
 		return
 	}
 	if s.mail == nil || s.account == nil {

@@ -65,6 +65,10 @@ func TestCompatibleOrganizationInvitationMutationHTTP(t *testing.T) {
 	f := newResolutionHTTPFixture(t)
 	mailServer, mailClient, mailCSRF := newManagementMailServer(t, f)
 	mailPath := "/api/0/organizations/" + f.org.Slug + "/members/"
+	onCall, err := f.db.CreateTeam(f.ctx, f.owner.ID, f.org.Slug, "On call")
+	if err != nil {
+		t.Fatal(err)
+	}
 	var invitation compatibleInvitationView
 	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "POST", mailPath, `{"email":"invitee@management.test","orgRole":"admin"}`, http.Header{"X-CSRF-Token": {mailCSRF}}, 201), &invitation); err != nil || invitation.ID == "" || invitation.Email != "invitee@management.test" || !invitation.Pending || invitation.Role != "admin" || invitation.RoleName != "Admin" {
 		t.Fatalf("compatible invitation: %+v %v", invitation, err)
@@ -72,16 +76,24 @@ func TestCompatibleOrganizationInvitationMutationHTTP(t *testing.T) {
 	mailCall(t, f.ctx, mailClient, mailServer, "POST", mailPath, `{"email":"invitee@management.test","orgRole":"admin"}`, http.Header{"X-CSRF-Token": {mailCSRF}}, 409)
 	for _, body := range []string{
 		`{"email":"bad","orgRole":"member"}`,
-		`{"email":"x@management.test","orgRole":"manager"}`,
-		`{"email":"x@management.test","orgRole":"member","teamRoles":[{"teamSlug":"default"}]}`,
+		`{"email":"x@management.test","orgRole":"member","teamRoles":[{}]}`,
+		`{"email":"x@management.test","orgRole":"member","teamRoles":[{"teamSlug":7}]}`,
+		`{"email":"x@management.test","orgRole":"member","teamRoles":[{"teamSlug":"default","role":7}]}`,
+		`{"email":"x@management.test","orgRole":"member","teamRoles":[{"teamSlug":"default","extra":true}]}`,
 		`{"email":"x@management.test","orgRole":"member","sendInvite":false}`,
 		`{"email":"x@management.test","orgRole":"member","reinvite":false}`,
 		`{"email":"x@management.test","orgRole":"member","unknown":true}`,
 	} {
 		mailCall(t, f.ctx, mailClient, mailServer, "POST", mailPath, body, http.Header{"X-CSRF-Token": {mailCSRF}}, 400)
 	}
+	var managerInvitation compatibleInvitationView
+	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "POST", mailPath,
+		`{"email":"manager@management.test","orgRole":"manager","teamRoles":[{"teamSlug":"on-call","role":"contributor"},{"teamSlug":"on-call","role":"anything"},{"teamSlug":"missing"}]}`,
+		http.Header{"X-CSRF-Token": {mailCSRF}}, 201), &managerInvitation); err != nil || managerInvitation.Role != "manager" || managerInvitation.RoleName != "Manager" || len(managerInvitation.Teams) != 1 || managerInvitation.Teams[0] != onCall.Slug {
+		t.Fatalf("manager invitation with team assignments: %+v %v", managerInvitation, err)
+	}
 	var members []store.CompatibleOrganizationUser
-	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "GET", mailPath, "", nil, 200), &members); err != nil || len(members) != 2 || !members[1].Pending || members[1].Email != "invitee@management.test" {
+	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "GET", mailPath, "", nil, 200), &members); err != nil || len(members) != 3 {
 		t.Fatalf("pending invitation visibility: %+v %v", members, err)
 	}
 	invitationPath := mailPath + invitation.ID + "/"
@@ -89,12 +101,25 @@ func TestCompatibleOrganizationInvitationMutationHTTP(t *testing.T) {
 	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "GET", invitationPath, "", nil, 200), &pending); err != nil || !pending.Pending || pending.ID != invitation.ID || pending.Email != "invitee@management.test" || pending.User != nil || pending.Teams == nil || len(pending.Teams) != 0 {
 		t.Fatalf("pending invitation detail: %+v %v", pending, err)
 	}
+	managerInvitationPath := mailPath + managerInvitation.ID + "/"
+	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "GET", managerInvitationPath, "", nil, 200), &pending); err != nil || !pending.Pending || pending.Role != "manager" || len(pending.Teams) != 1 || pending.Teams[0] != onCall.Slug {
+		t.Fatalf("pending manager assignment detail: %+v %v", pending, err)
+	}
 	mailCall(t, f.ctx, mailClient, mailServer, "PUT", invitationPath, `{"orgRole":"member"}`, http.Header{"X-CSRF-Token": {mailCSRF}}, 400)
 
 	insertDiscoveryMember(t, f, "invitation-member@management.test", "Invitation member", "member")
 	memberClient, memberCSRF := loginManagementMemberOn(t, f, mailServer, "invitation-member@management.test")
 	mailCall(t, f.ctx, memberClient, mailServer, "GET", invitationPath, "", nil, 404)
 	mailCall(t, f.ctx, memberClient, mailServer, "POST", mailPath, `{"email":"member-invite@management.test","orgRole":"member"}`, http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
+	adminID := insertDiscoveryMember(t, f, "invite-admin@management.test", "Invitation admin", "admin")
+	adminClient, adminCSRF := loginManagementMemberOn(t, f, mailServer, "invite-admin@management.test")
+	adminHeaders := http.Header{"X-CSRF-Token": {adminCSRF}}
+	mailCall(t, f.ctx, adminClient, mailServer, "POST", mailPath, `{"email":"forbidden-manager@management.test","orgRole":"manager"}`, adminHeaders, 403)
+	mailCall(t, f.ctx, adminClient, mailServer, "POST", mailPath, `{"email":"unjoined-team@management.test","orgRole":"member","teamRoles":[{"teamSlug":"on-call"}]}`, adminHeaders, 403)
+	if err := f.db.AddTeamMember(f.ctx, f.owner.ID, f.org.Slug, onCall.ID, adminID); err != nil {
+		t.Fatal(err)
+	}
+	mailCall(t, f.ctx, adminClient, mailServer, "POST", mailPath, `{"email":"joined-team@management.test","orgRole":"member","teamRoles":[{"teamSlug":"on-call"}]}`, adminHeaders, 201)
 	readToken := issueManagementToken(t, f, f.org.Slug, "Invitation reader", []string{"org:read"}, []string{f.project.ID})
 	mailCall(t, f.ctx, http.DefaultClient, mailServer, "POST", mailPath, `{"email":"read-denied@management.test","orgRole":"member"}`, http.Header{"Authorization": {"Bearer " + readToken}}, 403)
 	writeToken := issueManagementToken(t, f, f.org.Slug, "Invitation writer", []string{"org:write"}, []string{f.project.ID})
@@ -115,16 +140,20 @@ func TestCompatibleOrganizationUpdateDeleteHTTP(t *testing.T) {
 		f.request(t, f.client, "PUT", orgPath, body, http.Header{"X-CSRF-Token": {f.csrf}}, 400)
 	}
 	insertDiscoveryMember(t, f, "org-admin@management.test", "Org admin", "admin")
+	insertDiscoveryMember(t, f, "org-manager@management.test", "Org manager", "manager")
 	insertDiscoveryMember(t, f, "org-member@management.test", "Org member", "member")
 	adminClient, adminCSRF := loginManagementMember(t, f, "org-admin@management.test")
+	managerClient, managerCSRF := loginManagementMember(t, f, "org-manager@management.test")
 	memberClient, memberCSRF := loginManagementMember(t, f, "org-member@management.test")
 	f.request(t, adminClient, "PUT", orgPath, `{"name":"Admin rename"}`, http.Header{"X-CSRF-Token": {adminCSRF}}, 200)
+	f.request(t, managerClient, "PUT", orgPath, `{"name":"Manager rename"}`, http.Header{"X-CSRF-Token": {managerCSRF}}, 200)
 	f.request(t, memberClient, "PUT", orgPath, `{"name":"Member rename"}`, http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
 	readToken := issueManagementToken(t, f, f.org.Slug, "Org reader", []string{"org:read"}, []string{f.project.ID})
 	f.request(t, http.DefaultClient, "PUT", orgPath, `{"name":"Read denied"}`, http.Header{"Authorization": {"Bearer " + readToken}}, 403)
 	writeToken := issueManagementToken(t, f, f.org.Slug, "Org writer", []string{"org:write"}, []string{f.project.ID})
 	f.request(t, http.DefaultClient, "PUT", orgPath, `{"name":"Bearer rename"}`, http.Header{"Authorization": {"Bearer " + writeToken}}, 200)
 	f.request(t, adminClient, "DELETE", orgPath, "", http.Header{"X-CSRF-Token": {adminCSRF}}, 403)
+	f.request(t, managerClient, "DELETE", orgPath, "", http.Header{"X-CSRF-Token": {managerCSRF}}, 403)
 	f.request(t, memberClient, "DELETE", orgPath, "", http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
 	f.request(t, f.client, "DELETE", orgPath, "", http.Header{"X-CSRF-Token": {f.csrf}}, 204)
 	f.request(t, f.client, "GET", orgPath, "", nil, 404)

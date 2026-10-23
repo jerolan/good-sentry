@@ -78,8 +78,8 @@ func (s *Server) projectWriteAccess(w http.ResponseWriter, r *http.Request) (sto
 	if !valid {
 		return store.ManagementAccess{}, false
 	}
-	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "admin" {
-		failure(w, 403, "Organization owner or admin permission required")
+	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "manager" && access.Role != "admin" {
+		failure(w, 403, "Organization owner, manager or admin permission required")
 		return store.ManagementAccess{}, false
 	}
 	return access, true
@@ -261,7 +261,65 @@ func (s *Server) compatibleOrganizationMember(w http.ResponseWriter, r *http.Req
 }
 
 func compatibleOrganizationRole(value string) bool {
-	return value == "member" || value == "admin" || value == "owner"
+	return value == "member" || value == "admin" || value == "manager" || value == "owner"
+}
+
+func compatibleTeamRoleSlugs(w http.ResponseWriter, raw json.RawMessage) ([]string, bool) {
+	if len(raw) == 0 {
+		return nil, true
+	}
+	trimmed := strings.TrimSpace(string(raw))
+	if len(trimmed) == 0 || trimmed[0] != '[' {
+		failure(w, 400, "teamRoles must be an array of team assignments")
+		return nil, false
+	}
+	var entries []json.RawMessage
+	if err := json.Unmarshal(raw, &entries); err != nil {
+		failure(w, 400, "teamRoles must be an array of team assignments")
+		return nil, false
+	}
+	slugs := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal(entry, &fields); err != nil || fields == nil {
+			failure(w, 400, "Each teamRoles entry must be an object")
+			return nil, false
+		}
+		for key := range fields {
+			if key != "teamSlug" && key != "role" {
+				failure(w, 400, "teamRoles entries accept only teamSlug and role")
+				return nil, false
+			}
+		}
+		slugRaw, exists := fields["teamSlug"]
+		if !exists {
+			failure(w, 400, "Each teamRoles entry requires teamSlug")
+			return nil, false
+		}
+		var slugValue any
+		if err := json.Unmarshal(slugRaw, &slugValue); err != nil {
+			failure(w, 400, "teamSlug must be a string")
+			return nil, false
+		}
+		slug, ok := slugValue.(string)
+		if !ok {
+			failure(w, 400, "teamSlug must be a string")
+			return nil, false
+		}
+		if roleRaw, exists := fields["role"]; exists {
+			var roleValue any
+			if err := json.Unmarshal(roleRaw, &roleValue); err != nil {
+				failure(w, 400, "team role must be a string")
+				return nil, false
+			}
+			if _, ok := roleValue.(string); !ok {
+				failure(w, 400, "team role must be a string")
+				return nil, false
+			}
+		}
+		slugs = append(slugs, slug)
+	}
+	return slugs, true
 }
 
 func (s *Server) compatibleUpdateOrganizationMember(w http.ResponseWriter, r *http.Request) {
@@ -277,18 +335,17 @@ func (s *Server) compatibleUpdateOrganizationMember(w http.ResponseWriter, r *ht
 		return
 	}
 	var input struct {
-		OrgRole   string            `json:"orgRole"`
-		TeamRoles []json.RawMessage `json:"teamRoles"`
+		OrgRole   string          `json:"orgRole"`
+		TeamRoles json.RawMessage `json:"teamRoles"`
 	}
 	if !bodyJSON(w, r, &input) {
 		return
 	}
 	if !compatibleOrganizationRole(input.OrgRole) {
-		failure(w, 400, "Organization role must be owner, admin or member")
+		failure(w, 400, "Organization role must be owner, manager, admin or member")
 		return
 	}
-	if len(input.TeamRoles) > 0 {
-		failure(w, 400, "Team roles are not supported yet")
+	if _, ok := compatibleTeamRoleSlugs(w, input.TeamRoles); !ok {
 		return
 	}
 	if _, err := s.db.UpdateMemberRole(r.Context(), current(r).User.ID, r.PathValue("org"), memberID, input.OrgRole); err != nil {
@@ -390,8 +447,8 @@ func (s *Server) orgWriteAccess(w http.ResponseWriter, r *http.Request) (store.M
 	if !valid {
 		return store.ManagementAccess{}, false
 	}
-	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "admin" {
-		failure(w, 403, "Organization owner or admin permission required")
+	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "manager" && access.Role != "admin" {
+		failure(w, 403, "Organization owner, manager or admin permission required")
 		return store.ManagementAccess{}, false
 	}
 	return access, true
@@ -406,6 +463,7 @@ type compatibleInvitationView struct {
 	User        *store.CompatibleUser `json:"user"`
 	Pending     bool                  `json:"pending"`
 	IsOwner     bool                  `json:"isOwner"`
+	Teams       []string              `json:"teams"`
 	InviteLink  *string               `json:"inviteLink"`
 }
 
@@ -413,6 +471,8 @@ func invitationRoleName(role string) string {
 	switch role {
 	case "owner":
 		return "Owner"
+	case "manager":
+		return "Manager"
 	case "admin":
 		return "Admin"
 	default:
@@ -425,17 +485,17 @@ func (s *Server) compatibleCreateOrganizationMember(w http.ResponseWriter, r *ht
 		return
 	}
 	var input struct {
-		Email      string            `json:"email"`
-		OrgRole    string            `json:"orgRole"`
-		TeamRoles  []json.RawMessage `json:"teamRoles"`
-		SendInvite *bool             `json:"sendInvite"`
-		Reinvite   *bool             `json:"reinvite"`
+		Email      string          `json:"email"`
+		OrgRole    string          `json:"orgRole"`
+		TeamRoles  json.RawMessage `json:"teamRoles"`
+		SendInvite *bool           `json:"sendInvite"`
+		Reinvite   *bool           `json:"reinvite"`
 	}
 	if !bodyJSON(w, r, &input) {
 		return
 	}
-	if len(input.TeamRoles) > 0 {
-		failure(w, 400, "Invitation teamRoles are not supported yet")
+	teamSlugs, ok := compatibleTeamRoleSlugs(w, input.TeamRoles)
+	if !ok {
 		return
 	}
 	if input.SendInvite != nil && !*input.SendInvite {
@@ -452,8 +512,8 @@ func (s *Server) compatibleCreateOrganizationMember(w http.ResponseWriter, r *ht
 		failure(w, 400, "Invite a valid email address")
 		return
 	}
-	if input.OrgRole != "owner" && input.OrgRole != "admin" && input.OrgRole != "member" {
-		failure(w, 400, "Organization role must be owner, admin or member")
+	if !compatibleOrganizationRole(input.OrgRole) {
+		failure(w, 400, "Organization role must be owner, manager, admin or member")
 		return
 	}
 	if s.mail == nil || s.account == nil {
@@ -471,12 +531,17 @@ func (s *Server) compatibleCreateOrganizationMember(w http.ResponseWriter, r *ht
 		failure(w, 503, "Invitation is temporarily unavailable")
 		return
 	}
-	item, err := s.db.InviteMember(r.Context(), current(r).User.ID, r.PathValue("org"), email, input.OrgRole, hash, ciphertext, invitationLifetime)
+	item, err := s.db.InviteMemberWithTeams(r.Context(), current(r).User.ID, r.PathValue("org"), email, input.OrgRole, teamSlugs, hash, ciphertext, invitationLifetime)
 	if err != nil {
 		report(w, err)
 		return
 	}
-	writeJSON(w, 201, compatibleInvitationView{ID: item.ID, Role: item.Role, RoleName: invitationRoleName(item.Role), DateCreated: item.CreatedAt.UTC(), Email: item.Email, Pending: true, IsOwner: item.Role == "owner"})
+	member, err := s.db.CompatibleOrganizationInvitationMember(r.Context(), current(r).User.ID, r.PathValue("org"), item.ID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 201, compatibleInvitationView{ID: item.ID, Role: item.Role, RoleName: invitationRoleName(item.Role), DateCreated: item.CreatedAt.UTC(), Email: item.Email, Pending: true, IsOwner: item.Role == "owner", Teams: member.Teams})
 }
 
 func validTeamSlugInput(w http.ResponseWriter, value string) (string, bool) {
@@ -770,8 +835,8 @@ func (s *Server) keyAccess(w http.ResponseWriter, r *http.Request) (store.Manage
 	if !valid {
 		return store.ManagementAccess{}, false
 	}
-	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "admin" {
-		failure(w, 403, "Organization owner or admin permission required")
+	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "manager" && access.Role != "admin" {
+		failure(w, 403, "Organization owner, manager or admin permission required")
 		return store.ManagementAccess{}, false
 	}
 	return access, true

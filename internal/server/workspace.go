@@ -58,8 +58,8 @@ func (s *Server) nativeProjectWriteAccess(w http.ResponseWriter, r *http.Request
 		report(w, err)
 		return store.ManagementAccess{}, false
 	}
-	if org.Role != "owner" && org.Role != "admin" {
-		failure(w, http.StatusForbidden, "Organization owner or admin permission required")
+	if org.Role != "owner" && org.Role != "manager" && org.Role != "admin" {
+		failure(w, http.StatusForbidden, "Organization owner, manager or admin permission required")
 		return store.ManagementAccess{}, false
 	}
 	return store.ManagementAccess{UserID: current(r).User.ID, OrganizationID: org.ID, Role: org.Role, AllProjects: true}, true
