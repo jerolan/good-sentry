@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/binary"
+	"encoding/json"
 	"testing"
+	"time"
 
 	"goodsentry/internal/testfixture/nativepdb"
 )
@@ -110,6 +112,250 @@ func TestParseNativePDBC13SourceLines(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParseNativePDBExpandsNestedInlineFrames(t *testing.T) {
+	fixture := nativepdb.WithInlineFrames()
+	objects := ParseDebugObjects("crash.pdb", fixture.Data)
+	if len(objects) != 1 {
+		t.Fatalf("parsed PDB objects=%d, want one", len(objects))
+	}
+	crash := Crash{
+		Modules: []Module{{Name: "crash.exe", Base: 0x140000000, Size: 0x10000, DebugID: "5A9832E5287241C1838ED98914E9B7FF1"}},
+		Frames:  []Frame{{Instruction: 0x140001015, Module: "crash.exe"}},
+	}
+	Symbolicate(&crash, SymbolSet{objects[0].DebugID: objects[0].Functions})
+	frame := crash.Frames[0]
+	if frame.Function != "CrashFunction" || frame.File != `C:\src\crash.cc` || frame.Line != 42 {
+		t.Fatalf("physical frame=%+v", frame)
+	}
+	wantInline := []InlineFrame{
+		{Function: "OuterInline", File: `C:\include\inline.hpp`, Line: 100},
+		{Function: "InnerInline", File: `C:\include\inner.hpp`, Line: 200},
+		{Function: "DeepInline", File: `C:\include\deep.hpp`, Line: 300},
+	}
+	if len(frame.InlineFrames) != len(wantInline) {
+		t.Fatalf("inline frames=%+v, want %+v", frame.InlineFrames, wantInline)
+	}
+	for i, want := range wantInline {
+		if frame.InlineFrames[i] != want {
+			t.Fatalf("inline frame[%d]=%+v, want %+v", i, frame.InlineFrames[i], want)
+		}
+	}
+
+	eventJSON, _, err := BuildEvent(crash, nil, time.Unix(0, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var event struct {
+		Exception struct {
+			Values []struct {
+				Stacktrace struct {
+					Frames []struct {
+						Instruction string `json:"instruction_addr"`
+						Function    string `json:"function"`
+						Filename    string `json:"filename"`
+						Line        int    `json:"lineno"`
+					} `json:"frames"`
+				} `json:"stacktrace"`
+			} `json:"values"`
+		} `json:"exception"`
+	}
+	if err := json.Unmarshal(eventJSON, &event); err != nil {
+		t.Fatal(err)
+	}
+	if len(event.Exception.Values) != 1 {
+		t.Fatalf("exception values=%d", len(event.Exception.Values))
+	}
+	frames := event.Exception.Values[0].Stacktrace.Frames
+	wantFunctions := []string{"DeepInline", "InnerInline", "OuterInline", "CrashFunction"}
+	if len(frames) != len(wantFunctions) {
+		t.Fatalf("event frames=%+v, want functions %v", frames, wantFunctions)
+	}
+	for i, name := range wantFunctions {
+		if frames[i].Function != name || frames[i].Instruction != "0x140001015" {
+			t.Fatalf("event frame[%d]=%+v, want %s at the captured instruction", i, frames[i], name)
+		}
+	}
+	if frames[0].Filename != `C:\include\deep.hpp` || frames[0].Line != 300 || frames[3].Filename != `C:\src\crash.cc` || frames[3].Line != 42 {
+		t.Fatalf("event inline/physical source locations=%+v", frames)
+	}
+}
+
+func TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols(t *testing.T) {
+	fixture := nativepdb.WithInlineFrames()
+	tests := []struct {
+		name   string
+		mutate func([]byte)
+	}{
+		{name: "missing IPI stream", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.IPIStreamSizeOffset:], ^uint32(0)) }},
+		{name: "invalid procedure end pointer", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.ProcedureEndPointerOffset:], ^uint32(0)) }},
+		{name: "procedure end kind mismatch", mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[fixture.ProcedureEndOffset+2:], 0x114f) }},
+		{name: "inline parent pointer mismatch", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.InlineSiteOffset+4:], ^uint32(0)) }},
+		{name: "inline end pointer escapes parent", mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[fixture.InlineSiteOffset+8:], binary.LittleEndian.Uint32(data[fixture.ProcedureEndPointerOffset:]))
+		}},
+		{name: "unknown inlinee ID", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.InlineSiteOffset+12:], 0x1099) }},
+		{name: "missing inlinee checksum", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.InlineeLinesOffset+8:], ^uint32(0)) }},
+		{name: "missing inlinee-lines subsection", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.InlineeLinesOffset-8:], 0x7777) }},
+		{name: "unknown annotation opcode", mutate: func(data []byte) { data[fixture.InlineAnnotationOffset] = 0x0e }},
+		{name: "truncated annotation operand", mutate: func(data []byte) { data[fixture.InlineAnnotationOffset+5] = 0xc0 }},
+		{name: "unbalanced inline scope", mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[fixture.InlineEndOffset:], 0x0006) }},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			corrupt := append([]byte(nil), fixture.Data...)
+			test.mutate(corrupt)
+			if objects := ParseDebugObjects("corrupt.pdb", corrupt); len(objects) != 0 {
+				t.Fatalf("malformed inline PDB produced partial symbols: %+v", objects)
+			}
+		})
+	}
+}
+
+func TestPDBInlineAnnotationsResolveLineAndFileChanges(t *testing.T) {
+	annotations := []byte{
+		1, 0, // code offset zero
+		6, 2, // first line is one after the inlinee declaration
+		5, 24, // next source file
+		6, 2, // next source line is one more
+		4, 4, // first range is four bytes
+		1, 4, // second range starts four bytes later
+		0,
+	}
+	checksums := map[uint32]string{0: "outer.hpp", 24: "inner.hpp"}
+	ranges, ok := parsePDBInlineAnnotations(annotations, pdbInlinee{fileID: 0, line: 100}, checksums, 8, new(int))
+	if !ok {
+		t.Fatal("parser rejected valid line and file changes")
+	}
+	want := []pdbInlineRange{{start: 0, end: 4, file: "outer.hpp", line: 101}, {start: 4, end: 8, file: "inner.hpp", line: 102}}
+	if len(ranges) != len(want) {
+		t.Fatalf("inline ranges=%+v, want %+v", ranges, want)
+	}
+	for i := range want {
+		if ranges[i] != want[i] {
+			t.Fatalf("inline range[%d]=%+v, want %+v", i, ranges[i], want[i])
+		}
+	}
+
+	combined, ok := parsePDBInlineAnnotations([]byte{6, 0, 12, 4, 0}, pdbInlinee{fileID: 0, line: 7}, checksums, 4, new(int))
+	if !ok || len(combined) != 1 || combined[0] != (pdbInlineRange{start: 0, end: 4, file: "outer.hpp", line: 7}) {
+		t.Fatalf("combined code length/offset annotation: ranges=%+v ok=%t", combined, ok)
+	}
+
+	implicitLine, ok := parsePDBInlineAnnotations([]byte{1, 0, 4, 4, 0}, pdbInlinee{fileID: 0, line: 7}, checksums, 4, new(int))
+	if !ok || len(implicitLine) != 1 || implicitLine[0].line != 7 {
+		t.Fatalf("implicit inlinee source line: ranges=%+v ok=%t", implicitLine, ok)
+	}
+}
+
+func TestPDBInlineRangesCoverUsesAdjacentRangesAndRejectsGaps(t *testing.T) {
+	parent := []pdbInlineRange{{start: 0, end: 4}, {start: 4, end: 8}, {start: 12, end: 16}}
+	if !pdbInlineRangesCover(parent, []pdbInlineRange{{start: 1, end: 7}, {start: 12, end: 16}}) {
+		t.Fatal("adjacent parent ranges should cover a child range")
+	}
+	if pdbInlineRangesCover(parent, []pdbInlineRange{{start: 1, end: 13}}) {
+		t.Fatal("parent range gap should not cover a child range")
+	}
+	if pdbInlineRangesCover(parent, []pdbInlineRange{{start: 0, end: 0}}) {
+		t.Fatal("empty child ranges must be rejected")
+	}
+}
+
+func TestPDBC13InlineeLinesParsesExtraFilesAndRecordBudgets(t *testing.T) {
+	data := make([]byte, 4+12+4+4)
+	binary.LittleEndian.PutUint32(data, 1)
+	binary.LittleEndian.PutUint32(data[4:], 0x1000)
+	binary.LittleEndian.PutUint32(data[8:], 0)
+	binary.LittleEndian.PutUint32(data[12:], 7)
+	binary.LittleEndian.PutUint32(data[16:], 1)
+	binary.LittleEndian.PutUint32(data[20:], 24)
+	entries, ok := parsePDBC13InlineeLines(data, map[uint32]string{0: "a.hpp", 24: "b.hpp"}, new(int))
+	if !ok || entries[0x1000] != (pdbInlinee{fileID: 0, line: 7}) {
+		t.Fatalf("inlinee extra-file entry=%+v ok=%t", entries, ok)
+	}
+	if _, ok := parsePDBC13InlineeLines(data, map[uint32]string{0: "a.hpp", 24: "b.hpp"}, intPointer(maxPDBInlineRecords)); ok {
+		t.Fatal("parser accepted inlinee records beyond the per-PDB budget")
+	}
+}
+
+func TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets(t *testing.T) {
+	fixture := nativepdb.Minimal()
+	moduleOffset := fixture.ModuleBlock*512 + 4
+	procedure := fixture.Data[moduleOffset : moduleOffset+fixture.FirstProcedureLength]
+	sections := []pdbSection{{virtualSize: 0x100, virtualAddr: 0x1000, rawSize: 0x100, flags: 0x20000000}}
+	siteRecord := func() []byte {
+		body := make([]byte, 12)
+		binary.LittleEndian.PutUint32(body[8:], 0x1000)
+		return pdbTestCodeViewRecord(0x114d, body)
+	}
+	t.Run("site count", func(t *testing.T) {
+		data := append(append([]byte(nil), procedure...), siteRecord()...)
+		var functions []SymbolFunction
+		procedures, records, siteCount := 0, 0, maxPDBInlineSites
+		if parsePDBModuleSymbolsWithInlineSites(data, sections, &functions, &procedures, &records, new([]pdbInlineSite), &siteCount) {
+			t.Fatal("parser accepted more than the per-PDB inline-site budget")
+		}
+	})
+	t.Run("nesting depth", func(t *testing.T) {
+		depth := maxPDBInlineDepth + 1
+		data := append([]byte(nil), procedure...)
+		siteLength, endLength := len(siteRecord()), len(pdbTestCodeViewRecord(0x114e, nil))
+		procedureEnd := len(procedure) + depth*(siteLength+endLength) + 4
+		binary.LittleEndian.PutUint32(data[4:], 0)
+		binary.LittleEndian.PutUint32(data[8:], uint32(procedureEnd))
+		siteOffsets := make([]uint32, depth)
+		for i := 0; i < depth; i++ {
+			siteOffsets[i] = uint32(len(data) + 4)
+			body := make([]byte, 12)
+			if i == 0 {
+				binary.LittleEndian.PutUint32(body, 4)
+			} else {
+				binary.LittleEndian.PutUint32(body, siteOffsets[i-1])
+			}
+			endOffset := len(procedure) + depth*siteLength + (depth-1-i)*endLength + 4
+			binary.LittleEndian.PutUint32(body[4:], uint32(endOffset))
+			binary.LittleEndian.PutUint32(body[8:], 0x1000)
+			data = append(data, pdbTestCodeViewRecord(0x114d, body)...)
+		}
+		for i := depth - 1; i >= 0; i-- {
+			data = append(data, pdbTestCodeViewRecord(0x114e, nil)...)
+		}
+		data = append(data, pdbTestCodeViewRecord(0x0006, nil)...)
+		var functions []SymbolFunction
+		var sites []pdbInlineSite
+		procedures, records, siteCount := 0, 0, 0
+		if parsePDBModuleSymbolsWithInlineSites(data, sections, &functions, &procedures, &records, &sites, &siteCount) {
+			t.Fatal("parser accepted inline nesting beyond the per-PDB limit")
+		}
+	})
+	t.Run("IPI type records", func(t *testing.T) {
+		data := make([]byte, 56)
+		binary.LittleEndian.PutUint32(data[4:], 56)
+		binary.LittleEndian.PutUint32(data[8:], 0x1000)
+		binary.LittleEndian.PutUint32(data[12:], 0x1000+maxPDBInlineRecords+1)
+		if _, ok := parsePDBInlineIDNames(data, new(int)); ok {
+			t.Fatal("parser accepted IPI records beyond the per-PDB budget")
+		}
+	})
+	t.Run("annotation operations", func(t *testing.T) {
+		count := maxPDBInlineAnnots
+		if _, ok := parsePDBInlineAnnotations([]byte{1, 0, 4, 1, 0}, pdbInlinee{fileID: 0, line: 1}, map[uint32]string{0: "a.hpp"}, 1, &count); ok {
+			t.Fatal("parser accepted annotations beyond the per-PDB budget")
+		}
+	})
+}
+
+func intPointer(value int) *int {
+	return &value
+}
+
+func pdbTestCodeViewRecord(kind uint16, body []byte) []byte {
+	var record bytes.Buffer
+	binary.Write(&record, binary.LittleEndian, uint16(2+len(body)))
+	binary.Write(&record, binary.LittleEndian, kind)
+	record.Write(body)
+	return record.Bytes()
 }
 
 func TestParseNativePDBC13KeepsSourceLinesWithinTheirModule(t *testing.T) {

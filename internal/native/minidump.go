@@ -35,11 +35,18 @@ type Module struct {
 }
 
 type Frame struct {
-	Instruction uint64
-	Module      string
-	Function    string
-	File        string
-	Line        int
+	Instruction  uint64
+	Module       string
+	Function     string
+	File         string
+	Line         int
+	InlineFrames []InlineFrame
+}
+
+type InlineFrame struct {
+	Function string
+	File     string
+	Line     int
 }
 
 type Crash struct {
@@ -384,10 +391,12 @@ func readPointer(ranges []memoryRange, addr uint64, size int) (uint64, bool) {
 }
 
 type SymbolFunction struct {
-	Start, End uint64
-	Name       string
-	File       string
-	Line       int
+	Start, End     uint64
+	Name           string
+	File           string
+	Line           int
+	inlineSites    *pdbInlineSiteSet
+	procedureStart uint64
 }
 
 type SymbolSet map[string][]SymbolFunction
@@ -470,6 +479,7 @@ func moduleKey(name string) string {
 func Symbolicate(crash *Crash, symbols SymbolSet) {
 	for i := range crash.Frames {
 		frame := &crash.Frames[i]
+		frame.InlineFrames = nil
 		module := moduleFor(frame.Instruction, crash.Modules)
 		if frame.Module == "" || module == nil {
 			continue
@@ -491,6 +501,17 @@ func Symbolicate(crash *Crash, symbols SymbolSet) {
 		if best >= 0 {
 			f := funcs[best]
 			frame.Function, frame.File, frame.Line = f.Name, f.File, f.Line
+			procedureStart := f.procedureStart
+			if procedureStart == 0 {
+				procedureStart = f.Start
+			}
+			for j := range funcs {
+				candidate := &funcs[j]
+				if candidate.Start == procedureStart && candidate.inlineSites != nil {
+					frame.InlineFrames = pdbInlineFramesAt(candidate.inlineSites, procedureStart, offset-procedureStart)
+					break
+				}
+			}
 		}
 	}
 }

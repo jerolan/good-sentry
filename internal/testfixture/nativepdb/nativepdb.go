@@ -9,21 +9,29 @@ import (
 )
 
 type Fixture struct {
-	Data                   []byte
-	DBIBlock               int
-	InfoBlock              int
-	ModuleBlock            int
-	NamesBlock             int
-	FirstProcedureLength   int
-	C13Start               int
-	LineSubsectionLength   int
-	LineSegmentOffset      int
-	LineCodeSizeOffset     int
-	LineNameIndexOffset    int
-	FirstLineOffset        int
-	SecondLineOffset       int
-	SecondLineNumber       int
-	NamesStreamIndexOffset int
+	Data                      []byte
+	DBIBlock                  int
+	InfoBlock                 int
+	ModuleBlock               int
+	NamesBlock                int
+	FirstProcedureLength      int
+	C13Start                  int
+	LineSubsectionLength      int
+	LineSegmentOffset         int
+	LineCodeSizeOffset        int
+	LineNameIndexOffset       int
+	FirstLineOffset           int
+	SecondLineOffset          int
+	SecondLineNumber          int
+	NamesStreamIndexOffset    int
+	InlineSiteOffset          int
+	InlineAnnotationOffset    int
+	InlineEndOffset           int
+	InlineeLinesOffset        int
+	IPIStreamSizeOffset       int
+	ProcedureEndPointerOffset int
+	ProcedureEndOffset        int
+	SecondProcedureOffset     int
 }
 
 func Minimal() Fixture {
@@ -36,6 +44,211 @@ func WithSourceLines(localStrings bool) Fixture {
 
 func WithMultipleSourceLineModules() Fixture {
 	return build(true, false, true)
+}
+
+func WithInlineFrames() Fixture {
+	const blockSize = 512
+	info := make([]byte, 28)
+	binary.LittleEndian.PutUint32(info, 20000404)
+	binary.LittleEndian.PutUint32(info[4:], 1)
+	binary.LittleEndian.PutUint32(info[8:], 1)
+	copy(info[12:], []byte{0xe5, 0x32, 0x98, 0x5a, 0x72, 0x28, 0xc1, 0x41, 0xff, 0xb7, 0xe9, 0x14, 0x89, 0xd9, 0x8e, 0x83})
+
+	firstProcedure := procedure("CrashFunction", 0x10, 0x20, 0x1110)
+	outerSite, outerAnnotation := inlineSite(0x1000, 0, 0x20)
+	block := blockScope()
+	innerSite, _ := inlineSite(0x1001, 4, 8)
+	deepSite, _ := inlineSite(0x1002, 4, 2)
+	outerOffset := len(firstProcedure)
+	blockOffset := outerOffset + len(outerSite)
+	innerOffset := blockOffset + len(block)
+	deepOffset := innerOffset + len(innerSite)
+	deepEndOffset := deepOffset + len(deepSite)
+	innerEndOffset := deepEndOffset + len(inlineSiteEnd())
+	blockEndOffset := innerEndOffset + len(inlineSiteEnd())
+	outerEndOffset := blockEndOffset + len(inlineSiteEnd())
+	procedureEndOffset := outerEndOffset + len(inlineSiteEnd())
+	setScopeOffsets(firstProcedure, 0, uint32(procedureEndOffset+4))
+	setScopeOffsets(outerSite, 4, uint32(outerEndOffset+4))
+	setScopeOffsets(block, uint32(outerOffset+4), uint32(blockEndOffset+4))
+	setScopeOffsets(innerSite, uint32(blockOffset+4), uint32(innerEndOffset+4))
+	setScopeOffsets(deepSite, uint32(innerOffset+4), uint32(deepEndOffset+4))
+	symbols := append([]byte(nil), firstProcedure...)
+	symbols = append(symbols, outerSite...)
+	symbols = append(symbols, block...)
+	symbols = append(symbols, innerSite...)
+	symbols = append(symbols, deepSite...)
+	symbols = append(symbols, inlineSiteEnd()...)
+	symbols = append(symbols, inlineSiteEnd()...)
+	symbols = append(symbols, codeViewRecord(0x0006, nil)...)
+	symbols = append(symbols, inlineSiteEnd()...)
+	symbols = append(symbols, codeViewRecord(0x0006, nil)...)
+	secondProcedureOffset := len(symbols)
+	secondProcedure := procedure("OtherFunction", 0x80, 0x10, 0x1147)
+	secondProcedureEndOffset := secondProcedureOffset + len(secondProcedure)
+	setScopeOffsets(secondProcedure, 0, uint32(secondProcedureEndOffset+4))
+	symbols = append(symbols, secondProcedure...)
+	symbols = append(symbols, codeViewRecord(0x114f, nil)...)
+
+	c13, _, inlineeOffset := inlineSourceLines()
+	symbolBytes := 4 + len(symbols)
+	module := append([]byte{4, 0, 0, 0}, symbols...)
+	module = append(module, c13...)
+	moduleInfo := moduleInfoRecord(5, symbolBytes, len(c13), "fixture.obj", "fixture.obj")
+
+	const optionalHeaderBytes = 11 * 2
+	dbi := make([]byte, 64)
+	binary.LittleEndian.PutUint32(dbi, ^uint32(0))
+	binary.LittleEndian.PutUint32(dbi[4:], 19990903)
+	binary.LittleEndian.PutUint32(dbi[8:], 1)
+	binary.LittleEndian.PutUint16(dbi[12:], ^uint16(0))
+	binary.LittleEndian.PutUint16(dbi[16:], ^uint16(0))
+	binary.LittleEndian.PutUint16(dbi[20:], ^uint16(0))
+	binary.LittleEndian.PutUint32(dbi[24:], uint32(len(moduleInfo)))
+	binary.LittleEndian.PutUint32(dbi[48:], optionalHeaderBytes)
+	dbi = append(dbi, moduleInfo...)
+	optional := bytes.Repeat([]byte{0xff}, optionalHeaderBytes)
+	binary.LittleEndian.PutUint16(optional[10:], 6)
+	dbi = append(dbi, optional...)
+
+	section := make([]byte, 40)
+	copy(section, ".text\x00\x00\x00")
+	binary.LittleEndian.PutUint32(section[8:], 0x100)
+	binary.LittleEndian.PutUint32(section[12:], 0x1000)
+	binary.LittleEndian.PutUint32(section[16:], 0x100)
+	binary.LittleEndian.PutUint32(section[36:], 0x60000020)
+
+	streams := [][]byte{nil, info, nil, dbi, inlineIDStream(), module, section}
+	data, blocks := writeMSF(blockSize, streams)
+	moduleBase := blocks[5][0] * blockSize
+	fixture := Fixture{
+		Data: data, DBIBlock: blocks[3][0], InfoBlock: blocks[1][0], ModuleBlock: blocks[5][0],
+		FirstProcedureLength: len(firstProcedure), C13Start: moduleBase + symbolBytes,
+		InlineSiteOffset:          moduleBase + 4 + outerOffset,
+		InlineAnnotationOffset:    moduleBase + 4 + outerOffset + outerAnnotation,
+		InlineEndOffset:           moduleBase + 4 + deepEndOffset + 2,
+		InlineeLinesOffset:        moduleBase + symbolBytes + inlineeOffset,
+		IPIStreamSizeOffset:       3*blockSize + 4 + 4*4,
+		ProcedureEndPointerOffset: moduleBase + 4 + 8,
+		ProcedureEndOffset:        moduleBase + 4 + procedureEndOffset,
+		SecondProcedureOffset:     moduleBase + 4 + secondProcedureOffset,
+	}
+	return fixture
+}
+
+func inlineSite(inlinee uint32, start, length byte) ([]byte, int) {
+	annotations := []byte{1, 0, 6, 0, 4, length, 0, 0}
+	if start != 0 {
+		annotations[1] = start
+	}
+	body := make([]byte, 12, 12+len(annotations))
+	binary.LittleEndian.PutUint32(body[8:], inlinee)
+	body = append(body, annotations...)
+	return codeViewRecord(0x114d, body), 4 + 12
+}
+
+func blockScope() []byte {
+	body := make([]byte, 18)
+	body[16] = 1
+	return codeViewRecord(0x1103, append(body, 0))
+}
+
+func inlineSiteEnd() []byte {
+	return codeViewRecord(0x114e, nil)
+}
+
+func codeViewRecord(kind uint16, body []byte) []byte {
+	var record bytes.Buffer
+	binary.Write(&record, binary.LittleEndian, uint16(2+len(body)))
+	binary.Write(&record, binary.LittleEndian, kind)
+	record.Write(body)
+	return record.Bytes()
+}
+
+func setScopeOffsets(record []byte, parent, end uint32) {
+	binary.LittleEndian.PutUint32(record[4:], parent)
+	binary.LittleEndian.PutUint32(record[8:], end)
+}
+
+func inlineSourceLines() ([]byte, int, int) {
+	paths := [][]byte{[]byte("C:\\src\\crash.cc\x00"), []byte("C:\\include\\inline.hpp\x00"), []byte("C:\\include\\inner.hpp\x00"), []byte("C:\\include\\deep.hpp\x00")}
+	var stringsData []byte
+	nameOffsets := make([]uint32, len(paths))
+	for i, path := range paths {
+		nameOffsets[i] = uint32(len(stringsData))
+		stringsData = append(stringsData, path...)
+	}
+	stringsData = append([]byte{0}, stringsData...)
+	for i := range nameOffsets {
+		nameOffsets[i]++
+	}
+
+	checksums := make([]byte, 4*24)
+	for i := 0; i < 4; i++ {
+		binary.LittleEndian.PutUint32(checksums[i*24:], nameOffsets[i])
+		checksums[i*24+4] = 16
+		checksums[i*24+5] = 1
+	}
+	line := make([]byte, 48)
+	binary.LittleEndian.PutUint32(line, 0x10)
+	binary.LittleEndian.PutUint16(line[4:], 1)
+	binary.LittleEndian.PutUint16(line[6:], 1)
+	binary.LittleEndian.PutUint32(line[8:], 0x20)
+	binary.LittleEndian.PutUint32(line[16:], 2)
+	binary.LittleEndian.PutUint32(line[20:], 36)
+	binary.LittleEndian.PutUint32(line[28:], 42)
+	binary.LittleEndian.PutUint32(line[32:], 0x10)
+	binary.LittleEndian.PutUint32(line[36:], 43)
+	binary.LittleEndian.PutUint16(line[40:], 1)
+	binary.LittleEndian.PutUint16(line[42:], 3)
+	binary.LittleEndian.PutUint16(line[44:], 1)
+	binary.LittleEndian.PutUint16(line[46:], 4)
+
+	inlinees := make([]byte, 4+3*12)
+	binary.LittleEndian.PutUint32(inlinees, 0)
+	binary.LittleEndian.PutUint32(inlinees[4:], 0x1000)
+	binary.LittleEndian.PutUint32(inlinees[8:], 24)
+	binary.LittleEndian.PutUint32(inlinees[12:], 100)
+	binary.LittleEndian.PutUint32(inlinees[16:], 0x1001)
+	binary.LittleEndian.PutUint32(inlinees[20:], 48)
+	binary.LittleEndian.PutUint32(inlinees[24:], 200)
+	binary.LittleEndian.PutUint32(inlinees[28:], 0x1002)
+	binary.LittleEndian.PutUint32(inlinees[32:], 72)
+	binary.LittleEndian.PutUint32(inlinees[36:], 300)
+
+	var c13 bytes.Buffer
+	appendSubsection(&c13, 0xf2, line)
+	appendSubsection(&c13, 0xf4, checksums)
+	appendSubsection(&c13, 0xf3, stringsData)
+	inlineeOffset := c13.Len() + 8
+	appendSubsection(&c13, 0xf6, inlinees)
+	return c13.Bytes(), len(line), inlineeOffset
+}
+
+func inlineIDStream() []byte {
+	first := inlineIDRecord("OuterInline", 0x1601)
+	second := inlineIDRecord("InnerInline", 0x1602)
+	third := inlineIDRecord("DeepInline", 0x1601)
+	stream := make([]byte, 56, 56+len(first)+len(second)+len(third))
+	binary.LittleEndian.PutUint32(stream, 20040203)
+	binary.LittleEndian.PutUint32(stream[4:], 56)
+	binary.LittleEndian.PutUint32(stream[8:], 0x1000)
+	binary.LittleEndian.PutUint32(stream[12:], 0x1003)
+	binary.LittleEndian.PutUint32(stream[16:], uint32(len(first)+len(second)+len(third)))
+	stream = append(stream, first...)
+	stream = append(stream, second...)
+	stream = append(stream, third...)
+	return stream
+}
+
+func inlineIDRecord(name string, kind uint16) []byte {
+	body := make([]byte, 8)
+	body = append(body, name...)
+	body = append(body, 0)
+	for padding := (4 - len(body)%4) % 4; padding > 0; padding-- {
+		body = append(body, byte(0xf0+padding))
+	}
+	return codeViewRecord(kind, body)
 }
 
 func build(includeLines, globalStrings, multipleModules bool) Fixture {

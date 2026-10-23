@@ -19,6 +19,10 @@ const (
 	maxPDBSourceFiles     = 65_536
 	maxPDBLineMappings    = 1_000_000
 	maxPDBNamedCapacity   = 65_536
+	maxPDBInlineSites     = 100_000
+	maxPDBInlineDepth     = 128
+	maxPDBInlineRecords   = 1_000_000
+	maxPDBInlineAnnots    = 1_000_000
 	pdbHeaderSize         = 32
 	pdbStreamAbsent       = ^uint32(0)
 	pdbModuleStreamAbsent = ^uint16(0)
@@ -49,7 +53,21 @@ type pdbProcedure struct {
 	segment uint16
 	offset  uint32
 	size    uint32
+	parent  uint32
+	end     uint32
 	name    string
+}
+
+type pdbSymbolScope struct {
+	startOffset    uint32
+	parentOffset   uint32
+	endOffset      uint32
+	opener         uint16
+	endKind        uint16
+	procedure      int
+	inlineSite     int
+	inlineAncestor int
+	inlineDepth    int
 }
 
 func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
@@ -256,6 +274,8 @@ func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, 
 	modules, procedures, records := 0, 0, 0
 	sourceLines := 0
 	sourceFiles, lineMappings := 0, 0
+	inlineSites, inlineRecords, inlineAnnotations, inlineeRecords := 0, 0, 0, 0
+	var inlineNames map[uint32]string
 	for offset := 0; offset < len(moduleInfo); {
 		if len(moduleInfo)-offset < 64 || modules == maxPDBModules {
 			return nil, false
@@ -293,17 +313,36 @@ func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, 
 			return nil, false
 		}
 		moduleFunctionsStart := len(functions)
-		if !parsePDBModuleSymbols(moduleStream[4:symbolBytes], sections, &functions, &procedures, &records) {
+		var moduleInlineSites []pdbInlineSite
+		if !parsePDBModuleSymbolsWithInlineSites(moduleStream[4:symbolBytes], sections, &functions, &procedures, &records, &moduleInlineSites, &inlineSites) {
 			return nil, false
 		}
+		moduleProceduresEnd := len(functions)
 		if c13Bytes > 0 {
 			c13Start := uint64(symbolBytes) + uint64(c11Bytes)
 			c13End := c13Start + uint64(c13Bytes)
-			lines, ok := parsePDBC13(moduleStream[c13Start:c13End], msf, pdbInfo, sections, functions[moduleFunctionsStart:], &sourceLines, &sourceFiles, &lineMappings)
+			lines, checksums, inlinees, ok := parsePDBC13WithInlinees(moduleStream[c13Start:c13End], msf, pdbInfo, sections, functions[moduleFunctionsStart:moduleProceduresEnd], &sourceLines, &sourceFiles, &lineMappings, &inlineeRecords)
 			if !ok {
 				return nil, false
 			}
 			functions = append(functions, lines...)
+			if len(moduleInlineSites) != 0 {
+				if inlineNames == nil {
+					inlineStream, ok := msf.readStream(4)
+					if !ok {
+						return nil, false
+					}
+					inlineNames, ok = parsePDBInlineIDNames(inlineStream, &inlineRecords)
+					if !ok {
+						return nil, false
+					}
+				}
+				if !attachPDBInlineSites(functions[moduleFunctionsStart:], moduleFunctionsStart, moduleProceduresEnd-moduleFunctionsStart, moduleInlineSites, checksums, inlinees, inlineNames, &inlineAnnotations) {
+					return nil, false
+				}
+			}
+		} else if len(moduleInlineSites) != 0 {
+			return nil, false
 		}
 	}
 	return functions, true
@@ -316,17 +355,23 @@ type pdbC13Line struct {
 }
 
 func parsePDBC13(data []byte, msf *pdbMSFFile, pdbInfo []byte, sections []pdbSection, functions []SymbolFunction, sourceLineCount, sourceFileCount, lineMappingCount *int) ([]SymbolFunction, bool) {
+	lines, _, _, ok := parsePDBC13WithInlinees(data, msf, pdbInfo, sections, functions, sourceLineCount, sourceFileCount, lineMappingCount, new(int))
+	return lines, ok
+}
+
+func parsePDBC13WithInlinees(data []byte, msf *pdbMSFFile, pdbInfo []byte, sections []pdbSection, functions []SymbolFunction, sourceLineCount, sourceFileCount, lineMappingCount, inlineeRecordCount *int) ([]SymbolFunction, map[uint32]string, map[uint32]pdbInlinee, bool) {
 	if len(data)%4 != 0 {
-		return nil, false
+		return nil, nil, nil, false
 	}
 	var lineSubsections [][]byte
+	var inlineeSubsections [][]byte
 	var checksumData []byte
 	var localStringTable []byte
-	checksumSeen, stringTableSeen := false, false
+	checksumSeen, stringTableSeen, inlineeSeen := false, false, false
 	subsections := 0
 	for offset := 0; offset < len(data); {
 		if len(data)-offset < 8 || subsections == maxPDBC13Subsections {
-			return nil, false
+			return nil, nil, nil, false
 		}
 		subsections++
 		rawKind := binary.LittleEndian.Uint32(data[offset:])
@@ -335,7 +380,7 @@ func parsePDBC13(data []byte, msf *pdbMSFFile, pdbInfo []byte, sections []pdbSec
 		end := start + uint64(size)
 		paddedEnd := (end + 3) &^ uint64(3)
 		if end > uint64(len(data)) || paddedEnd > uint64(len(data)) {
-			return nil, false
+			return nil, nil, nil, false
 		}
 		if rawKind&0x80000000 == 0 {
 			payload := data[start:end]
@@ -344,54 +389,73 @@ func parsePDBC13(data []byte, msf *pdbMSFFile, pdbInfo []byte, sections []pdbSec
 				lineSubsections = append(lineSubsections, payload)
 			case 0xf3: // DEBUG_S_STRINGTABLE
 				if stringTableSeen {
-					return nil, false
+					return nil, nil, nil, false
 				}
 				stringTableSeen, localStringTable = true, payload
 			case 0xf4: // DEBUG_S_FILECHKSMS
 				if checksumSeen {
-					return nil, false
+					return nil, nil, nil, false
 				}
 				checksumSeen, checksumData = true, payload
+			case 0xf6: // DEBUG_S_INLINEELINES
+				if inlineeSeen {
+					return nil, nil, nil, false
+				}
+				inlineeSeen = true
+				inlineeSubsections = append(inlineeSubsections, payload)
 			}
 		}
 		offset = int(paddedEnd)
 	}
 
 	if !checksumSeen {
-		if len(lineSubsections) != 0 {
-			return nil, false
+		if len(lineSubsections) != 0 || len(inlineeSubsections) != 0 {
+			return nil, nil, nil, false
 		}
 		if stringTableSeen && !validPDBStringTable(localStringTable) {
-			return nil, false
+			return nil, nil, nil, false
 		}
-		return nil, true
+		return nil, nil, nil, true
 	}
 	stringTable := localStringTable
 	if stringTableSeen {
 		if !validPDBStringTable(stringTable) {
-			return nil, false
+			return nil, nil, nil, false
 		}
 	} else {
 		var ok bool
 		stringTable, ok = pdbGlobalStringTable(msf, pdbInfo)
 		if !ok {
-			return nil, false
+			return nil, nil, nil, false
 		}
 	}
 	checksums, ok := parsePDBC13Checksums(checksumData, stringTable, sourceFileCount)
 	if !ok {
-		return nil, false
+		return nil, nil, nil, false
+	}
+	inlinees := make(map[uint32]pdbInlinee)
+	for _, subsection := range inlineeSubsections {
+		entries, ok := parsePDBC13InlineeLines(subsection, checksums, inlineeRecordCount)
+		if !ok {
+			return nil, nil, nil, false
+		}
+		for id, entry := range entries {
+			if _, exists := inlinees[id]; exists {
+				return nil, nil, nil, false
+			}
+			inlinees[id] = entry
+		}
 	}
 	index := newPDBFunctionIndex(functions)
 	var sourceFunctions []SymbolFunction
 	for _, subsection := range lineSubsections {
 		lines, ok := parsePDBC13Lines(subsection, checksums, sections, index, sourceLineCount, lineMappingCount)
 		if !ok {
-			return nil, false
+			return nil, nil, nil, false
 		}
 		sourceFunctions = append(sourceFunctions, lines...)
 	}
-	return sourceFunctions, true
+	return sourceFunctions, checksums, inlinees, true
 }
 
 func parsePDBC13Checksums(data, stringTable []byte, sourceFileCount *int) (map[uint32]string, bool) {
@@ -598,7 +662,7 @@ func pdbC13FunctionsForLines(lines []pdbC13Line, codeSize uint32, section pdbSec
 			start := max(lineStart, function.Start)
 			end := min(lineEnd, function.End)
 			if start < end {
-				sourceFunctions = append(sourceFunctions, SymbolFunction{Start: start, End: end, Name: function.Name, File: line.file, Line: line.line})
+				sourceFunctions = append(sourceFunctions, SymbolFunction{Start: start, End: end, Name: function.Name, File: line.file, Line: line.line, procedureStart: function.Start})
 			}
 		}
 	}
@@ -772,6 +836,14 @@ func pdbStringAt(table []byte, offset uint32) (string, bool) {
 }
 
 func parsePDBModuleSymbols(data []byte, sections []pdbSection, functions *[]SymbolFunction, procedures, records *int) bool {
+	return parsePDBModuleSymbolsWithInlineSites(data, sections, functions, procedures, records, nil, nil)
+}
+
+func parsePDBModuleSymbolsWithInlineSites(data []byte, sections []pdbSection, functions *[]SymbolFunction, procedures, records *int, sites *[]pdbInlineSite, siteCount *int) bool {
+	currentProcedure := -1
+	strictScopes := false
+	scopeStackInvalid := false
+	var scopes []pdbSymbolScope
 	for offset := 0; offset < len(data); {
 		if len(data)-offset < 4 || *records == maxPDBSymbolRecords {
 			return false
@@ -782,39 +854,188 @@ func parsePDBModuleSymbols(data []byte, sections []pdbSection, functions *[]Symb
 		}
 		(*records)++
 		kind := binary.LittleEndian.Uint16(data[offset+2:])
+		body := data[offset+4 : offset+2+length]
+		// Scope pointers are relative to the symbol substream, including its
+		// four-byte CodeView signature. data begins immediately after it.
+		recordOffset := uint32(offset + 4)
+		if kind == 0x114d {
+			if sites == nil || siteCount == nil || currentProcedure < 0 || len(body) < 12 || *siteCount == maxPDBInlineSites {
+				return false
+			}
+			if !strictScopes {
+				if scopeStackInvalid || !validPDBInlineScopeStack(scopes, uint32(len(data))+4) {
+					return false
+				}
+				strictScopes = true
+			}
+			if len(scopes) == 0 || scopes[len(scopes)-1].procedure != currentProcedure || !validPDBScopeChild(scopes, recordOffset, binary.LittleEndian.Uint32(body), binary.LittleEndian.Uint32(body[4:]), 0x114d, 0x114e, uint32(len(data))+4) {
+				return false
+			}
+			parentScope := scopes[len(scopes)-1]
+			parent, inlineDepth := parentScope.inlineAncestor, parentScope.inlineDepth
+			if inlineDepth == maxPDBInlineDepth {
+				return false
+			}
+			index := len(*sites)
+			*sites = append(*sites, pdbInlineSite{
+				parent: parent, procedure: currentProcedure, procedureStart: (*functions)[currentProcedure].Start,
+				inlinee: binary.LittleEndian.Uint32(body[8:]), annotations: append([]byte(nil), body[12:]...),
+			})
+			(*siteCount)++
+			scopes = append(scopes, pdbSymbolScope{
+				startOffset: recordOffset, parentOffset: binary.LittleEndian.Uint32(body), endOffset: binary.LittleEndian.Uint32(body[4:]),
+				opener: kind, endKind: 0x114e, procedure: currentProcedure, inlineSite: index,
+				inlineAncestor: index, inlineDepth: inlineDepth + 1,
+			})
+		} else if endKind, isEnd := pdbScopeEndKind(kind); isEnd {
+			if length != 2 {
+				return false
+			}
+			if len(scopes) == 0 || scopes[len(scopes)-1].endOffset != recordOffset || scopes[len(scopes)-1].endKind != endKind {
+				if strictScopes {
+					return false
+				}
+				scopeStackInvalid = true
+			} else {
+				closed := scopes[len(scopes)-1]
+				scopes = scopes[:len(scopes)-1]
+				if pdbProcedureScope(closed.opener) {
+					currentProcedure = -1
+				}
+			}
+		}
 		if isPDBProcedureKind(kind) {
+			if strictScopes && len(scopes) != 0 {
+				return false
+			}
+			if !strictScopes {
+				scopes = nil
+				scopeStackInvalid = false
+			}
+			currentProcedure = -1
 			if *procedures == maxPDBProcedures {
 				return false
 			}
 			(*procedures)++
-			procedure, ok := parsePDBProcedure(data[offset+4 : offset+2+length])
+			procedure, ok := parsePDBProcedure(body)
 			if !ok {
 				return false
 			}
 			if procedure.segment == 0 || int(procedure.segment) > len(sections) {
 				return false
 			}
-			if procedure.size == 0 {
-				offset += length + 2
-				continue
-			}
-			section := sections[procedure.segment-1]
-			sectionSize := max(section.virtualSize, section.rawSize)
-			if section.flags&0x20000000 != 0 {
-				if procedure.offset >= sectionSize || procedure.size > sectionSize-procedure.offset {
-					return false
+			if procedure.size > 0 {
+				section := sections[procedure.segment-1]
+				sectionSize := max(section.virtualSize, section.rawSize)
+				if section.flags&0x20000000 != 0 {
+					if procedure.offset >= sectionSize || procedure.size > sectionSize-procedure.offset {
+						return false
+					}
+					start := uint64(section.virtualAddr) + uint64(procedure.offset)
+					end := start + uint64(procedure.size)
+					if end > uint64(1)<<32 || end <= start {
+						return false
+					}
+					*functions = append(*functions, SymbolFunction{Start: start, End: end, Name: procedure.name, Line: -1})
+					currentProcedure = len(*functions) - 1
 				}
-				start := uint64(section.virtualAddr) + uint64(procedure.offset)
-				end := start + uint64(procedure.size)
-				if end > uint64(1)<<32 || end <= start {
-					return false
-				}
-				*functions = append(*functions, SymbolFunction{Start: start, End: end, Name: procedure.name, Line: -1})
 			}
+			if strictScopes && (procedure.parent != 0 || procedure.end <= recordOffset || procedure.end >= uint32(len(data))+4) {
+				return false
+			}
+			scopes = append(scopes, pdbSymbolScope{
+				startOffset: recordOffset, parentOffset: procedure.parent, endOffset: procedure.end,
+				opener: kind, endKind: pdbProcedureEndKind(kind), procedure: currentProcedure, inlineSite: -1, inlineAncestor: -1,
+			})
+		} else if endKind, isScope := pdbScopeOpenerEndKind(kind); isScope && kind != 0x114d {
+			if len(body) < 8 {
+				return false
+			}
+			parentOffset, endOffset := binary.LittleEndian.Uint32(body), binary.LittleEndian.Uint32(body[4:])
+			if strictScopes && !validPDBScopeChild(scopes, recordOffset, parentOffset, endOffset, kind, endKind, uint32(len(data))+4) {
+				return false
+			}
+			inlineAncestor, inlineDepth := -1, 0
+			if len(scopes) > 0 {
+				inlineAncestor = scopes[len(scopes)-1].inlineAncestor
+				inlineDepth = scopes[len(scopes)-1].inlineDepth
+			}
+			scopes = append(scopes, pdbSymbolScope{
+				startOffset: recordOffset, parentOffset: parentOffset, endOffset: endOffset,
+				opener: kind, endKind: endKind, procedure: currentProcedure, inlineSite: -1,
+				inlineAncestor: inlineAncestor, inlineDepth: inlineDepth,
+			})
 		}
 		offset += length + 2
 	}
+	return !strictScopes || len(scopes) == 0
+}
+
+func validPDBInlineScopeStack(scopes []pdbSymbolScope, symbolBytes uint32) bool {
+	if len(scopes) == 0 {
+		return false
+	}
+	root := scopes[0]
+	if !isPDBProcedureKind(root.opener) || root.parentOffset != 0 || root.procedure < 0 || root.inlineSite >= 0 ||
+		root.endKind != pdbProcedureEndKind(root.opener) || root.endOffset <= root.startOffset || root.endOffset >= symbolBytes {
+		return false
+	}
+	for i, scope := range scopes {
+		if i == 0 {
+			continue
+		}
+		parent := scopes[i-1]
+		wantEndKind, ok := pdbScopeOpenerEndKind(scope.opener)
+		if !ok || scope.parentOffset != parent.startOffset || scope.procedure != root.procedure ||
+			scope.endKind != wantEndKind || scope.startOffset <= parent.startOffset ||
+			scope.endOffset <= scope.startOffset || scope.endOffset >= parent.endOffset || scope.endOffset >= symbolBytes {
+			return false
+		}
+	}
 	return true
+}
+
+func validPDBScopeChild(scopes []pdbSymbolScope, start, parent, end uint32, opener, endKind uint16, symbolBytes uint32) bool {
+	if len(scopes) == 0 {
+		return false
+	}
+	parentScope := scopes[len(scopes)-1]
+	wantEndKind, ok := pdbScopeOpenerEndKind(opener)
+	return ok && wantEndKind == endKind && parentScope.startOffset == parent &&
+		start > parentScope.startOffset && end > start && end < parentScope.endOffset && end < symbolBytes
+}
+
+func pdbScopeEndKind(kind uint16) (uint16, bool) {
+	switch kind {
+	case 0x0006, 0x114e, 0x114f:
+		return kind, true
+	default:
+		return 0, false
+	}
+}
+
+func pdbScopeOpenerEndKind(kind uint16) (uint16, bool) {
+	switch kind {
+	case 0x1102, 0x1103, 0x1104:
+		return 0x0006, true
+	case 0x114d:
+		return 0x114e, true
+	default:
+		return 0, false
+	}
+}
+
+func pdbProcedureScope(kind uint16) bool {
+	return isPDBProcedureKind(kind)
+}
+
+func pdbProcedureEndKind(kind uint16) uint16 {
+	switch kind {
+	case 0x1146, 0x1147, 0x1156:
+		return 0x114f
+	default:
+		return 0x0006
+	}
 }
 
 func parsePDBProcedure(data []byte) (pdbProcedure, bool) {
@@ -823,6 +1044,8 @@ func parsePDBProcedure(data []byte) (pdbProcedure, bool) {
 		return procedure, false
 	}
 	procedure.size = binary.LittleEndian.Uint32(data[12:])
+	procedure.parent = binary.LittleEndian.Uint32(data)
+	procedure.end = binary.LittleEndian.Uint32(data[4:])
 	procedure.offset = binary.LittleEndian.Uint32(data[28:])
 	procedure.segment = binary.LittleEndian.Uint16(data[32:])
 	name := data[35:]

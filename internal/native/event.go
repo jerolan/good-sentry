@@ -18,20 +18,11 @@ func BuildEvent(crash Crash, fields map[string]string, now time.Time) (json.RawM
 	value := fmt.Sprintf("Minidump crash in thread %d (%s)", crash.ThreadID, typeName)
 	frames := make([]map[string]any, 0, len(crash.Frames))
 	for _, frame := range crash.Frames {
-		entry := map[string]any{"instruction_addr": fmt.Sprintf("0x%x", frame.Instruction)}
-		if frame.Module != "" {
-			entry["package"] = frame.Module
+		for i := len(frame.InlineFrames) - 1; i >= 0; i-- {
+			inline := frame.InlineFrames[i]
+			frames = append(frames, eventStackFrame(frame.Instruction, frame.Module, inline.Function, inline.File, inline.Line))
 		}
-		if frame.Function != "" {
-			entry["function"] = frame.Function
-		}
-		if frame.File != "" {
-			entry["filename"] = frame.File
-		}
-		if frame.Line > 0 {
-			entry["lineno"] = frame.Line
-		}
-		frames = append(frames, entry)
+		frames = append(frames, eventStackFrame(frame.Instruction, frame.Module, frame.Function, frame.File, frame.Line))
 	}
 	images := make([]map[string]any, 0, len(crash.Modules))
 	for _, module := range crash.Modules {
@@ -61,6 +52,23 @@ func BuildEvent(crash Crash, fields map[string]string, now time.Time) (json.RawM
 	}
 	raw, err := json.Marshal(payload)
 	return raw, eventID, err
+}
+
+func eventStackFrame(instruction uint64, module, function, file string, line int) map[string]any {
+	entry := map[string]any{"instruction_addr": fmt.Sprintf("0x%x", instruction)}
+	if module != "" {
+		entry["package"] = module
+	}
+	if function != "" {
+		entry["function"] = function
+	}
+	if file != "" {
+		entry["filename"] = file
+	}
+	if line > 0 {
+		entry["lineno"] = line
+	}
+	return entry
 }
 
 func exceptionName(code uint32) string {
