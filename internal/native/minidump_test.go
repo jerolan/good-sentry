@@ -10,6 +10,7 @@ import (
 	"debug/macho"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -1486,12 +1487,6 @@ func TestParseTARDebugArchivesRejectPartialSymbols(t *testing.T) {
 		t.Fatalf("non-regular entry returned symbols: %+v", objects)
 	}
 
-	nested := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "test_app.sym", Data: symbol}})
-	outer := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "nested.tar", Data: nested}})
-	if objects := ParseDebugObjects("outer.tar", outer); len(objects) != 0 {
-		t.Fatalf("nested archive returned symbols: %+v", objects)
-	}
-
 	var compressed bytes.Buffer
 	writerGzip := gzip.NewWriter(&compressed)
 	if _, err := writerGzip.Write(complete); err != nil {
@@ -1504,6 +1499,131 @@ func TestParseTARDebugArchivesRejectPartialSymbols(t *testing.T) {
 	corrupt[len(corrupt)-8] ^= 0xff
 	if objects := ParseDebugObjects("broken.tar.gz", corrupt); len(objects) != 0 {
 		t.Fatalf("checksum-invalid archive returned partial symbols: %+v", objects)
+	}
+}
+
+func TestParseNestedDebugArchivesAndSymbolicate(t *testing.T) {
+	symbol := []byte("MODULE windows x86_64 ABCDEF0123456789 test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 CrashFunction\n1010 20 42 1\n")
+	nestedTAR := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "test_app.sym", Data: symbol}})
+	nestedGzipTAR := gzipTestArchive(t, nestedTAR)
+	nestedZIP := buildTestZIP(t, []testTARFile{{Name: "test_app.sym", Data: symbol}})
+	cases := []struct {
+		name string
+		data []byte
+	}{
+		{name: "tar inside zip", data: buildTestZIP(t, []testTARFile{{Name: "nested.tar", Data: nestedTAR}})},
+		{name: "zip inside tar", data: buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "nested.zip", Data: nestedZIP}})},
+		{name: "gzip tar inside zip", data: buildTestZIP(t, []testTARFile{{Name: "nested.tar.gz", Data: nestedGzipTAR}})},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			objects := ParseDebugObjects("outer", tc.data)
+			if len(objects) != 1 {
+				t.Fatalf("nested symbols=%+v", objects)
+			}
+			foundFunction := false
+			for _, function := range objects[0].Functions {
+				foundFunction = foundFunction || function.Name == "CrashFunction"
+			}
+			if !foundFunction {
+				t.Fatalf("nested symbols=%+v", objects)
+			}
+			crash, err := ParseMinidump(buildAMD64Minidump())
+			if err != nil {
+				t.Fatal(err)
+			}
+			Symbolicate(&crash, SymbolSet{objects[0].Name: objects[0].Functions})
+			if frame := crash.Frames[0]; frame.Function != "CrashFunction" || frame.File != "C:\\src\\crash.cc" || frame.Line != 42 {
+				t.Fatalf("nested archive symbolication=%+v", frame)
+			}
+		})
+	}
+
+	deepest := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "test_app.sym", Data: symbol}})
+	deep := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "deeper.tar", Data: deepest}})
+	tooDeep := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{
+		{Name: "valid.sym", Data: symbol},
+		{Name: "deep.tar", Data: deep},
+	})
+	if objects := ParseDebugObjects("too-deep.tar", tooDeep); len(objects) != 0 {
+		t.Fatalf("archive deeper than two layers returned partial symbols: %+v", objects)
+	}
+	malformedNested := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{
+		{Name: "valid.sym", Data: symbol},
+		{Name: "malformed.zip", Data: []byte{'P', 'K', 0x03, 0x04, 0}},
+	})
+	if objects := ParseDebugObjects("malformed-nested.tar", malformedNested); len(objects) != 0 {
+		t.Fatalf("malformed nested archive returned partial symbols: %+v", objects)
+	}
+
+	var inner bytes.Buffer
+	innerWriter := tar.NewWriter(&inner)
+	if err := innerWriter.WriteHeader(&tar.Header{Name: "test_app.sym", Mode: 0600, Size: int64(len(symbol)), Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := innerWriter.Write(symbol); err != nil {
+		t.Fatal(err)
+	}
+	for i := 1; i < maxDebugArchiveEntries; i++ {
+		if err := innerWriter.WriteHeader(&tar.Header{Name: fmt.Sprintf("dir-%03d", i), Mode: 0700, Typeflag: tar.TypeDir}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := innerWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+	outer := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "inner.tar", Data: inner.Bytes()}})
+	if objects := ParseDebugObjects("too-many-nested-entries.tar", outer); len(objects) != 0 {
+		t.Fatalf("archive entries counted independently at each layer: %+v", objects)
+	}
+}
+
+func TestNestedDebugArchiveExpandedByteBudgetIsShared(t *testing.T) {
+	const (
+		outerPayloadSize = 62 << 20
+		innerPayloadSize = 67 << 20
+	)
+	symbol := []byte("MODULE windows x86_64 ABCDEF0123456789 test_app.pdb\nFUNC 1010 20 0 CrashFunction\n")
+	var compressedInner bytes.Buffer
+	gzipWriter := gzip.NewWriter(&compressedInner)
+	innerWriter := tar.NewWriter(gzipWriter)
+	if err := innerWriter.WriteHeader(&tar.Header{Name: "padding.bin", Mode: 0600, Size: innerPayloadSize, Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	writeTestZeroes(t, innerWriter, innerPayloadSize)
+	if err := innerWriter.WriteHeader(&tar.Header{Name: "test_app.sym", Mode: 0600, Size: int64(len(symbol)), Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := innerWriter.Write(symbol); err != nil {
+		t.Fatal(err)
+	}
+	if err := innerWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := gzipWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	var outer bytes.Buffer
+	outerWriter := tar.NewWriter(&outer)
+	if err := outerWriter.WriteHeader(&tar.Header{Name: "padding.bin", Mode: 0600, Size: outerPayloadSize, Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	writeTestZeroes(t, outerWriter, outerPayloadSize)
+	if err := outerWriter.WriteHeader(&tar.Header{Name: "nested.tar.gz", Mode: 0600, Size: int64(compressedInner.Len()), Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.Copy(outerWriter, &compressedInner); err != nil {
+		t.Fatal(err)
+	}
+	if err := outerWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if len(outer.Bytes()) >= 64<<20 {
+		t.Fatalf("fixture exceeds uploaded debug-file limit: %d bytes", outer.Len())
+	}
+	if objects := ParseDebugObjects("outer.tar", outer.Bytes()); len(objects) != 0 {
+		t.Fatalf("nested archives exceeded the shared expanded-byte budget: %+v", objects)
 	}
 }
 
@@ -1528,4 +1648,52 @@ func buildTestTAR(t *testing.T, format tar.Format, files []testTARFile) []byte {
 		t.Fatal(err)
 	}
 	return archive.Bytes()
+}
+
+func buildTestZIP(t *testing.T, files []testTARFile) []byte {
+	t.Helper()
+	var archive bytes.Buffer
+	writer := zip.NewWriter(&archive)
+	for _, file := range files {
+		entry, err := writer.Create(file.Name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := entry.Write(file.Data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return archive.Bytes()
+}
+
+func gzipTestArchive(t *testing.T, data []byte) []byte {
+	t.Helper()
+	var compressed bytes.Buffer
+	writer := gzip.NewWriter(&compressed)
+	if _, err := writer.Write(data); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return compressed.Bytes()
+}
+
+func writeTestZeroes(t *testing.T, writer io.Writer, size int64) {
+	t.Helper()
+	zeroes := make([]byte, 32<<10)
+	for size > 0 {
+		chunk := zeroes
+		if int64(len(chunk)) > size {
+			chunk = chunk[:size]
+		}
+		written, err := writer.Write(chunk)
+		if err != nil {
+			t.Fatal(err)
+		}
+		size -= int64(written)
+	}
 }

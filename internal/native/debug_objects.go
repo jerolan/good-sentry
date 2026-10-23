@@ -12,8 +12,23 @@ import (
 const (
 	maxDebugArchiveEntries = 256
 	maxDebugArchiveBytes   = 128 << 20
+	maxDebugArchiveDepth   = 2
 	tarEndMarkerBytes      = 2 * 512
 )
+
+type debugArchiveBudget struct {
+	entries       int
+	expandedBytes uint64
+}
+
+func (b *debugArchiveBudget) addEntry(size uint64) error {
+	if b.entries >= maxDebugArchiveEntries || size > uint64(maxDebugArchiveBytes)-b.expandedBytes {
+		return errors.New("debug archive exceeds processing limits")
+	}
+	b.entries++
+	b.expandedBytes += size
+	return nil
+}
 
 type DebugObject struct {
 	Name      string
@@ -26,11 +41,12 @@ type DebugObject struct {
 // parses the upload as one object. Unsupported or malformed content yields no
 // objects so a project can retain it without making Minidump ingestion fail.
 func ParseDebugObjects(name string, data []byte) []DebugObject {
-	if isDebugZIP(data) {
-		return parseDebugArchive(name, data)
-	}
-	if isDebugTAR(data) || isGzip(data) {
-		return parseDebugTARArchive(data)
+	if isDebugArchive(data) {
+		objects, err := parseDebugArchive(data, 1, &debugArchiveBudget{})
+		if err != nil {
+			return nil
+		}
+		return objects
 	}
 	if object, ok := parseDebugObject(name, data); ok {
 		return []DebugObject{object}
@@ -54,20 +70,46 @@ func isGzip(data []byte) bool {
 	return len(data) >= 2 && data[0] == 0x1f && data[1] == 0x8b
 }
 
-func parseDebugTARArchive(data []byte) []DebugObject {
+func parseDebugArchive(data []byte, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
+	if depth < 1 || depth > maxDebugArchiveDepth {
+		return nil, errors.New("debug archive nesting exceeds processing limits")
+	}
+	if isDebugZIP(data) {
+		return parseDebugZIPArchive(data, depth, budget)
+	}
+	if isDebugTAR(data) || isGzip(data) {
+		return parseDebugTARArchive(data, depth, budget)
+	}
+	return nil, errors.New("unsupported debug archive")
+}
+
+func parseDebugArchiveEntry(name string, data []byte, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
+	if !isDebugArchive(data) {
+		if object, ok := parseDebugObject(name, data); ok {
+			return []DebugObject{object}, nil
+		}
+		return nil, nil
+	}
+	if depth >= maxDebugArchiveDepth {
+		return nil, errors.New("debug archive nesting exceeds processing limits")
+	}
+	return parseDebugArchive(data, depth+1, budget)
+}
+
+func parseDebugTARArchive(data []byte, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
 	var source io.Reader = bytes.NewReader(data)
 	var compressed *gzip.Reader
 	if isGzip(data) {
 		var err error
 		compressed, err = gzip.NewReader(source)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 		source = compressed
 	}
 	limited := &io.LimitedReader{R: source, N: maxDebugArchiveBytes + 1}
 	counted := &countingReader{Reader: limited}
-	objects, err := parseDebugTAR(counted)
+	objects, err := parseDebugTAR(counted, depth, budget)
 	if err == nil {
 		err = drainTARPadding(limited)
 	}
@@ -77,16 +119,17 @@ func parseDebugTARArchive(data []byte) []DebugObject {
 		}
 	}
 	if err != nil || limited.N == 0 {
-		return nil
+		if err == nil {
+			err = errors.New("TAR debug archive exceeds processing limits")
+		}
+		return nil, err
 	}
-	return objects
+	return objects, nil
 }
 
-func parseDebugTAR(source *countingReader) ([]DebugObject, error) {
+func parseDebugTAR(source *countingReader, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
 	reader := tar.NewReader(source)
 	objects := []DebugObject{}
-	var expanded int64
-	entries := 0
 	for {
 		beforeNext := source.count
 		header, err := reader.Next()
@@ -103,11 +146,12 @@ func parseDebugTAR(source *countingReader) ([]DebugObject, error) {
 		if header == nil {
 			return nil, errors.New("TAR archive returned an empty member")
 		}
-		entries++
-		if entries > maxDebugArchiveEntries || header.Size < 0 || header.Size > maxDebugArchiveBytes-expanded {
-			return nil, errors.New("TAR debug archive exceeds processing limits")
+		if header.Size < 0 {
+			return nil, errors.New("TAR debug archive has an invalid member size")
 		}
-		expanded += header.Size
+		if err := budget.addEntry(uint64(header.Size)); err != nil {
+			return nil, err
+		}
 		if header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeRegA {
 			if _, err := io.Copy(io.Discard, reader); err != nil {
 				return nil, err
@@ -121,9 +165,11 @@ func parseDebugTAR(source *countingReader) ([]DebugObject, error) {
 			}
 			return nil, err
 		}
-		if object, ok := parseDebugObject(header.Name, content); ok {
-			objects = append(objects, object)
+		members, err := parseDebugArchiveEntry(header.Name, content, depth, budget)
+		if err != nil {
+			return nil, err
 		}
+		objects = append(objects, members...)
 	}
 }
 
@@ -156,35 +202,44 @@ func drainTARPadding(source io.Reader) error {
 	}
 }
 
-func parseDebugArchive(name string, data []byte) []DebugObject {
+func parseDebugZIPArchive(data []byte, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
 	reader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil || len(reader.File) == 0 || len(reader.File) > maxDebugArchiveEntries {
-		return nil
+		if err == nil {
+			err = errors.New("ZIP debug archive exceeds processing limits")
+		}
+		return nil, err
 	}
 	objects := []DebugObject{}
-	var total uint64
 	for _, entry := range reader.File {
+		if err := budget.addEntry(entry.UncompressedSize64); err != nil {
+			return nil, err
+		}
 		if entry.FileInfo().IsDir() || entry.UncompressedSize64 == 0 {
 			continue
 		}
-		if entry.UncompressedSize64 > maxDebugArchiveBytes-total {
-			return nil
-		}
-		total += entry.UncompressedSize64
 		file, err := entry.Open()
 		if err != nil {
-			continue
+			return nil, err
 		}
 		content, err := io.ReadAll(io.LimitReader(file, int64(entry.UncompressedSize64)+1))
-		file.Close()
-		if err != nil || uint64(len(content)) != entry.UncompressedSize64 {
-			continue
+		closeErr := file.Close()
+		if err != nil {
+			return nil, err
 		}
-		if object, ok := parseDebugObject(entry.Name, content); ok {
-			objects = append(objects, object)
+		if closeErr != nil {
+			return nil, closeErr
 		}
+		if uint64(len(content)) != entry.UncompressedSize64 {
+			return nil, io.ErrUnexpectedEOF
+		}
+		members, err := parseDebugArchiveEntry(entry.Name, content, depth, budget)
+		if err != nil {
+			return nil, err
+		}
+		objects = append(objects, members...)
 	}
-	return objects
+	return objects, nil
 }
 
 func parseDebugObject(name string, data []byte) (DebugObject, bool) {
