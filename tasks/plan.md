@@ -320,7 +320,7 @@ Compatible issue tags are accepted at f07647d with merged-alias aggregation, obj
 
 Optional issue-tag key filtering is accepted at `e088d8e`: both compatible route aliases apply exact case-sensitive matching and retain strict query admission. The existing HTTP aggregation owner verifies encoded, empty, unmatched and malformed/repeated cases; CI `39976040595` and image publication `39977008284` pass. Continue the remaining compatible monitors/alerts and administration routes.
 
-Close the compatible organization-project pagination parameter gap: support OpenAPI `limit` beside GoodSentry's existing `per_page`, reject malformed/repeated/conflicting page-size values, preserve the supplied alias in `Link`, and retain the existing cursor/access semantics.
+Compatible organization-project pagination accepts OpenAPI `limit` alongside GoodSentry's existing `per_page`. Both aliases allow values from1 through100; matching values may be supplied together, while conflicts, repetitions and malformed values return400. Generated `Link` headers preserve the requested alias and cursor/access behavior. `TestAPITokenHTTPContract` covers both aliases and follows the `limit` link. Commit `4839d937525da8f78e7f6048e7cda52ad44629af` passes exact-source CI [39979744432](https://github.com/jerolan/good-sentry/actions/runs/39979744432) and image publication [39980675495](https://github.com/jerolan/good-sentry/actions/runs/39980675495). Continue the remaining compatible monitors/alerts and administration routes.
 
 Compatible uptime monitors are accepted at 82148dd with native scheduler reuse, cursor pages, type aliases and owner/admin mutation authority. Continue compatible alerts and the remaining management routes.
 
