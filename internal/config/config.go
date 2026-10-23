@@ -51,20 +51,9 @@ type Config struct {
 
 func (c Config) AuthenticationDisabled() bool { return c.AuthMode == "disabled" }
 
-// ValidateRuntimeAvailability rejects feature switches whose implementation is
-// not part of this build. Parsing a flag is not permission to claim support.
+// ValidateRuntimeAvailability rejects external services not supported by this
+// build. Parsing a flag is not permission to claim support.
 func (c Config) ValidateRuntimeAvailability() error {
-	for _, feature := range []struct {
-		name      string
-		enabled   bool
-		canonical string
-	}{
-		{"cold span archive", c.ArchiveEnabled, "GOODSENTRY_ENABLE_ARCHIVE"},
-	} {
-		if feature.enabled {
-			return fmt.Errorf("%s is not implemented; set %s=false", feature.name, feature.canonical)
-		}
-	}
 	if c.ValkeyURL != "" {
 		return fmt.Errorf("Valkey is not implemented; leave VALKEY_URL empty for PostgreSQL-only mode")
 	}

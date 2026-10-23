@@ -102,7 +102,7 @@ func TestDeploymentConfiguration(t *testing.T) {
 	}
 }
 
-func TestArchiveConfigurationAliasesDefaultsAndReadinessGate(t *testing.T) {
+func TestArchiveConfigurationAliasesDefaultsAndRuntimeSupport(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
 	t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
 	t.Setenv("GOODSENTRY_DOMAIN", "http://localhost:8000")
@@ -147,8 +147,8 @@ func TestArchiveConfigurationAliasesDefaultsAndReadinessGate(t *testing.T) {
 	if err != nil || !cfg.ArchiveEnabled {
 		t.Fatalf("canonical archive flag precedence=%v err=%v", cfg.ArchiveEnabled, err)
 	}
-	if err := cfg.ValidateRuntimeAvailability(); err == nil || !strings.Contains(err.Error(), "cold span archive") {
-		t.Fatalf("incomplete archive passed the startup gate: %v", err)
+	if err := cfg.ValidateRuntimeAvailability(); err != nil {
+		t.Fatalf("implemented archive was rejected by the runtime gate: %v", err)
 	}
 
 	t.Setenv("GOODSENTRY_ARCHIVE_BACKEND", "s3")
@@ -246,23 +246,6 @@ func TestFeatureAliasesAndRuntimeOptions(t *testing.T) {
 	}
 	if err := cfg.ValidateRuntimeAvailability(); err != nil {
 		t.Fatalf("PostgreSQL-only defaults unavailable: %v", err)
-	}
-	for _, option := range []struct {
-		key, value, want string
-	}{
-		{"GOODSENTRY_ENABLE_DUCKDB", "true", "cold span archive"},
-	} {
-		t.Run(option.key, func(t *testing.T) {
-			t.Setenv(option.key, option.value)
-			cfg, err := Load()
-			if err != nil {
-				t.Fatal(err)
-			}
-			err = cfg.ValidateRuntimeAvailability()
-			if err == nil || !strings.Contains(err.Error(), option.want) {
-				t.Fatalf("unavailable %s accepted: %v", option.want, err)
-			}
-		})
 	}
 	for _, key := range []string{"ENABLE_ADMIN", "ENABLE_OPENAPI"} {
 		t.Run(key, func(t *testing.T) {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"goodsentry/internal/jobs"
 	"goodsentry/internal/notify"
 	"goodsentry/internal/server"
+	"goodsentry/internal/spanarchive"
 	"goodsentry/internal/store"
 )
 
@@ -42,6 +44,10 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	archiveOptions, err := configureSpanArchive(ctx, db, cfg)
+	if err != nil {
+		return err
+	}
 	var defaultUser *store.User
 	if cfg.AuthenticationDisabled() {
 		password := cfg.DefaultPassword
@@ -70,7 +76,12 @@ func run() error {
 	defer stopIssueMaintenance()
 	stopLogRetention := jobs.StartLogRetention(ctx, db, cfg.LogRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopLogRetention()
-	stopTransactionRetention := jobs.StartTransactionRetention(ctx, db, cfg.TransactionRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	var stopTransactionRetention func()
+	if archiveOptions == nil {
+		stopTransactionRetention = jobs.StartTransactionRetention(ctx, db, cfg.TransactionRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	} else {
+		stopTransactionRetention = jobs.StartTransactionRetentionWithArchive(ctx, db, cfg.TransactionRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second, *archiveOptions)
+	}
 	defer stopTransactionRetention()
 	stopEventRetention := jobs.StartEventRetention(ctx, db, cfg.EventRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopEventRetention()
@@ -135,4 +146,38 @@ func run() error {
 	shutdown, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	return srv.Shutdown(shutdown)
+}
+
+func configureSpanArchive(ctx context.Context, db *store.Store, cfg config.Config) (*store.SpanArchiveOptions, error) {
+	if !cfg.ArchiveEnabled {
+		if err := db.RequireSpanArchiveDisabled(ctx); err != nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+	var objects spanarchive.Objects
+	switch cfg.ArchiveBackend {
+	case "local":
+		local, err := spanarchive.NewLocalObjects(cfg.ArchiveDir)
+		if err != nil {
+			return nil, fmt.Errorf("configure local span archive: %w", err)
+		}
+		objects = local
+	case "s3":
+		remote, err := spanarchive.NewS3Objects(ctx, cfg.ArchiveS3Region, cfg.ArchiveS3Bucket, cfg.ArchiveS3Endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("configure S3 span archive: %w", err)
+		}
+		objects = remote
+	default:
+		return nil, fmt.Errorf("unsupported span archive backend %q", cfg.ArchiveBackend)
+	}
+	options := store.SpanArchiveOptions{
+		Backend: cfg.ArchiveBackend, AfterDays: cfg.ArchiveAfterDays,
+		S3Prefix: cfg.ArchiveS3Prefix, Objects: objects,
+	}
+	if err := db.EnableSpanArchive(ctx, options, cfg.TransactionRetentionDays); err != nil {
+		return nil, fmt.Errorf("initialize span archive before serving: %w", err)
+	}
+	return &options, nil
 }

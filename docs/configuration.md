@@ -48,6 +48,14 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `GOODSENTRY_EVENT_RETENTION_DAYS` | Master lifetime | Error and message event lifetime; issue history remains available. |
 | `GOODSENTRY_LOG_RETENTION_DAYS` | Master lifetime | Sentry and OTLP log lifetime. |
 | `GOODSENTRY_TRANSACTION_RETENTION_DAYS` | Master lifetime | Legacy transaction and standalone span lifetime. |
+| `GOODSENTRY_ENABLE_ARCHIVE` | `false` | Store older spans as Parquet while keeping them queryable. `GOODSENTRY_ENABLE_DUCKDB` and `GLITCHTIP_ENABLE_DUCKDB` are accepted aliases. |
+| `GOODSENTRY_ARCHIVE_BACKEND` | `local` | Parquet object storage: `local` or `s3`. |
+| `GOODSENTRY_ARCHIVE_DIR` | `${UPLOAD_DIR}/archive` | Local archive directory. Compose persists it in the existing `uploads` volume. |
+| `GOODSENTRY_ARCHIVE_AFTER_DAYS` | Up to `30`, half of span retention | Move spans to cold storage after this many days; valid range is 1 through `GOODSENTRY_TRANSACTION_RETENTION_DAYS`. |
+| `GOODSENTRY_ARCHIVE_S3_BUCKET` | Empty | Required with the S3 backend. |
+| `GOODSENTRY_ARCHIVE_S3_REGION` | `AWS_REGION` | Required with S3 unless supplied as `AWS_REGION`. |
+| `GOODSENTRY_ARCHIVE_S3_ENDPOINT` | Empty | Optional HTTP or HTTPS endpoint for S3-compatible storage. |
+| `GOODSENTRY_ARCHIVE_S3_PREFIX` | Empty | Optional key prefix for S3 objects. |
 | `GOODSENTRY_UPTIME_RETENTION_DAYS` | Master lifetime | Completed monitor result lifetime; cached state and alert history remain available. |
 | `GOODSENTRY_FILE_RETENTION_DAYS` | Master lifetime | Source map, attachment and opaque envelope item lifetime; retained event history remains available. |
 | `GOODSENTRY_RELEASE_RETENTION_DAYS` | `365` | Organization/version metadata lifetime, independent of file and master lifetimes. |
@@ -60,7 +68,15 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS` | `false` | Allow monitors to reach your private network. |
 | `GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS` | `false` | Allow webhooks to reach your private network. |
 
-The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Enabling the unavailable DuckDB or Valkey options fails startup rather than reporting them as available. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
+The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Valkey is not supported and a nonempty `VALKEY_URL` fails startup. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
+
+### Cold span storage
+
+Cold archival is off by default. Set `GOODSENTRY_ENABLE_ARCHIVE=true` to store spans as Parquet in the local archive directory or an S3-compatible bucket. Compose uses `/data/archive` inside its existing persistent application volume. For S3, set the bucket and region; the AWS SDK uses its standard credential chain. Compose passes `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` and `AWS_REGION` from `.env` when supplied.
+
+`GOODSENTRY_ARCHIVE_AFTER_DAYS` controls when a span moves to object storage. If unset, it uses half of the configured transaction/span lifetime, capped at 30 days and with a one-day minimum. Archived spans remain available through the same project, trace, performance, environment and release views. They expire at the existing `GOODSENTRY_TRANSACTION_RETENTION_DAYS` deadline; archival does not extend retention.
+
+Keep archival enabled and retain the same backend while its manifests exist. Startup backfills the searchable catalog before opening the HTTP listener. A missing or unreadable object, an incomplete backfill or a backend change stops startup with an error instead of hiding historical spans. Disabling archival is allowed only after all archive manifests have expired and been removed.
 
 ### API documentation and administration
 

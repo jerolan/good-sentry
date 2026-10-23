@@ -45,10 +45,16 @@ func TestBackfillSpanArchiveIndexesExistingObjectsBeforeCompletion(t *testing.T)
 		created, created.Add(time.Second)).Scan(&objectID); err != nil {
 		t.Fatal(err)
 	}
+	if err := db.BackfillSpanArchive(ctx, SpanArchiveOptions{Backend: "s3", Objects: objects}); err == nil {
+		t.Fatal("startup backfill accepted a backend that cannot read the existing local object")
+	}
+	var complete bool
+	if err := db.pool.QueryRow(ctx, `SELECT index_complete FROM span_archive_objects WHERE id=$1`, objectID).Scan(&complete); err != nil || complete {
+		t.Fatalf("backend mismatch changed manifest index_complete=%v err=%v", complete, err)
+	}
 	if err := db.BackfillSpanArchive(ctx, options); err != nil {
 		t.Fatal(err)
 	}
-	var complete bool
 	if err := db.pool.QueryRow(ctx, `SELECT index_complete FROM span_archive_objects WHERE id=$1`, objectID).Scan(&complete); err != nil || !complete {
 		t.Fatalf("backfilled manifest complete=%v err=%v", complete, err)
 	}
