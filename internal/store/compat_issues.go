@@ -240,6 +240,30 @@ func (s *Store) CompatibleIssue(ctx context.Context, access ManagementAccess, is
 	return record, tx.Commit(ctx)
 }
 
+// CompatibleIssueCommits returns the ordered commits for the first currently
+// associated release observed by the visible canonical issue group.
+func (s *Store) CompatibleIssueCommits(ctx context.Context, access ManagementAccess, issueID string) ([]ReleaseCommit, error) {
+	result := []ReleaseCommit{}
+	tx, scope, err := s.compatibleEventTransaction(ctx, access, EventIssueTarget(issueID))
+	if err != nil {
+		return nil, compatibleIssueTargetError(err)
+	}
+	defer tx.Rollback(ctx)
+
+	releases, err := readCompatibleIssueReleaseReferences(ctx, tx, []string{fmt.Sprint(scope.issueID)})
+	if err != nil {
+		return nil, err
+	}
+	reference := releases[fmt.Sprint(scope.issueID)].First
+	if reference != nil {
+		result, err = releaseCommitRowsAll(ctx, tx, reference.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return result, tx.Commit(ctx)
+}
+
 func readCompatibleIssueRecord(ctx context.Context, tx pgx.Tx, userID, issueID string, filter CompatibleIssueDetailFilter) (CompatibleIssueRecord, error) {
 	record, err := scanCompatibleIssue(tx.QueryRow(ctx, "SELECT "+issueColumns+compatibleIssueExtras+issueJoins+` WHERE m.user_id=$1::bigint AND i.id=$2::bigint`, userID, issueID))
 	if err != nil {

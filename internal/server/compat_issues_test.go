@@ -250,3 +250,117 @@ func TestCompatibleShortIDLookupHTTPContract(t *testing.T) {
 	f.request(t, http.DefaultClient, "GET", lookup, "", http.Header{"Authorization": {"Bearer " + projectToken}}, 403)
 	f.request(t, http.DefaultClient, "GET", lookup, "", http.Header{"Authorization": {"Bearer invalid"}}, 401)
 }
+
+// Authoring gate: the two issue commit paths, their five-field array shape,
+// event:read admission and strict query behavior are independent public HTTP
+// contracts. The store owner covers first-release selection/order; this real
+// HTTP test catches route, scope and projection regressions those SQL checks
+// cannot reach. It uses persisted release metadata and no production seam.
+func TestCompatibleIssueCommitsHTTPContract(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	firstAt := time.Date(2024, 1, 2, 3, 4, 5, 123000000, time.UTC)
+	secondAt := firstAt.Add(time.Minute)
+	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+	_, err := f.db.ReplaceReleaseCommits(f.ctx, access, "app@1.0", []store.ReleaseCommitInput{
+		{ID: "first-commit", Message: "First commit", AuthorName: "Ada", AuthorEmail: "ada@example.invalid", Timestamp: &firstAt, PatchSet: []store.CommitPatch{{Path: "private.js", Type: "M"}}, Data: json.RawMessage(`{"id":"first-commit","extra":"private"}`)},
+		{ID: "second-commit", Message: "Second commit", AuthorName: "Lin", AuthorEmail: "lin@example.invalid", Timestamp: &secondAt, Data: json.RawMessage(`{"id":"second-commit"}`)},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	aliasEvent, err := event.Normalize(json.RawMessage(`{"event_id":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"Commit alias"}`), "", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	aliasID, _, err := f.db.Ingest(f.ctx, f.project.ID, aliasEvent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if merged, err := f.db.MergeIssues(f.ctx, f.owner.ID, f.org.Slug, []string{f.issueID, aliasID}); err != nil || merged.Issue.ID != f.issueID {
+		t.Fatalf("commit issue merge=%+v err=%v", merged, err)
+	}
+	global := "/api/0/issues/" + f.issueID + "/commits/"
+	org := "/api/0/organizations/" + f.org.Slug + "/issues/"
+	for _, path := range []string{global, org + f.issueID + "/commits/", org + aliasID + "/commits/"} {
+		f.request(t, http.DefaultClient, "GET", path, "", nil, 401)
+	}
+	for _, path := range []string{"/api/0/issues/01/commits/", "/api/0/organizations/" + f.org.Slug + "/issues/0/commits/", org + "9223372036854775808/commits/"} {
+		f.request(t, f.client, "GET", path, "", nil, 400)
+	}
+	f.request(t, f.client, "GET", global+"?unknown=1", "", nil, 400)
+	f.request(t, f.client, "GET", global+"?unknown=1&unknown=2", "", nil, 400)
+	f.request(t, f.client, "GET", "/api/0/issues/9223372036854775807/commits/", "", nil, 404)
+	f.request(t, f.client, "GET", "/api/0/organizations/foreign-org/issues/"+f.issueID+"/commits/", "", nil, 404)
+
+	decode := func(raw []byte) []map[string]json.RawMessage {
+		t.Helper()
+		var result []map[string]json.RawMessage
+		if err := json.Unmarshal(raw, &result); err != nil {
+			t.Fatalf("issue commits JSON: %v body=%s", err, raw)
+		}
+		return result
+	}
+	for _, path := range []string{global, org + f.issueID + "/commits/", org + aliasID + "/commits/"} {
+		commits := decode(f.request(t, f.client, "GET", path, "", nil, 200))
+		if len(commits) != 2 {
+			t.Fatalf("first-release commits=%v", commits)
+		}
+		for _, commit := range commits {
+			if len(commit) != 5 {
+				t.Fatalf("issue commit exposed fields outside its public projection: %v", commit)
+			}
+		}
+		var id, message, author, email string
+		var date time.Time
+		if json.Unmarshal(commits[0]["id"], &id) != nil || id != "first-commit" || json.Unmarshal(commits[0]["message"], &message) != nil || message != "First commit" ||
+			json.Unmarshal(commits[0]["authorName"], &author) != nil || author != "Ada" || json.Unmarshal(commits[0]["authorEmail"], &email) != nil || email != "ada@example.invalid" ||
+			json.Unmarshal(commits[0]["dateCreated"], &date) != nil || !date.Equal(firstAt) {
+			t.Fatalf("first issue commit=%v", commits[0])
+		}
+		if json.Unmarshal(commits[1]["id"], &id) != nil || id != "second-commit" {
+			t.Fatalf("issue commit order=%v", commits)
+		}
+	}
+	noReleaseEvent, err := event.Normalize(json.RawMessage(`{"event_id":"cccccccccccccccccccccccccccccccc","message":"No release issue"}`), "", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	noReleaseID, _, err := f.db.Ingest(f.ctx, f.project.ID, noReleaseEvent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if raw := f.request(t, f.client, "GET", "/api/0/issues/"+noReleaseID+"/commits/", "", nil, 200); strings.TrimSpace(string(raw)) != "[]" {
+		t.Fatalf("issue with no observed release commits=%s", raw)
+	}
+	noCommitsEvent, err := event.Normalize(json.RawMessage(`{"event_id":"dddddddddddddddddddddddddddddddd","message":"Release without commits","release":"app@uncommitted"}`), "", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	noCommitsID, _, err := f.db.Ingest(f.ctx, f.project.ID, noCommitsEvent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if raw := f.request(t, f.client, "GET", "/api/0/issues/"+noCommitsID+"/commits/", "", nil, 200); strings.TrimSpace(string(raw)) != "[]" {
+		t.Fatalf("issue with a release without commits=%s", raw)
+	}
+
+	var token struct {
+		Token string `json:"token"`
+	}
+	body := resolutionJSON(t, map[string]any{"name": "Issue commits read", "scopes": []string{"event:read"}, "projectIds": []string{f.project.ID}})
+	if raw := f.request(t, f.client, "POST", "/api/v1/organizations/"+f.org.Slug+"/api-tokens", body, http.Header{"X-CSRF-Token": {f.csrf}}, 201); json.Unmarshal(raw, &token) != nil || token.Token == "" {
+		t.Fatal("event:read token response missing credential")
+	}
+	read := http.Header{"Authorization": {"Bearer " + token.Token}}
+	for _, path := range []string{global, org + f.issueID + "/commits/"} {
+		f.request(t, http.DefaultClient, "GET", path, "", read, 200)
+	}
+	projectTokenBody := resolutionJSON(t, map[string]any{"name": "Issue commits wrong scope", "scopes": []string{"project:read"}, "projectIds": []string{f.project.ID}})
+	var projectToken struct {
+		Token string `json:"token"`
+	}
+	if raw := f.request(t, f.client, "POST", "/api/v1/organizations/"+f.org.Slug+"/api-tokens", projectTokenBody, http.Header{"X-CSRF-Token": {f.csrf}}, 201); json.Unmarshal(raw, &projectToken) != nil || projectToken.Token == "" {
+		t.Fatal("project:read token response missing credential")
+	}
+	f.request(t, http.DefaultClient, "GET", global, "", http.Header{"Authorization": {"Bearer " + projectToken.Token}}, 403)
+}

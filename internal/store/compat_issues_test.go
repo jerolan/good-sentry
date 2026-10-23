@@ -242,6 +242,16 @@ func TestCompatibleIssuesObservedReleasesGroupedCommentsAndCurrentPolicies(t *te
 	compatibleCapture(t, f.ctx, f.db, f.project, 4, base.Add(2*time.Minute), map[string]any{"release": "app@unassociated"})
 	compatibleCapture(t, f.ctx, f.db, f.project, 5, base.Add(time.Minute), map[string]any{"release": "app@last-tie"})
 	firstMetadata, lastMetadata := f.release(t, "app@first"), f.release(t, "app@last-tie")
+	firstCommits := []ReleaseCommitInput{
+		{ID: "first-commit", Message: "First in release order", Data: json.RawMessage(`{"id":"first-commit"}`), PatchSet: []CommitPatch{{Path: "first.js", Type: "M"}}},
+		{ID: "second-commit", Message: "Second in release order", Data: json.RawMessage(`{"id":"second-commit"}`)},
+	}
+	if _, err := f.db.ReplaceReleaseCommits(f.ctx, f.access, "app@first", firstCommits); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.db.ReplaceReleaseCommits(f.ctx, f.access, "app@last-tie", []ReleaseCommitInput{{ID: "later-release-commit", Data: json.RawMessage(`{"id":"later-release-commit"}`)}}); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := f.db.pool.Exec(f.ctx, `UPDATE releases SET
  created_at=CASE version WHEN 'app@first' THEN '2010-01-01Z'::timestamptz ELSE '2005-01-01Z'::timestamptz END,
  date_released=CASE version WHEN 'app@first' THEN '2010-01-02Z'::timestamptz ELSE NULL END
@@ -279,6 +289,10 @@ func TestCompatibleIssuesObservedReleasesGroupedCommentsAndCurrentPolicies(t *te
 	detail, err := f.db.CompatibleIssue(f.ctx, f.access, source, CompatibleIssueDetailFilter{Environments: []string{"production"}})
 	if err != nil || detail.Issue.ID != root || detail.NumComments != 2 || !reflect.DeepEqual(detail.Issue.Ignore, muted.Ignore) || detail.Issue.Status != "ignored" || detail.FirstRelease == nil || detail.FirstRelease.Version != "app@first" || detail.LastRelease == nil || detail.LastRelease.Version != "app@last-tie" {
 		t.Fatalf("observed releases/comments/policy=%+v err=%v", detail, err)
+	}
+	issueCommits, err := f.db.CompatibleIssueCommits(f.ctx, f.access, source)
+	if err != nil || len(issueCommits) != 2 || issueCommits[0].ID != "first-commit" || issueCommits[1].ID != "second-commit" || len(issueCommits[0].PatchSet) != 1 {
+		t.Fatalf("first-release commits did not preserve alias root/order: %+v err=%v", issueCommits, err)
 	}
 	if detail.FirstRelease.ID != firstMetadata.ID || !detail.FirstRelease.DateCreated.Equal(time.Date(2010, 1, 1, 0, 0, 0, 0, time.UTC)) || detail.FirstRelease.DateReleased == nil || !detail.FirstRelease.DateReleased.Equal(time.Date(2010, 1, 2, 0, 0, 0, 0, time.UTC)) || detail.LastRelease.ID != lastMetadata.ID || !detail.LastRelease.DateCreated.Equal(time.Date(2005, 1, 1, 0, 0, 0, 0, time.UTC)) || detail.LastRelease.DateReleased != nil {
 		t.Fatalf("observed release references used metadata ordering or invented dates: first=%+v last=%+v", detail.FirstRelease, detail.LastRelease)

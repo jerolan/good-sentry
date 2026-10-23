@@ -67,7 +67,10 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
 - [x] Implement and locally verify the organization short-ID lookup route as a separate compatible issue-read increment.
   - [x] Return organizationSlug, projectSlug, canonical groupId, group summary and canonical shortId through the current membership/grant-aware RR provider.
   - [x] Verify decimal validation, merged-alias resolution, resolved-status lookup, missing/foreign 404s, query rejection and event:read scope. The new HTTP test passes in4.036s; the existing store grant/alias/current-membership test passes in3.847s against an ephemeral PostgreSQL16 instance; focused `go vet` passes for server/store.
-- [ ] Publish the short-ID route commit and verify the exact public source and matching CI; `gh auth status` still reports an invalid token for `jerolan`.
+- [ ] Publish the issue short-ID and first-release commit route commits, then verify their exact public source and matching CI; `gh auth status` still reports an invalid token for `jerolan`.
+- [x] Implement compatible issue-first-release commit reads on the global and organization issue paths.
+  - [x] Resolve aliases, current release association and ordered commits in one grant-aware read-only repeatable-read transaction; project only the documented five commit fields and return `[]` when empty.
+  - [x] Verify malformed IDs/queries, both paths, first-release selection, projection, empty results and `event:read` scope. `TestCompatibleIssuesObservedReleasesGroupedCommentsAndCurrentPolicies` passes in0.555s; `TestCompatibleIssueCommitsHTTPContract` passes in0.395s against disposable PostgreSQL16; integration-tag `go vet` passes for server/store. `git diff --check` is clean. Publication remains pending until `gh` authentication is restored.
 - [x] Implement actual SDK user-feedback ingestion, issue report retrieval/counts and usable feedback UI.
   - [x] Add029 legacy report storage, receipt/update/pending clocks, generation-safe error binding and bounded orphan cleanup with real PostgreSQL proofs.
   - [x] Add scoped snapshot lists/counts/full-event reports and native/compatible paginated read routes.

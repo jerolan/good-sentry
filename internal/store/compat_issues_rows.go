@@ -8,6 +8,51 @@ import (
 	"goodsentry/internal/eventview"
 )
 
+type compatibleIssueReleaseReferences struct {
+	First, Last *eventview.ReleaseReference
+}
+
+func readCompatibleIssueReleaseReferences(ctx context.Context, tx pgx.Tx, ids []string) (map[string]compatibleIssueReleaseReferences, error) {
+	result := make(map[string]compatibleIssueReleaseReferences, len(ids))
+	if len(ids) == 0 {
+		return result, nil
+	}
+	rows, err := tx.Query(ctx, `WITH observed AS (
+ SELECT e.issue_id,e.timestamp,e.id,r.id::text release_id,r.version,r.created_at,r.date_released
+ FROM events e JOIN projects p ON p.id=e.project_id
+ JOIN releases r ON r.organization_id=p.organization_id AND r.version=e.release
+ JOIN release_projects rp ON rp.release_id=r.id AND rp.project_id=e.project_id
+ WHERE e.issue_id=ANY($1::bigint[]) AND e.release<>''),
+ first_release AS(SELECT DISTINCT ON(issue_id) * FROM observed ORDER BY issue_id,timestamp,id),
+ last_release AS(SELECT DISTINCT ON(issue_id) * FROM observed ORDER BY issue_id,timestamp DESC,id DESC)
+ SELECT issue_id::text,true,release_id,version,created_at,date_released FROM first_release
+ UNION ALL SELECT issue_id::text,false,release_id,version,created_at,date_released FROM last_release`, issueNumericIDs(ids))
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var id string
+		var first bool
+		var release eventview.ReleaseReference
+		if err = rows.Scan(&id, &first, &release.ID, &release.Version, &release.DateCreated, &release.DateReleased); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		release.DateCreated = release.DateCreated.UTC()
+		release.DateReleased = releaseTimeUTC(release.DateReleased)
+		references := result[id]
+		if first {
+			references.First = &release
+		} else {
+			references.Last = &release
+		}
+		result[id] = references
+	}
+	err = rows.Err()
+	rows.Close()
+	return result, err
+}
+
 func readCompatibleIssueMetrics(ctx context.Context, tx pgx.Tx, records []CompatibleIssueRecord, filter issueOccurrenceFilter, end time.Time, chart string) error {
 	ids := make([]string, len(records))
 	byID := map[string]*CompatibleIssueRecord{}
@@ -48,36 +93,13 @@ func readCompatibleIssueMetrics(ctx context.Context, tx pgx.Tx, records []Compat
 	}
 	// Release references require a retained occurrence and a current real
 	// release/project association. Project release candidates alone do not qualify.
-	rows, err = tx.Query(ctx, `WITH observed AS (
- SELECT e.issue_id,e.timestamp,e.id,r.id::text release_id,r.version,r.created_at,r.date_released
- FROM events e JOIN projects p ON p.id=e.project_id
- JOIN releases r ON r.organization_id=p.organization_id AND r.version=e.release
- JOIN release_projects rp ON rp.release_id=r.id AND rp.project_id=e.project_id
- WHERE e.issue_id=ANY($1::bigint[]) AND e.release<>''),
- first_release AS(SELECT DISTINCT ON(issue_id) * FROM observed ORDER BY issue_id,timestamp,id),
- last_release AS(SELECT DISTINCT ON(issue_id) * FROM observed ORDER BY issue_id,timestamp DESC,id DESC)
- SELECT issue_id::text,true,release_id,version,created_at,date_released FROM first_release
- UNION ALL SELECT issue_id::text,false,release_id,version,created_at,date_released FROM last_release`, issueNumericIDs(ids))
+	releases, err := readCompatibleIssueReleaseReferences(ctx, tx, ids)
 	if err != nil {
 		return err
 	}
-	for rows.Next() {
-		var id string
-		var first bool
-		var release eventview.ReleaseReference
-		if err = rows.Scan(&id, &first, &release.ID, &release.Version, &release.DateCreated, &release.DateReleased); err != nil {
-			rows.Close()
-			return err
-		}
-		release.DateCreated = release.DateCreated.UTC()
-		release.DateReleased = releaseTimeUTC(release.DateReleased)
-		if first {
-			byID[id].FirstRelease = &release
-		} else {
-			byID[id].LastRelease = &release
-		}
+	for id, references := range releases {
+		byID[id].FirstRelease = references.First
+		byID[id].LastRelease = references.Last
 	}
-	err = rows.Err()
-	rows.Close()
-	return err
+	return nil
 }

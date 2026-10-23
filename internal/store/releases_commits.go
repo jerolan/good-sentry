@@ -21,6 +21,19 @@ func releaseCommitRows(ctx context.Context, tx pgx.Tx, id string, offset, limit 
 	if err != nil {
 		return nil, err
 	}
+	return readReleaseCommitRows(rows)
+}
+
+func releaseCommitRowsAll(ctx context.Context, tx pgx.Tx, id string) ([]ReleaseCommit, error) {
+	rows, err := tx.Query(ctx, `SELECT commit_id,repository,message,author_name,author_email,created_at,patch_set,data
+		FROM release_commits WHERE release_id=$1::bigint ORDER BY ordinal LIMIT 1000`, id)
+	if err != nil {
+		return nil, err
+	}
+	return readReleaseCommitRows(rows)
+}
+
+func readReleaseCommitRows(rows pgx.Rows) ([]ReleaseCommit, error) {
 	defer rows.Close()
 	result := []ReleaseCommit{}
 	for rows.Next() {
