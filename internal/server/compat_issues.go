@@ -12,6 +12,7 @@ func (s *Server) registerCompatibleIssueRoutes(mux *routeMux) {
 	for _, root := range []string{"/api/0/organizations/{org}/issues/", "/api/0/projects/{org}/{project}/issues/"} {
 		mux.Handle("GET "+root+"{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssues))
 	}
+	mux.Handle("GET /api/0/organizations/{org}/shortids/{short_id}/{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleShortIDLookup))
 	for _, root := range []string{"/api/0/issues/{issue}/", "/api/0/organizations/{org}/issues/{issue}/"} {
 		mux.Handle("GET "+root+"{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssue))
 		mux.Handle("GET "+root+"comments/{$}", s.compatibleAny([]string{"event:read", "event:write"}, s.compatibleIssueComments))
@@ -60,6 +61,49 @@ func (s *Server) compatibleIssues(w http.ResponseWriter, r *http.Request) {
 	}
 	s.compatibleOffsetLinks(w, r, query, filter.Offset, filter.Limit, next)
 	writeJSON(w, 200, result)
+}
+
+func (s *Server) compatibleShortIDLookup(w http.ResponseWriter, r *http.Request) {
+	access, ok := s.compatibleEventAccess(w, r)
+	if !ok {
+		return
+	}
+	query, ok := credentialQuery(w, r)
+	if !ok {
+		return
+	}
+	if len(query) != 0 {
+		failure(w, 400, "Short-ID lookup does not accept query parameters")
+		return
+	}
+	shortID, valid := compatibleShortIDReference(r.PathValue("short_id"))
+	if !valid {
+		failure(w, 400, "Short ID must contain a valid project slug and positive decimal issue ID")
+		return
+	}
+	records, err := s.db.CompatibleIssues(r.Context(), access, "", store.CompatibleIssueFilter{
+		Query: shortID, Sort: "-last_seen", Limit: 1, ShortIDLookup: true,
+	})
+	if err != nil {
+		reportCompatibleIssue(w, err)
+		return
+	}
+	if len(records) == 0 {
+		report(w, store.ErrNotFound)
+		return
+	}
+	group, err := projectCompatibleIssue(records[0], s.cfg.Domain, false)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, 200, compatibleShortIDLookupView{
+		OrganizationSlug: records[0].OrganizationSlug,
+		ProjectSlug:      records[0].Issue.Project.Slug,
+		GroupID:          records[0].Issue.ID,
+		Group:            group,
+		ShortID:          records[0].Issue.ShortID,
+	})
 }
 
 func (s *Server) compatibleIssue(w http.ResponseWriter, r *http.Request) {

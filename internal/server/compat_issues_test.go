@@ -11,6 +11,10 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
+
+	"goodsentry/internal/event"
+	"goodsentry/internal/store"
 )
 
 // Authoring gate: transport owns five exact routes, authoritative event:read
@@ -167,4 +171,82 @@ func TestCompatibleIssuesHTTPContract(t *testing.T) {
 			t.Fatalf("followed issue page size=%d links=%s", len(list), links)
 		}
 	})
+}
+
+// Authoring gate: this route is a distinct public contract with a wrapper
+// shape and path identity that list-query coverage cannot reach. A real merged
+// alias and resolved root catch loss of alias canonicalization or an accidental
+// unresolved-only default; invalid, hidden and scoped-token requests exercise
+// transport behavior. Existing store tests own the SQL grant/alias matrix, so
+// this test adds no duplicated provider assertions or production seam.
+func TestCompatibleShortIDLookupHTTPContract(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	aliasEvent, err := event.Normalize(json.RawMessage(fmt.Sprintf(`{"event_id":"%032x","message":"Short ID alias"}`, 2)), "", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	aliasID, _, err := f.db.Ingest(f.ctx, f.project.ID, aliasEvent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	merged, err := f.db.MergeIssues(f.ctx, f.owner.ID, f.org.Slug, []string{f.issueID, aliasID})
+	if err != nil || !merged.Changed || merged.Issue.ID != f.issueID {
+		t.Fatalf("merge fixture root=%+v err=%v", merged, err)
+	}
+	if _, err := f.db.UpdateIssue(f.ctx, f.owner.ID, f.issueID, store.IssueUpdate{Status: "resolved"}); err != nil {
+		t.Fatal(err)
+	}
+
+	path := "/api/0/organizations/" + f.org.Slug + "/shortids/"
+	lookup := path + strings.ToLower(f.project.Slug) + "-" + aliasID + "/"
+	f.request(t, http.DefaultClient, "GET", lookup, "", nil, 401)
+	for _, shortID := range []string{"bad", f.project.Slug + "-0", f.project.Slug + "-01", f.project.Slug + "-9223372036854775808", "bad_slug-1"} {
+		f.request(t, f.client, "GET", path+shortID+"/", "", nil, 400)
+	}
+	f.request(t, f.client, "GET", lookup+"?unknown=value", "", nil, 400)
+	f.request(t, f.client, "GET", path+f.project.Slug+"-9223372036854775807/", "", nil, 404)
+	f.request(t, f.client, "GET", strings.Replace(lookup, f.org.Slug, "foreign-org", 1), "", nil, 404)
+
+	decode := func(raw []byte, target any) {
+		t.Helper()
+		if err := json.Unmarshal(raw, target); err != nil {
+			t.Fatalf("short-ID lookup JSON: %v body=%s", err, raw)
+		}
+	}
+	var result struct {
+		OrganizationSlug string `json:"organizationSlug"`
+		ProjectSlug      string `json:"projectSlug"`
+		GroupID          string `json:"groupId"`
+		ShortID          string `json:"shortId"`
+		Group            struct {
+			ID      string `json:"id"`
+			ShortID string `json:"shortId"`
+			Status  string `json:"status"`
+			Project struct {
+				Slug string `json:"slug"`
+			} `json:"project"`
+		} `json:"group"`
+	}
+	decode(f.request(t, f.client, "GET", lookup, "", nil, 200), &result)
+	canonicalShortID := strings.ToUpper(f.project.Slug) + "-" + f.issueID
+	if result.OrganizationSlug != f.org.Slug || result.ProjectSlug != f.project.Slug || result.GroupID != f.issueID || result.ShortID != canonicalShortID ||
+		result.Group.ID != f.issueID || result.Group.ShortID != canonicalShortID || result.Group.Status != "resolved" || result.Group.Project.Slug != f.project.Slug {
+		t.Fatalf("short-ID lookup failed to return canonical resolved root: %+v", result)
+	}
+
+	issueToken := func(scope string) string {
+		t.Helper()
+		var token struct {
+			Token string `json:"token"`
+		}
+		body := resolutionJSON(t, map[string]any{"name": "Short-ID " + scope, "scopes": []string{scope}, "projectIds": []string{f.project.ID}})
+		if raw := f.request(t, f.client, "POST", "/api/v1/organizations/"+f.org.Slug+"/api-tokens", body, http.Header{"X-CSRF-Token": {f.csrf}}, 201); json.Unmarshal(raw, &token) != nil || token.Token == "" {
+			t.Fatal("API token response missing credential")
+		}
+		return token.Token
+	}
+	readToken, projectToken := issueToken("event:read"), issueToken("project:read")
+	f.request(t, http.DefaultClient, "GET", lookup, "", http.Header{"Authorization": {"Bearer " + readToken}}, 200)
+	f.request(t, http.DefaultClient, "GET", lookup, "", http.Header{"Authorization": {"Bearer " + projectToken}}, 403)
+	f.request(t, http.DefaultClient, "GET", lookup, "", http.Header{"Authorization": {"Bearer invalid"}}, 401)
 }

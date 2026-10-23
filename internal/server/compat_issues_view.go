@@ -88,6 +88,14 @@ type compatibleIssueStatsView struct {
 	Stats       map[string][][2]int64 `json:"stats"`
 }
 
+type compatibleShortIDLookupView struct {
+	OrganizationSlug string              `json:"organizationSlug"`
+	ProjectSlug      string              `json:"projectSlug"`
+	GroupID          string              `json:"groupId"`
+	Group            compatibleIssueView `json:"group"`
+	ShortID          string              `json:"shortId"`
+}
+
 func issueWireText(value string, limit int) string {
 	runes := []rune(value)
 	if len(runes) > limit {

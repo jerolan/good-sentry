@@ -64,6 +64,10 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
   - [x] Integrate pure public wire shapes and strict scoped routes/queries/Links, with explicit contract differences and pending compatibility flags.
   - [x] Add atomic native detail analytics and accessible affected-user/24-hour chart UI while preserving drafts/grouping/resolution flows.
   - [x] Verify owning tests, actual SDK/browser, cloned120-event image upgrade/restart and exact public source/CI.
+- [x] Implement and locally verify the organization short-ID lookup route as a separate compatible issue-read increment.
+  - [x] Return organizationSlug, projectSlug, canonical groupId, group summary and canonical shortId through the current membership/grant-aware RR provider.
+  - [x] Verify decimal validation, merged-alias resolution, resolved-status lookup, missing/foreign 404s, query rejection and event:read scope. The new HTTP test passes in4.036s; the existing store grant/alias/current-membership test passes in3.847s against an ephemeral PostgreSQL16 instance; focused `go vet` passes for server/store.
+- [ ] Publish the short-ID route commit and verify the exact public source and matching CI; `gh auth status` still reports an invalid token for `jerolan`.
 - [x] Implement actual SDK user-feedback ingestion, issue report retrieval/counts and usable feedback UI.
   - [x] Add029 legacy report storage, receipt/update/pending clocks, generation-safe error binding and bounded orphan cleanup with real PostgreSQL proofs.
   - [x] Add scoped snapshot lists/counts/full-event reports and native/compatible paginated read routes.

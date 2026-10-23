@@ -52,6 +52,21 @@ func compatibleIssueIDs(w http.ResponseWriter, values []string) bool {
 	return true
 }
 
+func compatibleShortIDReference(value string) (string, bool) {
+	separator := strings.LastIndexByte(value, '-')
+	if separator < 1 || separator == len(value)-1 || !utf8.ValidString(value) {
+		return "", false
+	}
+	project := strings.ToLower(value[:separator])
+	if len(project) > 64 || store.Slug(project) != project {
+		return "", false
+	}
+	if _, valid := occurrenceNumber(value[separator+1:], math.MaxInt64); !valid {
+		return "", false
+	}
+	return strings.ToUpper(project) + value[separator:], true
+}
+
 func compatibleIssueListQuery(w http.ResponseWriter, r *http.Request) (store.CompatibleIssueFilter, url.Values, bool) {
 	f := store.CompatibleIssueFilter{Limit: 100, Query: "is:unresolved", Sort: "-last_seen", StatsPeriod: "24h"}
 	q, ok := compatibleIssueQuery(w, r, []string{"query", "sort", "shortIdLookup", "limit", "per_page", "cursor", "start", "end", "statsPeriod", "groupStatsPeriod"}, []string{"id", "project", "environment"})
