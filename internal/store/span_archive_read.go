@@ -49,6 +49,40 @@ func (r *spanArchiveRead) organizationID(ctx context.Context, userID, orgSlug st
 	return id, dbError(err)
 }
 
+func (r *spanArchiveRead) loadAccessSpans(ctx context.Context, access ManagementAccess, selector spanArchiveSelector) error {
+	if !r.enabled {
+		return nil
+	}
+	selector.OrganizationID = referenceID(access.OrganizationID)
+	if selector.OrganizationID <= 0 {
+		return errors.New("span archive access requires an organization")
+	}
+	if !access.AllProjects {
+		selector.RestrictProjectIDs = true
+		selector.ProjectIDs = access.ProjectIDs
+	}
+	var member bool
+	if err := r.tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memberships
+		WHERE organization_id=$1 AND user_id=$2::bigint)`, selector.OrganizationID, access.UserID).Scan(&member); err != nil {
+		return fmt.Errorf("verify span archive organization access: %w", err)
+	}
+	if !member {
+		selector.RestrictProjectIDs = true
+		selector.ProjectIDs = nil
+	}
+	return r.Load(ctx, selector)
+}
+
+func (r *spanArchiveRead) windowBounds(ctx context.Context, window *TimeWindow, fallback time.Duration) (time.Time, time.Time, error) {
+	if window != nil {
+		return window.Start, window.End, nil
+	}
+	var start, end time.Time
+	err := r.tx.QueryRow(ctx, `SELECT transaction_timestamp()-($1::bigint*interval '1 microsecond'),
+		transaction_timestamp()+interval '1 microsecond'`, int64(fallback/time.Microsecond)).Scan(&start, &end)
+	return start, end, err
+}
+
 func withSpanArchiveRead[T any](ctx context.Context, s *Store, read func(*spanArchiveRead) (T, error)) (T, error) {
 	var zero T
 	for attempt := range spanArchiveReadAttempts {

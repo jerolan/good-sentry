@@ -104,68 +104,80 @@ func (s *Store) StatsV2(ctx context.Context, access ManagementAccess, category s
 		}
 		selected = projects
 	}
-	args := []any{access.OrganizationID, access.UserID, access.AllProjects, access.ProjectIDs, unit, start.UTC(), end.UTC()}
-	projectFilter := ""
-	if len(selected) > 0 {
-		args = append(args, selected)
-		projectFilter = fmt.Sprintf(" AND p.id=ANY($%d::bigint[])", len(args))
-	}
-	kind := "e.kind IN ('error','message')"
-	if category == "transaction" {
-		kind = "e.kind='transaction'"
-	}
-	query := `WITH telemetry AS (
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (StatsV2Response, error) {
+		if category == "transaction" {
+			isSegment := true
+			selector := spanArchiveSelector{TimeColumn: "end_timestamp", Start: &start, End: &end, IsSegment: &isSegment}
+			if len(selected) > 0 {
+				selector.RestrictProjectIDs, selector.ProjectIDs = true, selected
+			}
+			if err := read.loadAccessSpans(ctx, access, selector); err != nil {
+				return StatsV2Response{}, err
+			}
+		}
+		args := []any{access.OrganizationID, access.UserID, access.AllProjects, access.ProjectIDs, unit, start.UTC(), end.UTC()}
+		projectFilter := ""
+		if len(selected) > 0 {
+			args = append(args, selected)
+			projectFilter = fmt.Sprintf(" AND p.id=ANY($%d::bigint[])", len(args))
+		}
+		kind := "e.kind IN ('error','message')"
+		if category == "transaction" {
+			kind = "e.kind='transaction'"
+		}
+		query := `WITH telemetry AS (
  SELECT date_trunc($5::text,e.timestamp) AS bucket
  FROM events e JOIN projects p ON p.id=e.project_id
  JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
  WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[]))` + projectFilter + `
  AND ` + kind + ` AND e.timestamp>=$6::timestamptz AND e.timestamp<$7::timestamptz
 `
-	if category == "transaction" {
-		query += ` UNION ALL
+		if category == "transaction" {
+			query += ` UNION ALL
  SELECT date_trunc($5::text,s.end_timestamp) AS bucket
  FROM spans s JOIN projects p ON p.id=s.project_id
  JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
  WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[]))` + projectFilter + `
  AND s.is_segment AND s.end_timestamp>=$6::timestamptz AND s.end_timestamp<$7::timestamptz
 `
-	}
-	query += `) SELECT bucket,count(*) FROM telemetry GROUP BY bucket ORDER BY bucket`
-	rows, err := s.pool.Query(ctx, query, args...)
-	if err != nil {
-		return StatsV2Response{}, err
-	}
-	defer rows.Close()
-	series := make([]int64, len(buckets))
-	index := map[time.Time]int{}
-	for position, bucket := range buckets {
-		index[bucket] = position
-	}
-	var total int64
-	for rows.Next() {
-		var bucket time.Time
-		var count int64
-		if err = rows.Scan(&bucket, &count); err != nil {
+		}
+		query += `) SELECT bucket,count(*) FROM telemetry GROUP BY bucket ORDER BY bucket`
+		rows, err := read.tx.Query(ctx, query, args...)
+		if err != nil {
 			return StatsV2Response{}, err
 		}
-		position, exists := index[bucket.UTC()]
-		if !exists {
-			continue
+		defer rows.Close()
+		series := make([]int64, len(buckets))
+		index := map[time.Time]int{}
+		for position, bucket := range buckets {
+			index[bucket] = position
 		}
-		series[position] = count
-		total += count
-	}
-	if err = rows.Err(); err != nil {
-		return StatsV2Response{}, err
-	}
-	return StatsV2Response{
-		Start:     buckets[0].UTC(),
-		End:       buckets[len(buckets)-1].UTC().Add(duration),
-		Intervals: buckets,
-		Groups: []StatsV2Group{{
-			By:     StatsV2By{Category: category},
-			Totals: StatsV2Totals{SumTimesSeen: total, SumQuantity: total},
-			Series: StatsV2Series{SumTimesSeen: series, SumQuantity: append([]int64(nil), series...)},
-		}},
-	}, nil
+		var total int64
+		for rows.Next() {
+			var bucket time.Time
+			var count int64
+			if err = rows.Scan(&bucket, &count); err != nil {
+				return StatsV2Response{}, err
+			}
+			position, exists := index[bucket.UTC()]
+			if !exists {
+				continue
+			}
+			series[position] = count
+			total += count
+		}
+		if err = rows.Err(); err != nil {
+			return StatsV2Response{}, err
+		}
+		return StatsV2Response{
+			Start:     buckets[0].UTC(),
+			End:       buckets[len(buckets)-1].UTC().Add(duration),
+			Intervals: buckets,
+			Groups: []StatsV2Group{{
+				By:     StatsV2By{Category: category},
+				Totals: StatsV2Totals{SumTimesSeen: total, SumQuantity: total},
+				Series: StatsV2Series{SumTimesSeen: series, SumQuantity: append([]int64(nil), series...)},
+			}},
+		}, nil
+	})
 }

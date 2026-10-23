@@ -77,6 +77,16 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	if err != nil || detail.SpanCount != 2 || len(detail.Spans) != 2 || detail.Spans[0].SpanID != "0000000000000041" {
 		t.Fatalf("transaction detail cold root and hot children: %+v err=%v", detail, err)
 	}
+	window := &TimeWindow{Start: time.Unix(1_700_000_000, 0).UTC(), End: time.Unix(1_700_000_004, 0).UTC()}
+	groups, err := db.Transactions(ctx, user.ID, org.Slug, project.ID, window)
+	if err != nil || len(groups) != 1 || groups[0].Count != 1 || groups[0].LatestSample.ID != archivedRootID || groups[0].LatestSample.Source != "span" {
+		t.Fatalf("transaction groups include archived segment: %+v err=%v", groups, err)
+	}
+	access := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, AllProjects: true}
+	stats, err := db.StatsV2(ctx, access, "transaction", []int64{projectID}, window.Start, window.End, "1d")
+	if err != nil || len(stats.Groups) != 1 || stats.Groups[0].Totals.SumTimesSeen != 1 {
+		t.Fatalf("transaction stats include archived segment: %+v err=%v", stats, err)
+	}
 	trace, err := db.Trace(ctx, user.ID, org.Slug, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", project.ID, 1, false)
 	if err != nil || trace.NodeCount != 2 || len(trace.Data) != 2 {
 		t.Fatalf("trace graph hot+cold nodes: %+v err=%v", trace, err)

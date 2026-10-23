@@ -57,19 +57,41 @@ type Log struct {
 }
 
 func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID string, window *TimeWindow) ([]TransactionGroup, error) {
-	org, err := s.Organization(ctx, userID, orgSlug)
-	if err != nil {
-		return nil, err
-	}
-	args := []any{org.ID, projectID}
-	eventRange := "e.timestamp>=now()-interval '24 hours' AND e.timestamp<=now()"
-	spanRange := "s.end_timestamp>=now()-interval '24 hours' AND s.end_timestamp<=now()"
-	if window != nil {
-		args = append(args, window.Start, window.End)
-		eventRange = "e.timestamp>=$3::timestamptz AND e.timestamp<$4::timestamptz"
-		spanRange = "s.end_timestamp>=$3::timestamptz AND s.end_timestamp<$4::timestamptz"
-	}
-	rows, err := s.pool.Query(ctx, `WITH telemetry AS (
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]TransactionGroup, error) {
+		orgID, err := read.organizationID(ctx, userID, orgSlug)
+		if err != nil {
+			return nil, err
+		}
+		args := []any{strconv.FormatInt(orgID, 10), projectID}
+		eventRange := "e.timestamp>=now()-interval '24 hours' AND e.timestamp<=now()"
+		spanRange := "s.end_timestamp>=now()-interval '24 hours' AND s.end_timestamp<=now()"
+		var start, end *time.Time
+		if window != nil {
+			args = append(args, window.Start, window.End)
+			eventRange = "e.timestamp>=$3::timestamptz AND e.timestamp<$4::timestamptz"
+			spanRange = "s.end_timestamp>=$3::timestamptz AND s.end_timestamp<$4::timestamptz"
+			start, end = &window.Start, &window.End
+		} else {
+			var bounds [2]time.Time
+			if err := read.tx.QueryRow(ctx, "SELECT now()-interval '24 hours',now()+interval '1 microsecond'").Scan(&bounds[0], &bounds[1]); err != nil {
+				return nil, err
+			}
+			start, end = &bounds[0], &bounds[1]
+		}
+		isSegment := true
+		selector := spanArchiveSelector{OrganizationID: orgID, TimeColumn: "end_timestamp", Start: start, End: end, IsSegment: &isSegment}
+		if projectID != "" {
+			parsed, parseErr := strconv.ParseInt(projectID, 10, 64)
+			if parseErr != nil || parsed <= 0 || strconv.FormatInt(parsed, 10) != projectID {
+				selector.RestrictProjectIDs = true
+			} else {
+				selector.ProjectID = parsed
+			}
+		}
+		if err := read.Load(ctx, selector); err != nil {
+			return nil, err
+		}
+		rows, err := read.tx.Query(ctx, `WITH telemetry AS (
 		SELECT e.transaction_name AS name,COALESCE(e.data#>>'{contexts,trace,op}','') AS op,e.duration,
 		(e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed,
 		e.timestamp AS timestamp,e.trace_id,e.id,0 AS source,e.project_id
@@ -88,25 +110,26 @@ func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID str
 		(array_agg(project_id ORDER BY timestamp DESC,source DESC,id DESC))[1]::text
 		FROM telemetry
 		GROUP BY name,op ORDER BY count(*) DESC,max(timestamp) DESC,name,op`, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []TransactionGroup{}
-	for rows.Next() {
-		var g TransactionGroup
-		var source int
-		if err := rows.Scan(&g.Transaction, &g.Op, &g.Count, &g.ErrorCount, &g.AvgDuration, &g.P50, &g.P95, &g.LastSeen, &g.LatestTraceID,
-			&source, &g.LatestSample.ID, &g.LatestSample.ProjectID); err != nil {
+		if err != nil {
 			return nil, err
 		}
-		g.LatestSample.Source = "event"
-		if source == 1 {
-			g.LatestSample.Source = "span"
+		defer rows.Close()
+		items := []TransactionGroup{}
+		for rows.Next() {
+			var g TransactionGroup
+			var source int
+			if err := rows.Scan(&g.Transaction, &g.Op, &g.Count, &g.ErrorCount, &g.AvgDuration, &g.P50, &g.P95, &g.LastSeen, &g.LatestTraceID,
+				&source, &g.LatestSample.ID, &g.LatestSample.ProjectID); err != nil {
+				return nil, err
+			}
+			g.LatestSample.Source = "event"
+			if source == 1 {
+				g.LatestSample.Source = "span"
+			}
+			items = append(items, g)
 		}
-		items = append(items, g)
-	}
-	return items, rows.Err()
+		return items, rows.Err()
+	})
 }
 
 func (s *Store) Logs(ctx context.Context, userID, orgSlug string, f LogFilter) ([]Log, error) {
