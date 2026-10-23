@@ -357,7 +357,7 @@ func parsePDBPublicFunctions(msf *pdbMSFFile, symbolRecordStream uint16, section
 					return nil, false
 				}
 				mapping := sectionMap[segment-1]
-				unsupportedFlags := pdbSectionMapSelector | pdbSectionMapAbsolute | pdbSectionMapGroup
+				unsupportedFlags := uint16(pdbSectionMapSelector | pdbSectionMapAbsolute | pdbSectionMapGroup)
 				if mapping.flags&pdbSectionMapExecute == 0 || mapping.flags&unsupportedFlags != 0 || mapping.frame == 0 || int(mapping.frame) > len(sections) {
 					return nil, false
 				}
