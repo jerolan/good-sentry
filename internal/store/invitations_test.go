@@ -24,7 +24,9 @@ func TestInvitationMigration037PreservesPriorRowsAndReopens(t *testing.T) {
 	if _, err := db.CreateAPIToken(ctx, owner.ID, owner.AuthGeneration, org.Slug, APITokenInput{Name: "Before037", Scopes: []string{"project:read"}, ProjectIDs: []int64{apiTokenProjectID(t, project.ID)}, ExpiresInDays: 1}, hash, prefix); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.pool.Exec(ctx, `DROP TABLE organization_invitations; DELETE FROM schema_migrations WHERE version=37`); err != nil {
+	if _, err := db.pool.Exec(ctx, `DROP TABLE organization_invitation_teams;
+		DROP TABLE organization_invitations;
+		DELETE FROM schema_migrations WHERE version=37`); err != nil {
 		t.Fatal(err)
 	}
 	before := groupDatabaseSnapshot(t, ctx, db, 36)
