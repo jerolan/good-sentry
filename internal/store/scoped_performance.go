@@ -178,25 +178,36 @@ func (s *Store) ScopedTransactions(ctx context.Context, access ManagementAccess,
  (array_agg(project_id ORDER BY timestamp DESC,source DESC,id DESC))[1]::text
  FROM telemetry GROUP BY name,op ORDER BY count(*) DESC,max(timestamp) DESC,name,op
  LIMIT $` + fmt.Sprint(len(args)-1) + ` OFFSET $` + fmt.Sprint(len(args))
-	rows, err := s.pool.Query(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []TransactionGroup{}
-	for rows.Next() {
-		var g TransactionGroup
-		var source int
-		if err := rows.Scan(&g.Transaction, &g.Op, &g.Count, &g.ErrorCount, &g.AvgDuration, &g.P50, &g.P95, &g.LastSeen, &g.LatestTraceID, &source, &g.LatestSample.ID, &g.LatestSample.ProjectID); err != nil {
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]TransactionGroup, error) {
+		start, end, err := read.windowBounds(ctx, filter.Window, 24*time.Hour)
+		if err != nil {
 			return nil, err
 		}
-		g.LatestSample.Source = "event"
-		if source == 1 {
-			g.LatestSample.Source = "span"
+		isSegment := true
+		selector := spanArchiveSelector{ProjectID: projectID, TimeColumn: "end_timestamp", Start: &start, End: &end, IsSegment: &isSegment}
+		if err := read.loadAccessSpans(ctx, access, selector); err != nil {
+			return nil, err
 		}
-		items = append(items, g)
-	}
-	return items, rows.Err()
+		rows, err := read.tx.Query(ctx, query, args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		items := []TransactionGroup{}
+		for rows.Next() {
+			var g TransactionGroup
+			var source int
+			if err := rows.Scan(&g.Transaction, &g.Op, &g.Count, &g.ErrorCount, &g.AvgDuration, &g.P50, &g.P95, &g.LastSeen, &g.LatestTraceID, &source, &g.LatestSample.ID, &g.LatestSample.ProjectID); err != nil {
+				return nil, err
+			}
+			g.LatestSample.Source = "event"
+			if source == 1 {
+				g.LatestSample.Source = "span"
+			}
+			items = append(items, g)
+		}
+		return items, rows.Err()
+	})
 }
 
 func (s *Store) ScopedTransactionGroup(ctx context.Context, access ManagementAccess, filter TransactionFilter) (TransactionGroup, error) {
@@ -231,12 +242,13 @@ func (s *Store) ScopedSpanGroups(ctx context.Context, access ManagementAccess, f
 		legacyWhere += fmt.Sprintf(" AND e.project_id=$%d::bigint", len(args))
 		spanWhere += fmt.Sprintf(" AND s.project_id=$%d::bigint", len(args))
 	}
+	var selectedProjectIDs []int64
 	if len(filter.ProjectIDs) > 0 {
-		projectIDs, err := scopedProjectIDs(ctx, s, access, filter.ProjectIDs)
+		selectedProjectIDs, err = scopedProjectIDs(ctx, s, access, filter.ProjectIDs)
 		if err != nil {
 			return nil, err
 		}
-		args = append(args, projectIDs)
+		args = append(args, selectedProjectIDs)
 		legacyWhere += fmt.Sprintf(" AND e.project_id=ANY($%d::bigint[])", len(args))
 		spanWhere += fmt.Sprintf(" AND s.project_id=ANY($%d::bigint[])", len(args))
 	}
@@ -263,34 +275,47 @@ func (s *Store) ScopedSpanGroups(ctx context.Context, access ManagementAccess, f
 	case "-count", "", "-total_time":
 	}
 	args = append(args, filter.Limit, filter.Offset)
-	rows, err := s.pool.Query(ctx, `WITH derived AS (
+	query := `WITH derived AS (
  SELECT o.op,o.description AS name,e.project_id,e.trace_id,o.status,o.duration,o.start_timestamp,o.end_timestamp
  FROM transaction_span_operations o JOIN events e ON e.id=o.event_id JOIN projects p ON p.id=e.project_id
  JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
- WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND `+legacyWindow+legacyWhere+`
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND ` + legacyWindow + legacyWhere + `
  UNION ALL
  SELECT s.op,s.name,s.project_id,s.trace_id,s.status,s.duration,s.start_timestamp,s.end_timestamp
  FROM spans s JOIN projects p ON p.id=s.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
- WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND `+spanWindow+spanWhere+`
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND ` + spanWindow + spanWhere + `
 )
  SELECT op,name,array_agg(DISTINCT project_id::text ORDER BY project_id::text),
  count(DISTINCT trace_id),count(*),count(*) FILTER(WHERE status='error'),avg(duration),
  percentile_cont(0.95) WITHIN GROUP(ORDER BY duration),sum(duration),max(end_timestamp)
-	FROM derived GROUP BY op,name ORDER BY `+order+`
- LIMIT $`+fmt.Sprint(len(args)-1)+` OFFSET $`+fmt.Sprint(len(args)), args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []SpanGroup{}
-	for rows.Next() {
-		var item SpanGroup
-		if err := rows.Scan(&item.Op, &item.Description, &item.ProjectIDs, &item.TraceCount, &item.Count, &item.ErrorCount, &item.AvgDuration, &item.P95Duration, &item.TotalTime, &item.LastSeen); err != nil {
+	FROM derived GROUP BY op,name ORDER BY ` + order + `
+	LIMIT $` + fmt.Sprint(len(args)-1) + ` OFFSET $` + fmt.Sprint(len(args))
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]SpanGroup, error) {
+		start, end, err := read.windowBounds(ctx, filter.Window, 24*time.Hour)
+		if err != nil {
 			return nil, err
 		}
-		items = append(items, item)
-	}
-	return items, rows.Err()
+		isSegment := false
+		selector := spanArchiveSelector{ProjectID: projectID, ProjectIDs: selectedProjectIDs, RestrictProjectIDs: len(selectedProjectIDs) > 0,
+			TimeColumn: "start_timestamp", Start: &start, End: &end, IsSegment: &isSegment}
+		if err := read.loadAccessSpans(ctx, access, selector); err != nil {
+			return nil, err
+		}
+		rows, err := read.tx.Query(ctx, query, args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		items := []SpanGroup{}
+		for rows.Next() {
+			var item SpanGroup
+			if err := rows.Scan(&item.Op, &item.Description, &item.ProjectIDs, &item.TraceCount, &item.Count, &item.ErrorCount, &item.AvgDuration, &item.P95Duration, &item.TotalTime, &item.LastSeen); err != nil {
+				return nil, err
+			}
+			items = append(items, item)
+		}
+		return items, rows.Err()
+	})
 }
 
 func (s *Store) DetectNPlusOne(ctx context.Context, access ManagementAccess, filter NPlusOneFilter) ([]NPlusOneFinding, error) {
@@ -312,35 +337,63 @@ func (s *Store) DetectNPlusOne(ctx context.Context, access ManagementAccess, fil
 	}
 	args = append(args, filter.Threshold, filter.Limit, filter.Offset)
 	threshold, limit, offset := len(args)-2, len(args)-1, len(args)
-	rows, err := s.pool.Query(ctx, `WITH children AS (
+	query := `WITH children AS (
  SELECT e.project_id,e.trace_id,e.transaction_name AS root_name,COALESCE(e.data#>>'{contexts,trace,op}','') AS root_op,
  o.op,o.description AS name,o.duration,o.start_timestamp,o.end_timestamp
  FROM transaction_span_operations o JOIN events e ON e.id=o.event_id JOIN projects p ON p.id=e.project_id
  JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
- WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND `+legacyWindow+legacyWhere+`
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND ` + legacyWindow + legacyWhere + `
  UNION ALL
  SELECT s.project_id,s.trace_id,COALESCE(root.name,''),COALESCE(root.op,''),s.op,s.name,s.duration,s.start_timestamp,s.end_timestamp
  FROM spans s JOIN projects p ON p.id=s.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
  LEFT JOIN LATERAL (SELECT rs.name,rs.op FROM spans rs WHERE rs.project_id=s.project_id AND rs.trace_id=s.trace_id AND rs.is_segment ORDER BY rs.id LIMIT 1) root ON true
- WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND `+spanWindow+spanWhere+`
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND ` + spanWindow + spanWhere + `
 )
  SELECT project_id::text,trace_id,root_name,root_op,op,name,count(*),avg(duration),sum(duration),min(start_timestamp),max(end_timestamp)
- FROM children GROUP BY project_id,trace_id,root_name,root_op,op,name HAVING count(*)>=$`+fmt.Sprint(threshold)+`
+ FROM children GROUP BY project_id,trace_id,root_name,root_op,op,name HAVING count(*)>=$` + fmt.Sprint(threshold) + `
  ORDER BY count(*) DESC,sum(duration) DESC,project_id DESC,trace_id DESC,op COLLATE "C",name COLLATE "C"
- LIMIT $`+fmt.Sprint(limit)+` OFFSET $`+fmt.Sprint(offset), args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []NPlusOneFinding{}
-	for rows.Next() {
-		var item NPlusOneFinding
-		if err := rows.Scan(&item.ProjectID, &item.TraceID, &item.Transaction, &item.Op, &item.ChildOp, &item.ChildName, &item.Count, &item.AvgDuration, &item.TotalDuration, &item.FirstSeen, &item.LastSeen); err != nil {
+	 LIMIT $` + fmt.Sprint(limit) + ` OFFSET $` + fmt.Sprint(offset)
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]NPlusOneFinding, error) {
+		start, end, err := read.windowBounds(ctx, filter.Window, 24*time.Hour)
+		if err != nil {
 			return nil, err
 		}
-		items = append(items, item)
-	}
-	return items, rows.Err()
+		isSegment := false
+		selector := spanArchiveSelector{ProjectID: projectID, TimeColumn: "start_timestamp", Start: &start, End: &end, IsSegment: &isSegment}
+		if err := read.loadAccessSpans(ctx, access, selector); err != nil {
+			return nil, err
+		}
+		seedArgs, seedWindow := scopedRange([]any{access.OrganizationID, access.UserID, access.AllProjects, access.ProjectIDs},
+			"s.start_timestamp", filter.Window, "interval '24 hours'")
+		seedWhere := ""
+		if projectID != 0 {
+			seedArgs = append(seedArgs, projectID)
+			seedWhere += fmt.Sprintf(" AND s.project_id=$%d::bigint", len(seedArgs))
+		}
+		seedQuery := `SELECT s.project_id,s.trace_id FROM spans s JOIN projects p ON p.id=s.project_id
+			JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
+			WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND ` + seedWindow + seedWhere
+		if err := read.AddTraceSeeds(ctx, seedQuery, seedArgs...); err != nil {
+			return nil, err
+		}
+		if err := read.LoadSeededTraces(ctx); err != nil {
+			return nil, err
+		}
+		rows, err := read.tx.Query(ctx, query, args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		items := []NPlusOneFinding{}
+		for rows.Next() {
+			var item NPlusOneFinding
+			if err := rows.Scan(&item.ProjectID, &item.TraceID, &item.Transaction, &item.Op, &item.ChildOp, &item.ChildName, &item.Count, &item.AvgDuration, &item.TotalDuration, &item.FirstSeen, &item.LastSeen); err != nil {
+				return nil, err
+			}
+			items = append(items, item)
+		}
+		return items, rows.Err()
+	})
 }
 
 func (s *Store) ScopedNPlusOnePatterns(ctx context.Context, access ManagementAccess, filter NPlusOneFilter) ([]NPlusOnePattern, error) {
@@ -360,12 +413,13 @@ func (s *Store) ScopedNPlusOnePatterns(ctx context.Context, access ManagementAcc
 		legacyWhere += fmt.Sprintf(" AND e.project_id=$%d::bigint", len(args))
 		spanWhere += fmt.Sprintf(" AND s.project_id=$%d::bigint", len(args))
 	}
+	var selectedProjectIDs []int64
 	if len(filter.ProjectIDs) > 0 {
-		projectIDs, err := scopedProjectIDs(ctx, s, access, filter.ProjectIDs)
+		selectedProjectIDs, err = scopedProjectIDs(ctx, s, access, filter.ProjectIDs)
 		if err != nil {
 			return nil, err
 		}
-		args = append(args, projectIDs)
+		args = append(args, selectedProjectIDs)
 		legacyWhere += fmt.Sprintf(" AND e.project_id=ANY($%d::bigint[])", len(args))
 		spanWhere += fmt.Sprintf(" AND s.project_id=ANY($%d::bigint[])", len(args))
 	}
@@ -377,40 +431,75 @@ func (s *Store) ScopedNPlusOnePatterns(ctx context.Context, access ManagementAcc
 	spanWhere += fmt.Sprintf(" AND s.op LIKE $%d", len(args))
 	args = append(args, filter.Threshold, filter.Limit, filter.Offset)
 	threshold, limit, offset := len(args)-2, len(args)-1, len(args)
-	rows, err := s.pool.Query(ctx, `WITH children AS (
+	query := `WITH children AS (
  SELECT e.project_id,e.trace_id,e.transaction_name AS root_name,
  o.op,o.description AS name,o.duration
  FROM transaction_span_operations o JOIN events e ON e.id=o.event_id JOIN projects p ON p.id=e.project_id
  JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
- WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND `+legacyWindow+legacyWhere+`
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND ` + legacyWindow + legacyWhere + `
  UNION ALL
  SELECT s.project_id,s.trace_id,COALESCE(root.name,''),s.op,s.name,s.duration
  FROM spans s JOIN projects p ON p.id=s.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
  LEFT JOIN LATERAL (SELECT rs.name FROM spans rs WHERE rs.project_id=s.project_id AND rs.trace_id=s.trace_id AND rs.is_segment ORDER BY rs.id LIMIT 1) root ON true
- WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND `+spanWindow+spanWhere+`
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND ` + spanWindow + spanWhere + `
 ), repeated AS (
  SELECT project_id,trace_id,root_name,op,name,count(*) AS span_count,sum(duration) AS total_duration
- FROM children GROUP BY project_id,trace_id,root_name,op,name HAVING count(*)>=$`+fmt.Sprint(threshold)+`
+ FROM children GROUP BY project_id,trace_id,root_name,op,name HAVING count(*)>=$` + fmt.Sprint(threshold) + `
 )
  SELECT root_name,op,name,sum(span_count)::bigint,count(*)::bigint,avg(span_count),
  sum(total_duration)/sum(span_count),sum(total_duration)
  FROM repeated GROUP BY root_name,op,name
  ORDER BY sum(span_count) DESC,sum(total_duration) DESC,root_name COLLATE "C",op COLLATE "C",name COLLATE "C"
- LIMIT $`+fmt.Sprint(limit)+` OFFSET $`+fmt.Sprint(offset), args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []NPlusOnePattern{}
-	for rows.Next() {
-		var item NPlusOnePattern
-		if err := rows.Scan(&item.TransactionName, &item.Op, &item.Description, &item.TotalSpans, &item.TransactionCount,
-			&item.SpansPerTxn, &item.AvgDuration, &item.TotalTime); err != nil {
+	 LIMIT $` + fmt.Sprint(limit) + ` OFFSET $` + fmt.Sprint(offset)
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]NPlusOnePattern, error) {
+		start, end, err := read.windowBounds(ctx, filter.Window, 24*time.Hour)
+		if err != nil {
 			return nil, err
 		}
-		items = append(items, item)
-	}
-	return items, rows.Err()
+		isSegment := false
+		selector := spanArchiveSelector{ProjectID: projectID, ProjectIDs: selectedProjectIDs, RestrictProjectIDs: len(selectedProjectIDs) > 0,
+			TimeColumn: "start_timestamp", Start: &start, End: &end, IsSegment: &isSegment}
+		if err := read.loadAccessSpans(ctx, access, selector); err != nil {
+			return nil, err
+		}
+		seedArgs, seedWindow := scopedRange([]any{access.OrganizationID, access.UserID, access.AllProjects, access.ProjectIDs},
+			"s.start_timestamp", filter.Window, "interval '24 hours'")
+		seedWhere := ""
+		if projectID != 0 {
+			seedArgs = append(seedArgs, projectID)
+			seedWhere += fmt.Sprintf(" AND s.project_id=$%d::bigint", len(seedArgs))
+		}
+		if len(selectedProjectIDs) > 0 {
+			seedArgs = append(seedArgs, selectedProjectIDs)
+			seedWhere += fmt.Sprintf(" AND s.project_id=ANY($%d::bigint[])", len(seedArgs))
+		}
+		seedArgs = append(seedArgs, filter.Op+"%")
+		seedWhere += fmt.Sprintf(" AND s.op LIKE $%d", len(seedArgs))
+		seedQuery := `SELECT s.project_id,s.trace_id FROM spans s JOIN projects p ON p.id=s.project_id
+			JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
+			WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND NOT s.is_segment AND ` + seedWindow + seedWhere
+		if err := read.AddTraceSeeds(ctx, seedQuery, seedArgs...); err != nil {
+			return nil, err
+		}
+		if err := read.LoadSeededTraces(ctx); err != nil {
+			return nil, err
+		}
+		rows, err := read.tx.Query(ctx, query, args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		items := []NPlusOnePattern{}
+		for rows.Next() {
+			var item NPlusOnePattern
+			if err := rows.Scan(&item.TransactionName, &item.Op, &item.Description, &item.TotalSpans, &item.TransactionCount,
+				&item.SpansPerTxn, &item.AvgDuration, &item.TotalTime); err != nil {
+				return nil, err
+			}
+			items = append(items, item)
+		}
+		return items, rows.Err()
+	})
 }
 
 func (s *Store) ScopedTransactionTrend(ctx context.Context, access ManagementAccess, filter TransactionFilter) ([]TransactionTrendPoint, error) {
@@ -439,32 +528,44 @@ func (s *Store) ScopedTransactionTrend(ctx context.Context, access ManagementAcc
 		eventFilter += fmt.Sprintf(" AND e.project_id=$%d::bigint", len(args))
 		spanFilter += fmt.Sprintf(" AND s.project_id=$%d::bigint", len(args))
 	}
-	rows, err := s.pool.Query(ctx, `WITH telemetry AS (
+	query := `WITH telemetry AS (
  SELECT e.timestamp,e.duration,(e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed
  FROM events e JOIN projects p ON p.id=e.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
- WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND e.kind='transaction' AND `+eventRange+eventFilter+`
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND e.kind='transaction' AND ` + eventRange + eventFilter + `
  UNION ALL
  SELECT s.end_timestamp,s.duration,s.status='error'
  FROM spans s JOIN projects p ON p.id=s.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
- WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND s.is_segment AND `+spanRange+spanFilter+`
+ WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND s.is_segment AND ` + spanRange + spanFilter + `
 )
  SELECT to_char(date_trunc('day',timestamp AT TIME ZONE 'UTC'),'YYYY-MM-DD'),count(*),count(*) FILTER(WHERE failed),
  100.0*count(*) FILTER(WHERE failed)/count(*),avg(duration),
  percentile_cont(0.5) WITHIN GROUP(ORDER BY duration),percentile_cont(0.95) WITHIN GROUP(ORDER BY duration)
- FROM telemetry GROUP BY 1 ORDER BY 1`, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []TransactionTrendPoint{}
-	for rows.Next() {
-		var item TransactionTrendPoint
-		if err := rows.Scan(&item.Date, &item.Count, &item.ErrorCount, &item.ErrorRate, &item.AvgDuration, &item.P50, &item.P95); err != nil {
+ FROM telemetry GROUP BY 1 ORDER BY 1`
+	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]TransactionTrendPoint, error) {
+		start, end, err := read.windowBounds(ctx, filter.Window, 14*24*time.Hour)
+		if err != nil {
 			return nil, err
 		}
-		items = append(items, item)
-	}
-	return items, rows.Err()
+		isSegment := true
+		selector := spanArchiveSelector{ProjectID: projectID, TimeColumn: "end_timestamp", Start: &start, End: &end, IsSegment: &isSegment}
+		if err := read.loadAccessSpans(ctx, access, selector); err != nil {
+			return nil, err
+		}
+		rows, err := read.tx.Query(ctx, query, args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		items := []TransactionTrendPoint{}
+		for rows.Next() {
+			var item TransactionTrendPoint
+			if err := rows.Scan(&item.Date, &item.Count, &item.ErrorCount, &item.ErrorRate, &item.AvgDuration, &item.P50, &item.P95); err != nil {
+				return nil, err
+			}
+			items = append(items, item)
+		}
+		return items, rows.Err()
+	})
 }
 
 func utf8ValidNoNUL(value string) bool {

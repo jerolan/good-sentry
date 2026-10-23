@@ -58,8 +58,22 @@ func (r *spanArchiveRead) loadAccessSpans(ctx context.Context, access Management
 		return errors.New("span archive access requires an organization")
 	}
 	if !access.AllProjects {
+		if selector.RestrictProjectIDs {
+			permitted := make(map[int64]struct{}, len(access.ProjectIDs))
+			for _, id := range access.ProjectIDs {
+				permitted[id] = struct{}{}
+			}
+			intersection := make([]int64, 0, min(len(selector.ProjectIDs), len(access.ProjectIDs)))
+			for _, id := range selector.ProjectIDs {
+				if _, ok := permitted[id]; ok {
+					intersection = append(intersection, id)
+				}
+			}
+			selector.ProjectIDs = intersection
+		} else {
+			selector.ProjectIDs = access.ProjectIDs
+		}
 		selector.RestrictProjectIDs = true
-		selector.ProjectIDs = access.ProjectIDs
 	}
 	var member bool
 	if err := r.tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memberships

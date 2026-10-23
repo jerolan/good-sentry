@@ -27,10 +27,14 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 	}
 	root := spanFixture("0000000000000041", true, 1_700_000_000, 1_700_000_001)
 	child := spanFixture("0000000000000042", false, 1_700_000_002, 1_700_000_003)
+	childTwo := spanFixture("0000000000000043", false, 1_700_000_002.5, 1_700_000_003.5)
 	child["name"] = "SELECT cart"
 	child["attributes"].(map[string]any)["sentry.op"] = map[string]any{"type": "string", "value": "db"}
 	child["attributes"].(map[string]any)["sentry.segment.id"] = map[string]any{"type": "string", "value": "0000000000000041"}
-	if count, err := db.IngestSpans(ctx, project.ID, spanBatch(t, root, child), 2); err != nil || count != 2 {
+	childTwo["name"] = "SELECT cart"
+	childTwo["attributes"].(map[string]any)["sentry.op"] = map[string]any{"type": "string", "value": "db"}
+	childTwo["attributes"].(map[string]any)["sentry.segment.id"] = map[string]any{"type": "string", "value": "0000000000000041"}
+	if count, err := db.IngestSpans(ctx, project.ID, spanBatch(t, root, child, childTwo), 3); err != nil || count != 3 {
 		t.Fatalf("initial hot spans=%d err=%v", count, err)
 	}
 	if _, err := db.pool.Exec(ctx, "UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id=$1", "0000000000000041"); err != nil {
@@ -59,11 +63,11 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 		}
 		return total, nil
 	})
-	if err != nil || count != 2 {
+	if err != nil || count != 3 {
 		t.Fatalf("hot+cold trace rows=%d err=%v", count, err)
 	}
 	spans, err := db.Spans(ctx, user.ID, org.Slug, project.ID, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-	if err != nil || len(spans) != 2 {
+	if err != nil || len(spans) != 3 {
 		t.Fatalf("public span reader hot+cold rows=%d err=%v", len(spans), err)
 	}
 	var publicRaw map[string]any
@@ -77,7 +81,7 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 		t.Fatal(err)
 	}
 	detail, err := db.TransactionDetail(ctx, user.ID, org.Slug, "span", archivedRootID, 1)
-	if err != nil || detail.SpanCount != 2 || len(detail.Spans) != 2 || detail.Spans[0].SpanID != "0000000000000041" {
+	if err != nil || detail.SpanCount != 3 || len(detail.Spans) != 3 || detail.Spans[0].SpanID != "0000000000000041" {
 		t.Fatalf("transaction detail cold root and hot children: %+v err=%v", detail, err)
 	}
 	window := &TimeWindow{Start: time.Unix(1_700_000_000, 0).UTC(), End: time.Unix(1_700_000_004, 0).UTC()}
@@ -91,7 +95,7 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 		t.Fatalf("transaction stats include archived segment: %+v err=%v", stats, err)
 	}
 	trace, err := db.Trace(ctx, user.ID, org.Slug, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", project.ID, 1, false)
-	if err != nil || trace.NodeCount != 2 || len(trace.Data) != 2 {
+	if err != nil || trace.NodeCount != 3 || len(trace.Data) != 3 {
 		t.Fatalf("trace graph hot+cold nodes: %+v err=%v", trace, err)
 	}
 	var archivedNode string
@@ -130,19 +134,41 @@ func TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces(t *testing.T)
 		}
 		return total, nil
 	})
-	if err != nil || count != 2 {
+	if err != nil || count != 3 {
 		t.Fatalf("trace expansion rows=%d err=%v", count, err)
 	}
-	if _, err := db.pool.Exec(ctx, "UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id=$1", "0000000000000042"); err != nil {
-		t.Fatal(err)
-	}
-	_, moved, _, err = db.CleanupTransactionsWithArchive(ctx, 30, options)
-	if err != nil || moved != 1 {
-		t.Fatalf("archive trace child moved=%d err=%v", moved, err)
+	for _, spanID := range []string{"0000000000000042", "0000000000000043"} {
+		if _, err := db.pool.Exec(ctx, "UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id=$1", spanID); err != nil {
+			t.Fatal(err)
+		}
+		_, moved, _, err = db.CleanupTransactionsWithArchive(ctx, 30, options)
+		if err != nil || moved != 1 {
+			t.Fatalf("archive trace child %s moved=%d err=%v", spanID, moved, err)
+		}
 	}
 	spanGroups, err := db.TransactionSpanGroups(ctx, user.ID, org.Slug, "span", archivedRootID, "", window, 1)
-	if err != nil || spanGroups.TransactionCount != 1 || spanGroups.SpanCount != 1 || spanGroups.GroupCount != 1 || len(spanGroups.Data) != 1 ||
-		spanGroups.Data[0].Op != "db" || spanGroups.Data[0].Description != "SELECT cart" || spanGroups.Data[0].Count != 1 {
+	if err != nil || spanGroups.TransactionCount != 1 || spanGroups.SpanCount != 2 || spanGroups.GroupCount != 1 || len(spanGroups.Data) != 1 ||
+		spanGroups.Data[0].Op != "db" || spanGroups.Data[0].Description != "SELECT cart" || spanGroups.Data[0].Count != 2 {
 		t.Fatalf("transaction span groups include archived root and child: %+v err=%v", spanGroups, err)
+	}
+	scopedTransactions, err := db.ScopedTransactions(ctx, access, TransactionFilter{Project: project.ID, Window: window, Limit: 10})
+	if err != nil || len(scopedTransactions) != 1 || scopedTransactions[0].Count != 1 {
+		t.Fatalf("scoped transaction groups include archived segment: %+v err=%v", scopedTransactions, err)
+	}
+	trend, err := db.ScopedTransactionTrend(ctx, access, TransactionFilter{Project: project.ID, Transaction: "GET /checkout", Op: "http.server", Window: window})
+	if err != nil || len(trend) != 1 || trend[0].Count != 1 {
+		t.Fatalf("scoped transaction trend includes archived segment: %+v err=%v", trend, err)
+	}
+	spanGroupRows, err := db.ScopedSpanGroups(ctx, access, SpanGroupFilter{Project: project.ID, ProjectIDs: []int64{projectID}, Window: window, Limit: 10})
+	if err != nil || len(spanGroupRows) != 1 || spanGroupRows[0].Count != 2 || spanGroupRows[0].Description != "SELECT cart" {
+		t.Fatalf("scoped span groups include archived children: %+v err=%v", spanGroupRows, err)
+	}
+	findings, err := db.DetectNPlusOne(ctx, access, NPlusOneFilter{Project: project.ID, Window: window, Threshold: 2, Limit: 10})
+	if err != nil || len(findings) != 1 || findings[0].Count != 2 || findings[0].Transaction != "GET /checkout" {
+		t.Fatalf("N+1 findings expand archived trace roots: %+v err=%v", findings, err)
+	}
+	patterns, err := db.ScopedNPlusOnePatterns(ctx, access, NPlusOneFilter{Project: project.ID, Window: window, Op: "db", Threshold: 2, Limit: 10})
+	if err != nil || len(patterns) != 1 || patterns[0].TotalSpans != 2 || patterns[0].TransactionCount != 1 {
+		t.Fatalf("N+1 patterns include archived children: %+v err=%v", patterns, err)
 	}
 }
