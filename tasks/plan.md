@@ -11,6 +11,16 @@ Authority: ../SPEC.md. The user approved the capability map and authorized speci
 7. Complete management API parity, native debug-file/minidump symbolication, integrations, optional MCP, OAuth/OIDC and cold archival. Resolve each unknown against public contracts and runtime evidence before claiming support.
 8. Run the full SDK/browser/container acceptance matrix, retention/recovery/concurrency checks and measured memory workload. Finish documentation with supported versions, operating limits and reproducible commands. Audit every SPEC.md requirement before marking the goal complete.
 
+## Cold span archive increment
+
+The normative archive contract is in SPEC.md under Integrations and compatibility limits. Keep this feature off until each slice is usable and verified end to end.
+
+1. Add validated archive settings and the additive PostgreSQL object manifest. Keep current transaction/span retention as the total lifetime; derive the default archive threshold as the smaller of30 days and half that lifetime, rounded down with a one-day minimum.
+2. Add the pinned pure-Go Parquet codec and local/S3 object backends. Bound encoded objects, make local publication atomic, use deterministic keys, and keep S3 credentials in the AWS SDK credential chain.
+3. Change the existing bounded retention owner to move eligible spans to cold storage. Upload before committing manifest plus hot-row deletion; keep source rows untouched on any error. Expire local/S3 objects under the same total receipt-age contract and clean objects for deleted projects.
+4. Add the transaction-scoped historical span relation and route every existing span query owner through it. Preserve existing PostgreSQL filters, grants, ordering, pagination and aggregation semantics; do not add handler-specific copies of those algorithms.
+5. Add the all-in-one image/Compose/docs configuration, then prove local-volume and S3-compatible operation, archival queries, app-only restart, retention expiry, backup recovery and exact-source public CI/image acceptance using fresh isolated copies.
+
 Parallel execution is limited to disjoint files with defined contracts. Protocol decoding, pure event normalization and static frontend assets can be delegated after contracts are fixed. The primary owns PostgreSQL integration, auth, routes, consequential decisions, spec changes, diff review and final verification. A bounded HTTP worker may implement the primary's fixed route/error contract in assigned files, with primary review and acceptance. Workers do not expand scope, delegate or commit shared work.
 
 Every implementation increment leaves Go build/tests passing and gets an intention-focused commit. Tasks track exact evidence. Keep implementation and documentation truthful when later capabilities are still pending. Compile the user-authorized Tailwind CSS into embedded assets and verify the existing browser workflow after that stylesheet change.
