@@ -32,6 +32,8 @@ type Fixture struct {
 	ProcedureEndPointerOffset int
 	ProcedureEndOffset        int
 	SecondProcedureOffset     int
+	PublicSymbolsBlock        int
+	SectionMapStart           int
 }
 
 func Minimal() Fixture {
@@ -134,6 +136,85 @@ func WithInlineFrames() Fixture {
 		SecondProcedureOffset:     moduleBase + 4 + secondProcedureOffset,
 	}
 	return fixture
+}
+
+func WithPublicOnlySymbols() Fixture {
+	const blockSize = 512
+	info := make([]byte, 28)
+	binary.LittleEndian.PutUint32(info, 20000404)
+	binary.LittleEndian.PutUint32(info[4:], 1)
+	binary.LittleEndian.PutUint32(info[8:], 1)
+	copy(info[12:], []byte{0xe5, 0x32, 0x98, 0x5a, 0x72, 0x28, 0xc1, 0x41, 0xff, 0xb7, 0xe9, 0x14, 0x89, 0xd9, 0x8e, 0x83})
+
+	moduleInfo := moduleInfoRecord(^uint16(0), 0, 0, "fixture.obj", "fixture.obj")
+	sectionMap := make([]byte, 4+2*20)
+	binary.LittleEndian.PutUint16(sectionMap, 2)
+	binary.LittleEndian.PutUint16(sectionMap[2:], 2)
+	for i, frame := range []uint16{1, 2} {
+		entry := sectionMap[4+i*20 : 4+(i+1)*20]
+		binary.LittleEndian.PutUint16(entry, 1|4|8)
+		binary.LittleEndian.PutUint16(entry[6:], frame)
+		binary.LittleEndian.PutUint16(entry[8:], ^uint16(0))
+		binary.LittleEndian.PutUint16(entry[10:], ^uint16(0))
+		binary.LittleEndian.PutUint32(entry[12:], []uint32{0x20, 0}[i])
+		binary.LittleEndian.PutUint32(entry[16:], 0x60)
+	}
+
+	const optionalHeaderBytes = 11 * 2
+	dbi := make([]byte, 64)
+	binary.LittleEndian.PutUint32(dbi, ^uint32(0))
+	binary.LittleEndian.PutUint32(dbi[4:], 19990903)
+	binary.LittleEndian.PutUint32(dbi[8:], 1)
+	binary.LittleEndian.PutUint16(dbi[12:], 2) // GSI stream, unused by the public-symbol scan
+	binary.LittleEndian.PutUint16(dbi[16:], ^uint16(0))
+	binary.LittleEndian.PutUint16(dbi[20:], 4) // SymRecordStream (GSS records)
+	binary.LittleEndian.PutUint32(dbi[24:], uint32(len(moduleInfo)))
+	binary.LittleEndian.PutUint32(dbi[32:], uint32(len(sectionMap)))
+	binary.LittleEndian.PutUint32(dbi[48:], optionalHeaderBytes)
+	binary.LittleEndian.PutUint16(dbi[56:], 1<<1)
+	binary.LittleEndian.PutUint16(dbi[58:], 0x8664)
+	dbi = append(dbi, moduleInfo...)
+	dbi = append(dbi, sectionMap...)
+	optional := bytes.Repeat([]byte{0xff}, optionalHeaderBytes)
+	binary.LittleEndian.PutUint16(optional[10:], 5)
+	dbi = append(dbi, optional...)
+
+	sections := make([]byte, 2*40)
+	for i, sectionName := range []string{".text", ".text2"} {
+		section := sections[i*40 : (i+1)*40]
+		copy(section, sectionName)
+		binary.LittleEndian.PutUint32(section[8:], 0x80)
+		binary.LittleEndian.PutUint32(section[12:], []uint32{0x1000, 0x1080}[i])
+		binary.LittleEndian.PutUint32(section[16:], 0x80)
+		binary.LittleEndian.PutUint32(section[36:], 0x60000020)
+	}
+
+	publics := append(publicSymbol("PublicFirst", 3, 0x10, 1), publicSymbol("PublicSecond", 3, 0x30, 1)...)
+	publics = append(publics, publicSymbol("GlobalVariable", 1, 0x40, 1)...)
+	streams := [][]byte{nil, info, nil, dbi, publics, sections}
+	data, blocks := writeMSF(blockSize, streams)
+	return Fixture{
+		Data: data, DBIBlock: blocks[3][0], InfoBlock: blocks[1][0], PublicSymbolsBlock: blocks[4][0],
+		SectionMapStart: blocks[3][0]*blockSize + 64 + len(moduleInfo),
+	}
+}
+
+func publicSymbol(name string, flags uint32, offset uint32, segment uint16) []byte {
+	body := make([]byte, 10+len(name)+1)
+	binary.LittleEndian.PutUint32(body, flags)
+	binary.LittleEndian.PutUint32(body[4:], offset)
+	binary.LittleEndian.PutUint16(body[8:], segment)
+	copy(body[10:], name)
+	total := 4 + len(body)
+	padding := (4 - total%4) % 4
+	record := make([]byte, total+padding)
+	binary.LittleEndian.PutUint16(record, uint16(len(record)-2))
+	binary.LittleEndian.PutUint16(record[2:], 0x110e)
+	copy(record[4:], body)
+	for i := 0; i < padding; i++ {
+		record[total+i] = byte(0xf1 + i)
+	}
+	return record
 }
 
 func inlineSite(inlinee uint32, start, length byte) ([]byte, int) {

@@ -85,6 +85,182 @@ func TestParseNativePDBProcedureSymbols(t *testing.T) {
 	}
 }
 
+func TestParseNativePDBPublicSymbolsFromStrippedPDB(t *testing.T) {
+	fixture := nativepdb.WithPublicOnlySymbols()
+	objects := ParseDebugObjects("stripped.pdb", fixture.Data)
+	if len(objects) != 1 {
+		t.Fatalf("parsed PDB objects=%d, want one", len(objects))
+	}
+	object := objects[0]
+	want := []SymbolFunction{
+		{Start: 0x1030, End: 0x1050, Name: "PublicFirst", Line: -1, publicFallback: true},
+		{Start: 0x1050, End: 0x1080, Name: "PublicSecond", Line: -1, publicFallback: true},
+	}
+	if len(object.Functions) != len(want) {
+		t.Fatalf("public PDB functions=%+v, want %+v", object.Functions, want)
+	}
+	for i := range want {
+		if object.Functions[i] != want[i] {
+			t.Fatalf("public PDB function[%d]=%+v, want %+v", i, object.Functions[i], want[i])
+		}
+	}
+
+	crash := Crash{
+		Modules: []Module{{Name: "crash.exe", Base: 0x140000000, Size: 0x5000, DebugID: object.DebugID}},
+		Frames: []Frame{
+			{Instruction: 0x140001035, Module: "crash.exe"},
+			{Instruction: 0x14000107f, Module: "crash.exe"},
+			{Instruction: 0x140001080, Module: "crash.exe"},
+			{Instruction: 0x14000102f, Module: "crash.exe"},
+		},
+	}
+	Symbolicate(&crash, SymbolSet{object.DebugID: object.Functions})
+	for i, wantName := range []string{"PublicFirst", "PublicSecond", "", ""} {
+		if crash.Frames[i].Function != wantName {
+			t.Fatalf("public PDB frame[%d]=%+v, want function %q", i, crash.Frames[i], wantName)
+		}
+	}
+	crash.Modules[0].DebugID = "different-pdb-age"
+	crash.Frames[0].Function = ""
+	Symbolicate(&crash, SymbolSet{object.DebugID: object.Functions})
+	if crash.Frames[0].Function != "" {
+		t.Fatalf("mismatched public PDB identity symbolized frame: %+v", crash.Frames[0])
+	}
+
+	unstripped := append([]byte(nil), fixture.Data...)
+	binary.LittleEndian.PutUint16(unstripped[fixture.DBIBlock*512+56:], 0)
+	if objects := ParseDebugObjects("unstripped.pdb", unstripped); len(objects) != 0 {
+		t.Fatalf("unstripped PDB without module procedures unexpectedly used public fallback: %+v", objects)
+	}
+}
+
+func TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols(t *testing.T) {
+	fixture := nativepdb.WithPublicOnlySymbols()
+	tests := []struct {
+		name   string
+		mutate func([]byte)
+	}{
+		{name: "truncated global symbol record", mutate: func(data []byte) {
+			binary.LittleEndian.PutUint16(data[fixture.PublicSymbolsBlock*512:], 0xfffc)
+		}},
+		{name: "invalid segment index", mutate: func(data []byte) {
+			binary.LittleEndian.PutUint16(data[fixture.PublicSymbolsBlock*512+12:], 3)
+		}},
+		{name: "invalid alignment byte", mutate: func(data []byte) {
+			data[fixture.PublicSymbolsBlock*512+26] = 0
+		}},
+		{name: "unknown public flags", mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[fixture.PublicSymbolsBlock*512+4:], 0x80000000)
+		}},
+		{name: "mapping outside executable section", mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[fixture.SectionMapStart+4+12:], 0x80)
+		}},
+		{name: "selector mapping", mutate: func(data []byte) {
+			flags := binary.LittleEndian.Uint16(data[fixture.SectionMapStart+4:])
+			binary.LittleEndian.PutUint16(data[fixture.SectionMapStart+4:], flags|1<<8)
+		}},
+		{name: "absolute mapping", mutate: func(data []byte) {
+			flags := binary.LittleEndian.Uint16(data[fixture.SectionMapStart+4:])
+			binary.LittleEndian.PutUint16(data[fixture.SectionMapStart+4:], flags|1<<9)
+		}},
+		{name: "group mapping", mutate: func(data []byte) {
+			flags := binary.LittleEndian.Uint16(data[fixture.SectionMapStart+4:])
+			binary.LittleEndian.PutUint16(data[fixture.SectionMapStart+4:], flags|1<<10)
+		}},
+		{name: "frame outside PE sections", mutate: func(data []byte) {
+			binary.LittleEndian.PutUint16(data[fixture.SectionMapStart+4+6:], 3)
+		}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			data := append([]byte(nil), fixture.Data...)
+			test.mutate(data)
+			if objects := ParseDebugObjects("stripped.pdb", data); len(objects) != 0 {
+				t.Fatalf("malformed public PDB returned partial symbols: %+v", objects)
+			}
+		})
+	}
+}
+
+func TestParseNativePDBPublicSymbolsRejectsExcessiveAlignmentPadding(t *testing.T) {
+	// The name is already aligned; appending F1-F4 forms a valid padding prefix
+	// followed by a fourth byte that exceeds CodeView's three-byte limit.
+	record := []byte{18, 0, 0x0e, 0x11, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x', 0, 0xf1, 0xf2, 0xf3, 0xf4}
+	sectionMap := make([]byte, 4+20)
+	binary.LittleEndian.PutUint16(sectionMap, 1)
+	binary.LittleEndian.PutUint16(sectionMap[2:], 1)
+	binary.LittleEndian.PutUint16(sectionMap[4:], 1<<2)
+	binary.LittleEndian.PutUint16(sectionMap[10:], 1)
+	binary.LittleEndian.PutUint32(sectionMap[20:], 0x80)
+	sections := []pdbSection{{virtualSize: 0x80, virtualAddr: 0x1000, rawSize: 0x80, flags: 0x60000020}}
+
+	functions, ok := parsePDBPublicFunctions(pdbMSFWithGlobalSymbols(record), 0, sectionMap, sections)
+	if ok || len(functions) != 0 {
+		t.Fatalf("PDB with four alignment bytes returned ok=%t functions=%d", ok, len(functions))
+	}
+}
+
+func TestSymbolicatePrefersExactPDBProcedureToPublicFallback(t *testing.T) {
+	module := Module{Name: "crash.exe", Base: 0x140000000, Size: 0x5000, DebugID: "pdb-id"}
+	for _, functions := range [][]SymbolFunction{
+		{
+			{Start: 0x1020, End: 0x1040, Name: "PublicFallback", Line: -1, publicFallback: true},
+			{Start: 0x1000, End: 0x1100, Name: "PrivateProcedure", Line: -1},
+		},
+		{
+			{Start: 0x1000, End: 0x1100, Name: "PrivateProcedure", Line: -1},
+			{Start: 0x1020, End: 0x1040, Name: "PublicFallback", Line: -1, publicFallback: true},
+		},
+	} {
+		crash := Crash{Modules: []Module{module}, Frames: []Frame{{Instruction: module.Base + 0x1025, Module: module.Name}}}
+		Symbolicate(&crash, SymbolSet{"pdbid": functions})
+		if crash.Frames[0].Function != "PrivateProcedure" {
+			t.Fatalf("exact PDB procedure lost to public fallback: %+v", crash.Frames[0])
+		}
+	}
+}
+
+func TestParseNativePDBPublicSymbolsEnforcesStreamBudgets(t *testing.T) {
+	sectionMap := make([]byte, 4+20)
+	binary.LittleEndian.PutUint16(sectionMap, 1)
+	binary.LittleEndian.PutUint16(sectionMap[2:], 1)
+	binary.LittleEndian.PutUint16(sectionMap[4:], 1<<2)
+	binary.LittleEndian.PutUint16(sectionMap[10:], 1)
+	binary.LittleEndian.PutUint32(sectionMap[20:], 0x80)
+	sections := []pdbSection{{virtualSize: 0x80, virtualAddr: 0x1000, rawSize: 0x80, flags: 0x60000020}}
+	tests := []struct {
+		name    string
+		records []byte
+	}{
+		{name: "global symbol record limit", records: bytes.Repeat([]byte{2, 0, 0, 0}, maxPDBSymbolRecords+1)},
+		{name: "public function limit", records: bytes.Repeat([]byte{14, 0, 0x0e, 0x11, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 'x', 0}, maxPDBPublicFunctions+1)},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			msf := pdbMSFWithGlobalSymbols(test.records)
+			functions, ok := parsePDBPublicFunctions(msf, 0, sectionMap, sections)
+			if ok || len(functions) != 0 {
+				t.Fatalf("over-budget PDB returned ok=%t functions=%d", ok, len(functions))
+			}
+		})
+	}
+}
+
+func pdbMSFWithGlobalSymbols(records []byte) *pdbMSFFile {
+	const blockSize = 512
+	blockCount := (len(records) + blockSize - 1) / blockSize
+	data := make([]byte, blockCount*blockSize)
+	copy(data, records)
+	blocks := make([]uint32, blockCount)
+	for i := range blocks {
+		blocks[i] = uint32(i)
+	}
+	return &pdbMSFFile{
+		data: data, blockSize: blockSize,
+		streams: []pdbMSFStream{{size: uint32(len(records)), blocks: blocks}},
+	}
+}
+
 func TestParseNativePDBC13SourceLines(t *testing.T) {
 	for _, test := range []struct {
 		name         string

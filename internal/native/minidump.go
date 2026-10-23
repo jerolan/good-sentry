@@ -397,6 +397,7 @@ type SymbolFunction struct {
 	Line           int
 	inlineSites    *pdbInlineSiteSet
 	procedureStart uint64
+	publicFallback bool
 }
 
 type SymbolSet map[string][]SymbolFunction
@@ -517,6 +518,9 @@ func Symbolicate(crash *Crash, symbols SymbolSet) {
 }
 
 func symbolBetter(candidate, current SymbolFunction) bool {
+	if candidate.publicFallback != current.publicFallback {
+		return !candidate.publicFallback
+	}
 	candidateSource, currentSource := candidate.File != "" && candidate.Line > 0, current.File != "" && current.Line > 0
 	if candidateSource != currentSource {
 		return candidateSource

@@ -12,6 +12,7 @@ const (
 	maxPDBModules         = 4096
 	maxPDBSections        = 512
 	maxPDBProcedures      = 200_000
+	maxPDBPublicFunctions = 200_000
 	maxPDBSymbolRecords   = 1_000_000
 	maxPDBProcedureName   = 4096
 	maxPDBC13Subsections  = 65_536
@@ -26,6 +27,14 @@ const (
 	pdbHeaderSize         = 32
 	pdbStreamAbsent       = ^uint32(0)
 	pdbModuleStreamAbsent = ^uint16(0)
+	pdbPublicSymbolKind   = 0x110e
+	pdbPublicFunctionFlag = 1 << 1
+	pdbPublicKnownFlags   = 0x0f
+	pdbSectionMapExecute  = 1 << 2
+	pdbSectionMapSelector = 1 << 8
+	pdbSectionMapAbsolute = 1 << 9
+	pdbSectionMapGroup    = 1 << 10
+	pdbPESectionExecute   = 0x20000000
 )
 
 var msf7Magic = []byte("Microsoft C/C++ MSF 7.00\r\n\x1aDS\x00\x00\x00")
@@ -47,6 +56,20 @@ type pdbSection struct {
 	virtualAddr uint32
 	rawSize     uint32
 	flags       uint32
+}
+
+type pdbSectionMapEntry struct {
+	flags         uint16
+	frame         uint16
+	offset        uint32
+	sectionLength uint32
+}
+
+type pdbPublicFunction struct {
+	section       int
+	start         uint64
+	descriptorEnd uint64
+	name          string
 }
 
 type pdbProcedure struct {
@@ -117,7 +140,19 @@ func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
 	}
 	moduleData := dbi[moduleStart : moduleStart+moduleSize]
 	functions, ok := parsePDBModules(msf, moduleData, sections, info)
-	if !ok || len(functions) == 0 {
+	if !ok {
+		return "", nil, false
+	}
+	if binary.LittleEndian.Uint16(dbi[56:])&(1<<1) != 0 {
+		sectionMapStart := moduleStart + moduleSize + sectionContributionSize
+		sectionMap := dbi[sectionMapStart : sectionMapStart+sectionMapSize]
+		publicFunctions, ok := parsePDBPublicFunctions(msf, binary.LittleEndian.Uint16(dbi[20:]), sectionMap, sections)
+		if !ok {
+			return "", nil, false
+		}
+		functions = append(functions, publicFunctions...)
+	}
+	if len(functions) == 0 {
 		return "", nil, false
 	}
 	sort.SliceStable(functions, func(i, j int) bool {
@@ -267,6 +302,141 @@ func pdbDBISubstreamSizes(dbi []byte) (module, contribution, sectionMap, source,
 		return 0, 0, 0, 0, 0, 0, 0, false
 	}
 	return sizes[0], sizes[1], sizes[2], sizes[3], sizes[4], sizes[5], sizes[6], true
+}
+
+func parsePDBPublicFunctions(msf *pdbMSFFile, symbolRecordStream uint16, sectionMapData []byte, sections []pdbSection) ([]SymbolFunction, bool) {
+	sectionMap, ok := parsePDBSectionMap(sectionMapData)
+	if !ok {
+		return nil, false
+	}
+	globalSymbols, ok := msf.readStream(symbolRecordStream)
+	if !ok || len(globalSymbols)%4 != 0 {
+		return nil, false
+	}
+	publicFunctions := make([]pdbPublicFunction, 0)
+	for offset, records := 0, 0; offset < len(globalSymbols); records++ {
+		if len(globalSymbols)-offset < 4 || records == maxPDBSymbolRecords || offset%4 != 0 {
+			return nil, false
+		}
+		recordLength := int(binary.LittleEndian.Uint16(globalSymbols[offset:]))
+		totalLength := recordLength + 2
+		if recordLength < 2 || totalLength%4 != 0 || totalLength > len(globalSymbols)-offset {
+			return nil, false
+		}
+		record := globalSymbols[offset : offset+totalLength]
+		kind := binary.LittleEndian.Uint16(record[2:])
+		if kind == pdbPublicSymbolKind {
+			body := record[4:]
+			if len(body) < 11 {
+				return nil, false
+			}
+			nameBytes := body[10:]
+			nameLength := bytes.IndexByte(nameBytes, 0)
+			if nameLength < 1 || nameLength > maxPDBProcedureName {
+				return nil, false
+			}
+			padding := nameBytes[nameLength+1:]
+			if len(padding) > 3 {
+				return nil, false
+			}
+			for i, value := range padding {
+				if value != byte(0xf1+i) {
+					return nil, false
+				}
+			}
+			flags := binary.LittleEndian.Uint32(body)
+			if flags&^uint32(pdbPublicKnownFlags) != 0 {
+				return nil, false
+			}
+			if flags&pdbPublicFunctionFlag != 0 {
+				if len(publicFunctions) == maxPDBPublicFunctions {
+					return nil, false
+				}
+				segment := binary.LittleEndian.Uint16(body[8:])
+				if segment == 0 || int(segment) > len(sectionMap) {
+					return nil, false
+				}
+				mapping := sectionMap[segment-1]
+				unsupportedFlags := pdbSectionMapSelector | pdbSectionMapAbsolute | pdbSectionMapGroup
+				if mapping.flags&pdbSectionMapExecute == 0 || mapping.flags&unsupportedFlags != 0 || mapping.frame == 0 || int(mapping.frame) > len(sections) {
+					return nil, false
+				}
+				sectionIndex := int(mapping.frame - 1)
+				section := sections[sectionIndex]
+				sectionSize := max(section.virtualSize, section.rawSize)
+				if section.flags&pdbPESectionExecute == 0 || mapping.offset > sectionSize || mapping.sectionLength > sectionSize-mapping.offset {
+					return nil, false
+				}
+				symbolOffset := binary.LittleEndian.Uint32(body[4:])
+				if symbolOffset >= mapping.sectionLength {
+					return nil, false
+				}
+				start := uint64(section.virtualAddr) + uint64(mapping.offset) + uint64(symbolOffset)
+				descriptorEnd := uint64(section.virtualAddr) + uint64(mapping.offset) + uint64(mapping.sectionLength)
+				if descriptorEnd > uint64(1)<<32 || start >= descriptorEnd {
+					return nil, false
+				}
+				publicFunctions = append(publicFunctions, pdbPublicFunction{
+					section: sectionIndex, start: start, descriptorEnd: descriptorEnd, name: string(nameBytes[:nameLength]),
+				})
+			}
+		}
+		offset += totalLength
+	}
+	return inferredPDBPublicFunctions(publicFunctions), true
+}
+
+func parsePDBSectionMap(data []byte) ([]pdbSectionMapEntry, bool) {
+	if len(data) < 4 {
+		return nil, false
+	}
+	count := int(binary.LittleEndian.Uint16(data))
+	logicalCount := int(binary.LittleEndian.Uint16(data[2:]))
+	if count == 0 || count > maxPDBSections || logicalCount > count || len(data) != 4+count*20 {
+		return nil, false
+	}
+	entries := make([]pdbSectionMapEntry, count)
+	for i := range entries {
+		record := data[4+i*20 : 4+(i+1)*20]
+		entries[i] = pdbSectionMapEntry{
+			flags: binary.LittleEndian.Uint16(record), frame: binary.LittleEndian.Uint16(record[6:]),
+			offset: binary.LittleEndian.Uint32(record[12:]), sectionLength: binary.LittleEndian.Uint32(record[16:]),
+		}
+	}
+	return entries, true
+}
+
+func inferredPDBPublicFunctions(publicFunctions []pdbPublicFunction) []SymbolFunction {
+	sort.Slice(publicFunctions, func(i, j int) bool {
+		if publicFunctions[i].section != publicFunctions[j].section {
+			return publicFunctions[i].section < publicFunctions[j].section
+		}
+		if publicFunctions[i].start != publicFunctions[j].start {
+			return publicFunctions[i].start < publicFunctions[j].start
+		}
+		return publicFunctions[i].name < publicFunctions[j].name
+	})
+	functions := make([]SymbolFunction, 0, len(publicFunctions))
+	for groupStart := 0; groupStart < len(publicFunctions); {
+		groupEnd := groupStart + 1
+		for groupEnd < len(publicFunctions) && publicFunctions[groupEnd].section == publicFunctions[groupStart].section && publicFunctions[groupEnd].start == publicFunctions[groupStart].start {
+			groupEnd++
+		}
+		if groupEnd < len(publicFunctions) && publicFunctions[groupEnd].section == publicFunctions[groupStart].section {
+			nextStart := publicFunctions[groupEnd].start
+			for i := groupStart; i < groupEnd; i++ {
+				publicFunctions[i].descriptorEnd = min(publicFunctions[i].descriptorEnd, nextStart)
+			}
+		}
+		for i := groupStart; i < groupEnd; i++ {
+			function := publicFunctions[i]
+			if function.descriptorEnd > function.start {
+				functions = append(functions, SymbolFunction{Start: function.start, End: function.descriptorEnd, Name: function.name, Line: -1, publicFallback: true})
+			}
+		}
+		groupStart = groupEnd
+	}
+	return functions
 }
 
 func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, pdbInfo []byte) ([]SymbolFunction, bool) {
