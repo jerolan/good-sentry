@@ -96,3 +96,91 @@ func TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF(t *testing.T) {
 		t.Fatalf("required mode accepted open identity=%d", res.StatusCode)
 	}
 }
+
+func TestOpenAuthenticationInvitationsStayOnImplicitOwner(t *testing.T) {
+	f, srv, cfg := newOpenAuthenticationFixture(t)
+	owner, err := f.db.UserByEmail(f.ctx, "implicit@localhost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	box, err := accountmail.NewSecretBox(cfg.Secret)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hasher := &Server{cfg: cfg}
+	createInvitation := func(email, rawToken string) {
+		t.Helper()
+		tokenHash := hasher.hash(rawToken)
+		ciphertext, err := box.Seal(tokenHash, rawToken)
+		if err != nil {
+			t.Fatal(err)
+		}
+		invitation, err := f.db.InviteMember(f.ctx, f.owner.ID, f.org.Slug, email, "member", tokenHash, ciphertext, invitationLifetime)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.sql.Exec(f.ctx, `UPDATE organization_invitations SET status='sent',sent_at=clock_timestamp() WHERE id=$1`, invitation.ID); err != nil {
+			t.Fatal(err)
+		}
+	}
+	accept := func(rawToken string) (int, []byte) {
+		t.Helper()
+		body := `{"token":"` + rawToken + `","name":"Invited User","password":"resolution-http-password"}`
+		req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, srv.URL+cfg.Prefix+"/api/v1/invitations/accept", strings.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Origin", "https://public.example.test")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer res.Body.Close()
+		raw, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return res.StatusCode, raw
+	}
+
+	otherEmailToken := strings.Repeat("a", 64)
+	createInvitation("new-user@localhost", otherEmailToken)
+	if status, body := accept(otherEmailToken); status != http.StatusConflict {
+		t.Fatalf("open mode accepted a different account: status=%d body=%s", status, body)
+	}
+	if _, err := f.db.UserByEmail(f.ctx, "new-user@localhost"); err != store.ErrNotFound {
+		t.Fatalf("open mode created a user whose session it cannot use: err=%v", err)
+	}
+
+	ownerToken := strings.Repeat("b", 64)
+	createInvitation(owner.Email, ownerToken)
+	if status, body := accept(ownerToken); status != http.StatusOK {
+		t.Fatalf("implicit owner could not accept its invitation: status=%d body=%s", status, body)
+	}
+	req, err := http.NewRequestWithContext(f.ctx, http.MethodGet, srv.URL+cfg.Prefix+"/api/v1/me", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	var me struct {
+		User          store.User
+		Organizations []store.Organization
+	}
+	if err := json.NewDecoder(res.Body).Decode(&me); err != nil {
+		t.Fatal(err)
+	}
+	if res.StatusCode != http.StatusOK || me.User.ID != owner.ID {
+		t.Fatalf("cookie-free identity changed after accepting invitation: status=%d user=%+v", res.StatusCode, me.User)
+	}
+	for _, org := range me.Organizations {
+		if org.Slug == f.org.Slug {
+			return
+		}
+	}
+	t.Fatalf("accepted organization was not added to implicit owner: %+v", me.Organizations)
+}

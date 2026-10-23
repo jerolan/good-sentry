@@ -20,7 +20,7 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `GOODSENTRY_DEFAULT_EMAIL` | `owner@localhost` | Implicit owner email in open mode. |
 | `GOODSENTRY_DEFAULT_NAME` | `GoodSentry Owner` | Implicit owner display name. |
 | `GOODSENTRY_DEFAULT_ORGANIZATION` | `Default Organization` | Implicit owner workspace. |
-| `GOODSENTRY_DEFAULT_PASSWORD` | Empty | Optional 12–72 byte password assigned only when the implicit owner is first created. |
+| `GOODSENTRY_DEFAULT_PASSWORD` | Empty | Optional 12–72 byte password assigned only when the implicit owner is first created. Set it before first startup if the owner must accept invitations addressed to `GOODSENTRY_DEFAULT_EMAIL`; use `GOODSENTRY_AUTH=required` for other invitees and multi-user access. |
 | `GOODSENTRY_IMAGE` | `ghcr.io/jerolan/good-sentry:main` | Compose application image; accepts a revision tag or immutable image digest. |
 | `GOODSENTRY_DOMAIN` | `http://localhost:8000` | Public origin and optional path prefix used for DSNs and resource links. |
 | `POSTGRES_PASSWORD` | `goodsentry-local` | Local Compose database password; replace it for your deployment. |

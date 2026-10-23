@@ -147,6 +147,21 @@ func (s *Server) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 		report(w, err)
 		return
 	}
+	if s.cfg.AuthenticationDisabled() {
+		if s.defaultUserID == "" {
+			failure(w, http.StatusServiceUnavailable, "Implicit owner is unavailable")
+			return
+		}
+		owner, ownerErr := s.db.UserByID(r.Context(), s.defaultUserID)
+		if ownerErr != nil {
+			report(w, ownerErr)
+			return
+		}
+		if !strings.EqualFold(owner.Email, inspection.Email) {
+			failure(w, http.StatusConflict, "Open mode accepts invitations only for the implicit owner; enable required authentication for other accounts")
+			return
+		}
+	}
 	var user store.User
 	var org store.Organization
 	if inspection.ExistingAccount {
