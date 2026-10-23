@@ -464,6 +464,7 @@ For each item above: add a consumer-facing test at the owning boundary, verify t
 - [x] Measure application RSS under the documented repeatable workload. Concurrent official Go/Python/Node/Browser SDK traffic produced24.367 MiB maximum application VmRSS (25,550,848 bytes) with PostgreSQL excluded, well inside the256–512 MB target.
 - [x] Publish quickstart, upgrade/backup/restore procedure, SDK and endpoint matrices in README.md and linked guides.
 - [ ] Audit every specification requirement against current artifact/runtime evidence; only then complete the goal.
+  - [x] Reconcile the public README, compatibility guide, release guide and landing page with accepted native-debug and cold-span-archive evidence. Commit `3fb588b` passed exact-source CI `39914660976` (formatting, vet, PostgreSQL integration/race suite and image build), and Pages deployment `39914661053` succeeded. The complete requirement-by-requirement audit remains open.
 
 ## Evidence log
 
