@@ -103,8 +103,7 @@ func (s *Store) cleanupTransactions(ctx context.Context, days int, archive *Span
 		if err != nil {
 			return 0, 0, 0, err
 		}
-		expiredObjects, err = cleanupExpiredSpanArchives(ctx, tx, cutoff, *archive)
-		if err != nil {
+		if err := markExpiredSpanArchiveRows(ctx, tx, cutoff, *archive); err != nil {
 			return 0, 0, 0, err
 		}
 	}
@@ -117,6 +116,12 @@ func (s *Store) cleanupTransactions(ctx context.Context, days int, archive *Span
 	spans := archivedSpans + removed.RowsAffected()
 	if err := tx.Commit(ctx); err != nil {
 		return 0, 0, 0, err
+	}
+	if archive != nil {
+		expiredObjects, err = s.cleanupDeletingSpanArchives(ctx, *archive)
+		if err != nil {
+			return 0, 0, 0, err
+		}
 	}
 	return transactions, spans, expiredObjects, nil
 }

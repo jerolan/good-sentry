@@ -104,6 +104,17 @@ func TestSpanArchivePreservesReceiptLifetimeAndDeletedProjectCleanup(t *testing.
 		!bytes.Contains(decoded[0].Attributes, []byte(`"attempt"`)) {
 		t.Fatalf("decoded archive rows=%+v err=%v", decoded, err)
 	}
+	_, moved, removedObjects, err = db.CleanupTransactionsWithArchive(ctx, 12, SpanArchiveOptions{Backend: "local", AfterDays: 5, Objects: objects})
+	if err != nil || moved != 0 || removedObjects != 0 {
+		t.Fatalf("mixed-age expiry moved spans/objects=%d/%d err=%v", moved, removedObjects, err)
+	}
+	var partialRows, partialManifests int
+	if err := db.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM span_archive_rows),(SELECT count(*) FROM span_archive_objects)`).Scan(&partialRows, &partialManifests); err != nil {
+		t.Fatal(err)
+	}
+	if partialRows != 1 || partialManifests != 1 {
+		t.Fatalf("mixed-age catalog/manifests=%d/%d; want one live row in one object", partialRows, partialManifests)
+	}
 	if _, err := db.pool.Exec(ctx, `UPDATE span_archive_objects SET min_created_at=now()-interval '32 days',
 	 max_created_at=now()-interval '31 days'`); err != nil {
 		t.Fatal(err)
@@ -245,6 +256,77 @@ func TestIngestSpansPreservesAStillRetainedArchivedIdentity(t *testing.T) {
 	}
 }
 
+func TestSpanArchiveCleanupRecoversAfterObjectOrManifestDeleteFailure(t *testing.T) {
+	ctx, db, _, _, project := telemetryStore(t)
+	objects, err := spanarchive.NewLocalObjects(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	options := SpanArchiveOptions{Backend: "local", AfterDays: 5, Objects: objects}
+	if count, err := db.IngestSpans(ctx, project.ID, spanBatch(t, spanFixture("0000000000000031", true, 1_700_000_000, 1_700_000_001)), 1); err != nil || count != 1 {
+		t.Fatalf("insert span=%d err=%v", count, err)
+	}
+	if _, err := db.pool.Exec(ctx, "UPDATE spans SET created_at=now()-interval '10 days' WHERE span_id='0000000000000031'"); err != nil {
+		t.Fatal(err)
+	}
+	_, moved, _, err := db.CleanupTransactionsWithArchive(ctx, 30, options)
+	if err != nil || moved != 1 {
+		t.Fatalf("archive eligible span moved=%d err=%v", moved, err)
+	}
+	var key string
+	if err := db.pool.QueryRow(ctx, "SELECT object_key FROM span_archive_objects").Scan(&key); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE span_archive_objects SET min_created_at=now()-interval '32 days',
+	 max_created_at=now()-interval '31 days';
+	 UPDATE span_archive_rows SET created_at=now()-interval '31 days'`); err != nil {
+		t.Fatal(err)
+	}
+	failingDelete := failDeleteSpanArchive{Objects: objects}
+	if _, _, _, err := db.CleanupTransactionsWithArchive(ctx, 30, SpanArchiveOptions{Backend: "local", AfterDays: 5, Objects: failingDelete}); err == nil {
+		t.Fatal("cleanup acknowledged a failed external object delete")
+	}
+	var state string
+	if err := db.pool.QueryRow(ctx, "SELECT state FROM span_archive_objects WHERE object_key=$1", key).Scan(&state); err != nil || state != "deleting" {
+		t.Fatalf("external delete failure state=%q err=%v", state, err)
+	}
+	if _, err := objects.Get(ctx, key); err != nil {
+		t.Fatalf("failed external delete removed the object: %v", err)
+	}
+	if _, err := db.pool.Exec(ctx, `CREATE FUNCTION fail_span_archive_manifest_delete() RETURNS trigger LANGUAGE plpgsql AS $$
+	 BEGIN RAISE EXCEPTION 'synthetic manifest delete failure'; END $$`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `CREATE TRIGGER fail_span_archive_manifest_delete BEFORE DELETE ON span_archive_objects
+	 FOR EACH ROW EXECUTE FUNCTION fail_span_archive_manifest_delete()`); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, _, err := db.CleanupTransactionsWithArchive(ctx, 30, options); err == nil {
+		t.Fatal("cleanup acknowledged a failed manifest delete")
+	}
+	if _, err := objects.Get(ctx, key); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("object delete should precede the failed manifest commit: %v", err)
+	}
+	if err := db.pool.QueryRow(ctx, "SELECT state FROM span_archive_objects WHERE object_key=$1", key).Scan(&state); err != nil || state != "deleting" {
+		t.Fatalf("manifest failure lost the durable deleting state=%q err=%v", state, err)
+	}
+	if _, err := db.pool.Exec(ctx, `DROP TRIGGER fail_span_archive_manifest_delete ON span_archive_objects;
+	 DROP FUNCTION fail_span_archive_manifest_delete()`); err != nil {
+		t.Fatal(err)
+	}
+	_, _, removed, err := db.CleanupTransactionsWithArchive(ctx, 30, options)
+	if err != nil || removed != 1 {
+		t.Fatalf("retry cleanup removed=%d err=%v", removed, err)
+	}
+	var manifests, rows int
+	if err := db.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM span_archive_objects),(SELECT count(*) FROM span_archive_rows)`).Scan(&manifests, &rows); err != nil {
+		t.Fatal(err)
+	}
+	if manifests != 0 || rows != 0 {
+		t.Fatalf("retry left deleting rows manifests/catalog=%d/%d", manifests, rows)
+	}
+}
+
 func TestSpanArchiveSkipsLockedRowsCancelsAndSerializesMaintainers(t *testing.T) {
 	ctx, db, _, _, project := telemetryStore(t)
 	ids := []string{"0000000000000021", "0000000000000022"}
@@ -347,6 +429,14 @@ type failSpanArchivePut struct {
 
 func (failSpanArchivePut) Put(context.Context, string, []byte) error {
 	return errors.New("synthetic object upload failure")
+}
+
+type failDeleteSpanArchive struct {
+	spanarchive.Objects
+}
+
+func (failDeleteSpanArchive) Delete(context.Context, string) error {
+	return errors.New("synthetic object delete failure")
 }
 
 type blockingSpanArchivePut struct {
