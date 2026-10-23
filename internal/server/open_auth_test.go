@@ -63,6 +63,8 @@ func TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF(t *testing.T) {
 	if err := json.Unmarshal(request("GET", "/api/v1/setup", "", nil, 200), &setup); err != nil || setup.Required {
 		t.Fatalf("setup=%+v err=%v", setup, err)
 	}
+	request("POST", "/api/v1/setup", `{"email":"other@localhost","password":"long-open-password","name":"Other","organization":"Other"}`, nil, 409)
+	request("POST", "/api/v1/login", `{"email":"implicit@localhost","password":"resolution-http-password"}`, nil, 409)
 	var me struct {
 		User          store.User
 		Organizations []store.Organization

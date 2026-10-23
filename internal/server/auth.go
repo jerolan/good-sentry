@@ -137,6 +137,10 @@ func (s *Server) setup(w http.ResponseWriter, r *http.Request) {
 	s.startSession(w, r, u, 201)
 }
 func (s *Server) login(w http.ResponseWriter, r *http.Request) {
+	if s.cfg.AuthenticationDisabled() {
+		failure(w, http.StatusConflict, "Authentication is disabled; the implicit owner is active")
+		return
+	}
 	if !s.sameOrigin(r) {
 		failure(w, 403, "Invalid origin")
 		return
