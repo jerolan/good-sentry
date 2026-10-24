@@ -12,7 +12,7 @@ import (
 const (
 	maxDebugArchiveEntries = 256
 	maxDebugArchiveBytes   = 128 << 20
-	maxDebugArchiveDepth   = 2
+	maxDebugArchiveDepth   = 4
 	tarEndMarkerBytes      = 2 * 512
 )
 

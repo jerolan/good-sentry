@@ -1875,6 +1875,9 @@ func TestParseNestedDebugArchivesAndSymbolicate(t *testing.T) {
 	nestedTAR := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "test_app.sym", Data: symbol}})
 	nestedGzipTAR := gzipTestArchive(t, nestedTAR)
 	nestedZIP := buildTestZIP(t, []testTARFile{{Name: "test_app.sym", Data: symbol}})
+	layerTwo := buildTestZIP(t, []testTARFile{{Name: "layer-one.tar", Data: nestedTAR}})
+	layerThree := gzipTestArchive(t, buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "layer-two.zip", Data: layerTwo}}))
+	fourLayers := buildTestZIP(t, []testTARFile{{Name: "layer-three.tar.gz", Data: layerThree}})
 	cases := []struct {
 		name string
 		data []byte
@@ -1882,6 +1885,7 @@ func TestParseNestedDebugArchivesAndSymbolicate(t *testing.T) {
 		{name: "tar inside zip", data: buildTestZIP(t, []testTARFile{{Name: "nested.tar", Data: nestedTAR}})},
 		{name: "zip inside tar", data: buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "nested.zip", Data: nestedZIP}})},
 		{name: "gzip tar inside zip", data: buildTestZIP(t, []testTARFile{{Name: "nested.tar.gz", Data: nestedGzipTAR}})},
+		{name: "four mixed layers", data: fourLayers},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1907,14 +1911,12 @@ func TestParseNestedDebugArchivesAndSymbolicate(t *testing.T) {
 		})
 	}
 
-	deepest := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "test_app.sym", Data: symbol}})
-	deep := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "deeper.tar", Data: deepest}})
-	tooDeep := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{
+	tooDeep := buildTestZIP(t, []testTARFile{
 		{Name: "valid.sym", Data: symbol},
-		{Name: "deep.tar", Data: deep},
+		{Name: "layer-four.zip", Data: fourLayers},
 	})
 	if objects := ParseDebugObjects("too-deep.tar", tooDeep); len(objects) != 0 {
-		t.Fatalf("archive deeper than two layers returned partial symbols: %+v", objects)
+		t.Fatalf("archive deeper than four layers returned partial symbols: %+v", objects)
 	}
 	malformedNested := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{
 		{Name: "valid.sym", Data: symbol},
