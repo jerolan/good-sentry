@@ -97,14 +97,7 @@ func run() error {
 		"email":    env("COMPAT_EMAIL", "compat@example.test"),
 		"password": env("COMPAT_PASSWORD", "long test pw"),
 	}
-	var me meResponse
-	if setup.Required {
-		credentials["name"] = "SDK Compatibility"
-		credentials["organization"] = "SDK Compatibility"
-		err = client.json(ctx, http.MethodPost, "/api/v1/setup", credentials, http.StatusCreated, &me)
-	} else {
-		err = client.json(ctx, http.MethodPost, "/api/v1/login", credentials, http.StatusOK, &me)
-	}
+	me, err := client.resolveCurrentIdentity(ctx, setup.Required, credentials)
 	if err != nil {
 		return err
 	}
@@ -523,6 +516,30 @@ type apiStatusError struct {
 }
 
 func (e *apiStatusError) Error() string { return e.message }
+
+func (c *apiClient) resolveCurrentIdentity(ctx context.Context, setupRequired bool, credentials map[string]string) (meResponse, error) {
+	var me meResponse
+	if setupRequired {
+		credentials["name"] = "SDK Compatibility"
+		credentials["organization"] = "SDK Compatibility"
+		if err := c.json(ctx, http.MethodPost, "/api/v1/setup", credentials, http.StatusCreated, &me); err != nil {
+			return me, err
+		}
+		return me, nil
+	}
+	if err := c.json(ctx, http.MethodGet, "/api/v1/me", nil, http.StatusOK, &me); err == nil {
+		return me, nil
+	} else {
+		var status *apiStatusError
+		if !errors.As(err, &status) || status.status != http.StatusUnauthorized {
+			return me, err
+		}
+	}
+	if err := c.json(ctx, http.MethodPost, "/api/v1/login", credentials, http.StatusOK, &me); err != nil {
+		return me, err
+	}
+	return me, nil
+}
 
 func (c *apiClient) json(ctx context.Context, method, path string, input any, expected int, output any) error {
 	var body io.Reader
