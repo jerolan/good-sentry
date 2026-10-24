@@ -22,7 +22,13 @@ import (
 )
 
 func main() {
-	if err := run(); err != nil {
+	var err error
+	if len(os.Args) > 1 && os.Args[1] == "admin" {
+		err = runAdmin(os.Args[2:])
+	} else {
+		err = run()
+	}
+	if err != nil {
 		slog.Error("GoodSentry stopped", "error", err)
 		os.Exit(1)
 	}

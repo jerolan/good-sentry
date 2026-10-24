@@ -15,7 +15,11 @@ import (
 func createUserToken(t *testing.T, db *Store, userID, label string, mask int64, seed int) (UserAPIToken, string) {
 	t.Helper()
 	hash := fmt.Sprintf("%064x", seed)
-	token, err := db.CreateUserAPIToken(t.Context(), userID, label, mask, hash, []byte(fmt.Sprintf("sealed-%d", seed)))
+	user, err := db.UserByID(t.Context(), userID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := db.CreateUserAPIToken(t.Context(), userID, user.AuthGeneration, label, mask, hash, []byte(fmt.Sprintf("sealed-%d", seed)))
 	if err != nil {
 		t.Fatal(err)
 	}

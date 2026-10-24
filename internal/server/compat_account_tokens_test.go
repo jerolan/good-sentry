@@ -235,7 +235,8 @@ func TestCompatibleUserAPITokenBearerReads(t *testing.T) {
 	accountTokenHTTP(t, f, http.DefaultClient, "POST", "/api/0/projects/"+f.org.Slug+"/"+f.project.Slug+"/releases/", `{"version":"account-token@1.0"}`, http.Header{"Authorization": {"Bearer " + releaseWriter.Token}}, 201)
 
 	var secondUserID, secondOrgID string
-	if err := f.sql.QueryRow(f.ctx, `INSERT INTO users(email,name,password_hash) VALUES('foreign-account-token@example.test','Foreign account token',$1) RETURNING id::text`, []byte("hash")).Scan(&secondUserID); err != nil {
+	var secondGeneration int64
+	if err := f.sql.QueryRow(f.ctx, `INSERT INTO users(email,name,password_hash) VALUES('foreign-account-token@example.test','Foreign account token',$1) RETURNING id::text,auth_generation`, []byte("hash")).Scan(&secondUserID, &secondGeneration); err != nil {
 		t.Fatal(err)
 	}
 	if err := f.sql.QueryRow(f.ctx, `INSERT INTO organizations(slug,name) VALUES('foreign-account-token','Foreign account token') RETURNING id::text`).Scan(&secondOrgID); err != nil {
@@ -247,7 +248,7 @@ func TestCompatibleUserAPITokenBearerReads(t *testing.T) {
 	secret := strings.Repeat("b", 64)
 	hash := hmac.New(sha256.New, []byte(strings.Repeat("r", 64)))
 	hash.Write([]byte(secret))
-	if _, err := f.db.CreateUserAPIToken(f.ctx, secondUserID, "Foreign reader", store.UserTokenMask([]string{"org:read", "project:read"}), hex.EncodeToString(hash.Sum(nil)), []byte("sealed")); err != nil {
+	if _, err := f.db.CreateUserAPIToken(f.ctx, secondUserID, secondGeneration, "Foreign reader", store.UserTokenMask([]string{"org:read", "project:read"}), hex.EncodeToString(hash.Sum(nil)), []byte("sealed")); err != nil {
 		t.Fatal(err)
 	}
 	foreignHeaders := http.Header{"Authorization": {"Bearer " + secret}}

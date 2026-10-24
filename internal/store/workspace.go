@@ -9,11 +9,12 @@ import (
 )
 
 type User struct {
-	ID             string `json:"id"`
-	Email          string `json:"email"`
-	Name           string `json:"name"`
-	PasswordHash   []byte `json:"-"`
-	AuthGeneration int64  `json:"-"`
+	ID              string `json:"id"`
+	Email           string `json:"email"`
+	Name            string `json:"name"`
+	IsInstanceAdmin bool   `json:"-"`
+	PasswordHash    []byte `json:"-"`
+	AuthGeneration  int64  `json:"-"`
 }
 type Organization struct {
 	ID   string `json:"id"`
@@ -40,7 +41,7 @@ func (s *Store) SetupRequired(ctx context.Context) (bool, error) {
 func (s *Store) Bootstrap(ctx context.Context, email string, password []byte, name, organization string) (User, Organization, error) {
 	var u User
 	var o Organization
-	tx, err := s.pool.Begin(ctx)
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
 	if err != nil {
 		return u, o, err
 	}
@@ -55,7 +56,7 @@ func (s *Store) Bootstrap(ctx context.Context, email string, password []byte, na
 	if exists {
 		return u, o, ErrConflict
 	}
-	err = tx.QueryRow(ctx, "INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3) RETURNING id::text,email,name,auth_generation", email, password, name).Scan(&u.ID, &u.Email, &u.Name, &u.AuthGeneration)
+	err = tx.QueryRow(ctx, "INSERT INTO users(email,password_hash,name,is_instance_admin) VALUES($1,$2,$3,true) RETURNING id::text,email,name,auth_generation,is_instance_admin", email, password, name).Scan(&u.ID, &u.Email, &u.Name, &u.AuthGeneration, &u.IsInstanceAdmin)
 	if err != nil {
 		return u, o, dbError(err)
 	}
@@ -94,12 +95,19 @@ func (s *Store) EnsureDefaultOwner(ctx context.Context, email string, passwordHa
 	if _, err = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(73042190)"); err != nil {
 		return u, o, err
 	}
-	err = tx.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE lower(email)=lower($1)`, email).
-		Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
+	var noUsers bool
+	if err = tx.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM users)`).Scan(&noUsers); err != nil {
+		return u, o, err
+	}
+	var active bool
+	err = tx.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation,is_instance_admin,is_active FROM users WHERE lower(email)=lower($1) FOR SHARE`, email).
+		Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration, &u.IsInstanceAdmin, &active)
 	if errors.Is(err, pgx.ErrNoRows) {
-		err = tx.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3)
-			RETURNING id::text,email,name,password_hash,auth_generation`, email, passwordHash, name).
-			Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
+		err = tx.QueryRow(ctx, `INSERT INTO users(email,password_hash,name,is_instance_admin) VALUES($1,$2,$3,$4)
+			RETURNING id::text,email,name,password_hash,auth_generation,is_instance_admin,is_active`, email, passwordHash, name, noUsers).
+			Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration, &u.IsInstanceAdmin, &active)
+	} else if err == nil && !active {
+		err = ErrForbidden
 	}
 	if err != nil {
 		return u, o, dbError(err)
@@ -134,16 +142,16 @@ func (s *Store) EnsureDefaultOwner(ctx context.Context, email string, passwordHa
 
 func (s *Store) UserByEmail(ctx context.Context, email string) (User, error) {
 	var u User
-	err := s.pool.QueryRow(ctx, `SELECT u.id::text,u.email,u.name,u.password_hash,u.auth_generation FROM users u
-		WHERE lower(u.email)=lower($1) OR EXISTS(SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower($1))
-		ORDER BY (lower(u.email)=lower($1)) DESC LIMIT 1`, email).Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
+	err := s.pool.QueryRow(ctx, `SELECT u.id::text,u.email,u.name,u.password_hash,u.auth_generation,u.is_instance_admin FROM users u
+		WHERE (lower(u.email)=lower($1) OR EXISTS(SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower($1)))
+		AND u.is_active ORDER BY (lower(u.email)=lower($1)) DESC LIMIT 1`, email).Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration, &u.IsInstanceAdmin)
 	return u, dbError(err)
 }
 
 func (s *Store) UserByID(ctx context.Context, userID string) (User, error) {
 	var u User
-	err := s.pool.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE id=$1::bigint`, userID).
-		Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration)
+	err := s.pool.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation,is_instance_admin FROM users WHERE id=$1::bigint AND is_active`, userID).
+		Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.AuthGeneration, &u.IsInstanceAdmin)
 	return u, dbError(err)
 }
 
@@ -173,7 +181,7 @@ func (s *Store) Organization(ctx context.Context, userID, slug string) (Organiza
 func (s *Store) Session(ctx context.Context, tokenHash string) (User, string, error) {
 	var u User
 	var csrf string
-	err := s.pool.QueryRow(ctx, "SELECT u.id::text,u.email,u.name,u.auth_generation,s.csrf_token FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now()", tokenHash).Scan(&u.ID, &u.Email, &u.Name, &u.AuthGeneration, &csrf)
+	err := s.pool.QueryRow(ctx, "SELECT u.id::text,u.email,u.name,u.auth_generation,u.is_instance_admin,s.csrf_token FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now() AND u.is_active", tokenHash).Scan(&u.ID, &u.Email, &u.Name, &u.AuthGeneration, &u.IsInstanceAdmin, &csrf)
 	return u, csrf, dbError(err)
 }
 func (s *Store) RevokeSession(ctx context.Context, tokenHash string) error {

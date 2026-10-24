@@ -2,6 +2,7 @@
 /.tools/
 /.tmp/
 /uploads/
+**/.goodsentry-secret
 /test-results/
 /node_modules/
 /.env

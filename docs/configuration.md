@@ -33,7 +33,7 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `GOODSENTRY_ENABLE_LOGS` | `true` | Enable SDK log ingestion and its UI. |
 | `GOODSENTRY_ENABLE_MCP` | `false` | Enable `/mcp`, OAuth discovery and consent for MCP clients. |
 | `ENABLE_OPENAPI` | `false` | Serve the generated OpenAPI document at `/api/openapi.json` and its endpoint matrix at `/api/docs/`. |
-| `ENABLE_ADMIN` | `false` | Enable the read-only Administration view and `/api/v1/admin/overview` for organization owners and admins. |
+| `ENABLE_ADMIN` | `false` | Enable the Administration view for organization owners/admins and global user management for instance administrators. |
 | `GOODSENTRY_ENABLE_ORGANIZATION_CREATION` | `false` | Allow owners/admins to create additional organizations through the compatible API. `ENABLE_ORGANIZATION_CREATION` is accepted as a GlitchTip-compatible alias. |
 | `GOODSENTRY_OIDC_ISSUER` | Empty | Optional OpenID Connect issuer URL. HTTPS is required except on loopback. |
 | `GOODSENTRY_OIDC_CLIENT_ID` | Empty | OIDC client identifier; required with an issuer. |
@@ -82,13 +82,15 @@ Keep archival enabled and retain the same backend while its manifests exist. Sta
 
 Set `ENABLE_OPENAPI=true` to publish the API reference. `/api/openapi.json` is generated at process startup from the routes that build actually registered, and `/api/docs/` presents the same data as a browsable method/path matrix. Routes for optional features appear only when those features are enabled. The document uses the configured `GOODSENTRY_DOMAIN` as its server URL and describes each route family's authentication boundary without exposing credentials.
 
-Set `ENABLE_ADMIN=true` to add **Administration** to the sidebar. Owners and admins see non-secret operational totals for the organizations they manage, enabled capabilities and effective retention. The server rechecks the current role on every request, so a demoted account loses access immediately. This is GoodSentry's own read-only operations view, not Django admin.
+Set `ENABLE_ADMIN=true` to add **Administration** to the sidebar. Organization owners and admins see non-secret operational totals for the organizations they manage. Instance administrators also get a bounded, searchable account list and can suspend/reactivate accounts or grant/revoke instance-admin access. Organization roles do not grant instance-wide access. A first owner created on an empty database is an instance administrator; on existing installations, grant one active account with `docker compose run --rm goodsentry admin grant --email admin@example.com`. The command does not create or reactivate accounts and is safe to repeat. Account management rechecks authority on each request and requires same-origin plus CSRF for changes.
 
 ### Authentication mode
 
 `GOODSENTRY_AUTH=disabled` is the frictionless default. When `SECRET_KEY` is absent, the first startup writes 32 cryptographically random bytes as lowercase hex to `UPLOAD_DIR/.goodsentry-secret` with `0600` permissions. The key remains stable while the uploads volume is preserved. On startup GoodSentry creates or repairs the configured implicit owner, owner membership, default organization and default team using an advisory-lock transaction. Every session-authenticated request resolves to that owner without a cookie; restarting does not create duplicates or replace the existing password. `/api/v1/setup` reports `required:false`, while `/api/v1/me` returns the implicit owner and a stable CSRF token. All mutations still require same-origin and that CSRF token.
 
-This mode is a single-user administrative mode for local use or a trusted private network. Before exposing the service, set `GOODSENTRY_AUTH=required` and provide a persistent `SECRET_KEY` of at least 32 characters. Required mode will fail startup without it and restores the existing first-owner setup, login, sessions, invitations, OIDC and per-user flows. Replicated app instances must share the same configured key.
+This mode is a single-user administrative mode for local use or a trusted private network. Before exposing the service, set `GOODSENTRY_AUTH=required` and provide a persistent `SECRET_KEY` of at least 32 characters. Required mode will fail startup without it and restores the existing first-owner setup, login, sessions, invitations, OIDC and per-user flows. Replicated app instances must share the same configured key. If an instance administrator suspends the configured implicit owner while in required mode, switching back to open mode fails startup; sign in as another active instance administrator in required mode and reactivate that account first.
+
+After migration064, older application binaries do not enforce account suspension. Stop pre-064 application processes before upgrading, and do not roll back to an older image after suspending an account. Existing databases are not automatically given an instance administrator; run the CLI grant after upgrading and before using account management.
 
 ### OpenID Connect
 

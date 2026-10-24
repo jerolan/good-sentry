@@ -43,6 +43,26 @@ func TestOIDCIdentityLinksAndCreatesAccounts(t *testing.T) {
 	if err != nil || created.ID == "" || created.Email != "new@example.test" || created.Name != "New Person" || created.AuthGeneration != 1 {
 		t.Fatalf("auto-create: %+v %v", created, err)
 	}
+	var inactiveID string
+	if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES('inactive-primary@example.test',$1,'Inactive') RETURNING id::text`, []byte("inactive-hash")).Scan(&inactiveID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `INSERT INTO user_emails(user_id,email,is_verified) VALUES($1::bigint,'inactive-secondary@example.test',true)`, inactiveID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE users SET is_active=false WHERE id=$1::bigint`, inactiveID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.LoginOIDC(ctx, OIDCIdentity{
+		Provider: "https://id.example.test", Subject: "inactive-secondary", Email: "inactive-secondary@example.test",
+		Name: "Duplicate account", Password: []byte("oidc-only-sentinel"), AutoCreate: true,
+	}); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("auto-create reused a suspended verified secondary email: %v", err)
+	}
+	var duplicatePrimary int
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM users WHERE lower(email)=lower('inactive-secondary@example.test')`).Scan(&duplicatePrimary); err != nil || duplicatePrimary != 0 {
+		t.Fatalf("OIDC created a duplicate of a suspended secondary account: count=%d err=%v", duplicatePrimary, err)
+	}
 	reopened, err := Open(ctx, db.pool.Config().ConnString())
 	if err != nil {
 		t.Fatal(err)

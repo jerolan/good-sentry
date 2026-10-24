@@ -334,12 +334,22 @@ func (s *Store) AcceptInvitation(ctx context.Context, tokenHash, existingUserID 
 		return user, org, err
 	}
 	defer tx.Rollback(ctx)
+	if existingUserID == "" {
+		if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(73042190)`); err != nil {
+			return user, org, err
+		}
+	}
 	var invitationID, orgID, email, role string
 	if err = tx.QueryRow(ctx, "SELECT id,organization_id::text,email,role FROM organization_invitations WHERE token_hash=$1", tokenHash).Scan(&invitationID, &orgID, &email, &role); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return user, org, ErrInvalidInvitation
 		}
 		return user, org, err
+	}
+	if existingUserID != "" {
+		if err = pinUserGeneration(ctx, tx, existingUserID, authGeneration); err != nil {
+			return user, org, ErrInvalidInvitation
+		}
 	}
 	if err = tx.QueryRow(ctx, "SELECT id::text,slug,name FROM organizations WHERE id=$1::bigint FOR UPDATE", orgID).Scan(&org.ID, &org.Slug, &org.Name); err != nil {
 		return user, org, ErrInvalidInvitation
@@ -358,10 +368,7 @@ func (s *Store) AcceptInvitation(ctx context.Context, tokenHash, existingUserID 
 		return user, org, ErrInvalidInvitation
 	}
 	if existingUserID != "" {
-		if err = pinUserGeneration(ctx, tx, existingUserID, authGeneration); err != nil {
-			return user, org, ErrInvalidInvitation
-		}
-		if err = tx.QueryRow(ctx, "SELECT id::text,email,name,auth_generation FROM users WHERE id=$1::bigint", existingUserID).Scan(&user.ID, &user.Email, &user.Name, &user.AuthGeneration); err != nil {
+		if err = tx.QueryRow(ctx, "SELECT id::text,email,name,auth_generation,is_instance_admin FROM users WHERE id=$1::bigint AND is_active", existingUserID).Scan(&user.ID, &user.Email, &user.Name, &user.AuthGeneration, &user.IsInstanceAdmin); err != nil {
 			return user, org, ErrInvalidInvitation
 		}
 		if !strings.EqualFold(user.Email, email) {
@@ -375,7 +382,19 @@ func (s *Store) AcceptInvitation(ctx context.Context, tokenHash, existingUserID 
 			}
 		}
 	} else {
-		if err = tx.QueryRow(ctx, "INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3) RETURNING id::text,email,name,auth_generation", email, passwordHash, newName).Scan(&user.ID, &user.Email, &user.Name, &user.AuthGeneration); err != nil {
+		var matchingAccount string
+		// User deletion locks the account before its organizations; this transaction
+		// already holds the organization, so duplicate detection must remain a read.
+		err = tx.QueryRow(ctx, `SELECT u.id::text FROM users u
+			WHERE lower(u.email)=lower($1) OR EXISTS(SELECT 1 FROM user_emails ue WHERE ue.user_id=u.id AND ue.is_verified AND lower(ue.email)=lower($1))
+			ORDER BY (lower(u.email)=lower($1)) DESC LIMIT 1`, email).Scan(&matchingAccount)
+		if err == nil {
+			return user, org, ErrInvalidInvitation
+		}
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return user, org, err
+		}
+		if err = tx.QueryRow(ctx, "INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3) RETURNING id::text,email,name,auth_generation,is_instance_admin", email, passwordHash, newName).Scan(&user.ID, &user.Email, &user.Name, &user.AuthGeneration, &user.IsInstanceAdmin); err != nil {
 			return user, org, dbError(err)
 		}
 	}

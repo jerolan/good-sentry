@@ -207,11 +207,23 @@ func (s *Store) ExchangeOAuthCode(ctx context.Context, input OAuthExchangeInput)
 
 func (s *Store) RotateOAuthRefresh(ctx context.Context, input OAuthRotationInput) (OAuthIssued, error) {
 	var issued OAuthIssued
-	tx, err := s.pool.Begin(ctx)
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
 	if err != nil {
 		return issued, err
 	}
 	defer tx.Rollback(ctx)
+	var observedAccessID, observedUserID, observedGeneration string
+	if err = tx.QueryRow(ctx, `SELECT access_token_id::text,user_id::text,auth_generation::text FROM oauth_refresh_tokens WHERE secret_hash=$1 AND client_id=$2`, input.RefreshSecretHash, input.ClientID).
+		Scan(&observedAccessID, &observedUserID, &observedGeneration); err != nil {
+		return issued, ErrOAuthGrant
+	}
+	if err = pinUserGeneration(ctx, tx, observedUserID, parseInt64(observedGeneration)); err != nil {
+		return issued, ErrOAuthGrant
+	}
+	var accessRevoked *time.Time
+	if err = tx.QueryRow(ctx, `SELECT revoked_at FROM api_tokens WHERE id=$1::bigint AND user_id=$2::bigint FOR UPDATE`, observedAccessID, observedUserID).Scan(&accessRevoked); err != nil || accessRevoked != nil {
+		return issued, ErrOAuthGrant
+	}
 	var accessID, userID, orgID, authGeneration, clientName string
 	var projectIDs []int64
 	var allProjects bool
@@ -223,6 +235,9 @@ func (s *Store) RotateOAuthRefresh(ctx context.Context, input OAuthRotationInput
  WHERE r.secret_hash=$1 AND r.client_id=$2 FOR UPDATE OF r`, input.RefreshSecretHash, input.ClientID).
 		Scan(&accessID, &userID, &orgID, &authGeneration, &projectIDs, &allProjects, &scopes, &expires, &revoked, &clientName)
 	if err != nil || revoked != nil {
+		return issued, ErrOAuthGrant
+	}
+	if accessID != observedAccessID || userID != observedUserID || authGeneration != observedGeneration {
 		return issued, ErrOAuthGrant
 	}
 	var now time.Time
@@ -262,24 +277,37 @@ func (s *Store) RotateOAuthRefresh(ctx context.Context, input OAuthRotationInput
 }
 
 func (s *Store) RevokeOAuthArtifact(ctx context.Context, clientID, secretHash string) error {
-	tx, err := s.pool.Begin(ctx)
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
+	var userID, accessID string
+	err = tx.QueryRow(ctx, `SELECT r.user_id::text,r.access_token_id::text FROM oauth_refresh_tokens r
+		JOIN api_tokens t ON t.id=r.access_token_id
+		WHERE r.client_id=$2 AND (r.secret_hash=$1 OR t.secret_hash=$1) LIMIT 1`, secretHash, clientID).Scan(&userID, &accessID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return tx.Commit(ctx)
+	}
+	if err != nil {
+		return err
+	}
+	var lockedUser string
+	if err = tx.QueryRow(ctx, `SELECT id::text FROM users WHERE id=$1::bigint FOR UPDATE`, userID).Scan(&lockedUser); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return tx.Commit(ctx)
+		}
+		return err
+	}
 	var now time.Time
 	if err := tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(ctx, `WITH target AS (
- UPDATE api_tokens t SET revoked_at=COALESCE(t.revoked_at,$3) WHERE t.secret_hash=$1
- AND EXISTS(SELECT 1 FROM oauth_refresh_tokens r WHERE r.access_token_id=t.id AND r.client_id=$2) RETURNING t.id
-) UPDATE oauth_refresh_tokens r SET revoked_at=COALESCE(r.revoked_at,$3) WHERE r.access_token_id IN(SELECT id FROM target)`, secretHash, clientID, now); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE api_tokens SET revoked_at=COALESCE(revoked_at,$2) WHERE id=$1::bigint`, accessID, now); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(ctx, `WITH target AS (
- UPDATE oauth_refresh_tokens SET revoked_at=COALESCE(revoked_at,$2) WHERE secret_hash=$1 AND client_id=$3 RETURNING access_token_id
-) UPDATE api_tokens SET revoked_at=COALESCE(revoked_at,$2) WHERE id IN(SELECT access_token_id FROM target)`, secretHash, now, clientID); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE oauth_refresh_tokens SET revoked_at=COALESCE(revoked_at,$3)
+		WHERE access_token_id=$1::bigint AND client_id=$2`, accessID, clientID, now); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)

@@ -39,10 +39,22 @@ func scanUserAPIToken(row interface{ Scan(...any) error }) (UserAPIToken, error)
 }
 
 // CreateUserAPIToken stores one account credential for its owner.
-func (s *Store) CreateUserAPIToken(ctx context.Context, userID, label string, mask int64, secretHash string, sealed []byte) (UserAPIToken, error) {
-	return scanUserAPIToken(s.pool.QueryRow(ctx, `INSERT INTO user_api_tokens(user_id,label,scopes_mask,secret_hash,secret)
+func (s *Store) CreateUserAPIToken(ctx context.Context, userID string, authGeneration int64, label string, mask int64, secretHash string, sealed []byte) (UserAPIToken, error) {
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return UserAPIToken{}, err
+	}
+	defer tx.Rollback(ctx)
+	if err = pinUserGeneration(ctx, tx, userID, authGeneration); err != nil {
+		return UserAPIToken{}, err
+	}
+	created, err := scanUserAPIToken(tx.QueryRow(ctx, `INSERT INTO user_api_tokens(user_id,label,scopes_mask,secret_hash,secret)
 		VALUES($1::bigint,$2,$3,$4,$5) RETURNING `+userAPITokenColumns,
 		userID, label, mask, secretHash, sealed))
+	if err != nil {
+		return UserAPIToken{}, err
+	}
+	return created, tx.Commit(ctx)
 }
 
 // UserAPITokens lists one owner's credentials newest first. A limit of zero
@@ -110,7 +122,7 @@ func (s *Store) AuthenticateUserAPIToken(ctx context.Context, secretHash string)
 	var grant APITokenGrant
 	err := s.pool.QueryRow(ctx, `SELECT u.id::text,u.email,u.name,u.auth_generation,t.scopes_mask
 		FROM user_api_tokens t JOIN users u ON u.id=t.user_id
-		WHERE t.secret_hash=$1`, secretHash).
+		WHERE t.secret_hash=$1 AND u.is_active`, secretHash).
 		Scan(&grant.User.ID, &grant.User.Email, &grant.User.Name, &grant.User.AuthGeneration, &grant.ScopesMask)
 	if err != nil {
 		return grant, dbError(err)

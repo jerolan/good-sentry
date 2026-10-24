@@ -199,7 +199,7 @@ func (s *Store) AuthenticateAPIToken(ctx context.Context, secretHash string) (AP
 		WHERE tp.token_id=t.id AND p.organization_id=t.organization_id ORDER BY p.id)
 		FROM api_tokens t JOIN users u ON u.id=t.user_id
 		JOIN memberships m ON m.organization_id=t.organization_id AND m.user_id=t.user_id
-		WHERE t.secret_hash=$1 AND t.revoked_at IS NULL AND t.expires_at>now()`, secretHash).
+		WHERE t.secret_hash=$1 AND t.revoked_at IS NULL AND t.expires_at>now() AND u.is_active`, secretHash).
 		Scan(&grant.User.ID, &grant.User.Email, &grant.User.Name, &grant.User.AuthGeneration, &grant.OrganizationID, &grant.AllProjects, &grant.Scopes, &grant.ProjectIDs)
 	return grant, dbError(err)
 }

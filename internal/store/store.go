@@ -28,6 +28,7 @@ var (
 	ErrInvalidResetToken  = errors.New("invalid password reset token")
 	ErrInvalidInvitation  = errors.New("invalid organization invitation")
 	ErrLastOwner          = errors.New("last owner")
+	ErrLastInstanceAdmin  = errors.New("last active instance administrator")
 	ErrInvalidStatusPage  = errors.New("invalid status page")
 )
 

@@ -302,8 +302,8 @@ func (s *Store) completeChallenge(ctx context.Context, tokenHash, userID string,
 		return User{}, err
 	}
 	var user User
-	if err = tx.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation FROM users WHERE id=$1::bigint`, userID).
-		Scan(&user.ID, &user.Email, &user.Name, &user.PasswordHash, &user.AuthGeneration); err != nil {
+	if err = tx.QueryRow(ctx, `SELECT id::text,email,name,password_hash,auth_generation,is_instance_admin FROM users WHERE id=$1::bigint AND is_active`, userID).
+		Scan(&user.ID, &user.Email, &user.Name, &user.PasswordHash, &user.AuthGeneration, &user.IsInstanceAdmin); err != nil {
 		return User{}, dbError(err)
 	}
 	// A credential change between the challenge and its completion invalidates

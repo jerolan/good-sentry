@@ -30,8 +30,11 @@ func TestCompatibleUserDeletionRetainsOrganizationOwnerAndCascadesAccount(t *tes
 	}
 
 	second := triageMember(t, ctx, db, org, "user-delete-second-owner", "owner")
-	if err := db.DeleteCompatibleUser(ctx, owner.ID); err != nil {
-		t.Fatal(err)
+	if err := db.DeleteCompatibleUser(ctx, owner.ID); !errors.Is(err, ErrLastInstanceAdmin) {
+		t.Fatalf("delete last instance administrator error=%v", err)
+	}
+	if _, err := db.UserByID(ctx, owner.ID); err != nil {
+		t.Fatalf("last administrator deletion removed the account: %v", err)
 	}
 	if err := db.DeleteCompatibleUser(ctx, foreign.ID); err != nil {
 		t.Fatal(err)
@@ -75,7 +78,7 @@ func TestConcurrentCompatibleUserDeletionRetainsOneOrganizationOwner(t *testing.
 		switch {
 		case result.err == nil:
 			success++
-		case errors.Is(result.err, ErrLastOwner):
+		case errors.Is(result.err, ErrLastOwner), errors.Is(result.err, ErrLastInstanceAdmin):
 			retained++
 		default:
 			t.Fatalf("delete user %s: %v", result.user, result.err)

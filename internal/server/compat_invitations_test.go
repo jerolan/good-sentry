@@ -112,11 +112,12 @@ func TestCompatibleInvitationHTTPBearerAndSecondaryEmail(t *testing.T) {
 	f := newResolutionHTTPFixture(t)
 	item, token := createSentInvitation(t, f, "bearer-invite@example.test", "admin")
 	var userID string
-	if err := f.sql.QueryRow(f.ctx, `INSERT INTO users(email,password_hash,name) VALUES('bearer-invite@example.test',$1,'Bearer invitee') RETURNING id::text`, f.hash).Scan(&userID); err != nil {
+	var generation int64
+	if err := f.sql.QueryRow(f.ctx, `INSERT INTO users(email,password_hash,name) VALUES('bearer-invite@example.test',$1,'Bearer invitee') RETURNING id::text,auth_generation`, f.hash).Scan(&userID, &generation); err != nil {
 		t.Fatal(err)
 	}
 	secret := strings.Repeat("b", 64)
-	if _, err := f.db.CreateUserAPIToken(f.ctx, userID, "Invite bearer", store.UserTokenMask([]string{"org:read"}), compatibleInvitationHash(secret), []byte("sealed")); err != nil {
+	if _, err := f.db.CreateUserAPIToken(f.ctx, userID, generation, "Invite bearer", store.UserTokenMask([]string{"org:read"}), compatibleInvitationHash(secret), []byte("sealed")); err != nil {
 		t.Fatal(err)
 	}
 	var accepted compatibleInvitationWire

@@ -94,6 +94,28 @@ func TestCompatibleInvitationAcceptsExistingAndVerifiedSecondaryAccounts(t *test
 	}
 }
 
+func TestInvitationSignupCannotDuplicateSuspendedVerifiedSecondaryAccount(t *testing.T) {
+	ctx, db, owner, org, _ := telemetryStore(t)
+	var inactiveID string
+	if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES('inactive-invite-primary@example.test',$1,'Inactive') RETURNING id::text`, []byte("hash")).Scan(&inactiveID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `INSERT INTO user_emails(user_id,email,is_verified) VALUES($1::bigint,'inactive-invite-secondary@example.test',true)`, inactiveID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE users SET is_active=false WHERE id=$1::bigint`, inactiveID); err != nil {
+		t.Fatal(err)
+	}
+	_, hash := sentInvitation(t, ctx, db, owner.ID, org.Slug, "inactive-invite-secondary@example.test", "member", 4203)
+	if _, _, err := db.AcceptInvitation(ctx, hash, "", 0, "Duplicate", []byte("new-password-hash")); !errors.Is(err, ErrInvalidInvitation) {
+		t.Fatalf("suspended secondary invitation signup error=%v", err)
+	}
+	var duplicatePrimary int
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM users WHERE lower(email)=lower('inactive-invite-secondary@example.test')`).Scan(&duplicatePrimary); err != nil || duplicatePrimary != 0 {
+		t.Fatalf("invitation created a duplicate of a suspended secondary account: count=%d err=%v", duplicatePrimary, err)
+	}
+}
+
 func TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance(t *testing.T) {
 	ctx, db, owner, org, _ := telemetryStore(t)
 	admin := triageMember(t, ctx, db, org, "Invitation admin", "admin")

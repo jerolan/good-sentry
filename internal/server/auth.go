@@ -198,7 +198,7 @@ func (s *Server) sendMe(w http.ResponseWriter, r *http.Request, i identity, stat
 		report(w, err)
 		return
 	}
-	writeJSON(w, status, map[string]any{"user": i.User, "organizations": orgs, "csrfToken": i.CSRF, "features": map[string]bool{"logs": s.cfg.Logs, "uptime": s.cfg.Uptime, "alerts": true, "alertDelivery": s.cfg.AlertDelivery, "mcp": s.cfg.MCP, "openapi": s.cfg.OpenAPI, "admin": s.cfg.Admin, "oidc": s.oidc != nil, "passwordRecovery": s.mail != nil && s.account != nil, "authRequired": !s.cfg.AuthenticationDisabled()}})
+	writeJSON(w, status, map[string]any{"user": map[string]any{"id": i.User.ID, "email": i.User.Email, "name": i.User.Name, "isInstanceAdmin": i.User.IsInstanceAdmin}, "organizations": orgs, "csrfToken": i.CSRF, "features": map[string]bool{"logs": s.cfg.Logs, "uptime": s.cfg.Uptime, "alerts": true, "alertDelivery": s.cfg.AlertDelivery, "mcp": s.cfg.MCP, "openapi": s.cfg.OpenAPI, "admin": s.cfg.Admin, "oidc": s.oidc != nil, "passwordRecovery": s.mail != nil && s.account != nil, "authRequired": !s.cfg.AuthenticationDisabled()}})
 }
 func (s *Server) me(w http.ResponseWriter, r *http.Request) { s.sendMe(w, r, current(r), 200) }
 func (s *Server) logout(w http.ResponseWriter, r *http.Request) {

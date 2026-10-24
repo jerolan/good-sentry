@@ -16,14 +16,15 @@ func pinUserGeneration(ctx context.Context, tx pgx.Tx, userID string, expected i
 		return ErrCredentialsChanged
 	}
 	var current int64
-	err := tx.QueryRow(ctx, `SELECT auth_generation FROM users WHERE id=$1::bigint FOR SHARE`, userID).Scan(&current)
+	var active bool
+	err := tx.QueryRow(ctx, `SELECT auth_generation,is_active FROM users WHERE id=$1::bigint FOR SHARE`, userID).Scan(&current, &active)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ErrCredentialsChanged
 	}
 	if err != nil {
 		return err
 	}
-	if current != expected {
+	if current != expected || !active {
 		return ErrCredentialsChanged
 	}
 	return nil
@@ -34,14 +35,15 @@ func lockUserGeneration(ctx context.Context, tx pgx.Tx, userID string, expected 
 		return ErrCredentialsChanged
 	}
 	var current int64
-	err := tx.QueryRow(ctx, `SELECT auth_generation FROM users WHERE id=$1::bigint FOR UPDATE`, userID).Scan(&current)
+	var active bool
+	err := tx.QueryRow(ctx, `SELECT auth_generation,is_active FROM users WHERE id=$1::bigint FOR UPDATE`, userID).Scan(&current, &active)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ErrCredentialsChanged
 	}
 	if err != nil {
 		return err
 	}
-	if current != expected {
+	if current != expected || !active {
 		return ErrCredentialsChanged
 	}
 	return nil

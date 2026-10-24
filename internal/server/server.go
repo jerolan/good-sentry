@@ -312,6 +312,8 @@ func report(w http.ResponseWriter, err error) {
 		failure(w, 403, "Permission denied")
 	case errors.Is(err, store.ErrLastOwner):
 		failure(w, 409, "An organization must retain at least one owner")
+	case errors.Is(err, store.ErrLastInstanceAdmin):
+		failure(w, 409, "An instance must retain at least one active administrator")
 	case errors.Is(err, store.ErrCredentialsChanged):
 		failure(w, 401, "Session expired")
 	default:

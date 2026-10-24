@@ -391,7 +391,7 @@ func (s *Server) createUserAPIToken(w http.ResponseWriter, r *http.Request) {
 		failure(w, 503, "Cannot create a credential; retry shortly")
 		return
 	}
-	created, err := s.db.CreateUserAPIToken(r.Context(), user.ID, input.label, input.mask&0xFFFF, s.hash(secret), sealed)
+	created, err := s.db.CreateUserAPIToken(r.Context(), user.ID, user.AuthGeneration, input.label, input.mask&0xFFFF, s.hash(secret), sealed)
 	if err != nil {
 		report(w, err)
 		return

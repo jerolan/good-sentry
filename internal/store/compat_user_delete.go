@@ -18,9 +18,13 @@ func (s *Store) DeleteCompatibleUser(ctx context.Context, userID string) error {
 		return err
 	}
 	defer tx.Rollback(ctx)
+	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(73042191)`); err != nil {
+		return err
+	}
 
 	var lockedUser string
-	if err = tx.QueryRow(ctx, `SELECT id::text FROM users WHERE id=$1::bigint FOR UPDATE`, userID).Scan(&lockedUser); err != nil {
+	var activeAdmin bool
+	if err = tx.QueryRow(ctx, `SELECT id::text,is_active AND is_instance_admin FROM users WHERE id=$1::bigint FOR UPDATE`, userID).Scan(&lockedUser, &activeAdmin); err != nil {
 		return dbError(err)
 	}
 	rows, err := tx.Query(ctx, `SELECT organization_id::text FROM memberships WHERE user_id=$1::bigint ORDER BY organization_id`, userID)
@@ -63,6 +67,15 @@ func (s *Store) DeleteCompatibleUser(ctx context.Context, userID string) error {
 	}
 	if lastOwner {
 		return ErrLastOwner
+	}
+	if activeAdmin {
+		var activeAdmins int64
+		if err = tx.QueryRow(ctx, `SELECT count(*) FROM users WHERE is_active AND is_instance_admin`).Scan(&activeAdmins); err != nil {
+			return err
+		}
+		if activeAdmins <= 1 {
+			return ErrLastInstanceAdmin
+		}
 	}
 	if _, err = tx.Exec(ctx, `DELETE FROM users WHERE id=$1::bigint`, userID); err != nil {
 		return err

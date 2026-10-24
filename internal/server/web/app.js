@@ -541,7 +541,7 @@
         .filter(section => section !== 'api-tokens' || ['owner', 'admin'].includes(org?.role))
         .filter(section => section !== 'people' || ['owner', 'manager', 'admin'].includes(org?.role))
         .filter(section => section !== 'organization' || ['owner', 'manager', 'admin'].includes(org?.role))
-        .filter(section => section !== 'admin' || (state.me.features?.admin === true && ['owner', 'admin'].includes(org?.role)))
+        .filter(section => section !== 'admin' || (state.me.features?.admin === true && (state.me.user?.isInstanceAdmin === true || ['owner', 'admin'].includes(org?.role))))
         .map(section =>
         routeLink([navigationIcon(section), viewNames[section]],
           { ...traceReset, view: section, issue: null, monitor: null, alertProject: null, rule: null, delivery: null, sampleSource: null, sample: null, spanGroupsSource: null, spanGroups: null, traceMatch: null, version: null, commitPage: null, deployPage: null, sourceMaps: null, page: null, changes: null, query: null, status: null, sort: null, environment: null, release: null, level: null, trace: null, service: null, window: null, start: null, end: null,
@@ -614,6 +614,34 @@
       if (focus) main.querySelector('h1')?.focus();
       return;
     }
+    if (view === 'admin') {
+      if (state.me.features?.admin !== true) {
+        main.append(pageHeader(viewNames[view], 'Administration is disabled on this server.'));
+        return;
+      }
+      loading(main, 'Loading administration…');
+      try {
+        let overview = null;
+        try {
+          overview = await request('/api/v1/admin/overview');
+        } catch (error) {
+          if (error.status !== 403 || state.me.user?.isInstanceAdmin !== true) throw error;
+        }
+        if (version !== state.requestVersion) return;
+        let users = null;
+        if (state.me.user?.isInstanceAdmin === true) {
+          const query = new URLSearchParams({ page: String(Math.max(1, parseInt(params.get('page'), 10) || 1)), perPage: '25' });
+          if (params.get('query')) query.set('query', params.get('query'));
+          users = await request(`/api/v1/admin/users?${query}`);
+          if (version !== state.requestVersion) return;
+        }
+        renderAdmin(main, overview, users, params);
+      } catch (error) {
+        if (version === state.requestVersion) errorState(main, error, () => loadRoute(focus));
+      }
+      if (focus) main.querySelector('h1')?.focus();
+      return;
+    }
     if (!state.organization) {
       main.append(node('div', { class: 'card panel no-org' }, empty('No organization access', 'Your account does not belong to an organization. Contact your workspace owner to request access.')));
       return;
@@ -671,10 +699,6 @@
         await peopleUI.render(main, params, () => version === state.requestVersion);
       } else if (view === 'organization') {
         await renderOrganizationSettings(main, version, params);
-      } else if (view === 'admin') {
-        const overview = await request('/api/v1/admin/overview');
-        if (version !== state.requestVersion) return;
-        renderAdmin(main, overview);
       } else if (view === 'releases') {
         const { createReleasesUI } = await import('./releases.js');
         if (version !== state.requestVersion) return;
@@ -765,10 +789,10 @@
     }
   }
 
-  function renderAdmin(main, overview) {
+  function renderAdmin(main, overview, users, params) {
     document.title = 'Administration · GoodSentry';
-    const instance = overview.instance || {};
-    const organizations = overview.organizations || [];
+    const instance = overview?.instance || {};
+    const organizations = overview?.organizations || [];
     const featureNames = { logs: 'Logs', uptime: 'Uptime', mcp: 'MCP', openapi: 'OpenAPI', admin: 'Administration', alerts: 'Alerts', alertDelivery: 'Alert delivery' };
     const retentionNames = { events: 'Events', logs: 'Logs', transactions: 'Transactions and spans', uptime: 'Uptime checks', files: 'Files and attachments', releases: 'Release metadata' };
     const stat = (label, value) => node('div', { class: 'stat' }, node('dt', {}, label), node('dd', {}, value));
@@ -780,12 +804,14 @@
       node('td', { class: 'nowrap' }, number(organization.issues)),
       node('td', { class: 'nowrap' }, number(organization.events)),
       node('td', { class: 'nowrap' }, number(organization.logs))));
-    const features = Object.entries(overview.features || {}).map(([name, enabled]) =>
+    const features = Object.entries(overview?.features || {}).map(([name, enabled]) =>
       node('span', { class: `badge ${enabled ? 'resolved' : 'ignored'}` }, `${featureNames[name] || name}: ${enabled ? 'on' : 'off'}`));
-    const retention = Object.entries(overview.retention || {}).map(([name, days]) =>
+    const retention = Object.entries(overview?.retention || {}).map(([name, days]) =>
       node('tr', {}, node('td', {}, retentionNames[name] || name), node('td', { class: 'nowrap' }, `${number(days)} days`)));
-    main.replaceChildren(
-      pageHeader('Administration', 'Operational summary for organizations where you currently have owner or admin authority.', button('Refresh', () => loadRoute())),
+    const sections = [pageHeader('Administration', overview
+      ? 'Operational summary for organizations where you currently have owner or admin authority.'
+      : 'Instance user management for current instance administrators.', button('Refresh', () => loadRoute()))];
+    if (overview) sections.push(
       node('section', { class: 'card panel' },
         node('div', { class: 'panel-title' }, node('h2', {}, 'Instance'), node('span', { class: 'badge' }, instance.goVersion || 'Go')),
         node('dl', { class: 'stat-list' }, stat('Service', instance.name || 'GoodSentry'), stat('Version', instance.version || 'Unknown'), stat('Authentication', instance.authMode || 'Unknown')),
@@ -798,7 +824,70 @@
       node('section', { class: 'card panel panel-body form-stack' },
         node('h2', {}, 'Capabilities'), node('div', { class: 'actions' }, features),
         node('h2', {}, 'Retention'),
-        node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, node('th', { scope: 'col' }, 'Data'), node('th', { scope: 'col' }, 'Lifetime'))), node('tbody', {}, retention)))));
+        node('div', { class: 'table-scroll' }, node('table', {}, node('thead', {}, node('tr', {}, node('th', { scope: 'col' }, 'Data'), node('th', { scope: 'col' }, 'Lifetime'))), node('tbody', {}, retention))))
+    );
+    if (users) sections.push(renderAdminUsers(users, params));
+    main.replaceChildren(...sections);
+  }
+
+  function renderAdminUsers(users, params) {
+    const query = params.get('query') || '';
+    const page = Math.max(1, parseInt(params.get('page'), 10) || 1);
+    const search = field('Filter by email or name', 'search', { name: 'query', maxlength: 100, value: query });
+    const searchForm = node('form', { class: 'actions', 'aria-label': 'Search users' }, search.wrap,
+      button('Search', () => searchForm.requestSubmit(), 'small'));
+    searchForm.addEventListener('submit', event => {
+      event.preventDefault();
+      navigate({ view: 'admin', query: search.input.value.trim() || null, page: null });
+    });
+    const rows = (users.data || []).map(user => {
+      const accountState = node('span', { class: `badge ${user.isActive ? 'resolved' : 'ignored'}` }, user.isActive ? 'Active' : 'Suspended');
+      const adminState = node('span', { class: `badge ${user.isInstanceAdmin ? 'resolved' : 'ignored'}` }, user.isInstanceAdmin ? 'Instance admin' : 'Standard access');
+      const controls = node('div', { class: 'actions' });
+      const activity = button(user.isActive ? 'Suspend' : 'Reactivate', async () => {
+        activity.disabled = true;
+        try {
+          await request(`/api/v1/admin/users/${encodeURIComponent(user.id)}`, { method: 'PATCH', body: { isActive: !user.isActive } });
+          notify(`${user.email} updated.`);
+          state.me = await request('/api/v1/me');
+          if (!state.me.user?.isInstanceAdmin && !(state.me.organizations || []).some(item => ['owner', 'admin'].includes(item.role))) {
+            history.replaceState(null, '', routeURL({ view: 'issues', query: null, page: null }));
+          }
+          await loadRoute();
+        } catch (error) { notify(error.message); activity.disabled = false; }
+      }, 'small');
+      const admin = button(user.isInstanceAdmin ? 'Remove admin' : 'Make admin', async () => {
+        admin.disabled = true;
+        try {
+          await request(`/api/v1/admin/users/${encodeURIComponent(user.id)}`, { method: 'PATCH', body: { isInstanceAdmin: !user.isInstanceAdmin } });
+          notify(`${user.email} updated.`);
+          state.me = await request('/api/v1/me');
+          if (!state.me.user?.isInstanceAdmin && !(state.me.organizations || []).some(item => ['owner', 'admin'].includes(item.role))) {
+            history.replaceState(null, '', routeURL({ view: 'issues', query: null, page: null }));
+          }
+          await loadRoute();
+        } catch (error) { notify(error.message); admin.disabled = false; }
+      }, 'small');
+      if (!user.isActive) admin.disabled = true;
+      controls.append(activity, admin);
+      return node('tr', {},
+        node('td', {}, node('strong', {}, user.email), node('div', { class: 'small muted' }, user.name)),
+        node('td', { class: 'nowrap' }, number(user.organizationCount)),
+        node('td', {}, accountState),
+        node('td', {}, adminState),
+        node('td', {}, controls));
+    });
+    const previous = button('Previous', () => navigate({ view: 'admin', query: query || null, page: page > 2 ? page - 1 : null }), 'small');
+    const next = button('Next', () => navigate({ view: 'admin', query: query || null, page: page + 1 }), 'small');
+    previous.disabled = page <= 1;
+    next.disabled = page * users.perPage >= users.total;
+    return node('section', { class: 'card panel form-stack' },
+      node('div', { class: 'panel-title' }, node('h2', {}, 'Account users'), node('span', { class: 'small muted' }, `${number(users.total)} accounts`)),
+      searchForm,
+      node('div', { class: 'table-scroll' }, node('table', {},
+        node('thead', {}, node('tr', {}, ['User', 'Organizations', 'Account', 'Instance access', 'Actions'].map(name => node('th', { scope: 'col' }, name)))),
+        node('tbody', {}, rows.length ? rows : node('tr', {}, node('td', { colspan: '5' }, empty('No users found', query ? 'Try a different email or name.' : 'No accounts exist yet.')))))),
+      node('div', { class: 'pagination' }, node('span', {}, `Page ${page}`), node('div', { class: 'actions' }, previous, next)));
   }
 
   function renderAccount(main) {
@@ -1303,7 +1392,7 @@
   }
 
   function pageHeader(title, description, action) {
-    return node('div', { class: 'page-header' }, node('div', {}, node('div', { class: 'eyebrow' }, state.organization.name), node('h1', { tabindex: '-1' }, title), description ? node('p', {}, description) : null), action);
+    return node('div', { class: 'page-header' }, node('div', {}, node('div', { class: 'eyebrow' }, state.organization?.name || 'Instance'), node('h1', { tabindex: '-1' }, title), description ? node('p', {}, description) : null), action);
   }
 
   function badge(value) {
