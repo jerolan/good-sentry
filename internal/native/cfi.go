@@ -256,6 +256,9 @@ func ParseObjectUnwind(name string, data []byte) (string, *UnwindTable) {
 				table.architecture = "arm"
 			}
 		}
+		if file.Class == elf.ELFCLASS64 && file.Data == elf.ELFDATA2LSB && file.Machine == elf.EM_RISCV && table != nil {
+			table.architecture = "riscv64"
+		}
 		if table != nil {
 			table.normalize(base)
 		}
@@ -884,15 +887,23 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		pcRegister, spRegister, fpRegister = 15, 13, 11
 	case "arm64":
 		pcRegister, spRegister, fpRegister = 32, 31, 29
+	case "riscv64":
+		if crash.PointerSize != 8 || len(crash.registers) != 32 {
+			return nil
+		}
+		spRegister, fpRegister = 2, 8
 	case "amd64":
 	default:
 		return nil
 	}
 	registers := map[uint32]uint64{pcRegister: crash.RIP, spRegister: crash.RSP, fpRegister: crash.RBP}
-	if crash.Arch == "arm" {
+	if crash.Arch == "arm" || crash.Arch == "riscv64" {
 		registers = make(map[uint32]uint64, len(crash.registers))
 		for register, value := range crash.registers {
 			registers[register] = value
+		}
+		if crash.Arch == "riscv64" {
+			registers[0] = 0
 		}
 	}
 	pc, lookupPC := crash.RIP, crash.RIP
@@ -915,7 +926,7 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		var ehabi *arm32EHABIFDE
 		found := false
 		for _, table := range candidates {
-			if table == nil || (crash.Arch == "arm" && table.architecture != "arm") || (table.architecture != "" && table.architecture != crash.Arch) {
+			if table == nil || (crash.Arch == "arm" && table.architecture != "arm") || (crash.Arch == "riscv64" && table.architecture != "riscv64") || (table.architecture != "" && table.architecture != crash.Arch) {
 				continue
 			}
 			if rules, cie, found = table.rulesAt(lookupPC - module.Base); found {
@@ -955,6 +966,9 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 			break
 		}
 		frames = append(frames, frame)
+		if crash.Arch == "riscv64" && cie.returnReg > 31 && cie.returnReg != 64 {
+			break
+		}
 		returnAddress, ok := evaluateRegisterRule(cie.returnReg, rules, cfa, registers, crash.stack, crash.PointerSize)
 		if !ok || returnAddress == 0 || seen[returnAddress] {
 			break
@@ -969,16 +983,23 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		if !cie.signalFrame {
 			lookupPC--
 		}
-		if crash.Arch == "arm" {
+		if crash.Arch == "arm" || crash.Arch == "riscv64" {
 			nextRegisters := make(map[uint32]uint64, len(rules.regs)+2)
 			for register := range rules.regs {
+				if crash.Arch == "riscv64" && register > 31 && register != 64 {
+					continue
+				}
 				if value, ok := evaluateRegisterRule(register, rules, cfa, registers, crash.stack, crash.PointerSize); ok {
 					nextRegisters[register] = value
 				}
 			}
+			if crash.Arch == "riscv64" {
+				nextRegisters[0] = 0
+			} else {
+				nextRegisters[pcRegister] = returnAddress
+			}
 			registers = nextRegisters
 			registers[spRegister] = nextSP
-			registers[pcRegister] = returnAddress
 		} else {
 			nextFP, _ := evaluateRegisterRule(fpRegister, rules, cfa, registers, crash.stack, crash.PointerSize)
 			registers[pcRegister] = returnAddress

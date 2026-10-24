@@ -15,15 +15,21 @@ import (
 )
 
 const (
-	minidumpSignature = 0x504d444d
-	minidumpVersion   = 0xa793
-	streamThreadList  = 3
-	streamModuleList  = 4
-	streamException   = 6
-	streamMemory64    = 9
-	streamSystemInfo  = 7
-	cpuArchARM        = 5
-	cpuArchAMD64      = 9
+	minidumpSignature  = 0x504d444d
+	minidumpVersion    = 0xa793
+	streamThreadList   = 3
+	streamModuleList   = 4
+	streamException    = 6
+	streamMemory64     = 9
+	streamSystemInfo   = 7
+	cpuArchARM         = 5
+	cpuArchAMD64       = 9
+	cpuArchRISCV64     = 0x8006
+	// Crashpad's native struct size includes four bytes of tail alignment.
+	riscv64ContextSize = 528
+	riscv64ContextV1   = 1
+	riscv64ContextInt  = 0x08000001
+	riscv64ContextAll  = 0x08000003
 )
 
 type Module struct {
@@ -269,7 +275,24 @@ func ParseMinidump(data []byte) (Crash, error) {
 		crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[184:]))
 		crash.RSP = uint64(binary.LittleEndian.Uint32(rawContext[196:]))
 	default:
-		if declaredArch == cpuArchARM && len(rawContext) == 368 {
+		if declaredArch == cpuArchRISCV64 && len(rawContext) == riscv64ContextSize {
+			flags := binary.LittleEndian.Uint32(rawContext)
+			version := binary.LittleEndian.Uint32(rawContext[4:])
+			if version != riscv64ContextV1 || flags != riscv64ContextInt && flags != riscv64ContextAll {
+				return Crash{}, errors.New("invalid RISC-V64 minidump context flags or version")
+			}
+			crash.Arch, crash.PointerSize = "riscv64", 8
+			crash.RIP = binary.LittleEndian.Uint64(rawContext[8:])
+			crash.registers = make(map[uint32]uint64, 32)
+			crash.registers[0] = 0
+			for register := uint32(1); register <= 31; register++ {
+				offset := 16 + (register-1)*8
+				crash.registers[register] = binary.LittleEndian.Uint64(rawContext[offset:])
+			}
+			crash.RSP = crash.registers[2]
+			crash.RBP = crash.registers[8]
+			crash.LR = crash.registers[1]
+		} else if declaredArch == cpuArchARM && len(rawContext) == 368 {
 			// Crashpad and Breakpad ARM32 contexts share the general-register offsets.
 			crash.Arch, crash.PointerSize = "arm", 4
 			crash.registers = make(map[uint32]uint64, 16)
@@ -345,23 +368,42 @@ func unwind(crash Crash, ranges []memoryRange) []Frame {
 		seen[addr] = true
 	}
 	bp := crash.RBP
-	for len(addresses) < 64 && bp != 0 {
-		next, ok1 := readPointer(ranges, bp, crash.PointerSize)
-		ret, ok2 := readPointer(ranges, bp+uint64(crash.PointerSize), crash.PointerSize)
-		if !ok1 || !ok2 || ret == 0 || seen[ret] || next != 0 && next <= bp {
-			break
+	if crash.Arch == "riscv64" {
+		for len(addresses) < 64 && crash.PointerSize == 8 && bp >= 16 {
+			next, ok1 := readPointer(ranges, bp-16, 8)
+			ret, ok2 := readPointer(ranges, bp-8, 8)
+			if !ok1 || !ok2 || ret == 0 || seen[ret] || next != 0 && next <= bp {
+				break
+			}
+			addresses = append(addresses, ret)
+			seen[ret] = true
+			if next == 0 {
+				break
+			}
+			bp = next
 		}
-		addresses = append(addresses, ret)
-		seen[ret] = true
-		if next == 0 {
-			break
+	} else {
+		for len(addresses) < 64 && bp != 0 {
+			next, ok1 := readPointer(ranges, bp, crash.PointerSize)
+			ret, ok2 := readPointer(ranges, bp+uint64(crash.PointerSize), crash.PointerSize)
+			if !ok1 || !ok2 || ret == 0 || seen[ret] || next != 0 && next <= bp {
+				break
+			}
+			addresses = append(addresses, ret)
+			seen[ret] = true
+			if next == 0 {
+				break
+			}
+			bp = next
 		}
-		bp = next
 	}
 	if len(addresses) == 1 {
-		if crash.Arch == "arm" && crash.LR != 0 && !seen[crash.LR] {
-			addresses = append(addresses, crash.LR)
-		} else if crash.Arch != "arm" {
+		switch crash.Arch {
+		case "arm", "riscv64":
+			if crash.LR != 0 && !seen[crash.LR] {
+				addresses = append(addresses, crash.LR)
+			}
+		default:
 			if ret, ok := readPointer(ranges, crash.RSP, crash.PointerSize); ok && ret != 0 && !seen[ret] {
 				addresses = append(addresses, ret)
 			}

@@ -146,6 +146,48 @@ func TestNativeMinidumpSymbolicationAndIngestion(t *testing.T) {
 	}
 }
 
+func TestNativeRISCV64MinidumpIngestion(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	dump := buildRISCV64NativeMinidump(t, "C:\\test\\riscv64.exe", nativeTestDebugID, 0x1010)
+	body, contentType := minidumpForm(t, dump, map[string]string{"sentry[release]": "riscv64@1"})
+	req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", contentType)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	var accepted struct {
+		ID string `json:"id"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&accepted); err != nil || res.StatusCode != http.StatusOK || accepted.ID == "" {
+		t.Fatalf("RISC-V64 minidump response=%d %+v %v", res.StatusCode, accepted, err)
+	}
+	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+	events, err := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 10})
+	if err != nil || len(events) == 0 {
+		t.Fatalf("stored RISC-V64 minidump event: %d %v", len(events), err)
+	}
+	var payload struct {
+		Exception struct {
+			Values []struct {
+				Stacktrace struct {
+					Frames []nativeFrame `json:"frames"`
+				} `json:"stacktrace"`
+			} `json:"values"`
+		} `json:"exception"`
+	}
+	if err := json.Unmarshal(events[0].Data, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if len(payload.Exception.Values) != 1 || len(payload.Exception.Values[0].Stacktrace.Frames) != 2 {
+		t.Fatalf("stored RISC-V64 frames: %+v", payload.Exception)
+	}
+}
+
 func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 	const embeddedID = "5A9832E5287241C1838ED98914E9B7FF1"
 	for _, test := range []struct {
@@ -440,6 +482,43 @@ func buildNativeModuleMinidump(t *testing.T, moduleName, debugID string, functio
 		binary.LittleEndian.PutUint32(buf[offset+8:], location.rva)
 	}
 	return buf
+}
+
+func buildRISCV64NativeMinidump(t *testing.T, moduleName, debugID string, functionOffset uint64) []byte {
+	t.Helper()
+	data := buildNativeModuleMinidump(t, moduleName, debugID, functionOffset)
+	systemRVA := nativeTestMinidumpStreamRVA(data, 7)
+	threadRVA := nativeTestMinidumpStreamRVA(data, 3)
+	contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+	binary.LittleEndian.PutUint16(data[systemRVA:], 0x8006)
+	binary.LittleEndian.PutUint32(data[threadRVA+44:], 528)
+	context := data[contextRVA : contextRVA+528]
+	binary.LittleEndian.PutUint32(context, 0x08000003)
+	binary.LittleEndian.PutUint32(context[4:], 1)
+	binary.LittleEndian.PutUint64(context[8:], 0x0000000140000000+functionOffset)
+	setRegister := func(register uint32, value uint64) {
+		if register == 0 || register > 31 {
+			return
+		}
+		offset := 16 + (register-1)*8
+		binary.LittleEndian.PutUint64(context[offset:], value)
+	}
+	setRegister(1, 0x0000000140000000+functionOffset+4)
+	setRegister(2, 0x200000)
+	setRegister(8, 0)
+	return data
+}
+
+func nativeTestMinidumpStreamRVA(data []byte, streamType uint32) uint32 {
+	count := binary.LittleEndian.Uint32(data[8:])
+	directory := binary.LittleEndian.Uint32(data[12:])
+	for i := uint32(0); i < count; i++ {
+		entry := directory + i*12
+		if binary.LittleEndian.Uint32(data[entry:]) == streamType {
+			return binary.LittleEndian.Uint32(data[entry+8:])
+		}
+	}
+	return 0
 }
 
 func setCodeViewDebugID(codeView []byte, debugID string) error {

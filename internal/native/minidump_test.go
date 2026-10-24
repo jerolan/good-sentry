@@ -722,6 +722,251 @@ func TestParseARM64Minidump(t *testing.T) {
 	}
 }
 
+const (
+	testRISCV64MinidumpArchitecture = uint16(0x8006)
+	testRISCV64ModuleBase           = uint64(0x0000000140000000)
+	testRISCV64StackBase            = uint64(0x0000000000200000)
+)
+
+func buildRISCV64Minidump(contextSize int) []byte {
+	data := buildAMD64Minidump()
+	systemRVA := minidumpStreamRVA(data, streamSystemInfo)
+	threadRVA := minidumpStreamRVA(data, streamThreadList)
+	binary.LittleEndian.PutUint16(data[systemRVA:], testRISCV64MinidumpArchitecture)
+	context := make([]byte, contextSize)
+	if len(context) >= 8 {
+		binary.LittleEndian.PutUint32(context, 0x08000003)
+		binary.LittleEndian.PutUint32(context[4:], 1)
+	}
+	if len(context) >= 16 {
+		binary.LittleEndian.PutUint64(context[8:], testRISCV64ModuleBase+0x1010)
+	}
+	for register := uint32(1); register <= 31; register++ {
+		offset := 16 + int(register-1)*8
+		if offset+8 <= len(context) {
+			binary.LittleEndian.PutUint64(context[offset:], uint64(0x1000+register))
+		}
+	}
+	setRISCV64ContextRegister(context, 1, testRISCV64ModuleBase+0x1050)
+	setRISCV64ContextRegister(context, 2, testRISCV64StackBase)
+	setRISCV64ContextRegister(context, 8, 0)
+	data = append(data, context...)
+	binary.LittleEndian.PutUint32(data[threadRVA+44:], uint32(len(context)))
+	binary.LittleEndian.PutUint32(data[threadRVA+48:], uint32(len(data)-len(context)))
+	return data
+}
+
+func setRISCV64ContextRegister(context []byte, register uint32, value uint64) {
+	if register == 0 || register > 31 {
+		return
+	}
+	offset := 16 + int(register-1)*8
+	if offset+8 <= len(context) {
+		binary.LittleEndian.PutUint64(context[offset:], value)
+	}
+}
+
+func setRISCV64DumpRegister(data []byte, register uint32, value uint64) {
+	threadRVA := minidumpStreamRVA(data, streamThreadList)
+	contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+	setRISCV64ContextRegister(data[contextRVA:], register, value)
+}
+
+func TestParseRISCV64MinidumpContext(t *testing.T) {
+	for _, flags := range []uint32{0x08000001, 0x08000003} {
+		t.Run(fmt.Sprintf("flags_%08x", flags), func(t *testing.T) {
+			data := buildRISCV64Minidump(528)
+			threadRVA := minidumpStreamRVA(data, streamThreadList)
+			contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+			binary.LittleEndian.PutUint32(data[contextRVA:], flags)
+			crash, err := ParseMinidump(data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if crash.Arch != "riscv64" || crash.PointerSize != 8 || crash.RIP != testRISCV64ModuleBase+0x1010 || crash.RSP != testRISCV64StackBase || crash.RBP != 0 || crash.LR != testRISCV64ModuleBase+0x1050 {
+				t.Fatalf("RISC-V64 context: %+v", crash)
+			}
+			if len(crash.registers) != 32 || crash.registers[0] != 0 {
+				t.Fatalf("RISC-V64 register map has %d entries and x0=%#x", len(crash.registers), crash.registers[0])
+			}
+			for register := uint32(1); register <= 31; register++ {
+				want := uint64(0x1000 + register)
+				switch register {
+				case 1:
+					want = testRISCV64ModuleBase + 0x1050
+				case 2:
+					want = testRISCV64StackBase
+				case 8:
+					want = 0
+				}
+				if got := crash.registers[register]; got != want {
+					t.Fatalf("x%d = %#x; want %#x", register, got, want)
+				}
+			}
+			if len(crash.Frames) != 2 || crash.Frames[1].Instruction != crash.LR {
+				t.Fatalf("RISC-V64 x1 fallback: %+v", crash.Frames)
+			}
+		})
+	}
+}
+
+func TestParseRISCV64RejectsInvalidContexts(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		build func() []byte
+	}{
+		{name: "short context", build: func() []byte { return buildRISCV64Minidump(524) }},
+		{name: "long context", build: func() []byte { return buildRISCV64Minidump(536) }},
+		{name: "wrong version", build: func() []byte {
+			data := buildRISCV64Minidump(528)
+			threadRVA := minidumpStreamRVA(data, streamThreadList)
+			contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+			binary.LittleEndian.PutUint32(data[contextRVA+4:], 2)
+			return data
+		}},
+		{name: "floating point only", build: func() []byte {
+			data := buildRISCV64Minidump(528)
+			threadRVA := minidumpStreamRVA(data, streamThreadList)
+			contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+			binary.LittleEndian.PutUint32(data[contextRVA:], 0x08000002)
+			return data
+		}},
+		{name: "unknown flags", build: func() []byte {
+			data := buildRISCV64Minidump(528)
+			threadRVA := minidumpStreamRVA(data, streamThreadList)
+			contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+			binary.LittleEndian.PutUint32(data[contextRVA:], 0x08000005)
+			return data
+		}},
+		{name: "wrong architecture", build: func() []byte {
+			data := buildRISCV64Minidump(528)
+			systemRVA := minidumpStreamRVA(data, streamSystemInfo)
+			binary.LittleEndian.PutUint16(data[systemRVA:], cpuArchAMD64)
+			return data
+		}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if _, err := ParseMinidump(test.build()); err == nil {
+				t.Fatal("invalid RISC-V64 minidump was accepted")
+			}
+		})
+	}
+}
+
+func TestRISCV64FrameRecordsAndLinkRegisterFallback(t *testing.T) {
+	data := buildRISCV64Minidump(528)
+	threadRVA := minidumpStreamRVA(data, streamThreadList)
+	stackRVA := binary.LittleEndian.Uint32(data[threadRVA+40:])
+	stack := data[stackRVA : stackRVA+0x100]
+	currentFP, callerFP := testRISCV64StackBase+64, testRISCV64StackBase+96
+	setRISCV64DumpRegister(data, 2, testRISCV64StackBase+16)
+	setRISCV64DumpRegister(data, 8, currentFP)
+	setRISCV64DumpRegister(data, 1, testRISCV64ModuleBase+0x1070)
+	binary.LittleEndian.PutUint64(stack[48:], callerFP)
+	binary.LittleEndian.PutUint64(stack[56:], testRISCV64ModuleBase+0x1050)
+	binary.LittleEndian.PutUint64(stack[80:], 0)
+	binary.LittleEndian.PutUint64(stack[88:], testRISCV64ModuleBase+0x1090)
+	crash, err := ParseMinidump(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(crash.Frames) != 3 || crash.Frames[1].Instruction != testRISCV64ModuleBase+0x1050 || crash.Frames[2].Instruction != testRISCV64ModuleBase+0x1090 {
+		t.Fatalf("RISC-V64 CFA frame records: %+v", crash.Frames)
+	}
+
+	data = buildRISCV64Minidump(528)
+	threadRVA = minidumpStreamRVA(data, streamThreadList)
+	stackRVA = binary.LittleEndian.Uint32(data[threadRVA+40:])
+	contextRVA := binary.LittleEndian.Uint32(data[threadRVA+48:])
+	binary.LittleEndian.PutUint64(data[stackRVA:], testRISCV64ModuleBase+0x1060)
+	setRISCV64DumpRegister(data, 1, testRISCV64ModuleBase+0x1070)
+	setRISCV64DumpRegister(data, 8, 0)
+	crash, err = ParseMinidump(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(crash.Frames) != 2 || crash.Frames[1].Instruction != testRISCV64ModuleBase+0x1070 || crash.Frames[1].Instruction == binary.LittleEndian.Uint64(data[contextRVA+8:]) {
+		t.Fatalf("RISC-V64 must use x1 without guessing from SP: %+v", crash.Frames)
+	}
+
+	data = buildRISCV64Minidump(528)
+	threadRVA = minidumpStreamRVA(data, streamThreadList)
+	stackRVA = binary.LittleEndian.Uint32(data[threadRVA+40:])
+	binary.LittleEndian.PutUint64(data[stackRVA:], testRISCV64ModuleBase+0x1060)
+	setRISCV64DumpRegister(data, 1, 0)
+	setRISCV64DumpRegister(data, 8, 0)
+	crash, err = ParseMinidump(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(crash.Frames) != 1 {
+		t.Fatalf("RISC-V64 guessed a caller from SP when x1 was unavailable: %+v", crash.Frames)
+	}
+}
+
+func TestRISCV64FrameRecordChainStopsAt64Frames(t *testing.T) {
+	const (
+		stackBase = uint64(0x5000)
+		callers   = 70
+	)
+	stack := make([]byte, (callers+1)*16)
+	fp := stackBase + 16
+	for i := 0; i < callers; i++ {
+		previousFP := fp + 16
+		if i == callers-1 {
+			previousFP = 0
+		}
+		offset := fp - stackBase - 16
+		binary.LittleEndian.PutUint64(stack[offset:], previousFP)
+		binary.LittleEndian.PutUint64(stack[offset+8:], uint64(0x2000+i*4))
+		fp += 16
+	}
+	frames := unwind(Crash{RIP: 0x1000, RBP: stackBase + 16, Arch: "riscv64", PointerSize: 8}, []memoryRange{{start: stackBase, data: stack}})
+	if len(frames) != 64 {
+		t.Fatalf("RISC-V64 unwind returned %d frames; want 64", len(frames))
+	}
+}
+
+func TestRISCV64FrameRecordsRejectInvalidLinks(t *testing.T) {
+	const (
+		stackBase = uint64(0x3000)
+		frameFP   = stackBase + 16
+	)
+	for _, test := range []struct {
+		name string
+		data []byte
+		prev uint64
+		ret  uint64
+	}{
+		{name: "unavailable memory"},
+		{name: "return address outside captured memory", data: make([]byte, 8)},
+		{name: "nonmonotonic caller frame", data: make([]byte, 16), prev: frameFP - 8, ret: 0x2000},
+		{name: "repeated return address", data: make([]byte, 16), ret: 0x1000},
+		{name: "frame pointer underflow", data: make([]byte, 16), prev: 0, ret: 0x2000},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if len(test.data) >= 8 {
+				binary.LittleEndian.PutUint64(test.data, test.prev)
+			}
+			if len(test.data) >= 16 {
+				binary.LittleEndian.PutUint64(test.data[8:], test.ret)
+			}
+			fp := frameFP
+			if test.name == "frame pointer underflow" {
+				fp = 8
+			}
+			var memory []memoryRange
+			if len(test.data) > 0 {
+				memory = []memoryRange{{start: stackBase, data: test.data}}
+			}
+			frames := unwind(Crash{RIP: 0x1000, RBP: fp, Arch: "riscv64", PointerSize: 8}, memory)
+			if len(frames) != 1 || frames[0].Instruction != 0x1000 {
+				t.Fatalf("invalid RISC-V64 frame record yielded callers: %+v", frames)
+			}
+		})
+	}
+}
+
 func TestParseELFObjectSymbols(t *testing.T) {
 	data, err := os.ReadFile("testdata/elf-dwarf-amd64")
 	if err != nil {
@@ -911,6 +1156,129 @@ func signalFrameCFISection() []byte {
 	appendFDE(regularCIE, 0x2000)
 	appendFDE(regularCIE, 0x2f00)
 	return section.Bytes()
+}
+
+func TestRISCV64ELFCFIUsesReturnColumnAndRestoredRegisters(t *testing.T) {
+	key, table := ParseObjectUnwind("riscv64-fixture", buildRISCV64ELFWithCFI())
+	if table == nil {
+		t.Fatal("RISC-V64 ELF CFI was not parsed")
+	}
+	crash, err := ParseMinidump(buildRISCV64Minidump(528))
+	if err != nil {
+		t.Fatal(err)
+	}
+	crash.RIP = 0x1010
+	crash.RSP = 0x3000
+	crash.registers[2] = crash.RSP
+	crash.registers[8] = 0x1111
+	crash.Modules = []Module{{Name: "riscv64-fixture", Size: 0x3000}}
+	stack := make([]byte, 0x1020)
+	binary.LittleEndian.PutUint64(stack[0:], 0x4000) // caller x8 at CFA-16
+	binary.LittleEndian.PutUint64(stack[8:], 0x2000) // alternate return column at CFA-8
+	binary.LittleEndian.PutUint64(stack[0x1008:], 0)
+	crash.stack = []memoryRange{{start: 0x3000, data: stack}}
+	frames := UnwindCFI(&crash, UnwindSet{key: {table}})
+	if len(frames) != 2 || frames[0].Instruction != crash.RIP || frames[1].Instruction != 0x2000 {
+		t.Fatalf("RISC-V64 CFI did not use return column64 and restored x8: %+v", frames)
+	}
+
+	wrongELF := buildRISCV64ELFWithCFI()
+	binary.LittleEndian.PutUint16(wrongELF[18:], uint16(elf.EM_X86_64))
+	wrongKey, wrongTable := ParseObjectUnwind("wrong-architecture-fixture", wrongELF)
+	if wrongTable == nil {
+		t.Fatal("wrong-architecture control lacks CFI")
+	}
+	wrongCrash := crash
+	wrongCrash.Modules = []Module{{Name: "wrong-architecture-fixture", Size: 0x3000}}
+	frames = UnwindCFI(&wrongCrash, UnwindSet{wrongKey: {wrongTable}})
+	if len(frames) != 0 {
+		t.Fatalf("RISC-V64 crash used a mismatched ELF architecture: %+v", frames)
+	}
+
+	unsupportedKey, unsupportedTable := ParseObjectUnwind("floating-cfa-fixture", buildRISCV64ELFWithCFI(32))
+	if unsupportedTable == nil {
+		t.Fatal("floating-CFA control lacks CFI")
+	}
+	unsupportedCrash := crash
+	unsupportedCrash.Modules = []Module{{Name: "floating-cfa-fixture", Size: 0x3000}}
+	frames = UnwindCFI(&unsupportedCrash, UnwindSet{unsupportedKey: {unsupportedTable}})
+	if len(frames) != 0 {
+		t.Fatalf("RISC-V64 CFI guessed a floating-point CFA register: %+v", frames)
+	}
+}
+
+func buildRISCV64ELFWithCFI(firstCFARegister ...byte) []byte {
+	var section bytes.Buffer
+	appendRecord := func(record []byte) int {
+		start := section.Len()
+		_ = binary.Write(&section, binary.LittleEndian, uint32(len(record)))
+		_, _ = section.Write(record)
+		return start
+	}
+	appendCIE := func(cfaRegister byte, saveX8 bool) int {
+		var record bytes.Buffer
+		_ = binary.Write(&record, binary.LittleEndian, uint32(0xffffffff))
+		_, _ = record.Write([]byte{3, 0, 1, 0x78, 0x40}) // v3, empty augmentation, alignments, return column64
+		_, _ = record.Write([]byte{0x0c, cfaRegister, 16})
+		_, _ = record.Write([]byte{0x05, 64, 1}) // return column64 saved at CFA-8
+		if saveX8 {
+			_, _ = record.Write([]byte{0x05, 8, 2}) // x8 saved at CFA-16
+		}
+		return appendRecord(record.Bytes())
+	}
+	appendFDE := func(cieOffset int, start uint64) {
+		var record bytes.Buffer
+		_ = binary.Write(&record, binary.LittleEndian, uint32(cieOffset))
+		_ = binary.Write(&record, binary.LittleEndian, start)
+		_ = binary.Write(&record, binary.LittleEndian, uint64(0x100))
+		appendRecord(record.Bytes())
+	}
+	firstCFA := byte(2)
+	if len(firstCFARegister) > 0 {
+		firstCFA = firstCFARegister[0]
+	}
+	firstCIE := appendCIE(firstCFA, true)
+	appendFDE(firstCIE, 0x1000)
+	secondCIE := appendCIE(8, false)
+	appendFDE(secondCIE, 0x1f00)
+
+	const headerSize, sectionHeaderSize = 64, 64
+	sectionNames := []byte("\x00.shstrtab\x00.text\x00.debug_frame\x00")
+	sectionNamesOffset := headerSize
+	textOffset := (sectionNamesOffset + len(sectionNames) + 7) &^ 7
+	textData := make([]byte, 0x300)
+	debugFrameOffset := (textOffset + len(textData) + 7) &^ 7
+	sectionTableOffset := (debugFrameOffset + section.Len() + 7) &^ 7
+	data := make([]byte, sectionTableOffset+4*sectionHeaderSize)
+	copy(data[sectionNamesOffset:], sectionNames)
+	copy(data[textOffset:], textData)
+	copy(data[debugFrameOffset:], section.Bytes())
+	copy(data[:4], []byte{0x7f, 'E', 'L', 'F'})
+	data[4], data[5], data[6] = byte(elf.ELFCLASS64), byte(elf.ELFDATA2LSB), 1
+	binary.LittleEndian.PutUint16(data[16:], uint16(elf.ET_REL))
+	binary.LittleEndian.PutUint16(data[18:], uint16(elf.Machine(243)))
+	binary.LittleEndian.PutUint32(data[20:], 1)
+	binary.LittleEndian.PutUint64(data[40:], uint64(sectionTableOffset))
+	binary.LittleEndian.PutUint16(data[52:], headerSize)
+	binary.LittleEndian.PutUint16(data[58:], sectionHeaderSize)
+	binary.LittleEndian.PutUint16(data[60:], 4)
+	binary.LittleEndian.PutUint16(data[62:], 1)
+	nameOffset := func(name string) uint32 {
+		return uint32(bytes.Index(sectionNames, append([]byte(name), 0)))
+	}
+	writeSection := func(index int, name string, kind uint32, flags, offset, size uint64, alignment uint64) {
+		start := sectionTableOffset + index*sectionHeaderSize
+		binary.LittleEndian.PutUint32(data[start:], nameOffset(name))
+		binary.LittleEndian.PutUint32(data[start+4:], kind)
+		binary.LittleEndian.PutUint64(data[start+8:], flags)
+		binary.LittleEndian.PutUint64(data[start+24:], offset)
+		binary.LittleEndian.PutUint64(data[start+32:], size)
+		binary.LittleEndian.PutUint64(data[start+48:], alignment)
+	}
+	writeSection(1, ".shstrtab", uint32(elf.SHT_STRTAB), 0, uint64(sectionNamesOffset), uint64(len(sectionNames)), 1)
+	writeSection(2, ".text", uint32(elf.SHT_PROGBITS), uint64(elf.SHF_ALLOC|elf.SHF_EXECINSTR), uint64(textOffset), uint64(len(textData)), 4)
+	writeSection(3, ".debug_frame", uint32(elf.SHT_PROGBITS), 0, uint64(debugFrameOffset), uint64(section.Len()), 4)
+	return data
 }
 
 func TestCFIExpressionBranchControl(t *testing.T) {
