@@ -1126,9 +1126,9 @@ Public acceptance at `322e2a530c7a7dba0a0d76423cc3a1dbd2c3cedd`: public main mat
 
 - 2026-10-23 UTC: `TestOpenModeMCPOAuthUsesImplicitOwner` covers cookie-free MCP consent and grant issuance for the implicit owner, the required CSRF and same-origin checks, PKCE exchange, and selected-project tool reads. Exact-source CI [40048844658](https://github.com/jerolan/good-sentry/actions/runs/40048844658) passes formatting, vet, the full PostgreSQL integration/race suite and image build; image workflow [40049346247](https://github.com/jerolan/good-sentry/actions/runs/40049346247) publishes amd64 and arm64.
 
-- [ ] Implement compatible additional-user mute via `ignoreUserCount`.
+- [ ] Implement additional-user mute via `ignoreUserCount` in compatible API0 and native issue triage.
   - [x] Confirm Sentry's public API meaning: stop after this many additional users, with an optional separate `ignoreUserWindow` field deferred. Use GoodSentry's existing affected-user identity rule; keep anonymous captures out.
-  - [x] Fix the privacy and lifecycle contract in `SPEC.md`: organization-scoped HMAC digests use the stable app secret, survive event retention only while the mute is active, and preserve progress across merge/unmerge.
-  - [ ] Add strict individual/bulk wire parsing and typed policy support; zero disables the condition and `ignoreUserWindow` remains rejected.
-  - [ ] Add additive storage, new-user progress, atomic expiry/activity, issue reads and native visibility without persisting raw identities.
-  - [ ] Prove merge/unmerge, deduplication, anonymous events, retention, scope/CSRF and SDK capture; run full PostgreSQL integration/race/vet and image restart, then verify exact-source CI with `gh`.
+  - [x] Fix the privacy and lifecycle contract in `SPEC.md`: organization-scoped HMAC digests use the stable app secret, survive event retention only while the mute is active, preserve progress across merge/unmerge, and define native PATCH/UI behavior.
+  - [ ] Add strict individual/bulk and native PATCH parsing, typed policy support, and the native additional-user form; zero disables the compatible condition and `ignoreUserWindow` remains rejected.
+  - [ ] Add additive storage, new-user progress, atomic expiry/activity, issue reads and compatible/native visibility without persisting raw identities.
+  - [ ] Prove merge/unmerge, deduplication, anonymous events, retention, scope/CSRF and official SDK capture; run full PostgreSQL integration/race/vet, responsive browser and image restart, then verify exact-source CI with `gh`.
