@@ -443,9 +443,9 @@ func TestIssueIgnoreLockWaitRechecksPolicyAndWorkerSkipsRenewal(t *testing.T) {
 func TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts(t *testing.T) {
 	ctx, db, owner, _, project := telemetryStore(t)
 	id := triageCapture(t, ctx, db, project)
-	// Reconstruct the exact prior schema in this isolated fixture by removing
-	// only the new table and its receipt, then seed legacy values before Open.
-	if _, err := db.pool.Exec(ctx, `DROP TABLE issue_ignores;DELETE FROM schema_migrations WHERE version=13`); err != nil {
+	// Reconstruct the pre-ignore schema in this isolated fixture by removing
+	// both mute tables and their migration receipts, then seed legacy values.
+	if _, err := db.pool.Exec(ctx, `DROP TABLE issue_ignore_users;DROP TABLE issue_ignores;DELETE FROM schema_migrations WHERE version IN (13,63)`); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := db.pool.Exec(ctx, `UPDATE issues SET status='ignored',assignee_id=$2::bigint,first_seen='2000-01-01Z',last_seen='2001-01-01Z' WHERE id=$1::bigint`, id, owner.ID); err != nil {
