@@ -49,6 +49,9 @@ func NewWithAccountMail(cfg config.Config, db *store.Store, sender *notify.Sende
 }
 
 func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender *notify.Sender, box *accountmail.SecretBox, defaultUser *store.User) http.Handler {
+	if db != nil {
+		db.SetIssueIdentitySecret(cfg.Secret)
+	}
 	sealer, _ := newTOTPBox(cfg.Secret)
 	socialSealer, _ := newSecretSealer(cfg.Secret, "GoodSentry social apps v1", 191)
 	userTokenSealer, _ := newSecretSealer(cfg.Secret, "GoodSentry user tokens v1", 32)

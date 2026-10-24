@@ -47,6 +47,11 @@ func TestCompatibleIssueChangeParsing(t *testing.T) {
 		{"case sensitive latest", `{"statusDetails":{"inRelease":"Latest"}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueReleasePolicy, Version: "Latest"}}},
 		{"top ignore", `{"ignoreDuration":3,"ignoreCount":4}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: integer(3), Count: integer(4)}}},
 		{"nested ignore", `{"statusDetails":{"ignoreDuration":3,"ignoreCount":4}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: integer(3), Count: integer(4)}}},
+		{"top user count", `{"ignoreUserCount":3}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(3)}}},
+		{"nested user count", `{"statusDetails":{"ignoreUserCount":3}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(3)}}},
+		{"user count copies agree", `{"ignoreUserCount":3,"statusDetails":{"ignoreUserCount":3,"ignoreCount":2}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: integer(2), UserCount: integer(3)}}},
+		{"zero disables user count", `{"ignoreUserCount":0,"ignoreCount":2}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: integer(2)}}},
+		{"maximum user count", `{"statusDetails":{"ignoreUserCount":2147483647}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(2147483647)}}},
 		{"equal copies", `{"ignoreCount":7,"statusDetails":{"ignoreCount":7,"ignoreDuration":8}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: integer(8), Count: integer(7)}}},
 		{"zero disables each bound", `{"ignoreCount":0,"statusDetails":{"ignoreCount":0,"ignoreDuration":0}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy}}},
 		{"one disabled bound", `{"ignoreDuration":0,"ignoreCount":2147483647}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: integer(2147483647)}}},
@@ -54,7 +59,7 @@ func TestCompatibleIssueChangeParsing(t *testing.T) {
 		{"empty container with top zero", `{"statusDetails":{},"ignoreCount":0}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy}}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			fields, err := issueObject([]byte(tc.body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount")
+			fields, err := issueObject([]byte(tc.body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -88,18 +93,22 @@ func TestCompatibleIssueChangeRejectsAmbiguousInput(t *testing.T) {
 		`{"statusDetails":{"ignoreWindow":1}}`, `{"statusDetails":{"inCommit":{}}}`,
 		`{"ignoreDuration":null}`, `{"ignoreDuration":-1}`, `{"ignoreDuration":2147483648}`,
 		`{"ignoreCount":1.5}`, `{"ignoreCount":1e2}`, `{"ignoreCount":"1"}`, `{"ignoreCount":true}`,
+		`{"ignoreUserCount":null}`, `{"ignoreUserCount":-1}`, `{"ignoreUserCount":2147483648}`, `{"ignoreUserCount":1.5}`, `{"ignoreUserCount":1e2}`, `{"ignoreUserCount":"1"}`, `{"ignoreUserCount":true}`,
 		`{"statusDetails":{"ignoreCount":null}}`, `{"statusDetails":{"ignoreDuration":1.0}}`,
+		`{"statusDetails":{"ignoreUserCount":null}}`, `{"statusDetails":{"ignoreUserCount":1.0}}`,
 		`{"ignoreCount":1,"statusDetails":{"ignoreCount":2}}`,
+		`{"ignoreUserCount":1,"statusDetails":{"ignoreUserCount":2}}`,
 		`{"ignoreDuration":0,"statusDetails":{"ignoreDuration":1}}`,
 		`{"ignoreDuration":0,"statusDetails":{"inRelease":null}}`,
 		`{"ignoreCount":0,"statusDetails":{"inNextRelease":false}}`,
 		`{"statusDetails":{"ignoreCount":0,"inRelease":""}}`,
+		`{"ignoreUserCount":0,"statusDetails":{"inRelease":null}}`,
 		`{"statusDetails":{"inNextRelease":null,"ignoreDuration":1}}`,
 		`{"statusDetails":{"inNextRelease":true,"inNextRelease":false}}`,
 		`{"statusDetails":{"inRelease":".."}}`, `{"statusDetails":{"inRelease":"v\u0000x"}}`,
 	} {
 		t.Run(body, func(t *testing.T) {
-			fields, err := issueObject([]byte(body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount")
+			fields, err := issueObject([]byte(body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount")
 			if err == nil {
 				_, err = parseCompatibleIssueChange(fields)
 			}

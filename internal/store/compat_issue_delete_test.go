@@ -53,6 +53,16 @@ func TestDeleteCompatibleIssueWholeGroupRetainsIndependentHistoryAndNewGeneratio
 	}
 	stamp := time.Now().UTC().Add(-time.Minute)
 	aEvent := groupEvent(t, 1, "delete-old-a", "Historical A", stamp)
+	var aData map[string]any
+	if err := json.Unmarshal(aEvent.Data, &aData); err != nil {
+		t.Fatal(err)
+	}
+	aData["user"] = map[string]any{"id": "delete-user"}
+	userEventData, err := json.Marshal(aData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	aEvent.Data = userEventData
 	bEvent := groupEvent(t, 2, "delete-b", "Historical B", stamp.Add(time.Second))
 	cEvent := groupEvent(t, 3, "delete-empty-c", "Retained summary C", stamp.Add(2*time.Second))
 	items := CaptureItems{Attachments: []CaptureAttachment{{Filename: "captured.bin", ContentType: "application/octet-stream", Data: []byte{0, 255}}}, EnvelopeItems: []CaptureEnvelopeItem{{Type: "parented", Header: json.RawMessage(`{"type":"parented"}`), Data: []byte{255, 0}}}}
@@ -78,7 +88,10 @@ func TestDeleteCompatibleIssueWholeGroupRetainsIndependentHistoryAndNewGeneratio
 	if _, err := f.db.MergeIssues(f.ctx, f.owner.ID, f.org.Slug, []string{c, b, a}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := f.db.UpdateIssue(f.ctx, f.owner.ID, a, IssueUpdate{Status: "ignored", Ignore: issueIgnoreChange(60, 30), Assignment: &IssueAssignmentChange{Target: &IssueActorRef{Type: "user", ID: f.owner.ID}}}); err != nil {
+	f.db.SetIssueIdentitySecret("issue-delete-integration-secret-000001")
+	one := int32(1)
+	minutes, count := int32(60), int32(30)
+	if _, err := f.db.UpdateIssue(f.ctx, f.owner.ID, a, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: &IssueIgnoreCondition{Minutes: &minutes, Count: &count, UserCount: &one}}, Assignment: &IssueAssignmentChange{Target: &IssueActorRef{Type: "user", ID: f.owner.ID}}}); err != nil {
 		t.Fatal(err)
 	}
 	hashes := hashSamples(t, f, a, CompatibleIssueHashFilter{Limit: 100})
@@ -141,7 +154,7 @@ func TestDeleteCompatibleIssueWholeGroupRetainsIndependentHistoryAndNewGeneratio
 		t.Fatal(err)
 	}
 	before := groupDatabaseSnapshot(t, f.ctx, f.db, 0)
-	for _, table := range []string{"comments", "issue_activity", "issue_assignments", "issue_ignores", "attachments", "envelope_items", "transaction_span_operations", "spans", "logs", "source_maps", "release_commits", "release_deploys", "alert_deliveries", "alert_attempts"} {
+	for _, table := range []string{"comments", "issue_activity", "issue_assignments", "issue_ignores", "issue_ignore_users", "attachments", "envelope_items", "transaction_span_operations", "spans", "logs", "source_maps", "release_commits", "release_deploys", "alert_deliveries", "alert_attempts"} {
 		if before[table] == "" || before[table] == "[]" {
 			t.Fatalf("retention fixture must actually populate %s", table)
 		}
@@ -156,7 +169,7 @@ func TestDeleteCompatibleIssueWholeGroupRetainsIndependentHistoryAndNewGeneratio
 	removedEvents := map[string]bool{aEvent.ID: true, bEvent.ID: true}
 	for table, old := range before {
 		switch table {
-		case "issues", "events", "comments", "issue_activity", "issue_assignments", "issue_ignores", "issue_resolutions", "attachments", "envelope_items":
+		case "issues", "events", "comments", "issue_activity", "issue_assignments", "issue_ignores", "issue_ignore_users", "issue_resolutions", "attachments", "envelope_items":
 			want := []map[string]any{}
 			for _, row := range deleteStoreRows(t, old) {
 				drop := members[fmt.Sprint(row["issue_id"])]

@@ -117,6 +117,7 @@ func TestCompatibleFeedbackIssueCategoryWithEmptyHistory(t *testing.T) {
 func TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory(t *testing.T) {
 	until := time.Date(2026, 10, 15, 8, 0, 0, 0, time.FixedZone("fixture", -6*3600))
 	configured, remaining := int32(30), int64(7)
+	userCount, userRemaining := int32(4), int64(3)
 	for _, tc := range []struct {
 		name  string
 		issue store.Issue
@@ -124,6 +125,7 @@ func TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory(t *testing.T) {
 	}{
 		{"indefinite", store.Issue{Status: "ignored"}, `{}`},
 		{"configured count and until", store.Issue{Status: "ignored", Ignore: &store.IssueIgnore{Count: &configured, Remaining: &remaining, Until: &until}}, `{"ignoreCount":30,"ignoreUntil":"2026-10-15T14:00:00Z"}`},
+		{"configured additional users", store.Issue{Status: "ignored", Ignore: &store.IssueIgnore{UserCount: &userCount, UserRemaining: &userRemaining}}, `{"ignoreUserCount":4,"userRemaining":3}`},
 		{"pending next", store.Issue{Status: "resolved", Resolution: &store.IssueResolution{Mode: "next_release", Baseline: &store.IssueResolutionRelease{Version: "app@1"}}}, `{"inNextRelease":true}`},
 		{"selected boundary", store.Issue{Status: "resolved", Resolution: &store.IssueResolution{Mode: "release", Release: &store.IssueResolutionRelease{Version: "app@2"}}}, `{"inRelease":"app@2"}`},
 	} {

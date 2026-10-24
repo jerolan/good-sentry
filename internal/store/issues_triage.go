@@ -103,7 +103,7 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 		return i, err
 	}
 	defer tx.Rollback(ctx)
-	i, err = applyIssueUpdate(ctx, tx, userID, org, i, change)
+	i, err = s.applyIssueUpdate(ctx, tx, userID, org, i, change)
 	if err != nil {
 		return i, err
 	}
@@ -113,7 +113,7 @@ func (s *Store) UpdateIssue(ctx context.Context, userID, id string, change Issue
 	return i, nil
 }
 
-func applyIssueUpdate(ctx context.Context, tx pgx.Tx, userID, org string, i Issue, change IssueUpdate) (Issue, error) {
+func (s *Store) applyIssueUpdate(ctx context.Context, tx pgx.Tx, userID, org string, i Issue, change IssueUpdate) (Issue, error) {
 	if i.Category == "feedback" && ((change.Ignore != nil && change.Ignore.Condition != nil) || (change.Resolution != nil && change.Resolution.Policy != nil)) {
 		return i, ErrInvalidIssueChange
 	}
@@ -149,13 +149,13 @@ func applyIssueUpdate(ctx context.Context, tx pgx.Tx, userID, org string, i Issu
 		if change.Ignore != nil {
 			wantedIgnore = change.Ignore.Condition
 		} else if i.Status == "ignored" && i.Ignore != nil {
-			wantedIgnore = &IssueIgnoreCondition{Minutes: i.Ignore.Minutes, Count: i.Ignore.Count}
+			wantedIgnore = &IssueIgnoreCondition{Minutes: i.Ignore.Minutes, Count: i.Ignore.Count, UserCount: i.Ignore.UserCount}
 		}
 	}
 	ignoreChanged := change.Status == "ignored" && !sameIssueIgnore(i.Ignore, wantedIgnore)
 	if change.Status != "" && (change.Status != i.Status || ignoreChanged || resolutionChanged) {
 		var data any = map[string]string{"from": i.Status, "to": change.Status}
-		if err := replaceIssueIgnore(ctx, tx, &i, wantedIgnore); err != nil {
+		if err := s.replaceIssueIgnore(ctx, tx, &i, org, wantedIgnore); err != nil {
 			return i, err
 		}
 		if change.Status == "ignored" {

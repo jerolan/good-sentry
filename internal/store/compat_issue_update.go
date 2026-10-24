@@ -26,9 +26,9 @@ const (
 type CompatibleIssueAssignment struct{ Reference string }
 
 type CompatibleIssuePolicy struct {
-	Kind           CompatibleIssuePolicyKind
-	Version        ReleaseVersion
-	Minutes, Count *int32
+	Kind                      CompatibleIssuePolicyKind
+	Version                   ReleaseVersion
+	Minutes, Count, UserCount *int32
 }
 
 type CompatibleIssueChange struct {
@@ -54,12 +54,12 @@ func validCompatibleIssueChange(change CompatibleIssueChange) bool {
 	}
 	switch p.Kind {
 	case CompatibleIssueClearPolicy, CompatibleIssueClearResolutionPolicy, CompatibleIssueNextReleasePolicy, CompatibleIssueLatestReleasePolicy:
-		return p.Version == "" && p.Minutes == nil && p.Count == nil
+		return p.Version == "" && p.Minutes == nil && p.Count == nil && p.UserCount == nil
 	case CompatibleIssueReleasePolicy:
 		_, err := ParseReleaseVersion(string(p.Version))
-		return err == nil && p.Minutes == nil && p.Count == nil
+		return err == nil && p.Minutes == nil && p.Count == nil && p.UserCount == nil
 	case CompatibleIssueIgnorePolicy:
-		return p.Version == "" && (p.Minutes == nil || *p.Minutes > 0) && (p.Count == nil || *p.Count > 0)
+		return p.Version == "" && (p.Minutes == nil || *p.Minutes > 0) && (p.Count == nil || *p.Count > 0) && (p.UserCount == nil || *p.UserCount > 0)
 	}
 	return false
 }
@@ -87,7 +87,7 @@ func (s *Store) UpdateCompatibleIssue(ctx context.Context, access ManagementAcce
 		if !validateIssueUpdate(native) {
 			return record, ErrInvalidCompatibleIssueChange
 		}
-		if _, err = applyIssueUpdate(ctx, tx, access.UserID, org, issue, native); err != nil {
+		if _, err = s.applyIssueUpdate(ctx, tx, access.UserID, org, issue, native); err != nil {
 			return record, err
 		}
 	}
@@ -102,7 +102,7 @@ func compatibleIssueChange(ctx context.Context, tx pgx.Tx, org string, issue Iss
 	change := IssueUpdate{Status: input.Status}
 	if issue.Category == "feedback" && (input.Status == "resolvedInNextRelease" || input.Policy != nil &&
 		(input.Policy.Kind == CompatibleIssueReleasePolicy || input.Policy.Kind == CompatibleIssueLatestReleasePolicy || input.Policy.Kind == CompatibleIssueNextReleasePolicy ||
-			input.Policy.Kind == CompatibleIssueIgnorePolicy && (input.Policy.Count != nil || input.Policy.Minutes != nil))) {
+			input.Policy.Kind == CompatibleIssueIgnorePolicy && (input.Policy.Count != nil || input.Policy.Minutes != nil || input.Policy.UserCount != nil))) {
 		return change, ErrInvalidCompatibleIssueChange
 	}
 	if change.Status == "muted" {
@@ -149,8 +149,8 @@ func compatibleIssueChange(ctx context.Context, tx pgx.Tx, org string, issue Iss
 			return change, ErrInvalidCompatibleIssueChange
 		}
 		change.Ignore = &IssueIgnoreChange{}
-		if policy.Minutes != nil || policy.Count != nil {
-			change.Ignore.Condition = &IssueIgnoreCondition{Minutes: policy.Minutes, Count: policy.Count}
+		if policy.Minutes != nil || policy.Count != nil || policy.UserCount != nil {
+			change.Ignore.Condition = &IssueIgnoreCondition{Minutes: policy.Minutes, Count: policy.Count, UserCount: policy.UserCount}
 		}
 	case CompatibleIssueReleasePolicy, CompatibleIssueLatestReleasePolicy, CompatibleIssueNextReleasePolicy:
 		if change.Status != "resolved" {

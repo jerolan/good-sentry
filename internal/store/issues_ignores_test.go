@@ -11,6 +11,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"goodsentry/internal/event"
 )
 
 func TestIssueIgnoreSuppressesNewFrequencyQueue(t *testing.T) {
@@ -572,5 +574,125 @@ func TestIssueIgnoreDrainContinuesAcrossConcurrentRenewal(t *testing.T) {
 			}
 			t.Fatalf("drain stopped at claim %d with %d immutable other issues still due", claim, due)
 		}
+	}
+}
+
+func issueUserMuteEvent(t *testing.T, id, fingerprint string, userID any) event.Event {
+	t.Helper()
+	payload := map[string]any{
+		"event_id": id, "timestamp": time.Now().UTC().Format(time.RFC3339Nano),
+		"message": "Issue user mute", "fingerprint": []string{fingerprint}, "level": "error",
+	}
+	if userID != nil {
+		payload["user"] = map[string]any{"id": userID}
+	}
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := event.Normalize(raw, "", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return result
+}
+
+func TestIssueIgnoreUserCountLifecycle(t *testing.T) {
+	ctx, db, owner, organization, project := telemetryStore(t)
+	db.SetIssueIdentitySecret("issue-user-mute-integration-secret-0001")
+	root, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 1), "user-mute-root", "42"))
+	if err != nil || !fresh {
+		t.Fatalf("root capture=%s fresh=%v err=%v", root, fresh, err)
+	}
+	two := int32(2)
+	muted, err := db.UpdateIssue(ctx, owner.ID, root, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: &IssueIgnoreCondition{UserCount: &two}}})
+	if err != nil || muted.Ignore == nil || muted.Ignore.UserCount == nil || *muted.Ignore.UserCount != two || muted.Ignore.UserRemaining == nil || *muted.Ignore.UserRemaining != 2 {
+		t.Fatalf("user-count policy=%+v err=%v", muted.Ignore, err)
+	}
+	var baselineRows, allRows, digestLength int
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FILTER(WHERE baseline),count(*),COALESCE(max(octet_length(identity_digest)),0)
+ FROM issue_ignore_users WHERE issue_id=$1::bigint`, root).Scan(&baselineRows, &allRows, &digestLength); err != nil || baselineRows != 1 || allRows != 1 || digestLength != 32 {
+		t.Fatalf("baseline digests baseline=%d all=%d maxBytes=%d err=%v", baselineRows, allRows, digestLength, err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE events SET created_at=clock_timestamp()-interval '2 days' WHERE event_id=$1`, fmt.Sprintf("%032x", 1)); err != nil {
+		t.Fatal(err)
+	}
+	if removed, err := db.CleanupEvents(ctx, 1); err != nil || removed != 1 {
+		t.Fatalf("retained baseline cleanup removed=%d err=%v", removed, err)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 2), "user-mute-root", 42)); err != nil || !fresh {
+		t.Fatalf("numeric ID equivalent capture fresh=%v err=%v", fresh, err)
+	}
+	current := triageIssue(t, ctx, db, owner.ID, root)
+	if current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 2 {
+		t.Fatalf("known user after event retention advanced mute: %+v", current.Ignore)
+	}
+	source, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 3), "user-mute-source", "source-user"))
+	if err != nil || !fresh {
+		t.Fatalf("source capture=%s fresh=%v err=%v", source, fresh, err)
+	}
+	merged, err := db.MergeIssues(ctx, owner.ID, organization.Slug, []string{root, source})
+	if err != nil || merged.Issue.ID != root || merged.Issue.Ignore == nil || merged.Issue.Ignore.UserRemaining == nil || *merged.Issue.Ignore.UserRemaining != 2 {
+		t.Fatalf("merge did not seed existing users as baseline: %+v err=%v", merged.Issue.Ignore, err)
+	}
+	split, err := db.UnmergeIssue(ctx, owner.ID, root, []string{source})
+	if err != nil || !split.Changed || split.Issue.ID != root || split.Issue.Ignore == nil || split.Issue.Ignore.UserRemaining == nil || *split.Issue.Ignore.UserRemaining != 2 {
+		t.Fatalf("unmerge did not preserve root user mute: %+v err=%v", split.Issue.Ignore, err)
+	}
+	detached, err := db.IssueDetail(ctx, owner.ID, source)
+	if err != nil || detached.Issue.Status == "ignored" || detached.Issue.Ignore != nil {
+		t.Fatalf("unmerge copied mute to detached issue: %+v err=%v", detached.Issue, err)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 4), "user-mute-root", "source-user")); err != nil || !fresh {
+		t.Fatalf("existing merged user capture fresh=%v err=%v", fresh, err)
+	}
+	firstNewID := fmt.Sprintf("%032x", 5)
+	newUser := issueUserMuteEvent(t, firstNewID, "user-mute-root", "new-user-a")
+	if _, fresh, err := db.Ingest(ctx, project.ID, newUser); err != nil || !fresh {
+		t.Fatalf("first new user capture fresh=%v err=%v", fresh, err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, root)
+	if current.Status != "ignored" || current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("first new user did not consume one: %+v", current.Ignore)
+	}
+	if same, err := db.UpdateIssue(ctx, owner.ID, root, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: &IssueIgnoreCondition{UserCount: &two}}}); err != nil || same.Ignore == nil || same.Ignore.UserRemaining == nil || *same.Ignore.UserRemaining != 1 {
+		t.Fatalf("identical policy reset user progress: %+v err=%v", same.Ignore, err)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, newUser); err != nil || fresh {
+		t.Fatalf("duplicate event receipt fresh=%v err=%v", fresh, err)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 6), "user-mute-root", "new-user-a")); err != nil || !fresh {
+		t.Fatalf("repeat user capture fresh=%v err=%v", fresh, err)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 7), "user-mute-root", nil)); err != nil || !fresh {
+		t.Fatalf("anonymous capture fresh=%v err=%v", fresh, err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, root)
+	if current.Status != "ignored" || current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("retry, repeated or anonymous user advanced mute: %+v", current.Ignore)
+	}
+	lastID := fmt.Sprintf("%032x", 8)
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, lastID, "user-mute-root", "new-user-b")); err != nil || !fresh {
+		t.Fatalf("threshold user capture fresh=%v err=%v", fresh, err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, root)
+	if current.Status != "unresolved" || current.Ignore != nil {
+		t.Fatalf("second new user did not expire mute: %+v", current)
+	}
+	var remainingDigests int
+	if err := db.pool.QueryRow(ctx, "SELECT count(*) FROM issue_ignore_users WHERE issue_id=$1::bigint", root).Scan(&remainingDigests); err != nil || remainingDigests != 0 {
+		t.Fatalf("expired mute retained identity digests=%d err=%v", remainingDigests, err)
+	}
+	expiries := ignoreExpiries(t, ctx, db, owner.ID, root)
+	if len(expiries) != 1 {
+		t.Fatalf("automatic unignore activities=%d", len(expiries))
+	}
+	var receipt struct {
+		Reason  string      `json:"reason"`
+		EventID string      `json:"eventID"`
+		Ignore  IssueIgnore `json:"ignore"`
+	}
+	if err := json.Unmarshal(expiries[0].Data, &receipt); err != nil || receipt.Reason != "user_count" || receipt.EventID != lastID || receipt.Ignore.UserRemaining == nil || *receipt.Ignore.UserRemaining != 0 {
+		t.Fatalf("user-count expiry receipt=%s err=%v", expiries[0].Data, err)
 	}
 }

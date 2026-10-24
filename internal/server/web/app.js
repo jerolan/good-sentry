@@ -3198,15 +3198,17 @@
     const conditions = [];
     if (ignore.minutes != null) conditions.push(`${number(ignore.minutes)} ${ignore.minutes === 1 ? 'minute' : 'minutes'}`);
     if (ignore.count != null) conditions.push(`${number(ignore.count)} additional ${ignore.count === 1 ? 'error' : 'errors'}`);
+    if (ignore.userCount != null) conditions.push(`${number(ignore.userCount)} additional ${ignore.userCount === 1 ? 'user' : 'users'}`);
     return conditions.join(' or ');
   }
 
   function issueMute(issue, view, triage) {
-    view.muteDraft ??= { minutes: issue.ignore?.minutes == null ? '' : String(issue.ignore.minutes), count: issue.ignore?.count == null ? '' : String(issue.ignore.count) };
+    view.muteDraft ??= { minutes: issue.ignore?.minutes == null ? '' : String(issue.ignore.minutes), count: issue.ignore?.count == null ? '' : String(issue.ignore.count), userCount: issue.ignore?.userCount == null ? '' : String(issue.ignore.userCount) };
     const helpID = `mute-help-${++fieldNumber}`;
     const minutes = field('Minutes (optional)', 'text', { value: view.muteDraft.minutes, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 10, autocomplete: 'off', 'aria-describedby': helpID });
     const count = field('Additional errors (optional)', 'text', { value: view.muteDraft.count, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 10, autocomplete: 'off', 'aria-describedby': helpID });
-    for (const [key, control] of [['minutes', minutes], ['count', count]]) control.input.addEventListener('input', () => { view.muteDraft[key] = control.input.value; });
+    const userCount = field('Additional users (optional)', 'text', { value: view.muteDraft.userCount, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 10, autocomplete: 'off', 'aria-describedby': helpID });
+    for (const [key, control] of [['minutes', minutes], ['count', count], ['userCount', userCount]]) control.input.addEventListener('input', () => { view.muteDraft[key] = control.input.value; });
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const current = node('div', { class: 'form-stack' });
     if (issue.status !== 'ignored') current.append(node('p', {}, 'No notification mute is active.'));
@@ -3215,6 +3217,7 @@
       current.append(node('p', {}, `Muted for ${issueMuteDescription(issue.ignore)}.`));
       if (issue.ignore.until) current.append(node('p', { class: 'small' }, 'Ends: ', node('time', { datetime: issue.ignore.until, title: issue.ignore.until }, date(issue.ignore.until)), ' (your local time)'), node('p', { class: 'mono small wrap-anywhere' }, `UTC: ${issue.ignore.until}`));
       if (issue.ignore.remaining != null) current.append(node('p', {}, `${number(issue.ignore.remaining)} additional ${issue.ignore.remaining === 1 ? 'error' : 'errors'} remaining.`));
+      if (issue.ignore.userRemaining != null) current.append(node('p', {}, `${number(issue.ignore.userRemaining)} additional ${issue.ignore.userRemaining === 1 ? 'user' : 'users'} remaining.`));
     }
     const clear = button('Mute indefinitely', () => triage.patchIssue({ status: 'ignored', ignore: null }, 'Mute is now indefinite.', error, () => form.isConnected), 'small');
     clear.disabled = issue.status !== 'ignored' || !issue.ignore;
@@ -3222,21 +3225,21 @@
     const submit = triage.register(node('button', { class: 'btn button primary', type: 'submit' }, 'Apply mute'));
     const form = node('form', { class: 'panel-body form-stack', 'aria-label': 'Mute notifications' }, current,
       node('p', { class: 'muted small' }, 'New issue notifications pause while error capture continues. If both conditions are set, either condition ends the mute.'),
-      node('p', { class: 'muted small', id: helpID }, 'Set minutes, additional errors, or both. Use whole numbers from 1 to 2,147,483,647.'),
-      minutes.wrap, count.wrap, error, node('div', { class: 'actions' }, submit, clear));
+      node('p', { class: 'muted small', id: helpID }, 'Set minutes, additional errors, additional users, or any combination. Use whole numbers from 1 to 2,147,483,647.'),
+      minutes.wrap, count.wrap, userCount.wrap, error, node('div', { class: 'actions' }, submit, clear));
     form.addEventListener('submit', event => {
       event.preventDefault();
       const ignore = {};
-      for (const [key, control] of [['minutes', minutes], ['count', count]]) {
+      for (const [key, control] of [['minutes', minutes], ['count', count], ['userCount', userCount]]) {
         const value = control.input.value;
         if (!value) continue;
         if (!/^[0-9]+$/.test(value) || Number(value) < 1 || Number(value) > 2147483647) {
-          formError(error, new Error('Use whole numbers from 1 to 2,147,483,647 for mute conditions.'));
+          formError(error, new Error('Use whole numbers from 1 to 2,147,483,647 for each mute condition.'));
           return;
         }
         ignore[key] = Number(value);
       }
-      if (!Object.keys(ignore).length) { formError(error, new Error('Enter minutes, an additional error count, or both.')); return; }
+      if (!Object.keys(ignore).length) { formError(error, new Error('Enter minutes, an additional error count, additional users, or any combination.')); return; }
       triage.patchIssue({ status: 'ignored', ignore }, 'Mute updated.', error, () => form.isConnected);
     });
     const panel = detailPanel('Mute notifications', form);
@@ -3301,7 +3304,7 @@
       if (item.type === 'resolved' && Object.hasOwn(data, 'resolution')) description = [description, issueResolutionDescription(data.resolution)].filter(Boolean).join(' · ');
       else if (item.type === 'resolution_bound') description = issueResolutionDescription(data.resolution);
       else if (item.type === 'ignored' && Object.hasOwn(data, 'ignore')) description = [description, `Mute: ${issueMuteDescription(data.ignore)}`].filter(Boolean).join(' · ');
-      else if (item.type === 'unignored') description = [data.reason === 'duration' ? 'Duration reached' : data.reason === 'count' ? 'Additional error count reached' : 'Mute condition ended', data.ignore ? `Previous condition: ${issueMuteDescription(data.ignore)}` : '', data.eventID ? `New event ${data.eventID}` : ''].filter(Boolean).join(' · ');
+      else if (item.type === 'unignored') description = [data.reason === 'duration' ? 'Duration reached' : data.reason === 'count' ? 'Additional error count reached' : data.reason === 'user_count' ? 'Additional user count reached' : 'Mute condition ended', data.ignore ? `Previous condition: ${issueMuteDescription(data.ignore)}` : '', data.eventID ? `New event ${data.eventID}` : ''].filter(Boolean).join(' · ');
       else if (item.type === 'regressed') {
         const reason = { newer_release: 'Newer release observed', next_release: 'Next release reached', missing_release: 'Missing or invalid release' }[data.reason];
         description = [data.eventID ? `New event ${data.eventID}` : '', data.resolvedAt ? `Previously resolved ${date(data.resolvedAt)}` : '', reason, data.resolution ? issueResolutionDescription(data.resolution) : ''].filter(Boolean).join(' · ');
@@ -3320,6 +3323,7 @@
               description += ` · Mute: ${issueMuteDescription(previous.ignore)}`;
               if (previous.ignore?.until) description += ` · Mute ends: ${date(previous.ignore.until)}`;
               if (previous.ignore?.remaining != null) description += ` · Additional errors remaining: ${number(previous.ignore.remaining)}`;
+              if (previous.ignore?.userRemaining != null) description += ` · Additional users remaining: ${number(previous.ignore.userRemaining)}`;
             }
             if (previous.status === 'resolved') description += ` · ${issueResolutionDescription(previous.resolution)}`;
           }

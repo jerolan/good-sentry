@@ -51,8 +51,11 @@ try {
   const fingerprint = [`conditional-mute-sdk-${run}`];
   const stamp = Math.floor(Date.now() / 1000);
   const ids = Array.from({ length: 4 }, () => randomBytes(16).toString('hex'));
-  const capture = async (id, timestamp) => {
-    assert.equal(sdk.captureEvent({ event_id: id, message, fingerprint, timestamp, level: 'error', environment: 'ignore-sdk' }), id);
+  const userIDs = Array.from({ length: 6 }, () => randomBytes(16).toString('hex'));
+  const capture = async (id, timestamp, options = {}) => {
+    const event = { event_id: id, message: options.message ?? message, fingerprint: options.fingerprint ?? fingerprint, timestamp, level: 'error', environment: 'ignore-sdk' };
+    if (options.userID) event.user = { id: options.userID };
+    assert.equal(sdk.captureEvent(event), id);
     assert.ok(await sdk.flush(10000), 'Official SDK flush succeeds');
   };
   await capture(ids[0], stamp);
@@ -105,7 +108,43 @@ try {
   assert.equal(current.issue.ignore, null);
   assert.deepEqual(report.acknowledgedEvents, [ids[0], ids[0], ids[1], ids[1], ids[2], ids[3]]);
   report.checks.push('explicit indefinite mute continues accepting distinct SDK errors');
-  Object.assign(report, { passed: true, projectID: fixture.project.id, issueID, eventIDs: ids, message, fingerprint, occurrenceTimestamp: stamp, originalRawSHA256: rawHash });
+
+  const userMessage = `Additional-user mute SDK ${run}`;
+  const userFingerprint = [`additional-user-mute-sdk-${run}`];
+  const baselineUser = `baseline-${run}`, firstUser = `first-${run}`, lastUser = `last-${run}`;
+  const userOptions = userID => ({ message: userMessage, fingerprint: userFingerprint, ...(userID ? { userID } : {}) });
+  await capture(userIDs[0], stamp, userOptions(baselineUser));
+  const userListing = await api(`api/v1/organizations/${encodeURIComponent(fixture.orgSlug)}/issues?${new URLSearchParams({ project: fixture.project.id, query: userMessage, status: 'all' })}`);
+  assert.equal(userListing.total, 1);
+  const userIssueID = userListing.data[0].id;
+  const userPath = `api/v1/issues/${encodeURIComponent(userIssueID)}`;
+  const userMute = await api(userPath, { status: 'ignored', ignore: { userCount: 2 } });
+  assert.equal(userMute.ignore.userCount, 2);
+  assert.equal(userMute.ignore.userRemaining, 2);
+  await capture(userIDs[1], stamp, userOptions(baselineUser));
+  current = await api(userPath);
+  assert.equal(current.issue.ignore.userRemaining, 2);
+  await capture(userIDs[2], stamp, userOptions(firstUser));
+  current = await api(userPath);
+  assert.equal(current.issue.status, 'ignored');
+  assert.equal(current.issue.ignore.userRemaining, 1);
+  await capture(userIDs[2], stamp, userOptions(firstUser));
+  await capture(userIDs[3], stamp, userOptions(firstUser));
+  await capture(userIDs[4], stamp, userOptions());
+  current = await api(userPath);
+  assert.equal(current.issue.status, 'ignored');
+  assert.equal(current.issue.ignore.userRemaining, 1);
+  await capture(userIDs[5], stamp, userOptions(lastUser));
+  current = await api(userPath);
+  assert.equal(current.issue.status, 'unresolved');
+  assert.equal(current.issue.ignore, null);
+  const userExpiry = (await api(`${userPath}/activity`)).data.find(row => row.type === 'unignored');
+  assert.equal(userExpiry.data.reason, 'user_count');
+  assert.equal(userExpiry.data.eventID, userIDs[5]);
+  assert.equal(userExpiry.data.ignore.userRemaining, 0);
+  assert.deepEqual(report.acknowledgedEvents, [ids[0], ids[0], ids[1], ids[1], ids[2], ids[3], userIDs[0], userIDs[1], userIDs[2], userIDs[2], userIDs[3], userIDs[4], userIDs[5]]);
+  report.checks.push('official SDK identified users advance once per new identity; baseline, duplicate receipt, repeated user and anonymous capture do not advance, then user_count expiry records the triggering event');
+  Object.assign(report, { passed: true, projectID: fixture.project.id, issueID, userIssueID, eventIDs: ids, userEventIDs: userIDs, message, fingerprint, userMessage, userFingerprint, occurrenceTimestamp: stamp, originalRawSHA256: rawHash });
 } catch (error) { report.failure = safe(error.stack || error); process.exitCode = 1; }
 finally {
   if (active) try { assert.ok(await sdk.close(10000)); } catch (error) { report.passed = false; report.failure = safe(error.stack || error); process.exitCode = 1; }

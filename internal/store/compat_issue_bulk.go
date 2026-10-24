@@ -194,7 +194,7 @@ func (s *Store) UpdateCompatibleIssues(ctx context.Context, access ManagementAcc
 		if err != nil {
 			return result, err
 		}
-		merged, err := applyIssueMerge(ctx, tx, access.UserID, roots, members)
+		merged, err := s.applyIssueMerge(ctx, tx, access.UserID, roots, members)
 		if err != nil {
 			if errors.Is(err, ErrInvalidIssueChange) {
 				return result, ErrInvalidCompatibleIssueChange
@@ -229,7 +229,7 @@ func (s *Store) UpdateCompatibleIssues(ctx context.Context, access ManagementAcc
 				policy.Version = native.Resolution.Policy.Version
 				change.Policy = &policy
 			}
-			issue, err = applyIssueUpdate(ctx, tx, access.UserID, access.OrganizationID, issue, native)
+			issue, err = s.applyIssueUpdate(ctx, tx, access.UserID, access.OrganizationID, issue, native)
 			if err != nil {
 				return result, err
 			}

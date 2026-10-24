@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -37,6 +38,8 @@ type Store struct {
 	pool                     *pgxpool.Pool
 	spanArchive              *SpanArchiveOptions
 	spanArchiveRetentionDays int
+	issueIdentitySecretMu    sync.RWMutex
+	issueIdentitySecret      []byte
 }
 
 func Open(ctx context.Context, databaseURL string) (*Store, error) {
@@ -65,6 +68,15 @@ func Open(ctx context.Context, databaseURL string) (*Store, error) {
 
 func (s *Store) Close()                          { s.pool.Close() }
 func (s *Store) Ready(ctx context.Context) error { return s.pool.Ping(ctx) }
+
+// SetIssueIdentitySecret installs the stable application key used to create
+// private, organization-scoped user digests for active issue mutes. Call it
+// before serving requests and use the same key on every replica.
+func (s *Store) SetIssueIdentitySecret(secret string) {
+	s.issueIdentitySecretMu.Lock()
+	s.issueIdentitySecret = []byte(secret)
+	s.issueIdentitySecretMu.Unlock()
+}
 
 func (s *Store) migrate(ctx context.Context) error {
 	tx, err := s.pool.Begin(ctx)

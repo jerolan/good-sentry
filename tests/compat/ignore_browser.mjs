@@ -22,11 +22,13 @@ const checks = [], screenshots = [], dimensions = [], pageErrors = [], requestFa
 const run = `${Date.now().toString(36)}-${randomBytes(3).toString('hex')}`;
 const message = `Mute browser ${run} <img src=x onerror="window.__muteUnsafe=1">`;
 const fingerprint = [`mute-browser-${run}`];
+const baselineUser = `baseline-${run}`;
 let failure, issueID, csrf, expected400 = false, pendingRelease;
 const endpoint = () => new URL(`api/v1/issues/${encodeURIComponent(issueID)}`, base).href;
 const mute = () => page.getByRole('region', { name: 'Mute notifications', exact: true });
 const minutes = () => mute().getByLabel('Minutes (optional)', { exact: true });
 const count = () => mute().getByLabel('Additional errors (optional)', { exact: true });
+const userCount = () => mute().getByLabel('Additional users (optional)', { exact: true });
 const comments = () => page.getByRole('region', { name: 'Comments', exact: true });
 const activity = () => page.getByRole('region', { name: 'Activity', exact: true });
 page.on('pageerror', error => pageErrors.push(error.message));
@@ -44,10 +46,9 @@ async function api(suffix = '', method = 'GET', data) {
   assert.ok(response.ok(), `Actual ${method} issue ${suffix} succeeds (${response.status()})`);
   return response.status() === 204 ? null : response.json();
 }
-async function captureError() {
-  const eventID = randomBytes(16).toString('hex');
+async function captureError(userID, eventID = randomBytes(16).toString('hex')) {
   const event = { event_id: eventID, platform: 'javascript', level: 'error', timestamp: Date.now() / 1000, message, fingerprint,
-    exception: { values: [{ type: 'MuteBrowserError', value: message, stacktrace: { frames: [{ filename: 'src/mute-browser.js', function: 'captureProof', lineno: 7, colno: 1, in_app: true }] } }] } };
+    ...(userID ? { user: { id: userID } } : {}), exception: { values: [{ type: 'MuteBrowserError', value: message, stacktrace: { frames: [{ filename: 'src/mute-browser.js', function: 'captureProof', lineno: 7, colno: 1, in_app: true }] } }] } };
   const payload = JSON.stringify(event), dsn = new URL(fixture.project.dsn);
   const envelope = `${JSON.stringify({ dsn: fixture.project.dsn, event_id: eventID })}\n${JSON.stringify({ type: 'event', length: Buffer.byteLength(payload) })}\n${payload}\n`;
   const response = await context.request.post(new URL(`api/${encodeURIComponent(fixture.project.id)}/envelope/`, base).href, { headers: { 'Content-Type': 'application/x-sentry-envelope', 'X-Sentry-Auth': `Sentry sentry_version=7,sentry_key=${decodeURIComponent(dsn.username)},sentry_client=goodsentry-ignore-browser/1.0` }, data: envelope });
@@ -58,7 +59,7 @@ async function apply() {
   const pending = patchResponse(); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
   const response = await pending; assert.equal(response.status(), 200); await visible(page.getByText('Mute updated.', { exact: true })); return response.json();
 }
-async function inputs(expectedMinutes, expectedCount) { assert.equal(await minutes().inputValue(), expectedMinutes); assert.equal(await count().inputValue(), expectedCount); }
+async function inputs(expectedMinutes, expectedCount, expectedUsers = '') { assert.equal(await minutes().inputValue(), expectedMinutes); assert.equal(await count().inputValue(), expectedCount); assert.equal(await userCount().inputValue(), expectedUsers); }
 async function capture(name, anchor = mute()) {
   for (const width of [320, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -86,7 +87,7 @@ async function heldPatch(invalid = false) {
 try {
   const login = await context.request.post(new URL('api/v1/login', base).href, { headers: { Origin: base.origin }, data: { email: fixture.ownerEmail, password: fixture.ownerPassword } });
   assert.equal(login.status(), 200); csrf = (await login.json()).csrfToken;
-  await captureError();
+  await captureError(baselineUser);
   const listURL = new URL(`api/v1/organizations/${encodeURIComponent(fixture.orgSlug)}/issues`, base);
   listURL.search = new URLSearchParams({ project: fixture.project.id, status: 'all', query: JSON.stringify(`Mute browser ${run}`) }).toString();
   const rows = await until(async () => { const response = await context.request.get(listURL.href); assert.equal(response.status(), 200); return response.json(); }, result => result.total === 1, 'The owned capture creates one searchable issue');
@@ -98,7 +99,7 @@ try {
   await visible(mute().getByText('No notification mute is active.', { exact: true }));
   assert.equal(await page.locator('#main img, #main script').count(), 0, 'Capture text creates no executable HTML');
   await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
-  await visible(mute().getByRole('alert').filter({ hasText: 'Enter minutes, an additional error count, or both.' }));
+  await visible(mute().getByRole('alert').filter({ hasText: 'Enter minutes, an additional error count, additional users, or any combination.' }));
   await count().fill('2147483648'); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
   await visible(mute().getByRole('alert').filter({ hasText: 'Use whole numbers from 1 to 2,147,483,647' })); await inputs('', '2147483648');
   await capture('client-validation-draft');
@@ -151,7 +152,32 @@ try {
   await capture('automatic-count-activity', activity());
   checks.push('Newer input survives an actual successful held request; real captures continue, remaining updates and automatic System activity explains count unmute without a regression badge');
 
-  await minutes().fill('1'); await count().fill(''); await apply();
+  const firstUser = `new-user-a-${run}`, lastUser = `new-user-b-${run}`;
+  await minutes().fill(''); await count().fill(''); await userCount().fill('2');
+  const userMute = await apply(); assert.equal(userMute.ignore.userCount, 2); assert.equal(userMute.ignore.userRemaining, 2);
+  await visible(mute().getByText('Muted for 2 additional users.', { exact: true }));
+  await visible(mute().getByText('2 additional users remaining.', { exact: true }));
+  const sameUserMute = await apply(); assert.equal(sameUserMute.ignore.userCount, 2); assert.equal(sameUserMute.ignore.userRemaining, 2);
+  await captureError(baselineUser);
+  await until(() => api(), detail => detail.issue.ignore?.userRemaining === 2, 'A known user does not consume the additional-user threshold');
+  const firstUserEvent = await captureError(firstUser);
+  await until(() => api(), detail => detail.issue.ignore?.userRemaining === 1, 'A new user consumes one remaining user');
+  await page.getByRole('button', { name: 'Refresh issue', exact: true }).click();
+  await visible(mute().getByText('1 additional user remaining.', { exact: true }));
+  const preservedProgress = await apply(); assert.equal(preservedProgress.ignore.userRemaining, 1, 'Applying the displayed policy does not reset progress');
+  await captureError(firstUser, firstUserEvent); await captureError(firstUser); await captureError();
+  assert.equal((await api()).issue.ignore.userRemaining, 1, 'Repeated users and anonymous captures do not advance the threshold');
+  const newUserEvent = await captureError(lastUser);
+  await until(() => api(), detail => detail.issue.status === 'unresolved' && detail.issue.ignore === null, 'The second new user ends the mute');
+  await page.getByRole('button', { name: 'Refresh issue', exact: true }).click();
+  const userEnded = activity().getByRole('listitem').filter({ hasText: 'Mute ended' }).filter({ hasText: newUserEvent });
+  await visible(userEnded.getByText(/Additional user count reached · Previous condition: 2 additional users/));
+  const automatic = (await api('/activity')).data.find(row => row.type === 'unignored' && row.data.eventID === newUserEvent);
+  assert.equal(automatic?.data.ignore.userRemaining, 0);
+  await capture('automatic-user-count-activity', activity());
+  checks.push('New identified SDK users consume the threshold once; repeated, duplicate and anonymous captures do not, and automatic activity names the user-count reason');
+
+  await minutes().fill('1'); await count().fill(''); await userCount().fill(''); await apply();
   const clearing = patchResponse(); await mute().getByRole('button', { name: 'Mute indefinitely', exact: true }).click(); assert.equal((await clearing).status(), 200);
   await visible(mute().getByText('Muted indefinitely.', { exact: true }));
   const indefinite = (await api()).issue; assert.equal(indefinite.status, 'ignored'); assert.equal(indefinite.ignore, null);

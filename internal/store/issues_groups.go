@@ -182,14 +182,14 @@ func (s *Store) MergeIssues(ctx context.Context, userID, orgSlug string, ids []s
 	if err != nil {
 		return result, err
 	}
-	result, err = applyIssueMerge(ctx, tx, userID, roots, members)
+	result, err = s.applyIssueMerge(ctx, tx, userID, roots, members)
 	if err != nil {
 		return result, err
 	}
 	return result, tx.Commit(ctx)
 }
 
-func applyIssueMerge(ctx context.Context, tx pgx.Tx, userID string, roots, members []int64) (IssueMergeResult, error) {
+func (s *Store) applyIssueMerge(ctx context.Context, tx pgx.Tx, userID string, roots, members []int64) (IssueMergeResult, error) {
 	var result IssueMergeResult
 	var err error
 	var categories int
@@ -201,6 +201,9 @@ func applyIssueMerge(ctx context.Context, tx pgx.Tx, userID string, roots, membe
 	}
 	parent := strconv.FormatInt(roots[0], 10)
 	if len(roots) > 1 {
+		if err = s.seedMergedIssueIgnoreUsers(ctx, tx, parent, roots[1:]); err != nil {
+			return result, err
+		}
 		sources := make([]Issue, 0, len(roots)-1)
 		sourceIDs := make([]string, 0, len(roots)-1)
 		for _, id := range roots[1:] {
@@ -224,6 +227,9 @@ func applyIssueMerge(ctx context.Context, tx pgx.Tx, userID string, roots, membe
 			return result, err
 		}
 		if _, err = tx.Exec(ctx, `DELETE FROM issue_ignores WHERE issue_id=ANY($1::bigint[])`, roots[1:]); err != nil {
+			return result, err
+		}
+		if _, err = tx.Exec(ctx, `DELETE FROM issue_ignore_users WHERE issue_id=ANY($1::bigint[])`, roots[1:]); err != nil {
 			return result, err
 		}
 		if _, err = tx.Exec(ctx, `DELETE FROM issue_resolutions WHERE issue_id=ANY($1::bigint[])`, roots[1:]); err != nil {

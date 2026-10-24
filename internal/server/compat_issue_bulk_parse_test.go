@@ -27,6 +27,10 @@ func TestCompatibleIssueBulkChangeParsing(t *testing.T) {
 		{"null alias only is no command", `{"snoozeDuration":null}`, store.CompatibleIssueBulkChange{}},
 		{"duration alias", `{"snoozeDuration":3}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: number(3)}}}},
 		{"all duration copies agree", `{"snoozeDuration":3,"ignoreDuration":3,"statusDetails":{"ignoreDuration":3,"ignoreCount":4}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: number(3), Count: number(4)}}}},
+		{"user count accepted", `{"status":"muted","ignoreUserCount":3}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Status: "muted", Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: number(3)}}}},
+		{"nested user count accepted", `{"statusDetails":{"ignoreUserCount":2}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: number(2)}}}},
+		{"user count copies agree", `{"ignoreUserCount":3,"statusDetails":{"ignoreUserCount":3,"ignoreCount":4}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: number(4), UserCount: number(3)}}}},
+		{"zero disables user count", `{"ignoreUserCount":0,"ignoreCount":2}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: number(2)}}}},
 		{"explicit zero copies agree", `{"snoozeDuration":0,"ignoreDuration":0,"statusDetails":{"ignoreDuration":0}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy}}}},
 		{"largest duration", `{"snoozeDuration":2147483647}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: number(2147483647)}}}},
 		{"boolean merge", `{"merge":true}`, store.CompatibleIssueBulkChange{Merge: true}},
@@ -51,6 +55,7 @@ func TestCompatibleIssueBulkChangeParsing(t *testing.T) {
 		`{"snoozeDuration":"1"}`, `{"snoozeDuration":true}`, `{"snoozeDuration":[]}`,
 		`{"snoozeDuration":0,"ignoreDuration":1}`, `{"snoozeDuration":1,"ignoreDuration":0}`,
 		`{"snoozeDuration":0,"statusDetails":{"ignoreDuration":1}}`, `{"snoozeDuration":1,"statusDetails":{"ignoreDuration":0}}`,
+		`{"ignoreUserCount":1,"statusDetails":{"ignoreUserCount":2}}`, `{"ignoreUserCount":null}`, `{"ignoreUserCount":1.0}`, `{"statusDetails":{"ignoreUserWindow":1}}`,
 		`{"snoozeDuration":0,"ignoreDuration":null}`, `{"snoozeDuration":0,"statusDetails":{"inRelease":null}}`,
 		`{"merge":2}`, `{"merge":-1}`, `{"merge":1.0}`, `{"merge":"true"}`, `{"merge":[]}`, `{"merge":{}}`,
 	} {

@@ -61,7 +61,7 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 	raw, policyPresent := fields["statusDetails"]
 	if policyPresent && !compatibleIssueNull(raw) {
 		var err error
-		details, err = issueObject(raw, "inRelease", "inNextRelease", "ignoreDuration", "ignoreCount")
+		details, err = issueObject(raw, "inRelease", "inNextRelease", "ignoreDuration", "ignoreCount", "ignoreUserCount")
 		if err != nil {
 			return change, err
 		}
@@ -70,9 +70,11 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 	_, nextPresent := details["inNextRelease"]
 	_, topMinutes := fields["ignoreDuration"]
 	_, topCount := fields["ignoreCount"]
+	_, topUsers := fields["ignoreUserCount"]
 	_, nestedMinutes := details["ignoreDuration"]
 	_, nestedCount := details["ignoreCount"]
-	mutePresent := topMinutes || topCount || nestedMinutes || nestedCount
+	_, nestedUsers := details["ignoreUserCount"]
+	mutePresent := topMinutes || topCount || topUsers || nestedMinutes || nestedCount || nestedUsers
 	if (releasePresent || nextPresent) && mutePresent {
 		return change, errors.New("Resolution selectors and ignore conditions cannot be combined")
 	}
@@ -85,7 +87,11 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 		if err != nil {
 			return change, err
 		}
-		change.Policy = &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: minutes, Count: count}
+		users, err := compatibleIssueBound(fields, details, "ignoreUserCount")
+		if err != nil {
+			return change, err
+		}
+		change.Policy = &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: minutes, Count: count, UserCount: users}
 		return change, nil
 	}
 	if !policyPresent {

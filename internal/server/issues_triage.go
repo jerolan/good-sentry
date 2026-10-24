@@ -97,23 +97,26 @@ func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
 		}
 		change.Ignore = &store.IssueIgnoreChange{}
 		if !bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
-			condition, err := issueObject(raw, "minutes", "count")
+			condition, err := issueObject(raw, "minutes", "count", "userCount")
 			if err != nil || len(condition) == 0 {
-				failure(w, 400, "Ignore must contain minutes or count")
+				failure(w, 400, "Ignore must contain minutes, count or userCount")
 				return
 			}
 			change.Ignore.Condition = &store.IssueIgnoreCondition{}
 			for name, value := range condition {
 				number, err := strconv.ParseInt(string(bytes.TrimSpace(value)), 10, 32)
 				if err != nil || number <= 0 {
-					failure(w, 400, "Ignore minutes and count must be positive 32-bit JSON integers")
+					failure(w, 400, "Ignore minutes, count and userCount must be positive 32-bit JSON integers")
 					return
 				}
 				n := int32(number)
-				if name == "minutes" {
+				switch name {
+				case "minutes":
 					change.Ignore.Condition.Minutes = &n
-				} else {
+				case "count":
 					change.Ignore.Condition.Count = &n
+				case "userCount":
+					change.Ignore.Condition.UserCount = &n
 				}
 			}
 		}

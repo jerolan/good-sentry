@@ -112,9 +112,9 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 	}
 	path := "/api/v1/issues/" + issues.Data[0].ID
 	type ignoreDTO struct {
-		Minutes, Count *int32
-		Until          *time.Time
-		Remaining      *int64
+		Minutes, Count, UserCount *int32
+		Until                     *time.Time
+		Remaining, UserRemaining  *int64
 	}
 	type issueDTO struct {
 		Status     string
@@ -140,12 +140,12 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 			if err := json.Unmarshal(condition, &values); err != nil {
 				t.Fatal(err)
 			}
-			for _, key := range []string{"minutes", "count", "until", "remaining"} {
+			for _, key := range []string{"minutes", "count", "userCount", "until", "remaining", "userRemaining"} {
 				if _, present := values[key]; !present {
 					t.Fatalf("conditional ignore omitted nullable %s: %s", key, condition)
 				}
 			}
-			if len(values) != 4 {
+			if len(values) != 6 {
 				t.Fatalf("conditional ignore fields=%s", condition)
 			}
 			if item.Ignore.Until != nil {
@@ -171,8 +171,8 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 	}
 	t.Run("valid conditional mute response", func(t *testing.T) {
 		before := time.Now().UTC()
-		item := patch(t, `{"status":"ignored","ignore":{"minutes":2,"count":3}}`)
-		if item.Status != "ignored" || item.Ignore == nil || item.Ignore.Minutes == nil || *item.Ignore.Minutes != 2 || item.Ignore.Count == nil || *item.Ignore.Count != 3 || item.Ignore.Remaining == nil || *item.Ignore.Remaining != 3 || item.Ignore.Until == nil {
+		item := patch(t, `{"status":"ignored","ignore":{"minutes":2,"count":3,"userCount":2}}`)
+		if item.Status != "ignored" || item.Ignore == nil || item.Ignore.Minutes == nil || *item.Ignore.Minutes != 2 || item.Ignore.Count == nil || *item.Ignore.Count != 3 || item.Ignore.UserCount == nil || *item.Ignore.UserCount != 2 || item.Ignore.Remaining == nil || *item.Ignore.Remaining != 3 || item.Ignore.UserRemaining == nil || *item.Ignore.UserRemaining != 2 || item.Ignore.Until == nil {
 			t.Fatalf("combined mute response=%+v ignore=%+v", item, item.Ignore)
 		}
 		if item.Ignore.Until.Before(before.Add(2*time.Minute-time.Second)) || item.Ignore.Until.After(time.Now().UTC().Add(2*time.Minute+time.Second)) {
@@ -190,7 +190,7 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 		}
 	})
 	t.Run("single conditions nullable fields and integer boundaries", func(t *testing.T) {
-		for _, field := range []string{"minutes", "count"} {
+		for _, field := range []string{"minutes", "count", "userCount"} {
 			for _, value := range []int32{1, 2147483647} {
 				t.Run(fmt.Sprintf("%s=%d", field, value), func(t *testing.T) {
 					item := patch(t, fmt.Sprintf(`{"status":"ignored","ignore":{"%s": %d }}`, field, value))
@@ -202,8 +202,12 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 						if condition.Minutes == nil || *condition.Minutes != value || condition.Until == nil || condition.Count != nil || condition.Remaining != nil {
 							t.Fatalf("minutes condition=%+v", condition)
 						}
-					} else if condition.Count == nil || *condition.Count != value || condition.Remaining == nil || *condition.Remaining != int64(value) || condition.Minutes != nil || condition.Until != nil {
-						t.Fatalf("count condition=%+v", condition)
+					} else if field == "count" {
+						if condition.Count == nil || *condition.Count != value || condition.Remaining == nil || *condition.Remaining != int64(value) || condition.Minutes != nil || condition.UserCount != nil || condition.Until != nil || condition.UserRemaining != nil {
+							t.Fatalf("count condition=%+v", condition)
+						}
+					} else if condition.UserCount == nil || *condition.UserCount != value || condition.UserRemaining == nil || *condition.UserRemaining != int64(value) || condition.Minutes != nil || condition.Count != nil || condition.Until != nil || condition.Remaining != nil {
+						t.Fatalf("user count condition=%+v", condition)
 					}
 				})
 			}
@@ -252,7 +256,7 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 			"{\"status\":\"ignored\",\"ignore\":{\"count\":1},\"\xff\":0}",
 			`{"status":"ignored","ignore":{"count":1,"\u0000":2}}`,
 		}
-		for _, field := range []string{"minutes", "count"} {
+		for _, field := range []string{"minutes", "count", "userCount"} {
 			for _, value := range []string{"null", "0", "-0", "-1", "2147483648", "999999999999999999999999", "1.0", "1.5", "1e0", "1E1", "\"1\"", "true", "false", "[]", "{}", "+1", "01"} {
 				invalid = append(invalid, fmt.Sprintf(`{"status":"ignored","ignore":{"%s":%s}}`, field, value))
 			}
