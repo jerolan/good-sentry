@@ -12,6 +12,7 @@ import (
 
 	"goodsentry/internal/artifact"
 	"goodsentry/internal/event"
+	"goodsentry/internal/native"
 	"goodsentry/internal/protocol"
 	"goodsentry/internal/store"
 )
@@ -80,6 +81,44 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	nativeMinidumpIndex := -1
+	for index, item := range env.Items {
+		if item.Type != "attachment" {
+			continue
+		}
+		var attachmentType string
+		if json.Unmarshal(item.Header["attachment_type"], &attachmentType) != nil || attachmentType != "event.minidump" {
+			continue
+		}
+		if nativeMinidumpIndex >= 0 {
+			failure(w, 400, "An envelope may contain at most one native Minidump")
+			return
+		}
+		nativeMinidumpIndex = index
+	}
+	if nativeMinidumpIndex >= 0 {
+		nativeEvents := 0
+		for _, item := range env.Items {
+			switch item.Type {
+			case "event":
+				nativeEvents++
+				var fields struct {
+					Platform string `json:"platform"`
+				}
+				if json.Unmarshal(item.Payload, &fields) != nil || fields.Platform != "native" {
+					failure(w, 400, "A native Minidump attachment requires a native event")
+					return
+				}
+			case "transaction", "feedback":
+				failure(w, 400, "A native Minidump attachment requires one event item")
+				return
+			}
+		}
+		if nativeEvents != 1 {
+			failure(w, 400, "A native Minidump attachment requires one event item")
+			return
+		}
+	}
 	var normalized *event.Event
 	for _, item := range env.Items {
 		if item.Type != "event" && item.Type != "transaction" && item.Type != "feedback" {
@@ -131,6 +170,22 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+		if nativeMinidumpIndex >= 0 && item.Type == "event" {
+			crash, parseErr := native.ParseMinidump(env.Items[nativeMinidumpIndex].Payload)
+			if parseErr != nil {
+				failure(w, 400, "Invalid native Minidump attachment")
+				return
+			}
+			if err := s.symbolizeCrash(r.Context(), project, &crash); err != nil {
+				report(w, err)
+				return
+			}
+			raw, err = native.MergeMinidumpEvent(raw, crash, time.Now())
+			if err != nil {
+				failure(w, 400, "Invalid native event Minidump data")
+				return
+			}
+		}
 		ev, err := event.Normalize(raw, envelopeID, time.Now())
 		if err != nil {
 			failure(w, 400, err.Error())
@@ -151,7 +206,10 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		if userReport != nil {
 			children.UserReports = []store.UserReportInput{*userReport}
 		}
-		for _, item := range env.Items {
+		for index, item := range env.Items {
+			if index == nativeMinidumpIndex {
+				continue
+			}
 			switch item.Type {
 			case "attachment":
 				var filename, contentType, attachmentType string

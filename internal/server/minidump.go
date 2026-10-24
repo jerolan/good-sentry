@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -62,41 +63,10 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		failure(w, http.StatusBadRequest, "Invalid minidump")
 		return
 	}
-	symbolFiles, err := s.db.DebugSymbolFiles(r.Context(), r.PathValue("project"))
-	if err != nil {
+	if err := s.symbolizeCrash(r.Context(), r.PathValue("project"), &crash); err != nil {
 		report(w, err)
 		return
 	}
-	symbols := native.SymbolSet{}
-	unwindTables := native.UnwindSet{}
-	for _, file := range symbolFiles {
-		debugKey := native.DebugKey(file.DebugID)
-		for _, object := range native.ParseDebugObjects(file.Name, file.Content) {
-			if object.DebugID != "" && debugKey != "" && object.DebugID != debugKey {
-				continue
-			}
-			if object.DebugID == "" {
-				symbols[object.Name] = append(symbols[object.Name], object.Functions...)
-			}
-			objectDebugKey := object.DebugID
-			if objectDebugKey == "" {
-				objectDebugKey = debugKey
-			}
-			if objectDebugKey != "" {
-				symbols[objectDebugKey] = append(symbols[objectDebugKey], object.Functions...)
-			}
-			if object.Unwind != nil {
-				unwindTables[object.Name] = append(unwindTables[object.Name], object.Unwind)
-				if objectDebugKey != "" {
-					unwindTables[objectDebugKey] = append(unwindTables[objectDebugKey], object.Unwind)
-				}
-			}
-		}
-	}
-	if frames := native.UnwindCFI(&crash, unwindTables); len(frames) > len(crash.Frames) {
-		crash.Frames = frames
-	}
-	native.Symbolicate(&crash, symbols)
 	fields := map[string]string{}
 	if r.MultipartForm != nil {
 		for name, values := range r.MultipartForm.Value {
@@ -140,4 +110,42 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"id": eventID})
+}
+
+func (s *Server) symbolizeCrash(ctx context.Context, projectID string, crash *native.Crash) error {
+	symbolFiles, err := s.db.DebugSymbolFiles(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	symbols := native.SymbolSet{}
+	unwindTables := native.UnwindSet{}
+	for _, file := range symbolFiles {
+		debugKey := native.DebugKey(file.DebugID)
+		for _, object := range native.ParseDebugObjects(file.Name, file.Content) {
+			if object.DebugID != "" && debugKey != "" && object.DebugID != debugKey {
+				continue
+			}
+			if object.DebugID == "" {
+				symbols[object.Name] = append(symbols[object.Name], object.Functions...)
+			}
+			objectDebugKey := object.DebugID
+			if objectDebugKey == "" {
+				objectDebugKey = debugKey
+			}
+			if objectDebugKey != "" {
+				symbols[objectDebugKey] = append(symbols[objectDebugKey], object.Functions...)
+			}
+			if object.Unwind != nil {
+				unwindTables[object.Name] = append(unwindTables[object.Name], object.Unwind)
+				if objectDebugKey != "" {
+					unwindTables[objectDebugKey] = append(unwindTables[objectDebugKey], object.Unwind)
+				}
+			}
+		}
+	}
+	if frames := native.UnwindCFI(crash, unwindTables); len(frames) > len(crash.Frames) {
+		crash.Frames = frames
+	}
+	native.Symbolicate(crash, symbols)
+	return nil
 }

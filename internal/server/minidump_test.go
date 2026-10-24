@@ -15,6 +15,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -143,6 +144,239 @@ func TestNativeMinidumpSymbolicationAndIngestion(t *testing.T) {
 	res.Body.Close()
 	if res.StatusCode != http.StatusForbidden {
 		t.Fatalf("invalid minidump DSN=%d", res.StatusCode)
+	}
+}
+
+func TestNativeMinidumpEnvelopeAttachment(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	const debugID = "5A9832E5287241C1838ED98914E9B7FF1"
+	const eventID = "ca2e63929e354414adf9be81211c98aa"
+	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 CrashFunction\n1010 20 42 1\n")
+	digest := sha1.Sum(symbol)
+	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "test_app.sym", "sym", debugID, "x86_64", "test_app.pdb", hex.EncodeToString(digest[:]), nil, nil, symbol); err != nil {
+		t.Fatal(err)
+	}
+	dump := buildNativeModuleMinidump(t, `C:\test\test_app.pdb`, debugID, 0x1015)
+	makeEvent := func(id, platform string) []byte {
+		t.Helper()
+		payload := map[string]any{
+			"event_id": id, "platform": platform, "level": "fatal", "message": "SDK native crash",
+			"timestamp": "2026-10-23T10:11:12Z", "tags": map[string]string{"build": "demo-7"},
+			"contexts": map[string]any{"device": map[string]string{"arch": "x86_64"}, "app": map[string]string{"version": "7"}},
+			"exception": map[string]any{"values": []any{map[string]any{
+				"type": "SIGSEGV", "value": "captured by sentry-native", "mechanism": map[string]any{"type": "signal", "handled": false},
+				"data": map[string]string{"signal": "SIGSEGV"},
+			}}},
+			"debug_meta": map[string]any{"sdk_field": "preserved", "images": []any{
+				map[string]any{"type": "symbolic", "image_addr": "0x140000000", "debug_id": debugID, "code_file": "client-stale.pdb"},
+				map[string]any{"type": "symbolic", "image_addr": "0x1234", "debug_id": "CLIENTONLY1", "code_file": "client-only.dll"},
+			}},
+		}
+		raw, err := json.Marshal(payload)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return raw
+	}
+	type attachedDump struct {
+		attachmentType string
+		filename       string
+		data           []byte
+	}
+	makeEnvelope := func(id string, event []byte, attachments ...attachedDump) []byte {
+		t.Helper()
+		var wire bytes.Buffer
+		header, err := json.Marshal(map[string]string{"event_id": id})
+		if err != nil {
+			t.Fatal(err)
+		}
+		wire.Write(header)
+		wire.WriteByte('\n')
+		writeItem := func(itemHeader map[string]any, payload []byte) {
+			t.Helper()
+			itemHeader["length"] = len(payload)
+			header, err := json.Marshal(itemHeader)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wire.Write(header)
+			wire.WriteByte('\n')
+			wire.Write(payload)
+			wire.WriteByte('\n')
+		}
+		if event != nil {
+			writeItem(map[string]any{"type": "event"}, event)
+		}
+		for _, attachment := range attachments {
+			itemHeader := map[string]any{"type": "attachment", "filename": attachment.filename}
+			if attachment.attachmentType != "" {
+				itemHeader["attachment_type"] = attachment.attachmentType
+			}
+			writeItem(itemHeader, attachment.data)
+		}
+		return wire.Bytes()
+	}
+	post := func(wire []byte) (int, []byte) {
+		t.Helper()
+		endpoint := f.server.URL + "/good/api/" + f.project.ID + "/envelope/?sentry_version=7&sentry_key=" + f.project.PublicKey
+		req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, endpoint, bytes.NewReader(wire))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/x-sentry-envelope")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer res.Body.Close()
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return res.StatusCode, body
+	}
+	wire := makeEnvelope(eventID, makeEvent(eventID, "native"), attachedDump{attachmentType: "event.minidump", filename: "minidump.dmp", data: dump})
+	status, response := post(wire)
+	var accepted struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(response, &accepted); err != nil || status != http.StatusOK || accepted.ID != eventID {
+		t.Fatalf("native SDK envelope response=%d body=%s err=%v", status, response, err)
+	}
+	rows, err := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 100})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stored json.RawMessage
+	for _, row := range rows {
+		var identity struct {
+			EventID string `json:"event_id"`
+		}
+		if err := json.Unmarshal(row.Data, &identity); err != nil {
+			t.Fatal(err)
+		}
+		if identity.EventID == eventID {
+			stored = row.Data
+			break
+		}
+	}
+	if len(stored) == 0 {
+		t.Fatalf("native SDK event %s was not stored", eventID)
+	}
+	var got struct {
+		EventID   string            `json:"event_id"`
+		Platform  string            `json:"platform"`
+		Level     string            `json:"level"`
+		Message   string            `json:"message"`
+		Timestamp string            `json:"timestamp"`
+		Tags      map[string]string `json:"tags"`
+		Contexts  struct {
+			App struct {
+				Version string `json:"version"`
+			} `json:"app"`
+		} `json:"contexts"`
+		Exception struct {
+			Values []struct {
+				Type       string            `json:"type"`
+				Value      string            `json:"value"`
+				Mechanism  map[string]any    `json:"mechanism"`
+				Data       map[string]string `json:"data"`
+				Stacktrace struct {
+					Frames []struct {
+						Function string `json:"function"`
+						Filename string `json:"filename"`
+						Line     int    `json:"lineno"`
+					} `json:"frames"`
+				} `json:"stacktrace"`
+			} `json:"values"`
+		} `json:"exception"`
+		DebugMeta struct {
+			SDKField string `json:"sdk_field"`
+			Images   []struct {
+				ImageAddr string `json:"image_addr"`
+				DebugID   string `json:"debug_id"`
+				CodeFile  string `json:"code_file"`
+			} `json:"images"`
+		} `json:"debug_meta"`
+	}
+	if err := json.Unmarshal(stored, &got); err != nil {
+		t.Fatal(err)
+	}
+	if got.EventID != eventID || got.Platform != "native" || got.Level != "fatal" || got.Message != "SDK native crash" || got.Timestamp != "2026-10-23T10:11:12Z" || got.Tags["build"] != "demo-7" {
+		t.Fatalf("SDK event fields were not preserved: %+v", got)
+	}
+	if got.Contexts.App.Version != "7" {
+		t.Fatalf("SDK contexts were not preserved: %+v", got.Contexts)
+	}
+	if len(got.Exception.Values) != 1 {
+		t.Fatalf("native SDK exceptions=%+v", got.Exception.Values)
+	}
+	exception := got.Exception.Values[0]
+	if exception.Type != "SIGSEGV" || exception.Value != "captured by sentry-native" || exception.Mechanism["type"] != "signal" || exception.Data["signal"] != "SIGSEGV" {
+		t.Fatalf("SDK exception identity/context changed: %+v", exception)
+	}
+	if len(exception.Stacktrace.Frames) < 1 || exception.Stacktrace.Frames[0].Function != "CrashFunction" || exception.Stacktrace.Frames[0].Filename != "C:\\src\\crash.cc" || exception.Stacktrace.Frames[0].Line != 42 {
+		t.Fatalf("native SDK stack was not symbolicated: %+v", exception.Stacktrace.Frames)
+	}
+	if got.DebugMeta.SDKField != "preserved" || len(got.DebugMeta.Images) != 2 || got.DebugMeta.Images[0].DebugID != debugID || got.DebugMeta.Images[0].ImageAddr != "0x140000000" || got.DebugMeta.Images[0].CodeFile != `C:\test\test_app.pdb` || got.DebugMeta.Images[1].CodeFile != "client-only.dll" {
+		t.Fatalf("Minidump debug images were not merged authoritatively: %+v", got.DebugMeta)
+	}
+	var retainedDumps int
+	if err := f.sql.QueryRow(f.ctx, "SELECT count(*) FROM attachments WHERE project_id::text=$1 AND event_id=$2", f.project.ID, eventID).Scan(&retainedDumps); err != nil || retainedDumps != 0 {
+		t.Fatalf("native SDK Minidump attachments retained=%d err=%v", retainedDumps, err)
+	}
+
+	badCases := []struct {
+		name, id, platform string
+		event              bool
+		attachments        []attachedDump
+	}{
+		{name: "duplicate dumps", id: "ba2e63929e354414adf9be81211c98aa", platform: "native", event: true, attachments: []attachedDump{{attachmentType: "event.minidump", filename: "one.dmp", data: dump}, {attachmentType: "event.minidump", filename: "two.dmp", data: dump}}},
+		{name: "missing event", id: "bb2e63929e354414adf9be81211c98aa", attachments: []attachedDump{{attachmentType: "event.minidump", filename: "missing.dmp", data: dump}}},
+		{name: "non-native event", id: "bc2e63929e354414adf9be81211c98aa", platform: "go", event: true, attachments: []attachedDump{{attachmentType: "event.minidump", filename: "go.dmp", data: dump}}},
+		{name: "malformed dump", id: "bd2e63929e354414adf9be81211c98aa", platform: "native", event: true, attachments: []attachedDump{{attachmentType: "event.minidump", filename: "invalid.dmp", data: []byte("not a minidump")}}},
+	}
+	for _, test := range badCases {
+		t.Run(test.name, func(t *testing.T) {
+			var parent []byte
+			if test.event {
+				parent = makeEvent(test.id, test.platform)
+			}
+			status, body := post(makeEnvelope(test.id, parent, test.attachments...))
+			if status != http.StatusBadRequest {
+				t.Fatalf("invalid native envelope status=%d body=%s", status, body)
+			}
+			rows, err := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 100})
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, row := range rows {
+				var identity struct {
+					EventID string `json:"event_id"`
+				}
+				if err := json.Unmarshal(row.Data, &identity); err != nil {
+					t.Fatal(err)
+				}
+				if identity.EventID == test.id {
+					t.Fatalf("invalid native event %s was committed", test.id)
+				}
+			}
+			var attachmentRows int
+			if err := f.sql.QueryRow(f.ctx, "SELECT count(*) FROM attachments WHERE project_id::text=$1 AND event_id=$2", f.project.ID, test.id).Scan(&attachmentRows); err != nil || attachmentRows != 0 {
+				t.Fatalf("invalid native attachment rows=%d err=%v", attachmentRows, err)
+			}
+		})
+	}
+
+	ordinaryID := "be2e63929e354414adf9be81211c98aa"
+	status, body := post(makeEnvelope(ordinaryID, makeEvent(ordinaryID, "native"), attachedDump{filename: "unmarked.dmp", data: dump}))
+	if status != http.StatusOK {
+		t.Fatalf("unmarked .dmp attachment status=%d body=%s", status, body)
+	}
+	var ordinaryRows int
+	if err := f.sql.QueryRow(f.ctx, "SELECT count(*) FROM attachments WHERE project_id::text=$1 AND event_id=$2 AND data=$3", f.project.ID, ordinaryID, dump).Scan(&ordinaryRows); err != nil || ordinaryRows != 1 {
+		t.Fatalf("unmarked .dmp attachment rows=%d err=%v", ordinaryRows, err)
 	}
 }
 
