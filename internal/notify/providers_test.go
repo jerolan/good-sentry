@@ -60,7 +60,7 @@ func TestProviderMessages(t *testing.T) {
 		}
 		sections := object["sections"].([]any)
 		section := sections[0].(map[string]any)
-		if section["markdown"] != false || section["text"] != wantSummary {
+		if section["markdown"] != false || section["text"] != wantSummary+"\n"+payload.URL {
 			t.Fatalf("Teams plain section: %#v", section)
 		}
 		actions := object["potentialAction"].([]any)
@@ -256,7 +256,8 @@ func TestProviderEscapingAndBounds(t *testing.T) {
 			case "teams":
 				object := decodeProviderObject(t, message)
 				section := object["sections"].([]any)[0].(map[string]any)["text"].(string)
-				if utf8.RuneCountInString(section) > teamsTextLimit || !strings.HasSuffix(section, "…") || utf8.RuneCountInString(object["summary"].(string)) > teamsSummaryLimit {
+				visibleSummary := strings.TrimSuffix(section, "\n"+p.URL)
+				if utf8.RuneCountInString(section) > teamsTextLimit || !strings.HasSuffix(section, "\n"+p.URL) || !strings.HasSuffix(visibleSummary, "…") || utf8.RuneCountInString(object["summary"].(string)) > teamsSummaryLimit {
 					t.Fatalf("Teams bound: %#v", object)
 				}
 			default:

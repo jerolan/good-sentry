@@ -78,7 +78,10 @@ func teamsMessage(payload Payload) (providerMessage, error) {
 	if utf8.RuneCountInString(resource.String()) > teamsResourceLimit {
 		return providerMessage{}, invalid
 	}
-	sectionText := truncateRunes(summary, teamsTextLimit)
+	sectionText, err := providerTextWithURL(summary, resource.String(), teamsTextLimit)
+	if err != nil {
+		return providerMessage{}, invalid
+	}
 	cardSummary := strings.SplitN(sectionText, "\n", 2)[0]
 	cardSummary = truncateRunes(cardSummary, teamsSummaryLimit)
 	card := struct {
