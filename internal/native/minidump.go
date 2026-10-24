@@ -15,16 +15,16 @@ import (
 )
 
 const (
-	minidumpSignature  = 0x504d444d
-	minidumpVersion    = 0xa793
-	streamThreadList   = 3
-	streamModuleList   = 4
-	streamException    = 6
-	streamMemory64     = 9
-	streamSystemInfo   = 7
-	cpuArchARM         = 5
-	cpuArchAMD64       = 9
-	cpuArchRISCV64     = 0x8006
+	minidumpSignature = 0x504d444d
+	minidumpVersion   = 0xa793
+	streamThreadList  = 3
+	streamModuleList  = 4
+	streamException   = 6
+	streamMemory64    = 9
+	streamSystemInfo  = 7
+	cpuArchARM        = 5
+	cpuArchAMD64      = 9
+	cpuArchRISCV64    = 0x8006
 	// Crashpad's native struct size includes four bytes of tail alignment.
 	riscv64ContextSize = 528
 	riscv64ContextV1   = 1
