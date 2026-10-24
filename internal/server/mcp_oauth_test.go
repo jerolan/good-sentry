@@ -291,3 +291,118 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 		t.Fatalf("disabled OAuth metadata=%d", res.StatusCode)
 	}
 }
+
+func TestOpenModeMCPOAuthUsesImplicitOwner(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	cfg := config.Config{AuthMode: "disabled", MCP: true, Logs: true, Domain: "https://public.example.test/good", Prefix: "/good", Secret: strings.Repeat("r", 64), MaxBodyBytes: 1 << 20}
+	srv := httptest.NewServer(NewWithAccountMailAndDefaultUser(cfg, f.db, nil, nil, &f.owner))
+	t.Cleanup(srv.Close)
+	base := srv.URL + cfg.Prefix
+	publicBase := strings.TrimRight(cfg.Domain, "/")
+	redirect := base + "/oauth/callback"
+	client := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+
+	res, body := oauthJSON(t, client, base+"/oauth/register", `{"client_name":"Open mode MCP acceptance","redirect_uris":["`+redirect+`"],"token_endpoint_auth_method":"none","grant_types":["authorization_code","refresh_token"],"response_types":["code"]}`)
+	if res.StatusCode != http.StatusCreated {
+		t.Fatalf("register: %d %s", res.StatusCode, body)
+	}
+	var registered struct {
+		ClientID string `json:"client_id"`
+	}
+	if err := json.Unmarshal(body, &registered); err != nil || registered.ClientID == "" {
+		t.Fatalf("client: %s %v", body, err)
+	}
+	verifier := strings.Repeat("b", 43)
+	digest := sha256.Sum256([]byte(verifier))
+	challenge := base64.RawURLEncoding.EncodeToString(digest[:])
+	state := "open-owner-state"
+	scope := "org:read project:read event:read"
+	authorize := url.Values{"client_id": {registered.ClientID}, "redirect_uri": {redirect}, "response_type": {"code"}, "state": {state}, "resource": {publicBase + "/mcp"}, "scope": {scope}, "code_challenge": {challenge}, "code_challenge_method": {"S256"}}
+	consentResponse, err := client.Get(base + "/oauth/authorize?" + authorize.Encode())
+	if err != nil {
+		t.Fatal(err)
+	}
+	consent, err := io.ReadAll(consentResponse.Body)
+	consentResponse.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if consentResponse.StatusCode != http.StatusOK || !bytes.Contains(consent, []byte("Open mode MCP acceptance")) || !bytes.Contains(consent, []byte(f.org.Name)) || bytes.Contains(consent, []byte(`type="password"`)) || len(consentResponse.Header.Values("Set-Cookie")) != 0 {
+		t.Fatalf("open mode did not render cookie-free owner consent: %d %s", consentResponse.StatusCode, consent)
+	}
+
+	meResponse, err := client.Get(base + "/api/v1/me")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var me struct {
+		User struct {
+			ID    string `json:"id"`
+			Email string `json:"email"`
+		} `json:"user"`
+		CSRFToken string `json:"csrfToken"`
+		Features  struct {
+			MCP bool `json:"mcp"`
+		} `json:"features"`
+	}
+	if err := json.NewDecoder(meResponse.Body).Decode(&me); err != nil {
+		meResponse.Body.Close()
+		t.Fatal(err)
+	}
+	meResponse.Body.Close()
+	if meResponse.StatusCode != http.StatusOK || me.User.ID != f.owner.ID || me.User.Email != f.owner.Email || me.CSRFToken == "" || !me.Features.MCP || len(meResponse.Header.Values("Set-Cookie")) != 0 {
+		t.Fatalf("cookie-free open identity: status=%d user=%+v csrf=%t mcp=%t", meResponse.StatusCode, me.User, me.CSRFToken != "", me.Features.MCP)
+	}
+
+	postConsent := func(origin, csrf string) (*http.Response, []byte) {
+		t.Helper()
+		form := url.Values{"client_id": {registered.ClientID}, "redirect_uri": {redirect}, "response_type": {"code"}, "state": {state}, "resource": {publicBase + "/mcp"}, "scope": {scope}, "code_challenge": {challenge}, "code_challenge_method": {"S256"}, "csrf": {csrf}, "organization": {f.org.Slug}, "project": {f.project.ID}, "decision": {"approve"}}
+		req, err := http.NewRequest(http.MethodPost, base+"/oauth/authorize", strings.NewReader(form.Encode()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Set("Origin", origin)
+		response, err := client.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err := io.ReadAll(response.Body)
+		response.Body.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return response, data
+	}
+	if response, responseBody := postConsent("https://public.example.test", ""); response.StatusCode != http.StatusForbidden {
+		t.Fatalf("consent without CSRF=%d body=%s", response.StatusCode, responseBody)
+	}
+	if response, responseBody := postConsent("https://foreign.example.test", me.CSRFToken); response.StatusCode != http.StatusForbidden {
+		t.Fatalf("cross-origin consent=%d body=%s", response.StatusCode, responseBody)
+	}
+	consentPost, consentBody := postConsent("https://public.example.test", me.CSRFToken)
+	if consentPost.StatusCode != http.StatusSeeOther {
+		t.Fatalf("owner consent: %d %s", consentPost.StatusCode, consentBody)
+	}
+	callback, err := url.Parse(consentPost.Header.Get("Location"))
+	if err != nil || callback.Query().Get("code") == "" || callback.Query().Get("state") != state || callback.Query().Get("iss") != publicBase || callback.Query().Get("error") != "" {
+		t.Fatalf("OAuth callback: %q %v", consentPost.Header.Get("Location"), err)
+	}
+	tokenForm := url.Values{"grant_type": {"authorization_code"}, "client_id": {registered.ClientID}, "redirect_uri": {redirect}, "code": {callback.Query().Get("code")}, "code_verifier": {verifier}}
+	tokenResponse, tokenBody := oauthForm(t, client, base+"/oauth/token", tokenForm)
+	if tokenResponse.StatusCode != http.StatusOK {
+		t.Fatalf("code exchange: %d %s", tokenResponse.StatusCode, tokenBody)
+	}
+	var issued struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.Unmarshal(tokenBody, &issued); err != nil || issued.AccessToken == "" {
+		t.Fatalf("token response: %s %v", tokenBody, err)
+	}
+	session := mcpClient(t, f, srv, issued.AccessToken, "2026-07-28")
+	orgs := mcpWorkspaceCall(t, f, session, "list_organizations", map[string]any{})
+	projects := mcpWorkspaceCall(t, f, session, "list_projects", map[string]any{"organization": f.org.Slug})
+	if len(orgs.Data) != 1 || orgs.Data[0]["id"] != f.org.ID || len(projects.Data) != 1 || projects.Data[0]["id"] != f.project.ID {
+		t.Fatalf("OAuth grant did not use the implicit owner and selected project: orgs=%+v projects=%+v", orgs, projects)
+	}
+}
