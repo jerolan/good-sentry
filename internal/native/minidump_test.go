@@ -1706,6 +1706,36 @@ func testCFIUnwindFixture(t *testing.T, fixture string) {
 	}
 }
 
+func TestParseCFIECIEV4AddressAndSegmentSizes(t *testing.T) {
+	for _, addressSize := range []byte{4, 8} {
+		t.Run(fmt.Sprintf("address_size_%d", addressSize), func(t *testing.T) {
+			data := []byte{4, 0, addressSize, 0, 1, 0x78, 16, 0x0c, 7, 8}
+			cie, err := parseCFIECIE(data, 8, false)
+			if err != nil {
+				t.Fatalf("parse version 4 CIE: %v", err)
+			}
+			if cie.addrSize != int(addressSize) || cie.codeAlign != 1 || cie.dataAlign != -8 || cie.returnReg != 16 {
+				t.Fatalf("decoded CIE header: %+v", cie)
+			}
+			if cie.initial.cfa.register != 7 || cie.initial.cfa.offset != 8 {
+				t.Fatalf("decoded CIE instructions: %+v", cie.initial.cfa)
+			}
+		})
+	}
+
+	for name, data := range map[string][]byte{
+		"unsupported_address_size": {4, 0, 16, 0, 1, 0x78, 16},
+		"unsupported_segment_size": {4, 0, 8, 1, 1, 0x78, 16},
+		"truncated_sizes":          {4, 0, 8},
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := parseCFIECIE(data, 8, false); err == nil {
+				t.Fatal("invalid version 4 CIE was accepted")
+			}
+		})
+	}
+}
+
 func TestCFIParserRejectsTruncatedSection(t *testing.T) {
 	for _, data := range [][]byte{
 		{0x10, 0x00},

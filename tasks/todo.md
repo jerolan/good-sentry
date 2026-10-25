@@ -263,6 +263,13 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Local evidence (2026-10-22): `TestCFISignalFrameUsesUnadjustedReturnAddress` proves the `zRS` parser flag, exact-start lookup for a restored signal PC and unchanged return-address-minus-one lookup for ordinary frames. The full native race suite, integration-tag vet, trim-path build and fresh-volume Compose readiness/dashboard/open-auth/restart smoke pass. The focused server test is covered by PostgreSQL-enabled CI because no local `DATABASE_URL` is configured.
     - Public evidence: source tree `582c22ab704f8884401bc3188687faf5a587acc9` passes CI `39852760898` with formatting, vet, all unit and PostgreSQL integration race tests and image build. Container workflow `39853558056` publishes `linux/amd64` and `linux/arm64` to `main` and `latest` at OCI index `sha256:19c305f1ec8d17148cf24e2591083fe5b846b99603df8e615cb69d43a8dfa76c`.
 
+  - [x] Parse DWARF CIE v4 address and segment sizes in specification order.
+    - Contract: read `address_size` and `segment_selector_size` immediately after augmentation; accept address sizes4 and8, and reject unsupported sizes or nonzero segment selectors.
+    - Acceptance: cover both supported address sizes, header and CFI instruction decoding, truncated size fields, unsupported addresses and unsupported segment selectors.
+    - Verify: `go test -race ./internal/native`, `go vet -tags=integration ./...`, trim-path build and `git diff --check`; exact-source CI and public-image acceptance remain part of the native parent.
+    - Sources: [DWARF 4 §6.4.1](https://dwarfstd.org/doc/DWARF4.pdf), [DWARF 5 §6.4.1.1](https://dwarfstd.org/doc/DWARF5.pdf).
+    - Local evidence (2026-10-24): RED reproduced rejection for valid four- and eight-byte CIE v4 headers. The parser now reads fields in standard order, decodes alignment/return-register/CFA instructions correctly, and rejects truncation, unsupported addresses and segment selectors. Native race, integration-tag vet, trim-path build and `git diff --check` pass.
+    - Files: `SPEC.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
   - [x] Read DWARF dereference expressions with their declared widths.
     - Contract: `DW_OP_deref` reads one target pointer; `DW_OP_deref_size` consumes a one-byte size operand in 1..pointerSize, reads only captured bytes and zero-extends them. Invalid widths, truncated operands and addresses outside captured memory stop evaluation.
     - Acceptance: expression tests cover `DW_OP_deref`, every valid width from 1 through pointerSize for four- and eight-byte pointers, invalid zero/oversized/truncated sizes, unavailable memory, and the actual returned value.

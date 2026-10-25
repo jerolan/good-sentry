@@ -574,6 +574,17 @@ func parseCFIECIE(data []byte, pointerSize int, isEH bool) (cfiCIE, error) {
 	cie.addrSize = pointerSize
 	version := cursor.byte()
 	cie.augmentation = cursor.string()
+	segmentSelectorSize := byte(0)
+	if version >= 4 {
+		cie.addrSize = int(cursor.byte())
+		segmentSelectorSize = cursor.byte()
+		if cursor.err != nil {
+			return cfiCIE{}, cursor.err
+		}
+		if segmentSelectorSize != 0 {
+			return cfiCIE{}, errors.New("unsupported CIE segment selector size")
+		}
+	}
 	cie.codeAlign = cursor.uleb()
 	cie.dataAlign = cursor.sleb()
 	if version == 1 {
@@ -581,9 +592,8 @@ func parseCFIECIE(data []byte, pointerSize int, isEH bool) (cfiCIE, error) {
 	} else {
 		cie.returnReg = uint32(cursor.uleb())
 	}
-	if version >= 4 {
-		cie.addrSize = int(cursor.byte())
-		_ = cursor.byte()
+	if cursor.err != nil {
+		return cfiCIE{}, cursor.err
 	}
 	if cie.addrSize != 4 && cie.addrSize != 8 {
 		return cfiCIE{}, errors.New("unsupported CIE address size")
