@@ -461,3 +461,13 @@ Add additive migration066 for the policy bound and nullable per-identity receipt
 Verify strict individual/bulk field admission and top-level/nested agreement, native PATCH validation and issue/detail visibility, dynamic remaining and inclusive-window expiry, repeated-user refresh/re-entry, baseline exclusion, policy no-op/reset, merge/unmerge ownership, event-retention independence, bounded cleanup and concurrent capture/maintenance. Run focused parser/Store/HTTP PostgreSQL tests, migration upgrade/reopen, full integration race and vet, trim-path build, responsive browser checks, exact-source GitHub CI and amd64/arm64 image publication with `gh`. Official contract: [Sentry Update an Issue](https://docs.sentry.io/api/events/update-an-issue/) and [Bulk Mutate an Organization's Issues](https://docs.sentry.io/api/events/bulk-mutate-an-organizations-issues/).
 
 Status (2026-10-25 UTC): complete. The full integration/race suite, official Sentry Node SDK acceptance, responsive issue browser acceptance, exact-source CI and amd64/arm64 image publication are recorded in `tasks/todo.md`.
+
+## Compatible commit-bound issue resolution
+
+Support `statusDetails.inCommit` on compatible individual and bulk issue updates using the public `{commit, repository}` shape. Resolve only an exact pair already stored on a release linked to the issue's project; do not inspect a local Git checkout or call a repository provider. When multiple releases contain the pair, anchor to the earliest `(created_at,id)` release and preserve that snapshot so later release edits or deletion cannot rewrite the resolution. Existing release comparison and regression rules own subsequent fresh events.
+
+1. Extend issue-resolution persistence and projection with the commit identity plus its immutable release anchor; validate same-project lookup, no-op equality, clear/replace and regression.
+2. Normalize strict `statusDetails.inCommit` input for individual and bulk API0 routes; preserve atomic multi-issue behavior and return `inCommit` plus its selected `inRelease` in acknowledgements and reads.
+3. Verify malformed/conflicting inputs, unknown/cross-project commits, duplicate retries, release tie-break, snapshot survival, regression and migration reopen through owning PostgreSQL and HTTP tests, then full race/vet/build and exact-source `gh` CI/image.
+
+Official shape: [Sentry bulk issue API](https://docs.sentry.io/api/events/bulk-mutate-an-organizations-issues/) and [Sentry CLI issue resolution](https://cli.sentry.dev/commands/issue/). External repository discovery and commit-message auto-resolution remain separate capabilities.

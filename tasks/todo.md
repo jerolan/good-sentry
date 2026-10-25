@@ -1214,3 +1214,19 @@ Public acceptance at `322e2a530c7a7dba0a0d76423cc3a1dbd2c3cedd`: public main mat
 - 2026-10-25 UTC: A clean `git archive HEAD` Compose build with no `.env` and no `GOODSENTRY_AUTH` value resolves to `disabled`. On fresh PostgreSQL/uploads volumes, dashboard returns200, setup reports `required:false`, and cookie-free `/api/v1/me` returns the implicit owner and CSRF token. Missing CSRF and foreign origin each return403; same-origin plus CSRF creates a project201. Restart preserves the owner, organization and CSRF token with exactly one user, organization and team. A separate fresh-volume Compose run with `GOODSENTRY_AUTH=required` and a test-only key reports `required:true`, rejects cookie-free `/me`, starts with zero users/orgs, completes setup201 and login200, and serves `/me` with the resulting sessions. Temporary projects, volumes, image, source copy and build cache were removed; Docker has zero containers and zero build cache, and the two pre-existing `sentrygo_*` data volumes remain.
 
 - 2026-10-24 UTC: Commits `a49d806`, `6540feb` and `0828c05` add Sentry Native `event.minidump` envelope processing, compatibility docs and default-open detection in the pinned Go SDK smoke harness. Local PostgreSQL/HTTP envelope checks, the default-open Go SDK smoke and required-auth setup/login smokes pass; the full race suite, integration race suite and integration `vet` pass. Exact-source CI [40144251938](https://github.com/jerolan/good-sentry/actions/runs/40144251938) passes formatting, vet, the full PostgreSQL integration/race suite and application image build. Image workflow [40144689725](https://github.com/jerolan/good-sentry/actions/runs/40144689725) publishes OCI index `sha256:43cf29f2a89bc9ee258e7711fd19229a10a7eee5832fd91c2a8cd39e8ed31015`; registry inspection confirms `linux/amd64` and `linux/arm64` manifests.
+
+## Compatible commit-bound issue resolution
+
+- [ ] Add a typed commit resolution snapshot to PostgreSQL issue policies.
+  - Match exact repository and commit IDs only through the issue project's linked releases. Select the earliest `(created_at,id)` match, preserve that release snapshot, keep same-policy writes idempotent and use existing release regression behavior.
+  - Verify store owner tests for unknown/cross-project identities, multiple releases, snapshot survival, same-policy retry, clear/replace and fresh-event regression; prove additive migration upgrade/reopen.
+  - Files: migration067, `internal/store/issues_resolution.go`, `internal/store/issues_resolution_capture.go` and their existing store/migration test owners.
+- [ ] Accept and return `statusDetails.inCommit` from compatible individual issue updates.
+  - Require exact `{repository,commit}` string shape, resolved status and no conflicting selector; validate through the Store boundary and return both `inCommit` and the selected `inRelease`.
+  - Verify strict parser errors, real HTTP status/write behavior and issue detail projection.
+  - Files: `internal/server/compat_issue_update_parse.go`, `internal/server/compat_issue_update.go`, compatible issue projection and their existing tests.
+- [ ] Preserve commit-resolution behavior for compatible bulk issue updates.
+  - Keep per-issue project lookup and atomic rollback when any selected issue cannot resolve the same commit; return the commit and release selectors in acknowledgements.
+  - Verify same-project multi-issue success and cross-project/unknown commit rollback through PostgreSQL and HTTP.
+  - Files: `internal/server/compat_issue_bulk.go`, compatible Store update owners and their existing tests.
+- [ ] Pass focused and full integration/race/vet/build checks, then publish exact-source CI and amd64/arm64 image with `gh`.
