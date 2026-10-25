@@ -151,10 +151,10 @@ func TestNativeMinidumpEnvelopeAttachment(t *testing.T) {
 	f := newResolutionHTTPFixture(t)
 	const debugID = "5A9832E5287241C1838ED98914E9B7FF1"
 	const eventID = "ca2e63929e354414adf9be81211c98aa"
-	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 CrashFunction\n1010 20 42 1\n")
-	digest := sha1.Sum(symbol)
+	pdb := nativepdb.WithSourceLines(false).Data
+	digest := sha1.Sum(pdb)
 	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
-	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "test_app.sym", "sym", debugID, "x86_64", "test_app.pdb", hex.EncodeToString(digest[:]), nil, nil, symbol); err != nil {
+	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "test_app.pdb", "pdb", debugID, "x86_64", "test_app.pdb", hex.EncodeToString(digest[:]), nil, nil, pdb); err != nil {
 		t.Fatal(err)
 	}
 	dump := buildNativeModuleMinidump(t, `C:\test\test_app.pdb`, debugID, 0x1015)
