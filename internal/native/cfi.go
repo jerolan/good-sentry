@@ -1351,6 +1351,11 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 			if !push(uint64(cursor.sleb())) {
 				return 0, false
 			}
+		case 0x9e:
+			value, ok := readCFIImplicitValue(&cursor, pointerSize)
+			if !ok || !push(value) {
+				return 0, false
+			}
 		case 0x12:
 			if len(stack) == 0 || !push(stack[len(stack)-1]) {
 				return 0, false
@@ -1581,6 +1586,10 @@ func cfiExpressionBoundaries(expression []byte, pointerSize int) (map[int]struct
 				_ = cursor.uleb()
 			case 0x11:
 				_ = cursor.sleb()
+			case 0x9e:
+				if _, ok := readCFIImplicitValue(&cursor, pointerSize); !ok {
+					return nil, false
+				}
 			case 0x15:
 				_ = cursor.byte()
 			case 0x23, 0x90:
@@ -1603,6 +1612,19 @@ func cfiExpressionBoundaries(expression []byte, pointerSize int) (map[int]struct
 		boundaries[cursor.off] = struct{}{}
 	}
 	return boundaries, true
+}
+
+func readCFIImplicitValue(cursor *cfiCursor, pointerSize int) (uint64, bool) {
+	length := cursor.uleb()
+	if cursor.err != nil || length == 0 || length > uint64(pointerSize) || !cursor.need(int(length)) {
+		return 0, false
+	}
+	var value uint64
+	for index, current := range cursor.data[cursor.off : cursor.off+int(length)] {
+		value |= uint64(current) << (8 * index)
+	}
+	cursor.off += int(length)
+	return value, true
 }
 
 func jumpCFIExpression(cursor *cfiCursor, offset int16, boundaries map[int]struct{}) bool {

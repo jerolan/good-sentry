@@ -1304,6 +1304,7 @@ func TestCFIExpressionBranchControl(t *testing.T) {
 		expression []byte
 	}{
 		{name: "branch into operand", expression: []byte{0x30, 0x2f, 0xff, 0xff, 0x31}},
+		{name: "branch into implicit-value block", expression: []byte{0x31, 0x28, 2, 0, 0x9e, 2, 0x11, 0x22, 0x32}},
 		{name: "branch out of range", expression: []byte{0x30, 0x2f, 0x7f, 0}},
 		{name: "truncated skip operand", expression: []byte{0x30, 0x2f, 0}},
 		{name: "truncated branch operand", expression: []byte{0x31, 0x28, 0}},
@@ -1562,6 +1563,40 @@ func TestCFIExpressionAddressUsesTargetWidth(t *testing.T) {
 	}
 }
 
+func TestCFIExpressionImplicitValues(t *testing.T) {
+	block := []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99}
+	for _, pointerSize := range []int{4, 8} {
+		t.Run(fmt.Sprintf("pointer-%d", pointerSize), func(t *testing.T) {
+			for length := 1; length <= pointerSize; length++ {
+				expression := append([]byte{0x9e, byte(length)}, block[:length]...)
+				var want uint64
+				for index, value := range block[:length] {
+					want |= uint64(value) << (8 * index)
+				}
+				if got, ok := evaluateCFIExpression(expression, nil, 0, nil, pointerSize); !ok || got != want {
+					t.Fatalf("DW_OP_implicit_value length=%d = %#x, %v; want %#x", length, got, ok, want)
+				}
+			}
+			if got, ok := evaluateCFIExpression([]byte{0x9e, 1, 0x9f}, nil, 0, nil, pointerSize); !ok || got != 0x9f {
+				t.Fatalf("DW_OP_implicit_value treated its final block byte as an opcode: %#x, %v", got, ok)
+			}
+
+			invalid := [][]byte{
+				{0x9e, 0},
+				{0x9e, 0x80},
+				{0x9e, 2, 0x11},
+			}
+			overWidth := append([]byte{0x9e, byte(pointerSize + 1)}, block[:pointerSize+1]...)
+			invalid = append(invalid, overWidth)
+			for _, expression := range invalid {
+				if _, ok := evaluateCFIExpression(expression, nil, 0, nil, pointerSize); ok {
+					t.Errorf("invalid implicit-value expression %x was accepted", expression)
+				}
+			}
+		})
+	}
+}
+
 func TestCFIRegisterExpressionsHonorStackValue(t *testing.T) {
 	stack := make([]byte, 16)
 	binary.LittleEndian.PutUint64(stack, 0x5678)
@@ -1574,7 +1609,9 @@ func TestCFIRegisterExpressionsHonorStackValue(t *testing.T) {
 	}{
 		{name: "expression value", rule: cfiRegisterRule{kind: cfiRuleExpression, expr: []byte{0x90, 0, 0x9f}}, want: 0x123456},
 		{name: "expression address", rule: cfiRegisterRule{kind: cfiRuleExpression, expr: []byte{0x90, 1}}, want: 0x5678},
+		{name: "expression implicit-value address", rule: cfiRegisterRule{kind: cfiRuleExpression, expr: []byte{0x9e, 8, 0, 0x10, 0, 0, 0, 0, 0, 0}}, want: 0x5678},
 		{name: "value expression", rule: cfiRegisterRule{kind: cfiRuleValueExpression, expr: []byte{0x90, 0, 0x9f}}, want: 0x123456},
+		{name: "value expression implicit scalar", rule: cfiRegisterRule{kind: cfiRuleValueExpression, expr: []byte{0x9e, 4, 0x78, 0x56, 0x34, 0x12}}, want: 0x12345678},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			state := cfiState{regs: map[uint32]cfiRegisterRule{16: test.rule}}
