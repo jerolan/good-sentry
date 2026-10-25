@@ -26,8 +26,10 @@ func TestNativeReprocessingQueueCoalescesAndCascades(t *testing.T) {
 	if err := db.pool.QueryRow(ctx, `SELECT cursor_event_id,through_event_id FROM project_native_reprocessing WHERE project_id=$1::bigint`, project.ID).Scan(&cursor, &through); err != nil || cursor != 0 || through != firstID {
 		t.Fatalf("initial queue cursor=%d through=%d first=%d err=%v", cursor, through, firstID, err)
 	}
-	if _, err := db.pool.Exec(ctx, `UPDATE project_native_reprocessing SET cursor_event_id=through_event_id WHERE project_id=$1::bigint;
-		INSERT INTO events(project_id,event_id,kind,title,level,timestamp,data)
+	if _, err := db.pool.Exec(ctx, `UPDATE project_native_reprocessing SET cursor_event_id=through_event_id WHERE project_id=$1::bigint`, project.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `INSERT INTO events(project_id,event_id,kind,title,level,timestamp,data)
 		VALUES($1,'native-reprocess-2','error','native','error',now(),'{"platform":"native"}')`, project.ID); err != nil {
 		t.Fatal(err)
 	}

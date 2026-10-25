@@ -227,21 +227,21 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 		t.Fatalf("minidump capture=%d id=%q err=%v", res.StatusCode, accepted.ID, decodeErr)
 	}
 
-	readReceipt := func() ([]byte, string, time.Time, string) {
+	readReceipt := func() ([]byte, string, time.Time, string, string, string) {
 		t.Helper()
 		var data []byte
 		var issueID sql.NullString
 		var timestamp time.Time
-		var eventID string
-		if err := f.sql.QueryRow(f.ctx, `SELECT data,event_id,timestamp,issue_id::text FROM events WHERE project_id=$1::bigint AND event_id=$2`, f.project.ID, accepted.ID).Scan(&data, &eventID, &timestamp, &issueID); err != nil {
+		var eventID, release, environment string
+		if err := f.sql.QueryRow(f.ctx, `SELECT data,event_id,timestamp,issue_id::text,release,environment FROM events WHERE project_id=$1::bigint AND event_id=$2`, f.project.ID, accepted.ID).Scan(&data, &eventID, &timestamp, &issueID, &release, &environment); err != nil {
 			t.Fatal(err)
 		}
 		if !issueID.Valid {
 			t.Fatal("native event has no issue link")
 		}
-		return data, eventID, timestamp, issueID.String
+		return data, eventID, timestamp, issueID.String, release, environment
 	}
-	before, beforeID, beforeTimestamp, beforeIssue := readReceipt()
+	before, beforeID, beforeTimestamp, beforeIssue, beforeRelease, beforeEnvironment := readReceipt()
 	var unrelatedBefore []byte
 	if err := f.sql.QueryRow(f.ctx, `SELECT data FROM events WHERE project_id=$1::bigint AND event_id='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'`, f.project.ID).Scan(&unrelatedBefore); err != nil {
 		t.Fatal(err)
@@ -296,7 +296,7 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 	if !completed {
 		t.Fatal("worker did not drain project job with foreign-only symbols")
 	}
-	afterWrongProject, _, _, _ := readReceipt()
+	afterWrongProject, _, _, _, _, _ := readReceipt()
 	if !bytes.Equal(before, afterWrongProject) {
 		t.Fatal("reprocessing borrowed symbols from another project")
 	}
@@ -316,7 +316,7 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 	deadline = time.Now().Add(5 * time.Second)
 	var updated []byte
 	for time.Now().Before(deadline) {
-		updated, _, _, _ = readReceipt()
+		updated, _, _, _, _, _ = readReceipt()
 		var result struct {
 			Exception struct {
 				Values []struct {
@@ -361,11 +361,11 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 		t.Fatalf("reprocessed stack: %+v", result.Exception)
 	}
 	frame := result.Exception.Values[0].Stacktrace.Frames[0]
-	if frame.Function != "CrashFunction" || frame.Filename != "C:\\src\\crash.cc" || frame.Line != 42 || result.Release != "native@1" || result.Environment != "production" || result.Extra.CrashContext != "keep-me" {
+	if frame.Function != "CrashFunction" || frame.Filename != "C:\\src\\crash.cc" || frame.Line != 42 || beforeRelease != "native@1" || beforeEnvironment != "production" || result.Extra.CrashContext != "keep-me" {
 		t.Fatalf("reprocessed native event: %+v", result)
 	}
-	_, afterID, afterTimestamp, afterIssue := readReceipt()
-	if beforeID != afterID || !beforeTimestamp.Equal(afterTimestamp) || beforeIssue != afterIssue || len(result.Exception.Values[0].Stacktrace.Frames) != len(original.Exception.Values[0].Stacktrace.Frames) {
+	_, afterID, afterTimestamp, afterIssue, afterRelease, afterEnvironment := readReceipt()
+	if beforeID != afterID || !beforeTimestamp.Equal(afterTimestamp) || beforeIssue != afterIssue || afterRelease != beforeRelease || afterEnvironment != beforeEnvironment || len(result.Exception.Values[0].Stacktrace.Frames) != len(original.Exception.Values[0].Stacktrace.Frames) {
 		t.Fatal("reprocessing changed event identity, timestamp, issue, or frame count")
 	}
 	var untouched []byte
