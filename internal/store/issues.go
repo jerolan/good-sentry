@@ -55,16 +55,82 @@ type Comment struct {
 	CanEdit     bool       `json:"canEdit"`
 }
 
+type CaptureAdmission struct {
+	PublicKey         string
+	Charge            int
+	IndependentCharge int
+	Throttle          bool
+}
+
+type CaptureOutcome struct {
+	IssueID          string
+	Fresh            bool
+	Discarded        bool
+	ProjectThrottled bool
+	RetryAfter       int
+}
+
+func applyCaptureAdmission(ctx context.Context, tx pgx.Tx, projectID string, admission *CaptureAdmission, charge int, throttle bool) (CaptureOutcome, error) {
+	if admission == nil {
+		return CaptureOutcome{}, nil
+	}
+	if charge < 0 {
+		return CaptureOutcome{}, errors.New("invalid capture admission charge")
+	}
+	if throttle && admission.Throttle {
+		return CaptureOutcome{ProjectThrottled: true}, nil
+	}
+	if charge == 0 {
+		return CaptureOutcome{}, nil
+	}
+	allowed, retry, err := admitProjectKey(ctx, tx, projectID, admission.PublicKey, charge)
+	if err != nil {
+		return CaptureOutcome{}, err
+	}
+	if !allowed {
+		return CaptureOutcome{RetryAfter: retry}, nil
+	}
+	return CaptureOutcome{}, nil
+}
+
+func admissionCharge(admission *CaptureAdmission) int {
+	if admission == nil {
+		return 0
+	}
+	return admission.Charge
+}
+
+func independentAdmissionCharge(admission *CaptureAdmission) int {
+	if admission == nil {
+		return 0
+	}
+	return admission.IndependentCharge
+}
+
+func issueEventType(kind string) bool { return kind == "error" || kind == "message" || kind == "csp" }
+
 func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, parts ...CaptureItems) (string, bool, error) {
+	outcome, err := s.ingest(ctx, projectID, ev, nil, parts...)
+	return outcome.IssueID, outcome.Fresh, err
+}
+
+func (s *Store) IngestWithAdmission(ctx context.Context, projectID string, ev event.Event, admission CaptureAdmission, parts ...CaptureItems) (CaptureOutcome, error) {
+	return s.ingest(ctx, projectID, ev, &admission, parts...)
+}
+
+func (s *Store) ingest(ctx context.Context, projectID string, ev event.Event, admission *CaptureAdmission, parts ...CaptureItems) (CaptureOutcome, error) {
 	if ev.Type == "feedback" && ev.Feedback == nil {
-		return "", false, ErrInvalidFeedback
+		return CaptureOutcome{}, ErrInvalidFeedback
+	}
+	if admission != nil && (admission.Charge < 1 || admission.IndependentCharge < 0 || admission.IndependentCharge > admission.Charge || admission.PublicKey == "") {
+		return CaptureOutcome{}, errors.New("invalid capture admission")
 	}
 	hasItems := false
 	for _, part := range parts {
 		for _, input := range part.UserReports {
 			report, err := NormalizeUserReport(input)
 			if err != nil || report.EventID != ev.ID {
-				return "", false, ErrInvalidUserReport
+				return CaptureOutcome{}, ErrInvalidUserReport
 			}
 		}
 		if len(part.Attachments) > 0 || len(part.EnvelopeItems) > 0 || len(part.UserReports) > 0 {
@@ -73,13 +139,13 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return "", false, err
+		return CaptureOutcome{}, err
 	}
 	defer tx.Rollback(ctx)
 	// Receipt gates precede project/row locks, including an optional feedback
 	// association. Unrelated events still group under issue-row locks.
 	if err = lockCaptureReceipts(ctx, tx, projectID, ev); err != nil {
-		return "", false, err
+		return CaptureOutcome{}, err
 	}
 	var receipt int64
 	var owner string
@@ -87,50 +153,102 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 	err = tx.QueryRow(ctx, "SELECT id,COALESCE(issue_id::text,''),kind FROM events WHERE project_id::text=$1 AND event_id=$2", projectID, ev.ID).Scan(&receipt, &owner, &storedKind)
 	if err == nil {
 		if (ev.Type == "feedback" || storedKind == "feedback") && ev.Type != storedKind {
-			return "", false, ErrConflict
+			return CaptureOutcome{}, ErrConflict
 		}
 		if !hasItems {
-			return owner, false, nil
+			outcome, err := applyCaptureAdmission(ctx, tx, projectID, admission, admissionCharge(admission), true)
+			if err != nil || outcome.ProjectThrottled || outcome.RetryAfter > 0 {
+				return outcome, err
+			}
+			outcome.IssueID = owner
+			if admission != nil {
+				return outcome, tx.Commit(ctx)
+			}
+			return outcome, nil
 		}
 		if err = lockProjectIssues(ctx, tx, projectID, false); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 		// A deletion may win the gate after the first snapshot. The children
 		// belong to that exact receipt, even if its external ID is later reused.
 		var pinned int64
 		err = tx.QueryRow(ctx, "SELECT id FROM events WHERE id=$1 AND project_id::text=$2 AND event_id=$3 FOR KEY SHARE", receipt, projectID, ev.ID).Scan(&pinned)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return owner, false, nil
+			discarded := false
+			if issueEventType(ev.Type) {
+				discarded, err = discardedIssueFingerprint(ctx, tx, projectID, ev.Fingerprint)
+				if err != nil {
+					return CaptureOutcome{}, err
+				}
+			}
+			charge, throttle := admissionCharge(admission), true
+			if discarded && admission != nil {
+				charge = independentAdmissionCharge(admission)
+				throttle = charge > 0
+			}
+			outcome, err := applyCaptureAdmission(ctx, tx, projectID, admission, charge, throttle)
+			if err != nil || outcome.ProjectThrottled || outcome.RetryAfter > 0 {
+				return outcome, err
+			}
+			if !discarded {
+				outcome.IssueID = owner
+			}
+			outcome.Discarded = discarded
+			return outcome, tx.Commit(ctx)
 		}
 		if err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
+		}
+		outcome, err := applyCaptureAdmission(ctx, tx, projectID, admission, admissionCharge(admission), true)
+		if err != nil || outcome.ProjectThrottled || outcome.RetryAfter > 0 {
+			return outcome, err
 		}
 		if err = saveCaptureItems(ctx, tx, projectID, ev.ID, parts); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
-		return owner, false, tx.Commit(ctx)
+		outcome.IssueID = owner
+		return outcome, tx.Commit(ctx)
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
-		return "", false, err
+		return CaptureOutcome{}, err
 	}
 	var issueID any
 	var originID any
 	if ev.Type != "transaction" || hasItems {
 		if err = lockProjectIssues(ctx, tx, projectID, false); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
+	}
+	if issueEventType(ev.Type) {
+		discarded, err := discardedIssueFingerprint(ctx, tx, projectID, ev.Fingerprint)
+		if err != nil {
+			return CaptureOutcome{}, err
+		}
+		if discarded {
+			independentCharge := independentAdmissionCharge(admission)
+			outcome, err := applyCaptureAdmission(ctx, tx, projectID, admission, independentCharge, independentCharge > 0)
+			if err != nil || outcome.ProjectThrottled || outcome.RetryAfter > 0 {
+				return outcome, err
+			}
+			outcome.Discarded = true
+			return outcome, tx.Commit(ctx)
+		}
+	}
+	outcome, err := applyCaptureAdmission(ctx, tx, projectID, admission, admissionCharge(admission), true)
+	if err != nil || outcome.ProjectThrottled || outcome.RetryAfter > 0 {
+		return outcome, err
 	}
 	var association feedbackAssociation
 	if ev.Type == "feedback" {
 		association, err = pinFeedbackAssociation(ctx, tx, projectID, ev.Feedback.AssociatedEventID)
 		if err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 	}
 	if ev.Type != "transaction" {
 		own, target, err := activeIssueHashOrigin(ctx, tx, projectID, ev)
 		if err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 		originID = own
 		issueID = own
@@ -140,92 +258,95 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 		var status string
 		var receipts int64
 		if err = tx.QueryRow(ctx, `SELECT status,receipt_count FROM issues WHERE id=$1 FOR UPDATE`, issueID).Scan(&status, &receipts); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 		if status == "ignored" && ev.Type != "feedback" {
 			// Read the policy after acquiring the issue lock. The locking query's
 			// snapshot may predate a concurrent policy replacement it waited for.
 			windowReceiptAt, err := recordIssueIgnoreWindowReceipts(ctx, tx, issueID.(string))
 			if err != nil {
-				return "", false, err
+				return CaptureOutcome{}, err
 			}
 			var userCountEnabled, userWindowEnabled bool
 			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_ignores WHERE issue_id=$1 AND user_count IS NOT NULL),
 			 EXISTS(SELECT 1 FROM issue_ignores WHERE issue_id=$1 AND user_window_minutes IS NOT NULL)`, issueID).Scan(&userCountEnabled, &userWindowEnabled); err != nil {
-				return "", false, err
+				return CaptureOutcome{}, err
 			}
 			if userCountEnabled {
 				if err = s.recordIssueIgnoreUser(ctx, tx, projectID, issueID.(string), ev.Data, windowReceiptAt, userWindowEnabled); err != nil {
-					return "", false, err
+					return CaptureOutcome{}, err
 				}
 			}
 			if _, err = expireLockedIssueIgnore(ctx, tx, issueID.(string), 1, ev.ID, windowReceiptAt); err != nil {
-				return "", false, err
+				return CaptureOutcome{}, err
 			}
 		}
 		if receipts == 0 {
 			if _, err = recordIssueActivity(ctx, tx, issueID.(string), nil, "first_seen", map[string]string{"eventID": ev.ID}); err != nil {
-				return "", false, err
+				return CaptureOutcome{}, err
 			}
 		}
 		_, err = tx.Exec(ctx, `UPDATE issues SET count=count+1,receipt_count=receipt_count+1,first_seen=CASE WHEN count=0 THEN $2 ELSE LEAST(first_seen,$2) END,last_seen=CASE WHEN count=0 THEN $2 ELSE GREATEST(last_seen,$2) END,title=CASE WHEN count=0 OR $2>=last_seen THEN $3 ELSE title END,environment=CASE WHEN count=0 OR $2>=last_seen THEN $4 ELSE environment END,release=CASE WHEN count=0 OR $2>=last_seen THEN $5 ELSE release END WHERE id=$1`, issueID, ev.Timestamp, ev.Title, ev.Environment, ev.Release)
 		if err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 	}
 	var eventRowID int64
 	err = tx.QueryRow(ctx, `INSERT INTO events(project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`, projectID, ev.ID, issueID, originID, ev.Type, ev.Title, ev.Level, ev.Timestamp, ev.Environment, ev.Release, ev.TraceID, ev.Transaction, ev.Duration, ev.Data).Scan(&eventRowID)
 	if err != nil {
-		return "", false, err
+		return CaptureOutcome{}, err
 	}
 	if ev.Type == "feedback" {
 		if err = saveFeedbackAssociation(ctx, tx, projectID, ev.ID, eventRowID, association); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 	}
 	if ev.Type == "error" || ev.Type == "message" {
 		if err := bindPendingUserReport(ctx, tx, projectID, ev.ID, eventRowID); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 		if _, err = bindFeedbackForError(ctx, tx, projectID, ev.ID, eventRowID); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 	}
 	if err = saveCaptureItems(ctx, tx, projectID, ev.ID, parts); err != nil {
-		return "", false, err
+		return CaptureOutcome{}, err
 	}
 	if ev.Type == "transaction" {
 		if err = projectTransactionSpans(ctx, tx, eventRowID, ev.Data); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 	}
 	var alerts *errorAlertCapture
 	if issueID != nil && ev.Type != "feedback" {
 		alerts, err = prepareErrorAlerts(ctx, tx, projectID, ev.ID, issueID.(string))
 		if err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 	}
 	if ev.Type != "feedback" {
 		if err = observeRelease(ctx, tx, projectID, ev.Release); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 	}
 	if issueID != nil && ev.Type != "feedback" {
 		if err = settleIssueResolution(ctx, tx, issueID.(string), projectID, ev.ID, ev.Release); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 		if err = alerts.enqueue(ctx, tx, ev.ID, issueID.(string)); err != nil {
-			return "", false, err
+			return CaptureOutcome{}, err
 		}
 	}
 	if err = tx.Commit(ctx); err != nil {
-		return "", false, err
+		return CaptureOutcome{}, err
 	}
 	if issueID == nil {
-		return "", true, nil
+		outcome.Fresh = true
+		return outcome, nil
 	}
-	return issueID.(string), true, nil
+	outcome.IssueID = issueID.(string)
+	outcome.Fresh = true
+	return outcome, nil
 }
 
 const issueColumns = `i.id::text,p.id::text,p.slug,p.name,i.title,i.level,i.platform,i.status,i.count,i.first_seen,i.last_seen,i.environment,i.release,i.resolved_at,i.regressed_at,` + issueAssignmentJSON + "," + issueIgnoreJSON + "," + issueResolutionJSON + `,1+(SELECT count(*) FROM issues group_member WHERE group_member.merged_into=i.id),i.category`

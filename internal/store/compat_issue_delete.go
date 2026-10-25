@@ -12,6 +12,14 @@ import (
 )
 
 func (s *Store) DeleteCompatibleIssue(ctx context.Context, access ManagementAccess, id string) error {
+	return s.deleteCompatibleIssue(ctx, access, id, false)
+}
+
+func (s *Store) DiscardCompatibleIssue(ctx context.Context, access ManagementAccess, id string) error {
+	return s.deleteCompatibleIssue(ctx, access, id, true)
+}
+
+func (s *Store) deleteCompatibleIssue(ctx context.Context, access ManagementAccess, id string, discard bool) error {
 	if access.ReadOnly {
 		return ErrForbidden
 	}
@@ -34,16 +42,29 @@ func (s *Store) DeleteCompatibleIssue(ctx context.Context, access ManagementAcce
 		return err
 	}
 	var merged *string
-	if err = tx.QueryRow(ctx, `SELECT merged_into::text FROM issues WHERE id=$1::bigint`, id).Scan(&merged); err != nil {
+	var category string
+	if err = tx.QueryRow(ctx, `SELECT merged_into::text,category FROM issues WHERE id=$1::bigint`, id).Scan(&merged, &category); err != nil {
 		return dbError(err)
 	}
 	if merged != nil {
 		return &IssueMergedError{MergedInto: *merged}
 	}
+	if discard && category != "error" {
+		return ErrInvalidCompatibleIssueChange
+	}
 	root, _ := strconv.ParseInt(id, 10, 64)
 	roots := []int64{root}
 	if _, err = lockIssueGroups(ctx, tx, roots); err != nil {
 		return err
+	}
+	if discard {
+		if _, err = tx.Exec(ctx, `INSERT INTO discarded_issue_hashes(project_id,fingerprint)
+ SELECT route.project_id,route.fingerprint FROM issue_hash_routes route
+ JOIN issues origin ON origin.id=route.origin_issue_id AND origin.project_id=route.project_id
+ WHERE route.project_id=$1::bigint AND (origin.id=$2::bigint OR origin.merged_into=$2::bigint)
+ AND origin.category='error' ON CONFLICT(project_id,fingerprint) DO NOTHING`, project, root); err != nil {
+			return err
+		}
 	}
 	if err = deleteCompatibleIssueGroups(ctx, tx, roots); err != nil {
 		return err

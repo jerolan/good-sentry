@@ -2924,6 +2924,21 @@
     const cancelDelete = register(button('Cancel deletion', () => { deleteConfirmation.hidden = true; deleteError.textContent = ''; deleteIssue.focus(); }));
     deleteConfirmation.append(node('h2', {}, feedback ? 'Delete this feedback group?' : 'Delete this issue?'), node('p', {}, feedback ? 'This removes the whole feedback group, its submissions, attachments, comments and assignment. Future submissions can create a new group.' : issueDeletionWarning), deleteError, node('div', { class: 'actions' }, confirmDelete, cancelDelete));
     statusActions.append(deleteIssue);
+    let discardConfirmation = null;
+    if (issue.category === 'error') {
+      const discardError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+      discardConfirmation = node('section', { class: 'card panel panel-body form-stack', hidden: true, 'aria-label': 'Confirm permanent issue discard' });
+      const discardIssue = register(button('Delete and discard forever', () => { discardConfirmation.hidden = false; confirmDiscard.focus(); }, 'danger'));
+      const confirmDiscard = register(button('Confirm permanent discard', async () => {
+        confirmDiscard.textContent = 'Discarding…';
+        await triage.mutate(() => request(`/api/0/organizations/${encodeURIComponent(state.organization.slug)}/issues/${encodeURIComponent(issue.id)}/`, { method: 'PUT', body: { discard: true } }),
+          () => finishIssueDeletion(state.organization.slug, [issue.id], view), discardError, () => !discardConfirmation.hidden);
+        if (alive()) confirmDiscard.textContent = 'Confirm permanent discard';
+      }, 'danger'));
+      const cancelDiscard = register(button('Cancel discard', () => { discardConfirmation.hidden = true; discardError.textContent = ''; discardIssue.focus(); }));
+      discardConfirmation.append(node('h2', {}, 'Delete and discard this issue forever?'), node('p', {}, 'This permanently removes the issue. Future errors with its active fingerprints will be discarded instead of creating a new issue. This cannot be undone.'), discardError, node('div', { class: 'actions' }, confirmDiscard, cancelDiscard));
+      statusActions.append(discardIssue);
+    }
     const activity = issueActivity(path, view, triage);
     const comments = issueComments(issue, path, view, triage, () => activity.load(view.activityPage));
     const assignment = issueAssignment(issue, path, view, triage);
@@ -2948,7 +2963,7 @@
     if (!feedback && event.contexts && Object.keys(event.contexts).length) right.append(detailPanel('Contexts', node('div', { class: 'panel-body' }, Object.entries(event.contexts).map(([name, context]) => node('section', { class: 'context-block' }, node('h3', {}, name), typeof context === 'object' && context ? keyValues(context) : node('p', {}, text(context)))))));
     if (!feedback && event.request) right.append(detailPanel('Request', node('div', { class: 'panel-body' }, keyValues(event.request))));
     if (!feedback && event.extra && Object.keys(event.extra).length) right.append(detailPanel('Extra', node('div', { class: 'panel-body' }, keyValues(event.extra))));
-    main.replaceChildren(routeLink(feedback ? '← All feedback' : '← All issues', { issue: null }, { class: 'back-link' }), heading, actionError, deleteConfirmation, node('div', { class: 'detail-grid' }, left, right));
+    main.replaceChildren(routeLink(feedback ? '← All feedback' : '← All issues', { issue: null }, { class: 'back-link' }), heading, actionError, deleteConfirmation, ...(discardConfirmation ? [discardConfirmation] : []), node('div', { class: 'detail-grid' }, left, right));
     attachments?.start();
     comments.start();
     activity.load(view.activityPage);

@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"goodsentry/internal/event"
 	"goodsentry/internal/native"
 	"goodsentry/internal/protocol"
+	"goodsentry/internal/store"
 )
 
 func (s *Server) registerMinidumpRoutes(mux *routeMux) {
@@ -33,10 +33,6 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 	}
 	if !valid {
 		failure(w, http.StatusForbidden, "Invalid SDK authentication")
-		return
-	}
-	if shouldThrottleProjectEvent(eventThrottleRate) {
-		rejectProjectThrottle(w)
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxBodyBytes)
@@ -91,22 +87,19 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 	if environment := strings.TrimSpace(fields["sentry[environment]"]); environment != "" {
 		eventValue.Environment = environment
 	}
-	allowed, retry, err := s.db.AdmitProjectKey(r.Context(), r.PathValue("project"), key, 1)
+	outcome, err := s.db.IngestWithAdmission(r.Context(), r.PathValue("project"), eventValue, store.CaptureAdmission{
+		PublicKey: key, Charge: 1, Throttle: shouldThrottleProjectEvent(eventThrottleRate),
+	})
 	if err != nil {
 		report(w, err)
 		return
 	}
-	if !allowed {
-		if retry < 1 {
-			retry = 1
-		}
-		w.Header().Set("Retry-After", strconv.Itoa(retry))
-		w.Header().Set("X-Sentry-Rate-Limits", strconv.Itoa(retry)+":event:key:rate_limited")
-		failure(w, http.StatusTooManyRequests, "SDK key rate limit exceeded")
+	if outcome.ProjectThrottled {
+		rejectProjectThrottle(w)
 		return
 	}
-	if _, _, err := s.db.Ingest(r.Context(), r.PathValue("project"), eventValue); err != nil {
-		report(w, err)
+	if outcome.RetryAfter > 0 {
+		rejectProjectKeyRateLimit(w, outcome.RetryAfter)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"id": eventID})

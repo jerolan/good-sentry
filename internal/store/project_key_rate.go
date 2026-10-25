@@ -4,12 +4,22 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
+
+type projectKeyRateQueryer interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}
 
 // AdmitProjectKey atomically charges a fixed-window telemetry quota. A nil
 // rate limit admits without creating usage; an exhausted window returns false
 // and the remaining whole seconds before its next window.
 func (s *Store) AdmitProjectKey(ctx context.Context, projectID, publicKey string, charge int) (bool, int, error) {
+	return admitProjectKey(ctx, s.pool, projectID, publicKey, charge)
+}
+
+func admitProjectKey(ctx context.Context, queryer projectKeyRateQueryer, projectID, publicKey string, charge int) (bool, int, error) {
 	if charge < 1 || referenceID(projectID) == 0 {
 		return false, 0, errors.New("invalid project-key rate charge")
 	}
@@ -18,7 +28,7 @@ func (s *Store) AdmitProjectKey(ctx context.Context, projectID, publicKey string
 	var windowStart *time.Time
 	var used *int64
 	var retry *int
-	err := s.pool.QueryRow(ctx, `
+	err := queryer.QueryRow(ctx, `
  WITH k AS (
   SELECT api_id,rate_limit_window,rate_limit_count FROM project_keys
   WHERE project_id=$1::bigint AND public_key=$2 AND enabled

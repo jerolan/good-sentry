@@ -123,6 +123,17 @@ try {
   await visible(page.getByRole('button', { name: 'Resolve', exact: true })); await visible(resolution().getByText('This issue is not resolved.', { exact: true })); await checkDrafts();
   await consume('PUT', orgIssuePath, { assignedTo: null }); const restored = await refresh(); assert.equal(restored.issue.status, 'unresolved'); assert.equal(restored.issue.assignedTo, null); assert.equal(restored.issue.ignore, null); assert.equal(restored.issue.resolution, null); modified = false; await checkDrafts();
   checks.push('Native Reopen handles the API-created release policy, and writer unassignment restores the SDK issue baseline while every unsent draft survives');
+  const discardButton = page.getByRole('button', { name: 'Delete and discard forever', exact: true }); await visible(discardButton); await discardButton.click();
+  const discardConfirmation = region('Confirm permanent issue discard'); await visible(discardConfirmation);
+  assert.match(await discardConfirmation.innerText(), /Future errors with its active fingerprints will be discarded/);
+  await capture('permanent-discard-confirmation', () => discardConfirmation);
+  await discardConfirmation.getByRole('button', { name: 'Cancel discard', exact: true }).click(); assert.equal(await discardConfirmation.isVisible(), false);
+  await discardButton.click(); await visible(discardConfirmation);
+  const discardRequest = page.waitForResponse(response => response.request().method() === 'PUT' && response.url() === url(orgIssuePath));
+  await discardConfirmation.getByRole('button', { name: 'Confirm permanent discard', exact: true }).click();
+  const discarded = await discardRequest; assert.equal(discarded.status(), 204); assert.equal(await discarded.text(), '');
+  const absent = await context.request.get(url(nativeIssuePath), { headers: { Origin: base.origin, 'X-CSRF-Token': me.csrfToken } }); assert.equal(absent.status(), 404);
+  checks.push('Issue detail offers a separate two-step permanent discard, explains future fingerprint handling, supports cancellation, and removes the issue only after the empty 204 response');
   await page.goto(destination('api-tokens'), { waitUntil: 'networkidle' }); const row = region('API token metadata').getByRole('row').filter({ hasText: tokenName }); await visible(row);
   await row.getByRole('button', { name: 'Revoke', exact: true }).click(); const revoking = page.waitForResponse(response => response.request().method() === 'DELETE' && response.url() === url(`${tokenPath}/${issuedID}`));
   await row.getByRole('button', { name: 'Confirm revoke', exact: true }).click(); assert.equal((await revoking).status(), 204); revoked = true; await visible(row.getByText('Revoked', { exact: true }));

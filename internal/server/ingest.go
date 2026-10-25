@@ -54,26 +54,6 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		failure(w, 403, "Invalid SDK authentication")
 		return
 	}
-	if shouldThrottleProjectEvent(eventThrottleRate) {
-		rejectProjectThrottle(w)
-		return
-	}
-	if charge := ingestRateCharge(env); charge > 0 {
-		allowed, retry, err := s.db.AdmitProjectKey(r.Context(), project, key, charge)
-		if err != nil {
-			report(w, err)
-			return
-		}
-		if !allowed {
-			if retry < 1 {
-				retry = 1
-			}
-			w.Header().Set("Retry-After", strconv.Itoa(retry))
-			w.Header().Set("X-Sentry-Rate-Limits", strconv.Itoa(retry)+":event:key:rate_limited")
-			failure(w, http.StatusTooManyRequests, "SDK key rate limit exceeded")
-			return
-		}
-	}
 	var envelopeID string
 	if raw, exists := env.Header["event_id"]; exists {
 		if json.Unmarshal(raw, &envelopeID) != nil || envelopeID == "" {
@@ -201,6 +181,23 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 	if userReport != nil && normalized == nil {
 		envelopeID = userReport.EventID
 	}
+	if normalized == nil {
+		if shouldThrottleProjectEvent(eventThrottleRate) {
+			rejectProjectThrottle(w)
+			return
+		}
+		if charge := ingestRateCharge(env); charge > 0 {
+			allowed, retry, err := s.db.AdmitProjectKey(r.Context(), project, key, charge)
+			if err != nil {
+				report(w, err)
+				return
+			}
+			if !allowed {
+				rejectProjectKeyRateLimit(w, retry)
+				return
+			}
+		}
+	}
 	if normalized != nil {
 		var children store.CaptureItems
 		if userReport != nil {
@@ -234,8 +231,25 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		if len(children.Attachments) > 0 || len(children.EnvelopeItems) > 0 || len(children.UserReports) > 0 {
 			parts = []store.CaptureItems{children}
 		}
-		if _, _, err = s.db.Ingest(r.Context(), project, *normalized, parts...); err != nil {
-			reportUserReport(w, err)
+		charge := ingestRateCharge(env)
+		if charge < 1 {
+			failure(w, 400, "Event envelope has no billable capture item")
+			return
+		}
+		outcome, ingestErr := s.db.IngestWithAdmission(r.Context(), project, *normalized, store.CaptureAdmission{
+			PublicKey: key, Charge: charge, IndependentCharge: charge - 1,
+			Throttle: shouldThrottleProjectEvent(eventThrottleRate),
+		}, parts...)
+		if ingestErr != nil {
+			reportUserReport(w, ingestErr)
+			return
+		}
+		if outcome.ProjectThrottled {
+			rejectProjectThrottle(w)
+			return
+		}
+		if outcome.RetryAfter > 0 {
+			rejectProjectKeyRateLimit(w, outcome.RetryAfter)
 			return
 		}
 		envelopeID = normalized.ID
@@ -303,6 +317,15 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeJSON(w, 200, map[string]any{"id": envelopeID, "unsupportedItems": unsupported})
+}
+
+func rejectProjectKeyRateLimit(w http.ResponseWriter, retry int) {
+	if retry < 1 {
+		retry = 1
+	}
+	w.Header().Set("Retry-After", strconv.Itoa(retry))
+	w.Header().Set("X-Sentry-Rate-Limits", strconv.Itoa(retry)+":event:key:rate_limited")
+	failure(w, http.StatusTooManyRequests, "SDK key rate limit exceeded")
 }
 
 func ingestRateCharge(env protocol.Envelope) int {

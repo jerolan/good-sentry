@@ -17,6 +17,13 @@ type CompatibleIssueHash struct {
 	Latest *eventview.Record
 }
 
+func discardedIssueFingerprint(ctx context.Context, tx pgx.Tx, projectID, fingerprint string) (bool, error) {
+	var discarded bool
+	err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM discarded_issue_hashes
+ WHERE project_id=$1::bigint AND fingerprint=$2)`, projectID, fingerprint).Scan(&discarded)
+	return discarded, err
+}
+
 // The project gate precedes this route lock and both issue-row locks. Reset
 // holds the exclusive gate, so a committed capture stays on exactly one side.
 func activeIssueHashOrigin(ctx context.Context, tx pgx.Tx, projectID string, ev event.Event) (string, *string, error) {
