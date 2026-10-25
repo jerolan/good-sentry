@@ -102,6 +102,43 @@ func TestParseMinidumpAndBreakpadSymbols(t *testing.T) {
 	}
 }
 
+func TestParseBreakpadOptionalMultipleSymbolMarker(t *testing.T) {
+	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 PreviousFunction\n1010 20 42 1\nFUNC m 1030 20 0 Folded Function Name\n1030 20 17 1\nPUBLIC m 1050 0 Folded Public Name\n1050 1 18 1\nFUNC m nothex 20 0 Malformed Function\n1070 1 19 1\n")
+	_, functions := ParseBreakpad("test_app.pdb", symbol)
+	if len(functions) != 5 {
+		t.Fatalf("parsed %d symbol rows, want five valid FUNC/PUBLIC rows: %+v", len(functions), functions)
+	}
+	byIdentity := make(map[string]SymbolFunction, len(functions))
+	for _, function := range functions {
+		byIdentity[fmt.Sprintf("%x:%s:%d", function.Start, function.Name, function.Line)] = function
+	}
+	for _, want := range []struct {
+		key  string
+		end  uint64
+		file string
+	}{
+		{key: "1010:PreviousFunction:-1", end: 0x1030},
+		{key: "1010:PreviousFunction:42", end: 0x1030, file: `C:\src\crash.cc`},
+		{key: "1030:Folded Function Name:-1", end: 0x1050},
+		{key: "1030:Folded Function Name:17", end: 0x1050, file: `C:\src\crash.cc`},
+		{key: "1050:Folded Public Name:-1", end: 0x1051},
+	} {
+		function, ok := byIdentity[want.key]
+		if !ok || function.End != want.end || function.File != want.file {
+			t.Errorf("symbol %q: got %+v, present=%t; want end=%#x file=%q", want.key, function, ok, want.end, want.file)
+		}
+	}
+	for _, leaked := range []string{
+		"1030:PreviousFunction:17",
+		"1050:PreviousFunction:18",
+		"1070:PreviousFunction:19",
+	} {
+		if function, ok := byIdentity[leaked]; ok {
+			t.Errorf("orphan source row leaked onto the previous function: %+v", function)
+		}
+	}
+}
+
 func buildX86Minidump() []byte {
 	const moduleBase = uint32(0x00400000)
 	const stackBase = uint32(0x00200000)

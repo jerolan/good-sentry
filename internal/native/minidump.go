@@ -471,26 +471,39 @@ func ParseBreakpad(name string, data []byte) (string, []SymbolFunction) {
 				}
 			}
 		case "FUNC", "PUBLIC":
-			start, err := strconv.ParseUint(fields[1], 16, 64)
+			current = nil
+			fieldOffset := 1
+			if fields[1] == "m" {
+				fieldOffset++
+			}
+			if len(fields) <= fieldOffset {
+				continue
+			}
+			start, err := strconv.ParseUint(fields[fieldOffset], 16, 64)
 			if err != nil {
 				continue
 			}
 			var size uint64
 			var nameAt int
-			if fields[0] == "FUNC" && len(fields) >= 5 {
-				size, _ = strconv.ParseUint(fields[2], 16, 64)
-				nameAt = 4
+			if fields[0] == "FUNC" {
+				nameAt = fieldOffset + 3
+				if len(fields) <= nameAt {
+					continue
+				}
+				size, _ = strconv.ParseUint(fields[fieldOffset+1], 16, 64)
 			} else {
-				nameAt = 3
-			}
-			if len(fields) <= nameAt {
-				continue
+				nameAt = fieldOffset + 2
+				if len(fields) <= nameAt {
+					continue
+				}
 			}
 			if size == 0 {
 				size = 1
 			}
 			funcs = append(funcs, SymbolFunction{Start: start, End: start + size, Name: strings.Join(fields[nameAt:], " "), Line: -1})
-			current = &funcs[len(funcs)-1]
+			if fields[0] == "FUNC" {
+				current = &funcs[len(funcs)-1]
+			}
 		case "STACK", "INFO", "INLINE", "INLINE_END":
 			continue
 		default:
