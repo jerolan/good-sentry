@@ -991,26 +991,48 @@ func TestParseELFObjectSymbols(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var functionAddress uint64
+	addresses := map[string]uint64{}
 	for _, symbol := range symbols {
-		if symbol.Name == "fixture_function" && symbol.Value >= imageBase && symbol.Size > 1 {
-			functionAddress = symbol.Value
-			break
+		switch symbol.Name {
+		case "fixture_function", "main":
+			if symbol.Value >= imageBase && symbol.Size > 1 {
+				addresses[symbol.Name] = symbol.Value
+			}
 		}
 	}
-	if functionAddress == 0 {
-		t.Fatal("ELF fixture lacks fixture_function")
+	if addresses["fixture_function"] == 0 || addresses["main"] == 0 {
+		t.Fatalf("ELF fixture lacks expected functions: %v", addresses)
 	}
 	module, functions := ParseObjectSymbols("fixture", data)
 	if module != "fixture" || len(functions) == 0 {
 		t.Fatalf("ELF DWARF symbols module=%q functions=%d", module, len(functions))
 	}
-	crash := Crash{Modules: []Module{{Name: "fixture", Base: 0x70000000, Size: 0x10000000}}}
-	crash.Frames = []Frame{{Instruction: 0x70000000 + functionAddress - imageBase, Module: "fixture"}}
-	Symbolicate(&crash, SymbolSet{module: functions})
-	frame := crash.Frames[0]
-	if frame.Function != "fixture_function" || !strings.HasSuffix(frame.File, "elf-dwarf-source.c") || frame.Line < 1 {
-		t.Fatalf("ELF image-relative symbolication: raw=%#x base=%#x frame=%+v", functionAddress, imageBase, crash.Frames[0])
+	for _, test := range []struct {
+		name     string
+		symbol   string
+		function string
+		delta    uint64
+		line     int
+	}{
+		{name: "function entry", symbol: "fixture_function", function: "fixture_function", line: 2},
+		{name: "first line final instruction", symbol: "fixture_function", function: "fixture_function", delta: 0xa, line: 2},
+		{name: "first source transition", symbol: "fixture_function", function: "fixture_function", delta: 0xb, line: 3},
+		{name: "second line final instruction", symbol: "fixture_function", function: "fixture_function", delta: 0x10, line: 3},
+		{name: "second source transition", symbol: "fixture_function", function: "fixture_function", delta: 0x11, line: 4},
+		{name: "main entry", symbol: "main", function: "main", line: 6},
+		{name: "next source transition", symbol: "main", function: "main", delta: 8, line: 7},
+		{name: "final sequence instruction", symbol: "main", function: "main", delta: 0x12, line: 8},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			crash := Crash{Modules: []Module{{Name: "fixture", Base: 0x70000000, Size: 0x10000000}}}
+			address := addresses[test.symbol] - imageBase + test.delta
+			crash.Frames = []Frame{{Instruction: 0x70000000 + address, Module: "fixture"}}
+			Symbolicate(&crash, SymbolSet{module: functions})
+			frame := crash.Frames[0]
+			if frame.Function != test.function || !strings.HasSuffix(frame.File, "elf-dwarf-source.c") || frame.Line != test.line {
+				t.Fatalf("ELF image-relative symbolication at %#x: want %s:%d, got %+v", addresses[test.symbol]+test.delta, test.function, test.line, frame)
+			}
+		})
 	}
 }
 
@@ -1665,11 +1687,22 @@ func testCFIUnwindFixture(t *testing.T, fixture string) {
 	if module != moduleKey(fixture) {
 		t.Fatalf("CFI module=%q", module)
 	}
+	file, err := elf.NewFile(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	symbols, err := file.Symbols()
+	if err != nil {
+		t.Fatal(err)
+	}
 	addresses := map[string]uint64{}
-	for _, function := range functions {
-		switch function.Name {
+	imageBase := elfImageBase(file)
+	for _, symbol := range symbols {
+		switch symbol.Name {
 		case "crash_frame", "middle_frame", "outer_frame":
-			addresses[function.Name] = function.Start
+			if symbol.Value >= imageBase {
+				addresses[symbol.Name] = symbol.Value - imageBase
+			}
 		}
 	}
 	if len(addresses) != 3 {

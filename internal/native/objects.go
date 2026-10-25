@@ -6,9 +6,22 @@ import (
 	"debug/elf"
 	"debug/macho"
 	"encoding/binary"
+	"io"
 	"sort"
 	"strings"
 )
+
+const (
+	maxDWARFLineRows  = 1 << 18
+	maxDWARFLineSpans = 1 << 18
+)
+
+type dwarfLineSpan struct {
+	start uint64
+	end   uint64
+	file  string
+	line  int
+}
 
 // ParseObjectSymbols recognizes the standard ELF and Mach-O containers used by
 // native debug files. Unsupported objects return no symbols rather than error,
@@ -146,14 +159,20 @@ func isMachOMagic(value []byte) bool {
 func dwarfFunctions(table *dwarf.Data) []SymbolFunction {
 	reader := table.Reader()
 	var functions []SymbolFunction
-	var lineReader *dwarf.LineReader
+	var lineSpans []dwarfLineSpan
+	var sourceSpanCount int
 	for {
 		entry, err := reader.Next()
 		if err != nil || entry == nil {
 			break
 		}
 		if entry.Tag == dwarf.TagCompileUnit {
-			lineReader, _ = table.LineReader(entry)
+			lineReader, err := table.LineReader(entry)
+			if err != nil {
+				lineSpans = nil
+			} else {
+				lineSpans = dwarfLineSpans(lineReader)
+			}
 			continue
 		}
 		if entry.Tag != dwarf.TagSubprogram {
@@ -171,15 +190,58 @@ func dwarfFunctions(table *dwarf.Data) []SymbolFunction {
 			if r[0] == 0 || r[1] <= r[0] {
 				continue
 			}
-			file, line := "", -1
-			if lineReader != nil {
-				var lineEntry dwarf.LineEntry
-				if err := lineReader.SeekPC(r[0], &lineEntry); err == nil && lineEntry.File != nil {
-					file, line = lineEntry.File.Name, lineEntry.Line
+			functions = append(functions, SymbolFunction{Start: r[0], End: r[1], Name: name, Line: -1})
+			if sourceSpanCount >= maxDWARFLineSpans {
+				continue
+			}
+			firstSpan := sort.Search(len(lineSpans), func(i int) bool { return lineSpans[i].end > r[0] })
+			for i := firstSpan; i < len(lineSpans) && lineSpans[i].start < r[1]; i++ {
+				if sourceSpanCount >= maxDWARFLineSpans {
+					break
+				}
+				span := lineSpans[i]
+				start, end := max(r[0], span.start), min(r[1], span.end)
+				if start < end {
+					functions = append(functions, SymbolFunction{Start: start, End: end, Name: name, File: span.file, Line: span.line})
+					sourceSpanCount++
 				}
 			}
-			functions = append(functions, SymbolFunction{Start: r[0], End: r[1], Name: name, File: file, Line: line})
 		}
 	}
 	return functions
+}
+
+func dwarfLineSpans(reader *dwarf.LineReader) []dwarfLineSpan {
+	var spans []dwarfLineSpan
+	var previous dwarf.LineEntry
+	hasPrevious := false
+	var lastAddress uint64
+	hasAddress := false
+	rows := 0
+	for {
+		var entry dwarf.LineEntry
+		err := reader.Next(&entry)
+		if err == io.EOF {
+			if hasPrevious {
+				return nil
+			}
+			return spans
+		}
+		if err != nil {
+			return nil
+		}
+		rows++
+		if rows > maxDWARFLineRows || (hasAddress && entry.Address < lastAddress) {
+			return nil
+		}
+		lastAddress, hasAddress = entry.Address, true
+		if hasPrevious && entry.Address > previous.Address && previous.File != nil && previous.Line > 0 {
+			spans = append(spans, dwarfLineSpan{start: previous.Address, end: entry.Address, file: previous.File.Name, line: previous.Line})
+		}
+		if entry.EndSequence {
+			hasPrevious = false
+			continue
+		}
+		previous, hasPrevious = entry, true
+	}
 }

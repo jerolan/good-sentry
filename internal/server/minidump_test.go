@@ -1161,9 +1161,9 @@ func TestNativeELFObjectSymbolicationByDebugID(t *testing.T) {
 	if functionAddress == 0 {
 		t.Fatal("ELF fixture lacks fixture_function")
 	}
-	frame := ingestNativeObject(t, f, object, "uploaded.elf", "elf", functionAddress-imageBase, "fixture_function")
-	if !strings.HasSuffix(frame.Filename, "elf-dwarf-source.c") || frame.Line < 1 {
-		t.Fatalf("ELF minidump frame: %+v", frame)
+	frame := ingestNativeObject(t, f, object, "uploaded.elf", "elf", functionAddress-imageBase+0xb, "fixture_function")
+	if !strings.HasSuffix(frame.Filename, "elf-dwarf-source.c") || frame.Line != 3 {
+		t.Fatalf("ELF interior minidump frame: want elf-dwarf-source.c:3, got %+v", frame)
 	}
 }
 
