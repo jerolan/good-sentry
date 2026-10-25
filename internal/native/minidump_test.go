@@ -1592,6 +1592,31 @@ func TestCFIRegisterExpressionsHonorStackValue(t *testing.T) {
 			t.Fatalf("empty or nonterminal stack value expression %x was accepted", expression)
 		}
 	}
+
+	for _, test := range []struct {
+		pointerSize int
+		address     uint64
+		value       uint64
+	}{
+		{pointerSize: 4, address: 0x9f001000, value: 0x12345678},
+		{pointerSize: 8, address: 0x0123456789abcd9f, value: 0x0123456789abcdef},
+	} {
+		data := make([]byte, test.pointerSize)
+		for i := range data {
+			data[i] = byte(test.value >> (8 * i))
+		}
+		expression := []byte{0x03}
+		for i := 0; i < test.pointerSize; i++ {
+			expression = append(expression, byte(test.address>>(8*i)))
+		}
+		rule := cfiRegisterRule{kind: cfiRuleExpression, expr: expression}
+		state := cfiState{regs: map[uint32]cfiRegisterRule{16: rule}}
+		ranges := []memoryRange{{start: test.address, data: data}}
+		got, ok := evaluateRegisterRule(16, state, 0, nil, ranges, test.pointerSize)
+		if !ok || got != test.value {
+			t.Errorf("DW_OP_addr ending in 0x9f with pointerSize=%d = %#x, %v; want %#x", test.pointerSize, got, ok, test.value)
+		}
+	}
 }
 
 func testCFIUnwindFixture(t *testing.T, fixture string) {

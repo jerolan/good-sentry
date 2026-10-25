@@ -1255,7 +1255,14 @@ func readCFIValue(ranges []memoryRange, address uint64, size, pointerSize int) (
 }
 
 func evaluateCFIExpressionResult(expression []byte, registers map[uint32]uint64, cfa uint64, ranges []memoryRange, pointerSize int) (cfiExpressionResult, bool) {
-	stackValue := len(expression) > 0 && expression[len(expression)-1] == 0x9f
+	boundaries, ok := cfiExpressionBoundaries(expression, pointerSize)
+	if !ok {
+		return cfiExpressionResult{}, false
+	}
+	stackValue := false
+	if len(expression) > 0 && expression[len(expression)-1] == 0x9f {
+		_, stackValue = boundaries[len(expression)-1]
+	}
 	if stackValue {
 		expression = expression[:len(expression)-1]
 		if len(expression) == 0 {
@@ -1585,7 +1592,7 @@ func cfiExpressionBoundaries(expression []byte, pointerSize int) (map[int]struct
 				_ = cursor.sleb()
 			case 0x94:
 				_ = cursor.byte()
-			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x17, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x27, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x96, 0x9c:
+			case 0x06, 0x12, 0x13, 0x14, 0x16, 0x17, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x27, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x96, 0x9c, 0x9f:
 			default:
 				return nil, false
 			}
