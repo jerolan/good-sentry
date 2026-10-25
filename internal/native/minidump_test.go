@@ -875,16 +875,59 @@ func TestParseARM32MinidumpRejectsUnsupportedContextShape(t *testing.T) {
 }
 
 func TestParseARM64Minidump(t *testing.T) {
+	crash, err := ParseMinidump(buildARM64Minidump(912, 12, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertARM64Minidump(t, crash)
+}
+
+func TestParseLegacyBreakpadARM64Minidump(t *testing.T) {
+	for _, flags := range []uint64{0x80000002, 0x80000006} {
+		t.Run(fmt.Sprintf("flags_%08x", flags), func(t *testing.T) {
+			crash, err := ParseMinidump(buildARM64Minidump(796, 0x8003, flags))
+			if err != nil {
+				t.Fatal(err)
+			}
+			assertARM64Minidump(t, crash)
+		})
+	}
+}
+
+func TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes(t *testing.T) {
+	tests := []struct {
+		name  string
+		size  int
+		arch  uint16
+		flags uint64
+	}{
+		{name: "context too short", size: 795, arch: 0x8003, flags: 0x80000002},
+		{name: "context too long", size: 797, arch: 0x8003, flags: 0x80000002},
+		{name: "architecture mismatch", size: 796, arch: 12, flags: 0x80000002},
+		{name: "integer registers absent", size: 796, arch: 0x8003, flags: 0x80000004},
+		{name: "unknown context flags", size: 796, arch: 0x8003, flags: 0x8000000e},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if _, err := ParseMinidump(buildARM64Minidump(test.size, test.arch, test.flags)); err == nil {
+				t.Fatal("invalid legacy ARM64 context was accepted")
+			}
+		})
+	}
+}
+
+func buildARM64Minidump(contextSize int, architecture uint16, flags uint64) []byte {
 	const moduleBase = uint64(0x0000000100000000)
 	const stackBase = uint64(0x000000016f000000)
-	context := make([]byte, 912)
+	context := make([]byte, contextSize)
+	binary.LittleEndian.PutUint64(context, flags)
 	binary.LittleEndian.PutUint64(context[240:], stackBase)
 	binary.LittleEndian.PutUint64(context[264:], moduleBase+0x1010)
 	binary.LittleEndian.PutUint64(context[256:], stackBase)
 	stack := make([]byte, 0x100)
 	binary.LittleEndian.PutUint64(stack[8:], moduleBase+0x1050)
 	system := make([]byte, 2)
-	binary.LittleEndian.PutUint16(system, 12)
+	binary.LittleEndian.PutUint16(system, architecture)
 	modules := make([]byte, 4+108)
 	binary.LittleEndian.PutUint32(modules, 1)
 	binary.LittleEndian.PutUint64(modules[4:], moduleBase)
@@ -918,11 +961,14 @@ func TestParseARM64Minidump(t *testing.T) {
 		binary.LittleEndian.PutUint32(buf[off+4:], uint32(len(value)))
 		binary.LittleEndian.PutUint32(buf[off+8:], appendData(value))
 	}
-	crash, err := ParseMinidump(buf)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if crash.Arch != "arm64" || crash.ThreadID != 9 || crash.RIP != moduleBase+0x1010 || len(crash.Frames) != 2 || crash.Frames[1].Instruction != moduleBase+0x1050 {
+	return buf
+}
+
+func assertARM64Minidump(t *testing.T, crash Crash) {
+	t.Helper()
+	const moduleBase = uint64(0x0000000100000000)
+	const stackBase = uint64(0x000000016f000000)
+	if crash.Arch != "arm64" || crash.PointerSize != 8 || crash.ThreadID != 9 || crash.RBP != stackBase || crash.RSP != stackBase || crash.RIP != moduleBase+0x1010 || len(crash.Frames) != 2 || crash.Frames[1].Instruction != moduleBase+0x1050 {
 		t.Fatalf("arm64 crash: %+v", crash)
 	}
 }

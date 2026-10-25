@@ -15,21 +15,26 @@ import (
 )
 
 const (
-	minidumpSignature     = 0x504d444d
-	minidumpVersion       = 0xa793
-	streamThreadList      = 3
-	streamModuleList      = 4
-	streamException       = 6
-	streamMemory64        = 9
-	streamSystemInfo      = 7
-	cpuArchX86            = 0
-	cpuArchARM            = 5
-	cpuArchAMD64          = 9
-	cpuArchRISCV64        = 0x8006
-	amd64ContextSize      = 1232
-	x86ContextSize        = 716
-	maxMinidumpXState     = 16384
-	minidumpContextXState = 0x40
+	minidumpSignature      = 0x504d444d
+	minidumpVersion        = 0xa793
+	streamThreadList       = 3
+	streamModuleList       = 4
+	streamException        = 6
+	streamMemory64         = 9
+	streamSystemInfo       = 7
+	cpuArchX86             = 0
+	cpuArchARM             = 5
+	cpuArchAMD64           = 9
+	cpuArchARM64           = 12
+	cpuArchARM64Old        = 0x8003
+	cpuArchRISCV64         = 0x8006
+	amd64ContextSize       = 1232
+	x86ContextSize         = 716
+	arm64OldContextSize    = 796
+	arm64OldContextInteger = 0x80000002
+	arm64OldContextFull    = 0x80000006
+	maxMinidumpXState      = 16384
+	minidumpContextXState  = 0x40
 	// Crashpad's native struct size includes four bytes of tail alignment.
 	riscv64ContextSize = 528
 	riscv64ContextV1   = 1
@@ -314,7 +319,19 @@ func ParseMinidump(data []byte) (Crash, error) {
 			crash.RSP = uint64(binary.LittleEndian.Uint32(rawContext[56:]))
 			crash.LR = uint64(binary.LittleEndian.Uint32(rawContext[60:]))
 			crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[64:]))
-		} else if declaredArch == 12 && len(rawContext) >= 272 {
+		} else if declaredArch == cpuArchARM64Old && len(rawContext) == arm64OldContextSize {
+			flags := binary.LittleEndian.Uint64(rawContext)
+			if flags != arm64OldContextInteger && flags != arm64OldContextFull {
+				return Crash{}, errors.New("invalid legacy ARM64 minidump context flags")
+			}
+			crash.Arch, crash.PointerSize = "arm64", 8
+			crash.RBP = binary.LittleEndian.Uint64(rawContext[240:])
+			crash.RSP = binary.LittleEndian.Uint64(rawContext[256:])
+			crash.RIP = binary.LittleEndian.Uint64(rawContext[264:])
+		} else if declaredArch == cpuArchARM64 && len(rawContext) >= 272 {
+			if len(rawContext) >= 4 && binary.LittleEndian.Uint32(rawContext)&0xffffff00 == 0x80000000 {
+				return Crash{}, errors.New("legacy ARM64 minidump context conflicts with SystemInfo architecture")
+			}
 			crash.Arch, crash.PointerSize = "arm64", 8
 			crash.RBP = binary.LittleEndian.Uint64(rawContext[240:])
 			crash.RSP = binary.LittleEndian.Uint64(rawContext[256:])
