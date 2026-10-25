@@ -91,7 +91,7 @@ Open work:
 
 - Automatic repository integrations and additional conditional issue policies.
 - Real alert-provider and external identity-provider receipts, and representative native crash receipts.
-- Advanced administration and WebAuthn second factors.
+- WebAuthn second factors and organization-level `require2FA` enforcement.
 
 Available capabilities and limits:
 
