@@ -1587,6 +1587,80 @@ func TestCFIExpressionStackManipulation(t *testing.T) {
 	}
 }
 
+func TestCFILEB128ReadersRejectOverflow(t *testing.T) {
+	ulebPrefix := bytes.Repeat([]byte{0xff}, 9)
+	ulebMax := append(append([]byte(nil), ulebPrefix...), 0x01)
+	slebMax := append(append([]byte(nil), ulebPrefix...), 0x00)
+	slebMin := append(bytes.Repeat([]byte{0x80}, 9), 0x7f)
+	for _, test := range []struct {
+		name  string
+		data  []byte
+		read  func(*cfiCursor) uint64
+		want  uint64
+		valid bool
+	}{
+		{name: "ULEB zero", data: []byte{0}, read: (*cfiCursor).uleb, want: 0, valid: true},
+		{name: "ULEB uint64 max", data: ulebMax, read: (*cfiCursor).uleb, want: ^uint64(0), valid: true},
+		{name: "ULEB tenth payload overflow", data: append(bytes.Repeat([]byte{0x80}, 9), 0x02), read: (*cfiCursor).uleb},
+		{name: "ULEB continuation beyond width", data: append(bytes.Repeat([]byte{0x80}, 9), 0x81), read: (*cfiCursor).uleb},
+		{name: "ULEB truncated", data: []byte{0x80}, read: (*cfiCursor).uleb},
+		{name: "SLEB int64 max", data: slebMax, read: func(cursor *cfiCursor) uint64 { return uint64(cursor.sleb()) }, want: uint64(^uint64(0) >> 1), valid: true},
+		{name: "SLEB int64 min", data: slebMin, read: func(cursor *cfiCursor) uint64 { return uint64(cursor.sleb()) }, want: uint64(1) << 63, valid: true},
+		{name: "SLEB positive tenth-byte overflow", data: append(bytes.Repeat([]byte{0x80}, 9), 0x01), read: func(cursor *cfiCursor) uint64 { return uint64(cursor.sleb()) }},
+		{name: "SLEB negative tenth-byte overflow", data: append(bytes.Repeat([]byte{0x80}, 9), 0x7e), read: func(cursor *cfiCursor) uint64 { return uint64(cursor.sleb()) }},
+		{name: "SLEB continuation beyond width", data: append(bytes.Repeat([]byte{0x80}, 9), 0x80), read: func(cursor *cfiCursor) uint64 { return uint64(cursor.sleb()) }},
+		{name: "SLEB truncated", data: []byte{0x80}, read: func(cursor *cfiCursor) uint64 { return uint64(cursor.sleb()) }},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			cursor := cfiCursor{data: test.data}
+			got := test.read(&cursor)
+			if test.valid {
+				if cursor.err != nil || got != test.want || cursor.off != len(test.data) {
+					t.Fatalf("decoded %x = %#x, err=%v, offset=%d; want %#x with full consumption", test.data, got, cursor.err, cursor.off, test.want)
+				}
+			} else if cursor.err == nil {
+				t.Fatalf("malformed encoding %x decoded as %#x", test.data, got)
+			}
+		})
+	}
+}
+
+func TestCFIExpressionRejectsRegisterIDTruncation(t *testing.T) {
+	wideRegister := []byte{0x80, 0x80, 0x80, 0x80, 0x10} // 1<<32, which must not wrap to register zero.
+	registers := map[uint32]uint64{0: 0x1000, 5: 0x2000}
+	for _, test := range []struct {
+		name       string
+		expression []byte
+		want       uint64
+		valid      bool
+	}{
+		{name: "valid regx", expression: []byte{0x90, 0x05}, want: 0x2000, valid: true},
+		{name: "valid bregx", expression: []byte{0x92, 0x05, 0x01}, want: 0x2001, valid: true},
+		{name: "regx above uint32", expression: append([]byte{0x90}, wideRegister...)},
+		{name: "bregx above uint32", expression: append(append([]byte{0x92}, wideRegister...), 0x00)},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			got, ok := evaluateCFIExpression(test.expression, registers, 0, nil, 8)
+			if ok != test.valid || test.valid && got != test.want {
+				t.Fatalf("expression %x = %#x, %v; want %#x, %v", test.expression, got, ok, test.want, test.valid)
+			}
+		})
+	}
+}
+
+func TestApplyCFIInstructionsRejectsRegisterIDTruncation(t *testing.T) {
+	wideRegister := []byte{0x80, 0x80, 0x80, 0x80, 0x10} // 1<<32, which must not wrap to register zero.
+	for _, instructions := range [][]byte{
+		append([]byte{0x07}, wideRegister...),               // DW_CFA_undefined
+		append(append([]byte{0x09}, wideRegister...), 0x01), // DW_CFA_register
+		append(append([]byte{0x0c}, wideRegister...), 0x00), // DW_CFA_def_cfa
+	} {
+		if _, err := applyCFIInstructions(instructions, newCFIState(), cfiCIE{addrSize: 8}, 0, false); err == nil {
+			t.Errorf("instructions %x accepted a register ID above uint32", instructions)
+		}
+	}
+}
+
 func TestCFIExpressionDereferenceRespectsSizeOperands(t *testing.T) {
 	data := []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}
 	ranges := []memoryRange{{start: 0x1000, data: data}}

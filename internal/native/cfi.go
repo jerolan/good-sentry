@@ -173,6 +173,10 @@ func (c *cfiCursor) uleb() uint64 {
 		}
 		current := c.data[c.off]
 		c.off++
+		if shift == 63 && (current&0x7f > 1 || current&0x80 != 0) {
+			c.err = errors.New("CFI ULEB128 is too large")
+			return 0
+		}
 		value |= uint64(current&0x7f) << shift
 		if current&0x80 == 0 {
 			return value
@@ -184,28 +188,42 @@ func (c *cfiCursor) uleb() uint64 {
 
 func (c *cfiCursor) sleb() int64 {
 	var value int64
-	var shift uint
-	var current byte
-	for {
+	for shift := uint(0); ; shift += 7 {
 		if !c.need(1) {
 			return 0
 		}
-		current = c.data[c.off]
+		current := c.data[c.off]
 		c.off++
+		if shift == 63 {
+			payload := current & 0x7f
+			if current&0x80 != 0 || payload != 0 && payload != 0x7f {
+				c.err = errors.New("CFI SLEB128 is too large")
+				return 0
+			}
+			value |= int64(payload) << shift
+			return value
+		}
 		value |= int64(current&0x7f) << shift
-		shift += 7
 		if current&0x80 == 0 {
-			break
-		}
-		if shift >= 64 {
-			c.err = errors.New("CFI SLEB128 is too large")
-			return 0
+			shift += 7
+			if shift < 64 && current&0x40 != 0 {
+				value |= ^int64(0) << shift
+			}
+			return value
 		}
 	}
-	if shift < 64 && current&0x40 != 0 {
-		value |= ^int64(0) << shift
+}
+
+func (c *cfiCursor) register() uint32 {
+	value := c.uleb()
+	if c.err != nil {
+		return 0
 	}
-	return value
+	if value > uint64(^uint32(0)) {
+		c.err = errors.New("CFI register number exceeds uint32")
+		return 0
+	}
+	return uint32(value)
 }
 
 func (c *cfiCursor) string() string {
@@ -590,7 +608,7 @@ func parseCFIECIE(data []byte, pointerSize int, isEH bool) (cfiCIE, error) {
 	if version == 1 {
 		cie.returnReg = uint32(cursor.byte())
 	} else {
-		cie.returnReg = uint32(cursor.uleb())
+		cie.returnReg = cursor.register()
 	}
 	if cursor.err != nil {
 		return cfiCIE{}, cursor.err
@@ -768,22 +786,22 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 		case 0x04:
 			location += uint64(cursor.u32()) * cie.codeAlign
 		case 0x05:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: int64(cursor.uleb()) * cie.dataAlign}
 		case 0x06:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			if rule, ok := initial.regs[register]; ok {
 				state.regs[register] = rule
 			} else {
 				delete(state.regs, register)
 			}
 		case 0x07:
-			state.regs[uint32(cursor.uleb())] = cfiRegisterRule{kind: cfiRuleUndefined}
+			state.regs[cursor.register()] = cfiRegisterRule{kind: cfiRuleUndefined}
 		case 0x08:
-			state.regs[uint32(cursor.uleb())] = cfiRegisterRule{kind: cfiRuleSame}
+			state.regs[cursor.register()] = cfiRegisterRule{kind: cfiRuleSame}
 		case 0x09:
-			register := uint32(cursor.uleb())
-			state.regs[register] = cfiRegisterRule{kind: cfiRuleRegister, reg: uint32(cursor.uleb())}
+			register := cursor.register()
+			state.regs[register] = cfiRegisterRule{kind: cfiRuleRegister, reg: cursor.register()}
 		case 0x0a:
 			remembered = append(remembered, state.clone())
 		case 0x0b:
@@ -793,9 +811,9 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			state = remembered[len(remembered)-1]
 			remembered = remembered[:len(remembered)-1]
 		case 0x0c:
-			state.cfa = cfiCFARule{register: uint32(cursor.uleb()), offset: int64(cursor.uleb())}
+			state.cfa = cfiCFARule{register: cursor.register(), offset: int64(cursor.uleb())}
 		case 0x0d:
-			state.cfa.register = uint32(cursor.uleb())
+			state.cfa.register = cursor.register()
 			state.cfa.useExpr = false
 		case 0x0e:
 			state.cfa.offset = int64(cursor.uleb())
@@ -808,7 +826,7 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			state.cfa = cfiCFARule{expr: append([]byte(nil), cursor.data[cursor.off:cursor.off+length]...), useExpr: true}
 			cursor.off += length
 		case 0x10:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			length := int(cursor.uleb())
 			if !cursor.need(length) {
 				return state, cursor.err
@@ -816,21 +834,21 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			state.regs[register] = cfiRegisterRule{kind: cfiRuleExpression, expr: append([]byte(nil), cursor.data[cursor.off:cursor.off+length]...)}
 			cursor.off += length
 		case 0x11:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: cursor.sleb() * cie.dataAlign}
 		case 0x12:
-			state.cfa = cfiCFARule{register: uint32(cursor.uleb()), offset: cursor.sleb()}
+			state.cfa = cfiCFARule{register: cursor.register(), offset: cursor.sleb()}
 		case 0x13:
 			state.cfa.offset = cursor.sleb()
 			state.cfa.useExpr = false
 		case 0x14:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			state.regs[register] = cfiRegisterRule{kind: cfiRuleValueOffset, value: int64(cursor.uleb()) * cie.dataAlign}
 		case 0x15:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			state.regs[register] = cfiRegisterRule{kind: cfiRuleValueOffset, value: cursor.sleb() * cie.dataAlign}
 		case 0x16:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			length := int(cursor.uleb())
 			if !cursor.need(length) {
 				return state, cursor.err
@@ -840,7 +858,7 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 		case 0x2e:
 			_ = cursor.uleb()
 		case 0x2f:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: -int64(cursor.uleb()) * cie.dataAlign}
 		default:
 			return state, errors.New("unsupported CFI opcode")
@@ -1529,13 +1547,13 @@ func evaluateCFIExpression(expression []byte, registers map[uint32]uint64, cfa u
 				return 0, false
 			}
 		case 0x90:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			value, ok := registers[register]
 			if !ok || !push(value) {
 				return 0, false
 			}
 		case 0x92:
-			register := uint32(cursor.uleb())
+			register := cursor.register()
 			value, ok := registers[register]
 			if !ok || !push(addSigned(value, cursor.sleb())) {
 				return 0, false
@@ -1602,12 +1620,14 @@ func cfiExpressionBoundaries(expression []byte, pointerSize int) (map[int]struct
 				}
 			case 0x15:
 				_ = cursor.byte()
-			case 0x23, 0x90:
+			case 0x23:
 				_ = cursor.uleb()
+			case 0x90:
+				_ = cursor.register()
 			case 0x28, 0x2f:
 				_ = cursor.u16()
 			case 0x92:
-				_ = cursor.uleb()
+				_ = cursor.register()
 				_ = cursor.sleb()
 			case 0x94:
 				_ = cursor.byte()
