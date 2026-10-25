@@ -131,9 +131,11 @@ try {
   await discardButton.click(); await visible(discardConfirmation);
   const discardRequest = page.waitForResponse(response => response.request().method() === 'PUT' && response.url() === url(orgIssuePath));
   await discardConfirmation.getByRole('button', { name: 'Confirm permanent discard', exact: true }).click();
-  const discarded = await discardRequest; assert.equal(discarded.status(), 204); assert.equal(await discarded.text(), '');
+  const discarded = await discardRequest; assert.equal(discarded.status(), 204);
+  await page.waitForURL(value => !new URL(value).searchParams.has('issue'));
+  await visible(page.getByRole('heading', { name: 'Issues', exact: true, level: 1 }));
   const absent = await context.request.get(url(nativeIssuePath), { headers: { Origin: base.origin, 'X-CSRF-Token': me.csrfToken } }); assert.equal(absent.status(), 404);
-  checks.push('Issue detail offers a separate two-step permanent discard, explains future fingerprint handling, supports cancellation, and removes the issue only after the empty 204 response');
+  checks.push('Issue detail offers a two-step permanent discard, explains future fingerprint handling, supports cancellation, and returns to the issue list after the issue disappears');
   await page.goto(destination('api-tokens'), { waitUntil: 'networkidle' }); const row = region('API token metadata').getByRole('row').filter({ hasText: tokenName }); await visible(row);
   await row.getByRole('button', { name: 'Revoke', exact: true }).click(); const revoking = page.waitForResponse(response => response.request().method() === 'DELETE' && response.url() === url(`${tokenPath}/${issuedID}`));
   await row.getByRole('button', { name: 'Confirm revoke', exact: true }).click(); assert.equal((await revoking).status(), 204); revoked = true; await visible(row.getByText('Revoked', { exact: true }));

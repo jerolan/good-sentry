@@ -79,6 +79,7 @@
 }
 
 @layer base {
+  [hidden] { display: none !important; }
   :root {
     color-scheme: light;
     --bg: #f7f8fa;
