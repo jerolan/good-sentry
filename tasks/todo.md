@@ -337,6 +337,7 @@ Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete
     - Sources: [GNU `CFI directives`](https://sourceware.org/binutils/docs/as/CFI-directives.html#cfi_005fpersonality).
     - Files: `SPEC.md`, `tasks/todo.md`, `internal/native/cfi.go`, `internal/native/minidump_test.go`.
     - Local evidence (2026-10-25): the new positive unwind regression fails on the prior parser with `indirect CFI pointer is unsupported`; after the fix, the `zPR` CIE recovers its caller and malformed/truncated augmentation plus indirect FDE cases reject. Focused regressions, `go test -race ./internal/native`, full `go test ./...`, integration-tag compilation and vet, `go build -trimpath ./...`, formatting and `git diff --check` pass.
+    - Public evidence (2026-10-25): source commit `ae0bb6adf00edd4cdf494ef2968da422f215b3fc` is on `main`. CI [40234951669](https://github.com/jerolan/good-sentry/actions/runs/40234951669) passes formatting, vet, PostgreSQL integration/race tests and image build. Publication [40235508558](https://github.com/jerolan/good-sentry/actions/runs/40235508558) publishes `main`, `latest` and `sha-ae0bb6adf00edd4cdf494ef2968da422f215b3fc` for linux/amd64 and linux/arm64 at OCI index `sha256:e5de2b35de40139a6b02bc037b8fefdbd9e933b975eebdce0ebf12a9ace262eb`.
 
   - [x] Parse DWARF CIE v4 address and segment sizes in specification order.
     - Contract: read `address_size` and `segment_selector_size` immediately after augmentation; accept address sizes4 and8, and reject unsupported sizes or nonzero segment selectors.
