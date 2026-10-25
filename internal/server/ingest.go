@@ -54,10 +54,43 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		failure(w, 403, "Invalid SDK authentication")
 		return
 	}
+	projectThrottled := shouldThrottleProjectEvent(eventThrottleRate)
+	mayBeDiscarded := false
+	for _, item := range env.Items {
+		if item.Type == "event" {
+			mayBeDiscarded = true
+			break
+		}
+	}
+	if projectThrottled && !mayBeDiscarded {
+		rejectProjectThrottle(w)
+		return
+	}
+	earlyFailure := func(status int, message string) {
+		if projectThrottled {
+			rejectProjectThrottle(w)
+			return
+		}
+		failure(w, status, message)
+	}
+	earlyReport := func(err error) {
+		if projectThrottled {
+			rejectProjectThrottle(w)
+			return
+		}
+		report(w, err)
+	}
+	earlyUserReportError := func(err error) {
+		if projectThrottled {
+			rejectProjectThrottle(w)
+			return
+		}
+		reportUserReport(w, err)
+	}
 	var envelopeID string
 	if raw, exists := env.Header["event_id"]; exists {
 		if json.Unmarshal(raw, &envelopeID) != nil || envelopeID == "" {
-			failure(w, 400, "Invalid envelope event ID")
+			earlyFailure(400, "Invalid envelope event ID")
 			return
 		}
 	}
@@ -71,7 +104,7 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if nativeMinidumpIndex >= 0 {
-			failure(w, 400, "An envelope may contain at most one native Minidump")
+			earlyFailure(400, "An envelope may contain at most one native Minidump")
 			return
 		}
 		nativeMinidumpIndex = index
@@ -86,16 +119,16 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 					Platform string `json:"platform"`
 				}
 				if json.Unmarshal(item.Payload, &fields) != nil || fields.Platform != "native" {
-					failure(w, 400, "A native Minidump attachment requires a native event")
+					earlyFailure(400, "A native Minidump attachment requires a native event")
 					return
 				}
 			case "transaction", "feedback":
-				failure(w, 400, "A native Minidump attachment requires one event item")
+				earlyFailure(400, "A native Minidump attachment requires one event item")
 				return
 			}
 		}
 		if nativeEvents != 1 {
-			failure(w, 400, "A native Minidump attachment requires one event item")
+			earlyFailure(400, "A native Minidump attachment requires one event item")
 			return
 		}
 	}
@@ -105,20 +138,20 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if normalized != nil {
-			failure(w, 400, "An envelope may contain one event, transaction or feedback")
+			earlyFailure(400, "An envelope may contain one event, transaction or feedback")
 			return
 		}
 		raw := json.RawMessage(item.Payload)
 		if item.Type == "feedback" {
 			var fields map[string]json.RawMessage
 			if !utf8.Valid(raw) || json.Unmarshal(raw, &fields) != nil || fields == nil {
-				failure(w, 400, "Invalid feedback")
+				earlyFailure(400, "Invalid feedback")
 				return
 			}
 			if supplied, exists := fields["type"]; exists {
 				var kind string
 				if json.Unmarshal(supplied, &kind) != nil || kind != "feedback" {
-					failure(w, 400, "A feedback item requires feedback payload type")
+					earlyFailure(400, "A feedback item requires feedback payload type")
 					return
 				}
 			} else {
@@ -129,7 +162,7 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		if item.Type == "transaction" {
 			var value map[string]json.RawMessage
 			if json.Unmarshal(raw, &value) != nil || value == nil {
-				failure(w, 400, "Invalid transaction")
+				earlyFailure(400, "Invalid transaction")
 				return
 			}
 			value["type"] = json.RawMessage(`"transaction"`)
@@ -144,48 +177,44 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			if errors.Is(err, store.ErrArtifactLimit) || errors.Is(err, artifact.ErrSourceMapLimit) {
-				failure(w, 413, "Selected source maps exceed the configured processing limit")
+				earlyFailure(413, "Selected source maps exceed the configured processing limit")
 			} else {
-				report(w, err)
+				earlyReport(err)
 			}
 			return
 		}
 		if nativeMinidumpIndex >= 0 && item.Type == "event" {
 			crash, parseErr := native.ParseMinidump(env.Items[nativeMinidumpIndex].Payload)
 			if parseErr != nil {
-				failure(w, 400, "Invalid native Minidump attachment")
+				earlyFailure(400, "Invalid native Minidump attachment")
 				return
 			}
 			if err := s.symbolizeCrash(r.Context(), project, &crash); err != nil {
-				report(w, err)
+				earlyReport(err)
 				return
 			}
 			raw, err = native.MergeMinidumpEvent(raw, crash, time.Now())
 			if err != nil {
-				failure(w, 400, "Invalid native event Minidump data")
+				earlyFailure(400, "Invalid native event Minidump data")
 				return
 			}
 		}
 		ev, err := event.Normalize(raw, envelopeID, time.Now())
 		if err != nil {
-			failure(w, 400, err.Error())
+			earlyFailure(400, err.Error())
 			return
 		}
 		normalized = &ev
 	}
 	userReport, err := envelopeUserReport(env, envelopeID, normalized)
 	if err != nil {
-		reportUserReport(w, err)
+		earlyUserReportError(err)
 		return
 	}
 	if userReport != nil && normalized == nil {
 		envelopeID = userReport.EventID
 	}
 	if normalized == nil {
-		if shouldThrottleProjectEvent(eventThrottleRate) {
-			rejectProjectThrottle(w)
-			return
-		}
 		if charge := ingestRateCharge(env); charge > 0 {
 			allowed, retry, err := s.db.AdmitProjectKey(r.Context(), project, key, charge)
 			if err != nil {
@@ -238,7 +267,7 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 		}
 		outcome, ingestErr := s.db.IngestWithAdmission(r.Context(), project, *normalized, store.CaptureAdmission{
 			PublicKey: key, Charge: charge, IndependentCharge: charge - 1,
-			Throttle: shouldThrottleProjectEvent(eventThrottleRate),
+			Throttle: projectThrottled,
 		}, parts...)
 		if ingestErr != nil {
 			reportUserReport(w, ingestErr)

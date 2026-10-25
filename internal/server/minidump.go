@@ -35,8 +35,19 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		failure(w, http.StatusForbidden, "Invalid SDK authentication")
 		return
 	}
+	throttled := shouldThrottleProjectEvent(eventThrottleRate)
+	rejectIfThrottled := func() bool {
+		if !throttled {
+			return false
+		}
+		rejectProjectThrottle(w)
+		return true
+	}
 	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxBodyBytes)
 	if err := r.ParseMultipartForm(min(s.cfg.MaxBodyBytes, int64(1<<20))); err != nil {
+		if rejectIfThrottled() {
+			return
+		}
 		failure(w, http.StatusBadRequest, "Malformed minidump request")
 		return
 	}
@@ -45,21 +56,33 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 	}
 	file, _, err := r.FormFile("upload_file_minidump")
 	if err != nil {
+		if rejectIfThrottled() {
+			return
+		}
 		failure(w, http.StatusBadRequest, "upload_file_minidump is required")
 		return
 	}
 	defer file.Close()
 	contents, err := io.ReadAll(io.LimitReader(file, s.cfg.MaxBodyBytes+1))
 	if err != nil || int64(len(contents)) > s.cfg.MaxBodyBytes {
+		if rejectIfThrottled() {
+			return
+		}
 		failure(w, http.StatusRequestEntityTooLarge, "Minidump exceeds the configured limit")
 		return
 	}
 	crash, err := native.ParseMinidump(contents)
 	if err != nil {
+		if rejectIfThrottled() {
+			return
+		}
 		failure(w, http.StatusBadRequest, "Invalid minidump")
 		return
 	}
 	if err := s.symbolizeCrash(r.Context(), r.PathValue("project"), &crash); err != nil {
+		if rejectIfThrottled() {
+			return
+		}
 		report(w, err)
 		return
 	}
@@ -73,11 +96,17 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 	}
 	raw, eventID, err := native.BuildEvent(crash, fields, time.Now())
 	if err != nil {
+		if rejectIfThrottled() {
+			return
+		}
 		report(w, err)
 		return
 	}
 	eventValue, err := event.Normalize(json.RawMessage(raw), "", time.Now())
 	if err != nil {
+		if rejectIfThrottled() {
+			return
+		}
 		report(w, err)
 		return
 	}
@@ -88,7 +117,7 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		eventValue.Environment = environment
 	}
 	outcome, err := s.db.IngestWithAdmission(r.Context(), r.PathValue("project"), eventValue, store.CaptureAdmission{
-		PublicKey: key, Charge: 1, Throttle: shouldThrottleProjectEvent(eventThrottleRate),
+		PublicKey: key, Charge: 1, Throttle: throttled,
 	})
 	if err != nil {
 		report(w, err)
