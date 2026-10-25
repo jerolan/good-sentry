@@ -635,7 +635,10 @@ func parseCFIECIE(data []byte, pointerSize int, isEH bool) (cfiCIE, error) {
 				cie.encoding = cursor.byte()
 			case 'P':
 				encoding := cursor.byte()
-				_, _, err := readCFIPointer(data, &cursor.off, encoding, 0, cie.addrSize)
+				if cursor.err != nil || cursor.off > augmentationEnd {
+					return cfiCIE{}, errors.New("invalid CIE augmentation")
+				}
+				_, _, err := readCFIPointer(data[:augmentationEnd], &cursor.off, encoding&^0x80, 0, cie.addrSize)
 				if err != nil {
 					return cfiCIE{}, err
 				}

@@ -2122,6 +2122,77 @@ func TestCFILEBPointerEncodingUnwinds(t *testing.T) {
 	}
 }
 
+func TestCFIIndirectCIEPersonalityEncodingUnwinds(t *testing.T) {
+	var section bytes.Buffer
+	appendRecord := func(record []byte) int {
+		start := section.Len()
+		_ = binary.Write(&section, binary.LittleEndian, uint32(len(record)))
+		_, _ = section.Write(record)
+		return start
+	}
+	var cie bytes.Buffer
+	_ = binary.Write(&cie, binary.LittleEndian, uint32(0))
+	_, _ = cie.Write([]byte{1})
+	_, _ = cie.WriteString("zPR\x00")
+	_, _ = cie.Write([]byte{1, 0x78, 16, 6, 0x9b}) // alignments, return column, augmentation size, indirect pcrel sdata4 personality
+	_, _ = cie.Write([]byte{0, 0, 0, 0, 0x1b})
+	_, _ = cie.Write([]byte{0x0c, 7, 8, 0x90, 1}) // CFA = rsp+8; return address = [CFA-8]
+	cieOffset := appendRecord(cie.Bytes())
+	appendFDE := func(start uint64) {
+		var fde bytes.Buffer
+		recordStart := section.Len()
+		idOffset := recordStart + 4
+		_ = binary.Write(&fde, binary.LittleEndian, uint32(idOffset-cieOffset))
+		fieldAddress := uint64(recordStart + 8)
+		_ = binary.Write(&fde, binary.LittleEndian, int32(int64(start)-int64(fieldAddress)))
+		_ = binary.Write(&fde, binary.LittleEndian, int32(0x100))
+		_ = fde.WriteByte(0) // empty FDE augmentation
+		appendRecord(fde.Bytes())
+	}
+	appendFDE(0x1000)
+	appendFDE(0x1f00)
+
+	table, err := parseCFISection(section.Bytes(), 0, true, 8)
+	if err != nil || table == nil || len(table.entries) != 2 {
+		t.Fatalf("parse indirect-personality CFI: table=%+v err=%v", table, err)
+	}
+	if table.entries[0].cie.encoding != 0x1b {
+		t.Fatalf("CIE FDE encoding=%#x; want 0x1b", table.entries[0].cie.encoding)
+	}
+	const stackBase = uint64(0x3000)
+	stack := make([]byte, 16)
+	binary.LittleEndian.PutUint64(stack, 0x2000)
+	crash := Crash{
+		RIP: 0x1010, RSP: stackBase, Arch: "amd64", PointerSize: 8,
+		Modules: []Module{{Name: "indirect-personality", Size: 0x3000}},
+		stack:   []memoryRange{{start: stackBase, data: stack}},
+	}
+	frames := UnwindCFI(&crash, UnwindSet{"indirect-personality": {table}})
+	if len(frames) != 2 || frames[0].Instruction != crash.RIP || frames[1].Instruction != 0x2000 {
+		t.Fatalf("indirect CIE personality prevented caller unwind: %+v", frames)
+	}
+}
+
+func TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation(t *testing.T) {
+	for name, data := range map[string][]byte{
+		"truncated pointer":            {1, 'z', 'P', 0, 1, 0x78, 16, 1, 0x9b},
+		"pointer crosses augmentation": {1, 'z', 'P', 0, 1, 0x78, 16, 2, 0x9b, 0, 0x11, 0x22, 0x33},
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := parseCFIECIE(data, 8, true); err == nil {
+				t.Fatal("malformed personality augmentation was accepted")
+			}
+		})
+	}
+}
+
+func TestCFIIndirectFDEPointerEncodingRemainsUnsupported(t *testing.T) {
+	cie := cfiCIE{encoding: 0x9b, addrSize: 8}
+	if _, err := parseCFIFDE([]byte{0, 0, 0, 0, 0, 0, 0, 0}, 0, cie); err == nil {
+		t.Fatal("indirect FDE pointer encoding was accepted")
+	}
+}
+
 func TestCFIExpressionRejectsRegisterIDTruncation(t *testing.T) {
 	wideRegister := []byte{0x80, 0x80, 0x80, 0x80, 0x10} // 1<<32, which must not wrap to register zero.
 	registers := map[uint32]uint64{0: 0x1000, 5: 0x2000}
