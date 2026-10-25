@@ -84,6 +84,99 @@ func buildAMD64MinidumpWithContext(contextSize int, xstate bool) []byte {
 	return buf
 }
 
+func minidumpStream(t *testing.T, data []byte, typ uint32) (entry, body, size int) {
+	t.Helper()
+	count := int(binary.LittleEndian.Uint32(data[8:]))
+	directory := int(binary.LittleEndian.Uint32(data[12:]))
+	for i := 0; i < count; i++ {
+		entry = directory + i*12
+		if binary.LittleEndian.Uint32(data[entry:]) == typ {
+			body = int(binary.LittleEndian.Uint32(data[entry+8:]))
+			size = int(binary.LittleEndian.Uint32(data[entry+4:]))
+			return entry, body, size
+		}
+	}
+	t.Fatalf("minidump has no stream %d", typ)
+	return 0, 0, 0
+}
+
+func firstMinidumpThreadContext(t *testing.T, data []byte) []byte {
+	t.Helper()
+	_, body, _ := minidumpStream(t, data, streamThreadList)
+	contextSize := int(binary.LittleEndian.Uint32(data[body+44:]))
+	contextRVA := int(binary.LittleEndian.Uint32(data[body+48:]))
+	if contextSize == 0 || contextRVA < 0 || contextRVA > len(data)-contextSize {
+		t.Fatal("fixture has no valid first-thread context")
+	}
+	return append([]byte(nil), data[contextRVA:contextRVA+contextSize]...)
+}
+
+func appendMinidumpExceptionContext(t *testing.T, data, context []byte) []byte {
+	t.Helper()
+	entry, body, size := minidumpStream(t, data, streamException)
+	if size != 32 || len(context) == 0 {
+		t.Fatalf("fixture exception stream size=%d or context size=%d", size, len(context))
+	}
+	contextRVA := len(data) + 136
+	data = append(data, make([]byte, 136+len(context))...)
+	copy(data[contextRVA:], context)
+	binary.LittleEndian.PutUint32(data[entry+4:], 168)
+	binary.LittleEndian.PutUint32(data[body+160:], uint32(len(context)))
+	binary.LittleEndian.PutUint32(data[body+164:], uint32(contextRVA))
+	return data
+}
+
+func extendMinidumpExceptionStream(t *testing.T, data []byte) []byte {
+	t.Helper()
+	entry, _, size := minidumpStream(t, data, streamException)
+	if size != 32 {
+		t.Fatalf("fixture exception stream has size %d, want 32", size)
+	}
+	data = append(data, make([]byte, 136)...)
+	binary.LittleEndian.PutUint32(data[entry+4:], 168)
+	return data
+}
+
+func swapMinidumpDirectoryStreams(t *testing.T, data []byte, first, second uint32) {
+	t.Helper()
+	count := int(binary.LittleEndian.Uint32(data[8:]))
+	directory := int(binary.LittleEndian.Uint32(data[12:]))
+	firstEntry, secondEntry := -1, -1
+	for i := 0; i < count; i++ {
+		entry := directory + i*12
+		switch binary.LittleEndian.Uint32(data[entry:]) {
+		case first:
+			firstEntry = entry
+		case second:
+			secondEntry = entry
+		}
+	}
+	if firstEntry < 0 || secondEntry < 0 {
+		t.Fatalf("fixture lacks streams %d or %d", first, second)
+	}
+	var tmp [12]byte
+	copy(tmp[:], data[firstEntry:firstEntry+12])
+	copy(data[firstEntry:firstEntry+12], data[secondEntry:secondEntry+12])
+	copy(data[secondEntry:secondEntry+12], tmp[:])
+}
+
+func setMinidumpExceptionContextDescriptor(t *testing.T, data []byte, size, rva uint32) {
+	t.Helper()
+	_, body, streamSize := minidumpStream(t, data, streamException)
+	if streamSize < 168 {
+		t.Fatalf("fixture exception stream has size %d, want at least 168", streamSize)
+	}
+	binary.LittleEndian.PutUint32(data[body+160:], size)
+	binary.LittleEndian.PutUint32(data[body+164:], rva)
+}
+
+func setMinidumpThreadContextAbsent(t *testing.T, data []byte) {
+	t.Helper()
+	_, body, _ := minidumpStream(t, data, streamThreadList)
+	binary.LittleEndian.PutUint32(data[body+44:], 0)
+	binary.LittleEndian.PutUint32(data[body+48:], 0)
+}
+
 func encodeTestUTF16(value string) []byte {
 	out := make([]byte, 4+len(value)*2)
 	binary.LittleEndian.PutUint32(out, uint32(len(value)*2))
@@ -106,6 +199,147 @@ func TestParseMinidumpAndBreakpadSymbols(t *testing.T) {
 	Symbolicate(&crash, SymbolSet{moduleKey(crash.Modules[0].Name): functions})
 	if crash.Frames[0].Function != "CrashFunction" || crash.Frames[0].File != "C:\\src\\crash.cc" || crash.Frames[0].Line != 42 {
 		t.Fatalf("symbolication: %+v", crash.Frames[0])
+	}
+}
+
+func TestParseMinidumpUsesExceptionStreamThreadContext(t *testing.T) {
+	t.Run("preferred over matching thread context even before ThreadList", func(t *testing.T) {
+		data := buildAMD64Minidump()
+		context := firstMinidumpThreadContext(t, data)
+		binary.LittleEndian.PutUint64(context[248:], 0x0000000140001020)
+		data = appendMinidumpExceptionContext(t, data, context)
+		swapMinidumpDirectoryStreams(t, data, streamException, streamThreadList)
+
+		crash, err := ParseMinidump(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if crash.RIP != 0x0000000140001020 {
+			t.Fatalf("RIP=%#x, want exception-stream context %#x", crash.RIP, uint64(0x0000000140001020))
+		}
+	})
+
+	t.Run("usable without a ThreadList context", func(t *testing.T) {
+		data := buildAMD64Minidump()
+		context := firstMinidumpThreadContext(t, data)
+		binary.LittleEndian.PutUint64(context[248:], 0x0000000140001020)
+		setMinidumpThreadContextAbsent(t, data)
+		data = appendMinidumpExceptionContext(t, data, context)
+
+		crash, err := ParseMinidump(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if crash.RIP != 0x0000000140001020 {
+			t.Fatalf("RIP=%#x, want exception-stream context %#x", crash.RIP, uint64(0x0000000140001020))
+		}
+	})
+}
+
+func TestParseMinidumpFallsBackWhenExceptionContextIsAbsent(t *testing.T) {
+	for _, exceptionSize := range []int{32, 168} {
+		t.Run(fmt.Sprintf("stream_size_%d", exceptionSize), func(t *testing.T) {
+			data := buildAMD64Minidump()
+			if exceptionSize == 168 {
+				data = extendMinidumpExceptionStream(t, data)
+			}
+			crash, err := ParseMinidump(data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if crash.RIP != 0x0000000140001010 {
+				t.Fatalf("RIP=%#x, want ThreadList context %#x", crash.RIP, uint64(0x0000000140001010))
+			}
+		})
+	}
+
+	t.Run("first thread when exception thread is absent", func(t *testing.T) {
+		data := buildAMD64Minidump()
+		_, body, _ := minidumpStream(t, data, streamException)
+		binary.LittleEndian.PutUint32(data[body:], 999)
+
+		crash, err := ParseMinidump(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if crash.RIP != 0x0000000140001010 {
+			t.Fatalf("RIP=%#x, want first ThreadList context %#x", crash.RIP, uint64(0x0000000140001010))
+		}
+	})
+}
+
+func TestParseMinidumpRejectsMalformedExceptionThreadContexts(t *testing.T) {
+	tests := []struct {
+		name  string
+		build func(*testing.T) []byte
+	}{
+		{
+			name: "partial descriptor size",
+			build: func(t *testing.T) []byte {
+				data := buildAMD64Minidump()
+				data = appendMinidumpExceptionContext(t, data, firstMinidumpThreadContext(t, data))
+				_, body, _ := minidumpStream(t, data, streamException)
+				binary.LittleEndian.PutUint32(data[body+160:], 0)
+				return data
+			},
+		},
+		{
+			name: "partial descriptor RVA",
+			build: func(t *testing.T) []byte {
+				data := buildAMD64Minidump()
+				data = appendMinidumpExceptionContext(t, data, firstMinidumpThreadContext(t, data))
+				setMinidumpExceptionContextDescriptor(t, data, 1232, 0)
+				return data
+			},
+		},
+		{
+			name: "context range outside file",
+			build: func(t *testing.T) []byte {
+				data := buildAMD64Minidump()
+				data = appendMinidumpExceptionContext(t, data, firstMinidumpThreadContext(t, data))
+				setMinidumpExceptionContextDescriptor(t, data, 1232, uint32(len(data)-4))
+				return data
+			},
+		},
+		{
+			name: "unsupported context does not fall back",
+			build: func(t *testing.T) []byte {
+				data := buildAMD64Minidump()
+				return appendMinidumpExceptionContext(t, data, make([]byte, 716))
+			},
+		},
+		{
+			name: "context architecture mismatch does not fall back",
+			build: func(t *testing.T) []byte {
+				data := buildX86Minidump()
+				return appendMinidumpExceptionContext(t, data, make([]byte, 1232))
+			},
+		},
+		{
+			name: "33-byte partial stream",
+			build: func(t *testing.T) []byte {
+				data := extendMinidumpExceptionStream(t, buildAMD64Minidump())
+				entry, _, _ := minidumpStream(t, data, streamException)
+				binary.LittleEndian.PutUint32(data[entry+4:], 33)
+				return data
+			},
+		},
+		{
+			name: "167-byte partial stream",
+			build: func(t *testing.T) []byte {
+				data := extendMinidumpExceptionStream(t, buildAMD64Minidump())
+				entry, _, _ := minidumpStream(t, data, streamException)
+				binary.LittleEndian.PutUint32(data[entry+4:], 167)
+				return data
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if _, err := ParseMinidump(test.build(t)); err == nil {
+				t.Fatal("accepted malformed or unsupported exception-thread context")
+			}
+		})
 	}
 }
 

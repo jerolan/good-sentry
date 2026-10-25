@@ -15,6 +15,12 @@ import (
 )
 
 const (
+	minidumpExceptionLegacySize    = 32
+	minidumpExceptionStreamSize    = 168
+	minidumpExceptionContextOffset = 160
+)
+
+const (
 	minidumpSignature      = 0x504d444d
 	minidumpVersion        = 0xa793
 	streamThreadList       = 3
@@ -166,6 +172,7 @@ func ParseMinidump(data []byte) (Crash, error) {
 	}
 	var ranges []memoryRange
 	var firstContext []byte
+	var exceptionContext []byte
 	contexts := map[uint32][]byte{}
 	var moduleEntries []struct{ base, size, stamp, nameRVA, cvRVA, cvSize uint64 }
 	for _, s := range streams {
@@ -219,6 +226,10 @@ func ParseMinidump(data []byte) (Crash, error) {
 				return crash, mr.err
 			}
 		case streamException:
+			if len(body) != minidumpExceptionLegacySize && len(body) < minidumpExceptionStreamSize {
+				return crash, errors.New("invalid minidump exception stream size")
+			}
+			exceptionContext = nil
 			er := reader{b: body}
 			crash.ThreadID = er.u32()
 			er.off += 4
@@ -228,6 +239,20 @@ func ParseMinidump(data []byte) (Crash, error) {
 			crash.CrashAddr = er.u64()
 			if er.err != nil {
 				return crash, er.err
+			}
+			if len(body) >= minidumpExceptionStreamSize {
+				contextSize := binary.LittleEndian.Uint32(body[minidumpExceptionContextOffset:])
+				contextRVA := binary.LittleEndian.Uint32(body[minidumpExceptionContextOffset+4:])
+				if (contextSize == 0) != (contextRVA == 0) {
+					return crash, errors.New("invalid minidump exception thread context descriptor")
+				}
+				if contextSize > 0 {
+					contextEnd := uint64(contextRVA) + uint64(contextSize)
+					if contextEnd > uint64(len(data)) {
+						return crash, errors.New("minidump exception thread context exceeds file")
+					}
+					exceptionContext = data[int(contextRVA):int(contextEnd)]
+				}
 			}
 		case streamModuleList:
 			mr := reader{b: body}
@@ -269,7 +294,10 @@ func ParseMinidump(data []byte) (Crash, error) {
 		}
 		crash.Modules = append(crash.Modules, Module{Name: name, Base: entry.base, Size: uint32(entry.size), Timestamp: uint32(entry.stamp), DebugID: debugID})
 	}
-	rawContext := contexts[crash.ThreadID]
+	rawContext := exceptionContext
+	if len(rawContext) == 0 {
+		rawContext = contexts[crash.ThreadID]
+	}
 	if len(rawContext) == 0 {
 		rawContext = firstContext
 	}
