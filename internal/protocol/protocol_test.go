@@ -149,6 +149,7 @@ func TestAuthenticateAllSuppliedIdentities(t *testing.T) {
 	}{
 		{"header", "/prefix/api/42/envelope/", "Sentry sentry_version=7, sentry_key=public", "", false},
 		{"query", "/prefix/api/42/envelope/?sentry_key=public&sentry_version=7", "", "", false},
+		{"query missing version", "/prefix/api/42/envelope/?sentry_key=public", "", "", true},
 		{"dsn prefix", "/prefix/api/42/envelope/", "", "https://public@example.test/prefix/42", false},
 		{"all match", "/prefix/api/42/envelope/?sentry_key=public&sentry_version=7", "Sentry sentry_version=7, sentry_key=public", "https://public:oldsecret@example.test/prefix/42", false},
 		{"absent", "/api/42/envelope/", "", "", true},
@@ -195,6 +196,32 @@ func TestAuthenticateAllSuppliedIdentities(t *testing.T) {
 		if _, err := protocol.Authenticate(r, map[string]json.RawMessage{"dsn": dsn}, "42"); !errors.Is(err, protocol.ErrAuth) {
 			t.Fatalf("invalid dsn with valid header: %s %v", dsn, err)
 		}
+	}
+}
+
+func TestAuthenticateMinidumpAllowsCrashpadQuery(t *testing.T) {
+	for _, tc := range []struct {
+		name, path string
+		wantErr    bool
+	}{
+		{"Crashpad query", "/api/42/minidump/?sentry_client=sentry.native/0.17.4&sentry_key=public", false},
+		{"explicit supported version", "/api/42/minidump/?sentry_key=public&sentry_version=7", false},
+		{"unsupported version", "/api/42/minidump/?sentry_key=public&sentry_version=8", true},
+		{"missing key", "/api/42/minidump/?sentry_client=sentry.native/0.17.4", true},
+		{"disagreeing keys", "/api/42/minidump/?sentry_key=public&sentry_key=other", true},
+		{"malformed query", "/api/42/minidump/?sentry_key=%zz", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest("POST", tc.path, nil)
+			key, err := protocol.AuthenticateMinidump(r, "42")
+			if tc.wantErr {
+				if !errors.Is(err, protocol.ErrAuth) {
+					t.Fatalf("key=%q err=%v", key, err)
+				}
+			} else if err != nil || key != "public" {
+				t.Fatalf("key=%q err=%v", key, err)
+			}
+		})
 	}
 }
 

@@ -23,28 +23,16 @@ import (
 // envelope with one event item, preserving the submitted event JSON bytes.
 func Decode(r io.Reader, contentEncoding string, legacy bool, limits Limits) (Envelope, error) {
 	limits = limits.defaults()
-	encoding := strings.ToLower(strings.TrimSpace(contentEncoding))
-	switch encoding {
-	case "", "identity", "gzip", "deflate", "br", "zstd":
-	default:
-		return Envelope{}, ErrEncoding
-	}
-	body, err := readBounded(r, limits.MaxCompressed)
+	body, err := DecodeBody(r, contentEncoding, limits)
 	if err != nil {
 		return Envelope{}, err
-	}
-	if encoding != "" && encoding != "identity" {
-		body, err = decompress(body, encoding, limits.MaxDecompressed)
-		if err != nil {
-			return Envelope{}, err
-		}
 	}
 	if !legacy {
 		return ParseEnvelope(body, limits)
 	}
 	// Historical store clients send base64(zlib(JSON)) without a content
 	// encoding. JSON objects can be recognized without interpreting fields.
-	if (encoding == "" || encoding == "identity") && !bytes.HasPrefix(bytes.TrimSpace(body), []byte("{")) {
+	if (contentEncoding == "" || strings.EqualFold(strings.TrimSpace(contentEncoding), "identity")) && !bytes.HasPrefix(bytes.TrimSpace(body), []byte("{")) {
 		compressed, decodeErr := base64.StdEncoding.DecodeString(strings.TrimSpace(string(body)))
 		if decodeErr != nil {
 			return Envelope{}, fmt.Errorf("%w: invalid legacy base64", ErrMalformed)
@@ -62,6 +50,30 @@ func Decode(r io.Reader, contentEncoding string, legacy bool, limits Limits) (En
 		return Envelope{}, fmt.Errorf("%w: store payload must be a JSON object", ErrMalformed)
 	}
 	return Envelope{Header: map[string]json.RawMessage{}, Items: []Item{{Header: map[string]json.RawMessage{"type": json.RawMessage(`"event"`)}, Type: "event", Payload: body}}}, nil
+}
+
+// DecodeBody reads and decompresses one bounded SDK request body. It is shared
+// by envelope and multipart Minidump ingestion so both transports enforce the
+// same compressed and expanded body limits.
+func DecodeBody(r io.Reader, contentEncoding string, limits Limits) ([]byte, error) {
+	limits = limits.defaults()
+	encoding := strings.ToLower(strings.TrimSpace(contentEncoding))
+	switch encoding {
+	case "", "identity", "gzip", "deflate", "br", "zstd":
+	default:
+		return nil, ErrEncoding
+	}
+	body, err := readBounded(r, limits.MaxCompressed)
+	if err != nil {
+		return nil, err
+	}
+	if encoding != "" && encoding != "identity" {
+		body, err = decompress(body, encoding, limits.MaxDecompressed)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return body, nil
 }
 
 func readBounded(r io.Reader, limit int64) ([]byte, error) {
@@ -142,6 +154,17 @@ func compressionError(err error) error {
 // Authenticate validates every supplied SDK credential source and returns the
 // agreed public key. The caller must authorize it against projectID in storage.
 func Authenticate(r *http.Request, header map[string]json.RawMessage, projectID string) (string, error) {
+	return authenticate(r, header, projectID, false)
+}
+
+// AuthenticateMinidump accepts the query credentials sent by Crashpad, whose
+// Minidump URL has sentry_key but does not include sentry_version. When a
+// version is supplied, it still has to be the supported version 7.
+func AuthenticateMinidump(r *http.Request, projectID string) (string, error) {
+	return authenticate(r, nil, projectID, true)
+}
+
+func authenticate(r *http.Request, header map[string]json.RawMessage, projectID string, allowMissingQueryVersion bool) (string, error) {
 	if projectID == "" {
 		return "", ErrAuth
 	}
@@ -158,7 +181,7 @@ func Authenticate(r *http.Request, header map[string]json.RawMessage, projectID 
 		if err != nil {
 			return "", err
 		}
-		key, err := authFields(fields)
+		key, err := authFields(fields, false)
 		if err != nil {
 			return "", err
 		}
@@ -178,7 +201,7 @@ func Authenticate(r *http.Request, header map[string]json.RawMessage, projectID 
 		}
 	}
 	if queryAuth {
-		key, err := authFields(query)
+		key, err := authFields(query, allowMissingQueryVersion)
 		if err != nil {
 			return "", err
 		}
@@ -224,9 +247,9 @@ func ValidPublicKey(key string) bool {
 	return key != "" && !strings.ContainsFunc(key, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) || r == ',' || r == '=' })
 }
 
-func authFields(fields url.Values) (string, error) {
+func authFields(fields url.Values, allowMissingVersion bool) (string, error) {
 	keys, versions := fields["sentry_key"], fields["sentry_version"]
-	if len(keys) == 0 || len(versions) == 0 {
+	if len(keys) == 0 || (len(versions) == 0 && !allowMissingVersion) {
 		return "", ErrAuth
 	}
 	for _, key := range keys {

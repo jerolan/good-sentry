@@ -66,11 +66,20 @@ func TestNativeMinidumpSymbolicationAndIngestion(t *testing.T) {
 		t.Fatal(err)
 	}
 	body, contentType := minidumpForm(t, dump, map[string]string{"sentry[release]": "native@1", "sentry[environment]": "production", "crash_context": "unit"})
-	req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
+	var compressedBody bytes.Buffer
+	compressor := gzip.NewWriter(&compressedBody)
+	if _, err := compressor.Write(body.Bytes()); err != nil {
+		t.Fatal(err)
+	}
+	if err := compressor.Close(); err != nil {
+		t.Fatal(err)
+	}
+	req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_client=sentry.native/0.17.4&sentry_key="+f.project.PublicKey, bytes.NewReader(compressedBody.Bytes()))
 	if err != nil {
 		t.Fatal(err)
 	}
 	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Content-Encoding", "gzip")
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal(err)

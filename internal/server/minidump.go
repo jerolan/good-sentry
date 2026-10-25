@@ -1,8 +1,10 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -21,7 +23,7 @@ func (s *Server) registerMinidumpRoutes(mux *routeMux) {
 
 func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 	ingestCORS(w)
-	key, err := protocol.Authenticate(r, nil, r.PathValue("project"))
+	key, err := protocol.AuthenticateMinidump(r, r.PathValue("project"))
 	if err != nil {
 		failure(w, http.StatusForbidden, "Invalid SDK authentication")
 		return
@@ -43,7 +45,25 @@ func (s *Server) minidump(w http.ResponseWriter, r *http.Request) {
 		rejectProjectThrottle(w)
 		return true
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxBodyBytes)
+	body, err := protocol.DecodeBody(r.Body, r.Header.Get("Content-Encoding"), protocol.Limits{
+		MaxCompressed: s.cfg.MaxBodyBytes, MaxDecompressed: s.cfg.MaxBodyBytes,
+	})
+	if err != nil {
+		if rejectIfThrottled() {
+			return
+		}
+		switch {
+		case errors.Is(err, protocol.ErrTooLarge):
+			failure(w, http.StatusRequestEntityTooLarge, "Minidump exceeds the configured limit")
+		case errors.Is(err, protocol.ErrEncoding):
+			failure(w, http.StatusUnsupportedMediaType, "Unsupported content encoding")
+		default:
+			failure(w, http.StatusBadRequest, "Malformed minidump request")
+		}
+		return
+	}
+	r.Body = io.NopCloser(bytes.NewReader(body))
+	r.ContentLength = int64(len(body))
 	if err := r.ParseMultipartForm(min(s.cfg.MaxBodyBytes, int64(1<<20))); err != nil {
 		if rejectIfThrottled() {
 			return
