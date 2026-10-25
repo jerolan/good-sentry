@@ -15,20 +15,21 @@ import (
 )
 
 const (
-	minidumpSignature  = 0x504d444d
-	minidumpVersion    = 0xa793
-	streamThreadList   = 3
-	streamModuleList   = 4
-	streamException    = 6
-	streamMemory64     = 9
-	streamSystemInfo   = 7
-	cpuArchX86         = 0
-	cpuArchARM         = 5
-	cpuArchAMD64       = 9
-	cpuArchRISCV64     = 0x8006
-	amd64ContextSize   = 1232
-	maxAMD64XState     = 16384
-	amd64ContextXState = 0x40
+	minidumpSignature     = 0x504d444d
+	minidumpVersion       = 0xa793
+	streamThreadList      = 3
+	streamModuleList      = 4
+	streamException       = 6
+	streamMemory64        = 9
+	streamSystemInfo      = 7
+	cpuArchX86            = 0
+	cpuArchARM            = 5
+	cpuArchAMD64          = 9
+	cpuArchRISCV64        = 0x8006
+	amd64ContextSize      = 1232
+	x86ContextSize        = 716
+	maxMinidumpXState     = 16384
+	minidumpContextXState = 0x40
 	// Crashpad's native struct size includes four bytes of tail alignment.
 	riscv64ContextSize = 528
 	riscv64ContextV1   = 1
@@ -268,15 +269,18 @@ func ParseMinidump(data []byte) (Crash, error) {
 		rawContext = firstContext
 	}
 	switch {
-	case declaredArch == cpuArchAMD64 && len(rawContext) >= amd64ContextSize && len(rawContext) <= amd64ContextSize+maxAMD64XState:
-		if len(rawContext) > amd64ContextSize && binary.LittleEndian.Uint32(rawContext[48:])&amd64ContextXState == 0 {
+	case declaredArch == cpuArchAMD64 && len(rawContext) >= amd64ContextSize && len(rawContext) <= amd64ContextSize+maxMinidumpXState:
+		if len(rawContext) > amd64ContextSize && binary.LittleEndian.Uint32(rawContext[48:])&minidumpContextXState == 0 {
 			return Crash{}, errors.New("extended AMD64 minidump context lacks XSTATE flag")
 		}
 		crash.Arch, crash.PointerSize = "amd64", 8
 		crash.RSP = binary.LittleEndian.Uint64(rawContext[152:])
 		crash.RBP = binary.LittleEndian.Uint64(rawContext[160:])
 		crash.RIP = binary.LittleEndian.Uint64(rawContext[248:])
-	case len(rawContext) == 716 && declaredArch == cpuArchX86:
+	case declaredArch == cpuArchX86 && len(rawContext) >= x86ContextSize && len(rawContext) <= x86ContextSize+maxMinidumpXState:
+		if len(rawContext) > x86ContextSize && binary.LittleEndian.Uint32(rawContext)&minidumpContextXState == 0 {
+			return Crash{}, errors.New("extended x86 minidump context lacks XSTATE flag")
+		}
 		crash.Arch, crash.PointerSize = "x86", 4
 		crash.RBP = uint64(binary.LittleEndian.Uint32(rawContext[180:]))
 		crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[184:]))

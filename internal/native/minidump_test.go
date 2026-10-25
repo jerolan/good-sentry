@@ -248,9 +248,16 @@ func TestBreakpadPublicSymbolsInferModuleBoundedRanges(t *testing.T) {
 }
 
 func buildX86Minidump() []byte {
+	return buildX86MinidumpWithContext(716, false)
+}
+
+func buildX86MinidumpWithContext(contextSize int, xstate bool) []byte {
 	const moduleBase = uint32(0x00400000)
 	const stackBase = uint32(0x00200000)
-	context := make([]byte, 716)
+	context := make([]byte, contextSize)
+	if xstate {
+		binary.LittleEndian.PutUint32(context, 0x0001005f)
+	}
 	binary.LittleEndian.PutUint32(context[180:], stackBase)
 	binary.LittleEndian.PutUint32(context[184:], moduleBase+0x1010)
 	binary.LittleEndian.PutUint32(context[196:], stackBase)
@@ -308,6 +315,59 @@ func TestParseX86MinidumpFromContextShape(t *testing.T) {
 	if crash.Arch != "x86" || crash.PointerSize != 4 || crash.ThreadID != 3 || crash.RIP != 0x00401010 || len(crash.Frames) != 2 || crash.Frames[1].Instruction != 0x00401050 {
 		t.Fatalf("x86 crash: %+v", crash)
 	}
+}
+
+func TestParseX86MinidumpXStateExtension(t *testing.T) {
+	for _, extensionSize := range []int{144, 16384} {
+		t.Run(fmt.Sprintf("extension_%d", extensionSize), func(t *testing.T) {
+			data := buildX86MinidumpWithContext(716+extensionSize, true)
+			crash, err := ParseMinidump(data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if crash.Arch != "x86" || crash.RIP != 0x00401010 || len(crash.Frames) < 2 || crash.Frames[1].Instruction != 0x00401050 {
+				t.Fatalf("parsed extended x86 context: %+v", crash)
+			}
+		})
+	}
+}
+
+func TestParseX86MinidumpRejectsInvalidXStateExtensions(t *testing.T) {
+	tests := []struct {
+		name       string
+		extension  int
+		withXState bool
+		wrongArch  bool
+	}{
+		{name: "extension without XSTATE flag", extension: 144},
+		{name: "extension exceeds bound", extension: 16385, withXState: true},
+		{name: "context architecture mismatch", extension: 144, withXState: true, wrongArch: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			data := buildX86MinidumpWithContext(716+test.extension, test.withXState)
+			if test.wrongArch && !setMinidumpSystemInfoArchitecture(data, cpuArchAMD64) {
+				t.Fatal("minidump has no SystemInfo stream")
+			}
+			if _, err := ParseMinidump(data); err == nil {
+				t.Fatalf("accepted x86 XSTATE extension of %d bytes with flag=%v and wrongArch=%v", test.extension, test.withXState, test.wrongArch)
+			}
+		})
+	}
+}
+
+func setMinidumpSystemInfoArchitecture(data []byte, architecture uint16) bool {
+	count := binary.LittleEndian.Uint32(data[8:])
+	directory := binary.LittleEndian.Uint32(data[12:])
+	for i := uint32(0); i < count; i++ {
+		entry := int(directory + i*12)
+		if binary.LittleEndian.Uint32(data[entry:]) == streamSystemInfo {
+			systemRVA := binary.LittleEndian.Uint32(data[entry+8:])
+			binary.LittleEndian.PutUint16(data[systemRVA:], architecture)
+			return true
+		}
+	}
+	return false
 }
 
 func buildARM32Minidump(contextSize int) []byte {
