@@ -30,6 +30,7 @@ const minutes = () => mute().getByLabel('Minutes (optional)', { exact: true });
 const count = () => mute().getByLabel('Additional errors (optional)', { exact: true });
 const userCount = () => mute().getByLabel('Additional users (optional)', { exact: true });
 const window = () => mute().getByLabel('Count window in minutes (optional)', { exact: true });
+const userWindow = () => mute().getByLabel('User window in minutes (optional)', { exact: true });
 const comments = () => page.getByRole('region', { name: 'Comments', exact: true });
 const activity = () => page.getByRole('region', { name: 'Activity', exact: true });
 page.on('pageerror', error => pageErrors.push(error.message));
@@ -60,7 +61,7 @@ async function apply() {
   const pending = patchResponse(); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
   const response = await pending; assert.equal(response.status(), 200); await visible(page.getByText('Mute updated.', { exact: true })); return response.json();
 }
-async function inputs(expectedMinutes, expectedCount, expectedUsers = '', expectedWindow = '') { assert.equal(await minutes().inputValue(), expectedMinutes); assert.equal(await count().inputValue(), expectedCount); assert.equal(await userCount().inputValue(), expectedUsers); assert.equal(await window().inputValue(), expectedWindow); }
+async function inputs(expectedMinutes, expectedCount, expectedUsers = '', expectedWindow = '', expectedUserWindow = '') { assert.equal(await minutes().inputValue(), expectedMinutes); assert.equal(await count().inputValue(), expectedCount); assert.equal(await userCount().inputValue(), expectedUsers); assert.equal(await window().inputValue(), expectedWindow); assert.equal(await userWindow().inputValue(), expectedUserWindow); }
 async function capture(name, anchor = mute()) {
   for (const width of [320, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -104,7 +105,12 @@ try {
   await count().fill('2147483648'); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
   await visible(mute().getByRole('alert').filter({ hasText: 'Use whole numbers from 1 to 2,147,483,647' })); await inputs('', '2147483648');
   await count().fill(''); await window().fill('10081'); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
-  await visible(mute().getByRole('alert').filter({ hasText: 'Use a whole count window from 1 to 10,080 minutes.' })); await inputs('', '', '', '10081');
+  await visible(mute().getByRole('alert').filter({ hasText: 'Use a whole window from 1 to 10,080 minutes.' })); await inputs('', '', '', '10081');
+  await window().fill(''); await userWindow().fill('10081'); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
+  await visible(mute().getByRole('alert').filter({ hasText: 'Use a whole window from 1 to 10,080 minutes.' })); await inputs('', '', '', '', '10081');
+  await userWindow().fill('60'); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
+  await visible(mute().getByRole('alert').filter({ hasText: 'A user window requires an additional user count.' })); await inputs('', '', '', '', '60');
+  await userWindow().fill('');
   await capture('client-validation-draft');
   checks.push('Empty/overflow conditions show editable errors, preserve input and safely render the owned capture');
 
@@ -157,10 +163,11 @@ try {
 
   const firstUser = `new-user-a-${run}`, lastUser = `new-user-b-${run}`;
   await minutes().fill(''); await count().fill(''); await userCount().fill('2'); await window().fill('');
-  const userMute = await apply(); assert.equal(userMute.ignore.userCount, 2); assert.equal(userMute.ignore.userRemaining, 2);
-  await visible(mute().getByText('Muted for 2 additional users.', { exact: true }));
+  await userWindow().fill('60');
+  const userMute = await apply(); assert.equal(userMute.ignore.userCount, 2); assert.equal(userMute.ignore.userWindow, 60); assert.equal(userMute.ignore.userRemaining, 2);
+  await visible(mute().getByText('Muted for 2 additional users within any 60 minutes.', { exact: true }));
   await visible(mute().getByText('2 additional users remaining.', { exact: true }));
-  const sameUserMute = await apply(); assert.equal(sameUserMute.ignore.userCount, 2); assert.equal(sameUserMute.ignore.userRemaining, 2);
+  const sameUserMute = await apply(); assert.equal(sameUserMute.ignore.userCount, 2); assert.equal(sameUserMute.ignore.userWindow, 60); assert.equal(sameUserMute.ignore.userRemaining, 2);
   await captureError(baselineUser);
   await until(() => api(), detail => detail.issue.ignore?.userRemaining === 2, 'A known user does not consume the additional-user threshold');
   const firstUserEvent = await captureError(firstUser);
@@ -180,7 +187,7 @@ try {
   await capture('automatic-user-count-activity', activity());
   checks.push('New identified SDK users consume the threshold once; repeated, duplicate and anonymous captures do not, and automatic activity names the user-count reason');
 
-  await minutes().fill('1'); await count().fill(''); await userCount().fill(''); await apply();
+  await minutes().fill('1'); await count().fill(''); await userCount().fill(''); await userWindow().fill(''); await apply();
   const clearing = patchResponse(); await mute().getByRole('button', { name: 'Mute indefinitely', exact: true }).click(); assert.equal((await clearing).status(), 200);
   await visible(mute().getByText('Muted indefinitely.', { exact: true }));
   const indefinite = (await api()).issue; assert.equal(indefinite.status, 'ignored'); assert.equal(indefinite.ignore, null);

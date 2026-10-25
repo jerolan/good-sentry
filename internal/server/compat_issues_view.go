@@ -18,13 +18,14 @@ type compatibleIssueProject struct {
 }
 
 type compatibleIssueStatusDetails struct {
-	IgnoreUntil     *time.Time `json:"ignoreUntil,omitempty"`
-	IgnoreCount     *int32     `json:"ignoreCount,omitempty"`
-	IgnoreUserCount *int32     `json:"ignoreUserCount,omitempty"`
-	IgnoreWindow    *int32     `json:"ignoreWindow,omitempty"`
-	UserRemaining   *int64     `json:"userRemaining,omitempty"`
-	InNextRelease   bool       `json:"inNextRelease,omitempty"`
-	InRelease       string     `json:"inRelease,omitempty"`
+	IgnoreUntil      *time.Time `json:"ignoreUntil,omitempty"`
+	IgnoreCount      *int32     `json:"ignoreCount,omitempty"`
+	IgnoreUserCount  *int32     `json:"ignoreUserCount,omitempty"`
+	IgnoreWindow     *int32     `json:"ignoreWindow,omitempty"`
+	IgnoreUserWindow *int32     `json:"ignoreUserWindow,omitempty"`
+	UserRemaining    *int64     `json:"userRemaining,omitempty"`
+	InNextRelease    bool       `json:"inNextRelease,omitempty"`
+	InRelease        string     `json:"inRelease,omitempty"`
 }
 
 type compatibleIssueLifetime struct {
@@ -172,6 +173,9 @@ func projectCompatibleIssue(record store.CompatibleIssueRecord, domain string, d
 		view.StatusDetails.IgnoreUserCount, view.StatusDetails.UserRemaining = ignored.UserCount, ignored.UserRemaining
 		if ignored.Window != nil && ignored.Count != nil {
 			view.StatusDetails.IgnoreWindow = ignored.Window
+		}
+		if ignored.UserWindow != nil && ignored.UserCount != nil {
+			view.StatusDetails.IgnoreUserWindow = ignored.UserWindow
 		}
 	}
 	if resolution := i.Resolution; resolution != nil {

@@ -26,9 +26,9 @@ const (
 type CompatibleIssueAssignment struct{ Reference string }
 
 type CompatibleIssuePolicy struct {
-	Kind                              CompatibleIssuePolicyKind
-	Version                           ReleaseVersion
-	Minutes, Count, UserCount, Window *int32
+	Kind                                          CompatibleIssuePolicyKind
+	Version                                       ReleaseVersion
+	Minutes, Count, UserCount, Window, UserWindow *int32
 }
 
 type CompatibleIssueChange struct {
@@ -54,12 +54,12 @@ func validCompatibleIssueChange(change CompatibleIssueChange) bool {
 	}
 	switch p.Kind {
 	case CompatibleIssueClearPolicy, CompatibleIssueClearResolutionPolicy, CompatibleIssueNextReleasePolicy, CompatibleIssueLatestReleasePolicy:
-		return p.Version == "" && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil
+		return p.Version == "" && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil && p.UserWindow == nil
 	case CompatibleIssueReleasePolicy:
 		_, err := ParseReleaseVersion(string(p.Version))
-		return err == nil && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil
+		return err == nil && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil && p.UserWindow == nil
 	case CompatibleIssueIgnorePolicy:
-		return p.Version == "" && (p.Minutes == nil || *p.Minutes > 0) && (p.Count == nil || *p.Count > 0) && (p.UserCount == nil || *p.UserCount > 0) && (p.Window == nil || *p.Window > 0 && *p.Window <= 10080 && p.Count != nil)
+		return p.Version == "" && (p.Minutes == nil || *p.Minutes > 0) && (p.Count == nil || *p.Count > 0) && (p.UserCount == nil || *p.UserCount > 0) && (p.Window == nil || *p.Window > 0 && *p.Window <= 10080 && p.Count != nil) && (p.UserWindow == nil || *p.UserWindow > 0 && *p.UserWindow <= 10080 && p.UserCount != nil)
 	}
 	return false
 }
@@ -150,7 +150,7 @@ func compatibleIssueChange(ctx context.Context, tx pgx.Tx, org string, issue Iss
 		}
 		change.Ignore = &IssueIgnoreChange{}
 		if policy.Minutes != nil || policy.Count != nil || policy.UserCount != nil {
-			change.Ignore.Condition = &IssueIgnoreCondition{Minutes: policy.Minutes, Count: policy.Count, UserCount: policy.UserCount, Window: policy.Window}
+			change.Ignore.Condition = &IssueIgnoreCondition{Minutes: policy.Minutes, Count: policy.Count, UserCount: policy.UserCount, Window: policy.Window, UserWindow: policy.UserWindow}
 		}
 	case CompatibleIssueReleasePolicy, CompatibleIssueLatestReleasePolicy, CompatibleIssueNextReleasePolicy:
 		if change.Status != "resolved" {

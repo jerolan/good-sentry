@@ -145,20 +145,21 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 		if status == "ignored" && ev.Type != "feedback" {
 			// Read the policy after acquiring the issue lock. The locking query's
 			// snapshot may predate a concurrent policy replacement it waited for.
-			var userCountEnabled bool
-			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_ignores WHERE issue_id=$1 AND user_count IS NOT NULL)`, issueID).Scan(&userCountEnabled); err != nil {
-				return "", false, err
-			}
-			if userCountEnabled {
-				if err = s.recordIssueIgnoreUser(ctx, tx, projectID, issueID.(string), ev.Data); err != nil {
-					return "", false, err
-				}
-			}
-			countReceiptAt, err := recordIssueIgnoreCountReceipt(ctx, tx, issueID.(string))
+			windowReceiptAt, err := recordIssueIgnoreWindowReceipts(ctx, tx, issueID.(string))
 			if err != nil {
 				return "", false, err
 			}
-			if _, err = expireLockedIssueIgnore(ctx, tx, issueID.(string), 1, ev.ID, countReceiptAt); err != nil {
+			var userCountEnabled, userWindowEnabled bool
+			if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_ignores WHERE issue_id=$1 AND user_count IS NOT NULL),
+			 EXISTS(SELECT 1 FROM issue_ignores WHERE issue_id=$1 AND user_window_minutes IS NOT NULL)`, issueID).Scan(&userCountEnabled, &userWindowEnabled); err != nil {
+				return "", false, err
+			}
+			if userCountEnabled {
+				if err = s.recordIssueIgnoreUser(ctx, tx, projectID, issueID.(string), ev.Data, windowReceiptAt, userWindowEnabled); err != nil {
+					return "", false, err
+				}
+			}
+			if _, err = expireLockedIssueIgnore(ctx, tx, issueID.(string), 1, ev.ID, windowReceiptAt); err != nil {
 				return "", false, err
 			}
 		}

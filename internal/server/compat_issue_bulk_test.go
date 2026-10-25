@@ -81,9 +81,9 @@ func TestCompatibleIssueBulkHTTPContract(t *testing.T) {
 		if string(nativeIssue(t)["status"]) != `"resolved"` {
 			t.Fatal("CLI-shaped request did not mutate native state")
 		}
-		acknowledge(t, organization, resolutionJSON(t, map[string]any{"status": "muted", "assignedTo": f.owner.Email, "snoozeDuration": 0, "ignoreCount": 2, "ignoreUserCount": 1, "ignoreWindow": 60}), map[string]any{
+		acknowledge(t, organization, resolutionJSON(t, map[string]any{"status": "muted", "assignedTo": f.owner.Email, "snoozeDuration": 0, "ignoreCount": 2, "ignoreUserCount": 1, "ignoreWindow": 60, "ignoreUserWindow": 30}), map[string]any{
 			"status": "ignored", "assignedTo": map[string]any{"type": "user", "id": f.owner.ID, "name": f.owner.Name, "email": f.owner.Email},
-			"statusDetails": map[string]any{"ignoreDuration": 0, "ignoreCount": 2, "ignoreUserCount": 1, "ignoreWindow": 60},
+			"statusDetails": map[string]any{"ignoreDuration": 0, "ignoreCount": 2, "ignoreUserCount": 1, "ignoreWindow": 60, "ignoreUserWindow": 30},
 		})
 		if string(nativeIssue(t)["status"]) != `"ignored"` || string(nativeIssue(t)["assignedTo"]) == "null" {
 			t.Fatal("acknowledged actor or ignored state is absent from native detail")

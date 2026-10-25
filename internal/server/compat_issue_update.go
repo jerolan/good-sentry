@@ -43,7 +43,7 @@ func (s *Server) compatibleIssueUpdate(w http.ResponseWriter, r *http.Request) {
 		failure(w, 400, "Individual issue changes do not accept query parameters")
 		return
 	}
-	fields, ok := issueBody(w, r, "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow")
+	fields, ok := issueBody(w, r, "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow")
 	if !ok {
 		return
 	}

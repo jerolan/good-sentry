@@ -23,7 +23,7 @@ func (s *Server) compatibleIssueBulkUpdate(w http.ResponseWriter, r *http.Reques
 	if !ok {
 		return
 	}
-	fields, ok := issueBody(w, r, "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "snoozeDuration", "merge")
+	fields, ok := issueBody(w, r, "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow", "snoozeDuration", "merge")
 	if !ok {
 		return
 	}
@@ -78,6 +78,9 @@ func compatibleIssueBulkAcknowledgement(result store.CompatibleIssueBulkResult, 
 				details["ignoreDuration"], details["ignoreCount"], details["ignoreUserCount"] = minutes, count, users
 				if policy.Window != nil {
 					details["ignoreWindow"] = *policy.Window
+				}
+				if policy.UserWindow != nil {
+					details["ignoreUserWindow"] = *policy.UserWindow
 				}
 			case store.CompatibleIssueReleasePolicy, store.CompatibleIssueLatestReleasePolicy:
 				if i.Resolution != nil && i.Resolution.Release != nil {

@@ -118,8 +118,9 @@ try {
   assert.equal(userListing.total, 1);
   const userIssueID = userListing.data[0].id;
   const userPath = `api/v1/issues/${encodeURIComponent(userIssueID)}`;
-  const userMute = await api(userPath, { status: 'ignored', ignore: { userCount: 2 } });
+  const userMute = await api(userPath, { status: 'ignored', ignore: { userCount: 2, userWindow: 60 } });
   assert.equal(userMute.ignore.userCount, 2);
+  assert.equal(userMute.ignore.userWindow, 60);
   assert.equal(userMute.ignore.userRemaining, 2);
   await capture(userIDs[1], stamp, userOptions(baselineUser));
   current = await api(userPath);
@@ -128,6 +129,9 @@ try {
   current = await api(userPath);
   assert.equal(current.issue.status, 'ignored');
   assert.equal(current.issue.ignore.userRemaining, 1);
+  const sameUserMute = await api(userPath, { status: 'ignored', ignore: { userCount: 2, userWindow: 60 } });
+  assert.equal(sameUserMute.ignore.userWindow, 60);
+  assert.equal(sameUserMute.ignore.userRemaining, 1, 'Reapplying the same rolling user policy preserves SDK capture progress');
   await capture(userIDs[2], stamp, userOptions(firstUser));
   await capture(userIDs[3], stamp, userOptions(firstUser));
   await capture(userIDs[4], stamp, userOptions());
@@ -142,8 +146,9 @@ try {
   assert.equal(userExpiry.data.reason, 'user_count');
   assert.equal(userExpiry.data.eventID, userIDs[5]);
   assert.equal(userExpiry.data.ignore.userRemaining, 0);
+  assert.equal(userExpiry.data.ignore.userWindow, 60);
   assert.deepEqual(report.acknowledgedEvents, [ids[0], ids[0], ids[1], ids[1], ids[2], ids[3], userIDs[0], userIDs[1], userIDs[2], userIDs[2], userIDs[3], userIDs[4], userIDs[5]]);
-  report.checks.push('official SDK identified users advance once per new identity; baseline, duplicate receipt, repeated user and anonymous capture do not advance, then user_count expiry records the triggering event');
+  report.checks.push('official SDK identified users advance once per new identity within the configured rolling window; baseline, duplicate receipt, repeated user and anonymous capture do not advance, then user_count expiry records the triggering event');
   Object.assign(report, { passed: true, projectID: fixture.project.id, issueID, userIssueID, eventIDs: ids, userEventIDs: userIDs, message, fingerprint, userMessage, userFingerprint, occurrenceTimestamp: stamp, originalRawSHA256: rawHash });
 } catch (error) { report.failure = safe(error.stack || error); process.exitCode = 1; }
 finally {

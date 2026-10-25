@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -90,7 +91,7 @@ func (s *Store) seedIssueIgnoreUserBaseline(ctx context.Context, tx pgx.Tx, issu
 	return nil
 }
 
-func (s *Store) recordIssueIgnoreUser(ctx context.Context, tx pgx.Tx, projectID, issueID string, data []byte) error {
+func (s *Store) recordIssueIgnoreUser(ctx context.Context, tx pgx.Tx, projectID, issueID string, data []byte, receiptAt *time.Time, refresh bool) error {
 	identity, err := issueUserIdentityFromData(ctx, tx, data)
 	if err != nil || identity == "" {
 		return err
@@ -104,8 +105,10 @@ func (s *Store) recordIssueIgnoreUser(ctx context.Context, tx pgx.Tx, projectID,
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO issue_ignore_users(issue_id,identity_digest,baseline)
- VALUES($1::bigint,$2,false) ON CONFLICT(issue_id,identity_digest) DO NOTHING`, issueID, digest)
+	_, err = tx.Exec(ctx, `INSERT INTO issue_ignore_users(issue_id,identity_digest,baseline,received_at)
+	 VALUES($1::bigint,$2,false,COALESCE($3::timestamptz,clock_timestamp()))
+	 ON CONFLICT(issue_id,identity_digest) DO UPDATE SET received_at=EXCLUDED.received_at
+	 WHERE $4::boolean AND NOT issue_ignore_users.baseline`, issueID, digest, receiptAt, refresh)
 	return err
 }
 

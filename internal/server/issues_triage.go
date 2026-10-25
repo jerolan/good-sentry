@@ -97,9 +97,9 @@ func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
 		}
 		change.Ignore = &store.IssueIgnoreChange{}
 		if !bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
-			condition, err := issueObject(raw, "minutes", "count", "userCount", "window")
+			condition, err := issueObject(raw, "minutes", "count", "userCount", "window", "userWindow")
 			if err != nil || len(condition) == 0 {
-				failure(w, 400, "Ignore must contain minutes, count, userCount or window")
+				failure(w, 400, "Ignore must contain minutes, count, userCount, window or userWindow")
 				return
 			}
 			change.Ignore.Condition = &store.IssueIgnoreCondition{}
@@ -123,10 +123,20 @@ func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 					change.Ignore.Condition.Window = &n
+				case "userWindow":
+					if n > 10080 {
+						failure(w, 400, "Ignore user window must be between 1 and 10080 minutes")
+						return
+					}
+					change.Ignore.Condition.UserWindow = &n
 				}
 			}
 			if change.Ignore.Condition.Window != nil && change.Ignore.Condition.Count == nil {
 				failure(w, 400, "Ignore window requires a positive count")
+				return
+			}
+			if change.Ignore.Condition.UserWindow != nil && change.Ignore.Condition.UserCount == nil {
+				failure(w, 400, "Ignore user window requires a positive userCount")
 				return
 			}
 		}

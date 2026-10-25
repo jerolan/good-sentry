@@ -11,7 +11,9 @@ import (
 // Authoring gate: parsing owns JSON presence and normalization into typed
 // intent. Losing an explicit clear, accepting fractional bounds, or merging
 // conflicting selectors would change requests before Store can validate them.
-// These cases do not replay effective-status, identity, or transaction tests.
+// The user-window cases protect its public top/nested copies and dependency;
+// existing tests do not cover this new field. These cases do not replay
+// effective-status, identity, or transaction tests.
 // The parser is called by the real handler and needs no test-only seam.
 func TestCompatibleIssueChangeParsing(t *testing.T) {
 	integer := func(value int32) *int32 { return &value }
@@ -54,6 +56,10 @@ func TestCompatibleIssueChangeParsing(t *testing.T) {
 		{"nested rolling window", `{"statusDetails":{"ignoreCount":2,"ignoreWindow":10080}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: integer(2), Window: integer(10080)}}},
 		{"window zero keeps unbounded count", `{"ignoreCount":2,"ignoreWindow":0}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: integer(2)}}},
 		{"rolling window copies agree", `{"ignoreCount":2,"ignoreWindow":60,"statusDetails":{"ignoreWindow":60}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: integer(2), Window: integer(60)}}},
+		{"top rolling user window", `{"ignoreUserCount":2,"ignoreUserWindow":60}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(2), UserWindow: integer(60)}}},
+		{"nested rolling user window", `{"statusDetails":{"ignoreUserCount":2,"ignoreUserWindow":10080}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(2), UserWindow: integer(10080)}}},
+		{"rolling user window copies agree", `{"ignoreUserWindow":60,"statusDetails":{"ignoreUserCount":2,"ignoreUserWindow":60}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(2), UserWindow: integer(60)}}},
+		{"zero user window keeps unbounded threshold", `{"ignoreUserCount":2,"ignoreUserWindow":0}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(2)}}},
 		{"zero disables user count", `{"ignoreUserCount":0,"ignoreCount":2}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: integer(2)}}},
 		{"maximum user count", `{"statusDetails":{"ignoreUserCount":2147483647}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(2147483647)}}},
 		{"equal copies", `{"ignoreCount":7,"statusDetails":{"ignoreCount":7,"ignoreDuration":8}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: integer(8), Count: integer(7)}}},
@@ -63,7 +69,7 @@ func TestCompatibleIssueChangeParsing(t *testing.T) {
 		{"empty container with top zero", `{"statusDetails":{},"ignoreCount":0}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy}}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			fields, err := issueObject([]byte(tc.body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow")
+			fields, err := issueObject([]byte(tc.body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -96,6 +102,8 @@ func TestCompatibleIssueChangeRejectsAmbiguousInput(t *testing.T) {
 		`{"statusDetails":{"inRelease":"v2","inNextRelease":true}}`,
 		`{"ignoreWindow":1}`, `{"ignoreWindow":10081,"ignoreCount":2}`, `{"ignoreWindow":null,"ignoreCount":2}`, `{"ignoreWindow":1.0,"ignoreCount":2}`, `{"ignoreWindow":-1,"ignoreCount":2}`, `{"ignoreWindow":60}`, `{"ignoreWindow":60,"ignoreCount":0}`,
 		`{"ignoreWindow":60,"ignoreCount":2,"statusDetails":{"ignoreWindow":61}}`, `{"statusDetails":{"inCommit":{}}}`,
+		`{"ignoreUserWindow":60}`, `{"ignoreUserWindow":60,"ignoreUserCount":0}`, `{"ignoreUserWindow":10081,"ignoreUserCount":2}`, `{"ignoreUserWindow":null,"ignoreUserCount":2}`, `{"ignoreUserWindow":1.0,"ignoreUserCount":2}`, `{"ignoreUserWindow":1e2,"ignoreUserCount":2}`, `{"ignoreUserWindow":-1,"ignoreUserCount":2}`, `{"ignoreUserWindow":"1","ignoreUserCount":2}`, `{"ignoreUserWindow":true,"ignoreUserCount":2}`,
+		`{"ignoreUserWindow":60,"ignoreUserCount":2,"statusDetails":{"ignoreUserWindow":61}}`, `{"statusDetails":{"ignoreUserWindow":1}}`,
 		`{"ignoreDuration":null}`, `{"ignoreDuration":-1}`, `{"ignoreDuration":2147483648}`,
 		`{"ignoreCount":1.5}`, `{"ignoreCount":1e2}`, `{"ignoreCount":"1"}`, `{"ignoreCount":true}`,
 		`{"ignoreUserCount":null}`, `{"ignoreUserCount":-1}`, `{"ignoreUserCount":2147483648}`, `{"ignoreUserCount":1.5}`, `{"ignoreUserCount":1e2}`, `{"ignoreUserCount":"1"}`, `{"ignoreUserCount":true}`,
@@ -113,7 +121,7 @@ func TestCompatibleIssueChangeRejectsAmbiguousInput(t *testing.T) {
 		`{"statusDetails":{"inRelease":".."}}`, `{"statusDetails":{"inRelease":"v\u0000x"}}`,
 	} {
 		t.Run(body, func(t *testing.T) {
-			fields, err := issueObject([]byte(body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow")
+		fields, err := issueObject([]byte(body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow")
 			if err == nil {
 				_, err = parseCompatibleIssueChange(fields)
 			}

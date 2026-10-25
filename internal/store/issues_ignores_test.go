@@ -588,7 +588,7 @@ func TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts(t *testing.T) {
 	id := triageCapture(t, ctx, db, project)
 	// Reconstruct the pre-ignore schema in this isolated fixture by removing
 	// both mute tables and their migration receipts, then seed legacy values.
-	if _, err := db.pool.Exec(ctx, `DROP TABLE issue_ignore_count_receipts;DROP TABLE issue_ignore_users;DROP TABLE issue_ignores;DELETE FROM schema_migrations WHERE version IN (13,63,65)`); err != nil {
+	if _, err := db.pool.Exec(ctx, `DROP TABLE issue_ignore_count_receipts;DROP TABLE issue_ignore_users;DROP TABLE issue_ignores;DELETE FROM schema_migrations WHERE version IN (13,63,65,66)`); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := db.pool.Exec(ctx, `UPDATE issues SET status='ignored',assignee_id=$2::bigint,first_seen='2000-01-01Z',last_seen='2001-01-01Z' WHERE id=$1::bigint`, id, owner.ID); err != nil {
@@ -631,6 +631,10 @@ func TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts(t *testing.T) {
 	if err := reopened.pool.QueryRow(ctx, "SELECT applied_at FROM schema_migrations WHERE version=65").Scan(&windowMigration); err != nil {
 		t.Fatal(err)
 	}
+	var userWindowMigration time.Time
+	if err := reopened.pool.QueryRow(ctx, "SELECT applied_at FROM schema_migrations WHERE version=66").Scan(&userWindowMigration); err != nil {
+		t.Fatal(err)
+	}
 	reopened.Close()
 	second, err := Open(ctx, url)
 	if err != nil {
@@ -645,8 +649,91 @@ func TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts(t *testing.T) {
 	if err := second.pool.QueryRow(ctx, "SELECT applied_at FROM schema_migrations WHERE version=65").Scan(&windowAgain); err != nil || !windowAgain.Equal(windowMigration) {
 		t.Fatalf("065 reapplied on reopen: %v %v", windowAgain, err)
 	}
+	var userWindowAgain time.Time
+	if err := second.pool.QueryRow(ctx, "SELECT applied_at FROM schema_migrations WHERE version=66").Scan(&userWindowAgain); err != nil || !userWindowAgain.Equal(userWindowMigration) {
+		t.Fatalf("066 reapplied on reopen: %v %v", userWindowAgain, err)
+	}
 	if err := second.pool.QueryRow(ctx, snapshot).Scan(&after); err != nil || before != after {
 		t.Fatalf("restart rewrote history: equal=%v err=%v", before == after, err)
+	}
+}
+
+func TestIssueIgnoreUserWindowMigrationPreservesAndReopens(t *testing.T) {
+	ctx, db, owner, organization, project := telemetryStore(t)
+	db.SetIssueIdentitySecret("issue-user-window-migration-secret-0001")
+	root, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 201), "user-window-migration", "baseline-user"))
+	if err != nil || !fresh {
+		t.Fatalf("baseline capture=%s fresh=%v err=%v", root, fresh, err)
+	}
+	userCount := int32(2)
+	if _, err := db.UpdateIssue(ctx, owner.ID, root, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: &IssueIgnoreCondition{UserCount: &userCount}}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 202), "user-window-migration", "additional-user")); err != nil || !fresh {
+		t.Fatalf("additional capture fresh=%v err=%v", fresh, err)
+	}
+	baselineDigest, err := db.issueUserDigest(organization.ID, "id:baseline-user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	additionalDigest, err := db.issueUserDigest(organization.ID, "id:additional-user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var receiptSnapshot string
+	if err := db.pool.QueryRow(ctx, `SELECT jsonb_agg(to_jsonb(m) ORDER BY version)::text FROM schema_migrations m WHERE version<=65`).Scan(&receiptSnapshot); err != nil {
+		t.Fatal(err)
+	}
+	// Recreate the 065 index/schema while preserving its baseline and additional
+	// digest rows, then reopen so the real 066 migration performs its backfill.
+	if _, err := db.pool.Exec(ctx, `DROP INDEX issue_ignore_users_additional;
+	 CREATE INDEX issue_ignore_users_additional ON issue_ignore_users(issue_id) WHERE NOT baseline;
+	 ALTER TABLE issue_ignore_users DROP CONSTRAINT issue_ignore_users_additional_receipt_required;
+	 ALTER TABLE issue_ignore_users DROP COLUMN received_at;
+	 ALTER TABLE issue_ignores DROP CONSTRAINT issue_ignores_user_window_requires_user_count;
+	 ALTER TABLE issue_ignores DROP COLUMN user_window_minutes;
+	 DELETE FROM schema_migrations WHERE version=66`); err != nil {
+		t.Fatal(err)
+	}
+	url := db.pool.Config().ConnString()
+	db.Close()
+	upgraded, err := Open(ctx, url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(upgraded.Close)
+	var baseline, hasBaselineReceipt bool
+	if err := upgraded.pool.QueryRow(ctx, `SELECT baseline,received_at IS NOT NULL FROM issue_ignore_users
+	 WHERE issue_id=$1::bigint AND identity_digest=$2`, root, baselineDigest).Scan(&baseline, &hasBaselineReceipt); err != nil || !baseline || hasBaselineReceipt {
+		t.Fatalf("baseline row changed across 066: baseline=%v timestamp=%v err=%v", baseline, hasBaselineReceipt, err)
+	}
+	var additionalBaseline bool
+	var additionalReceipt time.Time
+	if err := upgraded.pool.QueryRow(ctx, `SELECT baseline,received_at FROM issue_ignore_users
+	 WHERE issue_id=$1::bigint AND identity_digest=$2`, root, additionalDigest).Scan(&additionalBaseline, &additionalReceipt); err != nil || additionalBaseline || additionalReceipt.IsZero() {
+		t.Fatalf("additional progress was not timestamped by 066: baseline=%v timestamp=%v err=%v", additionalBaseline, additionalReceipt, err)
+	}
+	current := triageIssue(t, ctx, upgraded, owner.ID, root)
+	if current.Status != "ignored" || current.Ignore == nil || current.Ignore.UserWindow != nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("migration changed old unbounded mute progress: %+v", current)
+	}
+	var indexContainsReceipt bool
+	if err := upgraded.pool.QueryRow(ctx, `SELECT position('received_at' in pg_get_indexdef('issue_ignore_users_additional'::regclass))>0`).Scan(&indexContainsReceipt); err != nil || !indexContainsReceipt {
+		t.Fatalf("066 additional-user index lacks receipt ordering: %v %v", indexContainsReceipt, err)
+	}
+	var receiptAfter string
+	if err := upgraded.pool.QueryRow(ctx, `SELECT jsonb_agg(to_jsonb(m) ORDER BY version)::text FROM schema_migrations m WHERE version<=65`).Scan(&receiptAfter); err != nil || receiptSnapshot != receiptAfter {
+		t.Fatalf("migration rewrote historical receipts: equal=%v err=%v", receiptSnapshot == receiptAfter, err)
+	}
+	upgraded.Close()
+	reopened, err := Open(ctx, url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(reopened.Close)
+	var reopenedTimestamp time.Time
+	if err := reopened.pool.QueryRow(ctx, `SELECT received_at FROM issue_ignore_users WHERE issue_id=$1::bigint AND identity_digest=$2`, root, additionalDigest).Scan(&reopenedTimestamp); err != nil || !reopenedTimestamp.Equal(additionalReceipt) {
+		t.Fatalf("066 progress changed on reopen: got=%v want=%v err=%v", reopenedTimestamp, additionalReceipt, err)
 	}
 }
 
@@ -845,5 +932,206 @@ func TestIssueIgnoreUserCountLifecycle(t *testing.T) {
 	}
 	if err := json.Unmarshal(expiries[0].Data, &receipt); err != nil || receipt.Reason != "user_count" || receipt.EventID != lastID || receipt.Ignore.UserRemaining == nil || *receipt.Ignore.UserRemaining != 0 {
 		t.Fatalf("user-count expiry receipt=%s err=%v", expiries[0].Data, err)
+	}
+}
+
+func TestIssueIgnoreRollingUserWindowLifecycle(t *testing.T) {
+	ctx, db, owner, organization, project := telemetryStore(t)
+	db.SetIssueIdentitySecret("issue-user-window-integration-secret-0001")
+	root, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 101), "user-window-root", "baseline-user"))
+	if err != nil || !fresh {
+		t.Fatalf("baseline capture=%s fresh=%v err=%v", root, fresh, err)
+	}
+	count, countWindow, userCount, userWindow := int32(20), int32(60), int32(2), int32(10)
+	condition := &IssueIgnoreCondition{Count: &count, Window: &countWindow, UserCount: &userCount, UserWindow: &userWindow}
+	muted, err := db.UpdateIssue(ctx, owner.ID, root, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: condition}})
+	if err != nil || muted.Ignore == nil || muted.Ignore.UserWindow == nil || *muted.Ignore.UserWindow != userWindow || muted.Ignore.UserRemaining == nil || *muted.Ignore.UserRemaining != int64(userCount) {
+		t.Fatalf("rolling user-count policy=%+v err=%v", muted.Ignore, err)
+	}
+	baselineDigest, err := db.issueUserDigest(organization.ID, "id:baseline-user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var baseline bool
+	var baselineReceipt *time.Time
+	if err := db.pool.QueryRow(ctx, `SELECT baseline,received_at FROM issue_ignore_users WHERE issue_id=$1::bigint AND identity_digest=$2`, root, baselineDigest).Scan(&baseline, &baselineReceipt); err != nil || !baseline || baselineReceipt != nil {
+		t.Fatalf("baseline identity=%v receipt=%v err=%v", baseline, baselineReceipt, err)
+	}
+
+	firstID := fmt.Sprintf("%032x", 102)
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, firstID, "user-window-root", "window-user-a")); err != nil || !fresh {
+		t.Fatalf("first user capture fresh=%v err=%v", fresh, err)
+	}
+	userDigest, err := db.issueUserDigest(organization.ID, "id:window-user-a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var countReceipt, userReceipt time.Time
+	if err := db.pool.QueryRow(ctx, `SELECT c.received_at,u.received_at FROM issue_ignore_count_receipts c
+	 JOIN issue_ignore_users u ON u.issue_id=c.issue_id
+	 WHERE c.issue_id=$1::bigint AND u.identity_digest=$2`, root, userDigest).Scan(&countReceipt, &userReceipt); err != nil || !countReceipt.Equal(userReceipt) {
+		t.Fatalf("capture did not share one receipt instant: count=%s user=%s err=%v", countReceipt, userReceipt, err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE events SET created_at=clock_timestamp()-interval '2 days' WHERE event_id=$1`, firstID); err != nil {
+		t.Fatal(err)
+	}
+	if removed, err := db.CleanupEvents(ctx, 1); err != nil || removed != 1 {
+		t.Fatalf("event retention removed=%d err=%v", removed, err)
+	}
+	if current := triageIssue(t, ctx, db, owner.ID, root); current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("event retention erased active user-window progress: %+v", current.Ignore)
+	}
+
+	// A repeat refreshes the same digest after its earlier receipt has aged out.
+	if _, err := db.pool.Exec(ctx, `UPDATE issue_ignore_users SET received_at=clock_timestamp()-interval '11 minutes'
+	 WHERE issue_id=$1::bigint AND identity_digest=$2`, root, userDigest); err != nil {
+		t.Fatal(err)
+	}
+	if current := triageIssue(t, ctx, db, owner.ID, root); current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 2 {
+		t.Fatalf("aged user receipt did not restore remaining count: %+v", current.Ignore)
+	}
+	secondID := fmt.Sprintf("%032x", 103)
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, secondID, "user-window-root", "window-user-a")); err != nil || !fresh {
+		t.Fatalf("re-entering user capture fresh=%v err=%v", fresh, err)
+	}
+	current := triageIssue(t, ctx, db, owner.ID, root)
+	if current.Status != "ignored" || current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("same identity did not re-enter its rolling window: %+v", current)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE issue_ignore_users SET received_at=clock_timestamp()-interval '11 minutes'
+	 WHERE issue_id=$1::bigint AND identity_digest=$2`, root, userDigest); err != nil {
+		t.Fatal(err)
+	}
+	if processed, err := db.ExpireIssueIgnore(ctx); err != nil || !processed {
+		t.Fatalf("maintenance did not prune the aged identity: processed=%v err=%v", processed, err)
+	}
+	var staleRows int
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM issue_ignore_users WHERE issue_id=$1::bigint AND identity_digest=$2`, root, userDigest).Scan(&staleRows); err != nil || staleRows != 0 {
+		t.Fatalf("maintenance retained stale digest rows=%d err=%v", staleRows, err)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 104), "user-window-root", "window-user-a")); err != nil || !fresh {
+		t.Fatalf("post-cleanup user re-entry fresh=%v err=%v", fresh, err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, root)
+	if current.Status != "ignored" || current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("same identity did not re-enter after digest cleanup: %+v", current)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 106), "user-window-root", "baseline-user")); err != nil || !fresh {
+		t.Fatalf("baseline repeat fresh=%v err=%v", fresh, err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, root)
+	if current.Status != "ignored" || current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("baseline user became additional after retention: %+v", current)
+	}
+
+	lastID := fmt.Sprintf("%032x", 105)
+	if _, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, lastID, "user-window-root", "window-user-b")); err != nil || !fresh {
+		t.Fatalf("threshold user capture fresh=%v err=%v", fresh, err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, root)
+	if current.Status != "unresolved" || current.Ignore != nil {
+		t.Fatalf("second in-window identity did not expire mute: %+v", current)
+	}
+	expiries := ignoreExpiries(t, ctx, db, owner.ID, root)
+	if len(expiries) != 1 {
+		t.Fatalf("automatic unignore activities=%d", len(expiries))
+	}
+	var receipt struct {
+		Reason  string      `json:"reason"`
+		EventID string      `json:"eventID"`
+		Ignore  IssueIgnore `json:"ignore"`
+	}
+	if err := json.Unmarshal(expiries[0].Data, &receipt); err != nil || receipt.Reason != "user_count" || receipt.EventID != lastID || receipt.Ignore.UserRemaining == nil || *receipt.Ignore.UserRemaining != 0 || receipt.Ignore.UserWindow == nil || *receipt.Ignore.UserWindow != userWindow {
+		t.Fatalf("rolling user expiry receipt=%s err=%v", expiries[0].Data, err)
+	}
+}
+
+func TestIssueIgnoreRollingUserWindowPolicyProgress(t *testing.T) {
+	ctx, db, owner, organization, project := telemetryStore(t)
+	db.SetIssueIdentitySecret("issue-user-window-policy-secret-0001")
+	root, fresh, err := db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 111), "user-window-policy", "baseline-user"))
+	if err != nil || !fresh {
+		t.Fatalf("baseline capture=%s fresh=%v err=%v", root, fresh, err)
+	}
+	userCount, userWindow := int32(2), int32(10)
+	condition := &IssueIgnoreCondition{UserCount: &userCount, UserWindow: &userWindow}
+	if _, err = db.UpdateIssue(ctx, owner.ID, root, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: condition}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, fresh, err = db.Ingest(ctx, project.ID, issueUserMuteEvent(t, fmt.Sprintf("%032x", 112), "user-window-policy", "policy-user")); err != nil || !fresh {
+		t.Fatalf("additional-user capture fresh=%v err=%v", fresh, err)
+	}
+	if current := triageIssue(t, ctx, db, owner.ID, root); current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("additional-user receipt did not advance progress: %+v", current.Ignore)
+	}
+	if _, err = db.UpdateIssue(ctx, owner.ID, root, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: condition}}); err != nil {
+		t.Fatal(err)
+	}
+	if current := triageIssue(t, ctx, db, owner.ID, root); current.Ignore == nil || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != 1 {
+		t.Fatalf("reapplying an unchanged user window reset progress: %+v", current.Ignore)
+	}
+
+	changedWindow := userWindow - 1
+	changed := &IssueIgnoreCondition{UserCount: &userCount, UserWindow: &changedWindow}
+	if _, err = db.UpdateIssue(ctx, owner.ID, root, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: changed}}); err != nil {
+		t.Fatal(err)
+	}
+	identityDigest, err := db.issueUserDigest(organization.ID, "id:policy-user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var baseline bool
+	if err = db.pool.QueryRow(ctx, `SELECT baseline FROM issue_ignore_users WHERE issue_id=$1::bigint AND identity_digest=$2`, root, identityDigest).Scan(&baseline); err != nil || !baseline {
+		t.Fatalf("changed policy did not reset progress into its new baseline: baseline=%v err=%v", baseline, err)
+	}
+	if current := triageIssue(t, ctx, db, owner.ID, root); current.Ignore == nil || current.Ignore.UserWindow == nil || *current.Ignore.UserWindow != changedWindow || current.Ignore.UserRemaining == nil || *current.Ignore.UserRemaining != int64(userCount) {
+		t.Fatalf("changed user window did not reset remaining progress: %+v", current.Ignore)
+	}
+}
+
+func TestIssueIgnoreRollingUserWindowIncludesLowerBound(t *testing.T) {
+	ctx, db, owner, organization, project := telemetryStore(t)
+	db.SetIssueIdentitySecret("issue-user-window-boundary-secret-0001")
+	id := triageCapture(t, ctx, db, project)
+	userCount, userWindow := int32(1), int32(10)
+	if _, err := db.UpdateIssue(ctx, owner.ID, id, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: &IssueIgnoreCondition{UserCount: &userCount, UserWindow: &userWindow}}}); err != nil {
+		t.Fatal(err)
+	}
+	userDigest, err := db.issueUserDigest(organization.ID, "id:user-at-window-edge")
+	if err != nil {
+		t.Fatal(err)
+	}
+	receiptAt := time.Date(2025, 1, 2, 3, 4, 0, 0, time.UTC)
+	if _, err := db.pool.Exec(ctx, `INSERT INTO issue_ignore_users(issue_id,identity_digest,baseline,received_at)
+	 VALUES($1::bigint,$2,false,$3::timestamptz-interval '10 minutes')`, id, userDigest, receiptAt); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := db.pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	var lockedID string
+	if err := tx.QueryRow(ctx, "SELECT id::text FROM issues WHERE id=$1::bigint FOR UPDATE", id).Scan(&lockedID); err != nil {
+		t.Fatal(err)
+	}
+	expired, err := expireLockedIssueIgnore(ctx, tx, id, 0, "", &receiptAt)
+	if err != nil || !expired {
+		t.Fatalf("inclusive lower-bound user receipt did not satisfy threshold: expired=%v err=%v", expired, err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	current := triageIssue(t, ctx, db, owner.ID, id)
+	if current.Status != "unresolved" || current.Ignore != nil {
+		t.Fatalf("lower-bound user left mute active: %+v", current)
+	}
+	expiries := ignoreExpiries(t, ctx, db, owner.ID, id)
+	var receipt struct {
+		Reason string      `json:"reason"`
+		Ignore IssueIgnore `json:"ignore"`
+	}
+	if len(expiries) != 1 || json.Unmarshal(expiries[0].Data, &receipt) != nil || receipt.Reason != "user_count" || receipt.Ignore.UserRemaining == nil || *receipt.Ignore.UserRemaining != 0 {
+		t.Fatalf("lower-bound user expiry=%+v", expiries)
 	}
 }

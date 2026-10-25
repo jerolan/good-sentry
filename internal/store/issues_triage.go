@@ -149,7 +149,7 @@ func (s *Store) applyIssueUpdate(ctx context.Context, tx pgx.Tx, userID, org str
 		if change.Ignore != nil {
 			wantedIgnore = change.Ignore.Condition
 		} else if i.Status == "ignored" && i.Ignore != nil {
-			wantedIgnore = &IssueIgnoreCondition{Minutes: i.Ignore.Minutes, Count: i.Ignore.Count, UserCount: i.Ignore.UserCount, Window: i.Ignore.Window}
+			wantedIgnore = &IssueIgnoreCondition{Minutes: i.Ignore.Minutes, Count: i.Ignore.Count, UserCount: i.Ignore.UserCount, Window: i.Ignore.Window, UserWindow: i.Ignore.UserWindow}
 		}
 	}
 	ignoreChanged := change.Status == "ignored" && !sameIssueIgnore(i.Ignore, wantedIgnore)

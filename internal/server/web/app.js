@@ -3290,18 +3290,22 @@
       const errors = `${number(ignore.count)} additional ${ignore.count === 1 ? 'error' : 'errors'}`;
       conditions.push(ignore.window == null ? errors : `${errors} within any ${number(ignore.window)} minutes`);
     }
-    if (ignore.userCount != null) conditions.push(`${number(ignore.userCount)} additional ${ignore.userCount === 1 ? 'user' : 'users'}`);
+    if (ignore.userCount != null) {
+      const users = `${number(ignore.userCount)} additional ${ignore.userCount === 1 ? 'user' : 'users'}`;
+      conditions.push(ignore.userWindow == null ? users : `${users} within any ${number(ignore.userWindow)} minutes`);
+    }
     return conditions.join(' or ');
   }
 
   function issueMute(issue, view, triage) {
-    view.muteDraft ??= { minutes: issue.ignore?.minutes == null ? '' : String(issue.ignore.minutes), count: issue.ignore?.count == null ? '' : String(issue.ignore.count), userCount: issue.ignore?.userCount == null ? '' : String(issue.ignore.userCount), window: issue.ignore?.window == null ? '' : String(issue.ignore.window) };
+    view.muteDraft ??= { minutes: issue.ignore?.minutes == null ? '' : String(issue.ignore.minutes), count: issue.ignore?.count == null ? '' : String(issue.ignore.count), userCount: issue.ignore?.userCount == null ? '' : String(issue.ignore.userCount), window: issue.ignore?.window == null ? '' : String(issue.ignore.window), userWindow: issue.ignore?.userWindow == null ? '' : String(issue.ignore.userWindow) };
     const helpID = `mute-help-${++fieldNumber}`;
     const minutes = field('Minutes (optional)', 'text', { value: view.muteDraft.minutes, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 10, autocomplete: 'off', 'aria-describedby': helpID });
     const count = field('Additional errors (optional)', 'text', { value: view.muteDraft.count, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 10, autocomplete: 'off', 'aria-describedby': helpID });
     const userCount = field('Additional users (optional)', 'text', { value: view.muteDraft.userCount, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 10, autocomplete: 'off', 'aria-describedby': helpID });
     const window = field('Count window in minutes (optional)', 'text', { value: view.muteDraft.window, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 5, autocomplete: 'off', 'aria-describedby': helpID });
-    for (const [key, control] of [['minutes', minutes], ['count', count], ['userCount', userCount], ['window', window]]) control.input.addEventListener('input', () => { view.muteDraft[key] = control.input.value; });
+    const userWindow = field('User window in minutes (optional)', 'text', { value: view.muteDraft.userWindow, inputmode: 'numeric', pattern: '[0-9]+', maxlength: 5, autocomplete: 'off', 'aria-describedby': helpID });
+    for (const [key, control] of [['minutes', minutes], ['count', count], ['userCount', userCount], ['window', window], ['userWindow', userWindow]]) control.input.addEventListener('input', () => { view.muteDraft[key] = control.input.value; });
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const current = node('div', { class: 'form-stack' });
     if (issue.status !== 'ignored') current.append(node('p', {}, 'No notification mute is active.'));
@@ -3318,22 +3322,23 @@
     const submit = triage.register(node('button', { class: 'btn button primary', type: 'submit' }, 'Apply mute'));
     const form = node('form', { class: 'panel-body form-stack', 'aria-label': 'Mute notifications' }, current,
       node('p', { class: 'muted small' }, 'New issue notifications pause while error capture continues. If both conditions are set, either condition ends the mute.'),
-      node('p', { class: 'muted small', id: helpID }, 'Set minutes, additional errors, additional users, or any combination. A count window requires additional errors and accepts 1 to 10,080 minutes; other conditions accept whole numbers up to 2,147,483,647.'),
-      minutes.wrap, count.wrap, userCount.wrap, window.wrap, error, node('div', { class: 'actions' }, submit, clear));
+      node('p', { class: 'muted small', id: helpID }, 'Set minutes, additional errors, additional users, or any combination. Each window requires its matching positive count and accepts 1 to 10,080 minutes; other conditions accept whole numbers up to 2,147,483,647.'),
+      minutes.wrap, count.wrap, userCount.wrap, window.wrap, userWindow.wrap, error, node('div', { class: 'actions' }, submit, clear));
     form.addEventListener('submit', event => {
       event.preventDefault();
       const ignore = {};
-      for (const [key, control] of [['minutes', minutes], ['count', count], ['userCount', userCount], ['window', window]]) {
+      for (const [key, control] of [['minutes', minutes], ['count', count], ['userCount', userCount], ['window', window], ['userWindow', userWindow]]) {
         const value = control.input.value;
         if (!value) continue;
-        const maximum = key === 'window' ? 10080 : 2147483647;
+        const maximum = key === 'window' || key === 'userWindow' ? 10080 : 2147483647;
         if (!/^[0-9]+$/.test(value) || Number(value) < 1 || Number(value) > maximum) {
-          formError(error, new Error(key === 'window' ? 'Use a whole count window from 1 to 10,080 minutes.' : 'Use whole numbers from 1 to 2,147,483,647 for each mute condition.'));
+          formError(error, new Error(key === 'window' || key === 'userWindow' ? 'Use a whole window from 1 to 10,080 minutes.' : 'Use whole numbers from 1 to 2,147,483,647 for each mute condition.'));
           return;
         }
         ignore[key] = Number(value);
       }
       if (ignore.window != null && ignore.count == null) { formError(error, new Error('A count window requires an additional error count.')); return; }
+      if (ignore.userWindow != null && ignore.userCount == null) { formError(error, new Error('A user window requires an additional user count.')); return; }
       if (!Object.keys(ignore).length) { formError(error, new Error('Enter minutes, an additional error count, additional users, or any combination.')); return; }
       triage.patchIssue({ status: 'ignored', ignore }, 'Mute updated.', error, () => form.isConnected);
     });
