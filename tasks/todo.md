@@ -1229,5 +1229,6 @@ Public acceptance at `322e2a530c7a7dba0a0d76423cc3a1dbd2c3cedd`: public main mat
   - Keep per-issue project lookup and atomic rollback when any selected issue cannot resolve the same commit; return the commit and release selectors in acknowledgements.
   - PostgreSQL tests prove same-project and cross-project per-issue anchors, rollback when one selected project lacks the commit, and the bulk HTTP acknowledgement.
   - Files: `internal/server/compat_issue_bulk.go`, compatible Store update owners and their existing tests.
-- [ ] Pass full integration/race/vet/build checks, then publish exact-source CI and amd64/arm64 image with `gh`.
-  - Local proof so far: full `go test ./... -count=1` passes; focused PostgreSQL migration/store and compatible individual/bulk HTTP tests pass with `-race`. Remote full integration/race/vet/build and image publication remain pending.
+- [x] Pass full integration/race/vet/build checks, then publish exact-source CI and amd64/arm64 image with `gh`.
+  - Local proof: full `go test ./... -count=1`, focused PostgreSQL migration/store and compatible individual/bulk HTTP tests pass with `-race`; `go vet -tags=integration ./...` passes. The full GitHub integration/race, vet, formatting and image-build workflow passed at [CI 40214943039](https://github.com/jerolan/good-sentry/actions/runs/40214943039).
+  - The [container workflow 40215362685](https://github.com/jerolan/good-sentry/actions/runs/40215362685) published exact revision `caed0989923740f8d6fcd8f18c509aa76c7b98a9` to `ghcr.io/jerolan/good-sentry:main`, `:latest` and `:sha-caed0989923740f8d6fcd8f18c509aa76c7b98a9` for amd64/arm64; manifest digest `sha256:b2b23423c85a613037c480f676bb32f1ef07dcd569fc1a604a59317f45360e8b`.
