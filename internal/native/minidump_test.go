@@ -2037,6 +2037,91 @@ func TestCFILEB128ReadersRejectOverflow(t *testing.T) {
 	}
 }
 
+func TestReadCFIPointerLEBFormats(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		data        []byte
+		encoding    byte
+		field       uint64
+		want        uint64
+		wantBytes   int
+		wantSuccess bool
+	}{
+		{name: "single-byte ULEB", data: []byte{0x7f}, encoding: 0x01, want: 127, wantBytes: 1, wantSuccess: true},
+		{name: "multi-byte ULEB", data: []byte{0x80, 0x20}, encoding: 0x01, want: 4096, wantBytes: 2, wantSuccess: true},
+		{name: "negative one SLEB", data: []byte{0x7f}, encoding: 0x09, want: ^uint64(0), wantBytes: 1, wantSuccess: true},
+		{name: "multi-byte negative SLEB", data: []byte{0xff, 0x7e}, encoding: 0x09, want: ^uint64(128), wantBytes: 2, wantSuccess: true},
+		{name: "negative PC-relative SLEB", data: []byte{0xff, 0x7e}, encoding: 0x19, field: 0x1000, want: 0xf7f, wantBytes: 2, wantSuccess: true},
+		{name: "truncated ULEB", data: []byte{0x80}, encoding: 0x01},
+		{name: "overflowing ULEB", data: append(bytes.Repeat([]byte{0xff}, 9), 0x02), encoding: 0x01},
+		{name: "truncated SLEB", data: []byte{0x80}, encoding: 0x09},
+		{name: "overflowing SLEB", data: append(bytes.Repeat([]byte{0x80}, 9), 0x01), encoding: 0x09},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			offset := 0
+			got, consumed, err := readCFIPointer(test.data, &offset, test.encoding, test.field, 8)
+			if test.wantSuccess {
+				if err != nil || got != test.want || consumed != test.wantBytes || offset != test.wantBytes {
+					t.Fatalf("decoded %x as %#x, consumed=%d offset=%d err=%v; want %#x over %d bytes", test.data, got, consumed, offset, err, test.want, test.wantBytes)
+				}
+			} else if err == nil || offset != 0 {
+				t.Fatalf("malformed pointer %x returned value=%#x consumed=%d offset=%d err=%v; want error without advancing caller offset", test.data, got, consumed, offset, err)
+			}
+		})
+	}
+}
+
+func TestCFILEBPointerEncodingUnwinds(t *testing.T) {
+	var section bytes.Buffer
+	appendRecord := func(record []byte) int {
+		start := section.Len()
+		_ = binary.Write(&section, binary.LittleEndian, uint32(len(record)))
+		_, _ = section.Write(record)
+		return start
+	}
+	var cie bytes.Buffer
+	_ = binary.Write(&cie, binary.LittleEndian, uint32(0))
+	_, _ = cie.Write([]byte{1})
+	_, _ = cie.WriteString("zR\x00")
+	_, _ = cie.Write([]byte{1, 0x78, 16, 1, 0x01}) // alignments, return column, augmentation size, ULEB pointer format
+	_, _ = cie.Write([]byte{0x0c, 7, 8, 0x90, 1})  // CFA = rsp+8; return address = [CFA-8]
+	cieOffset := appendRecord(cie.Bytes())
+
+	var fde bytes.Buffer
+	idOffset := section.Len() + 4
+	_ = binary.Write(&fde, binary.LittleEndian, uint32(idOffset-cieOffset))
+	_, _ = fde.Write([]byte{0x80, 0x20, 0x80, 0x02}) // start 0x1000, range 0x100
+	_ = fde.WriteByte(0)                             // empty augmentation
+	appendRecord(fde.Bytes())
+	fde.Reset()
+	idOffset = section.Len() + 4
+	_ = binary.Write(&fde, binary.LittleEndian, uint32(idOffset-cieOffset))
+	_, _ = fde.Write([]byte{0x80, 0x3e, 0x80, 0x02}) // caller start 0x1f00, range 0x100
+	_ = fde.WriteByte(0)
+	appendRecord(fde.Bytes())
+
+	table, err := parseCFISection(section.Bytes(), 0, true, 8)
+	if err != nil || table == nil || len(table.entries) != 2 {
+		t.Fatalf("parse LEB-pointer CFI: table=%+v err=%v", table, err)
+	}
+	if first, second := table.entries[0], table.entries[1]; first.start != 0x1000 || first.end != 0x1100 || second.start != 0x1f00 || second.end != 0x2000 {
+		t.Fatalf("decoded FDE ranges [%#x,%#x) and [%#x,%#x); want [0x1000,0x1100) and [0x1f00,0x2000)", first.start, first.end, second.start, second.end)
+	}
+
+	const stackBase = uint64(0x3000)
+	stack := make([]byte, 16)
+	binary.LittleEndian.PutUint64(stack, 0x2000)
+	crash := Crash{
+		RIP: 0x1010, RSP: stackBase, Arch: "amd64", PointerSize: 8,
+		Modules: []Module{{Name: "uleb-pointer", Size: 0x3000}},
+		stack:   []memoryRange{{start: stackBase, data: stack}},
+	}
+	frames := UnwindCFI(&crash, UnwindSet{"uleb-pointer": {table}})
+	if len(frames) != 2 || frames[0].Instruction != crash.RIP || frames[1].Instruction != 0x2000 {
+		t.Fatalf("LEB-pointer FDE did not unwind the caller frame: %+v", frames)
+	}
+}
+
 func TestCFIExpressionRejectsRegisterIDTruncation(t *testing.T) {
 	wideRegister := []byte{0x80, 0x80, 0x80, 0x80, 0x10} // 1<<32, which must not wrap to register zero.
 	registers := map[uint32]uint64{0: 0x1000, 5: 0x2000}

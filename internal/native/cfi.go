@@ -708,7 +708,7 @@ func readCFIPointer(data []byte, offset *int, encoding byte, fieldAddress uint64
 	case 0x00:
 		value = cursor.uintN(addrSize)
 	case 0x01:
-		value = uint64(cursor.byte())
+		value = cursor.uleb()
 	case 0x02:
 		value = uint64(cursor.u16())
 	case 0x03:
@@ -716,7 +716,7 @@ func readCFIPointer(data []byte, offset *int, encoding byte, fieldAddress uint64
 	case 0x04:
 		value = cursor.u64()
 	case 0x09:
-		value = uint64(int64(int8(cursor.byte())))
+		value = uint64(cursor.sleb())
 	case 0x0a:
 		value = uint64(int64(int16(cursor.u16())))
 	case 0x0b:
