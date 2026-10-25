@@ -21,6 +21,7 @@ type compatibleIssueStatusDetails struct {
 	IgnoreUntil     *time.Time `json:"ignoreUntil,omitempty"`
 	IgnoreCount     *int32     `json:"ignoreCount,omitempty"`
 	IgnoreUserCount *int32     `json:"ignoreUserCount,omitempty"`
+	IgnoreWindow    *int32     `json:"ignoreWindow,omitempty"`
 	UserRemaining   *int64     `json:"userRemaining,omitempty"`
 	InNextRelease   bool       `json:"inNextRelease,omitempty"`
 	InRelease       string     `json:"inRelease,omitempty"`
@@ -169,6 +170,9 @@ func projectCompatibleIssue(record store.CompatibleIssueRecord, domain string, d
 	if ignored := i.Ignore; ignored != nil {
 		view.StatusDetails.IgnoreUntil, view.StatusDetails.IgnoreCount = issueWireTime(ignored.Until), ignored.Count
 		view.StatusDetails.IgnoreUserCount, view.StatusDetails.UserRemaining = ignored.UserCount, ignored.UserRemaining
+		if ignored.Window != nil && ignored.Count != nil {
+			view.StatusDetails.IgnoreWindow = ignored.Window
+		}
 	}
 	if resolution := i.Resolution; resolution != nil {
 		if resolution.Release != nil {

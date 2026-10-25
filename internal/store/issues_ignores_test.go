@@ -151,6 +151,149 @@ func TestIssueIgnoreCountRetriesNoOpAndLateUniqueCaptures(t *testing.T) {
 	}
 }
 
+func TestIssueIgnoreRollingWindowLifecycle(t *testing.T) {
+	ctx, db, owner, _, project := telemetryStore(t)
+	id := triageCapture(t, ctx, db, project)
+	count, window := int32(3), int32(10)
+	condition := &IssueIgnoreCondition{Count: &count, Window: &window}
+	muted, err := db.UpdateIssue(ctx, owner.ID, id, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: condition}})
+	if err != nil || muted.Ignore == nil || muted.Ignore.Remaining == nil || *muted.Ignore.Remaining != 3 || muted.Ignore.Window == nil || *muted.Ignore.Window != window {
+		t.Fatalf("rolling count policy=%+v err=%v", muted.Ignore, err)
+	}
+	for _, eventID := range []string{"00000000000000000000000000000002", "00000000000000000000000000000003"} {
+		if _, fresh, err := db.Ingest(ctx, project.ID, triageEvent(t, eventID, time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC))); err != nil || !fresh {
+			t.Fatalf("old SDK timestamp capture %s fresh=%v err=%v", eventID, fresh, err)
+		}
+	}
+	current := triageIssue(t, ctx, db, owner.ID, id)
+	if current.Status != "ignored" || current.Ignore == nil || current.Ignore.Remaining == nil || *current.Ignore.Remaining != 1 {
+		t.Fatalf("fresh server receipts did not consume the window count: %+v", current)
+	}
+	if _, fresh, err := db.Ingest(ctx, project.ID, triageEvent(t, "00000000000000000000000000000003", time.Now())); err != nil || fresh {
+		t.Fatalf("retry fresh=%v err=%v", fresh, err)
+	}
+	var receipts int
+	if err := db.pool.QueryRow(ctx, "SELECT count(*) FROM issue_ignore_count_receipts WHERE issue_id=$1::bigint", id).Scan(&receipts); err != nil || receipts != 2 {
+		t.Fatalf("retry changed receipt rows=%d err=%v", receipts, err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE events SET created_at=clock_timestamp()-interval '2 days' WHERE event_id IN ($1,$2)`, "00000000000000000000000000000002", "00000000000000000000000000000003"); err != nil {
+		t.Fatal(err)
+	}
+	if removed, err := db.CleanupEvents(ctx, 1); err != nil || removed != 2 {
+		t.Fatalf("event retention removed=%d err=%v", removed, err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, id)
+	if current.Ignore == nil || current.Ignore.Remaining == nil || *current.Ignore.Remaining != 1 {
+		t.Fatalf("event retention changed active count-window progress: %+v", current.Ignore)
+	}
+	if same, err := db.UpdateIssue(ctx, owner.ID, id, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: condition}}); err != nil || same.Ignore == nil || same.Ignore.Remaining == nil || *same.Ignore.Remaining != 1 {
+		t.Fatalf("identical policy reset rolling progress: %+v err=%v", same.Ignore, err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE issue_ignore_count_receipts SET received_at=clock_timestamp()-interval '11 minutes'
+ WHERE issue_id=$1::bigint AND received_at=(SELECT min(received_at) FROM issue_ignore_count_receipts WHERE issue_id=$1::bigint)`, id); err != nil {
+		t.Fatal(err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, id)
+	if current.Ignore == nil || current.Ignore.Remaining == nil || *current.Ignore.Remaining != 2 {
+		t.Fatalf("aged receipt did not restore remaining count: %+v", current.Ignore)
+	}
+	if processed, err := db.ExpireIssueIgnore(ctx); err != nil || !processed {
+		t.Fatalf("maintenance did not claim stale rolling progress: processed=%v err=%v", processed, err)
+	}
+	if err := db.pool.QueryRow(ctx, "SELECT count(*) FROM issue_ignore_count_receipts WHERE issue_id=$1::bigint", id).Scan(&receipts); err != nil || receipts != 1 {
+		t.Fatalf("maintenance retained stale rows=%d err=%v", receipts, err)
+	}
+	five := int32(5)
+	changed, err := db.UpdateIssue(ctx, owner.ID, id, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: &IssueIgnoreCondition{Count: &five, Window: &window}}})
+	if err != nil || changed.Ignore == nil || changed.Ignore.Remaining == nil || *changed.Ignore.Remaining != 5 {
+		t.Fatalf("changed rolling policy=%+v err=%v", changed.Ignore, err)
+	}
+	if err := db.pool.QueryRow(ctx, "SELECT count(*) FROM issue_ignore_count_receipts WHERE issue_id=$1::bigint", id).Scan(&receipts); err != nil || receipts != 0 {
+		t.Fatalf("changed policy retained prior progress rows=%d err=%v", receipts, err)
+	}
+	changed, err = db.UpdateIssue(ctx, owner.ID, id, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: condition}})
+	if err != nil || changed.Ignore == nil || changed.Ignore.Remaining == nil || *changed.Ignore.Remaining != 3 {
+		t.Fatalf("new rolling policy baseline=%+v err=%v", changed.Ignore, err)
+	}
+	for _, eventID := range []string{"00000000000000000000000000000004", "00000000000000000000000000000005"} {
+		if _, fresh, err := db.Ingest(ctx, project.ID, triageEvent(t, eventID, time.Now())); err != nil || !fresh {
+			t.Fatalf("capture %s fresh=%v err=%v", eventID, fresh, err)
+		}
+	}
+	current = triageIssue(t, ctx, db, owner.ID, id)
+	if current.Status != "ignored" || current.Ignore == nil || current.Ignore.Remaining == nil || *current.Ignore.Remaining != 1 {
+		t.Fatalf("capture before threshold issue=%+v", current)
+	}
+	lastID := "00000000000000000000000000000006"
+	if _, fresh, err := db.Ingest(ctx, project.ID, triageEvent(t, lastID, time.Now())); err != nil || !fresh {
+		t.Fatalf("threshold capture fresh=%v err=%v", fresh, err)
+	}
+	current = triageIssue(t, ctx, db, owner.ID, id)
+	if current.Status != "unresolved" || current.Ignore != nil {
+		t.Fatalf("window threshold did not unignore issue: %+v", current)
+	}
+	expiries := ignoreExpiries(t, ctx, db, owner.ID, id)
+	if len(expiries) != 1 {
+		t.Fatalf("rolling threshold activity count=%d", len(expiries))
+	}
+	var receipt struct {
+		Reason  string      `json:"reason"`
+		EventID string      `json:"eventID"`
+		Ignore  IssueIgnore `json:"ignore"`
+	}
+	if err := json.Unmarshal(expiries[0].Data, &receipt); err != nil || receipt.Reason != "count" || receipt.EventID != lastID || receipt.Ignore.Remaining == nil || *receipt.Ignore.Remaining != 0 || receipt.Ignore.Window == nil || *receipt.Ignore.Window != window {
+		t.Fatalf("rolling threshold receipt=%s err=%v", expiries[0].Data, err)
+	}
+	if err := db.pool.QueryRow(ctx, "SELECT count(*) FROM issue_ignore_count_receipts WHERE issue_id=$1::bigint", id).Scan(&receipts); err != nil || receipts != 0 {
+		t.Fatalf("unignored issue retained rolling progress rows=%d err=%v", receipts, err)
+	}
+}
+
+func TestIssueIgnoreRollingWindowIncludesLowerBound(t *testing.T) {
+	ctx, db, owner, _, project := telemetryStore(t)
+	id := triageCapture(t, ctx, db, project)
+	count, window := int32(1), int32(10)
+	if _, err := db.UpdateIssue(ctx, owner.ID, id, IssueUpdate{Status: "ignored", Ignore: &IssueIgnoreChange{Condition: &IssueIgnoreCondition{Count: &count, Window: &window}}}); err != nil {
+		t.Fatal(err)
+	}
+
+	// Fix the receipt instant so this occurrence is exactly at the inclusive
+	// lower edge of the policy window.
+	receiptAt := time.Date(2025, 1, 2, 3, 4, 0, 0, time.UTC)
+	if _, err := db.pool.Exec(ctx, `INSERT INTO issue_ignore_count_receipts(issue_id,received_at)
+	 VALUES($1::bigint,$2::timestamptz-interval '10 minutes')`, id, receiptAt); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := db.pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	var lockedID string
+	if err := tx.QueryRow(ctx, "SELECT id::text FROM issues WHERE id=$1::bigint FOR UPDATE", id).Scan(&lockedID); err != nil {
+		t.Fatal(err)
+	}
+	expired, err := expireLockedIssueIgnore(ctx, tx, id, 0, "", &receiptAt)
+	if err != nil || !expired {
+		t.Fatalf("inclusive lower-bound receipt did not satisfy count: expired=%v err=%v", expired, err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	issue := triageIssue(t, ctx, db, owner.ID, id)
+	if issue.Status != "unresolved" || issue.Ignore != nil {
+		t.Fatalf("lower-bound count left mute active: %+v", issue)
+	}
+	activities := ignoreExpiries(t, ctx, db, owner.ID, id)
+	var result struct {
+		Reason string      `json:"reason"`
+		Ignore IssueIgnore `json:"ignore"`
+	}
+	if len(activities) != 1 || json.Unmarshal(activities[0].Data, &result) != nil || result.Reason != "count" || result.Ignore.Remaining == nil || *result.Ignore.Remaining != 0 {
+		t.Fatalf("lower-bound expiration activity=%+v", activities)
+	}
+}
+
 func TestIssueIgnoreDurationCatchUpWorkerORAndAtomicValidation(t *testing.T) {
 	ctx, db, owner, _, project := telemetryStore(t)
 	id := triageCapture(t, ctx, db, project)
@@ -445,7 +588,7 @@ func TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts(t *testing.T) {
 	id := triageCapture(t, ctx, db, project)
 	// Reconstruct the pre-ignore schema in this isolated fixture by removing
 	// both mute tables and their migration receipts, then seed legacy values.
-	if _, err := db.pool.Exec(ctx, `DROP TABLE issue_ignore_users;DROP TABLE issue_ignores;DELETE FROM schema_migrations WHERE version IN (13,63)`); err != nil {
+	if _, err := db.pool.Exec(ctx, `DROP TABLE issue_ignore_count_receipts;DROP TABLE issue_ignore_users;DROP TABLE issue_ignores;DELETE FROM schema_migrations WHERE version IN (13,63,65)`); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := db.pool.Exec(ctx, `UPDATE issues SET status='ignored',assignee_id=$2::bigint,first_seen='2000-01-01Z',last_seen='2001-01-01Z' WHERE id=$1::bigint`, id, owner.ID); err != nil {
@@ -484,6 +627,10 @@ func TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts(t *testing.T) {
 	if err := reopened.pool.QueryRow(ctx, "SELECT applied_at FROM schema_migrations WHERE version=13").Scan(&receipt); err != nil {
 		t.Fatal(err)
 	}
+	var windowMigration time.Time
+	if err := reopened.pool.QueryRow(ctx, "SELECT applied_at FROM schema_migrations WHERE version=65").Scan(&windowMigration); err != nil {
+		t.Fatal(err)
+	}
 	reopened.Close()
 	second, err := Open(ctx, url)
 	if err != nil {
@@ -493,6 +640,10 @@ func TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts(t *testing.T) {
 	var again time.Time
 	if err := second.pool.QueryRow(ctx, "SELECT applied_at FROM schema_migrations WHERE version=13").Scan(&again); err != nil || !again.Equal(receipt) {
 		t.Fatalf("013 reapplied on reopen: %v %v", again, err)
+	}
+	var windowAgain time.Time
+	if err := second.pool.QueryRow(ctx, "SELECT applied_at FROM schema_migrations WHERE version=65").Scan(&windowAgain); err != nil || !windowAgain.Equal(windowMigration) {
+		t.Fatalf("065 reapplied on reopen: %v %v", windowAgain, err)
 	}
 	if err := second.pool.QueryRow(ctx, snapshot).Scan(&after); err != nil || before != after {
 		t.Fatalf("restart rewrote history: equal=%v err=%v", before == after, err)

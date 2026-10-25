@@ -29,6 +29,9 @@ func TestCompatibleIssueBulkChangeParsing(t *testing.T) {
 		{"all duration copies agree", `{"snoozeDuration":3,"ignoreDuration":3,"statusDetails":{"ignoreDuration":3,"ignoreCount":4}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: number(3), Count: number(4)}}}},
 		{"user count accepted", `{"status":"muted","ignoreUserCount":3}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Status: "muted", Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: number(3)}}}},
 		{"nested user count accepted", `{"statusDetails":{"ignoreUserCount":2}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: number(2)}}}},
+		{"rolling window accepted", `{"ignoreCount":2,"ignoreWindow":60}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: number(2), Window: number(60)}}}},
+		{"nested rolling window accepted", `{"statusDetails":{"ignoreCount":2,"ignoreWindow":10080}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: number(2), Window: number(10080)}}}},
+		{"rolling window copies agree", `{"ignoreCount":2,"ignoreWindow":60,"statusDetails":{"ignoreWindow":60}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: number(2), Window: number(60)}}}},
 		{"user count copies agree", `{"ignoreUserCount":3,"statusDetails":{"ignoreUserCount":3,"ignoreCount":4}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: number(4), UserCount: number(3)}}}},
 		{"zero disables user count", `{"ignoreUserCount":0,"ignoreCount":2}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Count: number(2)}}}},
 		{"explicit zero copies agree", `{"snoozeDuration":0,"ignoreDuration":0,"statusDetails":{"ignoreDuration":0}}`, store.CompatibleIssueBulkChange{Change: store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy}}}},
@@ -55,7 +58,7 @@ func TestCompatibleIssueBulkChangeParsing(t *testing.T) {
 		`{"snoozeDuration":"1"}`, `{"snoozeDuration":true}`, `{"snoozeDuration":[]}`,
 		`{"snoozeDuration":0,"ignoreDuration":1}`, `{"snoozeDuration":1,"ignoreDuration":0}`,
 		`{"snoozeDuration":0,"statusDetails":{"ignoreDuration":1}}`, `{"snoozeDuration":1,"statusDetails":{"ignoreDuration":0}}`,
-		`{"ignoreUserCount":1,"statusDetails":{"ignoreUserCount":2}}`, `{"ignoreUserCount":null}`, `{"ignoreUserCount":1.0}`, `{"statusDetails":{"ignoreUserWindow":1}}`,
+		`{"ignoreUserCount":1,"statusDetails":{"ignoreUserCount":2}}`, `{"ignoreUserCount":null}`, `{"ignoreUserCount":1.0}`, `{"ignoreWindow":10081,"ignoreCount":2}`, `{"ignoreWindow":30}`, `{"ignoreWindow":60,"ignoreCount":2,"statusDetails":{"ignoreWindow":30}}`, `{"ignoreWindow":null,"ignoreCount":2}`, `{"statusDetails":{"ignoreUserWindow":1}}`,
 		`{"snoozeDuration":0,"ignoreDuration":null}`, `{"snoozeDuration":0,"statusDetails":{"inRelease":null}}`,
 		`{"merge":2}`, `{"merge":-1}`, `{"merge":1.0}`, `{"merge":"true"}`, `{"merge":[]}`, `{"merge":{}}`,
 	} {

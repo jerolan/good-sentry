@@ -154,7 +154,11 @@ func (s *Store) Ingest(ctx context.Context, projectID string, ev event.Event, pa
 					return "", false, err
 				}
 			}
-			if _, err = expireLockedIssueIgnore(ctx, tx, issueID.(string), 1, ev.ID); err != nil {
+			countReceiptAt, err := recordIssueIgnoreCountReceipt(ctx, tx, issueID.(string))
+			if err != nil {
+				return "", false, err
+			}
+			if _, err = expireLockedIssueIgnore(ctx, tx, issueID.(string), 1, ev.ID, countReceiptAt); err != nil {
 				return "", false, err
 			}
 		}

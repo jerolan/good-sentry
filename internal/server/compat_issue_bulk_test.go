@@ -81,9 +81,9 @@ func TestCompatibleIssueBulkHTTPContract(t *testing.T) {
 		if string(nativeIssue(t)["status"]) != `"resolved"` {
 			t.Fatal("CLI-shaped request did not mutate native state")
 		}
-		acknowledge(t, organization, resolutionJSON(t, map[string]any{"status": "muted", "assignedTo": f.owner.Email, "snoozeDuration": 0, "ignoreCount": 2, "ignoreUserCount": 1}), map[string]any{
+		acknowledge(t, organization, resolutionJSON(t, map[string]any{"status": "muted", "assignedTo": f.owner.Email, "snoozeDuration": 0, "ignoreCount": 2, "ignoreUserCount": 1, "ignoreWindow": 60}), map[string]any{
 			"status": "ignored", "assignedTo": map[string]any{"type": "user", "id": f.owner.ID, "name": f.owner.Name, "email": f.owner.Email},
-			"statusDetails": map[string]any{"ignoreDuration": 0, "ignoreCount": 2, "ignoreUserCount": 1},
+			"statusDetails": map[string]any{"ignoreDuration": 0, "ignoreCount": 2, "ignoreUserCount": 1, "ignoreWindow": 60},
 		})
 		if string(nativeIssue(t)["status"]) != `"ignored"` || string(nativeIssue(t)["assignedTo"]) == "null" {
 			t.Fatal("acknowledged actor or ignored state is absent from native detail")
@@ -92,10 +92,11 @@ func TestCompatibleIssueBulkHTTPContract(t *testing.T) {
 			Ignore *struct {
 				UserCount     *int32
 				UserRemaining *int64
+				Window        *int32
 			}
 		}
 		decode(t, []byte(`{"ignore":`+string(nativeIssue(t)["ignore"])+`}`), &muted)
-		if muted.Ignore == nil || muted.Ignore.UserCount == nil || *muted.Ignore.UserCount != 1 || muted.Ignore.UserRemaining == nil || *muted.Ignore.UserRemaining != 1 {
+		if muted.Ignore == nil || muted.Ignore.UserCount == nil || *muted.Ignore.UserCount != 1 || muted.Ignore.UserRemaining == nil || *muted.Ignore.UserRemaining != 1 || muted.Ignore.Window == nil || *muted.Ignore.Window != 60 {
 			t.Fatalf("bulk mute is absent from native detail: %+v", muted.Ignore)
 		}
 		acknowledge(t, project, `{"assignedTo":null,"statusDetails":null}`, map[string]any{"assignedTo": nil, "statusDetails": map[string]any{}})

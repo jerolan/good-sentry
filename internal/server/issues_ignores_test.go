@@ -112,9 +112,9 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 	}
 	path := "/api/v1/issues/" + issues.Data[0].ID
 	type ignoreDTO struct {
-		Minutes, Count, UserCount *int32
-		Until                     *time.Time
-		Remaining, UserRemaining  *int64
+		Minutes, Count, UserCount, Window *int32
+		Until                             *time.Time
+		Remaining, UserRemaining          *int64
 	}
 	type issueDTO struct {
 		Status     string
@@ -140,12 +140,12 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 			if err := json.Unmarshal(condition, &values); err != nil {
 				t.Fatal(err)
 			}
-			for _, key := range []string{"minutes", "count", "userCount", "until", "remaining", "userRemaining"} {
+			for _, key := range []string{"minutes", "count", "userCount", "window", "until", "remaining", "userRemaining"} {
 				if _, present := values[key]; !present {
 					t.Fatalf("conditional ignore omitted nullable %s: %s", key, condition)
 				}
 			}
-			if len(values) != 6 {
+			if len(values) != 7 {
 				t.Fatalf("conditional ignore fields=%s", condition)
 			}
 			if item.Ignore.Until != nil {
@@ -213,6 +213,20 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 			}
 		}
 	})
+	t.Run("rolling count window boundaries", func(t *testing.T) {
+		item := patch(t, `{"status":"ignored","ignore":{"count":3,"window":60}}`)
+		if item.Ignore == nil || item.Ignore.Count == nil || *item.Ignore.Count != 3 || item.Ignore.Window == nil || *item.Ignore.Window != 60 || item.Ignore.Remaining == nil || *item.Ignore.Remaining != 3 {
+			t.Fatalf("rolling window response=%+v", item.Ignore)
+		}
+		for _, body := range []string{
+			`{"status":"ignored","ignore":{"window":1}}`,
+			`{"status":"ignored","ignore":{"count":1,"window":0}}`,
+			`{"status":"ignored","ignore":{"count":1,"window":10081}}`,
+			`{"status":"ignored","ignore":{"count":1,"window":2147483647}}`,
+		} {
+			request(t, client, "PATCH", path, body, csrf, 400)
+		}
+	})
 	t.Run("omission preserves and explicit null clears", func(t *testing.T) {
 		original := patch(t, `{"status":"ignored","ignore":{"minutes":3,"count":8}}`)
 		assigned := patch(t, fmt.Sprintf(`{"assignedTo":{"type":"user","id":%q}}`, owner.ID))
@@ -244,7 +258,6 @@ func TestIssueIgnoreHTTPContract(t *testing.T) {
 			`{"status":"ignored","ignore":true}`,
 			`{"status":"ignored","ignore":"forever"}`,
 			`{"status":"ignored","ignore":1}`,
-			`{"status":"ignored","ignore":{"count":1,"window":2}}`,
 			`{"status":"ignored","ignore":{"count":1,"count":2}}`,
 			`{"status":"ignored","ignore":{"minutes":1,"m\u0069nutes":2}}`,
 			`{"status":"ignored","ignore":{"count":1},"ignore":null}`,

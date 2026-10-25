@@ -84,7 +84,7 @@ func TestCompatibleIssueUpdateHTTPContract(t *testing.T) {
 		f.request(t, http.DefaultClient, "GET", "/api/0/projects/"+f.org.Slug+"/"+f.project.Slug+"/events/", "", bearer(writer.Token), 403)
 	})
 	t.Run("partial write projects real compatible detail", func(t *testing.T) {
-		body := resolutionJSON(t, map[string]any{"status": "muted", "assignedTo": f.owner.Email, "ignoreDuration": 5, "ignoreCount": 2, "ignoreUserCount": 1})
+		body := resolutionJSON(t, map[string]any{"status": "muted", "assignedTo": f.owner.Email, "ignoreDuration": 5, "ignoreCount": 2, "ignoreUserCount": 1, "ignoreWindow": 60})
 		var result struct {
 			ID, Status, Count, Permalink string
 			AssignedTo                   *struct{ Type, ID, Email string }
@@ -92,13 +92,14 @@ func TestCompatibleIssueUpdateHTTPContract(t *testing.T) {
 				IgnoreUntil     *string
 				IgnoreCount     *int32
 				IgnoreUserCount *int32
+				IgnoreWindow    *int32
 				UserRemaining   *int64
 			}
 			Stats           map[string]json.RawMessage
 			UserReportCount *int64
 		}
 		decode(f.request(t, http.DefaultClient, "PUT", global, body, bearer(writer.Token), 200), &result)
-		if result.ID != f.issueID || result.Status != "ignored" || result.Count != "1" || result.AssignedTo == nil || result.AssignedTo.Type != "user" || result.AssignedTo.ID != f.owner.ID || result.AssignedTo.Email != f.owner.Email || result.StatusDetails.IgnoreUntil == nil || result.StatusDetails.IgnoreCount == nil || *result.StatusDetails.IgnoreCount != 2 || result.StatusDetails.IgnoreUserCount == nil || *result.StatusDetails.IgnoreUserCount != 1 || result.StatusDetails.UserRemaining == nil || *result.StatusDetails.UserRemaining != 1 || result.Stats["24h"] == nil || result.UserReportCount == nil || result.Permalink != "https://public.example.test/good/?issue="+f.issueID+"&org="+f.org.Slug {
+		if result.ID != f.issueID || result.Status != "ignored" || result.Count != "1" || result.AssignedTo == nil || result.AssignedTo.Type != "user" || result.AssignedTo.ID != f.owner.ID || result.AssignedTo.Email != f.owner.Email || result.StatusDetails.IgnoreUntil == nil || result.StatusDetails.IgnoreCount == nil || *result.StatusDetails.IgnoreCount != 2 || result.StatusDetails.IgnoreUserCount == nil || *result.StatusDetails.IgnoreUserCount != 1 || result.StatusDetails.IgnoreWindow == nil || *result.StatusDetails.IgnoreWindow != 60 || result.StatusDetails.UserRemaining == nil || *result.StatusDetails.UserRemaining != 1 || result.Stats["24h"] == nil || result.UserReportCount == nil || result.Permalink != "https://public.example.test/good/?issue="+f.issueID+"&org="+f.org.Slug {
 			t.Fatalf("PUT must return actual compatible detail: %+v", result)
 		}
 		var native struct {

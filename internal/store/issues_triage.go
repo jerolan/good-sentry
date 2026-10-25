@@ -136,7 +136,7 @@ func (s *Store) applyIssueUpdate(ctx context.Context, tx pgx.Tx, userID, org str
 		return i, err
 	}
 	if i.Status == "ignored" {
-		expired, err := expireLockedIssueIgnore(ctx, tx, id, 0, "")
+		expired, err := expireLockedIssueIgnore(ctx, tx, id, 0, "", nil)
 		if err != nil {
 			return i, err
 		}
@@ -149,7 +149,7 @@ func (s *Store) applyIssueUpdate(ctx context.Context, tx pgx.Tx, userID, org str
 		if change.Ignore != nil {
 			wantedIgnore = change.Ignore.Condition
 		} else if i.Status == "ignored" && i.Ignore != nil {
-			wantedIgnore = &IssueIgnoreCondition{Minutes: i.Ignore.Minutes, Count: i.Ignore.Count, UserCount: i.Ignore.UserCount}
+			wantedIgnore = &IssueIgnoreCondition{Minutes: i.Ignore.Minutes, Count: i.Ignore.Count, UserCount: i.Ignore.UserCount, Window: i.Ignore.Window}
 		}
 	}
 	ignoreChanged := change.Status == "ignored" && !sameIssueIgnore(i.Ignore, wantedIgnore)

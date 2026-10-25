@@ -61,7 +61,7 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 	raw, policyPresent := fields["statusDetails"]
 	if policyPresent && !compatibleIssueNull(raw) {
 		var err error
-		details, err = issueObject(raw, "inRelease", "inNextRelease", "ignoreDuration", "ignoreCount", "ignoreUserCount")
+		details, err = issueObject(raw, "inRelease", "inNextRelease", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow")
 		if err != nil {
 			return change, err
 		}
@@ -71,10 +71,12 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 	_, topMinutes := fields["ignoreDuration"]
 	_, topCount := fields["ignoreCount"]
 	_, topUsers := fields["ignoreUserCount"]
+	_, topWindow := fields["ignoreWindow"]
 	_, nestedMinutes := details["ignoreDuration"]
 	_, nestedCount := details["ignoreCount"]
 	_, nestedUsers := details["ignoreUserCount"]
-	mutePresent := topMinutes || topCount || topUsers || nestedMinutes || nestedCount || nestedUsers
+	_, nestedWindow := details["ignoreWindow"]
+	mutePresent := topMinutes || topCount || topUsers || topWindow || nestedMinutes || nestedCount || nestedUsers || nestedWindow
 	if (releasePresent || nextPresent) && mutePresent {
 		return change, errors.New("Resolution selectors and ignore conditions cannot be combined")
 	}
@@ -91,7 +93,17 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 		if err != nil {
 			return change, err
 		}
-		change.Policy = &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: minutes, Count: count, UserCount: users}
+		window, err := compatibleIssueBound(fields, details, "ignoreWindow")
+		if err != nil {
+			return change, err
+		}
+		if window != nil && *window > 10080 {
+			return change, errors.New("ignoreWindow must be between 0 and 10080 minutes")
+		}
+		if window != nil && count == nil {
+			return change, errors.New("ignoreWindow requires a positive ignoreCount")
+		}
+		change.Policy = &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: minutes, Count: count, UserCount: users, Window: window}
 		return change, nil
 	}
 	if !policyPresent {

@@ -29,6 +29,7 @@ const mute = () => page.getByRole('region', { name: 'Mute notifications', exact:
 const minutes = () => mute().getByLabel('Minutes (optional)', { exact: true });
 const count = () => mute().getByLabel('Additional errors (optional)', { exact: true });
 const userCount = () => mute().getByLabel('Additional users (optional)', { exact: true });
+const window = () => mute().getByLabel('Count window in minutes (optional)', { exact: true });
 const comments = () => page.getByRole('region', { name: 'Comments', exact: true });
 const activity = () => page.getByRole('region', { name: 'Activity', exact: true });
 page.on('pageerror', error => pageErrors.push(error.message));
@@ -59,7 +60,7 @@ async function apply() {
   const pending = patchResponse(); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
   const response = await pending; assert.equal(response.status(), 200); await visible(page.getByText('Mute updated.', { exact: true })); return response.json();
 }
-async function inputs(expectedMinutes, expectedCount, expectedUsers = '') { assert.equal(await minutes().inputValue(), expectedMinutes); assert.equal(await count().inputValue(), expectedCount); assert.equal(await userCount().inputValue(), expectedUsers); }
+async function inputs(expectedMinutes, expectedCount, expectedUsers = '', expectedWindow = '') { assert.equal(await minutes().inputValue(), expectedMinutes); assert.equal(await count().inputValue(), expectedCount); assert.equal(await userCount().inputValue(), expectedUsers); assert.equal(await window().inputValue(), expectedWindow); }
 async function capture(name, anchor = mute()) {
   for (const width of [320, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -102,13 +103,15 @@ try {
   await visible(mute().getByRole('alert').filter({ hasText: 'Enter minutes, an additional error count, additional users, or any combination.' }));
   await count().fill('2147483648'); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
   await visible(mute().getByRole('alert').filter({ hasText: 'Use whole numbers from 1 to 2,147,483,647' })); await inputs('', '2147483648');
+  await count().fill(''); await window().fill('10081'); await mute().getByRole('button', { name: 'Apply mute', exact: true }).click();
+  await visible(mute().getByRole('alert').filter({ hasText: 'Use a whole count window from 1 to 10,080 minutes.' })); await inputs('', '', '', '10081');
   await capture('client-validation-draft');
   checks.push('Empty/overflow conditions show editable errors, preserve input and safely render the owned capture');
 
   const commentDraft = `Mute workflow unsent draft ${run}`; await comments().getByLabel('Add a comment', { exact: true }).fill(commentDraft);
-  await minutes().fill('5'); await count().fill('3'); const combined = await apply();
-  assert.equal(combined.status, 'ignored'); assert.equal(combined.ignore.minutes, 5); assert.equal(combined.ignore.count, 3);
-  await visible(mute().getByText('Muted for 5 minutes or 3 additional errors.', { exact: true }));
+  await window().fill(''); await minutes().fill('5'); await count().fill('3'); await window().fill('60'); const combined = await apply();
+  assert.equal(combined.status, 'ignored'); assert.equal(combined.ignore.minutes, 5); assert.equal(combined.ignore.count, 3); assert.equal(combined.ignore.window, 60);
+  await visible(mute().getByText('Muted for 5 minutes or 3 additional errors within any 60 minutes.', { exact: true }));
   await visible(mute().getByText('3 additional errors remaining.', { exact: true }));
   assert.equal(await mute().locator('time').getAttribute('datetime'), combined.ignore.until);
   await visible(mute().getByText(`UTC: ${combined.ignore.until}`, { exact: true }));
@@ -120,7 +123,7 @@ try {
   await assignment.getByRole('button', { name: 'Search assignees', exact: true }).click();
   const assign = await visible(assignment.getByRole('button', { name: /^Assign to person / }));
   const assigning = patchResponse(); await assign.click(); assert.equal((await assigning).status(), 200);
-  await visible(page.getByText('Assignment updated.', { exact: true })); await inputs('6', '9');
+  await visible(page.getByText('Assignment updated.', { exact: true })); await inputs('6', '9', '', '60');
   assert.equal(await comments().getByLabel('Add a comment', { exact: true }).inputValue(), commentDraft);
   assert.equal((await api()).issue.ignore.until, combined.ignore.until);
   checks.push('Combined OR conditions show actual local/UTC deadline and remaining; retry and assignment preserve current policy, mute drafts and comment draft');
@@ -128,7 +131,7 @@ try {
   expected400 = true; const rejected = await heldPatch(true);
   await minutes().fill('7'); await count().fill('11');
   assert.equal((await rejected.release()).status(), 400);
-  await visible(mute().getByRole('alert').filter({ hasText: /\S/ })); await inputs('7', '11');
+  await visible(mute().getByRole('alert').filter({ hasText: /\S/ })); await inputs('7', '11', '', '60');
   assert.equal(await minutes().isEnabled(), true); assert.equal(await count().isEnabled(), true);
   assert.equal((await api()).issue.ignore.until, combined.ignore.until);
   await capture('real400-newer-draft'); expected400 = false;
@@ -136,7 +139,7 @@ try {
 
   await minutes().fill(''); await count().fill('2'); const held = await heldPatch();
   await count().fill('99'); assert.equal((await held.release()).status(), 200);
-  await visible(mute().getByText('Muted for 2 additional errors.', { exact: true })); await inputs('', '99');
+  await visible(mute().getByText('Muted for 2 additional errors within any 60 minutes.', { exact: true })); await inputs('', '99', '', '60');
   assert.equal(await comments().getByLabel('Add a comment', { exact: true }).inputValue(), commentDraft);
   await capture('successful-pending-draft');
   await captureError(); await until(() => api(), detail => detail.issue.ignore?.remaining === 1, 'A new accepted capture advances remaining');
@@ -150,10 +153,10 @@ try {
   await visible(ended.getByText(/Additional error count reached · Previous condition: 2 additional errors/));
   assert.equal(await page.getByText('Regressed', { exact: true }).count(), 0);
   await capture('automatic-count-activity', activity());
-  checks.push('Newer input survives an actual successful held request; real captures continue, remaining updates and automatic System activity explains count unmute without a regression badge');
+  checks.push('The rolling window remains in the editable draft, survives a held request, advances on server captures and appears in automatic count-expiry activity');
 
   const firstUser = `new-user-a-${run}`, lastUser = `new-user-b-${run}`;
-  await minutes().fill(''); await count().fill(''); await userCount().fill('2');
+  await minutes().fill(''); await count().fill(''); await userCount().fill('2'); await window().fill('');
   const userMute = await apply(); assert.equal(userMute.ignore.userCount, 2); assert.equal(userMute.ignore.userRemaining, 2);
   await visible(mute().getByText('Muted for 2 additional users.', { exact: true }));
   await visible(mute().getByText('2 additional users remaining.', { exact: true }));

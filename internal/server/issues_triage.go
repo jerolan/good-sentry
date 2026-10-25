@@ -97,16 +97,16 @@ func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
 		}
 		change.Ignore = &store.IssueIgnoreChange{}
 		if !bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
-			condition, err := issueObject(raw, "minutes", "count", "userCount")
+			condition, err := issueObject(raw, "minutes", "count", "userCount", "window")
 			if err != nil || len(condition) == 0 {
-				failure(w, 400, "Ignore must contain minutes, count or userCount")
+				failure(w, 400, "Ignore must contain minutes, count, userCount or window")
 				return
 			}
 			change.Ignore.Condition = &store.IssueIgnoreCondition{}
 			for name, value := range condition {
 				number, err := strconv.ParseInt(string(bytes.TrimSpace(value)), 10, 32)
 				if err != nil || number <= 0 {
-					failure(w, 400, "Ignore minutes, count and userCount must be positive 32-bit JSON integers")
+					failure(w, 400, "Ignore conditions must be positive 32-bit JSON integers")
 					return
 				}
 				n := int32(number)
@@ -117,7 +117,17 @@ func (s *Server) triage(w http.ResponseWriter, r *http.Request) {
 					change.Ignore.Condition.Count = &n
 				case "userCount":
 					change.Ignore.Condition.UserCount = &n
+				case "window":
+					if n > 10080 {
+						failure(w, 400, "Ignore window must be between 1 and 10080 minutes")
+						return
+					}
+					change.Ignore.Condition.Window = &n
 				}
+			}
+			if change.Ignore.Condition.Window != nil && change.Ignore.Condition.Count == nil {
+				failure(w, 400, "Ignore window requires a positive count")
+				return
 			}
 		}
 	}
