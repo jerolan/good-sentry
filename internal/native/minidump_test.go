@@ -17,11 +17,18 @@ import (
 )
 
 func buildAMD64Minidump() []byte {
+	return buildAMD64MinidumpWithContext(1232, false)
+}
+
+func buildAMD64MinidumpWithContext(contextSize int, xstate bool) []byte {
 	const (
 		moduleBase = uint64(0x0000000140000000)
 		stackBase  = uint64(0x0000000000200000)
 	)
-	context := make([]byte, 1232)
+	context := make([]byte, contextSize)
+	if xstate {
+		binary.LittleEndian.PutUint32(context[48:], 0x0010005f)
+	}
 	binary.LittleEndian.PutUint64(context[152:], stackBase)
 	binary.LittleEndian.PutUint64(context[160:], stackBase)
 	binary.LittleEndian.PutUint64(context[248:], moduleBase+0x1010)
@@ -129,6 +136,40 @@ func TestParseMinidumpRejectsArchitectureContextMismatches(t *testing.T) {
 				return
 			}
 			t.Fatal("minidump has no SystemInfo stream")
+		})
+	}
+}
+
+func TestParseAMD64MinidumpXStateExtension(t *testing.T) {
+	for _, extensionSize := range []int{144, 16384} {
+		t.Run(fmt.Sprintf("extension_%d", extensionSize), func(t *testing.T) {
+			data := buildAMD64MinidumpWithContext(1232+extensionSize, true)
+			crash, err := ParseMinidump(data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if crash.Arch != "amd64" || crash.RIP != 0x0000000140001010 || len(crash.Frames) < 2 || crash.Frames[1].Instruction != 0x0000000140001050 {
+				t.Fatalf("parsed extended AMD64 context: %+v", crash)
+			}
+		})
+	}
+}
+
+func TestParseAMD64MinidumpRejectsInvalidXStateExtensions(t *testing.T) {
+	tests := []struct {
+		name       string
+		extension  int
+		withXState bool
+	}{
+		{name: "extension without XSTATE flag", extension: 128},
+		{name: "extension exceeds bound", extension: 16385, withXState: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			data := buildAMD64MinidumpWithContext(1232+test.extension, test.withXState)
+			if _, err := ParseMinidump(data); err == nil {
+				t.Fatalf("accepted AMD64 XSTATE extension of %d bytes with flag=%v", test.extension, test.withXState)
+			}
 		})
 	}
 }
