@@ -121,7 +121,7 @@ func TestCompatibleIssueChangeRejectsAmbiguousInput(t *testing.T) {
 		`{"statusDetails":{"inRelease":".."}}`, `{"statusDetails":{"inRelease":"v\u0000x"}}`,
 	} {
 		t.Run(body, func(t *testing.T) {
-		fields, err := issueObject([]byte(body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow")
+			fields, err := issueObject([]byte(body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow")
 			if err == nil {
 				_, err = parseCompatibleIssueChange(fields)
 			}
