@@ -47,8 +47,16 @@ type project struct {
 }
 
 type issue struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
+	ID     string     `json:"id"`
+	Title  string     `json:"title"`
+	Status string     `json:"status"`
+	Ignore *issueMute `json:"ignore"`
+}
+
+type issueMute struct {
+	UserCount     *int32 `json:"userCount"`
+	UserWindow    *int32 `json:"userWindow"`
+	UserRemaining *int64 `json:"userRemaining"`
 }
 
 type issueDetail struct {
@@ -168,6 +176,10 @@ func run() error {
 		return err
 	}
 	fmt.Printf("PASS: SDK log %q retained trace %s and string/integer/boolean/double attributes\n", logMessage, transaction.TraceID.String())
+	if err := client.verifyUserWindowMute(ctx, orgPath, created.ID, runID); err != nil {
+		return err
+	}
+	fmt.Printf("PASS: official Sentry Go SDK captures exhausted a 60-minute additional-user mute with repeated users and anonymous events handled\n")
 	return nil
 }
 
@@ -211,6 +223,148 @@ func (c *apiClient) verifyException(ctx context.Context, orgPath, eventID string
 		}
 	}
 	return fmt.Errorf("captured event %s was not visible through the authenticated issue API", eventID)
+}
+
+func (c *apiClient) verifyUserWindowMute(ctx context.Context, orgPath, projectID, runID string) error {
+	message := "GoodSentry SDK user-window acceptance " + runID
+	fingerprint := []string{"goodsentry-sdk-user-window-" + runID}
+	capture := func(userID string) (string, error) {
+		sentry.ConfigureScope(func(scope *sentry.Scope) {
+			scope.SetFingerprint(fingerprint)
+			scope.SetUser(sentry.User{ID: userID})
+		})
+		eventID := sentry.CaptureException(errors.New(message))
+		if eventID == nil {
+			return "", errors.New("official Sentry SDK dropped a user-window event")
+		}
+		if !sentry.Flush(10 * time.Second) {
+			return "", errors.New("official Sentry SDK failed to flush a user-window event")
+		}
+		return string(*eventID), nil
+	}
+
+	baselineUser := "baseline-" + runID
+	if _, err := capture(baselineUser); err != nil {
+		return err
+	}
+	var listed struct {
+		Data []issue `json:"data"`
+	}
+	listPath := orgPath + "/issues?" + url.Values{
+		"project": []string{projectID},
+		"query":   []string{message},
+	}.Encode()
+	issueID := ""
+	for attempt := 0; attempt < 25; attempt++ {
+		if err := c.json(ctx, http.MethodGet, listPath, nil, http.StatusOK, &listed); err != nil {
+			return err
+		}
+		if len(listed.Data) == 1 {
+			issueID = listed.Data[0].ID
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(200 * time.Millisecond):
+		}
+	}
+	if issueID == "" {
+		return errors.New("official SDK user-window capture did not create one issue")
+	}
+	issuePath := "/api/v1/issues/" + url.PathEscape(issueID)
+	var muted issue
+	if err := c.json(ctx, http.MethodPatch, issuePath, map[string]any{
+		"status": "ignored",
+		"ignore": map[string]int{"userCount": 2, "userWindow": 60},
+	}, http.StatusOK, &muted); err != nil {
+		return err
+	}
+	assertMute := func(wantStatus string, wantRemaining int64) error {
+		var detail issueDetail
+		if err := c.json(ctx, http.MethodGet, issuePath, nil, http.StatusOK, &detail); err != nil {
+			return err
+		}
+		if detail.Issue.Status != wantStatus {
+			return fmt.Errorf("user-window issue status=%q, want %q", detail.Issue.Status, wantStatus)
+		}
+		if wantStatus != "ignored" {
+			if detail.Issue.Ignore != nil {
+				return errors.New("user-window mute remained active after its threshold")
+			}
+			return nil
+		}
+		if detail.Issue.Ignore == nil || detail.Issue.Ignore.UserCount == nil || *detail.Issue.Ignore.UserCount != 2 || detail.Issue.Ignore.UserWindow == nil || *detail.Issue.Ignore.UserWindow != 60 || detail.Issue.Ignore.UserRemaining == nil || *detail.Issue.Ignore.UserRemaining != wantRemaining {
+			return fmt.Errorf("official SDK user-window progress=%+v, want remaining %d", detail.Issue.Ignore, wantRemaining)
+		}
+		return nil
+	}
+	if muted.Ignore == nil || muted.Ignore.UserWindow == nil || *muted.Ignore.UserWindow != 60 || muted.Ignore.UserRemaining == nil || *muted.Ignore.UserRemaining != 2 {
+		return fmt.Errorf("native mute response omitted rolling user condition: %+v", muted.Ignore)
+	}
+
+	if _, err := capture(baselineUser); err != nil {
+		return err
+	}
+	if err := assertMute("ignored", 2); err != nil {
+		return err
+	}
+	firstUser := "first-" + runID
+	if _, err := capture(firstUser); err != nil {
+		return err
+	}
+	if err := assertMute("ignored", 1); err != nil {
+		return err
+	}
+	var samePolicy issue
+	if err := c.json(ctx, http.MethodPatch, issuePath, map[string]any{
+		"status": "ignored",
+		"ignore": map[string]int{"userCount": 2, "userWindow": 60},
+	}, http.StatusOK, &samePolicy); err != nil {
+		return err
+	}
+	if samePolicy.Ignore == nil || samePolicy.Ignore.UserRemaining == nil || *samePolicy.Ignore.UserRemaining != 1 {
+		return fmt.Errorf("same user-window policy reset SDK progress: %+v", samePolicy.Ignore)
+	}
+	if _, err := capture(firstUser); err != nil {
+		return err
+	}
+	if _, err := capture(""); err != nil {
+		return err
+	}
+	if err := assertMute("ignored", 1); err != nil {
+		return err
+	}
+	lastEventID, err := capture("last-" + runID)
+	if err != nil {
+		return err
+	}
+	if err := assertMute("unresolved", 0); err != nil {
+		return err
+	}
+	var activity struct {
+		Data []struct {
+			Type string `json:"type"`
+			Data struct {
+				Reason  string     `json:"reason"`
+				EventID string     `json:"eventID"`
+				Ignore  *issueMute `json:"ignore"`
+			} `json:"data"`
+		} `json:"data"`
+	}
+	if err := c.json(ctx, http.MethodGet, issuePath+"/activity", nil, http.StatusOK, &activity); err != nil {
+		return err
+	}
+	for _, item := range activity.Data {
+		if item.Type != "unignored" {
+			continue
+		}
+		if item.Data.Reason != "user_count" || item.Data.EventID != lastEventID || item.Data.Ignore == nil || item.Data.Ignore.UserRemaining == nil || *item.Data.Ignore.UserRemaining != 0 {
+			return fmt.Errorf("SDK user-window expiry activity=%+v", item.Data)
+		}
+		return nil
+	}
+	return errors.New("official SDK user-window threshold created no unignore activity")
 }
 
 type transactionReference struct {
