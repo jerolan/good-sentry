@@ -103,6 +103,10 @@ func TestPasswordResetEnqueueDeliveryConsumptionAndRevocation(t *testing.T) {
 	if _, err := db.CreateAPIToken(ctx, owner.ID, owner.AuthGeneration, org.Slug, APITokenInput{Name: "Reset old", Scopes: []string{"project:read"}, ExpiresInDays: 1}, tokenHash, prefix); err != nil {
 		t.Fatal(err)
 	}
+	personalTokenHash := strings.Repeat("e", 64)
+	if _, err := db.CreateUserAPIToken(ctx, owner.ID, owner.AuthGeneration, "Reset old personal token", UserTokenMask([]string{"org:read"}), personalTokenHash, []byte("sealed-reset-personal-token")); err != nil {
+		t.Fatal(err)
+	}
 	replacement := []byte("reset-replacement-hash")
 	if err := db.ResetPassword(ctx, hash, replacement); err != nil {
 		t.Fatal(err)
@@ -116,6 +120,9 @@ func TestPasswordResetEnqueueDeliveryConsumptionAndRevocation(t *testing.T) {
 	}
 	if _, err := db.AuthenticateAPIToken(ctx, tokenHash); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("reset token survived: %v", err)
+	}
+	if _, err := db.AuthenticateUserAPIToken(ctx, personalTokenHash); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("reset personal token survived: %v", err)
 	}
 	if err := db.ResetPassword(ctx, hash, []byte("replay")); !errors.Is(err, ErrInvalidResetToken) {
 		t.Fatalf("reset replay error=%v", err)

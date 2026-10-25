@@ -98,6 +98,9 @@ func changePasswordLocked(ctx context.Context, tx pgx.Tx, userID string, passwor
 	if _, err := tx.Exec(ctx, `UPDATE api_tokens SET revoked_at=$2 WHERE user_id=$1::bigint AND revoked_at IS NULL`, userID, changedAt); err != nil {
 		return err
 	}
+	if _, err := tx.Exec(ctx, `DELETE FROM user_api_tokens WHERE user_id=$1::bigint`, userID); err != nil {
+		return err
+	}
 	if _, err := tx.Exec(ctx, `DELETE FROM account_password_resets WHERE user_id=$1::bigint AND consumed_at IS NULL`, userID); err != nil {
 		return err
 	}

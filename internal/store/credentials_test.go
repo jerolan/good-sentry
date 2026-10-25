@@ -180,6 +180,10 @@ func TestPasswordChangeRevokesEveryOwnedCredentialAtomically(t *testing.T) {
 	_, secondHash := ownedToken("owner-second", secondOrg.Slug, owner.ID, owner.AuthGeneration)
 	memberToken, memberHash := ownedToken("member-owned", org.Slug, member.ID, member.AuthGeneration)
 	priorRevoked, priorHash := ownedToken("owner-prior-revoked", org.Slug, owner.ID, owner.AuthGeneration)
+	personalTokenHash := fmt.Sprintf("%064x", 91001)
+	if _, err := db.CreateUserAPIToken(ctx, owner.ID, owner.AuthGeneration, "Owner personal token", UserTokenMask([]string{"org:read"}), personalTokenHash, []byte("sealed-owner-personal-token")); err != nil {
+		t.Fatal(err)
+	}
 	if err := db.RevokeAPIToken(ctx, owner.ID, org.Slug, priorRevoked.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -220,6 +224,9 @@ func TestPasswordChangeRevokesEveryOwnedCredentialAtomically(t *testing.T) {
 		if _, err := db.AuthenticateAPIToken(ctx, hash); !errors.Is(err, ErrNotFound) {
 			t.Fatalf("owned token survived password change: %v", err)
 		}
+	}
+	if _, err := db.AuthenticateUserAPIToken(ctx, personalTokenHash); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("personal token survived password change: %v", err)
 	}
 	if grant, err := db.AuthenticateAPIToken(ctx, memberHash); err != nil || grant.User.ID != member.ID {
 		t.Fatalf("unrelated member credential changed: %+v err=%v", grant, err)
