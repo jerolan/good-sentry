@@ -17,7 +17,7 @@ func (s *Server) registerDebugFileRoutes(mux *routeMux) {
 	mux.Handle("GET "+root+"dsyms/{$}", s.compatible("project:releases", s.debugFiles))
 	mux.Handle("POST "+root+"dsyms/{$}", s.compatible("project:releases", s.uploadDebugFile))
 	mux.Handle("POST "+root+"difs/assemble/{$}", s.compatible("project:releases", s.assembleDebugFiles))
-	mux.Handle("POST /api/0/projects/{org}/{project}/reprocessing/{$}", s.compatible("project:releases", s.reprocessingDummy))
+	mux.Handle("POST /api/0/projects/{org}/{project}/reprocessing/{$}", s.compatible("project:releases", s.reprocessing))
 }
 
 func (s *Server) debugFiles(w http.ResponseWriter, r *http.Request) {
@@ -200,8 +200,13 @@ func (s *Server) assembleDebugFiles(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, results)
 }
 
-func (s *Server) reprocessingDummy(w http.ResponseWriter, r *http.Request) {
-	if _, valid := s.artifactAccess(w, r); !valid {
+func (s *Server) reprocessing(w http.ResponseWriter, r *http.Request) {
+	access, valid := s.artifactAccess(w, r)
+	if !valid {
+		return
+	}
+	if err := s.db.EnqueueNativeReprocessing(r.Context(), access, r.PathValue("project")); err != nil {
+		reportArtifact(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

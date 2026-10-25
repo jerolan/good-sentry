@@ -8,7 +8,7 @@ Authority: ../SPEC.md. The user approved the capability map and authorized speci
 4. Add issue filters and triage, comments, assignment and merge/unmerge as independently verified increments. Add releases and JavaScript source maps, then prove mapped production frames and modern CLI compatibility.
 5. Deliver transactions/spans and logs from ingestion through aggregates and UI. Verify percentiles from known durations and log/trace correlation. Add native OTLP log ingestion and retention.
 6. Deliver monitors and scheduler with durable checks, heartbeat expiry, TCP and transitions. Then add frequency/transition alerts and durable email/webhook delivery with retries.
-7. Complete management API parity, native debug-file/minidump symbolication including official Sentry Native SDK `event.minidump` envelope attachments, integrations, optional MCP, OAuth/OIDC and cold archival. Resolve each unknown against public contracts and runtime evidence before claiming support.
+7. Complete management API parity, native debug-file/minidump symbolication including official Sentry Native SDK `event.minidump` envelope attachments and durable project-scoped reprocessing of stored native frames, integrations, optional MCP, OAuth/OIDC and cold archival. Resolve each unknown against public contracts and runtime evidence before claiming support.
 8. Run the full SDK/browser/container acceptance matrix, retention/recovery/concurrency checks and measured memory workload. Finish documentation with supported versions, operating limits and reproducible commands. Audit every SPEC.md requirement before marking the goal complete.
 
 ## Cold span archive increment

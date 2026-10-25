@@ -117,32 +117,11 @@ func (s *Server) symbolizeCrash(ctx context.Context, projectID string, crash *na
 	if err != nil {
 		return err
 	}
-	symbols := native.SymbolSet{}
-	unwindTables := native.UnwindSet{}
+	files := make([]native.DebugSymbolFile, 0, len(symbolFiles))
 	for _, file := range symbolFiles {
-		debugKey := native.DebugKey(file.DebugID)
-		for _, object := range native.ParseDebugObjects(file.Name, file.Content) {
-			if object.DebugID != "" && debugKey != "" && object.DebugID != debugKey {
-				continue
-			}
-			if object.DebugID == "" {
-				symbols[object.Name] = append(symbols[object.Name], object.Functions...)
-			}
-			objectDebugKey := object.DebugID
-			if objectDebugKey == "" {
-				objectDebugKey = debugKey
-			}
-			if objectDebugKey != "" {
-				symbols[objectDebugKey] = append(symbols[objectDebugKey], object.Functions...)
-			}
-			if object.Unwind != nil {
-				unwindTables[object.Name] = append(unwindTables[object.Name], object.Unwind)
-				if objectDebugKey != "" {
-					unwindTables[objectDebugKey] = append(unwindTables[objectDebugKey], object.Unwind)
-				}
-			}
-		}
+		files = append(files, native.DebugSymbolFile{Name: file.Name, DebugID: file.DebugID, Content: file.Content})
 	}
+	symbols, unwindTables := native.BuildSymbolTables(files)
 	if frames := native.UnwindCFI(crash, unwindTables); len(frames) > len(crash.Frames) {
 		crash.Frames = frames
 	}

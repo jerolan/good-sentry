@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/sha1"
+	"database/sql"
 	"debug/dwarf"
 	"debug/elf"
 	"debug/macho"
@@ -22,7 +23,9 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
+	"goodsentry/internal/jobs"
 	"goodsentry/internal/store"
 	"goodsentry/internal/testfixture/nativepdb"
 	"goodsentry/internal/testfixture/nativesymcache"
@@ -144,6 +147,236 @@ func TestNativeMinidumpSymbolicationAndIngestion(t *testing.T) {
 	res.Body.Close()
 	if res.StatusCode != http.StatusForbidden {
 		t.Fatalf("invalid minidump DSN=%d", res.StatusCode)
+	}
+}
+
+func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	otherProject, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Other native project", "native")
+	if err != nil {
+		t.Fatal(err)
+	}
+	base := "/api/0/projects/" + f.org.Slug + "/"
+	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 CrashFunction\n1010 20 42 1\n")
+	uploadSymbol := func(projectSlug string) {
+		t.Helper()
+		var body bytes.Buffer
+		writer := multipart.NewWriter(&body)
+		part, err := writer.CreateFormFile("file", "test_app.sym")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := part.Write(symbol); err != nil {
+			t.Fatal(err)
+		}
+		for name, value := range map[string]string{
+			"type": "sym", "debug_id": "5A9832E5287241C1838ED98914E9B7FF1",
+			"cpu_name": "x86_64", "object_name": "test_app.pdb",
+		} {
+			if err := writer.WriteField(name, value); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := writer.Close(); err != nil {
+			t.Fatal(err)
+		}
+		req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good"+base+projectSlug+"/files/dsyms/", &body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		req.Header.Set("X-CSRF-Token", f.csrf)
+		res, err := f.client.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer res.Body.Close()
+		if res.StatusCode != http.StatusOK {
+			response, _ := io.ReadAll(res.Body)
+			t.Fatalf("debug symbol upload=%d body=%s", res.StatusCode, response)
+		}
+	}
+	uploadSymbol(otherProject.Slug)
+	wrongPDB := nativepdb.WithSourceLines(false).Data
+	wrongDigest := sha1.Sum(wrongPDB)
+	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, Role: "owner", AllProjects: true}
+	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "wrong.pdb", "pdb", "5A9832E5287241C1838ED98914E9B7FF2", "x86_64", "test_app.pdb", hex.EncodeToString(wrongDigest[:]), nil, nil, wrongPDB); err != nil {
+		t.Fatal(err)
+	}
+
+	dump, err := os.ReadFile("testdata/amd64-minidump.dmp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, contentType := minidumpForm(t, dump, map[string]string{"sentry[release]": "native@1", "sentry[environment]": "production", "crash_context": "keep-me"})
+	req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", contentType)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var accepted struct {
+		ID string `json:"id"`
+	}
+	decodeErr := json.NewDecoder(res.Body).Decode(&accepted)
+	res.Body.Close()
+	if res.StatusCode != http.StatusOK || decodeErr != nil || accepted.ID == "" {
+		t.Fatalf("minidump capture=%d id=%q err=%v", res.StatusCode, accepted.ID, decodeErr)
+	}
+
+	readReceipt := func() ([]byte, string, time.Time, string) {
+		t.Helper()
+		var data []byte
+		var issueID sql.NullString
+		var timestamp time.Time
+		var eventID string
+		if err := f.sql.QueryRow(f.ctx, `SELECT data,event_id,timestamp,issue_id::text FROM events WHERE project_id=$1::bigint AND event_id=$2`, f.project.ID, accepted.ID).Scan(&data, &eventID, &timestamp, &issueID); err != nil {
+			t.Fatal(err)
+		}
+		if !issueID.Valid {
+			t.Fatal("native event has no issue link")
+		}
+		return data, eventID, timestamp, issueID.String
+	}
+	before, beforeID, beforeTimestamp, beforeIssue := readReceipt()
+	var unrelatedBefore []byte
+	if err := f.sql.QueryRow(f.ctx, `SELECT data FROM events WHERE project_id=$1::bigint AND event_id='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'`, f.project.ID).Scan(&unrelatedBefore); err != nil {
+		t.Fatal(err)
+	}
+	var original struct {
+		Release     string `json:"release"`
+		Environment string `json:"environment"`
+		Extra       struct {
+			CrashContext string `json:"crash_context"`
+		} `json:"extra"`
+		Exception struct {
+			Values []struct {
+				Stacktrace struct {
+					Frames []struct {
+						Function string `json:"function"`
+					} `json:"frames"`
+				} `json:"stacktrace"`
+			} `json:"values"`
+		} `json:"exception"`
+	}
+	if err := json.Unmarshal(before, &original); err != nil {
+		t.Fatal(err)
+	}
+	if len(original.Exception.Values) != 1 || len(original.Exception.Values[0].Stacktrace.Frames) < 2 || original.Exception.Values[0].Stacktrace.Frames[0].Function != "" {
+		t.Fatalf("capture should retain unresolved native frames before symbol upload: %+v", original.Exception)
+	}
+
+	otherEvent, err := f.db.DebugSymbolFiles(f.ctx, otherProject.ID)
+	if err != nil || len(otherEvent) != 1 {
+		t.Fatalf("other project symbols missing: %d %v", len(otherEvent), err)
+	}
+	reprocessPath := base + f.project.Slug + "/reprocessing/"
+	if response := f.request(t, f.client, http.MethodPost, reprocessPath, "", http.Header{"X-CSRF-Token": {f.csrf}}, http.StatusOK); len(response) != 0 {
+		t.Fatalf("reprocessing response must be empty, got %q", response)
+	}
+	stop := jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour)
+	deadline := time.Now().Add(5 * time.Second)
+	completed := false
+	for time.Now().Before(deadline) {
+		var queued int
+		if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM project_native_reprocessing WHERE project_id=$1::bigint`, f.project.ID).Scan(&queued); err != nil {
+			stop()
+			t.Fatal(err)
+		}
+		if queued == 0 {
+			completed = true
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	stop()
+	if !completed {
+		t.Fatal("worker did not drain project job with foreign-only symbols")
+	}
+	afterWrongProject, _, _, _ := readReceipt()
+	if !bytes.Equal(before, afterWrongProject) {
+		t.Fatal("reprocessing borrowed symbols from another project")
+	}
+
+	uploadSymbol(f.project.Slug)
+	for range 2 {
+		if response := f.request(t, f.client, http.MethodPost, reprocessPath, "", http.Header{"X-CSRF-Token": {f.csrf}}, http.StatusOK); len(response) != 0 {
+			t.Fatalf("reprocessing response must be empty, got %q", response)
+		}
+	}
+	var queued int
+	var cursor, through int64
+	if err := f.sql.QueryRow(f.ctx, `SELECT count(*),min(cursor_event_id),max(through_event_id) FROM project_native_reprocessing WHERE project_id=$1::bigint`, f.project.ID).Scan(&queued, &cursor, &through); err != nil || queued != 1 || cursor != 0 {
+		t.Fatalf("repeated requests did not coalesce: rows=%d cursor=%d through=%d err=%v", queued, cursor, through, err)
+	}
+	stop = jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour)
+	deadline = time.Now().Add(5 * time.Second)
+	var updated []byte
+	for time.Now().Before(deadline) {
+		updated, _, _, _ = readReceipt()
+		var result struct {
+			Exception struct {
+				Values []struct {
+					Stacktrace struct {
+						Frames []struct {
+							Function string `json:"function"`
+							Filename string `json:"filename"`
+							Line     int    `json:"lineno"`
+						} `json:"frames"`
+					} `json:"stacktrace"`
+				} `json:"values"`
+			} `json:"exception"`
+		}
+		if json.Unmarshal(updated, &result) == nil && len(result.Exception.Values) > 0 && len(result.Exception.Values[0].Stacktrace.Frames) > 0 && result.Exception.Values[0].Stacktrace.Frames[0].Function == "CrashFunction" {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	stop()
+	var result struct {
+		Release     string `json:"release"`
+		Environment string `json:"environment"`
+		Extra       struct {
+			CrashContext string `json:"crash_context"`
+		} `json:"extra"`
+		Exception struct {
+			Values []struct {
+				Stacktrace struct {
+					Frames []struct {
+						Function string `json:"function"`
+						Filename string `json:"filename"`
+						Line     int    `json:"lineno"`
+					} `json:"frames"`
+				} `json:"stacktrace"`
+			} `json:"values"`
+		} `json:"exception"`
+	}
+	if err := json.Unmarshal(updated, &result); err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Exception.Values) != 1 || len(result.Exception.Values[0].Stacktrace.Frames) < 2 {
+		t.Fatalf("reprocessed stack: %+v", result.Exception)
+	}
+	frame := result.Exception.Values[0].Stacktrace.Frames[0]
+	if frame.Function != "CrashFunction" || frame.Filename != "C:\\src\\crash.cc" || frame.Line != 42 || result.Release != "native@1" || result.Environment != "production" || result.Extra.CrashContext != "keep-me" {
+		t.Fatalf("reprocessed native event: %+v", result)
+	}
+	_, afterID, afterTimestamp, afterIssue := readReceipt()
+	if beforeID != afterID || !beforeTimestamp.Equal(afterTimestamp) || beforeIssue != afterIssue || len(result.Exception.Values[0].Stacktrace.Frames) != len(original.Exception.Values[0].Stacktrace.Frames) {
+		t.Fatal("reprocessing changed event identity, timestamp, issue, or frame count")
+	}
+	var untouched []byte
+	if err := f.sql.QueryRow(f.ctx, `SELECT data FROM events WHERE project_id=$1::bigint AND event_id='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'`, f.project.ID).Scan(&untouched); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(untouched, unrelatedBefore) {
+		t.Fatal("reprocessing changed an unrelated event")
+	}
+	if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM project_native_reprocessing WHERE project_id=$1::bigint`, f.project.ID).Scan(&queued); err != nil || queued != 0 {
+		t.Fatalf("completed job remains queued: %d %v", queued, err)
 	}
 }
 

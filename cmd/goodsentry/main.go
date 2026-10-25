@@ -80,6 +80,8 @@ func run() error {
 	defer stopTransactionSpans()
 	stopIssueMaintenance := jobs.StartIssueMaintenance(ctx, db, time.Duration(cfg.IssueMaintenanceIntervalSeconds)*time.Second)
 	defer stopIssueMaintenance()
+	stopNativeReprocessing := jobs.StartNativeReprocessing(ctx, db, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	defer stopNativeReprocessing()
 	stopLogRetention := jobs.StartLogRetention(ctx, db, cfg.LogRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopLogRetention()
 	var stopTransactionRetention func()
