@@ -310,7 +310,9 @@ func TestIssueResolutionMigrationPreserves001Through013AndReopen(t *testing.T) {
 		t.Fatal(err)
 	}
 	resolutionStageRelease(t, ctx, db, owner, org, p, "prior-release")
-	if _, err = db.pool.Exec(ctx, "DROP TABLE issue_resolutions; DELETE FROM schema_migrations WHERE version=14"); err != nil {
+	// Rebuild from the pre-resolution schema, including the later migration
+	// whose columns depend on 014's issue_resolutions table.
+	if _, err = db.pool.Exec(ctx, "DROP TABLE issue_resolutions; DROP INDEX release_commits_identity; DELETE FROM schema_migrations WHERE version IN (14,67)"); err != nil {
 		t.Fatal(err)
 	}
 	const prior = `SELECT jsonb_build_object(
