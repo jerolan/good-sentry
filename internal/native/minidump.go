@@ -448,6 +448,7 @@ func ParseBreakpad(name string, data []byte) (string, []SymbolFunction) {
 	module := moduleKey(name)
 	files := map[int]string{}
 	var funcs []SymbolFunction
+	var symbolStarts []uint64
 	var current *SymbolFunction
 	for _, raw := range bytes.Split(data, []byte{'\n'}) {
 		line := strings.TrimSpace(string(raw))
@@ -485,12 +486,17 @@ func ParseBreakpad(name string, data []byte) (string, []SymbolFunction) {
 			}
 			var size uint64
 			var nameAt int
+			publicFallback := fields[0] == "PUBLIC"
 			if fields[0] == "FUNC" {
 				nameAt = fieldOffset + 3
 				if len(fields) <= nameAt {
 					continue
 				}
-				size, _ = strconv.ParseUint(fields[fieldOffset+1], 16, 64)
+				parsedSize, err := strconv.ParseUint(fields[fieldOffset+1], 16, 64)
+				if err != nil {
+					continue
+				}
+				size = parsedSize
 			} else {
 				nameAt = fieldOffset + 2
 				if len(fields) <= nameAt {
@@ -500,7 +506,8 @@ func ParseBreakpad(name string, data []byte) (string, []SymbolFunction) {
 			if size == 0 {
 				size = 1
 			}
-			funcs = append(funcs, SymbolFunction{Start: start, End: start + size, Name: strings.Join(fields[nameAt:], " "), Line: -1})
+			funcs = append(funcs, SymbolFunction{Start: start, End: start + size, Name: strings.Join(fields[nameAt:], " "), Line: -1, publicFallback: publicFallback})
+			symbolStarts = append(symbolStarts, start)
 			if fields[0] == "FUNC" {
 				current = &funcs[len(funcs)-1]
 			}
@@ -523,7 +530,25 @@ func ParseBreakpad(name string, data []byte) (string, []SymbolFunction) {
 			}
 		}
 	}
-	sort.Slice(funcs, func(i, j int) bool { return funcs[i].Start < funcs[j].Start })
+	sort.Slice(symbolStarts, func(i, j int) bool { return symbolStarts[i] < symbolStarts[j] })
+	uniqueStarts := symbolStarts[:0]
+	for _, start := range symbolStarts {
+		if len(uniqueStarts) == 0 || uniqueStarts[len(uniqueStarts)-1] != start {
+			uniqueStarts = append(uniqueStarts, start)
+		}
+	}
+	for i := range funcs {
+		if !funcs[i].publicFallback {
+			continue
+		}
+		nextStart := sort.Search(len(uniqueStarts), func(j int) bool { return uniqueStarts[j] > funcs[i].Start })
+		if nextStart < len(uniqueStarts) {
+			funcs[i].End = uniqueStarts[nextStart]
+		} else {
+			funcs[i].End = ^uint64(0)
+		}
+	}
+	sort.SliceStable(funcs, func(i, j int) bool { return funcs[i].Start < funcs[j].Start })
 	return module, funcs
 }
 

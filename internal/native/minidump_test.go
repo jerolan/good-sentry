@@ -103,7 +103,7 @@ func TestParseMinidumpAndBreakpadSymbols(t *testing.T) {
 }
 
 func TestParseBreakpadOptionalMultipleSymbolMarker(t *testing.T) {
-	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 PreviousFunction\n1010 20 42 1\nFUNC m 1030 20 0 Folded Function Name\n1030 20 17 1\nPUBLIC m 1050 0 Folded Public Name\n1050 1 18 1\nFUNC m nothex 20 0 Malformed Function\n1070 1 19 1\n")
+	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 PreviousFunction\n1010 20 42 1\nFUNC m 1030 20 0 Folded Function Name\n1030 20 17 1\nPUBLIC m 1050 0 Folded Public Name\n1050 1 18 1\nFUNC m 1060 nothex 0 Malformed Function\n1070 1 19 1\n")
 	_, functions := ParseBreakpad("test_app.pdb", symbol)
 	if len(functions) != 5 {
 		t.Fatalf("parsed %d symbol rows, want five valid FUNC/PUBLIC rows: %+v", len(functions), functions)
@@ -121,7 +121,7 @@ func TestParseBreakpadOptionalMultipleSymbolMarker(t *testing.T) {
 		{key: "1010:PreviousFunction:42", end: 0x1030, file: `C:\src\crash.cc`},
 		{key: "1030:Folded Function Name:-1", end: 0x1050},
 		{key: "1030:Folded Function Name:17", end: 0x1050, file: `C:\src\crash.cc`},
-		{key: "1050:Folded Public Name:-1", end: 0x1051},
+		{key: "1050:Folded Public Name:-1", end: ^uint64(0)},
 	} {
 		function, ok := byIdentity[want.key]
 		if !ok || function.End != want.end || function.File != want.file {
@@ -135,6 +135,42 @@ func TestParseBreakpadOptionalMultipleSymbolMarker(t *testing.T) {
 	} {
 		if function, ok := byIdentity[leaked]; ok {
 			t.Errorf("orphan source row leaked onto the previous function: %+v", function)
+		}
+	}
+}
+
+func TestBreakpadPublicSymbolsInferModuleBoundedRanges(t *testing.T) {
+	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nPUBLIC m 1000 0 First Public\nPUBLIC 1000 0 Duplicate Public\nPUBLIC m 1010 0 Next Public\nFUNC 1020 20 0 Exact Function\nPUBLIC 1025 0 Public Without Source\nFILE 1 C:\\src\\crash.cc\nFUNC 1040 20 0 Exact Function With Source\n1040 20 42 1\nPUBLIC 1045 0 Public With Source\nPUBLIC m 1060 0 Final Public\n")
+	_, functions := ParseBreakpad("test_app.pdb", symbol)
+	module := Module{Name: "test_app.pdb", Base: 0x100000, Size: 0x2000}
+	offsets := []uint64{0x1000, 0x100f, 0x1010, 0x101f, 0x1020, 0x1025, 0x103f, 0x1040, 0x105f, 0x1060, 0x1fff, 0x2000}
+	want := []struct {
+		function string
+		file     string
+		line     int
+	}{
+		{function: "First Public", line: -1},
+		{function: "First Public", line: -1},
+		{function: "Next Public", line: -1},
+		{function: "Next Public", line: -1},
+		{function: "Exact Function", line: -1},
+		{function: "Exact Function", line: -1},
+		{function: "Exact Function", line: -1},
+		{function: "Exact Function With Source", file: `C:\src\crash.cc`, line: 42},
+		{function: "Exact Function With Source", file: `C:\src\crash.cc`, line: 42},
+		{function: "Final Public", line: -1},
+		{function: "Final Public", line: -1},
+		{},
+	}
+	crash := Crash{Modules: []Module{module}}
+	for _, offset := range offsets {
+		crash.Frames = append(crash.Frames, Frame{Instruction: module.Base + offset, Module: module.Name})
+	}
+	Symbolicate(&crash, SymbolSet{moduleKey(module.Name): functions})
+	for i, expected := range want {
+		frame := crash.Frames[i]
+		if frame.Function != expected.function || frame.File != expected.file || frame.Line != expected.line {
+			t.Errorf("frame at module offset %#x: got function=%q file=%q line=%d, want %+v", offsets[i], frame.Function, frame.File, frame.Line, expected)
 		}
 	}
 }
