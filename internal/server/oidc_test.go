@@ -192,13 +192,15 @@ func TestOIDCPKCEAccountLinkAndSession(t *testing.T) {
 
 	unstarted := httptest.NewServer(New(cfg, f.db))
 	defer unstarted.Close()
-	bad, err := http.Get(unstarted.URL + "/good/auth/oidc/callback?code=test-code&state=tampered")
+	noRedirect := &http.Client{CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
+	bad, err := noRedirect.Get(unstarted.URL + "/good/auth/oidc/callback?code=test-code&state=tampered")
 	if err != nil {
 		t.Fatal(err)
 	}
 	bad.Body.Close()
-	if bad.Request.URL.Query().Get("authError") != "failed" {
-		t.Fatalf("tampered callback ended at %s", bad.Request.URL)
+	if bad.StatusCode != http.StatusSeeOther || bad.Header.Get("Location") != "/good/?authError=failed" ||
+		bad.Header.Get("Referrer-Policy") != "no-referrer" || bad.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("tampered callback response: status=%d location=%q referrer-policy=%q cache-control=%q", bad.StatusCode, bad.Header.Get("Location"), bad.Header.Get("Referrer-Policy"), bad.Header.Get("Cache-Control"))
 	}
 }
 

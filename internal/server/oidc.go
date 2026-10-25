@@ -166,6 +166,8 @@ func (s *Server) startOIDCFlow(w http.ResponseWriter, r *http.Request, client *o
 }
 
 func (s *Server) finishOIDCFlow(w http.ResponseWriter, r *http.Request, client *oidcClient, app, provider string, autoCreate bool, organizationID string) {
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Referrer-Policy", "no-referrer")
 	flow, ok := s.readOIDCFlow(r)
 	s.clearOIDCFlow(w)
 	if !ok || flow.App != app {
