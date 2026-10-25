@@ -21,6 +21,7 @@ const (
 	CompatibleIssueLatestReleasePolicy
 	CompatibleIssueNextReleasePolicy
 	CompatibleIssueClearResolutionPolicy
+	CompatibleIssueCommitPolicy
 )
 
 type CompatibleIssueAssignment struct{ Reference string }
@@ -28,6 +29,7 @@ type CompatibleIssueAssignment struct{ Reference string }
 type CompatibleIssuePolicy struct {
 	Kind                                          CompatibleIssuePolicyKind
 	Version                                       ReleaseVersion
+	Repository, Commit                            string
 	Minutes, Count, UserCount, Window, UserWindow *int32
 }
 
@@ -54,12 +56,14 @@ func validCompatibleIssueChange(change CompatibleIssueChange) bool {
 	}
 	switch p.Kind {
 	case CompatibleIssueClearPolicy, CompatibleIssueClearResolutionPolicy, CompatibleIssueNextReleasePolicy, CompatibleIssueLatestReleasePolicy:
-		return p.Version == "" && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil && p.UserWindow == nil
+		return p.Version == "" && p.Repository == "" && p.Commit == "" && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil && p.UserWindow == nil
 	case CompatibleIssueReleasePolicy:
 		_, err := ParseReleaseVersion(string(p.Version))
-		return err == nil && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil && p.UserWindow == nil
+		return err == nil && p.Repository == "" && p.Commit == "" && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil && p.UserWindow == nil
+	case CompatibleIssueCommitPolicy:
+		return p.Version == "" && ValidIssueResolutionCommit(p.Repository, p.Commit) && p.Minutes == nil && p.Count == nil && p.UserCount == nil && p.Window == nil && p.UserWindow == nil
 	case CompatibleIssueIgnorePolicy:
-		return p.Version == "" && (p.Minutes == nil || *p.Minutes > 0) && (p.Count == nil || *p.Count > 0) && (p.UserCount == nil || *p.UserCount > 0) && (p.Window == nil || *p.Window > 0 && *p.Window <= 10080 && p.Count != nil) && (p.UserWindow == nil || *p.UserWindow > 0 && *p.UserWindow <= 10080 && p.UserCount != nil)
+		return p.Version == "" && p.Repository == "" && p.Commit == "" && (p.Minutes == nil || *p.Minutes > 0) && (p.Count == nil || *p.Count > 0) && (p.UserCount == nil || *p.UserCount > 0) && (p.Window == nil || *p.Window > 0 && *p.Window <= 10080 && p.Count != nil) && (p.UserWindow == nil || *p.UserWindow > 0 && *p.UserWindow <= 10080 && p.UserCount != nil)
 	}
 	return false
 }
@@ -101,7 +105,7 @@ func (s *Store) UpdateCompatibleIssue(ctx context.Context, access ManagementAcce
 func compatibleIssueChange(ctx context.Context, tx pgx.Tx, org string, issue Issue, input CompatibleIssueChange) (IssueUpdate, error) {
 	change := IssueUpdate{Status: input.Status}
 	if issue.Category == "feedback" && (input.Status == "resolvedInNextRelease" || input.Policy != nil &&
-		(input.Policy.Kind == CompatibleIssueReleasePolicy || input.Policy.Kind == CompatibleIssueLatestReleasePolicy || input.Policy.Kind == CompatibleIssueNextReleasePolicy ||
+		(input.Policy.Kind == CompatibleIssueReleasePolicy || input.Policy.Kind == CompatibleIssueLatestReleasePolicy || input.Policy.Kind == CompatibleIssueNextReleasePolicy || input.Policy.Kind == CompatibleIssueCommitPolicy ||
 			input.Policy.Kind == CompatibleIssueIgnorePolicy && (input.Policy.Count != nil || input.Policy.Minutes != nil || input.Policy.UserCount != nil))) {
 		return change, ErrInvalidCompatibleIssueChange
 	}
@@ -152,13 +156,16 @@ func compatibleIssueChange(ctx context.Context, tx pgx.Tx, org string, issue Iss
 		if policy.Minutes != nil || policy.Count != nil || policy.UserCount != nil {
 			change.Ignore.Condition = &IssueIgnoreCondition{Minutes: policy.Minutes, Count: policy.Count, UserCount: policy.UserCount, Window: policy.Window, UserWindow: policy.UserWindow}
 		}
-	case CompatibleIssueReleasePolicy, CompatibleIssueLatestReleasePolicy, CompatibleIssueNextReleasePolicy:
+	case CompatibleIssueReleasePolicy, CompatibleIssueLatestReleasePolicy, CompatibleIssueNextReleasePolicy, CompatibleIssueCommitPolicy:
 		if change.Status != "resolved" {
 			return change, ErrInvalidCompatibleIssueChange
 		}
 		selection := &IssueResolutionInput{Mode: "release", Version: policy.Version}
 		if policy.Kind == CompatibleIssueNextReleasePolicy {
 			selection.Mode = "next_release"
+		}
+		if policy.Kind == CompatibleIssueCommitPolicy {
+			selection.Mode, selection.Repository, selection.Commit = "commit", policy.Repository, policy.Commit
 		}
 		if policy.Kind == CompatibleIssueLatestReleasePolicy {
 			if err := tx.QueryRow(ctx, `SELECT r.version FROM releases r JOIN release_projects rp ON rp.release_id=r.id

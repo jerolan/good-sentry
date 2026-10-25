@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"goodsentry/internal/store"
 )
 
 // Authoring gate: HTTP owns the two exact PUTs, authoritative event:write
@@ -82,6 +84,42 @@ func TestCompatibleIssueUpdateHTTPContract(t *testing.T) {
 		f.request(t, http.DefaultClient, "PATCH", "/api/v1/issues/"+f.issueID, `{"status":"resolved"}`, bearer(writer.Token), 401)
 		f.request(t, http.DefaultClient, "PUT", "/api/0/organizations/"+f.org.Slug+"/releases/app%402.0/", `{}`, bearer(writer.Token), 403)
 		f.request(t, http.DefaultClient, "GET", "/api/0/projects/"+f.org.Slug+"/"+f.project.Slug+"/events/", "", bearer(writer.Token), 403)
+	})
+	t.Run("commit resolution returns its stored project release", func(t *testing.T) {
+		access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+		_, err := f.db.ReplaceReleaseCommits(f.ctx, access, "app@2.0", []store.ReleaseCommitInput{{
+			ID: "abc123", Repository: "getsentry/sentry", Data: json.RawMessage(`{"id":"abc123"}`),
+		}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var result struct {
+			Status        string
+			StatusDetails struct {
+				InRelease string
+				InCommit  *struct{ Repository, Commit string }
+			}
+		}
+		body := `{"status":"resolved","statusDetails":{"inCommit":{"repository":"getsentry/sentry","commit":"abc123"}}}`
+		decode(f.request(t, http.DefaultClient, "PUT", global, body, bearer(writer.Token), 200), &result)
+		if result.Status != "resolved" || result.StatusDetails.InRelease != "app@2.0" || result.StatusDetails.InCommit == nil || result.StatusDetails.InCommit.Repository != "getsentry/sentry" || result.StatusDetails.InCommit.Commit != "abc123" {
+			t.Fatalf("commit resolution response=%+v", result)
+		}
+		before := nativeState(t)
+		f.request(t, http.DefaultClient, "PUT", global, `{"status":"resolved","statusDetails":{"inCommit":{"repository":"other/repo","commit":"missing"}}}`, bearer(writer.Token), 400)
+		if !reflect.DeepEqual(before, nativeState(t)) {
+			t.Fatal("unknown commit changed the saved resolution")
+		}
+		f.request(t, http.DefaultClient, "PUT", global, `{"status":"resolved","statusDetails":{"inCommit":null}}`, bearer(writer.Token), 200)
+		var native struct {
+			Issue struct {
+				Resolution json.RawMessage
+			}
+		}
+		decode(f.request(t, f.client, "GET", "/api/v1/issues/"+f.issueID, "", nil, 200), &native)
+		if string(native.Issue.Resolution) != "null" {
+			t.Fatalf("null inCommit did not clear the saved resolution: %s", native.Issue.Resolution)
+		}
 	})
 	t.Run("partial write projects real compatible detail", func(t *testing.T) {
 		body := resolutionJSON(t, map[string]any{"status": "muted", "assignedTo": f.owner.Email, "ignoreDuration": 5, "ignoreCount": 2, "ignoreUserCount": 1, "ignoreWindow": 60, "ignoreUserWindow": 30})

@@ -3,6 +3,8 @@
 package store
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -384,5 +386,49 @@ func TestCompatibleIssueBulkProviderBoundariesAndCrossProjectRestrictions(t *tes
 		_, err := f.db.UpdateCompatibleIssues(f.ctx, f.access, "", filter, CompatibleIssueBulkChange{Change: CompatibleIssueChange{Status: "ignored"}})
 		triageRequireError(t, err, ErrInvalidCompatibleIssueFilter)
 		groupRequireUnchanged(t, f.ctx, f.db, before)
+	}
+}
+
+// Commit selection is resolved independently under each issue project's
+// release scope. A later project failure must roll back earlier issue writes.
+func TestCompatibleIssueBulkCommitResolutionIsProjectScopedAndAtomic(t *testing.T) {
+	f := resolutionStore(t)
+	_, a := compatibleCapture(t, f.ctx, f.db, f.project, 1, time.Now(), nil)
+	other, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Commit bulk peer", "go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, b := compatibleCapture(t, f.ctx, f.db, other, 1, time.Now(), nil)
+	_, c := compatibleCapture(t, f.ctx, f.db, f.project, 2, time.Now(), map[string]any{"fingerprint": []string{"commit-bulk-peer"}})
+	first := f.release(t, "commit-release-first")
+	second, _, err := f.db.CreateRelease(f.ctx, f.access, ReleaseCreate{Version: "commit-release-second", Projects: []string{other.ID}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	commit := []ReleaseCommitInput{{ID: "commit-bulk", Repository: "getsentry/sentry", Data: json.RawMessage(`{"id":"commit-bulk"}`)}}
+	if _, err = f.db.ReplaceReleaseCommits(f.ctx, f.access, first.Version, commit); err != nil {
+		t.Fatal(err)
+	}
+	command := CompatibleIssueBulkChange{Change: CompatibleIssueChange{
+		Status: "resolved", Policy: &CompatibleIssuePolicy{Kind: CompatibleIssueCommitPolicy, Repository: "getsentry/sentry", Commit: "commit-bulk"},
+	}}
+	filter := CompatibleIssueBulkFilter{Limit: 1000, IDs: []string{a, b, c}}
+	before := groupDatabaseSnapshot(t, f.ctx, f.db, 0)
+	if _, err = f.db.UpdateCompatibleIssues(f.ctx, f.access, "", filter, command); !errors.Is(err, ErrInvalidIssueChange) {
+		t.Fatalf("commit missing from one selected project error=%v", err)
+	}
+	groupRequireUnchanged(t, f.ctx, f.db, before)
+	if _, err = f.db.ReplaceReleaseCommits(f.ctx, f.access, second.Version, commit); err != nil {
+		t.Fatal(err)
+	}
+	result, err := f.db.UpdateCompatibleIssues(f.ctx, f.access, "", filter, command)
+	if err != nil || result.First == nil {
+		t.Fatalf("project-scoped bulk commit resolution result=%+v error=%v", result, err)
+	}
+	for _, want := range []struct{ id, version string }{{a, string(first.Version)}, {b, string(second.Version)}, {c, string(first.Version)}} {
+		got := triageIssue(t, f.ctx, f.db, f.owner.ID, want.id)
+		if got.Status != "resolved" || got.Resolution == nil || got.Resolution.Mode != "commit" || got.Resolution.Commit == nil || got.Resolution.Commit.Commit != "commit-bulk" || got.Resolution.Release == nil || string(got.Resolution.Release.Version) != want.version {
+			t.Fatalf("bulk issue %s resolution=%+v", want.id, got.Resolution)
+		}
 	}
 }

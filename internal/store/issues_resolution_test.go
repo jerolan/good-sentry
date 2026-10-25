@@ -4,6 +4,7 @@ package store
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -45,6 +46,142 @@ func TestIssueResolutionSelectedPolicyPersists(t *testing.T) {
 	var data struct{ Resolution *IssueResolution }
 	if err := json.Unmarshal(activities[0].Data, &data); err != nil || !reflect.DeepEqual(data.Resolution, got.Resolution) {
 		t.Fatalf("selected activity snapshot=%s err=%v", activities[0].Data, err)
+	}
+}
+
+// The store owns project-scoped commit lookup, stable release anchoring and
+// regression against that saved boundary. Parser and HTTP tests cannot prove
+// the SQL snapshot survives later release observations.
+func TestIssueResolutionCommitAnchorAndRegression(t *testing.T) {
+	f := resolutionStore(t)
+	first := f.release(t, "anchor-first")
+	second := f.release(t, "anchor-second")
+	later := f.release(t, "later-release")
+	otherProject, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Commit elsewhere", "go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherRelease, _, err := f.db.CreateRelease(f.ctx, f.access, ReleaseCreate{Version: "foreign-release", Projects: []string{otherProject.ID}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	stamp := time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)
+	for _, item := range []struct {
+		id string
+		at time.Time
+	}{{otherRelease.ID, stamp.Add(-time.Hour)}, {first.ID, stamp}, {second.ID, stamp.Add(time.Hour)}, {later.ID, stamp.Add(2 * time.Hour)}} {
+		if _, err = f.db.pool.Exec(f.ctx, "UPDATE releases SET created_at=$2 WHERE id=$1::bigint", item.id, item.at); err != nil {
+			t.Fatal(err)
+		}
+	}
+	commit := func(version, id string) {
+		t.Helper()
+		_, err := f.db.ReplaceReleaseCommits(f.ctx, f.access, ReleaseVersion(version), []ReleaseCommitInput{{
+			ID: id, Repository: "getsentry/sentry", Data: json.RawMessage(`{"id":"` + id + `"}`),
+		}})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	commit(string(first.Version), "abc123")
+	commit(string(second.Version), "abc123")
+	commit(string(otherRelease.Version), "foreign-only")
+	id := f.capture(t, 1, "original-event", time.Now())
+	before := triageIssue(t, f.ctx, f.db, f.owner.ID, id)
+	for _, change := range []IssueUpdate{
+		{Status: "resolved", Resolution: &IssueResolutionChange{Policy: &IssueResolutionInput{Mode: "commit", Repository: "getsentry/sentry", Commit: "missing"}}},
+		{Status: "resolved", Resolution: &IssueResolutionChange{Policy: &IssueResolutionInput{Mode: "commit", Repository: "getsentry/sentry", Commit: "foreign-only"}}},
+	} {
+		if _, err = f.db.UpdateIssue(f.ctx, f.owner.ID, id, change); !errors.Is(err, ErrInvalidIssueChange) || !reflect.DeepEqual(before, triageIssue(t, f.ctx, f.db, f.owner.ID, id)) {
+			t.Fatalf("unknown or cross-project commit was not rejected atomically: %v", err)
+		}
+	}
+	selected, err := f.db.UpdateIssue(f.ctx, f.owner.ID, id, IssueUpdate{Status: "resolved", Resolution: &IssueResolutionChange{Policy: &IssueResolutionInput{Mode: "commit", Repository: "getsentry/sentry", Commit: "abc123"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if selected.Resolution == nil || selected.Resolution.Mode != "commit" || selected.Resolution.Commit == nil || selected.Resolution.Commit.Repository != "getsentry/sentry" || selected.Resolution.Commit.Commit != "abc123" || selected.Resolution.Release == nil || selected.Resolution.Release.Version != first.Version || selected.Resolution.Comparison != "created" {
+		t.Fatalf("commit resolution did not retain the earliest project release snapshot: %+v", selected.Resolution)
+	}
+	history := triageActivities(t, f.ctx, f.db, f.owner.ID, id)
+	if _, err = f.db.ReplaceReleaseCommits(f.ctx, f.access, first.Version, nil); err != nil {
+		t.Fatal(err)
+	}
+	retried, err := f.db.UpdateIssue(f.ctx, f.owner.ID, id, IssueUpdate{Status: "resolved", Resolution: &IssueResolutionChange{Policy: &IssueResolutionInput{Mode: "commit", Repository: "getsentry/sentry", Commit: "abc123"}}})
+	if err != nil || retried.Status != selected.Status || retried.ResolvedAt == nil || selected.ResolvedAt == nil || !retried.ResolvedAt.Equal(*selected.ResolvedAt) || !reflect.DeepEqual(retried.Resolution, selected.Resolution) || !reflect.DeepEqual(history, triageActivities(t, f.ctx, f.db, f.owner.ID, id)) {
+		t.Fatalf("reapplying the saved commit policy changed its anchor: issue=%+v err=%v", retried, err)
+	}
+	if err = f.db.DeleteRelease(f.ctx, f.access, first.Version, ""); err != nil {
+		t.Fatal(err)
+	}
+	retained, err := f.db.UpdateIssue(f.ctx, f.owner.ID, id, IssueUpdate{Status: "resolved", Resolution: &IssueResolutionChange{Policy: &IssueResolutionInput{Mode: "commit", Repository: "getsentry/sentry", Commit: "abc123"}}})
+	if err != nil || !reflect.DeepEqual(retained.Resolution, selected.Resolution) || !reflect.DeepEqual(history, triageActivities(t, f.ctx, f.db, f.owner.ID, id)) {
+		t.Fatalf("same commit update after anchor release deletion changed its saved snapshot: issue=%+v err=%v", retained, err)
+	}
+	f.capture(t, 2, string(later.Version), time.Now().Add(-time.Hour))
+	assertResolutionRegression(t, f, id, "newer_release", selected.Resolution)
+}
+
+// Fresh-schema Store tests cannot catch an additive migration that rewrites
+// existing release policies or prior migration receipts; reopen this schema
+// from its exact pre-067 shape and inspect the real PostgreSQL result.
+func TestIssueResolutionCommitMigration067PreservesAndReopens(t *testing.T) {
+	f := resolutionStore(t)
+	anchor := f.release(t, "migration067-anchor")
+	id := f.capture(t, 1, "migration067-event", time.Now())
+	f.resolve(t, id, "release", anchor.Version)
+	policy := func(db *Store) string {
+		t.Helper()
+		var value string
+		if err := db.pool.QueryRow(f.ctx, `SELECT jsonb_build_object(
+ 'issue_id',issue_id,'mode',mode,'comparison',comparison,'set_at',set_at,
+ 'baseline_id',baseline_id,'baseline_version',baseline_version,'baseline_created_at',baseline_created_at,'baseline_released_at',baseline_released_at,
+ 'release_id',release_id,'release_version',release_version,'release_created_at',release_created_at,'release_released_at',release_released_at,'next_check_at',next_check_at)::text
+ FROM issue_resolutions WHERE issue_id=$1::bigint`, id).Scan(&value); err != nil {
+			t.Fatal(err)
+		}
+		return value
+	}
+	prior := policy(f.db)
+	var oldReceipts string
+	if err := f.db.pool.QueryRow(f.ctx, `SELECT jsonb_agg(jsonb_build_array(version,checksum) ORDER BY version)::text FROM schema_migrations WHERE version<=66`).Scan(&oldReceipts); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.db.pool.Exec(f.ctx, `ALTER TABLE issue_resolutions DROP CONSTRAINT issue_resolutions_state_check;
+ ALTER TABLE issue_resolutions DROP CONSTRAINT issue_resolutions_commit_pair;
+ ALTER TABLE issue_resolutions DROP CONSTRAINT issue_resolutions_mode_check;
+ ALTER TABLE issue_resolutions DROP COLUMN commit_repository,DROP COLUMN commit_id;
+ DROP INDEX release_commits_identity;
+ ALTER TABLE issue_resolutions ADD CONSTRAINT issue_resolutions_mode_check CHECK (mode IN ('release','next_release'));
+ ALTER TABLE issue_resolutions ADD CONSTRAINT issue_resolutions_check2 CHECK (
+    (mode='release' AND baseline_id IS NULL AND release_id IS NOT NULL AND next_check_at IS NULL)
+    OR (mode='next_release' AND baseline_id IS NOT NULL
+        AND ((release_id IS NULL AND next_check_at IS NOT NULL)
+          OR (release_id IS NOT NULL AND next_check_at IS NULL)))
+ );
+ DELETE FROM schema_migrations WHERE version=67`); err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		reopened, err := Open(f.ctx, f.db.pool.Config().ConnString())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := policy(reopened); got != prior {
+			t.Fatalf("migration067 rewrote existing issue resolution: got=%s want=%s", got, prior)
+		}
+		var receipts, checksum, index string
+		if err := reopened.pool.QueryRow(f.ctx, `SELECT jsonb_agg(jsonb_build_array(version,checksum) ORDER BY version)::text FROM schema_migrations WHERE version<=66`).Scan(&receipts); err != nil {
+			t.Fatal(err)
+		}
+		if err := reopened.pool.QueryRow(f.ctx, `SELECT checksum,to_regclass('release_commits_identity')::text FROM schema_migrations JOIN pg_indexes ON schemaname=current_schema() AND indexname='release_commits_identity' WHERE version=67`).Scan(&checksum, &index); err != nil {
+			t.Fatal(err)
+		}
+		body, err := migrations.ReadFile("migrations/067_issue_resolution_commits.sql")
+		if err != nil || receipts != oldReceipts || checksum != fmt.Sprintf("%x", sha256.Sum256(body)) || index != "release_commits_identity" {
+			t.Fatalf("migration067 receipt, index or prior receipts mismatch: index=%q err=%v", index, err)
+		}
+		reopened.Close()
 	}
 }
 

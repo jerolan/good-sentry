@@ -18,14 +18,15 @@ type compatibleIssueProject struct {
 }
 
 type compatibleIssueStatusDetails struct {
-	IgnoreUntil      *time.Time `json:"ignoreUntil,omitempty"`
-	IgnoreCount      *int32     `json:"ignoreCount,omitempty"`
-	IgnoreUserCount  *int32     `json:"ignoreUserCount,omitempty"`
-	IgnoreWindow     *int32     `json:"ignoreWindow,omitempty"`
-	IgnoreUserWindow *int32     `json:"ignoreUserWindow,omitempty"`
-	UserRemaining    *int64     `json:"userRemaining,omitempty"`
-	InNextRelease    bool       `json:"inNextRelease,omitempty"`
-	InRelease        string     `json:"inRelease,omitempty"`
+	IgnoreUntil      *time.Time                   `json:"ignoreUntil,omitempty"`
+	IgnoreCount      *int32                       `json:"ignoreCount,omitempty"`
+	IgnoreUserCount  *int32                       `json:"ignoreUserCount,omitempty"`
+	IgnoreWindow     *int32                       `json:"ignoreWindow,omitempty"`
+	IgnoreUserWindow *int32                       `json:"ignoreUserWindow,omitempty"`
+	UserRemaining    *int64                       `json:"userRemaining,omitempty"`
+	InNextRelease    bool                         `json:"inNextRelease,omitempty"`
+	InRelease        string                       `json:"inRelease,omitempty"`
+	InCommit         *store.IssueResolutionCommit `json:"inCommit,omitempty"`
 }
 
 type compatibleIssueLifetime struct {
@@ -179,6 +180,10 @@ func projectCompatibleIssue(record store.CompatibleIssueRecord, domain string, d
 		}
 	}
 	if resolution := i.Resolution; resolution != nil {
+		if resolution.Commit != nil {
+			commit := *resolution.Commit
+			view.StatusDetails.InCommit = &commit
+		}
 		if resolution.Release != nil {
 			view.StatusDetails.InRelease = string(resolution.Release.Version)
 		} else if resolution.Mode == "next_release" {

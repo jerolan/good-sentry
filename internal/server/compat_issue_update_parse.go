@@ -61,13 +61,14 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 	raw, policyPresent := fields["statusDetails"]
 	if policyPresent && !compatibleIssueNull(raw) {
 		var err error
-		details, err = issueObject(raw, "inRelease", "inNextRelease", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow")
+		details, err = issueObject(raw, "inRelease", "inNextRelease", "inCommit", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow")
 		if err != nil {
 			return change, err
 		}
 	}
 	_, releasePresent := details["inRelease"]
 	_, nextPresent := details["inNextRelease"]
+	commitRaw, commitPresent := details["inCommit"]
 	_, topMinutes := fields["ignoreDuration"]
 	_, topCount := fields["ignoreCount"]
 	_, topUsers := fields["ignoreUserCount"]
@@ -79,7 +80,10 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 	_, nestedWindow := details["ignoreWindow"]
 	_, nestedUserWindow := details["ignoreUserWindow"]
 	mutePresent := topMinutes || topCount || topUsers || topWindow || topUserWindow || nestedMinutes || nestedCount || nestedUsers || nestedWindow || nestedUserWindow
-	if (releasePresent || nextPresent) && mutePresent {
+	if commitPresent && (releasePresent || nextPresent) {
+		return change, errors.New("inCommit cannot be combined with inRelease or inNextRelease")
+	}
+	if (releasePresent || nextPresent || commitPresent) && mutePresent {
 		return change, errors.New("Resolution selectors and ignore conditions cannot be combined")
 	}
 	if mutePresent {
@@ -136,11 +140,26 @@ func parseCompatibleIssueChange(fields map[string]json.RawMessage) (store.Compat
 	if next && version != "" {
 		return change, errors.New("inNextRelease and a nonempty inRelease cannot be combined")
 	}
+	var commitSelection *store.CompatibleIssuePolicy
+	if commitPresent && !compatibleIssueNull(commitRaw) {
+		commitFields, err := issueObject(commitRaw, "repository", "commit")
+		if err != nil || len(commitFields) != 2 {
+			return change, errors.New("inCommit must contain repository and commit strings")
+		}
+		var repository, commit string
+		if json.Unmarshal(commitFields["repository"], &repository) != nil || json.Unmarshal(commitFields["commit"], &commit) != nil ||
+			!store.ValidIssueResolutionCommit(repository, commit) {
+			return change, errors.New("inCommit repository and commit must be nonempty strings of at most 200 characters without controls")
+		}
+		commitSelection = &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueCommitPolicy, Repository: repository, Commit: commit}
+	}
 	policy := &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueClearPolicy}
-	if releasePresent && !compatibleIssueNull(details["inRelease"]) || nextPresent && !compatibleIssueNull(details["inNextRelease"]) {
+	if releasePresent && !compatibleIssueNull(details["inRelease"]) || nextPresent && !compatibleIssueNull(details["inNextRelease"]) || commitSelection != nil {
 		policy.Kind = store.CompatibleIssueClearResolutionPolicy
 	}
 	switch {
+	case commitSelection != nil:
+		policy = commitSelection
 	case next:
 		policy.Kind = store.CompatibleIssueNextReleasePolicy
 	case version == "latest":

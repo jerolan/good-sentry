@@ -86,6 +86,15 @@ func compatibleIssueBulkAcknowledgement(result store.CompatibleIssueBulkResult, 
 				if i.Resolution != nil && i.Resolution.Release != nil {
 					details["inRelease"] = string(i.Resolution.Release.Version)
 				}
+			case store.CompatibleIssueCommitPolicy:
+				if i.Resolution != nil {
+					if i.Resolution.Release != nil {
+						details["inRelease"] = string(i.Resolution.Release.Version)
+					}
+					if i.Resolution.Commit != nil {
+						details["inCommit"] = i.Resolution.Commit
+					}
+				}
 			case store.CompatibleIssueNextReleasePolicy:
 				details["inNextRelease"] = true
 			}

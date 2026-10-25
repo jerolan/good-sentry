@@ -1217,16 +1217,17 @@ Public acceptance at `322e2a530c7a7dba0a0d76423cc3a1dbd2c3cedd`: public main mat
 
 ## Compatible commit-bound issue resolution
 
-- [ ] Add a typed commit resolution snapshot to PostgreSQL issue policies.
+- [x] Add a typed commit resolution snapshot to PostgreSQL issue policies.
   - Match exact repository and commit IDs only through the issue project's linked releases. Select the earliest `(created_at,id)` match, preserve that release snapshot, keep same-policy writes idempotent and use existing release regression behavior.
-  - Verify store owner tests for unknown/cross-project identities, multiple releases, snapshot survival, same-policy retry, clear/replace and fresh-event regression; prove additive migration upgrade/reopen.
+  - PostgreSQL owner tests cover unknown/cross-project identities, earliest match, commit-list and anchor deletion, same-policy retry, fresh-event regression, and migration067 upgrade/reopen without changing existing resolution rows or migration receipts.
   - Files: migration067, `internal/store/issues_resolution.go`, `internal/store/issues_resolution_capture.go` and their existing store/migration test owners.
-- [ ] Accept and return `statusDetails.inCommit` from compatible individual issue updates.
+- [x] Accept and return `statusDetails.inCommit` from compatible individual issue updates.
   - Require exact `{repository,commit}` string shape, resolved status and no conflicting selector; validate through the Store boundary and return both `inCommit` and the selected `inRelease`.
-  - Verify strict parser errors, real HTTP status/write behavior and issue detail projection.
+  - Parser tests cover the exact object, malformed/duplicate/oversized/control values and conflicting selectors. The HTTP owner verifies successful projection, unknown-commit 400, and null clearing.
   - Files: `internal/server/compat_issue_update_parse.go`, `internal/server/compat_issue_update.go`, compatible issue projection and their existing tests.
-- [ ] Preserve commit-resolution behavior for compatible bulk issue updates.
+- [x] Preserve commit-resolution behavior for compatible bulk issue updates.
   - Keep per-issue project lookup and atomic rollback when any selected issue cannot resolve the same commit; return the commit and release selectors in acknowledgements.
-  - Verify same-project multi-issue success and cross-project/unknown commit rollback through PostgreSQL and HTTP.
+  - PostgreSQL tests prove same-project and cross-project per-issue anchors, rollback when one selected project lacks the commit, and the bulk HTTP acknowledgement.
   - Files: `internal/server/compat_issue_bulk.go`, compatible Store update owners and their existing tests.
-- [ ] Pass focused and full integration/race/vet/build checks, then publish exact-source CI and amd64/arm64 image with `gh`.
+- [ ] Pass full integration/race/vet/build checks, then publish exact-source CI and amd64/arm64 image with `gh`.
+  - Local proof so far: full `go test ./... -count=1` passes; focused PostgreSQL migration/store and compatible individual/bulk HTTP tests pass with `-race`. Remote full integration/race/vet/build and image publication remain pending.

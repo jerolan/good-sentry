@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"goodsentry/internal/store"
 )
 
 // Authoring gate: HTTP owns exact bulk routing, issued-token/session admission,
@@ -101,6 +103,15 @@ func TestCompatibleIssueBulkHTTPContract(t *testing.T) {
 		}
 		acknowledge(t, project, `{"assignedTo":null,"statusDetails":null}`, map[string]any{"assignedTo": nil, "statusDetails": map[string]any{}})
 		acknowledge(t, organization, `{"status":"resolved","statusDetails":{"inRelease":"latest"}}`, map[string]any{"status": "resolved", "statusDetails": map[string]any{"inRelease": "app@2.0"}})
+		access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+		if _, err := f.db.ReplaceReleaseCommits(f.ctx, access, "app@2.0", []store.ReleaseCommitInput{{
+			ID: "bulk123", Repository: "getsentry/sentry", Data: json.RawMessage(`{"id":"bulk123"}`),
+		}}); err != nil {
+			t.Fatal(err)
+		}
+		acknowledge(t, project, `{"status":"resolved","statusDetails":{"inCommit":{"repository":"getsentry/sentry","commit":"bulk123"}}}`, map[string]any{
+			"status": "resolved", "statusDetails": map[string]any{"inRelease": "app@2.0", "inCommit": map[string]any{"repository": "getsentry/sentry", "commit": "bulk123"}},
+		})
 		acknowledge(t, project, `{"status":"resolvedInNextRelease"}`, map[string]any{"status": "resolved", "statusDetails": map[string]any{"inNextRelease": true}})
 		acknowledge(t, organization, `{"status":"unresolved"}`, map[string]any{"status": "unresolved"})
 		before := nativeIssue(t)

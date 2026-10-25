@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 
 	"goodsentry/internal/store"
@@ -12,8 +13,9 @@ import (
 // intent. Losing an explicit clear, accepting fractional bounds, or merging
 // conflicting selectors would change requests before Store can validate them.
 // The user-window cases protect its public top/nested copies and dependency;
-// existing tests do not cover this new field. These cases do not replay
-// effective-status, identity, or transaction tests.
+// the commit cases protect its strict public object shape and selector
+// exclusion. Existing tests did not cover either field. These cases do not
+// replay effective-status, identity, or transaction tests.
 // The parser is called by the real handler and needs no test-only seam.
 func TestCompatibleIssueChangeParsing(t *testing.T) {
 	integer := func(value int32) *int32 { return &value }
@@ -21,6 +23,7 @@ func TestCompatibleIssueChangeParsing(t *testing.T) {
 	clearResolution := &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueClearResolutionPolicy}
 	next := &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueNextReleasePolicy}
 	latest := &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueLatestReleasePolicy}
+	commit := &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueCommitPolicy, Repository: "getsentry/sentry", Commit: "abc123"}
 	assignment := func(value string) *store.CompatibleIssueAssignment {
 		return &store.CompatibleIssueAssignment{Reference: value}
 	}
@@ -37,6 +40,7 @@ func TestCompatibleIssueChangeParsing(t *testing.T) {
 		{"null policy", `{"statusDetails":null}`, store.CompatibleIssueChange{Policy: clear}},
 		{"empty policy", `{"statusDetails":{}}`, store.CompatibleIssueChange{Policy: clear}},
 		{"null release selector", `{"statusDetails":{"inRelease":null}}`, store.CompatibleIssueChange{Policy: clear}},
+		{"null commit selector", `{"statusDetails":{"inCommit":null}}`, store.CompatibleIssueChange{Policy: clear}},
 		{"null next selector", `{"statusDetails":{"inNextRelease":null}}`, store.CompatibleIssueChange{Policy: clear}},
 		{"both null selectors", `{"statusDetails":{"inRelease":null,"inNextRelease":null}}`, store.CompatibleIssueChange{Policy: clear}},
 		{"empty release selector", `{"statusDetails":{"inRelease":""}}`, store.CompatibleIssueChange{Policy: clearResolution}},
@@ -47,6 +51,7 @@ func TestCompatibleIssueChangeParsing(t *testing.T) {
 		{"exact release", `{"statusDetails":{"inRelease":" aplicación@2.0 "}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueReleasePolicy, Version: " aplicación@2.0 "}}},
 		{"release with false next", `{"statusDetails":{"inRelease":"v2","inNextRelease":false}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueReleasePolicy, Version: "v2"}}},
 		{"case sensitive latest", `{"statusDetails":{"inRelease":"Latest"}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueReleasePolicy, Version: "Latest"}}},
+		{"commit selector", `{"statusDetails":{"inCommit":{"repository":"getsentry/sentry","commit":"abc123"}}}`, store.CompatibleIssueChange{Policy: commit}},
 		{"top ignore", `{"ignoreDuration":3,"ignoreCount":4}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: integer(3), Count: integer(4)}}},
 		{"nested ignore", `{"statusDetails":{"ignoreDuration":3,"ignoreCount":4}}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, Minutes: integer(3), Count: integer(4)}}},
 		{"top user count", `{"ignoreUserCount":3}`, store.CompatibleIssueChange{Policy: &store.CompatibleIssuePolicy{Kind: store.CompatibleIssueIgnorePolicy, UserCount: integer(3)}}},
@@ -99,9 +104,18 @@ func TestCompatibleIssueChangeRejectsAmbiguousInput(t *testing.T) {
 		`{"assignedTo":1}`, `{"assignedTo":{}}`, `{"assignedTo":[]}`,
 		`{"statusDetails":[]}`, `{"statusDetails":false}`, `{"statusDetails":""}`,
 		`{"statusDetails":{"inRelease":1}}`, `{"statusDetails":{"inNextRelease":1}}`,
+		`{"statusDetails":{"inCommit":"abc"}}`, `{"statusDetails":{"inCommit":1}}`,
+		`{"statusDetails":{"inCommit":{}}}`, `{"statusDetails":{"inCommit":{"repository":"repo"}}}`,
+		`{"statusDetails":{"inCommit":{"commit":"abc"}}}`, `{"statusDetails":{"inCommit":{"repository":"","commit":"abc"}}}`,
+		`{"statusDetails":{"inCommit":{"repository":"repo","commit":""}}}`, `{"statusDetails":{"inCommit":{"repository":"repo","commit":"abc","extra":true}}}`,
+		`{"statusDetails":{"inCommit":{"repository":"repo","repository":"other","commit":"abc"}}}`,
+		`{"statusDetails":{"inCommit":{"repository":"repo","commit":"abc\u0001"}}}`,
 		`{"statusDetails":{"inRelease":"v2","inNextRelease":true}}`,
+		`{"statusDetails":{"inCommit":{"repository":"repo","commit":"abc"},"inRelease":"v2"}}`,
+		`{"statusDetails":{"inCommit":{"repository":"repo","commit":"abc"},"inNextRelease":true}}`,
+		`{"statusDetails":{"inCommit":{"repository":"repo","commit":"abc"},"ignoreCount":1}}`,
 		`{"ignoreWindow":1}`, `{"ignoreWindow":10081,"ignoreCount":2}`, `{"ignoreWindow":null,"ignoreCount":2}`, `{"ignoreWindow":1.0,"ignoreCount":2}`, `{"ignoreWindow":-1,"ignoreCount":2}`, `{"ignoreWindow":60}`, `{"ignoreWindow":60,"ignoreCount":0}`,
-		`{"ignoreWindow":60,"ignoreCount":2,"statusDetails":{"ignoreWindow":61}}`, `{"statusDetails":{"inCommit":{}}}`,
+		`{"ignoreWindow":60,"ignoreCount":2,"statusDetails":{"ignoreWindow":61}}`,
 		`{"ignoreUserWindow":60}`, `{"ignoreUserWindow":60,"ignoreUserCount":0}`, `{"ignoreUserWindow":10081,"ignoreUserCount":2}`, `{"ignoreUserWindow":null,"ignoreUserCount":2}`, `{"ignoreUserWindow":1.0,"ignoreUserCount":2}`, `{"ignoreUserWindow":1e2,"ignoreUserCount":2}`, `{"ignoreUserWindow":-1,"ignoreUserCount":2}`, `{"ignoreUserWindow":"1","ignoreUserCount":2}`, `{"ignoreUserWindow":true,"ignoreUserCount":2}`,
 		`{"ignoreUserWindow":60,"ignoreUserCount":2,"statusDetails":{"ignoreUserWindow":61}}`, `{"statusDetails":{"ignoreUserWindow":1}}`,
 		`{"ignoreDuration":null}`, `{"ignoreDuration":-1}`, `{"ignoreDuration":2147483648}`,
@@ -129,5 +143,14 @@ func TestCompatibleIssueChangeRejectsAmbiguousInput(t *testing.T) {
 				t.Fatalf("accepted invalid issue change %s", body)
 			}
 		})
+	}
+	tooLong := strings.Repeat("x", 201)
+	body := `{"statusDetails":{"inCommit":{"repository":"repo","commit":"` + tooLong + `"}}}`
+	fields, err := issueObject([]byte(body), "status", "assignedTo", "statusDetails", "ignoreDuration", "ignoreCount", "ignoreUserCount", "ignoreWindow", "ignoreUserWindow")
+	if err == nil {
+		_, err = parseCompatibleIssueChange(fields)
+	}
+	if err == nil {
+		t.Fatal("accepted an inCommit commit id longer than 200 characters")
 	}
 }

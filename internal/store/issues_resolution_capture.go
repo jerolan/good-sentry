@@ -132,7 +132,7 @@ func settleIssueResolution(ctx context.Context, tx pgx.Tx, id, project, eventID,
 						Scan(&candidate.id, &candidate.DateCreated, &candidate.DateReleased); err != nil {
 						return err
 					}
-					if p.mode == "release" {
+					if p.mode == "release" || p.mode == "commit" {
 						regress = releaseTupleCompare(candidate.DateCreated, candidate.id, p.release.DateCreated, p.release.id) > 0
 					} else {
 						regress = releaseTupleCompare(candidate.effective(), candidate.id, p.release.effective(), p.release.id) >= 0
