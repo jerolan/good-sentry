@@ -2278,6 +2278,77 @@ func TestCFIExpressionDereferenceRespectsSizeOperands(t *testing.T) {
 	}
 }
 
+func TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace(t *testing.T) {
+	data := []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}
+	ranges := []memoryRange{{start: 0x1000, data: data}}
+	for _, pointerSize := range []int{4, 8} {
+		t.Run(fmt.Sprintf("pointer-%d", pointerSize), func(t *testing.T) {
+			// The address-space identifier is below the address on the DWARF stack.
+			registers := map[uint32]uint64{0: 0, 1: 0x1000}
+			for _, test := range []struct {
+				name       string
+				expression []byte
+				width      int
+			}{
+				{name: "xderef", expression: []byte{0x50, 0x51, 0x18}, width: pointerSize},
+			} {
+				t.Run(test.name, func(t *testing.T) {
+					var want uint64
+					for i := 0; i < test.width; i++ {
+						want |= uint64(data[i]) << (8 * i)
+					}
+					got, ok := evaluateCFIExpression(test.expression, registers, 0, ranges, pointerSize)
+					if !ok || got != want {
+						t.Fatalf("expression %x = %#x, %v; want %#x", test.expression, got, ok, want)
+					}
+				})
+			}
+			for size := 1; size <= pointerSize; size++ {
+				t.Run(fmt.Sprintf("xderef-size-%d", size), func(t *testing.T) {
+					var want uint64
+					for i := 0; i < size; i++ {
+						want |= uint64(data[i]) << (8 * i)
+					}
+					expression := []byte{0x50, 0x51, 0x95, byte(size)}
+					got, ok := evaluateCFIExpression(expression, registers, 0, ranges, pointerSize)
+					if !ok || got != want {
+						t.Fatalf("expression %x = %#x, %v; want %#x", expression, got, ok, want)
+					}
+				})
+			}
+		})
+	}
+
+	for _, test := range []struct {
+		name        string
+		expression  []byte
+		registers   map[uint32]uint64
+		pointerSize int
+	}{
+		{name: "nonzero address space", expression: []byte{0x50, 0x51, 0x18}, registers: map[uint32]uint64{0: 1, 1: 0x1000}, pointerSize: 8},
+		{name: "missing address-space identifier", expression: []byte{0x51, 0x18}, registers: map[uint32]uint64{1: 0x1000}, pointerSize: 8},
+		{name: "missing address", expression: []byte{0x50, 0x18}, registers: map[uint32]uint64{0: 0}, pointerSize: 8},
+		{name: "missing size operand", expression: []byte{0x50, 0x51, 0x95}, registers: map[uint32]uint64{0: 0, 1: 0x1000}, pointerSize: 8},
+		{name: "zero size", expression: []byte{0x50, 0x51, 0x95, 0}, registers: map[uint32]uint64{0: 0, 1: 0x1000}, pointerSize: 8},
+		{name: "size larger than pointer", expression: []byte{0x50, 0x51, 0x95, 9}, registers: map[uint32]uint64{0: 0, 1: 0x1000}, pointerSize: 8},
+		{name: "size larger than four-byte pointer", expression: []byte{0x50, 0x51, 0x95, 5}, registers: map[uint32]uint64{0: 0, 1: 0x1000}, pointerSize: 4},
+		{name: "read beyond captured bytes", expression: []byte{0x50, 0x51, 0x18}, registers: map[uint32]uint64{0: 0, 1: 0x1001}, pointerSize: 8},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if _, ok := evaluateCFIExpression(test.expression, test.registers, 0, ranges, test.pointerSize); ok {
+				t.Fatalf("invalid extended dereference %x was accepted", test.expression)
+			}
+		})
+	}
+
+	if got, ok := evaluateCFIExpression([]byte{0x2f, 0x02, 0x00, 0x95, 0x04, 0x31}, nil, 0, ranges, 8); !ok || got != 1 {
+		t.Fatalf("branch over DW_OP_xderef_size operand = %d, %v; want 1", got, ok)
+	}
+	if _, ok := evaluateCFIExpression([]byte{0x2f, 0x01, 0x00, 0x95, 0x04, 0x31}, nil, 0, ranges, 8); ok {
+		t.Fatal("branch into DW_OP_xderef_size operand was accepted")
+	}
+}
+
 func TestCFIExpressionAddressUsesTargetWidth(t *testing.T) {
 	for _, test := range []struct {
 		pointerSize int

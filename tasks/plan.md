@@ -473,3 +473,13 @@ Support `statusDetails.inCommit` on compatible individual and bulk issue updates
 Official shape: [Sentry bulk issue API](https://docs.sentry.io/api/events/bulk-mutate-an-organizations-issues/) and [Sentry CLI issue resolution](https://cli.sentry.dev/commands/issue/). External repository discovery and commit-message auto-resolution remain separate capabilities.
 
 Status (2026-10-25 UTC): complete at `caed0989923740f8d6fcd8f18c509aa76c7b98a9`. The pre-014 migration-reopen fixture now removes migration067's receipt and dependent index before rebuilding. Focused PostgreSQL migration/store/HTTP checks, the full Go suite, integration race suite, vet and app-image build pass; [CI 40214943039](https://github.com/jerolan/good-sentry/actions/runs/40214943039) is green. [Image workflow 40215362685](https://github.com/jerolan/good-sentry/actions/runs/40215362685) published amd64/arm64 tags `main`, `latest` and `sha-caed0989923740f8d6fcd8f18c509aa76c7b98a9` at manifest digest `sha256:b2b23423c85a613037c480f676bb32f1ef07dcd569fc1a604a59317f45360e8b`.
+
+## Native CFI address-space dereference
+
+Complete the DWARF 5 `DW_OP_xderef` operations without pretending the captured process supports address spaces that are absent from Minidump memory. Map address-space identifier 0 to the captured process memory; reject other identifiers and use the existing bounded memory ranges.
+
+1. Extend the native CFI expression owner with actual memory-backed tests for both operations, stack operand order, target widths, invalid address spaces/sizes, missing memory and jump boundaries.
+2. Implement opcodes `0x18` and `0x95` in expression boundary parsing and evaluation; keep failures closed and preserve existing `DW_OP_deref` behavior.
+3. Run the focused native race suite, integration-tag vet, trim-path build, full project verification and exact-source GitHub CI/image publication through `gh`.
+
+Status (2026-10-25 UTC): implementation and local verification complete. `go test -race ./internal/native`, `go test ./...`, `go vet -tags=integration ./...`, `go build -trimpath ./cmd/goodsentry`, and `git diff --check` pass. Exact-source GitHub CI and image publication remain pending.
