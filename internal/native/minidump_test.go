@@ -102,6 +102,37 @@ func TestParseMinidumpAndBreakpadSymbols(t *testing.T) {
 	}
 }
 
+func TestParseMinidumpRejectsArchitectureContextMismatches(t *testing.T) {
+	tests := []struct {
+		name         string
+		build        func() []byte
+		declaredArch uint16
+	}{
+		{name: "AMD64 context declared as x86", build: buildAMD64Minidump, declaredArch: 0},
+		{name: "x86 context declared as AMD64", build: buildX86Minidump, declaredArch: cpuArchAMD64},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			data := test.build()
+			count := binary.LittleEndian.Uint32(data[8:])
+			directory := binary.LittleEndian.Uint32(data[12:])
+			for i := uint32(0); i < count; i++ {
+				entry := int(directory + i*12)
+				if binary.LittleEndian.Uint32(data[entry:]) != streamSystemInfo {
+					continue
+				}
+				systemRVA := binary.LittleEndian.Uint32(data[entry+8:])
+				binary.LittleEndian.PutUint16(data[systemRVA:], test.declaredArch)
+				if _, err := ParseMinidump(data); err == nil {
+					t.Fatalf("accepted context whose declared architecture is %d", test.declaredArch)
+				}
+				return
+			}
+			t.Fatal("minidump has no SystemInfo stream")
+		})
+	}
+}
+
 func TestParseBreakpadOptionalMultipleSymbolMarker(t *testing.T) {
 	symbol := []byte("MODULE windows x86_64 TEST test_app.pdb\nFILE 1 C:\\src\\crash.cc\nFUNC 1010 20 0 PreviousFunction\n1010 20 42 1\nFUNC m 1030 20 0 Folded Function Name\n1030 20 17 1\nPUBLIC m 1050 0 Folded Public Name\n1050 1 18 1\nFUNC m 1060 nothex 0 Malformed Function\n1070 1 19 1\n")
 	_, functions := ParseBreakpad("test_app.pdb", symbol)
@@ -185,7 +216,7 @@ func buildX86Minidump() []byte {
 	stack := make([]byte, 0x100)
 	binary.LittleEndian.PutUint32(stack[4:], moduleBase+0x1050)
 	system := make([]byte, 2)
-	binary.LittleEndian.PutUint16(system, 3)
+	binary.LittleEndian.PutUint16(system, 0)
 	modules := make([]byte, 4+108)
 	binary.LittleEndian.PutUint32(modules, 1)
 	binary.LittleEndian.PutUint64(modules[4:], uint64(moduleBase))

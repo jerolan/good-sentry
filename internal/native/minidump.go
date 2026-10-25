@@ -22,6 +22,7 @@ const (
 	streamException   = 6
 	streamMemory64    = 9
 	streamSystemInfo  = 7
+	cpuArchX86        = 0
 	cpuArchARM        = 5
 	cpuArchAMD64      = 9
 	cpuArchRISCV64    = 0x8006
@@ -263,13 +264,13 @@ func ParseMinidump(data []byte) (Crash, error) {
 	if len(rawContext) == 0 {
 		rawContext = firstContext
 	}
-	switch len(rawContext) {
-	case 1232:
+	switch {
+	case len(rawContext) == 1232 && declaredArch == cpuArchAMD64:
 		crash.Arch, crash.PointerSize = "amd64", 8
 		crash.RSP = binary.LittleEndian.Uint64(rawContext[152:])
 		crash.RBP = binary.LittleEndian.Uint64(rawContext[160:])
 		crash.RIP = binary.LittleEndian.Uint64(rawContext[248:])
-	case 716:
+	case len(rawContext) == 716 && declaredArch == cpuArchX86:
 		crash.Arch, crash.PointerSize = "x86", 4
 		crash.RBP = uint64(binary.LittleEndian.Uint32(rawContext[180:]))
 		crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[184:]))
