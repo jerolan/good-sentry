@@ -204,5 +204,5 @@ func (s *Server) reprocessingDummy(w http.ResponseWriter, r *http.Request) {
 	if _, valid := s.artifactAccess(w, r); !valid {
 		return
 	}
-	writeJSON(w, 200, struct{}{})
+	w.WriteHeader(http.StatusOK)
 }

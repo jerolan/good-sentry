@@ -77,7 +77,9 @@ func TestCompatibleDebugFileUploadListAndPermissions(t *testing.T) {
 		t.Fatalf("debug list: %+v %v", files, err)
 	}
 	f.request(t, f.client, "POST", base+"/files/difs/assemble/", "{}", http.Header{"X-CSRF-Token": {f.csrf}}, 400)
-	f.request(t, f.client, "POST", base+"/reprocessing/", "{}", http.Header{"X-CSRF-Token": {f.csrf}}, 200)
+	if body := f.request(t, f.client, "POST", base+"/reprocessing/", "", http.Header{"X-CSRF-Token": {f.csrf}}, 200); len(body) != 0 {
+		t.Fatalf("debug-file reprocessing response must be empty, got %q", body)
+	}
 
 	insertDiscoveryMember(t, f, "debug-member@management.test", "Debug member", "member")
 	memberClient, memberCSRF := loginManagementMember(t, f, "debug-member@management.test")
