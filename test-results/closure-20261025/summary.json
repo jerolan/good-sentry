@@ -4101,6 +4101,14 @@
         "rendimiento-037/ui.json"
       ]
     },
+    "CLOSE-rendimiento-038": {
+      "evidence": "vigente",
+      "scope": "real sentry-sdk 2.72.0 transaction in API and UI with identity, parent/child, timing, breakdown and trace navigation",
+      "evidence_files": [
+        "rendimiento-038/python-trace.json",
+        "rendimiento-038/ui.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

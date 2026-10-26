@@ -1,0 +1,28 @@
+{
+  "status": 200,
+  "nodeCount": 3,
+  "resolved": 2,
+  "root": {
+    "kind": "transaction",
+    "op": "http.server",
+    "duration": 8.908,
+    "childCount": 2
+  },
+  "children": [
+    {
+      "op": "db.query",
+      "description": "SELECT python trace",
+      "depth": 1,
+      "parentStatus": "resolved",
+      "duration": 5.115
+    },
+    {
+      "op": "http.client",
+      "description": "GET python trace",
+      "depth": 1,
+      "parentStatus": "resolved",
+      "duration": 3.121
+    }
+  ],
+  "ok": true
+}

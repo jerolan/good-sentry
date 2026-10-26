@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -037
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -038
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-038. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-039. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2096,7 +2096,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-029](../SPEC.md#close-logs-029) | Go 0.50.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-214](../SPEC.md#close-errores-214) | Python 2.72.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-215](../SPEC.md#close-errores-215) | Python 2.72.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-038](../SPEC.md#close-rendimiento-038) | Python 2.72.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegació… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-038](../SPEC.md#close-rendimiento-038) | Python 2.72.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegació… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-030](../SPEC.md#close-logs-030) | Python 2.72.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlac… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-216](../SPEC.md#close-errores-216) | Node 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-217](../SPEC.md#close-errores-217) | Node 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7887,6 +7887,26 @@ además de `rendimiento-036/sdk-traces.json` y
 `rendimiento-028/sdk-child-metrics.json`.
 
 Límites registrados: la UI se ejecuta en Chromium headless sobre una instalación
+local; el CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Cierre 2026-10-26: Python 2.72.0 en API y UI
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-038. Candidata
+`4a5561c`.
+
+| Comprobación | Resultado |
+|---|---|
+| Traza real del SDK oficial | `fa27fecd1083430abc02bf908c633227`: 3 nodos, 2 relaciones, raíz `transaction` `http.server` de 8.908 ms con dos hijos |
+| Hijos y tiempos | `db.query` «SELECT python trace» 5.115 ms y `http.client` «GET python trace» 3.121 ms, profundidad 1 y padre resuelto |
+| Agregado en Transactions | `python-trace-038`, count 1, 8.9 ms, con ocurrencia y View trace |
+| Ocurrencia | Muestra los dos hijos reales |
+| Navegación a traza | Abre `traceView=fa27fecd1083430abc02bf908c633227` conservando `returnView=transactions`, proyecto y sample |
+
+Evidencia: `rendimiento-038/python-trace.json`,
+`rendimiento-038/ui.json` y `rendimiento-038/python-trace-ui.png` (captura
+de la traza Python).
+
+Límites registrados: la UI se ejecutó en Chromium headless sobre una instalación
 local; el CI público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
