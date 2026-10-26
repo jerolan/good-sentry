@@ -945,6 +945,82 @@
         "no overflow or page errors"
       ],
       "evidence_files": ["issue-filters/report.json", "issue-filters/*.png", "tests/compat/issue_filters_browser.mjs"]
+    },
+    "CLOSE-errores-015": {
+      "evidence": "vigente",
+      "scope": "individual and bounded bulk compatible issue deletion with real UI",
+      "covered": [
+        "individual/global/organization and organization bulk deletion",
+        "management session and event:admin scope",
+        "detail and selected UI confirmation"
+      ],
+      "evidence_files": ["errores-015-026.log", "issue-delete/report.json", "issue-delete/*.png"]
+    },
+    "CLOSE-errores-016": {
+      "evidence": "vigente",
+      "scope": "individual 204 and organization bulk 200 status contract",
+      "covered": ["individual global/organization 204", "bulk 200", "hidden/unknown selectors"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-017": {
+      "evidence": "vigente",
+      "scope": "exact DELETE routes and aliases",
+      "covered": ["all four exact routes", "strict slash/query/IDs", "alias canonicalization"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-018": {
+      "evidence": "vigente",
+      "scope": "020 event:admin scope migration and preservation",
+      "covered": ["only event:admin added", "old rows/scopes preserved", "reopen checksum"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-019": {
+      "evidence": "vigente",
+      "scope": "bulk selectors, containment, dedup and limits",
+      "covered": ["id/project/environment/query/status/sort/page/category", "containment", "dedup"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-020": {
+      "evidence": "vigente",
+      "scope": "ID-less same-occurrence selection and hidden scope precedence",
+      "covered": ["historical same-event search", "hidden containment before limit", "typed state"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-021": {
+      "evidence": "vigente",
+      "scope": "DeleteCompatibleIssue(s) interfaces and ManagementAccess",
+      "covered": ["atomic current membership/admission", "whole-group provider", "bounded bulk"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-022": {
+      "evidence": "vigente",
+      "scope": "whole-group deletion and independent history",
+      "covered": ["root plus partitions", "independent history retained", "new generation"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-023": {
+      "evidence": "vigente",
+      "scope": "new matching capture after deletion creates a fresh issue",
+      "covered": ["retry identity", "fresh generation", "no resurrection of old partitions"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-024": {
+      "evidence": "vigente",
+      "scope": "atomic child attachment/opaque storage and deletion ordering",
+      "covered": ["no post-commit gap", "capture waits/fencing", "cancel/rollback"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-025": {
+      "evidence": "vigente",
+      "scope": "envelope boundary collects only normalized parent attachments/opaque",
+      "covered": ["parent-only child storage", "mixed envelope independence", "retry"]
+      ,"evidence_files": ["errores-015-026.log"]
+    },
+    "CLOSE-errores-026": {
+      "evidence": "vigente",
+      "scope": "native Delete issue/Delete selected with confirmation",
+      "covered": ["bulk exactly selected", "detail confirmation", "320/768/1440 without errors"]
+      ,"evidence_files": ["issue-delete/report.json", "issue-delete/*.png", "tests/compat/issue_delete_browser.mjs"]
     }
   },
   "commands": [

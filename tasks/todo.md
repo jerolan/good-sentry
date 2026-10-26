@@ -1443,12 +1443,12 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005 y 007–014 ya están vigentes. 006 espera sus
+publicación/CI; errores 001–005, 007–026 ya están vigentes. 006 espera sus
 proveedores de releases/artefactos/nativo/CLI. Siguiente acción:
-CLOSE-errores-015 (borrado individual/bulk compatible). No se declara
-aceptación ni cierre del producto. El avance se informa por
-criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
-Goal no completan el producto ni borran este registro.
+CLOSE-errores-027 (discard permanente). No se declara aceptación ni cierre del
+producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1550,18 +1550,18 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-012](../SPEC.md#close-errores-012) | Issue search, historical filters and pages: Organization membership/selected-project authorization, count and… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de authz |
 | [CLOSE-errores-013](../SPEC.md#close-errores-013) | Issue search, historical filters and pages: Extend the existing responsive Issues form with release, All statu… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de filtros UI |
 | [CLOSE-errores-014](../SPEC.md#close-errores-014) | Issue search, historical filters and pages: Real Chromium at320/768/1440 must verify combined historical/tag/r… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del formulario |
-| [CLOSE-errores-015](../SPEC.md#close-errores-015) | Compatible issue deletion: Implement complete individual and bounded bulk error-issue deletion, usable through… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-016](../SPEC.md#close-errores-016) | Compatible issue deletion: GlitchTip declares individual global/organization204 and organization bulk200; Sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-017](../SPEC.md#close-errores-017) | Compatible issue deletion: Add exact DELETE /api/0/issues/{issue}/, /api/0/organizations/{org}/issues/{issue}/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-018](../SPEC.md#close-errores-018) | Compatible issue deletion: Add only event:admin through additive020 migration of api_tokens_scopes_check; it a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-019](../SPEC.md#close-errores-019) | Compatible issue deletion: Organization bulk accepts the implemented id/project/environment/query/status/sort/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-020](../SPEC.md#close-errores-020) | Compatible issue deletion: Without IDs, organization bulk uses the existing actual same-event occurrence/searc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-021](../SPEC.md#close-errores-021) | Compatible issue deletion: Store interfaces are DeleteCompatibleIssue(ctx,access ManagementAccess,id string) e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-022](../SPEC.md#close-errores-022) | Compatible issue deletion: The deletion unit is the complete current group: root plus all direct historical or… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-023](../SPEC.md#close-errores-023) | Compatible issue deletion: A new matching SDK event after deletion can create a fresh issue through the retain… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-024](../SPEC.md#close-errores-024) | Compatible issue deletion: Remove the post-commit child-storage gap. Define CaptureAttachment{Filename,Content… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-025](../SPEC.md#close-errores-025) | Compatible issue deletion: The HTTP envelope boundary collects only the normalized parent's attachment/opaque… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-026](../SPEC.md#close-errores-026) | Compatible issue deletion: UI: provide Delete issue in detail and Delete selected in the list, using real comm… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-015](../SPEC.md#close-errores-015) | Compatible issue deletion: Implement complete individual and bounded bulk error-issue deletion, usable through… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de borrado |
+| [CLOSE-errores-016](../SPEC.md#close-errores-016) | Compatible issue deletion: GlitchTip declares individual global/organization204 and organization bulk200; Sent… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener status |
+| [CLOSE-errores-017](../SPEC.md#close-errores-017) | Compatible issue deletion: Add exact DELETE /api/0/issues/{issue}/, /api/0/organizations/{org}/issues/{issue}/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
+| [CLOSE-errores-018](../SPEC.md#close-errores-018) | Compatible issue deletion: Add only event:admin through additive020 migration of api_tokens_scopes_check; it a… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 020 |
+| [CLOSE-errores-019](../SPEC.md#close-errores-019) | Compatible issue deletion: Organization bulk accepts the implemented id/project/environment/query/status/sort/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de bulk |
+| [CLOSE-errores-020](../SPEC.md#close-errores-020) | Compatible issue deletion: Without IDs, organization bulk uses the existing actual same-event occurrence/searc… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de filtros |
+| [CLOSE-errores-021](../SPEC.md#close-errores-021) | Compatible issue deletion: Store interfaces are DeleteCompatibleIssue(ctx,access ManagementAccess,id string) e… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener interfaces |
+| [CLOSE-errores-022](../SPEC.md#close-errores-022) | Compatible issue deletion: The deletion unit is the complete current group: root plus all direct historical or… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de grupo |
+| [CLOSE-errores-023](../SPEC.md#close-errores-023) | Compatible issue deletion: A new matching SDK event after deletion can create a fresh issue through the retain… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener generación |
+| [CLOSE-errores-024](../SPEC.md#close-errores-024) | Compatible issue deletion: Remove the post-commit child-storage gap. Define CaptureAttachment{Filename,Content… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de captura |
+| [CLOSE-errores-025](../SPEC.md#close-errores-025) | Compatible issue deletion: The HTTP envelope boundary collects only the normalized parent's attachment/opaque… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de envelope |
+| [CLOSE-errores-026](../SPEC.md#close-errores-026) | Compatible issue deletion: UI: provide Delete issue in detail and Delete selected in the list, using real comm… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI |
 | [CLOSE-errores-027](../SPEC.md#close-errores-027) | Permanent issue discard: Implement Sentry-compatible discard:true on the individual compatible issue PUT and a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-028](../SPEC.md#close-errores-028) | Permanent issue discard: Use a durable project-scoped discarded-signature table keyed by project and exact nor… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-029](../SPEC.md#close-errores-029) | Permanent issue discard: Every new capture checks its exact project/fingerprint marker under the same shared p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3687,6 +3687,31 @@ Evidencia: `test-results/closure-20261025/issue-filters/`,
 
 Siguiente acción: CLOSE-errores-015 (borrado individual/bulk compatible) y las
 reglas de discard/hash que siguen.
+
+### Ejecución 2026-10-26: borrado compatible de issues
+
+Selección registrada antes de trabajar: CLOSE-errores-015 a -026. Candidata
+`b3005b8`; producto sin cambios desde `54db6e4`. La evidencia proviene de
+store/HTTP `-race` y un contrato de navegador nuevo.
+
+Resultado observado: 020 añade solo `event:admin` y preserva scopes/reopen. Las
+rutas individuales global/organización devuelven 204 y el bulk de organización
+200; aceptan IDs, filtros de proyecto/entorno/query/estado/orden/página,
+contienen el conjunto autorizado y deduplican. Sin IDs usan la misma ocurrencia
+histórica y el scope seleccionado; un filtro oculto precede al límite. Las
+interfaces `DeleteCompatibleIssue(s)` usan `ManagementAccess`, grupos completos
+root+particiones, conservan historial ajeno y permiten una nueva generación
+tras un evento posterior. La captura de attachments/opaque hijos es atómica y
+los locks de proyecto se ordenan por clave firmada; los tests cubren esperas,
+reintentos, duplicados y cancelación. La UI muestra Delete issue en detalle y
+Delete selected en la lista; Chromium confirma ambos con `Confirm deletion`,
+elimina solo los grupos elegidos y deja el resto, a 320/768/1440 sin errores.
+Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-015-026.log` y
+`issue-delete/`, más `tests/compat/issue_delete_browser.mjs`.
+
+Siguiente acción: CLOSE-errores-027 (discard permanente y tabla de firmas).
 
 ### Comprobante de integración documental
 

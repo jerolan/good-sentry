@@ -1,0 +1,42 @@
+=== RUN   TestCompatibleIssueDeletionMigration020PreservesRowsScopesAndReopen
+--- PASS: TestCompatibleIssueDeletionMigration020PreservesRowsScopesAndReopen (1.04s)
+=== RUN   TestDeleteCompatibleIssueWaitsForAtomicCaptureItems
+--- PASS: TestDeleteCompatibleIssueWaitsForAtomicCaptureItems (0.72s)
+=== RUN   TestDeleteCompatibleIssueOrdersFreshAndDuplicateItemsAfterItsCut
+=== RUN   TestDeleteCompatibleIssueOrdersFreshAndDuplicateItemsAfterItsCut/duplicate=false
+=== RUN   TestDeleteCompatibleIssueOrdersFreshAndDuplicateItemsAfterItsCut/duplicate=true
+--- PASS: TestDeleteCompatibleIssueOrdersFreshAndDuplicateItemsAfterItsCut (1.21s)
+    --- PASS: TestDeleteCompatibleIssueOrdersFreshAndDuplicateItemsAfterItsCut/duplicate=false (0.61s)
+    --- PASS: TestDeleteCompatibleIssueOrdersFreshAndDuplicateItemsAfterItsCut/duplicate=true (0.60s)
+=== RUN   TestDeleteCompatibleIssuesOrdersActualSignedProjectGates
+--- PASS: TestDeleteCompatibleIssuesOrdersActualSignedProjectGates (0.64s)
+=== RUN   TestDeleteCompatibleIssueWholeGroupRetainsIndependentHistoryAndNewGeneration
+--- PASS: TestDeleteCompatibleIssueWholeGroupRetainsIndependentHistoryAndNewGeneration (1.10s)
+=== RUN   TestDeleteCompatibleIssueAdmissionAliasAndCurrentMembershipAreAtomic
+--- PASS: TestDeleteCompatibleIssueAdmissionAliasAndCurrentMembershipAreAtomic (0.73s)
+=== RUN   TestDeleteCompatibleIssuesWholeIDContainmentIgnoredFiltersAndDedup
+--- PASS: TestDeleteCompatibleIssuesWholeIDContainmentIgnoredFiltersAndDedup (1.09s)
+=== RUN   TestDeleteCompatibleIssuesSameOccurrenceFiltersAndTypedStateSelection
+--- PASS: TestDeleteCompatibleIssuesSameOccurrenceFiltersAndTypedStateSelection (0.66s)
+PASS
+ok  	goodsentry/internal/store	8.212s
+=== RUN   TestCompatibleIssueDeleteHTTPContract
+=== RUN   TestCompatibleIssueDeleteHTTPContract/all_four_routes_require_deletion_scope_or_protected_session
+=== RUN   TestCompatibleIssueDeleteHTTPContract/admin_scope_does_not_inherit_other_APIs
+=== RUN   TestCompatibleIssueDeleteHTTPContract/strict_body_query_ID_and_slash_framing_never_invokes_deletion
+=== RUN   TestCompatibleIssueDeleteHTTPContract/individual_routes_and_bulk_serializers_acknowledge_actual_deletion
+=== RUN   TestCompatibleIssueDeleteHTTPContract/hidden_containment_precedes_limit_and_known_selectors_are_ignored_for_IDs
+=== RUN   TestCompatibleIssueDeleteHTTPContract/individual_alias_conflicts_and_bulk_alias_canonicalization_retain_meaning
+=== RUN   TestCompatibleIssueDeleteHTTPContract/ID-less_organization_defaults_differ_from_explicit_empty_query_and_project_scope
+=== RUN   TestCompatibleIssueDeleteHTTPContract/owner_and_admin_manage_credentials_while_current_membership_governs_consumption
+--- PASS: TestCompatibleIssueDeleteHTTPContract (1.99s)
+    --- PASS: TestCompatibleIssueDeleteHTTPContract/all_four_routes_require_deletion_scope_or_protected_session (0.14s)
+    --- PASS: TestCompatibleIssueDeleteHTTPContract/admin_scope_does_not_inherit_other_APIs (0.01s)
+    --- PASS: TestCompatibleIssueDeleteHTTPContract/strict_body_query_ID_and_slash_framing_never_invokes_deletion (0.08s)
+    --- PASS: TestCompatibleIssueDeleteHTTPContract/individual_routes_and_bulk_serializers_acknowledge_actual_deletion (0.23s)
+    --- PASS: TestCompatibleIssueDeleteHTTPContract/hidden_containment_precedes_limit_and_known_selectors_are_ignored_for_IDs (0.13s)
+    --- PASS: TestCompatibleIssueDeleteHTTPContract/individual_alias_conflicts_and_bulk_alias_canonicalization_retain_meaning (0.10s)
+    --- PASS: TestCompatibleIssueDeleteHTTPContract/ID-less_organization_defaults_differ_from_explicit_empty_query_and_project_scope (0.25s)
+    --- PASS: TestCompatibleIssueDeleteHTTPContract/owner_and_admin_manage_credentials_while_current_membership_governs_consumption (0.18s)
+PASS
+ok  	goodsentry/internal/server	3.013s

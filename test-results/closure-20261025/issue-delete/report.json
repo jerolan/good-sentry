@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "checks": [
+    "Bulk deletion removes exactly the selected groups and leaves the unselected issue",
+    "Individual deletion from issue detail requires confirmation and returns to the list without the group"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/issue-delete/selected-issues-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/issue-delete/selected-issues-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/issue-delete/selected-issues-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/issue-delete/confirm-detail-delete-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/issue-delete/confirm-detail-delete-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/issue-delete/confirm-detail-delete-1440.png"
+  ],
+  "pageErrors": []
+}
