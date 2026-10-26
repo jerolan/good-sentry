@@ -6,8 +6,11 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -44,6 +47,45 @@ func TestCompatibleReleaseFilesHTTP(t *testing.T) {
 	var organizationFiles []releaseFileWire
 	if err := json.Unmarshal(f.request(t, f.client, "GET", orgPath, "", nil, 200), &organizationFiles); err != nil || len(organizationFiles) != 2 {
 		t.Fatalf("organization files=%+v err=%v", organizationFiles, err)
+	}
+	emptyPath := "/api/0/projects/" + f.org.Slug + "/" + f.project.Slug + "/releases/release-files-empty/files/"
+	if body := f.request(t, f.client, "GET", emptyPath, "", nil, 200); strings.TrimSpace(string(body)) != "[]" {
+		t.Fatalf("empty release files=%s", body)
+	}
+	bulkVersion := "release-files-bulk"
+	for index := 0; index < 51; index++ {
+		if _, _, err := f.db.SaveSourceMap(f.ctx, f.owner.ID, f.org.Slug, f.project.ID, fmt.Sprintf("~/bulk-%02d.map", index), bulkVersion, "", "", []byte(fmt.Sprintf(`{"version":3,"sources":["bulk-%02d.ts"],"names":[],"mappings":"AAAA"}`, index))); err != nil {
+			t.Fatal(err)
+		}
+	}
+	bulkPath := "/api/0/projects/" + f.org.Slug + "/" + f.project.Slug + "/releases/" + bulkVersion + "/files/"
+	var bulkFiles []releaseFileWire
+	if err := json.Unmarshal(f.request(t, f.client, "GET", bulkPath, "", nil, 200), &bulkFiles); err != nil || len(bulkFiles) != 50 {
+		t.Fatalf("default release file page=%d err=%v", len(bulkFiles), err)
+	}
+	previousID := int64(0)
+	for _, file := range bulkFiles {
+		id, err := strconv.ParseInt(file.ID, 10, 64)
+		if err != nil || (previousID != 0 && id >= previousID) {
+			t.Fatalf("release files are not newest-id-first: %+v", bulkFiles)
+		}
+		previousID = id
+	}
+	nextHeader := keyLink(t, f, bulkPath)
+	if !strings.Contains(nextHeader, `rel="next"`) {
+		t.Fatalf("release file next Link=%q", nextHeader)
+	}
+	cursor := regexp.MustCompile(`cursor=([^&>]+)`).FindStringSubmatch(nextHeader)
+	if len(cursor) != 2 {
+		t.Fatalf("release file cursor missing: %q", nextHeader)
+	}
+	previousHeader := keyLink(t, f, bulkPath+"?limit=50&cursor="+cursor[1])
+	if !strings.Contains(previousHeader, `rel="previous"`) {
+		t.Fatalf("release file previous Link=%q", previousHeader)
+	}
+	var secondPage []releaseFileWire
+	if err := json.Unmarshal(f.request(t, f.client, "GET", bulkPath+"?limit=50&cursor="+cursor[1], "", nil, 200), &secondPage); err != nil || len(secondPage) != 1 {
+		t.Fatalf("release file second page=%d err=%v", len(secondPage), err)
 	}
 	if organizationFiles[0].ID != second.ID || organizationFiles[1].ID != first.ID {
 		t.Fatalf("organization files are not newest-first: %+v", organizationFiles)

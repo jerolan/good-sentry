@@ -3719,6 +3719,13 @@
       "evidence_files": [
         "sourcemaps-012-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-013": {
+      "evidence": "vigente",
+      "scope": "release file listing over source_maps with default page, ordering and link navigation",
+      "evidence_files": [
+        "sourcemaps-013-go.log"
+      ]
     }
   },
   "commands": [

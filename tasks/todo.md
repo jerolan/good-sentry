@@ -1451,7 +1451,8 @@ CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
 CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
-Siguiente acción: CLOSE-sourcemaps-013. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-013 queda vigente. Siguiente acción: CLOSE-sourcemaps-014.
+No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1708,7 +1709,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir el CLI contra la imagen y verificar upgrade/reinicio |
 | [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-013](../SPEC.md#close-sourcemaps-013) | Compatible release files: The view is backed by the existing release-scoped source_maps rows, not a duplicate… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-013](../SPEC.md#close-sourcemaps-013) | Compatible release files: The view is backed by the existing release-scoped source_maps rows, not a duplicate… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-014](../SPEC.md#close-sourcemaps-014) | JavaScript artifacts: The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at /api/0/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-015](../SPEC.md#close-sourcemaps-015) | JavaScript artifacts: The modern JavaScript upload increment connects exact GET/POST /api/0/organizations/{org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-016](../SPEC.md#close-sourcemaps-016) | JavaScript artifacts: Negotiate an absolute upload URL derived from the configured public domain/prefix, hashA… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6339,6 +6340,39 @@ Mapa de comprobantes:
 
 Evidencia: `test-results/closure-20261025/sourcemaps-012-go.log` y los cambios
 en `internal/server/compat_release_files.go` y su owner.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: listado de archivos respaldado por source_maps
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-013. Candidata
+`f2f75d7`.
+
+Resultado observado: la vista lee las filas `source_maps` existentes; las
+subidas reales son las que aparecen y el borrado elimina solo la fila elegida.
+La página por defecto contiene 50 entradas, `limit`/`per_page` aceptan 1..100
+con cursor de desplazamiento y los enlaces prefijados emiten `next` y
+`previous`. El orden es recepción más reciente y luego id numérico descendente;
+cada elemento devuelve id en cadena, creación UTC, SHA-1 de los bytes,
+`headers` nulo, nombre y tamaño entero. La ruta de proyecto restringe a su
+proyecto y la de organización incluye los proyectos autorizados. Una lista
+autorizada vacía devuelve 200 con `[]`, y el borrado no toca metadatos de la
+release, archivos de otros proyectos, telemetría ni chunks en staging.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Vista respaldada por `source_maps` y campos reales | HTTP `TestCompatibleReleaseFilesHTTP`; store `TestSourceMapsMatchBuildAndProjectAfterRestart` |
+| Página por defecto de 50 | HTTP `TestCompatibleReleaseFilesHTTP` (aserción añadida con 51 archivos) |
+| Orden por id descendente | HTTP `TestCompatibleReleaseFilesHTTP` (aserción añadida) |
+| Enlaces `next` y `previous` | HTTP `TestCompatibleReleaseFilesHTTP` (aserciones añadidas) |
+| Lista vacía 200 `[]` | HTTP `TestCompatibleReleaseFilesHTTP` (aserción añadida) |
+| Alcance por proyecto y organización | HTTP `TestCompatibleReleaseFilesHTTP` |
+| Borrado aislado | store `TestReleaseFilesListDetailDeleteAndScope` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-013-go.log` y el cambio en
+`internal/server/compat_release_files_test.go`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 
