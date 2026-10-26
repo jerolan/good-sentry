@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-020 (Slack en el diálogo de alertas). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-021 (matriz de aceptación de Slack). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1888,7 +1888,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-017](../SPEC.md#close-alertas-017) | Slack incoming webhooks: The summary is GoodSentry: rule name, then a Project line. Frequency adds the optiona… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-018](../SPEC.md#close-alertas-018) | Slack incoming webhooks: Keep POST, JSON content type and the two existing GoodSentry identity headers for Sla… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-019](../SPEC.md#close-alertas-019) | Slack incoming webhooks: Slack rate-limit responses(https://docs.slack.dev/apis/web-api/rate-limits/) include… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-020](../SPEC.md#close-alertas-020) | Slack incoming webhooks: Expose Slack incoming webhook as a recipient choice in the existing original Alert di… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-020](../SPEC.md#close-alertas-020) | Slack incoming webhooks: Expose Slack incoming webhook as a recipient choice in the existing original Alert di… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-021](../SPEC.md#close-alertas-021) | Slack incoming webhooks: Pure owning checks cover configured Slack acceptance/deduplication/URL rejection, act… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-022](../SPEC.md#close-alertas-022) | Additional provider webhooks: The remaining incoming-webhook providers are explicit recipient types discord, t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-023](../SPEC.md#close-alertas-023) | Additional provider webhooks: Additive038_provider_alerts.sql expands only alert_deliveries_recipient_type_che… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4615,6 +4615,26 @@ parseo, el propietario de migración034 con pista durable y el de reclamación c
 token y backoff.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: Slack en el diálogo de alertas
+
+Selección registrada antes de trabajar: CLOSE-alertas-020. Candidata
+`dc68329`.
+
+Resultado observado: el diálogo original de alertas ofrece «Slack incoming
+webhook» junto a los demás destinatarios, con la explicación de que la URL del
+canal es obligatoria y contiene un secreto. En Chromium, el propietario crea una
+regla Slack, la lista y abre su detalle, donde el destino snapshot
+`slack: https://hooks.slack.example/...` queda visible; un miembro real no ve
+ni el destino ni el control de creación. Las capturas 320/768/1440 no
+desbordan y no hay errores de página. La implementación reutiliza el módulo
+`alerts.js` existente, sin servicio, dependencia, flag ni paso de instalación
+nuevos, y conserva los flujos de regla, historial, pausa y prueba ya cubiertos.
+
+Evidencia: `test-results/closure-20261025/alerts-slack-ui/report.json`.
+
+Límites registrados: el CI público y la recepción real en un canal de Slack
+siguen pendientes y pertenecen a CLOSE-alertas-021.
 
 ### Comprobante de integración documental
 

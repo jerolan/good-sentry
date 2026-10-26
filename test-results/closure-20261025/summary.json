@@ -3094,6 +3094,13 @@
       "evidence_files": [
         "alertas-019-go.log"
       ]
+    },
+    "CLOSE-alertas-020": {
+      "evidence": "vigente",
+      "scope": "Slack recipient choice in the original alert dialog with secret guidance and member secrecy",
+      "evidence_files": [
+        "alerts-slack-ui/report.json"
+      ]
     }
   },
   "commands": [

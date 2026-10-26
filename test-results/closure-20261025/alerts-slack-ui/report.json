@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "Owner selects the Slack incoming webhook, sees the secret hint and the stored destination snapshot",
+    "Member sees neither the Slack destination nor the alert controls"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-dialog-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-dialog-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-dialog-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-rule-owner-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-rule-owner-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-rule-owner-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-member-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-member-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alerts-slack-ui/slack-member-1440.png"
+  ],
+  "pageErrors": []
+}
