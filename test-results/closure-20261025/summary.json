@@ -4027,6 +4027,13 @@
         "rendimiento-028-image/image-sdk-metrics.json"
       ]
     },
+    "CLOSE-rendimiento-029": {
+      "evidence": "vigente",
+      "scope": "native trace, node and error routes with hex normalization, project/page admission, repeatable snapshot, foreign 404 and logs-only trace handling",
+      "evidence_files": [
+        "rendimiento-029/trace-graph.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

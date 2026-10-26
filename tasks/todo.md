@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -027
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -029
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-029. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-030. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1861,7 +1861,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7634,6 +7634,28 @@ binario.
 
 Límite registrado: la imagen se construyó y ejecutó localmente; no se publicó ni
 se compara con CI público, que sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: reconstrucción de traza por API
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-029. Candidata
+`0214f37`. Pruebas sobre PostgreSQL 18 desechable:
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Tres rutas nativas de traza, nodo y errores | `TestTraceHTTPContract` las recorre con 200/404 |
+| Identificador de 32 hex, mayúsculas aceptadas y normalizadas | La traza se ingesta con mayúsculas y se consulta en minúsculas sin reescribir payloads |
+| Proyecto y página canónicos, proyecto vacío como todos | Cubierto por la prueba HTTP |
+| Búsqueda independiente de ventanas | `TestTracePreviewsRawScopeRelatedPagesAndLogFlags` y `TestTraceSnapshotKeepsGraphMetadataRelatedCountsAndErrorPagesCoherent` pasan |
+| Instantánea repetible de grafo, metadatos y conteos | La prueba de instantánea mantiene coherencia entre páginas y conteos |
+| 404 ausente o solo ajeno | `TestTracePendingVersionOneAndForeignScope` más el caso foreign-only del contrato HTTP |
+| Traza con solo errores o logs habilitados | La prueba HTTP incluye una traza solo-logs y errores asociados con cascada vacía |
+| Logs desactivados sin conteo ni traza solo-logs | La prueba HTTP construye servidores con logs activados y desactivados |
+
+Evidencia: `test-results/closure-20261025/rendimiento-029/trace-graph.log`.
+
+Límites registrados: la cascada de UI y la reconstrucción visual completa siguen
+en criterios posteriores. El CI público y la imagen final siguen pendientes para
+la auditoría final.
 
 ### Comprobante de integración documental
 
