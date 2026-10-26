@@ -1,0 +1,12 @@
+=== RUN   TestReleaseHTTPContract
+--- PASS: TestReleaseHTTPContract (2.26s)
+PASS
+ok  	goodsentry/internal/server	2.266s
+=== RUN   TestReleaseSharedIdentityAndCoverage
+--- PASS: TestReleaseSharedIdentityAndCoverage (0.51s)
+=== RUN   TestReleaseDeployScopeObservationAndArtifactDeletion
+--- PASS: TestReleaseDeployScopeObservationAndArtifactDeletion (0.61s)
+=== RUN   TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent
+--- PASS: TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent (0.49s)
+PASS
+ok  	goodsentry/internal/store	1.609s

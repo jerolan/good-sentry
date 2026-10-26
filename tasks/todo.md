@@ -1449,8 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 a -007 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-008. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -008 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-009. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1702,7 +1702,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-005](../SPEC.md#close-sourcemaps-005) | Release lifecycle, commit metadata and deploys: List releases by dateCreated descending then numeric id descen… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-006](../SPEC.md#close-sourcemaps-006) | Release lifecycle, commit metadata and deploys: Support organization GET/POST .../releases/{version}/commits/,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-007](../SPEC.md#close-sourcemaps-007) | Release lifecycle, commit metadata and deploys: Persist an organization/name repository identity whenever expl… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6155,6 +6155,41 @@ Evidencia: `test-results/closure-20261025/sourcemaps-007-go.log` y el cambio en
 Límites registrados: el CI público sigue pendiente para la auditoría final. No
 se acredita una integración de repositorio remoto; el proveedor es el etiquetado
 manual.
+
+### Ejecución 2026-10-26: deploys completados
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-008. Candidata
+`f77ba0e`.
+
+Resultado observado: `POST .../releases/{version}/deploys/` exige entorno de
+1..64 caracteres sin controles, nombre opcional de hasta 200, URL de hasta 2000,
+fechas opcionales y proyectos de 1..1000 referencias. Un final omitido o nulo
+usa el instante de recepción de la base y la respuesta expone un
+`dateFinished` concreto; un final anterior al inicio conocido se rechaza. La
+ausencia de proyectos significa todos los de la release y exige cobertura
+completa, mientras una lista explícita debe ser no vacía, estar asociada y
+autorizada. Cada deploy conserva sus proyectos seleccionados, las lecturas y
+resúmenes se filtran por la intersección autorizada, y la respuesta incluye id
+entero, entorno, nombre/URL/inicio nulos, creación y fin. El `lastDeploy`
+anidado conserva los slugs compatibles y el listado nativo devuelve los objetos
+de proyecto reales.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Alta con fin nulo usando el reloj de recepción | HTTP `TestReleaseHTTPContract` |
+| Límites de entorno, nombre, URL, fechas y proyectos | HTTP `TestReleaseHTTPContract` |
+| Fin anterior al inicio rechazado | HTTP `TestReleaseHTTPContract` |
+| Proyectos implícitos con cobertura completa y explícitos autorizados | HTTP `TestReleaseHTTPContract`; store `TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent` |
+| Asociaciones por deploy y filtrado visible | store `TestReleaseDeployScopeObservationAndArtifactDeletion` |
+| `lastDeploy`, listado compatible y nativo | HTTP `TestReleaseHTTPContract` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-008-go.log` con cuatro
+owners.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. El
+fin concreto se comprueba contra el reloj de PostgreSQL, sin costura de reloj.
 
 ### Comprobante de integración documental
 

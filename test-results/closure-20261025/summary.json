@@ -3678,6 +3678,13 @@
       "evidence_files": [
         "sourcemaps-007-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-008": {
+      "evidence": "vigente",
+      "scope": "completed deploys, receipt finish, project coverage and visible summaries",
+      "evidence_files": [
+        "sourcemaps-008-go.log"
+      ]
     }
   },
   "commands": [
