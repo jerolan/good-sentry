@@ -3565,6 +3565,18 @@
         "password-recovery/reset-form-1440.png",
         "password-recovery/post-reset-1440.png"
       ]
+    },
+    "CLOSE-identidad-106": {
+      "evidence": "vigente",
+      "scope": "TOTP enrollment and challenge plus organization require2FA in API and browser",
+      "evidence_files": [
+        "identidad-106-go.log",
+        "two-factor/report.json",
+        "two-factor/account-1440.png",
+        "two-factor/challenge-1440.png",
+        "two-factor/session-1440.png",
+        "two-factor/organization-2fa-1440.png"
+      ]
     }
   },
   "commands": [

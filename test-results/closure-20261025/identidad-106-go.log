@@ -1,0 +1,8 @@
+=== RUN   TestTwoFactorEnrollmentAndLoginHTTP
+--- PASS: TestTwoFactorEnrollmentAndLoginHTTP (0.79s)
+=== RUN   TestTwoFactorStateAvailableWithoutSessionInOpenMode
+--- PASS: TestTwoFactorStateAvailableWithoutSessionInOpenMode (0.45s)
+=== RUN   TestOrganizationRequire2FAGatesSessionsAndBearerTokens
+--- PASS: TestOrganizationRequire2FAGatesSessionsAndBearerTokens (0.67s)
+PASS
+ok  	goodsentry/internal/server	1.911s
