@@ -1445,8 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-113 (merge/
-unmerge nativo). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-120 (rutas/UI de merge). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1648,13 +1647,13 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-110](../SPEC.md#close-errores-110) | Compatible event inspection: The JSON view is a legacy compatibility projection, not byte-identical SDK transp… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-111](../SPEC.md#close-errores-111) | Compatible event inspection: Internal contracts: eventview.Record contains ID/GroupID strings, ProjectID int64… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-112](../SPEC.md#close-errores-112) | Compatible event inspection: Require actual official SDK events queried through compatible project and issue U… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
-| [CLOSE-errores-113](../SPEC.md#close-errores-113) | Native merge, original partitions and unmerge: Complete native merging and separation of error issues through… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-114](../SPEC.md#close-errores-114) | Native merge, original partitions and unmerge: An issue row owns its original project/fingerprint forever. A v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-115](../SPEC.md#close-errores-115) | Native merge, original partitions and unmerge: Historical group counts and fresh-capture progress are distinct… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-116](../SPEC.md#close-errores-116) | Native merge, original partitions and unmerge: Add a subsequent migration016 for topology constraints and inde… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-117](../SPEC.md#close-errores-117) | Native merge, original partitions and unmerge: Merge/unmerge locks current organization membership FOR SHARE,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-118](../SPEC.md#close-errores-118) | Native merge, original partitions and unmerge: The surviving root retains status, assignment, resolution/regre… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-119](../SPEC.md#close-errores-119) | Native merge, original partitions and unmerge: Comments and activities remain on their original issue IDs. Rea… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-113](../SPEC.md#close-errores-113) | Native merge, original partitions and unmerge: Complete native merging and separation of error issues through… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-114](../SPEC.md#close-errores-114) | Native merge, original partitions and unmerge: An issue row owns its original project/fingerprint forever. A v… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-115](../SPEC.md#close-errores-115) | Native merge, original partitions and unmerge: Historical group counts and fresh-capture progress are distinct… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-116](../SPEC.md#close-errores-116) | Native merge, original partitions and unmerge: Add a subsequent migration016 for topology constraints and inde… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-117](../SPEC.md#close-errores-117) | Native merge, original partitions and unmerge: Merge/unmerge locks current organization membership FOR SHARE,… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-118](../SPEC.md#close-errores-118) | Native merge, original partitions and unmerge: The surviving root retains status, assignment, resolution/regre… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-119](../SPEC.md#close-errores-119) | Native merge, original partitions and unmerge: Comments and activities remain on their original issue IDs. Rea… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-120](../SPEC.md#close-errores-120) | Native merge, original partitions and unmerge: Native POST /api/v1/organizations/{org}/issues/merge accepts ex… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-121](../SPEC.md#close-errores-121) | Native merge, original partitions and unmerge: Native POST /api/v1/issues/{issue}/unmerge accepts exactly {ori… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-122](../SPEC.md#close-errores-122) | Native merge, original partitions and unmerge: All grouping mutations use the existing session/CSRF controls a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3968,6 +3967,27 @@ que queda bloqueada, no cerrada.
 Evidencia: `test-results/closure-20261025/errores-101-112.log`.
 
 Siguiente acción: CLOSE-errores-113 (merge/original partitions/unmerge nativo).
+
+### Ejecución 2026-10-26: merge y particiones originales
+
+Selección registrada antes de trabajar: CLOSE-errores-113 a -119. Candidata
+`01ffae3`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners store/HTTP con `-race`.
+
+Resultado observado: 016 añade constraints/índices de topología y rechaza
+self/upward/cross-project/chain/active-alias/ownership inválidos atómicamente.
+Merge/unmerge bloquean membership vigente y el gate de proyecto, conservan la
+partición y fingerprint originales para siempre, distinguen count histórico de
+progreso fresco y mantienen status/assignment/resolution/regression/comments/
+activity en sus IDs originales. La raíz conserva su política, las rutas nativas
+y origenes paginan/buscan literalmente, y capturas/triage/merge concurrentes se
+serializan sin resucitar aliases. Subresultados pendientes de los bloques:
+ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-113-119.log`.
+
+Siguiente acción: CLOSE-errores-120 (rutas nativas merge/unmerge y UI de
+selección).
 
 ### Comprobante de integración documental
 

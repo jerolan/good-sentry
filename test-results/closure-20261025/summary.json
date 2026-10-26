@@ -2127,6 +2127,55 @@
       "evidence_files": [
         "errores-101-112.log"
       ]
+    },
+    "CLOSE-errores-113": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge, original partitions, topology migration, locks and history",
+      "evidence_files": [
+        "errores-113-119.log"
+      ]
+    },
+    "CLOSE-errores-114": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge, original partitions, topology migration, locks and history",
+      "evidence_files": [
+        "errores-113-119.log"
+      ]
+    },
+    "CLOSE-errores-115": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge, original partitions, topology migration, locks and history",
+      "evidence_files": [
+        "errores-113-119.log"
+      ]
+    },
+    "CLOSE-errores-116": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge, original partitions, topology migration, locks and history",
+      "evidence_files": [
+        "errores-113-119.log"
+      ]
+    },
+    "CLOSE-errores-117": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge, original partitions, topology migration, locks and history",
+      "evidence_files": [
+        "errores-113-119.log"
+      ]
+    },
+    "CLOSE-errores-118": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge, original partitions, topology migration, locks and history",
+      "evidence_files": [
+        "errores-113-119.log"
+      ]
+    },
+    "CLOSE-errores-119": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge, original partitions, topology migration, locks and history",
+      "evidence_files": [
+        "errores-113-119.log"
+      ]
     }
   },
   "commands": [
