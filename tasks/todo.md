@@ -1753,7 +1753,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | por contrastar | pendiente | Parcial: CRUD, slug, POST compatible y límite 100 verificados; faltan roles y monitor de otra org |
+| [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | por contrastar | pendiente | Parcial: falta sesión de miembro real y monitor de otra organización |
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7974,10 +7974,17 @@ Comprobado después con `/tmp/gs-s001u.mjs` sobre una instalación limpia:
 
 Evidencia adicional: `uptime-001/status-page-rules.json`.
 
-Siguen sin prueba específica las fronteras de rol (miembro listando pero sin
-crear, y `org:write` en el POST compatible) y un monitor real de otra
-organización; el 404 de un identificador desconocido y la consulta acotada por
-organización cubren la no-atribución.
+Fronteras de autoridad comprobadas con un token `org:read`:
+la lista compatible responde 200 y el `POST` compatible responde 403, de
+modo que `org:write` es necesario para crear. También se intentó adjuntar
+un monitor inexistente y la actualización devolvió 404, sin asociarlo.
+
+Sigue pendiente una sesión de miembro real (listar sí, crear no) y un monitor
+real de otra organización: la creación de una segunda organización con la
+sesión del propietario devuelve 403, así que no se pudo construir ese fixture
+por la API.
+
+Evidencia adicional: `uptime-001/status-page-roles.json`.
 
 Evidencia: `test-results/closure-20261025/uptime-001/status-pages.log`.
 

@@ -1,0 +1,12 @@
+{
+  "secondOrg": {
+    "status": 403
+  },
+  "foreignMonitor": 404,
+  "page": 201,
+  "foreignAttach": 404,
+  "token": 201,
+  "readList": 200,
+  "writePost": 403,
+  "ok": false
+}
