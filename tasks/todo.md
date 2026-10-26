@@ -1446,7 +1446,8 @@ la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
 releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-103
+vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
+Siguiente acción: CLOSE-identidad-104
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1997,7 +1998,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-100](../SPEC.md#close-identidad-100) | Instance user administration: Every list and update rechecks that the current account is active and an instanc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-101](../SPEC.md#close-identidad-101) | Instance user administration: Once an instance administrator exists, serialized updates and the existing self-… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-102](../SPEC.md#close-identidad-102) | Instance user administration: The first-owner/admin bootstrap must be serialized with user creation. The first… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-103](../SPEC.md#close-identidad-103) | Instance user administration: Acceptance uses real PostgreSQL migration from063 and reopen, store concurrency… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-103](../SPEC.md#close-identidad-103) | Instance user administration: Acceptance uses real PostgreSQL migration from063 and reopen, store concurrency… | implementada (local) | bloqueada | Autorizar CI público y publicación; luego repetir la actualización con imágenes en Compose |
 | [CLOSE-operacion-049](../SPEC.md#close-operacion-049) | Instance user administration: Optional MCP uses Streamable HTTP with authenticated scoped access to issues, lo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-050](../SPEC.md#close-operacion-050) | Instance user administration: GOODSENTRY_ENABLE_ARCHIVE is the canonical switch. Preserve GOODSENTRY_ENABLE_DU… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-051](../SPEC.md#close-operacion-051) | Instance user administration: Every span read that can include cold data runs on one Repeatable Read, Read Wri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5615,6 +5616,39 @@ owners y las secciones de configuración citadas.
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 parada de procesos previos y la reversión no soportada son restricciones
 operativas documentadas; no se simula un binario pre-064.
+
+### Ejecución 2026-10-26: aceptación de administración de instancia
+
+Selección registrada antes de trabajar: CLOSE-identidad-103. Candidata
+`87cd9d7`.
+
+Resultado observado: la corrida enfocada reúne migración 064, bootstrap, CLI,
+búsqueda y suspensión, último administrador, revalidación del actor tras el
+bloqueo, emisor en espera, rotación OAuth, rechazo de identidad OIDC suspendida,
+rutas HTTP, modo abierto y concesión desde el CLI. La suite completa
+`go test -race -count=1 -tags=integration ./...` pasa con `go vet` y
+`go build` previos, sin `DATA RACE` (server 201s, store 386s). La actualización
+real desde 063 se ejecutó con el binario previo a 064 y el actual sobre la misma
+base: 1 usuario conservado, `is_active` ausente antes y presente después,
+migraciones 63→73, cero administradores tras migrar, `admin/users` 403,
+`admin grant` promueve al owner existente, la lista responde 200 y un reinicio
+posterior conserva el estado. En Chromium, 31 cuentas producen dos páginas: la
+primera exige «Previous» deshabilitado, «Next» abre la segunda con la cuenta
+restante y la suspensión/reactivación funciona desde esa página, sin
+desbordamiento a 320/768/1440.
+
+Evidencia: `test-results/closure-20261025/identidad-103-go.log`,
+`full-race-instance-admin.log`, `upgrade-064.log` y
+`admin-users-pagination/` con `report.json` y seis capturas.
+
+Bloqueo registrado: el criterio exige `gh` CI e imagen pública y una
+actualización Compose con imágenes. No hay autorización de publicación ni una
+imagen previa a 064 disponible localmente; el avance local se probó con
+binarios sobre PostgreSQL real. Condición de desbloqueo: autorizar CI público y
+publicación (o aportar una imagen previa a 064) y repetir la actualización con
+las imágenes en Compose. Responsable: instrucción del usuario. Intentos: uno
+local con binarios; sin intentos de publicación. Siguiente acción tras
+desbloquear: ejecutar CI exacto, publicar y repetir el flujo Compose.
 
 ### Comprobante de integración documental
 

@@ -1,0 +1,34 @@
+=== RUN   TestInstanceUserAdminMigration064PreservesExistingAccountsAndCredentials
+--- PASS: TestInstanceUserAdminMigration064PreservesExistingAccountsAndCredentials (0.97s)
+=== RUN   TestInstanceUserAdminBootstrapAndGrant
+--- PASS: TestInstanceUserAdminBootstrapAndGrant (0.78s)
+=== RUN   TestInstanceUserAdminSearchSuspensionAndLastAdmin
+--- PASS: TestInstanceUserAdminSearchSuspensionAndLastAdmin (0.67s)
+=== RUN   TestInstanceAdminRechecksActorAfterWaitingForSerializationLock
+--- PASS: TestInstanceAdminRechecksActorAfterWaitingForSerializationLock (0.56s)
+=== RUN   TestSuspensionWaitsForCredentialIssuerAndRevokesItsCommit
+--- PASS: TestSuspensionWaitsForCredentialIssuerAndRevokesItsCommit (0.43s)
+=== RUN   TestOAuthRefreshRotationLocksUserBeforeRefreshToken
+--- PASS: TestOAuthRefreshRotationLocksUserBeforeRefreshToken (0.48s)
+=== RUN   TestOIDCIdentityLinksAndCreatesAccounts
+--- PASS: TestOIDCIdentityLinksAndCreatesAccounts (0.51s)
+PASS
+ok  	goodsentry/internal/store	4.412s
+=== RUN   TestInstanceUserAdministrationHTTPAuthorizationAndUpdates
+--- PASS: TestInstanceUserAdministrationHTTPAuthorizationAndUpdates (0.73s)
+=== RUN   TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner
+--- PASS: TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner (0.64s)
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped/disabled
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped/enabled
+--- PASS: TestAdministrationIsOptInAndOrganizationScoped (1.26s)
+    --- PASS: TestAdministrationIsOptInAndOrganizationScoped/disabled (0.55s)
+    --- PASS: TestAdministrationIsOptInAndOrganizationScoped/enabled (0.71s)
+PASS
+ok  	goodsentry/internal/server	2.644s
+=== RUN   TestAdminGrantCommandPromotesExistingActiveAccount
+Granted instance administrator to cli-grant@example.test
+cli-grant@example.test is already an instance administrator
+--- PASS: TestAdminGrantCommandPromotesExistingActiveAccount (1.81s)
+PASS
+ok  	goodsentry/cmd/goodsentry	1.814s

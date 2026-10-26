@@ -80,4 +80,17 @@ func TestOIDCIdentityLinksAndCreatesAccounts(t *testing.T) {
 			t.Fatalf("identity changed after reopen: %+v", user)
 		}
 	}
+	if _, err := reopened.pool.Exec(ctx, `UPDATE users SET is_active=false WHERE id=$1::bigint`, created.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := reopened.LoginOIDC(ctx, OIDCIdentity{
+		Provider: "https://id.example.test", Subject: "subject-new",
+		Email: "new@example.test", Name: "New Person", AutoCreate: true,
+	}); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("suspended identity signed in or was recreated: %v", err)
+	}
+	var suspendedRows int
+	if err := reopened.pool.QueryRow(ctx, `SELECT count(*) FROM users WHERE lower(email)='new@example.test'`).Scan(&suspendedRows); err != nil || suspendedRows != 1 {
+		t.Fatalf("suspended sign-in created an account: rows=%d err=%v", suspendedRows, err)
+	}
 }

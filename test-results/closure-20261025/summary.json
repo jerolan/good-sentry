@@ -3533,6 +3533,18 @@
       "evidence_files": [
         "identidad-102-go.log"
       ]
+    },
+    "CLOSE-identidad-103": {
+      "evidence": "bloqueada",
+      "scope": "local acceptance for instance administration; public CI/image and Compose image upgrade remain",
+      "evidence_files": [
+        "identidad-103-go.log",
+        "full-race-instance-admin.log",
+        "upgrade-064.log",
+        "admin-users-pagination/report.json",
+        "admin-users-pagination/admin-users-page-1-1440.png",
+        "admin-users-pagination/admin-users-page-2-1440.png"
+      ]
     }
   },
   "commands": [
