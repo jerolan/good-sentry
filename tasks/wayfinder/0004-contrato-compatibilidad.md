@@ -330,9 +330,9 @@ existentes. Los destinos y recibos externos de alertas siguen en su ticket.
 Evidencia: aprobación directa en sesión. No se ejecuta aceptación ni se da
 por vigente evidencia anterior a cambios que puedan invalidarla.
 
-## Next round, alerts, administration and operation
+## Alerts, administration and operation approved in rounds 13 to 15
 
-Tres propuestas independientes, pendientes de aprobación:
+Tres criterios independientes aprobados por el usuario:
 
 13. Alertas: provocar la condición de una regla por frecuencia de errores y
     de una transición de uptime; comprobar destinatarios, entorno, umbrales,
@@ -359,3 +359,43 @@ Tres propuestas independientes, pendientes de aprobación:
 Se mantiene el alcance de planificación. Las revisiones/digests concretos y
 los comprobantes de aceptación se fijarán al ejecutar el contrato aprobado.
 No se modifica SPEC.md, el plan de implementación ni el Goal.
+
+## Resolution comments, rounds 13 to 15
+
+2026-10-25, America/Mexico_City. Resolución parcial.
+El usuario respondió "Si" a los tres criterios de alertas, identidad y
+administración, y operación. Se aprueban los resultados descritos arriba,
+incluida recuperación de entregas, controles de credenciales y restauración
+en un entorno independiente. Los recibos de proveedores externos conservan
+su decisión propia. Evidencia: aprobación directa en esta sesión.
+No se ejecuta aceptación, se publica ni se modifica el Goal.
+
+## Next round, releases, read integrations and browser
+
+Propuestas pendientes de aprobación:
+
+16. Releases y artefactos: con sentry-cli 3.8.0, crear y finalizar una release,
+    asociar metadatos locales de commits y registrar un deploy. Consultar desde
+    API/UI la misma versión, proyectos, archivos y eventos asociados. Comprobar
+    subida, listado, acceso y eliminación de artefactos según los contratos
+    existentes, sin borrar datos ajenos a la operación; mantener permisos,
+    reintentos y persistencia. Conservar los flujos de adjuntos y feedback ya
+    contratados. No se introduce integración automática con repositorios.
+17. Integraciones de lectura: desde un Grafana externo 13.0.2 con plugin Sentry
+    2.2.8, conectar con token y verificar consulta de issues y serie temporal
+    de errores. Desde un GitLab real, conectar su Error Tracking, seleccionar
+    el proyecto y consultar los errores de GoodSentry. Comprobar alcance y
+    revocación del token. Son consumidores externos de la API, no dependencias
+    de runtime. La versión/edición exacta de GitLab, instancia y acceso se
+    fijarán en Acordar las pruebas externas y sus dependencias antes de aprobar
+    el contrato final; esa selección no debe ampliar los flujos aquí acordados.
+18. Interfaz: recorrer los flujos acordados en un navegador real a 320, 768 y
+    1440 píxeles, además de conservar las verificaciones específicas de cada
+    contrato existente. Comprobar navegación con teclado, formularios y sus
+    estados de carga/vacío/error/permisos, filtros persistentes y presentación
+    de telemetría como texto. La UI es propia de GoodSentry; no se exige
+    reproducir la apariencia de GlitchTip ni añadir un framework nuevo.
+
+Estos criterios no declaran paridad universal de API/SDK ni reducen contratos
+existentes. La compatibilidad global sigue abierta hasta resolver esta ronda.
+Las selecciones externas y el contrato final siguen siendo decisiones futuras.
