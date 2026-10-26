@@ -4294,6 +4294,14 @@
         "alertas-001/compat-alerts.log"
       ]
     },
+    "CLOSE-alertas-003": {
+      "evidence": "vigente",
+      "scope": "compatible test queue returning one queued entry per recipient without claiming external delivery",
+      "evidence_files": [
+        "alertas-003/test-queue.json",
+        "alertas-001/compat-alerts.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

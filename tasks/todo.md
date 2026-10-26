@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-alertas-003. No se declara
+runtime preservado. Siguiente acción: CLOSE-alertas-004. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -8422,6 +8422,26 @@ Evidencia: `test-results/closure-20261025/alertas-001/compat-alerts.log`.
 Límites registrados: los proveedores URL comparten el transporte webhook
 genérico; no se inventan cargas específicas. El CI público y la imagen final
 siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: cola de test de alertas
+
+Selección registrada antes de trabajar: CLOSE-alertas-003. Candidata
+`e91bbf1`.
+
+| Elemento | Resultado |
+|---|---|
+| `POST .../alerts/{id}/test/` encola la entrega nativa | 200 con dos entradas para dos destinatarios |
+| Una entrada por destinatario | `recipientType` email y webhook |
+| Estado observado | `status` `queued` y `message` nulo |
+| Sin afirmar entrega externa síncrona | La respuesta solo declara cola |
+| Paginación y validación de la ruta | `TestCompatibleProjectAlertsPaginationValidationAndTestQueue` |
+
+Evidencia: `test-results/closure-20261025/alertas-003/test-queue.json` y
+`test-results/closure-20261025/alertas-001/compat-alerts.log`.
+
+Límites registrados: no se envía a un proveedor externo real; la cola durable y
+el worker pertenecen a 009/010. El CI público y la imagen final siguen
+pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

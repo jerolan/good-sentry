@@ -1,0 +1,17 @@
+{
+  "create": 201,
+  "test": 200,
+  "entries": [
+    {
+      "message": null,
+      "recipientType": "email",
+      "status": "queued"
+    },
+    {
+      "message": null,
+      "recipientType": "webhook",
+      "status": "queued"
+    }
+  ],
+  "ok": true
+}
