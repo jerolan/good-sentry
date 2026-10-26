@@ -1442,11 +1442,11 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014 ya está vigente. Siguiente
-acción: CLOSE-identidad-015 (emisores con generación observada y sin overload
-por user ID). No se declara aceptación ni cierre del producto. El avance se
-informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014 y 015 ya están vigentes.
+Siguiente acción: CLOSE-identidad-016 (Read Committed, locks y error dedicado).
+No se declara aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1478,7 +1478,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-012](../SPEC.md#close-identidad-012) | Account credential generations and authenticated password changes: fila 4, / account-recovery / Email request… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 027–033 pendientes |
 | [CLOSE-identidad-013](../SPEC.md#close-identidad-013) | Account credential generations and authenticated password changes: fila 5, / membership-invitations / Owner/ad… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 045–049 pendientes |
 | [CLOSE-identidad-014](../SPEC.md#close-identidad-014) | Account credential generations and authenticated password changes: Additive migration035 after034 adds users.a… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 035 |
-| [CLOSE-identidad-015](../SPEC.md#close-identidad-015) | Account credential generations and authenticated password changes: Both production issuers must require the ge… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-015](../SPEC.md#close-identidad-015) | Account credential generations and authenticated password changes: Both production issuers must require the ge… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de emisores |
 | [CLOSE-identidad-016](../SPEC.md#close-identidad-016) | Account credential generations and authenticated password changes: Session and API-token issuance use an expli… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-017](../SPEC.md#close-identidad-017) | Account credential generations and authenticated password changes: Password change uses explicit pgx.ReadCommi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-018](../SPEC.md#close-identidad-018) | Account credential generations and authenticated password changes: When issuance acquires its user SHARE lock… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2902,6 +2902,30 @@ esquema `internal/store/migrations/035_auth_generation.sql`.
 
 Siguiente acción: CLOSE-identidad-015 (los dos emisores exigen la generación
 observada y no hay overload por user ID), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: emisores con generación observada
+
+Selección registrada antes de trabajar: CLOSE-identidad-015, siguiente en el
+plan. Candidata `46c1f85`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `generations.log` y de la revisión de los call sites.
+
+Resultado observado: `CreateSession(userID, authGeneration, ...)` y
+`CreateAPIToken(userID, authGeneration, ...)` exigen la generación; no existe
+un overload que emita solo con el ID. Login usa el mismo `User` cuyo hash pasó
+bcrypt y pasa su `AuthGeneration`; bootstrap usa la generación devuelta por el
+insert; la creación nativa de tokens usa la generación admitida por el
+middleware (`current(r).User.AuthGeneration`) sin refrescarla. La recuperación
+usa `EnqueuePasswordReset(userID, authGeneration, ...)`. Los tests de emisión
+obsoleta y de espera bajo Repeatable Read demuestran que una generación
+cambiada no inserta credencial. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account/generations.log`;
+`internal/store/credentials.go`, `internal/store/api_tokens.go`,
+`internal/server/auth.go` y `internal/server/api_tokens.go`.
+
+Siguiente acción: CLOSE-identidad-016 (transacción Read Committed, locks
+user/membership/proyectos y error dedicado), con dependencias locales
+resueltas.
 
 ### Comprobante de integración documental
 

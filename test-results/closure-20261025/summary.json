@@ -303,6 +303,16 @@
         "AuthGeneration is excluded from JSON; zero/missing never authorizes issuance"
       ],
       "evidence_files": ["account/generations.log"]
+    },
+    "CLOSE-identidad-015": {
+      "evidence": "vigente",
+      "scope": "both production issuers and password-reset authorization require the observed generation",
+      "covered": [
+        "CreateSession and CreateAPIToken require authGeneration with no user-ID-only overload",
+        "login/bootstrap/token creation/reset call sites pass the originally observed generation",
+        "stale issuance tests reject changed generations"
+      ],
+      "evidence_files": ["account/generations.log"]
     }
   },
   "commands": [
