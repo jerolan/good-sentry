@@ -1,0 +1,4 @@
+=== RUN   TestUptimeDeploymentOptions
+--- PASS: TestUptimeDeploymentOptions (0.00s)
+PASS
+ok  	goodsentry/internal/config	0.003s

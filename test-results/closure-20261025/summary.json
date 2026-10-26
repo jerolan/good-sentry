@@ -4214,6 +4214,14 @@
         "uptime-015/heartbeat-timing.log"
       ]
     },
+    "CLOSE-uptime-019": {
+      "evidence": "vigente",
+      "scope": "private destination blocking with opt-in, bounded redirects, verified TLS, whole-probe timeout, body/header bounds and offline config validation",
+      "evidence_files": [
+        "uptime-019/network-policy.log",
+        "uptime-019/config-policy.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
