@@ -47,6 +47,8 @@ investigación en archivos disjuntos, sin ramas research/ ni PR.
 
 - [Acordar los flujos que prueban equivalencia con GlitchTip](0004-contrato-compatibilidad.md): aprobados referencia, cobertura, clientes y criterios observables, con aplazamiento de fuentes Java y prueba nativa representativa.
 
+- [Decidir qué capacidades de Sentry se aplazan](0005-sacrificios.md): aprobados tres aplazamientos expresos, conservando las capacidades y controles existentes.
+
 ## Not yet specified
 
 La referencia y el inventario pueden revelar ambigüedades de equivalencia
