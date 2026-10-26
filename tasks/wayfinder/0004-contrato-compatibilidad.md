@@ -220,7 +220,7 @@ JavaScript propuestos. Se aprueban los resultados y clientes descritos arriba,
 incluida persistencia tras reinicio. Evidencia: respuesta directa en sesión.
 No se declara ejecutada ni vigente una prueba por registrar su criterio.
 
-## Next round, cold archive and Java source context
+## Round 8 pending and original Java proposal superseded
 
 Propuestas pendientes de aprobación:
 
@@ -255,13 +255,29 @@ no prueba por sí sola necesidad, demanda o bajo esfuerzo en GoodSentry.
 La propuesta de archivo y retención queda pendiente de respuesta inequívoca;
 no se atribuye aprobación al "Ok" que precede a la objeción sobre Java.
 
-## Recommendation pending, Java source-context exception
+## Java source-context exception approved
 
 La investigación revisada no satisface la condición de bajo esfuerzo o
-fundamentalidad expresada por el usuario. Recomendación pendiente de su
-aprobación: aplazar el enriquecimiento automático con fuentes Java como
-excepción explícita al mínimo documentado de GlitchTip, manteniendo los
-requisitos de errores ya aprobados y sin declarar probado un SDK Java.
-No se presenta como ausencia de una capacidad en GlitchTip ni se elimina
-código existente. No es una exclusión aprobada hasta respuesta expresa.
+fundamentalidad expresada por el usuario. Se aprueba aplazar el enriquecimiento
+automático con fuentes Java como excepción explícita al mínimo documentado de
+GlitchTip, manteniendo los requisitos de errores ya aprobados y sin declarar
+probado un SDK Java. No se elimina código existente. La propuesta anterior
+de exigir contexto Java queda sustituida por este aplazamiento.
 El criterio de archivo frío de la ronda 8 continúa pendiente.
+
+## Resolution comments, Java deferral
+
+2026-10-25, America/Mexico_City. Resolución parcial.
+El usuario respondió "Si" a la recomendación explícita de aplazar el
+enriquecimiento con fuentes Java como excepción al mínimo de GlitchTip.
+Se aprueba ese aplazamiento, sustentado en la investigación de
+[utilidad y esfuerzo](research/java-scope-feasibility.md). La consecuencia
+observable es que el cierre no exige que GoodSentry derive fragmentos de
+fuentes Java desde bundles subidos. No implica que GlitchTip carezca de la
+capacidad ni permite anunciar compatibilidad Java sin comprobantes.
+No se amplía esta excepción a captura de errores, source maps JavaScript
+ni diagnóstico nativo ya acordados. No se requiere fijar SDK/JDK o mecanismo
+de bundles Java para el enriquecimiento aplazado. Cualquier aceptación básica
+de cliente Java sería un flujo distinto que todavía no ha sido aprobado.
+Evidencia: respuesta directa del usuario en esta sesión. La decisión de
+compatibilidad global permanece abierta.
