@@ -4390,6 +4390,21 @@
         "nativo-003/summary.json"
       ]
     },
+    "CLOSE-nativo-004": {
+      "evidence": "vigente",
+      "scope": "pinned sentry-cli chunked Breakpad upload, original-byte assembly and dSYM multipart, negative assembly states, and bounded Breakpad/ELF/Mach-O/ZIP/TAR/gzip-TAR/PDB consumption",
+      "evidence_files": [
+        "nativo-004/cli-upload.log",
+        "nativo-004/cli-retry.log",
+        "nativo-004/negotiation.json",
+        "nativo-004/dsym-upload.json",
+        "nativo-004/list.json",
+        "nativo-004/assemble.log",
+        "nativo-004/native.log",
+        "nativo-004/restart-check.txt",
+        "nativo-004/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

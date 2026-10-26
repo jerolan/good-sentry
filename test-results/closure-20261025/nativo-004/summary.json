@@ -1,0 +1,61 @@
+{
+  "criteria": ["CLOSE-nativo-004"],
+  "date": "2026-10-26",
+  "product_revision": "3cfc664",
+  "note": "This receipt adds only tests and documentation. Chunk negotiation, assembly, debug-file storage and native artifact parsing are unchanged from the product revision.",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64",
+    "postgres": "18, disposable container gs-nativo004-pg on 127.0.0.1:18344",
+    "app": "product binary on 127.0.0.1:18345 with GOODSENTRY_AUTH=required",
+    "cli": "sentry-cli 3.8.0, SHA-256 13f8cb34ae01a6a272d7d7c22e277a105286615b4020de900ea95a8de47cdbb6"
+  },
+  "owners": {
+    "cli": [
+      "sentry-cli debug-files upload (real pinned binary)"
+    ],
+    "http": [
+      "TestChunkedDebugFileAssemblyState"
+    ],
+    "native": [
+      "go test ./internal/native"
+    ]
+  },
+  "covered": [
+    "chunk negotiation returns debug_files before artifact_bundles, a 64MiB maximum file, SHA-1, gzip, concurrency 2 and the configured request limit",
+    "the real pinned sentry-cli 3.8.0 completes capability negotiation, gzip chunk upload, reassembly and state:ok for a textual Breakpad .sym",
+    "the stored row preserves the original 818154 bytes and SHA-1 2c7310ede31e5b934f595eb2a7f1f66b41faf56c, not the compressed chunk bytes",
+    "a repeated CLI upload reports nothing to upload and creates no second row",
+    "the compatible multipart dSYM route stores a 4540-byte Mach-O dSYM companion with its original SHA-1",
+    "missing and expired chunks return 200 state:not_found with the exact missing SHA-1 list; a complete set returns state:ok with the stored DTO",
+    "invalid metadata, a mismatched complete SHA-1 and a foreign-project grant fail without adding a partial debug file",
+    "the native suite consumes textual Breakpad, ELF, Mach-O/dSYM, bounded ZIP, TAR, gzip-TAR and nested archives, rejects malformed, truncated, link, checksum and limit violations without partial symbols, and covers classic PDB procedure, public, C13 and inline records",
+    "an app restart preserves both uploaded debug files and their identities"
+  ],
+  "observed": {
+    "cli_upload": "Uploaded 1 missing debug information file; OK 5a9832e5-2872-41c1-838e-d98914e9b7ff-1",
+    "cli_retry": "Nothing to upload, all files are on the server",
+    "stored_rows": 2,
+    "restart": "2 files preserved",
+    "native": "PASS in 0.626s",
+    "assemble": "PASS in 0.588s",
+    "vet": "PASS for ./internal/server with -tags=integration"
+  },
+  "limits": [
+    "The app and CLI ran on the local host against disposable PostgreSQL; the final image and public CI were not exercised.",
+    "Legacy/Portable PDB and complete native unwinding remain required by later criteria.",
+    "Local tokens, cookies and CSRF values were mode 0600 and are not part of the evidence.",
+    "The product is not declared an acceptance candidate or closed."
+  ],
+  "evidence": [
+    "cli-upload.log",
+    "cli-retry.log",
+    "negotiation.json",
+    "dsym-upload.json",
+    "list.json",
+    "assemble.log",
+    "native.log",
+    "restart-check.txt",
+    "summary.json"
+  ]
+}

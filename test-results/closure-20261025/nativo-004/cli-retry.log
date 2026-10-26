@@ -1,0 +1,4 @@
+  INFO    2026-10-26 14:10:52.459456785 -06:00 sentry-cli was invoked with the following command line: "/tmp/sentry-cli-3.8.0" "debug-files" "upload" "--org" "native-cli-org" "--project" "native-cli-project" "--log-level" "info" "/tmp/minidump-fixture/test_app-image.sym"
+> Found 1 debug information file
+> Prepared debug information file for upload
+> Nothing to upload, all files are on the server

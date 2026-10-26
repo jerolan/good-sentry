@@ -219,15 +219,15 @@ func TestChunkedDebugFileAssemblyState(t *testing.T) {
 		MissingChunks []string         `json:"missingChunks"`
 		DIF           *store.DebugFile `json:"dif"`
 	}
-	decodeState := func(raw []byte) state {
+	decodeState := func(raw []byte, key string) state {
 		t.Helper()
 		var values map[string]state
-		if err := json.Unmarshal(raw, &values); err != nil || values[checksum].State == "" {
+		if err := json.Unmarshal(raw, &values); err != nil || values[key].State == "" {
 			t.Fatalf("assembly response: %s %v", raw, err)
 		}
-		return values[checksum]
+		return values[key]
 	}
-	first := decodeState(f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", body, headers, 200))
+	first := decodeState(f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", body, headers, 200), checksum)
 	if first.State != "not_found" || len(first.MissingChunks) != 1 || first.MissingChunks[0] != checksum || first.DIF != nil {
 		t.Fatalf("missing state: %+v", first)
 	}
@@ -239,8 +239,47 @@ func TestChunkedDebugFileAssemblyState(t *testing.T) {
 	if err := f.db.SaveArtifactChunks(f.ctx, access, []store.ArtifactChunk{{Checksum: checksum, Data: symbol}}, store.ArtifactStagingPolicy{MaxBytes: 1 << 20, TTL: time.Hour}); err != nil {
 		t.Fatal(err)
 	}
-	second := decodeState(f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", body, headers, 200))
+	second := decodeState(f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", body, headers, 200), checksum)
 	if second.State != "ok" || len(second.MissingChunks) != 0 || second.DIF == nil || second.DIF.DebugID == nil || second.DIF.Size != int64(len(symbol)) {
 		t.Fatalf("assembled state: %+v", second)
+	}
+	countFiles := func() int {
+		t.Helper()
+		var count int
+		if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM debug_files WHERE project_id=$1::bigint`, f.project.ID).Scan(&count); err != nil {
+			t.Fatal(err)
+		}
+		return count
+	}
+	if got := countFiles(); got != 1 {
+		t.Fatalf("assembled files=%d want=1", got)
+	}
+	invalid := fmt.Sprintf(`{"%s":{"name":"","debug_id":"x","chunks":["%s"]}}`, checksum, checksum)
+	f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", invalid, headers, 400)
+	mismatch := strings.Repeat("b", 40)
+	if _, err := f.sql.Exec(f.ctx, `INSERT INTO artifact_chunks(organization_id,checksum,data,size,expires_at)
+		VALUES($1,$2,$3,$4,clock_timestamp()+interval '1 hour')`, f.org.ID, mismatch, []byte("mismatched chunk"), len("mismatched chunk")); err != nil {
+		t.Fatal(err)
+	}
+	mismatchBody := fmt.Sprintf(`{"%s":{"name":"mismatch.sym","debug_id":"x","chunks":["%s"]}}`, mismatch, mismatch)
+	f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", mismatchBody, headers, 400)
+	expired := strings.Repeat("c", 40)
+	if _, err := f.sql.Exec(f.ctx, `INSERT INTO artifact_chunks(organization_id,checksum,data,size,expires_at)
+		VALUES($1,$2,$3,$4,clock_timestamp()-interval '1 hour')`, f.org.ID, expired, []byte("expired chunk"), len("expired chunk")); err != nil {
+		t.Fatal(err)
+	}
+	expiredBody := fmt.Sprintf(`{"%s":{"name":"expired.sym","debug_id":"x","chunks":["%s"]}}`, expired, expired)
+	expiredState := decodeState(f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", expiredBody, headers, 200), expired)
+	if expiredState.State != "not_found" || len(expiredState.MissingChunks) != 1 || expiredState.MissingChunks[0] != expired || expiredState.DIF != nil {
+		t.Fatalf("expired state: %+v", expiredState)
+	}
+	foreign, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Foreign DIF", "native")
+	if err != nil {
+		t.Fatal(err)
+	}
+	foreignToken := issueManagementToken(t, f, f.org.Slug, "Foreign DIF writer", []string{"project:releases"}, []string{foreign.ID})
+	f.request(t, http.DefaultClient, "POST", base+"/files/difs/assemble/", body, http.Header{"Authorization": {"Bearer " + foreignToken}}, 404)
+	if got := countFiles(); got != 1 {
+		t.Fatalf("failed assembly created a partial file: %d", got)
 	}
 }

@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -003 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -004 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-004. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-005. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1730,7 +1730,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8681,6 +8681,34 @@ Límites registrados: la prueba usa PostgreSQL desechable y un worker local; no
 ejercita varias réplicas reales ni la imagen final. La aceptación de SDK/CLI y
 de dSYM/PDB completos pertenece a criterios posteriores. El CI público sigue
 pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: ensamblado y consumo de artefactos nativos
+
+Selección registrada antes de trabajar: CLOSE-nativo-004. Revisión de producto
+`3cfc664`; este incremento solo añade pruebas y documentación, sin cambios de
+producto, esquema ni imagen.
+
+| Elemento | Comprobante |
+|---|---|
+| Negociación con `debug_files` primero, 64MiB, gzip, concurrencia 2 y límite configurado | `negotiation.json`; `TestArtifactUploadCurrentRoleOrganizationAndProjectScope` (owner de cuota/TTL) |
+| CLI real `sentry-cli 3.8.0` (SHA-256 fijado) completa negociación, chunks gzip y ensamblado | `cli-upload.log` |
+| Reintento idempotente sin segunda fila | `cli-retry.log`; conteo de `debug_files` |
+| Bytes originales y SHA-1 preservados tras la CLI | `list.json`; consulta `debug_files` (818154 bytes, SHA-1 del fixture) |
+| Ruta multipart dSYM disponible y almacenada | `dsym-upload.json` (4540 bytes, SHA-1 del companion) |
+| Estados `not_found`/`ok`, chunks expirados y lista exacta de faltantes | `TestChunkedDebugFileAssemblyState`; `assemble.log` |
+| Metadatos inválidos, checksum que no coincide y grant de otro proyecto sin archivo parcial | `TestChunkedDebugFileAssemblyState`; `assemble.log` |
+| Breakpad, ELF, Mach-O/dSYM, ZIP/TAR/gzip-TAR y PDB consumidos con límites | `TestParseMinidumpAndBreakpadSymbols`, `TestParseELFObjectSymbols`, `TestParseMachODSYMObjectSymbols`, `TestParseDebugArchiveObjects`, `TestParseTARDebugArchivesAndSymbolicate`, `TestParseTARDebugArchivesRejectPartialSymbols`, `TestParseNestedDebugArchivesAndSymbolicate`, `TestNestedDebugArchiveExpandedByteBudgetIsShared` y la suite PDB; `native.log` |
+| Reinicio de la app conserva los archivos cargados | `restart-check.txt` |
+
+Evidencia: `test-results/closure-20261025/nativo-004/cli-upload.log`,
+`cli-retry.log`, `negotiation.json`, `dsym-upload.json`, `list.json`,
+`assemble.log`, `native.log` y `restart-check.txt`.
+
+Límites registrados: la CLI y la app corren en el host local contra PostgreSQL
+desechable; no se usó la imagen final ni el CI público. PDB legado/Portable,
+desenrollado nativo completo y la aceptación de SDK contra la imagen siguen
+requeridos por criterios posteriores. Los tokens y cookies de la prueba eran
+locales, modo 0600, y no se registran en la evidencia.
 
 ### Comprobante de integración documental
 
