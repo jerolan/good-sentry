@@ -1442,12 +1442,11 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 están vigentes, salvo 025/033 bloqueadas por
-publicación/CI. Siguiente acción: CLOSE-identidad-050 (OIDC opcional), inicio
-de la familia de identidad externa. No se declara aceptación ni cierre del
-producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+bloques detallados 014–053 están vigentes, salvo 025/033 bloqueadas por
+publicación/CI. Siguiente acción: CLOSE-identidad-054 (social apps por
+organización). No se declara aceptación ni cierre del producto. El avance se
+informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1514,10 +1513,10 @@ este registro.
 | [CLOSE-identidad-047](../SPEC.md#close-identidad-047) | Organization invitations: Public request/accept routes are same-origin, contain no bearer authentication and r… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
 | [CLOSE-identidad-048](../SPEC.md#close-identidad-048) | Compatible invitation acceptance: GET/POST /api/0/accept/{invitation}/{token}/ maps GlitchTip's invitation-acc… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios compatibles |
 | [CLOSE-identidad-049](../SPEC.md#close-identidad-049) | Compatible invitation acceptance: Acceptance owners are pure token/MIME tests, real PostgreSQL migration/parti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de aceptación |
-| [CLOSE-identidad-050](../SPEC.md#close-identidad-050) | OpenID Connect sign-in: OIDC is disabled unless GOODSENTRY_OIDC_ISSUER, GOODSENTRY_OIDC_CLIENT_ID and GOODSENT… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-051](../SPEC.md#close-identidad-051) | OpenID Connect sign-in: GET /auth/oidc/start creates random state, nonce and PKCE verifier values, stores an H… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-052](../SPEC.md#close-identidad-052) | OpenID Connect sign-in: Additive045 stores provider, subject, normalized email, user and login instants with u… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-053](../SPEC.md#close-identidad-053) | OpenID Connect sign-in: GET /api/v1/auth/config exposes only whether OIDC is enabled and its display name. The… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-050](../SPEC.md#close-identidad-050) | OpenID Connect sign-in: OIDC is disabled unless GOODSENTRY_OIDC_ISSUER, GOODSENTRY_OIDC_CLIENT_ID and GOODSENT… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios OIDC |
+| [CLOSE-identidad-051](../SPEC.md#close-identidad-051) | OpenID Connect sign-in: GET /auth/oidc/start creates random state, nonce and PKCE verifier values, stores an H… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios PKCE |
+| [CLOSE-identidad-052](../SPEC.md#close-identidad-052) | OpenID Connect sign-in: Additive045 stores provider, subject, normalized email, user and login instants with u… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 045 |
+| [CLOSE-identidad-053](../SPEC.md#close-identidad-053) | OpenID Connect sign-in: GET /api/v1/auth/config exposes only whether OIDC is enabled and its display name. The… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de config |
 | [CLOSE-identidad-054](../SPEC.md#close-identidad-054) | Organization single sign-on applications: Additive migration 055_social_apps.sql stores organization-managed O… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-055](../SPEC.md#close-identidad-055) | Organization single sign-on applications: GET, POST /api/0/organizations/{org}/social-apps/ and GET, PUT, DELE… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-056](../SPEC.md#close-identidad-056) | Organization single sign-on applications: Each application's callback is {domain}/auth/social/{providerID}/cal… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3503,6 +3502,27 @@ los bloques: ninguno.
 Evidencia: `test-results/closure-20261025/invitations/tests.log`.
 
 Siguiente acción: CLOSE-identidad-050 (OIDC opcional), siguiente familia.
+
+### Ejecución 2026-10-26: OIDC opcional
+
+Selección registrada antes de trabajar: CLOSE-identidad-050 a -053. Candidata
+`4028479`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+tests OIDC de store/server con `-race`.
+
+Resultado observado: OIDC se desactiva si faltan issuer/client/secret; al
+activarse, `/auth/oidc/start` genera state/nonce/verifier PKCE, guarda solo el
+hash y una cookie HttpOnly, y el callback valida state/nonce/PKCE, correo
+verificado, issuer/audience y sesión. 045 almacena provider, subject, correo
+normalizado, usuario e instantes con unicidad por provider/subject; el store
+vincula una identidad existente o crea una cuenta sin duplicar. `/api/v1/auth/
+config` solo expone enabled/display name y no filtra issuer, client ni secret.
+El proveedor externo real está aplazado (identidad-113), pero el flujo local
+está probado. Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/oidc.log`.
+
+Siguiente acción: CLOSE-identidad-054 (social apps por organización), siguiente
+familia.
 
 ### Comprobante de integración documental
 

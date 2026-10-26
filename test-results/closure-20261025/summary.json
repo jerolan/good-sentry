@@ -681,6 +681,43 @@
         "HTTP acceptance, replay, cancellation and secondary verified email"
       ],
       "evidence_files": ["invitations/tests.log"]
+    },
+    "CLOSE-identidad-050": {
+      "evidence": "vigente",
+      "scope": "optional OIDC configuration and local sign-in flow",
+      "covered": [
+        "OIDC disabled without issuer/client/secret",
+        "state/nonce/PKCE and HttpOnly flow cookie",
+        "verified email, issuer/audience and session validation"
+      ],
+      "evidence_files": ["identity/oidc.log"]
+    },
+    "CLOSE-identidad-051": {
+      "evidence": "vigente",
+      "scope": "OIDC start/callback state, nonce and PKCE",
+      "covered": [
+        "random state/nonce/verifier and hashed storage",
+        "callback validates them and rejects tampering"
+      ],
+      "evidence_files": ["identity/oidc.log"]
+    },
+    "CLOSE-identidad-052": {
+      "evidence": "vigente",
+      "scope": "045 provider/subject links and account creation",
+      "covered": [
+        "normalized email, user and login instants",
+        "unique provider/subject and existing-account link without duplication"
+      ],
+      "evidence_files": ["identity/oidc.log"]
+    },
+    "CLOSE-identidad-053": {
+      "evidence": "vigente",
+      "scope": "public auth config exposes only enablement and display name",
+      "covered": [
+        "enabled/display name only; no issuer/client/secret leakage",
+        "disabled public configuration passes"
+      ],
+      "evidence_files": ["identity/oidc.log"]
     }
   },
   "commands": [
