@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-073 (gestión de claves y límites por ventana). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-074 (gestor de claves en la vista Projects). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1913,7 +1913,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-070](../SPEC.md#close-identidad-070) | Compatible organization detail and project keys: Additive039_compat_management.sql supplies the remaining read… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-071](../SPEC.md#close-identidad-071) | Compatible organization detail and project keys: GET /api/0/organizations/{org}/ returns the live Organization… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-072](../SPEC.md#close-identidad-072) | Compatible organization detail and project keys: Project-key routes are GET/POST /api/0/projects/{org}/{projec… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-073](../SPEC.md#close-identidad-073) | Compatible organization detail and project keys: Key creation preserves the generated public key only in the D… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-073](../SPEC.md#close-identidad-073) | Compatible organization detail and project keys: Key creation preserves the generated public key only in the D… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-074](../SPEC.md#close-identidad-074) | Compatible organization detail and project keys: The native Projects view offers a project-scoped SDK-key mana… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-075](../SPEC.md#close-identidad-075) | Compatible organization detail and project keys: Real PostgreSQL owns039/041 preservation/reopen, UUID/team-cl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-076](../SPEC.md#close-identidad-076) | Compatible project update and deletion: PUT /api/0/projects/{org}/{project}/ accepts project name and platform… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4827,6 +4827,33 @@ cubre crear, renombrar, desactivar —con rechazo real de ingesta 403—, reacti
 Evidencia: `test-results/closure-20261025/identidad-070-072-go.log` con los
 cinco owners (HTTP de gestión, migración 039, creación en equipo y relaciones
 múltiples).
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: claves con límite por ventana
+
+Selección registrada antes de trabajar: CLOSE-identidad-073. Candidata
+`a9aa562`.
+
+Resultado observado: crear una clave preserva la clave pública generada solo en
+el DTO, sin endpoint de rotación; `PUT` reemplaza etiqueta y límite nulo o
+`{window,count}` con rangos 1..604800 y 1..1000000000, acepta `isActive`
+opcional y conserva el estado si se omite; `DELETE` elimina exactamente esa
+clave. La migración `041_project_key_rate_usage.sql` almacena el uso por clave y
+su owner comprueba que las claves y filas previas se conservan y que reabrir no
+las altera. La admisión cobra una vez los elementos de evento, transacción,
+feedback y log, y los spans por `item_count` válido de 1 a 1000 —los inválidos o
+desbordados cuentan uno—, además de cada registro OTLP preparado; ambos insertan
+o incrementan la ventana alineada al reloj de la base y, al exceder el conteo,
+responden 429 con `Retry-After` y `X-Sentry-Rate-Limits` (OTLP con
+`google.rpc.Status` código 8 y exportaciones vacías exitosas). Una clave sin
+límite no crea fila de uso, y el proveedor de limpieza borra como máximo 250
+ventanas mayores de 14 días por pasada, conservando más de una ventana máxima
+previa.
+
+Evidencia: `test-results/closure-20261025/identidad-073-go.log` con los owners
+de ingesta, OTLP, limitación por proyecto, admisión y ventana, migración 041 y
+limpieza (17 subpruebas en total, sin fallos).
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

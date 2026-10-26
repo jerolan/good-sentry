@@ -3284,6 +3284,13 @@
       "evidence_files": [
         "identidad-070-072-go.log"
       ]
+    },
+    "CLOSE-identidad-073": {
+      "evidence": "vigente",
+      "scope": "project key management, fixed-window rate usage, admission charging and cleanup",
+      "evidence_files": [
+        "identidad-073-go.log"
+      ]
     }
   },
   "commands": [
