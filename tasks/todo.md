@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-083 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-085 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1923,8 +1923,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-080](../SPEC.md#close-identidad-080) | Compatible project update and deletion: POST /api/0/teams/{org}/{team}/projects/ accepts ProjectIn {name,slug?… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-081](../SPEC.md#close-identidad-081) | Compatible project update and deletion: Additive048_project_teams.sql introduces the authoritative many-to-man… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-082](../SPEC.md#close-identidad-082) | Compatible project update and deletion: POST/DELETE /api/0/projects/{org}/{project}/teams/{team}/ add or remov… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-083](../SPEC.md#close-identidad-083) | Compatible project update and deletion: GlitchTip-specific POST /api/0/organizations/{org}/members/{member}/se… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-084](../SPEC.md#close-identidad-084) | Compatible project update and deletion: Additive049_project_environments.sql creates project-scoped environmen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-083](../SPEC.md#close-identidad-083) | Compatible project update and deletion: GlitchTip-specific POST /api/0/organizations/{org}/members/{member}/se… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-084](../SPEC.md#close-identidad-084) | Compatible project update and deletion: Additive049_project_environments.sql creates project-scoped environmen… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-085](../SPEC.md#close-identidad-085) | Compatible project update and deletion: GET /api/0/projects/{org}/{project}/environments/ and its /{name}/ det… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-086](../SPEC.md#close-identidad-086) | Compatible project update and deletion: The read-only people surface is GET /api/0/organizations/{org}/members… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-087](../SPEC.md#close-identidad-087) | Compatible project update and deletion: Organization people use OrganizationUserSchema with the real user id,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5005,6 +5005,35 @@ equipo reflejan ambas relaciones y un token de solo lectura no puede mutar.
 Evidencia: `test-results/closure-20261025/identidad-081-082-go.log` con los
 cinco owners de asociación, migración, reparación del espejo y destinatarios
 multi-equipo.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: transferencia de propiedad y entornos de proyecto
+
+Selección registrada antes de trabajar: CLOSE-identidad-083 y -084. Candidata
+`873faca`.
+
+Resultado observado: `POST /api/0/organizations/{org}/members/{member}/set_owner/`
+exige sesión de propietario/administrador o `org:write` y, en storage, un actor
+que sea propietario actual: un administrador recibe 403, al igual que una
+petición sin sesión o sin CSRF, un ID malformado devuelve 400, uno ausente 404 y
+una consulta 400. La transferencia devuelve 200 con el usuario objetivo como
+propietario y deja exactamente un propietario, degradando a los demás. La
+revisión detectó que el contrato exige rechazar cuerpos y el handler los
+ignoraba; se añadió un rechazo explícito con 400 y se cubrió junto al alias
+`me`, que devuelve al propietario actual de forma idempotente.
+
+La migración `049_project_environments.sql` rellena entornos no vacíos desde
+eventos, monitores, logs y spans sin reescribir telemetría; los owners cubren la
+revisión de visibilidad con `visibility=all|hidden|visible` estricta, el 403 de
+un miembro para ocultar, la respuesta `{id:null,name,isHidden}` sin identidad
+numérica inventada, el detalle y los nombres de toda la organización limitados a
+los proyectos concedidos, y que la visibilidad organizativa es oculta solo si
+todas las ocurrencias lo están.
+
+Evidencia: `test-results/closure-20261025/identidad-083-084-go.log` con los
+owners de transferencia, entornos, visibilidad y migración 049, más el cambio en
+`internal/server/compat_management.go`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

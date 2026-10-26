@@ -3358,6 +3358,20 @@
       "evidence_files": [
         "identidad-081-082-go.log"
       ]
+    },
+    "CLOSE-identidad-083": {
+      "evidence": "vigente",
+      "scope": "single-owner transfer with body rejection and project environment visibility",
+      "evidence_files": [
+        "identidad-083-084-go.log"
+      ]
+    },
+    "CLOSE-identidad-084": {
+      "evidence": "vigente",
+      "scope": "single-owner transfer with body rejection and project environment visibility",
+      "evidence_files": [
+        "identidad-083-084-go.log"
+      ]
     }
   },
   "commands": [

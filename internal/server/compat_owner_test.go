@@ -24,6 +24,11 @@ func TestCompatibleSetOrganizationOwnerHTTP(t *testing.T) {
 	f.request(t, f.client, "POST", adminPath+"?unknown=1", "", csrf, 400)
 	f.request(t, f.client, "POST", orgBase+"not-a-number/set_owner/", "", csrf, 400)
 	f.request(t, f.client, "POST", orgBase+"999999999/set_owner/", "", csrf, 404)
+	f.request(t, f.client, "POST", adminPath, "{}", csrf, 400)
+	var self store.CompatibleOrganizationUser
+	if err := json.Unmarshal(f.request(t, f.client, "POST", orgBase+"me/set_owner/", "", csrf, 200), &self); err != nil || self.ID != f.owner.ID || self.Role != "owner" || !self.IsOwner {
+		t.Fatalf("set owner with me: %+v %v", self, err)
+	}
 	var owner store.CompatibleOrganizationUser
 	if err := json.Unmarshal(f.request(t, f.client, "POST", adminPath, "", csrf, 200), &owner); err != nil || owner.ID != adminID || owner.Role != "owner" || !owner.IsOwner {
 		t.Fatalf("set owner HTTP: %+v %v", owner, err)

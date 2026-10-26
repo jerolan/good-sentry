@@ -433,6 +433,9 @@ func (s *Server) compatibleSetOrganizationOwner(w http.ResponseWriter, r *http.R
 	if _, valid := discoveryNoQuery(w, r); !valid {
 		return
 	}
+	if !rejectRequestBody(w, r) {
+		return
+	}
 	memberID, valid := compatibleMemberPathID(w, r)
 	if !valid {
 		return
@@ -443,6 +446,22 @@ func (s *Server) compatibleSetOrganizationOwner(w http.ResponseWriter, r *http.R
 		return
 	}
 	writeJSON(w, 200, member)
+}
+
+// rejectRequestBody refuses a route whose contract accepts no request entity.
+func rejectRequestBody(w http.ResponseWriter, r *http.Request) bool {
+	if r.ContentLength > 0 {
+		failure(w, 400, "This request does not accept a body")
+		return false
+	}
+	if r.ContentLength < 0 {
+		buffer := make([]byte, 1)
+		if read, _ := r.Body.Read(buffer); read > 0 {
+			failure(w, 400, "This request does not accept a body")
+			return false
+		}
+	}
+	return true
 }
 
 func (s *Server) orgWriteAccess(w http.ResponseWriter, r *http.Request) (store.ManagementAccess, bool) {

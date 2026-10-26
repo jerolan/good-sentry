@@ -1,0 +1,12 @@
+=== RUN   TestCompatibleEnvironmentsHTTP
+--- PASS: TestCompatibleEnvironmentsHTTP (0.77s)
+=== RUN   TestCompatibleSetOrganizationOwnerHTTP
+--- PASS: TestCompatibleSetOrganizationOwnerHTTP (0.60s)
+PASS
+ok  	goodsentry/internal/server	2.417s
+=== RUN   TestProjectEnvironmentsMigration049BackfillsAndReopens
+--- PASS: TestProjectEnvironmentsMigration049BackfillsAndReopens (0.87s)
+=== RUN   TestCompatibleEnvironmentsVisibilityAndGrants
+--- PASS: TestCompatibleEnvironmentsVisibilityAndGrants (0.66s)
+PASS
+ok  	goodsentry/internal/store	2.607s
