@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -024
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-025. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-025 (completar prueba de identidad con conteo cero). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1857,7 +1857,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 014/016) |
 | [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | por contrastar | pendiente | Parcial: rutas y 052 pasan; falta identidad con conteo cero tras vencer la telemetría |
 | [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7498,6 +7498,28 @@ Límites registrados: la forma sin zona `2006-01-02T15:04:05` y el default
 `1h` no se sondean por separado en esta ejecución; la alineación de
 buckets y la ventana semiabierta sí están cubiertas. El CI público y la imagen
 final siguen pendientes para la auditoría final.
+
+### Avance parcial 2026-10-26: identidad de grupos de transacciones
+
+CLOSE-rendimiento-025 sigue pendiente. Ejecuté
+`TestCompatibleTransactionGroupsDetailTrendAndSpansHTTP` y
+`TestCompatibleTransactionGroupMigration052PreservesTelemetryAndReopens`
+sobre PostgreSQL 18 desechable; ambas pasan.
+
+Comprobado: la lista devuelve project, id, transaction, op, method, count,
+errorCount, errorRate, throughput, p50, p95, firstSeen y lastSeen, con enlace de
+cursor; el detalle responde sin consulta y rechaza claves desconocidas con 400;
+la tendencia devuelve count, transactionCount y totalTime del bucket; los spans
+del grupo resuelven la operación; los filtros de proyecto se rechazan en
+tendencia y spans con 400; y la migración 052 preserva la telemetría al reabrir.
+
+Falta para cerrar: probar que el detalle conserva una identidad con conteo cero
+cuando toda su telemetría ha vencido, y confirmar el default de historial
+retenido sin ventana. Evidencia parcial:
+`test-results/closure-20261025/rendimiento-025/routes-and-migration.log`.
+
+Siguiente paso: vencer o eliminar la telemetría de una identidad controlada y
+leer su detalle; después repetir el flujo sin ventana.
 
 ### Comprobante de integración documental
 
