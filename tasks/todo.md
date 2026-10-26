@@ -1444,8 +1444,8 @@ CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
-y 101–111, y 139–149 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-150 (asignación, comentarios y actividad de triage). No se declara aceptación ni cierre del producto. El avance se
+y 101–111, y 139–155 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-156 (adjuntos de evento nativo). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1684,12 +1684,12 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-147](../SPEC.md#close-errores-147) | Native conditional mute: Ignored issues, both indefinite and conditional, suppress new frequency-rule deliveri… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-148](../SPEC.md#close-errores-148) | Native conditional mute: The original issue detail adds a labeled mute form for minutes/count/additional users… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-149](../SPEC.md#close-errores-149) | Native conditional mute: Owning PostgreSQL proof covers deadline receipt bounds, same-policy idempotence, assi… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-150](../SPEC.md#close-errores-150) | Native assignment, comments and recorded triage activity: Complete native assignment, comment management and v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-151](../SPEC.md#close-errores-151) | Native assignment, comments and recorded triage activity: Keep unresolved/resolved/ignored. Extend issue DTOs… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-152](../SPEC.md#close-errores-152) | Native assignment, comments and recorded triage activity: Resolve records database clock_timestamp() after acq… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-153](../SPEC.md#close-errores-153) | Native assignment, comments and recorded triage activity: Add GET issue/assignees (optional query at most200 U… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-154](../SPEC.md#close-errores-154) | Native assignment, comments and recorded triage activity: Comment POST retains201 and trimmed1..10000 UTF-8 by… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-155](../SPEC.md#close-errores-155) | Native assignment, comments and recorded triage activity: Original responsive detail gains searchable/paginate… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-150](../SPEC.md#close-errores-150) | Native assignment, comments and recorded triage activity: Complete native assignment, comment management and v… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-151](../SPEC.md#close-errores-151) | Native assignment, comments and recorded triage activity: Keep unresolved/resolved/ignored. Extend issue DTOs… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-152](../SPEC.md#close-errores-152) | Native assignment, comments and recorded triage activity: Resolve records database clock_timestamp() after acq… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-153](../SPEC.md#close-errores-153) | Native assignment, comments and recorded triage activity: Add GET issue/assignees (optional query at most200 U… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-154](../SPEC.md#close-errores-154) | Native assignment, comments and recorded triage activity: Comment POST retains201 and trimmed1..10000 UTF-8 by… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-155](../SPEC.md#close-errores-155) | Native assignment, comments and recorded triage activity: Original responsive detail gains searchable/paginate… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-001](../SPEC.md#close-sourcemaps-001) | Release lifecycle, commit metadata and deploys: This artifacts increment provides actual release entities shar… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-002](../SPEC.md#close-sourcemaps-002) | Release lifecycle, commit metadata and deploys: An exact release version is1..255 Unicode characters excluding… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-003](../SPEC.md#close-sourcemaps-003) | Release lifecycle, commit metadata and deploys: Expose compatible organization GET/POST /api/0/organizations/{… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4084,6 +4084,43 @@ vencida por worker (`durationIssueID` nulo), de modo que el vencimiento por
 duración se apoya en los owners de store; y CLOSE-errores-149 mantiene para la
 auditoría final la imagen final con upgrade/reinicio, CI remoto, landing
 desplegada y la suite completa sobre la revisión aceptada.
+
+### Ejecución 2026-10-26: asignación, comentarios y actividad nativa
+
+Selección registrada antes de trabajar: CLOSE-errores-150 a -155. Candidata
+`3773e35` más el ajuste `web: drain empty 204 responses` producido en este
+bloque a partir del hallazgo del owner de navegador.
+
+Resultado observado: la asignación nativa usa `issue_assignments` con un solo
+destino, membresía/equipo vigentes y `regressed_at`; las mutaciones bloquean
+membresía `FOR SHARE` e issue `FOR UPDATE`, validan el destino y no mutan
+parcialmente en 404/400, con no-op que conserva tiempos y actividad. Los DTO
+exponen `assignedTo`, `resolvedAt` y `regressedAt`, historiales paginados
+independientes (assignment/comments/activity) y `canEdit`/`updatedAt` en
+comentarios; la moderación autor/owner/admin, el borrado de contenido y la
+actividad `comment_added/edited/deleted` sin texto se comprueban en store y
+HTTP. La captura tardía real del SDK oficial reabre con instante de recibo, una
+sola actividad `regressed` y `eventID`, mientras un duplicado no hace nada.
+
+El owner de navegador ejecuta 29 candidatos reales (25+4), 26 comentarios
+(25+1), búsqueda/ asignación/limpieza de usuario y equipo con borrador
+intacto, error 400 real por bytes UTF-8, edición con borrador más nuevo que la
+respuesta, moderación por rol, regresión por SDK, y la carrera de navegación
+con restore por Back. La primera corrida en este árbol falló de forma
+reproducible: un DELETE ya respondido con 204 aparecía como
+`net::ERR_ABORTED` porque el helper compartido regresaba sin consumir el
+cuerpo vacío; consumirlo eliminó el fallo y la corrida quedó en cero peticiones
+fallidas.
+
+Evidencia: `test-results/closure-20261025/errores-150-155-store.log`,
+`errores-150-155-http.log`, `errores-150-155-browser.log` y
+`triage-ui/report.json` (7 comprobaciones, 27 capturas 320/768/1440,
+`pageErrors` 0, `requestFailures` 0).
+
+Límites registrados: el fixture se sembró en una organización aislada con 26
+invitaciones aceptadas por correo local y un equipo; la imagen final con
+upgrade/reinicio, el CI remoto y la suite completa sobre la revisión aceptada
+siguen en la auditoría final de CLOSE-errores-155.
 
 ### Comprobante de integración documental
 

@@ -1,0 +1,12 @@
+=== RUN   TestCompatibleIssueCommentsContract
+--- PASS: TestCompatibleIssueCommentsContract (0.66s)
+=== RUN   TestIssueTriageHTTPContract
+=== RUN   TestIssueTriageHTTPContract/read_routes_queries_and_candidates
+=== RUN   TestIssueTriageHTTPContract/partial_assignment_and_status_JSON
+=== RUN   TestIssueTriageHTTPContract/comments_detail_and_recorded_activity_wire
+--- PASS: TestIssueTriageHTTPContract (1.27s)
+    --- PASS: TestIssueTriageHTTPContract/read_routes_queries_and_candidates (0.11s)
+    --- PASS: TestIssueTriageHTTPContract/partial_assignment_and_status_JSON (0.12s)
+    --- PASS: TestIssueTriageHTTPContract/comments_detail_and_recorded_activity_wire (0.37s)
+PASS
+ok  	goodsentry/internal/server	2.971s

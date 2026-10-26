@@ -2441,6 +2441,66 @@
         "ignore-browser-userwindow-20261025/report.json",
         "ignore-sdk-userwindow-20261025/report.json"
       ]
+    },
+    "CLOSE-errores-150": {
+      "evidence": "vigente",
+      "scope": "native assignment, comment moderation and recorded triage activity",
+      "evidence_files": [
+        "errores-150-155-store.log",
+        "errores-150-155-http.log",
+        "errores-150-155-browser.log",
+        "triage-ui/report.json"
+      ]
+    },
+    "CLOSE-errores-151": {
+      "evidence": "vigente",
+      "scope": "native assignment, comment moderation and recorded triage activity",
+      "evidence_files": [
+        "errores-150-155-store.log",
+        "errores-150-155-http.log",
+        "errores-150-155-browser.log",
+        "triage-ui/report.json"
+      ]
+    },
+    "CLOSE-errores-152": {
+      "evidence": "vigente",
+      "scope": "native assignment, comment moderation and recorded triage activity",
+      "evidence_files": [
+        "errores-150-155-store.log",
+        "errores-150-155-http.log",
+        "errores-150-155-browser.log",
+        "triage-ui/report.json"
+      ]
+    },
+    "CLOSE-errores-153": {
+      "evidence": "vigente",
+      "scope": "native assignment, comment moderation and recorded triage activity",
+      "evidence_files": [
+        "errores-150-155-store.log",
+        "errores-150-155-http.log",
+        "errores-150-155-browser.log",
+        "triage-ui/report.json"
+      ]
+    },
+    "CLOSE-errores-154": {
+      "evidence": "vigente",
+      "scope": "native assignment, comment moderation and recorded triage activity",
+      "evidence_files": [
+        "errores-150-155-store.log",
+        "errores-150-155-http.log",
+        "errores-150-155-browser.log",
+        "triage-ui/report.json"
+      ]
+    },
+    "CLOSE-errores-155": {
+      "evidence": "vigente",
+      "scope": "native assignment, comment moderation and recorded triage activity",
+      "evidence_files": [
+        "errores-150-155-store.log",
+        "errores-150-155-http.log",
+        "errores-150-155-browser.log",
+        "triage-ui/report.json"
+      ]
     }
   },
   "commands": [
