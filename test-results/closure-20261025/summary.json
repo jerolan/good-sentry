@@ -4534,6 +4534,11 @@
       "scope": "classic PDB symbol-scope Parent/End offsets normalized to the module substream origin including its four-byte signature",
       "evidence_files": ["nativo-024/scope-pointers.log", "nativo-024/native.log", "nativo-024/summary.json"]
     },
+    "CLOSE-nativo-025": {
+      "evidence": "vigente",
+      "scope": "Crashpad minidump auth without sentry_version, version-7 constraint, full-body gzip, independent compressed/expanded limits and pre-persistence rejection",
+      "evidence_files": ["nativo-025/protocol.log", "nativo-025/server.log", "nativo-025/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

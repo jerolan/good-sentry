@@ -210,6 +210,34 @@ func TestNativeMinidumpSymbolicationAndIngestion(t *testing.T) {
 	if res.StatusCode != http.StatusRequestEntityTooLarge {
 		t.Fatalf("oversized minidump=%d", res.StatusCode)
 	}
+	req, _ = http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, bytes.NewReader([]byte("unsupported")))
+	req.Header.Set("Content-Encoding", "snappy")
+	res, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusUnsupportedMediaType {
+		t.Fatalf("unsupported minidump encoding=%d", res.StatusCode)
+	}
+	var expandedBody bytes.Buffer
+	expandedWriter := gzip.NewWriter(&expandedBody)
+	if _, err := expandedWriter.Write(bytes.Repeat([]byte("x"), (1<<20)+1)); err != nil {
+		t.Fatal(err)
+	}
+	if err := expandedWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+	req, _ = http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, &expandedBody)
+	req.Header.Set("Content-Encoding", "gzip")
+	res, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusRequestEntityTooLarge {
+		t.Fatalf("expanded minidump=%d", res.StatusCode)
+	}
 	if afterFailures := countEvents(); afterFailures != beforeFailures {
 		t.Fatalf("failed minidump requests stored events: before=%d after=%d", beforeFailures, afterFailures)
 	}

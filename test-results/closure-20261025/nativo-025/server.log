@@ -1,0 +1,4 @@
+=== RUN   TestNativeMinidumpSymbolicationAndIngestion
+--- PASS: TestNativeMinidumpSymbolicationAndIngestion (0.66s)
+PASS
+ok  	goodsentry/internal/server	0.673s

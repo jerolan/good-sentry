@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -024 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -025 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-025. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-026. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1751,7 +1751,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -9082,6 +9082,27 @@ Evidencia: `test-results/closure-20261025/nativo-024/scope-pointers.log` y
 
 Límites registrados: no se usó la imagen final ni el CI público; la imagen y el
 CI siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: autenticación y gzip de Crashpad
+
+Selección registrada antes de trabajar: CLOSE-nativo-025. Revisión de producto
+`9bf3a7d`; el incremento añade dos fronteras HTTP (encoding no soportado y
+expansión gzip sobre límite) sin cambiar el handler ni el protocolo.
+
+| Elemento | Comprobante |
+|---|---|---|
+| `sentry_key` sin `sentry_version` en `/api/{project}/minidump/`; versión 7 obligatoria si se envía | `TestAuthenticateMinidumpAllowsCrashpadQuery` |
+| Cuerpo multipart completo comprimido con gzip por Crashpad | `TestNativeMinidumpSymbolicationAndIngestion` (primera captura con `sentry_client` y gzip) |
+| Decodificación antes de multipart; límites comprimido y expandido independientes | `TestDecodeHTTPCompression`; `TestDecodeBoundsCompressionExpansionAndWindow`; `TestNativeMinidumpSymbolicationAndIngestion` (expansión 413) |
+| Encoding no soportado, stream malformado o desbordamiento rechazan antes de persistir | `TestDecodeHTTPCompression`; `TestDecodeBoundsCompressionExpansionAndWindow`; `TestNativeMinidumpSymbolicationAndIngestion` (415 y conteo de eventos estable) |
+| Otros SDK conservan autenticación versión 7 | `TestAuthenticateMinidumpAllowsCrashpadQuery` (versión 8 rechazada); pruebas de envelope existentes |
+
+Evidencia: `test-results/closure-20261025/nativo-025/protocol.log` y
+`server.log`.
+
+Límites registrados: PostgreSQL desechable y binario local; no se usó la imagen
+final ni el CI público. La imagen y el CI siguen pendientes para la auditoría
+final.
 
 ### Comprobante de integración documental
 
