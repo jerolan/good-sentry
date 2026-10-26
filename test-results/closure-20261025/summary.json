@@ -4159,6 +4159,14 @@
         "uptime-004/pagination.json"
       ]
     },
+    "CLOSE-uptime-005": {
+      "evidence": "vigente",
+      "scope": "stable endpoint UUID and public heartbeat route with 413/404 bounds, migration 057 preservation and unchanged native capability",
+      "evidence_files": [
+        "uptime-005/heartbeat-endpoint.log",
+        "uptime-005/endpoint-migration.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

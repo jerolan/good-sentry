@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-005. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-013. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1757,7 +1757,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-005](../SPEC.md#close-uptime-005) | Compatible uptime monitors: Additive057 gives every monitor a stable UUID endpoint identity and a unique index… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-005](../SPEC.md#close-uptime-005) | Compatible uptime monitors: Additive057 gives every monitor a stable UUID endpoint identity and a unique index… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-001](../SPEC.md#close-alertas-001) | Compatible project alerts: GET/POST /api/0/projects/{org}/{project}/alerts/ and PUT/DELETE .../alerts/{id}/ ex… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-002](../SPEC.md#close-alertas-002) | Compatible project alerts: MonitorIn-style fields map as follows: timespanMinutes to the rolling window, quant… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-003](../SPEC.md#close-alertas-003) | Compatible project alerts: POST .../alerts/{id}/test/ queues the same native test delivery and returns one rec… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -8062,6 +8062,27 @@ Evidencia: `test-results/closure-20261025/uptime-004/pagination.json`.
 Límites registrados: el cuerpo de la respuesta de latido no se usa como
 aserción; el check registrado y paginado sí. El CI público y la imagen final
 siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: endpoint UUID de heartbeat
+
+Selección registrada antes de trabajar: CLOSE-uptime-005. Candidata
+`186a72b`.
+
+| Elemento | Resultado |
+|---|---|
+| `endpointId` y `heartbeatEndpoint` en el JSON compatible | `TestCompatibleHeartbeatCheckHTTP` los valida con la URL absoluta esperada |
+| Ruta pública `POST /api/0/organizations/{org}/heartbeat_check/{endpoint}/` | Registra un check y responde con `isUp`, `reason` nulo y `startCheck` |
+| Cuerpo mayor de 1024 bytes | 413 |
+| Endpoint ajeno, UUID inválido o monitor desactivado | 404 |
+| Migración 057 y preservación | `TestCompatibleHeartbeatAndEndpointMigration` reabre sin cambiar monitores ni checks previos |
+| Endpoint y clave nativa | El monitor conserva `endpointId` y `heartbeatKey`; la ruta nativa sigue disponible |
+
+Evidencia: `test-results/closure-20261025/uptime-005/heartbeat-endpoint.log` y
+`test-results/closure-20261025/uptime-005/endpoint-migration.log`.
+
+Límites registrados: el rechazo específico de parámetros de consulta en la ruta
+compatible no se sondea por separado; la ruta fija y el handler no leen consulta.
+El CI público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

@@ -1,0 +1,14 @@
+=== RUN   TestMonitorSSLMigration033PreservesAndReopens
+--- PASS: TestMonitorSSLMigration033PreservesAndReopens (0.96s)
+=== RUN   TestMonitorThresholdResetRecoveryAndHistory
+--- PASS: TestMonitorThresholdResetRecoveryAndHistory (0.53s)
+=== RUN   TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases
+--- PASS: TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases (0.53s)
+=== RUN   TestMonitorMembershipProjectScopeAndHistoryPagination
+--- PASS: TestMonitorMembershipProjectScopeAndHistoryPagination (0.98s)
+PASS
+ok  	goodsentry/internal/store	3.005s
+=== RUN   TestCompatibleHeartbeatAndEndpointMigration
+--- PASS: TestCompatibleHeartbeatAndEndpointMigration (0.71s)
+PASS
+ok  	goodsentry/internal/store	0.718s
