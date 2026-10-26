@@ -1,0 +1,18 @@
+{
+  "setup_org": "account-025-org",
+  "project_id": "1",
+  "invalid_bearer_status": 401,
+  "full_bearer_before": 200,
+  "password_status": 204,
+  "owner_me_after": 401,
+  "member_me_after": 200,
+  "full_bearer_after": 401,
+  "old_login": 401,
+  "new_login": 200,
+  "envelope_before": 200,
+  "envelope_after": 200,
+  "owner_cookies": [],
+  "member_cookies": [
+    "goodsentry_session"
+  ]
+}

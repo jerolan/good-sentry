@@ -92,6 +92,8 @@ This mode is a single-user administrative mode for local use or a trusted privat
 
 After migration064, older application binaries do not enforce account suspension. Stop pre-064 application processes before upgrading, and do not roll back to an older image after suspending an account. Existing databases are not automatically given an instance administrator; run the CLI grant after upgrading and before using account management.
 
+Password mutation requires every older application process that can issue credentials to be stopped before the new version starts. Mixed old/new replicas are not a supported rolling upgrade for this increment: recreate the single documented `goodsentry` service with the new image. Keep the prior image and a separately restored backup for rollback, and never run an older issuer against a database after a password change.
+
 ### OpenID Connect
 
 Register this callback with your identity provider:

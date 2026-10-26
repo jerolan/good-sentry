@@ -1442,11 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024 ya están vigentes.
-Siguiente acción: CLOSE-identidad-025 (HTTP real, navegador y copia de imagen
-con reinicio). No se declara aceptación ni cierre del producto. El avance se
-informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014–024 y 026 ya están vigentes y
+025 está bloqueada por publicación/CI de la misma fuente. Siguiente acción:
+CLOSE-identidad-027 (migración 036 y outbox de reset). No se declara aceptación
+ni cierre del producto. El avance se informa por criterios/evidencia, sin
+porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
+producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1488,8 +1489,8 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de cookie |
 | [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de la vista Account |
 | [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de transacciones |
-| [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | implementada (local) | bloqueada | Publicar imagen/CI de la misma fuente y repetir aceptación pública |
+| [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener la guía de no-rolling-upgrade |
 | [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-028](../SPEC.md#close-identidad-028) | Account email and single-use password recovery: register and login screens expose a password-reset request for… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-029](../SPEC.md#close-identidad-029) | Account email and single-use password recovery: A reset token is 32 random bytes as64 lowercase hex digits. St… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3150,6 +3151,61 @@ Evidencia: `test-results/closure-20261025/account/{generations.log,rollback.log}
 
 Siguiente acción: CLOSE-identidad-025 (HTTP real, navegador y copia de imagen
 con reinicio) antes de la publicación del incremento.
+
+### Ejecución 2026-10-26: aceptación local de imagen y bloqueo de publicación
+
+Selección registrada antes de trabajar: CLOSE-identidad-025, siguiente en el
+plan. Candidata `aaf0e0f`; producto sin cambios desde `54db6e4`. Se construyó
+una imagen local desechable y se ejecutó el flujo completo; la publicación/CI
+de la misma fuente no está autorizada en esta sesión.
+
+Resultado local: imagen `goodsentry:account-025`,
+`sha256:3b39f59382f096e51a1ed8c14adf4aefad872c42a9055688e81838e3f0a1589d`,
+usuario 65532:65532, 73 migraciones. Sobre PostgreSQL desechable con owner y
+member reales: setup required, proyecto y DSN, envelope 200 antes del cambio;
+204 al cambiar la contraseña; `/api/v1/me` del owner 401 y del member 200
+después; bearer revocado 401; bearer inválido 401; login anterior 401 y nuevo
+200; envelope 200 después del cambio. El reinicio solo de la aplicación
+conservó usuarios y digests de hashes idénticos, 3 eventos/3 issues, la sesión
+del member y login nuevo 200. Los tests HTTP, navegador owner/member/sin
+organización y PostgreSQL race ya están registrados. No se publicó ni se hizo
+push; no hay CI de la misma fuente.
+
+Bloqueo: la condición de cierre de 025 exige publicación/CI de la misma fuente.
+Causa: los commits siguen locales y no hay autorización de publicación en esta
+sesión. Dependencia: push/CI/publicación autorizada o un artefacto público
+equivalente. Responsable: propietario del repositorio/proceso de publicación.
+Intentos: no se intentó publicar para no ejecutar una acción externa no
+autorizada. Desbloqueo: imagen y CI con la fuente de la candidata; repetir la
+aceptación y el reinicio contra el digest público. Siguiente acción: continuar
+con 026/027 sin declarar 025 cerrada.
+
+Evidencia: `test-results/closure-20261025/identity-025/`
+(`summary.json`, `build.log`, `flow.json`, `envelope-after.json`, `image.txt`,
+`restart.txt`, `app.log`).
+
+### Ejecución 2026-10-26: despliegue y rollback de contraseña
+
+Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
+plan. Candidata `aaf0e0f`; producto sin cambios desde `54db6e4`. Se documenta
+el procedimiento y se contrasta con el Compose de un solo servicio.
+
+Resultado observado: `docs/configuration.md` exige detener todo proceso
+anterior que pueda emitir credenciales antes de habilitar el cambio de
+contraseña; declara que old/new mezclados no son un rolling upgrade soportado
+para este incremento, que debe recrearse el único servicio `goodsentry` con la
+imagen nueva y que deben conservarse la imagen previa y un backup restaurado
+por separado. También prohíbe ejecutar un emisor viejo contra la base después
+de un cambio de contraseña. El Compose verificado en 008 tiene únicamente
+`goodsentry` y `postgres`; el reinicio app-only de 025 confirmó el ciclo de
+vida de un solo servicio. Subresultados pendientes del bloque: ninguno; la
+ejecución real en un despliegue externo es responsabilidad del operador.
+
+Evidencia: diff de `docs/configuration.md`, `identity-025/` y
+`compose/config-default.json`.
+
+Siguiente acción: CLOSE-identidad-027 (migración 036, outbox de reset y
+contratos de token), primer bloque detallado de recuperación.
 
 ### Comprobante de integración documental
 

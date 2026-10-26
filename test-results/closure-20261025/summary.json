@@ -412,6 +412,31 @@
         "new injected failure after revocation and deferred COMMIT failure roll back all state"
       ],
       "evidence_files": ["account/generations.log", "account/rollback.log"]
+    },
+    "CLOSE-identidad-025": {
+      "evidence": "bloqueada por publicacion",
+      "scope": "local image acceptance, HTTP/browser password change, revocation, ingestion and app-only restart",
+      "covered": [
+        "local image built; 204 change; owner 401, member 200; revoked bearer 401; old/new login 401/200",
+        "envelope 200 before and after; app-only restart preserves users/hashes and 3 events/issues",
+        "HTTP and browser owners at 320/768/1440 including no-organization"
+      ],
+      "blocker": {
+        "cause": "matching-source publication/CI is required by the contract but not authorized; commits remain local",
+        "unlock": "publish image/CI from the candidate or provide an equivalent public artifact, then repeat the public acceptance"
+      },
+      "evidence_files": ["identity-025/summary.json", "identity-025/build.log", "identity-025/flow.json", "identity-025/envelope-after.json", "identity-025/image.txt", "identity-025/restart.txt", "identity-025/app.log"]
+    },
+    "CLOSE-identidad-026": {
+      "evidence": "vigente",
+      "scope": "deployment procedure, single-service recreation and rollback constraints",
+      "covered": [
+        "documented stop of older credential issuers before password mutation",
+        "mixed replicas are not a supported rolling upgrade; recreate the single service",
+        "retain prior image and separately restored backup; no older issuer after a password change",
+        "Compose has only goodsentry and postgres; app-only restart verified"
+      ],
+      "evidence_files": ["docs/configuration.md diff", "identity-025/restart.txt", "compose/config-default.json"]
     }
   },
   "commands": [

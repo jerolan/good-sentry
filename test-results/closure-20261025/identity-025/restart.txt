@@ -1,0 +1,5 @@
+users_and_hashes=identical
+events_after_restart=3
+issues_after_restart=3
+member_login_after_restart=200
+migrations=73
