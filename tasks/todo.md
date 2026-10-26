@@ -1444,8 +1444,8 @@ CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
-y 101–111, y 139–162 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-012 (recepción OTLP de logs). No se declara aceptación ni cierre del producto. El avance se
+y 101–111, 139–162 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-001 (retención nativa de logs). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1816,23 +1816,23 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-160](../SPEC.md#close-errores-160) | Native event attachment access: The HTTP boundary adds downloadName to metadata, using the same policy as Cont… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-161](../SPEC.md#close-errores-161) | Native event attachment access: On a retained issue event, add an Event attachments region with loading/retry,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-162](../SPEC.md#close-errores-162) | Native event attachment access: Test-audit precedes authoring. Real PostgreSQL owns exact binary/empty data, b… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-logs-012](../SPEC.md#close-logs-012) | Native OTLP log reception: This telemetry increment receives logs from standard OpenTelemetry HTTP exporters w… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-013](../SPEC.md#close-logs-013) | Native OTLP log reception: GlitchTip6.2 release notes confirm this endpoint, but the public installation/log g… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-014](../SPEC.md#close-logs-014) | Native OTLP log reception: Authenticate using exactly one nonempty X-GoodSentry-Key header, with the existing… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-015](../SPEC.md#close-logs-015) | Native OTLP log reception: OPTIONS /v1/logs returns204 without database access or ingestion, allows POST/OPTIO… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-016](../SPEC.md#close-logs-016) | Native OTLP log reception: Decode the HTTP entity as one ExportLogs request. Binary zero bytes and JSON {} are… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-017](../SPEC.md#close-logs-017) | Native OTLP log reception: Use the official general-purpose go.opentelemetry.io/proto/otlp v1.11.0 signal mess… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-018](../SPEC.md#close-logs-018) | Native OTLP log reception: MAX_BODY_BYTES bounds both compressed and decompressed bytes and the canonical stor… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-019](../SPEC.md#close-logs-019) | Native OTLP log reception: An admitted batch preserves every record's full AnyValue body; resource, scope and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-020](../SPEC.md#close-logs-020) | Native OTLP log reception: Index one UTC timestamp per record using nonzero timeUnixNano, otherwise nonzero ob… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-021](../SPEC.md#close-logs-021) | Native OTLP log reception: Only nonzero16-byte trace IDs and nonzero8-byte span IDs contribute canonical lower… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-022](../SPEC.md#close-logs-022) | Native OTLP log reception: Migration021 adds an otlp_log_batches table with numeric id, project ownership, rec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-023](../SPEC.md#close-logs-023) | Native OTLP log reception: Store.IngestOTLP accepts a completely decoded, bounded batch and writes its batch r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-024](../SPEC.md#close-logs-024) | Native OTLP log reception: For valid encoding/authentication, commit every record or reject the complete reque… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-025](../SPEC.md#close-logs-025) | Native OTLP log reception: Keep the existing native Logs listing/page/filter contract. SDK entries retain thei… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-026](../SPEC.md#close-logs-026) | Native OTLP log reception: The original Tailwind/daisyUI Projects view gains a per-project OpenTelemetry discl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-027](../SPEC.md#close-logs-027) | Native OTLP log reception: Acceptance owners: pure internal/otlp consumer tests prove actual binary/JSON equiv… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-028](../SPEC.md#close-logs-028) | Native OTLP log reception: Run the actual official Python SDK1.45.1 with opentelemetry-exporter-otlp-proto-htt… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-logs-012](../SPEC.md#close-logs-012) | Native OTLP log reception: This telemetry increment receives logs from standard OpenTelemetry HTTP exporters w… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-013](../SPEC.md#close-logs-013) | Native OTLP log reception: GlitchTip6.2 release notes confirm this endpoint, but the public installation/log g… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-014](../SPEC.md#close-logs-014) | Native OTLP log reception: Authenticate using exactly one nonempty X-GoodSentry-Key header, with the existing… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-015](../SPEC.md#close-logs-015) | Native OTLP log reception: OPTIONS /v1/logs returns204 without database access or ingestion, allows POST/OPTIO… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-016](../SPEC.md#close-logs-016) | Native OTLP log reception: Decode the HTTP entity as one ExportLogs request. Binary zero bytes and JSON {} are… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-017](../SPEC.md#close-logs-017) | Native OTLP log reception: Use the official general-purpose go.opentelemetry.io/proto/otlp v1.11.0 signal mess… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-018](../SPEC.md#close-logs-018) | Native OTLP log reception: MAX_BODY_BYTES bounds both compressed and decompressed bytes and the canonical stor… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-019](../SPEC.md#close-logs-019) | Native OTLP log reception: An admitted batch preserves every record's full AnyValue body; resource, scope and… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-020](../SPEC.md#close-logs-020) | Native OTLP log reception: Index one UTC timestamp per record using nonzero timeUnixNano, otherwise nonzero ob… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-021](../SPEC.md#close-logs-021) | Native OTLP log reception: Only nonzero16-byte trace IDs and nonzero8-byte span IDs contribute canonical lower… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-022](../SPEC.md#close-logs-022) | Native OTLP log reception: Migration021 adds an otlp_log_batches table with numeric id, project ownership, rec… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-023](../SPEC.md#close-logs-023) | Native OTLP log reception: Store.IngestOTLP accepts a completely decoded, bounded batch and writes its batch r… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-024](../SPEC.md#close-logs-024) | Native OTLP log reception: For valid encoding/authentication, commit every record or reject the complete reque… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-025](../SPEC.md#close-logs-025) | Native OTLP log reception: Keep the existing native Logs listing/page/filter contract. SDK entries retain thei… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-026](../SPEC.md#close-logs-026) | Native OTLP log reception: The original Tailwind/daisyUI Projects view gains a per-project OpenTelemetry discl… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-027](../SPEC.md#close-logs-027) | Native OTLP log reception: Acceptance owners: pure internal/otlp consumer tests prove actual binary/JSON equiv… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-028](../SPEC.md#close-logs-028) | Native OTLP log reception: Run the actual official Python SDK1.45.1 with opentelemetry-exporter-otlp-proto-htt… | implementada (local) | bloqueada | Restaurar la copia de 4010 filas/524 eventos o autorizar una línea base nueva y CI público |
 | [CLOSE-rendimiento-012](../SPEC.md#close-rendimiento-012) | Sentry spans and native telemetry reads: Current JavaScript SDKs use standalone span v2 envelopes by default.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-013](../SPEC.md#close-rendimiento-013) | Sentry spans and native telemetry reads: The telemetry UI exposes transaction aggregates and paginated log fil… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-014](../SPEC.md#close-rendimiento-014) | Sentry spans and native telemetry reads: The next telemetry slice adds native start and end query parameters t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4164,6 +4164,38 @@ Evidencia: `test-results/closure-20261025/errores-156-162-go.log`,
 Límites registrados: no se ejecutó CI público ni se publicó la imagen porque no
 hay autorización de publicación; esa comprobación queda para la auditoría
 final junto con la landing desplegada.
+
+### Ejecución 2026-10-26: recepción OTLP de logs
+
+Selección registrada antes de trabajar: CLOSE-logs-012 a -028. Candidata
+`1cebf3d`; sin cambios de producto.
+
+Resultado observado: los owners de consumo, store y HTTP pasan con `-race`
+sobre PostgreSQL desechable (179 subpruebas en `internal/otlp`,
+`internal/store` e `internal/server`, incluidas las de admisión,
+presupuestos, migración021, rollback y detalle seleccionado). El owner de
+navegador se ejecutó contra dos instancias reales del binario actual sobre una
+base sembrada al efecto: receta OTLP por proyecto con endpoint prefijado
+exacto, encabezado copiable y distinción con el DSN; fila OTLP con distintivo y
+detalle perezoso que conserva cuerpo hostil, servicio, entorno, severidad,
+nanosegundos exactos, enteros de 64 bits extremos, bytes, `NaN`, NUL escapado,
+claves duplicadas y clave vacía; reintento real ante 503, petición única al
+reabrir durante la carga, resultado pendiente que no se adjunta tras navegar,
+paginación que conserva el proyecto, filtros de texto/servicio que aíslan el
+registro y enlace de traza; atributos SDK intactos con enteros exactos; lectura
+por un miembro real; y proyecto con logs deshabilitados sin receta utilizable.
+Las 10 comprobaciones y 12 capturas 320/768/1440 pasan sin errores de página ni
+peticiones fallidas.
+
+Evidencia: `test-results/closure-20261025/errores-logs-012-027-go.log` y
+`otlp-ui/report.json`.
+
+Límites registrados: CLOSE-logs-028 queda bloqueada. Su texto exige construir la
+copia aislada desde la base aceptada de 18088 conservando 4010 filas y 524
+eventos, y esa instancia (`goodsentry-deletion-grouping-regression-check`)
+ya no existe en el host ni se conserva un volcado equivalente; tampoco hay
+autorización de publicación para el CI remoto. Desbloqueo: restaurar ese volcado
+exacto o aprobar una línea base nueva, y ejecutar CI público.
 
 ### Comprobante de integración documental
 

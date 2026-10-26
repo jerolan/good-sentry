@@ -2585,6 +2585,142 @@
         "vet.log",
         "image-build.log"
       ]
+    },
+    "CLOSE-logs-012": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-013": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-014": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-015": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-016": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-017": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-018": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-019": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-020": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-021": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-022": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-023": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-024": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-025": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-026": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-027": {
+      "evidence": "vigente",
+      "scope": "OTLP/HTTP log reception, persistence, native detail and browser recipe",
+      "evidence_files": [
+        "errores-logs-012-027-go.log",
+        "otlp-ui/report.json"
+      ]
+    },
+    "CLOSE-logs-028": {
+      "evidence": "bloqueada",
+      "scope": "official Python exporter image acceptance against the 4010-row baseline",
+      "evidence_files": [
+        "errores-logs-012-027-go.log"
+      ],
+      "blocked": "La instancia/base aceptada de 4010 filas ya no existe y no hay volcado equivalente; falta CI público."
     }
   },
   "commands": [

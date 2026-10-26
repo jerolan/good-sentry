@@ -1,0 +1,105 @@
+{
+  "passed": true,
+  "checks": [
+    "Projects exposes the exact prefixed OTLP endpoint, copyable key header, exporter variables and DSN distinction",
+    "Logs OTLP row shows badge and lazy detail with resource, scope, record, severity, exact nanoseconds and metadata",
+    "Detail close returns to Logs without stale detail content",
+    "The failed lazy read retries and renders the actual selected backend record",
+    "Close/reopen during loading sends once and a pending response cannot attach after navigation",
+    "Project selection survives log pagination",
+    "Real text/service filters isolate OTLP records and the stored trace link opens its trace",
+    "Existing SDK logs retain their separate attributes disclosure and exact integer text",
+    "Actual organization member reads selected OTLP detail",
+    "Disabled ingestion shows unavailability without offering a working recipe"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/projects-otlp-recipe-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/projects-otlp-recipe-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/projects-otlp-recipe-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-otlp-detail-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-otlp-detail-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-otlp-detail-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-after-close-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-after-close-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-after-close-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-loading-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-loading-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/otlp-ui/logs-loading-1440.png"
+  ],
+  "dimensions": [
+    {
+      "name": "projects-otlp-recipe",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "projects-otlp-recipe",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "projects-otlp-recipe",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-otlp-detail",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-otlp-detail",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-otlp-detail",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-after-close",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-after-close",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-after-close",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-loading",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-loading",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-loading",
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "badResponses": [
+    {
+      "url": "http://127.0.0.1:18124/observe/api/v1/organizations/otlp-acceptance-822e7a/logs/1",
+      "status": 503
+    }
+  ],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "url": "http://127.0.0.1:18124/observe/api/v1/organizations/otlp-acceptance-822e7a/logs/1"
+    }
+  ]
+}
