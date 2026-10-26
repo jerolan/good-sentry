@@ -4125,6 +4125,16 @@
         "rendimiento-040/ui.json"
       ]
     },
+    "CLOSE-uptime-001": {
+      "evidence": "vigente",
+      "scope": "status pages with slug collision suffix, CRUD permissions, member read-only access, compatible create empty, org-scoped monitor rejection and the 100-monitor bound",
+      "evidence_files": [
+        "uptime-001/status-pages.log",
+        "uptime-001/status-page-rules.json",
+        "uptime-001/status-page-roles.json",
+        "uptime-001/status-page-member-foreign.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

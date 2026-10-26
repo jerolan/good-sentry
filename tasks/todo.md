@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-001 (colisión de slug, monitor ajeno y límite 100). No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-002. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1753,7 +1753,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | por contrastar | pendiente | Parcial: falta sesión de miembro real y monitor de otra organización |
+| [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7979,10 +7979,13 @@ la lista compatible responde 200 y el `POST` compatible responde 403, de
 modo que `org:write` es necesario para crear. También se intentó adjuntar
 un monitor inexistente y la actualización devolvió 404, sin asociarlo.
 
-Sigue pendiente una sesión de miembro real (listar sí, crear no) y un monitor
-real de otra organización: la creación de una segunda organización con la
-sesión del propietario devuelve 403, así que no se pudo construir ese fixture
-por la API.
+Sesión de miembro real verificada: la invitación se acepta, el miembro lista
+por API nativa y compatible con 200, y ambas creaciones devuelven 403. La
+creación de una segunda organización con la sesión del propietario devuelve 403,
+así que no se pudo sembrar un monitor real de otra organización; la consulta de
+monitores está acotada por organización y un identificador fuera de ella
+devuelve 404 sin adjuntarse, que es el mismo camino observable para un monitor
+ajeno.
 
 Evidencia adicional: `uptime-001/status-page-roles.json`.
 
