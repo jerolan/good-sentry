@@ -1449,8 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 a -003 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-004. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -004 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-005. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1698,7 +1698,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-001](../SPEC.md#close-sourcemaps-001) | Release lifecycle, commit metadata and deploys: This artifacts increment provides actual release entities shar… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-002](../SPEC.md#close-sourcemaps-002) | Release lifecycle, commit metadata and deploys: An exact release version is1..255 Unicode characters excluding… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-003](../SPEC.md#close-sourcemaps-003) | Release lifecycle, commit metadata and deploys: Expose compatible organization GET/POST /api/0/organizations/{… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-004](../SPEC.md#close-sourcemaps-004) | Release lifecycle, commit metadata and deploys: Release JSON returns string id, version, shortVersion (the exa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-004](../SPEC.md#close-sourcemaps-004) | Release lifecycle, commit metadata and deploys: Release JSON returns string id, version, shortVersion (the exa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-005](../SPEC.md#close-sourcemaps-005) | Release lifecycle, commit metadata and deploys: List releases by dateCreated descending then numeric id descen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-006](../SPEC.md#close-sourcemaps-006) | Release lifecycle, commit metadata and deploys: Support organization GET/POST .../releases/{version}/commits/,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-007](../SPEC.md#close-sourcemaps-007) | Release lifecycle, commit metadata and deploys: Persist an organization/name repository identity whenever expl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6022,6 +6022,37 @@ Mapa de comprobantes:
 | Archivos de release | HTTP `TestCompatibleReleaseFilesHTTP` |
 
 Evidencia: `test-results/closure-20261025/sourcemaps-003-go.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: proyección JSON de releases
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-004. Candidata
+`e5fbd09`.
+
+Resultado observado: la respuesta devuelve `id` como cadena, `version`,
+`shortVersion` idéntico, `ref`/`url` nulos o presentes, estado, fechas UTC y
+nulas, proyectos autorizados con sus metadatos reales, `commitCount`,
+`deployCount` visible, `lastCommit`/`lastDeploy` y `canWrite` calculado con
+el rol actual, el permiso de escritura de la credencial y la cobertura completa
+de proyectos. Los commits son compartidos por release; cada deploy conserva sus
+asociaciones y solo los visibles cuentan en el resumen. Las lecturas usan
+instantáneas repeatable-read de solo lectura y las mutaciones una transacción con
+bloqueos y comprobaciones de membresía/proyecto; la creación concurrente se
+serializa por la identidad única organización/versión y la sustitución de
+commits por la fila de release, sin métricas inventadas.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Campos JSON, `shortVersion` y metadatos de proyecto | HTTP `TestReleaseHTTPContract` |
+| `canWrite` por rol, credencial y cobertura | HTTP `TestReleaseHTTPContract` |
+| Commits compartidos y deploys con asociaciones propias | store `TestReleaseCommitRawOrderRepositoriesAndPreviousHead`, `TestReleaseDeployScopeObservationAndArtifactDeletion` |
+| Instantáneas coherentes y bloqueos de mutación | store `TestReleaseConcurrentIdentityAndCommitReplacement` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-004-006-go.log` con nueve
+owners.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

@@ -3650,6 +3650,13 @@
       "evidence_files": [
         "sourcemaps-003-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-004": {
+      "evidence": "vigente",
+      "scope": "release JSON projection, canWrite and snapshot consistency",
+      "evidence_files": [
+        "sourcemaps-004-006-go.log"
+      ]
     }
   },
   "commands": [

@@ -1,0 +1,22 @@
+=== RUN   TestReleaseSharedIdentityAndCoverage
+--- PASS: TestReleaseSharedIdentityAndCoverage (0.62s)
+=== RUN   TestReleaseCommitRawOrderRepositoriesAndPreviousHead
+--- PASS: TestReleaseCommitRawOrderRepositoriesAndPreviousHead (0.54s)
+=== RUN   TestReleaseDeployScopeObservationAndArtifactDeletion
+--- PASS: TestReleaseDeployScopeObservationAndArtifactDeletion (0.61s)
+=== RUN   TestReleaseConcurrentIdentityAndCommitReplacement
+--- PASS: TestReleaseConcurrentIdentityAndCommitReplacement (1.90s)
+=== RUN   TestReleaseStandaloneObservationFreshOnly
+--- PASS: TestReleaseStandaloneObservationFreshOnly (0.62s)
+=== RUN   TestReleaseMetadataTimesAreUTC
+--- PASS: TestReleaseMetadataTimesAreUTC (0.45s)
+=== RUN   TestReleaseProjectReferencesResolveWithinAuthorizedScope
+--- PASS: TestReleaseProjectReferencesResolveWithinAuthorizedScope (0.41s)
+=== RUN   TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent
+--- PASS: TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent (0.49s)
+PASS
+ok  	goodsentry/internal/store	5.639s
+=== RUN   TestReleaseHTTPContract
+--- PASS: TestReleaseHTTPContract (1.90s)
+PASS
+ok  	goodsentry/internal/server	1.908s
