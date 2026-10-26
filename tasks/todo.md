@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-070 (detalle de organización y claves de proyecto). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-073 (gestión de claves y límites por ventana). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1910,9 +1910,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-067](../SPEC.md#close-identidad-067) | Compatible discovery surface: Organization responses use the public OpenAPI OrganizationSchema fields with rea… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-068](../SPEC.md#close-identidad-068) | Compatible discovery surface: List routes accept strict limit or per_page from1..100 (not both with different… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-069](../SPEC.md#close-identidad-069) | Compatible discovery surface: These routes are read-only and add no schema, feature worker or external integra… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-070](../SPEC.md#close-identidad-070) | Compatible organization detail and project keys: Additive039_compat_management.sql supplies the remaining read… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-071](../SPEC.md#close-identidad-071) | Compatible organization detail and project keys: GET /api/0/organizations/{org}/ returns the live Organization… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-072](../SPEC.md#close-identidad-072) | Compatible organization detail and project keys: Project-key routes are GET/POST /api/0/projects/{org}/{projec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-070](../SPEC.md#close-identidad-070) | Compatible organization detail and project keys: Additive039_compat_management.sql supplies the remaining read… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-071](../SPEC.md#close-identidad-071) | Compatible organization detail and project keys: GET /api/0/organizations/{org}/ returns the live Organization… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-072](../SPEC.md#close-identidad-072) | Compatible organization detail and project keys: Project-key routes are GET/POST /api/0/projects/{org}/{projec… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-073](../SPEC.md#close-identidad-073) | Compatible organization detail and project keys: Key creation preserves the generated public key only in the D… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-074](../SPEC.md#close-identidad-074) | Compatible organization detail and project keys: The native Projects view offers a project-scoped SDK-key mana… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-075](../SPEC.md#close-identidad-075) | Compatible organization detail and project keys: Real PostgreSQL owns039/041 preservation/reopen, UUID/team-cl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4799,6 +4799,34 @@ lectura y no añaden esquema, worker ni integración externa.
 
 Evidencia: `test-results/closure-20261025/identidad-065-067-go.log`, el mismo
 owner que ejercita paginación, filtros, enlaces y ajustes.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: detalle de organización y claves de proyecto
+
+Selección registrada antes de trabajar: CLOSE-identidad-070 a -072. Candidata
+`a9b5372`.
+
+Resultado observado: la migración `039_compat_management.sql` aporta únicamente
+los metadatos de gestión restantes —creación de equipos heredada del instante de
+su organización, UUID determinista y columnas de límite nulas para claves
+existentes, UUID aleatorio para nuevas— y su owner comprueba que las filas y los
+recibos previos se conservan y que reabrir no altera valores antiguos. El
+detalle de organización devuelve campos vivos, proyectos y equipos reales con su
+relación `{id,slug}`, `openMembership:false` y acceso derivado del rol: el
+propietario incluye escritura de proyecto, el miembro solo lectura más escritura
+de eventos y el manager añade organización, miembros y equipos. Las rutas de
+claves aceptan lectura con `project:read` y mutaciones con `project:write` o
+rol de propietario/manager/administrador, rechazan IDs desconocidos o de otro
+proyecto con 404, filtran por activo/inactivo, paginan con cursor y `Link`
+prefijado, y su DTO expone UUID, clave pública, proyecto, etiqueta, estado,
+creación y DSN con secreto vacío y URLs públicas de CSP/seguridad. El owner HTTP
+cubre crear, renombrar, desactivar —con rechazo real de ingesta 403—, reactivar
+—con ingesta 200—, borrar y la paginación.
+
+Evidencia: `test-results/closure-20261025/identidad-070-072-go.log` con los
+cinco owners (HTTP de gestión, migración 039, creación en equipo y relaciones
+múltiples).
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

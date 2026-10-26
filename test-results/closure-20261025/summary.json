@@ -3263,6 +3263,27 @@
       "evidence_files": [
         "identidad-065-067-go.log"
       ]
+    },
+    "CLOSE-identidad-070": {
+      "evidence": "vigente",
+      "scope": "migration039, organization detail and project key management",
+      "evidence_files": [
+        "identidad-070-072-go.log"
+      ]
+    },
+    "CLOSE-identidad-071": {
+      "evidence": "vigente",
+      "scope": "migration039, organization detail and project key management",
+      "evidence_files": [
+        "identidad-070-072-go.log"
+      ]
+    },
+    "CLOSE-identidad-072": {
+      "evidence": "vigente",
+      "scope": "migration039, organization detail and project key management",
+      "evidence_files": [
+        "identidad-070-072-go.log"
+      ]
     }
   },
   "commands": [
