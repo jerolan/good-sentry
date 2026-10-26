@@ -1449,8 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 a -005 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-006. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -006 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-007. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1700,7 +1700,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-003](../SPEC.md#close-sourcemaps-003) | Release lifecycle, commit metadata and deploys: Expose compatible organization GET/POST /api/0/organizations/{… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-004](../SPEC.md#close-sourcemaps-004) | Release lifecycle, commit metadata and deploys: Release JSON returns string id, version, shortVersion (the exa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-005](../SPEC.md#close-sourcemaps-005) | Release lifecycle, commit metadata and deploys: List releases by dateCreated descending then numeric id descen… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-006](../SPEC.md#close-sourcemaps-006) | Release lifecycle, commit metadata and deploys: Support organization GET/POST .../releases/{version}/commits/,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-006](../SPEC.md#close-sourcemaps-006) | Release lifecycle, commit metadata and deploys: Support organization GET/POST .../releases/{version}/commits/,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-007](../SPEC.md#close-sourcemaps-007) | Release lifecycle, commit metadata and deploys: Persist an organization/name repository identity whenever expl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6082,6 +6082,40 @@ Mapa de comprobantes:
 | `per_page`, alias `limit` y rechazos | HTTP `TestReleaseHTTPContract` |
 | Cursores y enlaces prefijados con filtros | HTTP `TestReleaseHTTPContract` |
 | Listado nativo con 25 filas y `hasMore` | HTTP `TestReleaseHTTPContract` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-004-006-go.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: commits de release
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-006. Candidata
+`1b8a791`.
+
+Resultado observado: las rutas de commits de organización (GET/POST) y de
+proyecto (GET) aceptan el array desnudo de GlitchTip y el campo `commits`
+en línea equivalente en la creación o actualización completa de la release. La
+ausencia del campo conserva el conjunto, `null` es inválido y un array vacío lo
+limpia. El conjunto admite hasta 1000 registros dentro del cuerpo de 1 MiB,
+conserva el orden más reciente primero, rechaza pares `(repository,id)`
+duplicados y se sustituye de forma atómica. Cada commit exige id no vacío de
+hasta 200 caracteres y limita repositorio a 200, mensaje a 10000, autor a 200 y
+correo a 320, admitiendo cadenas opcionales vacías. Los alias del CLI
+`author_name`, `author_email`, `timestamp` y `patch_set` conviven con
+camelCase, los conflictos devuelven 400 y los tokens numéricos estructurados se
+comparan sin redondeo. Las marcas de tiempo se normalizan como las fechas UTC y
+la paginación de commits usa los mismos enlaces prefijados.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Rutas GET/POST de commits y array desnudo | HTTP `TestReleaseHTTPContract` |
+| Ausencia conserva, `null` inválido, vacío limpia | HTTP `TestReleaseHTTPContract` |
+| Límite de 1000, orden y duplicados | HTTP `TestReleaseHTTPContract`; store `TestReleaseCommitRawOrderRepositoriesAndPreviousHead` |
+| Límites de campo y cadenas vacías | HTTP `TestReleaseHTTPContract` |
+| Alias del CLI, conflictos y tokens sin redondeo | HTTP `TestReleaseHTTPContract` |
+| Sustitución atómica y orden compartido | store `TestReleaseCommitRawOrderRepositoriesAndPreviousHead`, `TestReleaseConcurrentIdentityAndCommitReplacement` |
 
 Evidencia: `test-results/closure-20261025/sourcemaps-004-006-go.log`.
 

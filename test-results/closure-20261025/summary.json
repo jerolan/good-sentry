@@ -3664,6 +3664,13 @@
       "evidence_files": [
         "sourcemaps-004-006-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-006": {
+      "evidence": "vigente",
+      "scope": "release commit routes, whole-set replacement, aliases and bounds",
+      "evidence_files": [
+        "sourcemaps-004-006-go.log"
+      ]
     }
   },
   "commands": [
