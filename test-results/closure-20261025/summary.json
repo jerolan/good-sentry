@@ -4317,6 +4317,13 @@
         "alertas-004/alerts-core.log"
       ]
     },
+    "CLOSE-alertas-006": {
+      "evidence": "vigente",
+      "scope": "in-transaction rolling frequency crossing, environment filter, cooldown suppression and non-issue exclusion",
+      "evidence_files": [
+        "alertas-004/alerts-core.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
