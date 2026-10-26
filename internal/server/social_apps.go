@@ -21,6 +21,7 @@ const (
 	socialMicrosoftIssuer = "https://login.microsoftonline.com/common/v2.0"
 	socialGitHubURL       = "https://github.com"
 	socialGitLabURL       = "https://gitlab.com"
+	socialDigitalOceanURL = "https://cloud.digitalocean.com"
 )
 
 // compatibleSocialApp is the published organization application shape. The
@@ -170,6 +171,8 @@ func compatibleSocialBrand(value string) (string, bool) {
 		return "gitlab", true
 	case "gitea":
 		return "gitea", true
+	case "digitalocean":
+		return "digitalocean", true
 	default:
 		return "", false
 	}
@@ -189,7 +192,7 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 	}
 	brand, valid := compatibleSocialBrand(input.Provider)
 	if !valid {
-		failure(w, 400, "Provider must be openid_connect, google, microsoft, github, gitlab or gitea")
+		failure(w, 400, "Provider must be openid_connect, google, microsoft, github, gitlab, gitea or digitalocean")
 		return
 	}
 	if !compatibleSocialText(input.Name, socialAppNameMax) || strings.TrimSpace(input.Name) == "" {
@@ -217,6 +220,8 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 		issuer, provider = socialGitLabURL, "gitlab"
 	case "gitea":
 		provider = "gitea"
+	case "digitalocean":
+		issuer, provider = socialDigitalOceanURL, "digitalocean"
 	case "openid_connect":
 	}
 	if input.ServerURL != nil && strings.TrimSpace(*input.ServerURL) != "" {

@@ -209,6 +209,13 @@ func TestCompatibleSocialOAuth2AppsHTTP(t *testing.T) {
 	if microsoft.Provider != "openid_connect" || microsoft.Brand != "microsoft" || microsoft.ServerURL == nil || *microsoft.ServerURL != "https://login.microsoftonline.com/common/v2.0" {
 		t.Fatalf("Microsoft app=%+v", microsoft)
 	}
+	var digitalOcean compatibleSocialView
+	if err := json.Unmarshal(f.request(t, f.client, "POST", base, socialAppBody("DigitalOcean", "do-client", "do-secret", "digitalocean", ""), csrf, 201), &digitalOcean); err != nil {
+		t.Fatal(err)
+	}
+	if digitalOcean.Provider != "digitalocean" || digitalOcean.Brand != "digitalocean" || digitalOcean.ServerURL == nil || *digitalOcean.ServerURL != "https://cloud.digitalocean.com" {
+		t.Fatalf("DigitalOcean app=%+v", digitalOcean)
+	}
 	f.request(t, f.client, "POST", base, socialAppBody("Bad", "client", "secret", "github", "ftp://github.example.test"), csrf, 400)
 	f.request(t, f.client, "POST", base, socialAppBody("Gitea", "client", "secret", "gitea", ""), csrf, 400)
 	var updated compatibleSocialView
@@ -245,6 +252,8 @@ func newSocialOAuth2TestProvider(t *testing.T, kind string, verified, confirmed 
 		mux.HandleFunc("/api/v3/user/emails", provider.githubEmails)
 	} else if kind == "gitea" {
 		mux.HandleFunc("/api/v1/user", provider.giteaUser)
+	} else if kind == "digitalocean" {
+		mux.HandleFunc("/api/v2/account", provider.digitalOceanAccount)
 	} else {
 		mux.HandleFunc("/api/v4/user", provider.gitlabUser)
 	}
@@ -334,6 +343,15 @@ func (p *socialOAuth2TestProvider) giteaUser(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+func (p *socialOAuth2TestProvider) digitalOceanAccount(w http.ResponseWriter, r *http.Request) {
+	if !p.authorized(w, r) {
+		return
+	}
+	_ = json.NewEncoder(w).Encode(map[string]any{"account": map[string]any{
+		"uuid": "digitalocean-user-4242", "email": "oauth-member@resolution.test", "email_verified": p.verified, "status": "active",
+	}})
+}
+
 func newSocialOAuth2TestServer(t *testing.T, f *resolutionHTTPFixture, provider *socialOAuth2TestProvider) (*httptest.Server, store.SocialApp) {
 	t.Helper()
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -369,12 +387,13 @@ func newSocialOAuth2TestServer(t *testing.T, f *resolutionHTTPFixture, provider 
 
 func TestSocialOAuth2SignInCreatesOrganizationMember(t *testing.T) {
 	for _, test := range []struct {
-		kind, provider, email string
-		verified, confirmed   bool
+		kind, provider, email, subject string
+		verified, confirmed            bool
 	}{
-		{kind: "GitHub", provider: "github", email: "oauth-member@resolution.test", verified: true},
-		{kind: "GitLab", provider: "gitlab", email: "oauth-member@resolution.test", confirmed: true},
-		{kind: "Gitea", provider: "gitea", email: "oauth-member@resolution.test", verified: true},
+		{kind: "GitHub", provider: "github", email: "oauth-member@resolution.test", subject: "4242", verified: true},
+		{kind: "GitLab", provider: "gitlab", email: "oauth-member@resolution.test", subject: "4242", confirmed: true},
+		{kind: "Gitea", provider: "gitea", email: "oauth-member@resolution.test", subject: "4242", verified: true},
+		{kind: "DigitalOcean", provider: "digitalocean", email: "oauth-member@resolution.test", subject: "digitalocean-user-4242", verified: true},
 	} {
 		t.Run(test.kind, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
@@ -407,7 +426,7 @@ func TestSocialOAuth2SignInCreatesOrganizationMember(t *testing.T) {
 				t.Fatalf("social session status=%d %+v", session.StatusCode, me)
 			}
 			var identities int
-			if err = f.sql.QueryRow(f.ctx, "SELECT count(*) FROM user_identities WHERE provider=$1 AND subject='4242'", "social:"+app.ProviderID).Scan(&identities); err != nil || identities != 1 {
+			if err = f.sql.QueryRow(f.ctx, "SELECT count(*) FROM user_identities WHERE provider=$1 AND subject=$2", "social:"+app.ProviderID, test.subject).Scan(&identities); err != nil || identities != 1 {
 				t.Fatalf("identities=%d err=%v", identities, err)
 			}
 		})
@@ -423,6 +442,7 @@ func TestSocialOAuth2RejectsUnverifiedProfiles(t *testing.T) {
 		{kind: "GitHub", provider: "github"},
 		{kind: "GitLab", provider: "gitlab", verified: true},
 		{kind: "Gitea", provider: "gitea", verified: true, inactive: true},
+		{kind: "DigitalOcean", provider: "digitalocean"},
 	} {
 		t.Run(test.kind, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)

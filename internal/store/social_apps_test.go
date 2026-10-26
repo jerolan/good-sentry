@@ -140,7 +140,7 @@ func TestSocialOAuth2ProviderMigrationPreservesExistingApps(t *testing.T) {
 	}
 	if _, err = sql.Exec(ctx, `ALTER TABLE social_apps DROP CONSTRAINT social_apps_provider_check;
 		ALTER TABLE social_apps ADD CONSTRAINT social_apps_provider_check CHECK (provider IN ('openid_connect','google'));
-		DELETE FROM schema_migrations WHERE version IN (70,71)`); err != nil {
+		DELETE FROM schema_migrations WHERE version IN (70,71,72)`); err != nil {
 		t.Fatal(err)
 	}
 	db.Close()
@@ -164,5 +164,11 @@ func TestSocialOAuth2ProviderMigrationPreservesExistingApps(t *testing.T) {
 		ClientID: "gitea-client", ClientSecret: []byte("gitea-secret"), ServerURL: "https://gitea.example.test",
 	}); err != nil {
 		t.Fatalf("create Gitea application after migration: %v", err)
+	}
+	if _, err = reopened.CreateSocialApp(ctx, org.ID, SocialAppInput{
+		ProviderID: "migration-digitalocean", Provider: "digitalocean", Brand: "digitalocean", Name: "DigitalOcean",
+		ClientID: "do-client", ClientSecret: []byte("do-secret"), ServerURL: "https://cloud.digitalocean.com",
+	}); err != nil {
+		t.Fatalf("create DigitalOcean application after migration: %v", err)
 	}
 }

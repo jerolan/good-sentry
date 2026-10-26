@@ -33,7 +33,7 @@ type socialOAuth2Provider struct {
 
 func isSocialOAuth2Provider(provider string) bool {
 	switch provider {
-	case "github", "gitlab", "gitea":
+	case "github", "gitlab", "gitea", "digitalocean":
 		return true
 	default:
 		return false
@@ -82,6 +82,18 @@ func (s *Server) socialOAuth2Provider(app store.SocialApp, secret string) (socia
 				AuthStyle: oauth2.AuthStyleInParams,
 			},
 			Scopes: []string{"read:user"},
+		}
+	case "digitalocean":
+		authURL, tokenURL := "https://cloud.digitalocean.com/v1/oauth/authorize", "https://api.digitalocean.com/v2/oauth/token"
+		provider.apiURL = "https://api.digitalocean.com/v2/account"
+		if !strings.EqualFold(base.Host, "cloud.digitalocean.com") {
+			authURL, tokenURL = base.String()+"/oauth/authorize", base.String()+"/oauth/token"
+			provider.apiURL = base.String() + "/api/v2/account"
+		}
+		provider.config = &oauth2.Config{
+			ClientID: app.ClientID, ClientSecret: secret, RedirectURL: callback,
+			Endpoint: oauth2.Endpoint{AuthURL: authURL, TokenURL: tokenURL, AuthStyle: oauth2.AuthStyleInParams},
+			Scopes:   []string{"read"},
 		}
 	default:
 		return socialOAuth2Provider{}, false
@@ -245,6 +257,22 @@ func fetchSocialOAuth2Profile(ctx context.Context, provider socialOAuth2Provider
 			return socialOAuth2ProfileValue{}, errors.New("provider account is inactive")
 		}
 		return validSocialOAuth2Profile(user.ID, user.Email, user.FullName, user.Login)
+	case "digitalocean":
+		var response struct {
+			Account struct {
+				UUID          string `json:"uuid"`
+				Email         string `json:"email"`
+				EmailVerified bool   `json:"email_verified"`
+				Status        string `json:"status"`
+			} `json:"account"`
+		}
+		if err := fetchSocialOAuth2JSON(ctx, client, provider.apiURL, &response); err != nil {
+			return socialOAuth2ProfileValue{}, err
+		}
+		if response.Account.Status != "active" || !response.Account.EmailVerified {
+			return socialOAuth2ProfileValue{}, errors.New("provider account is not active and verified")
+		}
+		return validSocialOAuth2ProfileSubject(response.Account.UUID, response.Account.Email, "", "")
 	default:
 		return socialOAuth2ProfileValue{}, errors.New("unsupported social OAuth2 provider")
 	}
@@ -252,6 +280,14 @@ func fetchSocialOAuth2Profile(ctx context.Context, provider socialOAuth2Provider
 
 func validSocialOAuth2Profile(id int64, email, name, fallback string) (socialOAuth2ProfileValue, error) {
 	if id <= 0 {
+		return socialOAuth2ProfileValue{}, errors.New("provider returned an invalid identity")
+	}
+	return validSocialOAuth2ProfileSubject(strconv.FormatInt(id, 10), email, name, fallback)
+}
+
+func validSocialOAuth2ProfileSubject(subject, email, name, fallback string) (socialOAuth2ProfileValue, error) {
+	subject = strings.TrimSpace(subject)
+	if subject == "" || len(subject) > 255 || !utf8.ValidString(subject) || strings.ContainsFunc(subject, unicode.IsControl) {
 		return socialOAuth2ProfileValue{}, errors.New("provider returned an invalid identity")
 	}
 	email = strings.ToLower(strings.TrimSpace(email))
@@ -269,7 +305,7 @@ func validSocialOAuth2Profile(id int64, email, name, fallback string) (socialOAu
 	if len(name) > 120 || !utf8.ValidString(name) || strings.ContainsFunc(name, unicode.IsControl) {
 		name = strings.SplitN(email, "@", 2)[0]
 	}
-	return socialOAuth2ProfileValue{subject: strconv.FormatInt(id, 10), email: email, name: name}, nil
+	return socialOAuth2ProfileValue{subject: subject, email: email, name: name}, nil
 }
 
 func fetchSocialOAuth2JSON(ctx context.Context, client *http.Client, endpoint string, destination any) error {

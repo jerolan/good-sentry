@@ -114,11 +114,12 @@ are never sent to the browser.
 
 Owners and admins can add sign-in applications per organization from the
 Organization view. OpenID Connect and Microsoft use the application's issuer and
-callback; GitHub, GitLab and Gitea use OAuth2 with PKCE. Microsoft defaults to
-the common Entra ID v2.0 authority and requires its tenant claim. GitHub
-verifies the primary verified email from its API. GitLab requires an active,
-confirmed account and Gitea requires an active account with an email. GitHub
-and GitLab default to their hosted service; all three OAuth2 providers accept a
+callback; GitHub, GitLab, Gitea and DigitalOcean use OAuth2 with PKCE.
+Microsoft defaults to the common Entra ID v2.0 authority and requires its
+tenant claim. GitHub verifies the primary verified email from its API. GitLab
+requires an active, confirmed account. Gitea requires an active account with
+an email and DigitalOcean requires an active verified account. GitHub and
+GitLab default to their hosted service; GitHub, GitLab and Gitea accept a
 self-hosted HTTPS server URL.
 
 Copy the callback URL shown after saving into the provider application. Share
