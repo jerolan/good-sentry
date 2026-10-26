@@ -1,0 +1,36 @@
+{
+  "criteria": ["CLOSE-nativo-005"],
+  "date": "2026-10-26",
+  "product_revision": "671b0fd",
+  "note": "No production or test change was needed. The existing Breakpad owners already cover the full contract; this receipt records their execution at the current revision.",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64"
+  },
+  "owners": [
+    "TestParseBreakpadOptionalMultipleSymbolMarker",
+    "TestBreakpadPublicSymbolsInferModuleBoundedRanges"
+  ],
+  "covered": [
+    "the optional m marker is accepted on FUNC and PUBLIC after address, size/parameter-size and name fields",
+    "function and public names containing spaces are retained",
+    "each public symbol spans from its address to the next distinct FUNC or PUBLIC start",
+    "the final public range is capped by the captured module extent during symbolication",
+    "multiple records at one start share the inferred range and the first public record wins ties",
+    "a FUNC takes precedence over a PUBLIC that overlaps the same instruction",
+    "line rows attach only to the most recently accepted FUNC; a PUBLIC or malformed FUNC clears the association"
+  ],
+  "observed": {
+    "native": "PASS in 0.006s",
+    "failures": 0
+  },
+  "limits": [
+    "The symbols are synthetic and follow the public Breakpad format; the real CLI-uploaded Breakpad file was covered by CLOSE-nativo-004.",
+    "No final image or public CI was exercised in this increment.",
+    "The product is not declared an acceptance candidate or closed."
+  ],
+  "evidence": [
+    "breakpad.log",
+    "summary.json"
+  ]
+}

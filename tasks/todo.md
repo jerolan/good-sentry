@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -004 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -005 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-005. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-006. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1731,7 +1731,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8709,6 +8709,28 @@ desechable; no se usó la imagen final ni el CI público. PDB legado/Portable,
 desenrollado nativo completo y la aceptación de SDK contra la imagen siguen
 requeridos por criterios posteriores. Los tokens y cookies de la prueba eran
 locales, modo 0600, y no se registran en la evidencia.
+
+### Ejecución 2026-10-26: marcador y rangos Breakpad
+
+Selección registrada antes de trabajar: CLOSE-nativo-005. Revisión de producto
+`671b0fd`; no hizo falta cambiar producto: los owners existentes ya cubren el
+contrato. Este incremento solo añade documentación y el comprobante.
+
+| Elemento | Comprobante |
+|---|---|
+| Marcador `m` opcional en `FUNC` y `PUBLIC`, con los mismos campos de dirección, tamaño y nombre | `TestParseBreakpadOptionalMultipleSymbolMarker` |
+| Nombres con espacios preservados en ambos tipos | `TestParseBreakpadOptionalMultipleSymbolMarker`; `TestBreakpadPublicSymbolsInferModuleBoundedRanges` |
+| Rango público hasta la siguiente dirección distinta y límite en la extensión del módulo | `TestBreakpadPublicSymbolsInferModuleBoundedRanges` (offsets 0x1000–0x1fff y 0x2000) |
+| Inicios duplicados comparten rango; gana el primer `PUBLIC` | `TestBreakpadPublicSymbolsInferModuleBoundedRanges` (0x1000) |
+| Preferencia de `FUNC` sobre `PUBLIC` en solape | `TestBreakpadPublicSymbolsInferModuleBoundedRanges` (0x1020–0x103f, 0x1040–0x105f) |
+| Filas de línea solo tras el `FUNC` aceptado; `PUBLIC` o `FUNC` malformado cortan la asociación | `TestParseBreakpadOptionalMultipleSymbolMarker` (0x1030, 0x1050 y 0x1070) |
+
+Evidencia: `test-results/closure-20261025/nativo-005/breakpad.log`.
+
+Límites registrados: es una prueba de parser y simbolización con símbolos
+sintéticos conforme al formato público; el archivo Breakpad real de la CLI se
+cubrió en CLOSE-nativo-004. La imagen final y el CI público siguen pendientes
+para la auditoría final.
 
 ### Comprobante de integración documental
 

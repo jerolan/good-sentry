@@ -1,0 +1,6 @@
+=== RUN   TestParseBreakpadOptionalMultipleSymbolMarker
+--- PASS: TestParseBreakpadOptionalMultipleSymbolMarker (0.00s)
+=== RUN   TestBreakpadPublicSymbolsInferModuleBoundedRanges
+--- PASS: TestBreakpadPublicSymbolsInferModuleBoundedRanges (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.006s

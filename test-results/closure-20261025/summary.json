@@ -4405,6 +4405,14 @@
         "nativo-004/summary.json"
       ]
     },
+    "CLOSE-nativo-005": {
+      "evidence": "vigente",
+      "scope": "optional Breakpad m marker, names with spaces, public fallback ranges bounded by the module, duplicate ties and FUNC precedence, and line rows scoped to the accepted FUNC",
+      "evidence_files": [
+        "nativo-005/breakpad.log",
+        "nativo-005/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
