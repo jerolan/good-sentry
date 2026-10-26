@@ -3776,6 +3776,14 @@
       "evidence_files": [
         "sourcemaps-019-020-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-021": {
+      "evidence": "bloqueada",
+      "scope": "local CLI injection/upload variants, official SDK mapped retrieval and chunk resume; final image and CI remain",
+      "evidence_files": [
+        "artifact-cli-sdk/report.json",
+        "sourcemaps-021-restart.log"
+      ]
     }
   },
   "commands": [

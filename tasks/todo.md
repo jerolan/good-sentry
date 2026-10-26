@@ -1451,8 +1451,9 @@ CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
 CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
-CLOSE-sourcemaps-013 a -020 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-021. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
+final/CI con su comprobante local abajo. Siguiente acción: CLOSE-sourcemaps-022.
+No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1717,7 +1718,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-018](../SPEC.md#close-sourcemaps-018) | JavaScript artifacts: Assembly accepts one bounded JSON object with required checksum, nonempty ordered chunks… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-019](../SPEC.md#close-sourcemaps-019) | JavaScript artifacts: Use source_map file URLs as map names/source-resolution bases, never ZIP member paths or… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-020](../SPEC.md#close-sourcemaps-020) | JavaScript artifacts: Materialize maps for all deduplicated authorized projects in one transaction. Enforce AR… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir CLI/SDK contra la imagen y comprobar licencia/assets |
 | [CLOSE-sourcemaps-022](../SPEC.md#close-sourcemaps-022) | JavaScript artifacts: The first artifact integration stores validated JavaScript source maps by project, artif… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6626,6 +6627,37 @@ Mapa de comprobantes:
 Evidencia: `test-results/closure-20261025/sourcemaps-019-020-go.log`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: integración CLI, SDK y reanudación
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-021. Candidata
+`75c6212`.
+
+Resultado observado: las evidencias de -015 a -020 cubren cuota/expiración,
+aislamiento por organización/proyecto, atomicidad de lotes y conflictos,
+ensamblado con chunks ordenados/repetidos/ausentes, concurrencia, cambios de rol
+y alcance, reapertura, credenciales emitidas, CSRF, precedencia, límites y
+estados. El owner externo `tests/compat/artifact_cli_sdk.mjs` pasó completo con
+el CLI fijado 3.8.0 y el SDK oficial de Node 11.7.0: inyectó DebugIDs reales,
+subió el bundle, repitió la subida, subió variantes de release/dist y otra
+subida legacy, capturó excepciones reales y recuperó la línea 7 del archivo
+original con su contexto, conservando el stack minificado; las variantes de
+proyecto, versión y dist incorrectos no aplicaron el mapa. La reanudación de
+chunks se probó con un reinicio real del proceso: tras subir el primer chunk y
+reiniciar, el ensamblado devolvió `not_found` solo con el segundo digest; tras
+subirlo, la concatenación avanzó al decodificador (`state:error` por cabecera
+SYSB), lo que demuestra que ambos chunks persistieron y se leyeron en orden.
+
+Evidencia: `test-results/closure-20261025/artifact-cli-sdk/report.json` y
+`sourcemaps-021-restart.log`, más los logs de -015 a -020.
+
+Bloqueo registrado: el criterio exige además ejecutar el flujo contra la imagen
+final, comprobar licencia/assets y regresiones sobre esa imagen, y CI remoto.
+No hay autorización de publicación ni imagen final construida. Condición de
+desbloqueo: autorizar construcción/publicación y CI. Responsable: instrucción del
+usuario. Intentos: uno local con binario, CLI y SDK reales; ninguno de imagen o
+publicación. Siguiente acción tras desbloquear: construir la imagen, repetir
+CLI/SDK y reanudación, revisar licencia/assets y ejecutar CI exacto.
 
 ### Comprobante de integración documental
 

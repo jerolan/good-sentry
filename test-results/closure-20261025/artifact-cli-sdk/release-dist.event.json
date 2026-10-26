@@ -1,0 +1,335 @@
+{
+  "sdk": {
+    "name": "sentry.javascript.node",
+    "version": "11.7.0",
+    "packages": [
+      {
+        "name": "npm:@sentry/node",
+        "version": "11.7.0"
+      }
+    ],
+    "integrations": [
+      "EventFilters",
+      "FunctionToString",
+      "LinkedErrors",
+      "Dedupe",
+      "RequestData",
+      "NodeSystemError",
+      "ConversationId",
+      "Console",
+      "Http",
+      "NodeFetch",
+      "OnUncaughtException",
+      "OnUnhandledRejection",
+      "ContextLines",
+      "LocalVariablesAsync",
+      "Context",
+      "ChildProcess",
+      "WorkerThreads",
+      "ProcessSession",
+      "Modules",
+      "Express",
+      "Fastify",
+      "Hapi",
+      "Hono",
+      "Koa",
+      "Graphql",
+      "Mongo",
+      "Mongoose",
+      "Mysql",
+      "Mysql2",
+      "Redis",
+      "Postgres",
+      "Prisma",
+      "Tedious",
+      "Knex",
+      "GenericPool",
+      "Kafka",
+      "Amqplib",
+      "LruMemoizer",
+      "Dataloader",
+      "Aws",
+      "LangChain",
+      "LangGraph",
+      "Mastra",
+      "PiDurable",
+      "VercelAI",
+      "OpenAI",
+      "Anthropic_AI",
+      "Google_GenAI",
+      "Mistral",
+      "Groq",
+      "TogetherAI",
+      "TypeSafe",
+      "PostgresJs",
+      "Neon",
+      "Firebase",
+      "McpServer",
+      "SpanStreaming"
+    ]
+  },
+  "dist": "web",
+  "level": "error",
+  "modules": {},
+  "release": "goodsentry-artifact-cli-mvpd9qal-442df1b1f7",
+  "contexts": {
+    "os": {
+      "name": "Ubuntu Linux",
+      "version": "24.04",
+      "kernel_version": "6.8.0-147-generic"
+    },
+    "app": {
+      "app_memory": 113434624,
+      "free_memory": 6658699264,
+      "app_start_time": "2026-10-26T14:43:25.884Z"
+    },
+    "trace": {
+      "span_id": "97c968d206471ee9",
+      "trace_id": "89e8b0b8d2294a7fa8637574d2c42e90"
+    },
+    "device": {
+      "arch": "x64",
+      "boot_time": "2026-10-20T04:47:59.910Z",
+      "free_memory": 6658699264,
+      "memory_size": 8326328320,
+      "cpu_description": "AMD Ryzen 7 5700G with Radeon Graphics",
+      "processor_count": 4,
+      "processor_frequency": 0
+    },
+    "culture": {
+      "locale": "en-US",
+      "timezone": "America/Mexico_City"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "v24.22.0"
+    },
+    "cloud_resource": {}
+  },
+  "event_id": "0e0c117f56a745649807ab4d58d9a925",
+  "platform": "node",
+  "exception": {
+    "values": [
+      {
+        "type": "Error",
+        "value": "GoodSentry artifact SDK mvpd9qal-442df1b1f7",
+        "mechanism": {
+          "type": "generic",
+          "handled": true
+        },
+        "stacktrace": {
+          "frames": [
+            {
+              "colno": 7,
+              "in_app": true,
+              "lineno": 243,
+              "module": "artifact_cli_sdk",
+              "filename": "/home/dev/projects/SentryGo/tests/compat/artifact_cli_sdk.mjs",
+              "function": "?",
+              "pre_context": [
+                "  await capture('legacy-wrong-version', legacy.build, legacy.expected, null, { release: legacyRelease + '-wrong', dist: legacyDist, expectMa {snip}",
+                "  await capture('legacy-wrong-dist', legacy.build, legacy.expected, null, { release: legacyRelease, dist: legacyDist + '-wrong', expectMappe {snip}",
+                "  report.ok = true;",
+                "}",
+                ""
+              ],
+              "context_line": "try { await main(); }",
+              "post_context": [
+                "catch (error) { report.failure = sanitize(error.stack || error.message); console.error(report.failure); process.exitCode = 1; }",
+                "finally {",
+                "  if (Sentry) await Sentry.close(2000).catch(() => {});",
+                "  await mkdir(output, { recursive: true, mode: 0o700 }); await jsonFile(join(output, 'report.json'), report);",
+                "  console.log(JSON.stringify({ ok: report.ok, sdkEvents: report.captures.map(item => ({ stage: item.stage, eventID: item.eventID })), report {snip}"
+              ]
+            },
+            {
+              "colno": 5,
+              "in_app": false,
+              "lineno": 104,
+              "module": "task_queues",
+              "filename": "node:internal/process/task_queues",
+              "function": "process.processTicksAndRejections"
+            },
+            {
+              "colno": 9,
+              "in_app": true,
+              "lineno": 229,
+              "module": "artifact_cli_sdk",
+              "filename": "/home/dev/projects/SentryGo/tests/compat/artifact_cli_sdk.mjs",
+              "function": "main",
+              "pre_context": [
+                "  report.mapMetadata = { first, duplicate };",
+                "  await capture('debug-only', build, expected, fileID);",
+                "  await upload('upload-release-dist', ['--release', release, '--dist', 'web']);",
+                "  report.mapMetadata.releaseDist = await mapsFor(fileID);",
+                "  assert.ok(report.mapMetadata.releaseDist.some(map => map.release === release && map.dist === 'web'), 'The second upload must store the req {snip}"
+              ],
+              "context_line": "  await capture('release-dist', build, expected, fileID, { release, dist: 'web' });",
+              "post_context": [
+                "  await capture('wrong-project', build, expected, fileID, { targetProject: fixture.otherProject, release, dist: 'web', expectMapped: false });",
+                "  const legacyDir = join(work, 'legacy'), legacyRelease = `goodsentry-artifact-legacy-${run}`, legacyDist = 'legacy-web';",
+                "  const legacy = await authorBuild(work, legacyDir, 'app-legacy.js', `original-legacy-${run}.js`, `GoodSentry legacy artifact SDK ${run}`);",
+                "  // Intentionally never inject this second script: the SDK must use release+dist+URL matching.",
+                "  await command('upload-legacy', ['sourcemaps', 'upload', '--wait', '--release', legacyRelease, '--dist', legacyDist, '--url-prefix', legacy {snip}"
+              ]
+            },
+            {
+              "colno": 11,
+              "in_app": true,
+              "lineno": 111,
+              "module": "artifact_cli_sdk",
+              "filename": "/home/dev/projects/SentryGo/tests/compat/artifact_cli_sdk.mjs",
+              "function": "capture",
+              "pre_context": [
+                "    sendDefaultPii: false, maxBreadcrumbs: 0, enableLogs: false,",
+                "  });",
+                "  let eventID, rawLocation;",
+                "  try {",
+                "    const throwFromInjectedBuild = require(build);"
+              ],
+              "context_line": "    try { throwFromInjectedBuild(); assert.fail('The original fixture must actually throw'); }",
+              "post_context": [
+                "    catch (error) {",
+                "      assert.equal(error.message, expected.message);",
+                "      const line = error.stack.split('\\n').find(line => line.includes(build + ':'));",
+                "      assert.ok(line, 'V8 must identify the actual injected minified build');",
+                "      const position = line.match(/:(\\d+):(\\d+)\\)?$/);"
+              ]
+            },
+            {
+              "colno": 1,
+              "in_app": true,
+              "lineno": 7,
+              "module": "app",
+              "filename": "original-mvpd9qal-442df1b1f7.js",
+              "function": "artifactFailure",
+              "pre_context": [
+                "const component = 'artifact-proof';",
+                "function originalFailure() {",
+                "  const precedingValue = 'independent source context';",
+                "  const order = 42;",
+                "  // Known line immediately before the real exception."
+              ],
+              "context_line": "  throw new Error(\"GoodSentry artifact SDK mvpd9qal-442df1b1f7\");",
+              "post_context": [
+                "}",
+                "module.exports = originalFailure;"
+              ]
+            }
+          ]
+        },
+        "raw_stacktrace": {
+          "frames": [
+            {
+              "colno": 7,
+              "in_app": true,
+              "lineno": 243,
+              "module": "artifact_cli_sdk",
+              "filename": "/home/dev/projects/SentryGo/tests/compat/artifact_cli_sdk.mjs",
+              "function": "?",
+              "pre_context": [
+                "  await capture('legacy-wrong-version', legacy.build, legacy.expected, null, { release: legacyRelease + '-wrong', dist: legacyDist, expectMa {snip}",
+                "  await capture('legacy-wrong-dist', legacy.build, legacy.expected, null, { release: legacyRelease, dist: legacyDist + '-wrong', expectMappe {snip}",
+                "  report.ok = true;",
+                "}",
+                ""
+              ],
+              "context_line": "try { await main(); }",
+              "post_context": [
+                "catch (error) { report.failure = sanitize(error.stack || error.message); console.error(report.failure); process.exitCode = 1; }",
+                "finally {",
+                "  if (Sentry) await Sentry.close(2000).catch(() => {});",
+                "  await mkdir(output, { recursive: true, mode: 0o700 }); await jsonFile(join(output, 'report.json'), report);",
+                "  console.log(JSON.stringify({ ok: report.ok, sdkEvents: report.captures.map(item => ({ stage: item.stage, eventID: item.eventID })), report {snip}"
+              ]
+            },
+            {
+              "colno": 5,
+              "in_app": false,
+              "lineno": 104,
+              "module": "task_queues",
+              "filename": "node:internal/process/task_queues",
+              "function": "process.processTicksAndRejections"
+            },
+            {
+              "colno": 9,
+              "in_app": true,
+              "lineno": 229,
+              "module": "artifact_cli_sdk",
+              "filename": "/home/dev/projects/SentryGo/tests/compat/artifact_cli_sdk.mjs",
+              "function": "main",
+              "pre_context": [
+                "  report.mapMetadata = { first, duplicate };",
+                "  await capture('debug-only', build, expected, fileID);",
+                "  await upload('upload-release-dist', ['--release', release, '--dist', 'web']);",
+                "  report.mapMetadata.releaseDist = await mapsFor(fileID);",
+                "  assert.ok(report.mapMetadata.releaseDist.some(map => map.release === release && map.dist === 'web'), 'The second upload must store the req {snip}"
+              ],
+              "context_line": "  await capture('release-dist', build, expected, fileID, { release, dist: 'web' });",
+              "post_context": [
+                "  await capture('wrong-project', build, expected, fileID, { targetProject: fixture.otherProject, release, dist: 'web', expectMapped: false });",
+                "  const legacyDir = join(work, 'legacy'), legacyRelease = `goodsentry-artifact-legacy-${run}`, legacyDist = 'legacy-web';",
+                "  const legacy = await authorBuild(work, legacyDir, 'app-legacy.js', `original-legacy-${run}.js`, `GoodSentry legacy artifact SDK ${run}`);",
+                "  // Intentionally never inject this second script: the SDK must use release+dist+URL matching.",
+                "  await command('upload-legacy', ['sourcemaps', 'upload', '--wait', '--release', legacyRelease, '--dist', legacyDist, '--url-prefix', legacy {snip}"
+              ]
+            },
+            {
+              "colno": 11,
+              "in_app": true,
+              "lineno": 111,
+              "module": "artifact_cli_sdk",
+              "filename": "/home/dev/projects/SentryGo/tests/compat/artifact_cli_sdk.mjs",
+              "function": "capture",
+              "pre_context": [
+                "    sendDefaultPii: false, maxBreadcrumbs: 0, enableLogs: false,",
+                "  });",
+                "  let eventID, rawLocation;",
+                "  try {",
+                "    const throwFromInjectedBuild = require(build);"
+              ],
+              "context_line": "    try { throwFromInjectedBuild(); assert.fail('The original fixture must actually throw'); }",
+              "post_context": [
+                "    catch (error) {",
+                "      assert.equal(error.message, expected.message);",
+                "      const line = error.stack.split('\\n').find(line => line.includes(build + ':'));",
+                "      assert.ok(line, 'V8 must identify the actual injected minified build');",
+                "      const position = line.match(/:(\\d+):(\\d+)\\)?$/);"
+              ]
+            },
+            {
+              "colno": 49,
+              "in_app": true,
+              "lineno": 3,
+              "module": "app",
+              "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk/build-mvpd9qal-442df1b1f7/dist/app.js",
+              "function": "artifactFailure",
+              "pre_context": [
+                "",
+                "!function(){try{var e=\"undefined\"!=typeof window?window:\"undefined\"!=typeof global?global:\"undefined\"!=typeof globalThis?globalThis:\"undefin {snip}"
+              ],
+              "context_line": "module.exports=function artifactFailure(){throw new Error(\"GoodSentry artifact SDK mvpd9qal-442df1b1f7\")};",
+              "post_context": [
+                "//# sourceMappingURL=app.js.map",
+                "",
+                "//# debugId=3788bc6c-c574-525f-a992-2123ad39fb2c"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "timestamp": 1793025806.702,
+  "debug_meta": {
+    "images": [
+      {
+        "type": "sourcemap",
+        "debug_id": "3788bc6c-c574-525f-a992-2123ad39fb2c",
+        "code_file": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk/build-mvpd9qal-442df1b1f7/dist/app.js"
+      }
+    ]
+  },
+  "environment": "artifact-cli-sdk",
+  "server_name": "codex-linux"
+}

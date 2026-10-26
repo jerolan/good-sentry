@@ -1,0 +1,19 @@
+> Found 2 files
+> Analyzing 2 sources
+> Rewriting sources
+> Adding source map references
+> Bundled 2 files for upload
+> Bundle ID: 97db63d1-8949-54b3-9259-d7afe2801856
+> Uploaded files to Sentry
+> File processing complete
+> Organization: artifacts-021
+> Projects: artifact-app
+> Release: goodsentry-artifact-legacy-mvpd9qal-442df1b1f7
+> Dist: legacy-web
+> Upload type: artifact bundle
+
+Source Map Upload Report
+  Scripts
+    /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk/build-mvpd9qal-442df1b1f7/legacy/app-legacy.js (sourcemap at app-legacy.js.map)
+  Source Maps
+    /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk/build-mvpd9qal-442df1b1f7/legacy/app-legacy.js.map
