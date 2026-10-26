@@ -1,0 +1,18 @@
+{
+  "version": "8.0.1",
+  "exitCode": 0,
+  "url": "http://127.0.0.1:18202/",
+  "organization": "wizard-organization",
+  "project": "wizard-project",
+  "wizardHash": "000000006ad90e257044174b5e79c9ea640d9d0a5303a00d4c8de23b4fbad640",
+  "browserLoginCompleted": true,
+  "tokenPrefix": "gs_5a25",
+  "tokenLength": 67,
+  "tokenMatchesFormat": true,
+  "releaseAPIStatus": 200,
+  "createdSentryCLI": true,
+  "createdPackageScript": true,
+  "createdSentryclirc": true,
+  "selectedProjectMessageObserved": true,
+  "setupCompleteMessageObserved": true
+}

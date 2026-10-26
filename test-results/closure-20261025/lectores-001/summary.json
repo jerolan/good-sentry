@@ -1,0 +1,34 @@
+{
+  "criteria": ["CLOSE-lectores-001"],
+  "date": "2026-10-26",
+  "product_revision": "00de7c3",
+  "fresh_tests": {
+    "server": "PASS in 1.002s: TestSentryWizardHTTPContract and TestSentryWizardAdmissionExpiryAndBrowserRedirect"
+  },
+  "covered": {
+    "stateless_hash": "GET /api/0/wizard/ issues a signed 64-character hash without creating wizard_transfers rows",
+    "organization_selection": "authenticated POST /api/0/wizard-set-token/ accepts an owner/admin organization or a confined bearer source and rejects members/malformed bodies",
+    "transfer": "the raw credential is encrypted in migration 051 and exposed only through the short-lived transfer; GET consumes the payload and DELETE removes it",
+    "payload": "current projects, full DSNs and enabled keys are returned with a one-day credential carrying org:read, project:read and project:releases",
+    "official_client": "@sentry/wizard 8.0.1 completed browser login, organization/project selection, .sentryclirc and source-map script creation, exited 0 and authenticated",
+    "browser": "sign-in, organization selection and wizard handoff complete at 1440 and 390 with no page errors"
+  },
+  "observed": {
+    "wizard_version": "8.0.1",
+    "exit_code": 0,
+    "token_prefix": "gs_5a25",
+    "token_length": 67,
+    "release_api_status": 200,
+    "created_sentryclirc": true,
+    "created_package_script": true,
+    "historical_revision": "9740b434db868c2641e541e983817339834ccfa5",
+    "historical_ci": "39661318427",
+    "historical_image_workflow": "39662056750"
+  },
+  "revision_reuse": "Only internal/server/wizard.go changed since the historical acceptance, and only its route registration type changed for opt-in docs. The fresh server owners pass.",
+  "evidence": ["server.log", "official-cli-result.json", "browser-report.json", "wizard-connect-1440.png", "wizard-connect-390.png", "public-acceptance.json", "public-ci.json", "revision-comparison.txt", "summary.json"],
+  "limits": [
+    "The official CLI, browser and public CI receipts are historical; repeat them on the final candidate.",
+    "The product is not declared complete."
+  ]
+}
