@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -021
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -022
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-022. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-023. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1854,7 +1854,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-019](../SPEC.md#close-rendimiento-019) | Sentry spans and native telemetry reads: For legacy transactions, read the selected event's nested spans array… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 018) |
 | [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-021](../SPEC.md#close-rendimiento-021) | Sentry spans and native telemetry reads: The child-operation statistics increment groups spans by exact operat… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 016) |
-| [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 014/016) |
 | [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7429,6 +7429,30 @@ Evidencia: `test-results/closure-20261025/rendimiento-016/aggregate-sample-tests
 Límites registrados: no se repite la ejecución al no haber cambios de producto;
 el comprobante es de API/HTTP. El CI público y la imagen final siguen pendientes
 para la auditoría final.
+
+### Ejecución 2026-10-26: endpoint de span-groups de una ocurrencia
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-022. Se reutilizan los
+comprobantes de 016 y 014; `git diff 7ad5551..5410a31 -- internal cmd static third_party go.mod go.sum Dockerfile`
+no muestra cambios de producto.
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Ruta, fuente/id, página canónica y membresía | `TestTransactionSpanGroupsHTTPContract` y `TestTransactionOccurrenceHTTPContract` |
+| Proyecto omitido o vacío como todos los autorizados; proyecto inválido 400 | La prueba de span-groups consulta con y sin `project` y comprueba el aislamiento; la de ocurrencia rechaza identificadores no canónicos |
+| Ventana emparejada semiabierta y default de 24 h | `TestTransactionSpanGroupsRootWindowsReferenceAndOrganizationScope` y las sondas de 014 |
+| Forma de respuesta | La prueba valida `sample`, `transaction`, `op`, `transactionCount`, `spanCount`, `timedSpanCount`, `groupCount`, `data`, `page`, `pageSize` 50 y `hasMore` |
+| Métricas por fila | `count` 5 frente a `timedCount` 4, promedio 250 ms, p95 385 ms y total 1000 ms |
+| Sin tiempos válidos no se inventan métricas | Las filas sin reloj conservan conteo y métricas nulas |
+| Orden y paginación | La prueba recorre páginas de 50 filas y conserva el orden declarado |
+
+Evidencia: `test-results/closure-20261025/rendimiento-016/aggregate-sample-tests.log` y
+`test-results/closure-20261025/rendimiento-014/window-tests.log`.
+
+Límites registrados: la instantánea repetible de metadata, conteos y páginas es
+una propiedad de la implementación y de los conteos constantes observados; no
+se provoca una escritura concurrente en esta prueba. El CI público y la imagen
+final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

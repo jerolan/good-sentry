@@ -3971,6 +3971,14 @@
         "rendimiento-016/aggregate-sample-tests.log"
       ]
     },
+    "CLOSE-rendimiento-022": {
+      "evidence": "vigente",
+      "scope": "occurrence span-groups endpoint shape, filters, count vs timed metrics, p95 interpolation, ordering and zero-metric safety",
+      "evidence_files": [
+        "rendimiento-016/aggregate-sample-tests.log",
+        "rendimiento-014/window-tests.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
