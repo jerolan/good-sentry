@@ -6,7 +6,7 @@ labels: [wayfinder:grilling]
 parent: WF-0001
 assignee: jerolan
 claim_session: 01a17668-8461-7c71-bb8a-c64f02f890be
-blocked_by: [WF-0002, WF-0003]
+blocked_by: [WF-0002, WF-0003, WF-0008]
 ---
 
 ## Question
@@ -164,9 +164,9 @@ crash real por cada combinación para cerrar, conservando cobertura y
 regresiones de los formatos y arquitecturas soportados. Los demás pendientes
 nativos siguen sujetos a revisión. Evidencia: aprobación directa en sesión.
 
-## Next round, MCP client
+## MCP client approved in round 5
 
-Propuesta pendiente: fijar como cliente de aceptación MCP el cliente oficial
+El usuario aprobó fijar como cliente de aceptación MCP el cliente oficial
 Go modelcontextprotocol/go-sdk v1.8.0, ya fijado en go.mod y SPEC.md y usado
 como mcp.NewClient en internal/server/mcp_test.go. Ejercitar el endpoint real
 por Streamable HTTP, descubrir e invocar las 17 herramientas acordadas y
@@ -176,3 +176,38 @@ No exigir una matriz de todas las aplicaciones consumidoras MCP como
 condición de cierre. La selección del cliente no declara vigentes todas las
 pruebas ni elimina los requisitos de OAuth. No se ejecutan pruebas aquí.
 GitLab, contexto Java, archivo frío y los otros flujos siguen pendientes.
+
+## Resolution comments, round 5
+
+2026-10-25, America/Mexico_City. Resolución parcial.
+El usuario respondió "Si" al cliente oficial MCP Go SDK 1.8.0 y al criterio
+de conectar contra el endpoint real, descubrir e invocar las 17 herramientas,
+comprobar resultados y verificar permisos, token y OAuth. No se exige una
+matriz de todas las aplicaciones consumidoras MCP para cerrar.
+Evidencia: aprobación directa del usuario en esta sesión. La decisión global
+permanece abierta y se mantienen los requisitos existentes.
+
+La precisión factual de contexto Java y archivo frío se sigue en
+[Precisar contexto Java y archivo frío de la referencia](0008-contexto-java-archivo-frio.md).
+
+## Next round, errors and JavaScript source maps
+
+Dos propuestas independientes, pendientes de aprobación:
+
+- Errores y triage: para cada SDK Go/Python/Node/Browser fijado, capturar
+  un error real por DSN y recuperarlo mediante API y UI con su contexto,
+  tags, entorno y release. Comprobar agrupación y ausencia de duplicación
+  ante reintento del mismo evento. Demostrar búsqueda/filtros y acciones
+  de triage ya contratadas sobre esos datos; verificar persistencia tras
+  reinicio. No basta responder éxito a la ingestión.
+- Source maps JavaScript: usar sentry-cli 3.8.0 para preparar/subir los
+  artefactos del código minificado probado, emitir errores reales desde
+  Node y Browser 11.7.0 y comprobar que el issue muestra función, archivo,
+  línea y contexto del código original. Mantener trazabilidad al artefacto
+  correcto, persistencia tras reinicio y los mecanismos de selección por
+  Debug ID o release/distribution ya contratados. Contexto Java se investiga
+  por separado y esta propuesta no lo excluye.
+
+Estos criterios concretan evidencia de cierre sin sustituir ni reducir los
+contratos existentes de SPEC.md. Destinos externos de alertas e identidad
+siguen en su ticket de decisión propio.
