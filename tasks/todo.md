@@ -1456,7 +1456,9 @@ final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -028 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-001. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-013. CLOSE-operacion-001
+a -003 son marcos de objetivo y método que se auditan en el cierre final y no
+bloquean el trabajo independiente. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
