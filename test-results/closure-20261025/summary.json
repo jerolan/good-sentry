@@ -3323,6 +3323,13 @@
       "evidence_files": [
         "identidad-077-go.log"
       ]
+    },
+    "CLOSE-identidad-078": {
+      "evidence": "vigente",
+      "scope": "native project edit and confirmed deletion with the cascade statement and member restrictions",
+      "evidence_files": [
+        "project-ui/report.json"
+      ]
     }
   },
   "commands": [

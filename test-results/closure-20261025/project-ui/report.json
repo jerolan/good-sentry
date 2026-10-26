@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "checks": [
+    "Owner edits a project, and the current list reflects the saved name",
+    "Delete confirmation states the full cascade before anything is removed",
+    "Permanent deletion removes only the confirmed project",
+    "Member sees the project without edit or delete controls"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/project-edit-dialog-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/project-edit-dialog-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/project-edit-dialog-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/project-delete-dialog-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/project-delete-dialog-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/project-delete-dialog-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/projects-member-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/projects-member-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/project-ui/projects-member-1440.png"
+  ],
+  "pageErrors": []
+}

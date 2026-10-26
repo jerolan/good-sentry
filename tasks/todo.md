@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-078 (edición y borrado de proyecto en la UI nativa). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-079 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1918,7 +1918,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-075](../SPEC.md#close-identidad-075) | Compatible organization detail and project keys: Real PostgreSQL owns039/041 preservation/reopen, UUID/team-cl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-076](../SPEC.md#close-identidad-076) | Compatible project update and deletion: PUT /api/0/projects/{org}/{project}/ accepts project name and platform… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-077](../SPEC.md#close-identidad-077) | Compatible project update and deletion: Additive061 stores each project's event_throttle_rate with a default o… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-078](../SPEC.md#close-identidad-078) | Compatible project update and deletion: The native project UI exposes Edit and permanent-delete confirmation t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-078](../SPEC.md#close-identidad-078) | Compatible project update and deletion: The native project UI exposes Edit and permanent-delete confirmation t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-079](../SPEC.md#close-identidad-079) | Compatible project update and deletion: GET/POST /api/0/organizations/{org}/repos/ exposes the existing organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-080](../SPEC.md#close-identidad-080) | Compatible project update and deletion: POST /api/0/teams/{org}/{team}/projects/ accepts ProjectIn {name,slug?… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-081](../SPEC.md#close-identidad-081) | Compatible project update and deletion: Additive048_project_teams.sql introduces the authoritative many-to-man… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4926,6 +4926,27 @@ tasa 0 nunca rechaza.
 
 Evidencia: `test-results/closure-20261025/identidad-077-go.log` con los owners
 de decisión, HTTP y admisión, más el contenido de la migración.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: edición y borrado de proyecto en la UI
+
+Selección registrada antes de trabajar: CLOSE-identidad-078. Candidata
+`7f97704`.
+
+Resultado observado: en Chromium, el propietario abre «Edit» en la vista
+Projects, cambia el nombre y guarda; la lista actualiza el nombre y aparece el
+aviso «Project updated.». Al pulsar «Delete», el diálogo enuncia la cascada
+completa —claves DSN, eventos, issues, logs, trazas, releases, adjuntos y
+archivos de depuración— y que no se puede deshacer; «Cancel» deja el proyecto
+intacto, y «Delete project permanently» elimina solo el proyecto confirmado sin
+tocar otro. Un miembro real ve el proyecto sin los botones de edición ni borrado.
+Las capturas 320/768/1440 no desbordan. Los owners de PostgreSQL y HTTP de los
+criterios previos cubren los valores por defecto de la migración, la persistencia
+de la tasa, la conservación de slug y creación, el borrado en cascada y la
+conducta estricta de cuerpos, roles y alcances.
+
+Evidencia: `test-results/closure-20261025/project-ui/report.json`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 
