@@ -1,0 +1,8 @@
+=== RUN   TestStatusPageHTTPAndPublicView
+--- PASS: TestStatusPageHTTPAndPublicView (0.86s)
+PASS
+ok  	goodsentry/internal/server	0.875s
+=== RUN   TestStatusPagesAssociateMonitorsAndPersist
+--- PASS: TestStatusPagesAssociateMonitorsAndPersist (0.78s)
+PASS
+ok  	goodsentry/internal/store	0.795s

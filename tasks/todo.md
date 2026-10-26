@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-001 (paso 5 del plan). No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-001 (colisión de slug, monitor ajeno y límite 100). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1753,7 +1753,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | por contrastar | pendiente | Parcial: CRUD/persistencia verificados; faltan colisión de slug, monitor ajeno y límite 100 |
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7948,6 +7948,21 @@ Evidencia: `rendimiento-040/browser-trace.json`,
 
 Límites registrados: la UI se ejecutó en Chromium headless sobre una instalación
 local; el CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Avance parcial 2026-10-26: status pages
+
+CLOSE-uptime-001 sigue pendiente. `TestStatusPagesAssociateMonitorsAndPersist` y
+`TestStatusPageHTTPAndPublicView` pasan sobre PostgreSQL 18 desechable y
+cubren creación con nombre recortado, asociación de monitores, listado para
+miembros, actualización, borrado, reapertura y la vista pública con la ruta
+compatible `GET /api/0/organizations/{org}/status-pages/`.
+
+Pendiente de probar explícitamente: sufijo acotado ante colisión global de slug
+y estabilidad al renombrar; rechazo de monitores desconocidos, ajenos o de otra
+organización; `POST /api/0` compatible que empieza sin monitores y exige
+`org:write`; y el límite de 100 monitores en la actualización nativa.
+
+Evidencia: `test-results/closure-20261025/uptime-001/status-pages.log`.
 
 ### Comprobante de integración documental
 
