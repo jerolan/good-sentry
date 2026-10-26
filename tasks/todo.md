@@ -1453,8 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 queda vigente. Siguiente acción: CLOSE-sourcemaps-024.
-No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-023 y -024 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-025. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1722,7 +1722,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir CLI/SDK contra la imagen y comprobar licencia/assets |
 | [CLOSE-sourcemaps-022](../SPEC.md#close-sourcemaps-022) | JavaScript artifacts: The first artifact integration stores validated JavaScript source maps by project, artif… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6732,6 +6732,38 @@ ocho capturas a 320 y 1440.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 prueba cubre dos anchos (móvil y escritorio) según el criterio.
+
+### Ejecución 2026-10-26: consumidor propio y límites de mapas
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-024. Candidata
+`5e7bef7`.
+
+Resultado observado: el consumidor de mapas subidos es propio, acotado y no
+depende de un paquete de source maps: `go.mod` no declara ninguno y el parser
+vive en `internal/artifact`. Rechaza índices y posiciones fuera de rango al
+subir, de modo que no hay pánico en la búsqueda, y los segmentos sin mapeo dejan
+la trama intacta en lugar de heredar la fuente anterior. Valida VLQ, índices y
+posiciones, offsets de secciones indexadas y recursión hasta 32 niveles, con
+límites de un millón de mapeos por mapa y por conjunto seleccionado; al exceder
+devuelve error de presupuesto. La selección mantiene que un mapa asociado solo
+por debug ID de evento aplique únicamente a la imagen de depuración de esa trama,
+mientras los mapas cualificados por release/dist pueden además emparejar por URL.
+El comportamiento verificado de URL y contexto original se conserva.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Consumidor propio, sin dependencia de source maps | `go.mod` sin paquete de mapas; `internal/artifact/consumer.go`, `sourcemap.go` |
+| Índices fuera de rango y segmentos sin fuente | artefacto `TestSourceMapRejectsInvalidIndicesAndPositionsAtUpload`, `TestSourceMapUnmappedSegmentsDoNotBorrowPreviousSources` |
+| Offsets indexados y recursión 32 | artefacto `TestSourceMapIndexedOffsetsApplyColumnOnlyToFirstLine`, `TestSourceMapSectionBoundariesStopPreviousMappings`, `TestIndexedSourceMapContextFollowsSelectedSourceRecord` |
+| Límite de un millón de mapeos | artefacto `TestSourceMapParserBudgetsAreEnforced`; store `TestSourceMapRetriesConflictAndLoadBudget` |
+| Debug ID solo para su imagen; release/dist por URL | HTTP `TestAccountDSNCaptureAndTriage` (tramas sin identidad y distinta distribución) |
+| URL y contexto original preservados | HTTP `TestAccountDSNCaptureAndTriage`; store `TestSourceMapsMatchBuildAndProjectAfterRestart` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-024-go.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

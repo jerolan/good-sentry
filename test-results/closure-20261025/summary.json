@@ -3802,6 +3802,13 @@
         "source-maps-ui/mapped-issue-1440.png",
         "source-maps-ui/member-source-maps-1440.png"
       ]
+    },
+    "CLOSE-sourcemaps-024": {
+      "evidence": "vigente",
+      "scope": "independent bounded source-map consumer, budget limits and debug-id frame eligibility",
+      "evidence_files": [
+        "sourcemaps-024-go.log"
+      ]
     }
   },
   "commands": [
