@@ -4079,6 +4079,19 @@
         "rendimiento-034/report.json"
       ]
     },
+    "CLOSE-rendimiento-036": {
+      "evidence": "vigente",
+      "scope": "full trace acceptance across PostgreSQL, HTTP, browser, pinned Go/Node traces, image version-1 resume and restart-preserved trace/raw",
+      "evidence_files": [
+        "rendimiento-031/graph-identity.log",
+        "rendimiento-032/forest-timing.log",
+        "rendimiento-029/trace-graph.log",
+        "rendimiento-034/report.json",
+        "rendimiento-036/sdk-traces.json",
+        "rendimiento-036/image-before.json",
+        "rendimiento-036/image-after.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

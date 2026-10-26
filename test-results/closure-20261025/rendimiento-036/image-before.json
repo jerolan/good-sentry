@@ -1,0 +1,15 @@
+{
+  "traceId": "a4cb28a791410582b6f0fb2c97fa12e5",
+  "transitions": [
+    200
+  ],
+  "nodeCount": 3,
+  "resolved": 2,
+  "root": {
+    "id": "event-1",
+    "name": "go-trace-036",
+    "childCount": 2
+  },
+  "rawStatus": 200,
+  "raw": "{\"id\":\"event-1\",\"source\":\"event\",\"recordId\":\"1\",\"ordinal\":0,\"projectId\":\"1\",\"data\":{\"sdk\":{\"name\":\"sentry.go\",\"version\":\"0.50.0\",\"packages\":[{\"name\":\"sentry-go\",\"version\":\"0.50.0\"}],\"integrations\":[\"Environment\",\"GlobalTags\",\"IgnoreErrors\",\"IgnoreTransactions\",\"Modules\"]},\"type\":\"transaction\",\"level\":\"info\",\"spans\":[{\"op\":\"db.query\",\"origin\":\"manual\",\"span_id\":\"007eb1df358a556c\",\"trace_id\":\"a4cb28a791410582b6f0fb2c97fa12e5\",\"timestamp\":\"2026-10-26T11:54:40.567377828-06:00\",\"description\":\"SELECT go trace\",\"parent_span_id\":\"b9356d5325d31917\",\"start_timestamp\":\"2026-10-26T11:54:40.562149584-06:00\"},{\"op\":\"http.client\",\"origin\":\"manual\",\"span_id\":\"83d766544c271d84\",\"trace_id\":\"a4cb28a791410582b6f0fb2c97fa12e5\",\"timestamp\":\"2026-10-26T11:54:40.57062937-06:00\",\"description\":\"GET go trace\",\"parent_span_id\":\"b9356d5325d31917\",\"start_timestamp\":\"2026-10-26T11:54:40.567394958-06:00\"}],\"modules\":{\"golang.org/x/sys\":\"v0.47.0\",\"golang.org/x/text\":\"v0.41.0\",\"goodsentry/s036go\":\"(devel)\",\"github.com/getsentry/sentry-go\":\"v0.50.0\"},\"release\":\"sdk036@1\",\"contexts\":{\"os\":{\"name\":\"linux\"},\"trace\":{\"op\":\"http.server\",\"span_id\":\"b9356d5325d31917\",\"trace_id\":\"a4cb28a791410582b6f0fb2c97fa12e5\"},\"device\":{\"arch\":\"amd64\",\"num_cpu\":4},\"runtime\":{\"name\":\"go\",\"version\":\"go1.27.2\",\"go_maxprocs\":4,\"go_numcgocalls\":1,\"go_numroutines\":4}},\"event_id\":\"9476e4ff8d9649af8542f5af0e530a50\",\"platform\":\"go\",\"timestamp\":\"2026-10-26T11:54:40.57063167-06:00\",\"environment\":\"sdk036\",\"server_name\":\"codex-linux\",\"transaction\":\"go-trace-036\",\"start_timestamp\":\"2026-10-26T11:54:40.562145534-06:00\",\"transaction_info\":{\"source\":\"custom\"}}}\n"
+}

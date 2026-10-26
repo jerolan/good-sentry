@@ -1,0 +1,67 @@
+{
+  "image": "binary",
+  "checks": [
+    {
+      "sdk": "go",
+      "traceId": "a4cb28a791410582b6f0fb2c97fa12e5",
+      "status": 200,
+      "nodeCount": 3,
+      "resolved": 2,
+      "root": {
+        "kind": "transaction",
+        "name": "go-trace-036",
+        "op": "http.server",
+        "depth": 0,
+        "childCount": 2,
+        "duration": 8.486,
+        "start": "2026-10-26T17:54:40.562145Z"
+      },
+      "children": [
+        {
+          "op": "db.query",
+          "depth": 1,
+          "parentStatus": "resolved",
+          "duration": 5.228
+        },
+        {
+          "op": "http.client",
+          "depth": 1,
+          "parentStatus": "resolved",
+          "duration": 3.235
+        }
+      ],
+      "ok": true
+    },
+    {
+      "sdk": "node",
+      "traceId": "7177519c4552419c86484773cd81f0df",
+      "status": 200,
+      "nodeCount": 3,
+      "resolved": 2,
+      "root": {
+        "kind": "segment",
+        "name": "node-trace-036",
+        "op": "http.server",
+        "depth": 0,
+        "childCount": 2,
+        "duration": 11.353,
+        "start": "2026-10-26T17:54:40.943454Z"
+      },
+      "children": [
+        {
+          "op": "db.query",
+          "depth": 1,
+          "parentStatus": "resolved",
+          "duration": 5.705
+        },
+        {
+          "op": "http.client",
+          "depth": 1,
+          "parentStatus": "resolved",
+          "duration": 3.289
+        }
+      ],
+      "ok": true
+    }
+  ]
+}

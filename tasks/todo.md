@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -035
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -036
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-036 (trazas Go/Node y reinicio de imagen). No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-037. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1868,7 +1868,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 029) |
 | [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 034) |
-| [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | por contrastar | pendiente | Parcial: PG/HTTP/navegador verificados; faltan trazas Go/Node y reinicio de imagen con trabajo v1 |
+| [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7833,6 +7833,25 @@ conserva las mismas respuestas autenticadas de traza y raw tras reiniciar.
 
 Siguiente paso: capturar una traza por SDK, comprobarla con el endpoint de traza
 y repetir la reanudación v1 más el reinicio sobre la imagen construida.
+
+### Cierre 2026-10-26: aceptación completa del grafo de traza
+
+Se completaron los dos resultados pendientes de CLOSE-rendimiento-036.
+
+| Comprobación | Resultado |
+|---|---|
+| Traza real de Go 0.50.0 | `a4cb28a791410582b6f0fb2c97fa12e5`: 3 nodos, 2 relaciones resueltas, raíz `transaction` `go-trace-036` (`http.server`, 8.486 ms) con hijos `db.query` y `http.client` a profundidad 1 |
+| Traza real de Node 11.7.0 | `7177519c4552419c86484773cd81f0df`: 3 nodos, 2 relaciones resueltas, raíz `segment` `node-trace-036` (`http.server`, 11.353 ms) con hijos `db.query` y `http.client` a profundidad 1 |
+| Reanudación v1 en la imagen | Tras forzar `span_projection_version=1` y limpiar metadatos, la imagen `goodsentry:028-local` proyectó el evento y la traza respondió 200 con 3 nodos |
+| Reinicio de la imagen | Tras reiniciar el contenedor, la traza conserva 3 nodos y 2 relaciones y el raw autenticado del nodo es idéntico (`sameRaw`) |
+
+Evidencia: `rendimiento-036/sdk-traces.json`,
+`rendimiento-036/image-before.json` y `rendimiento-036/image-after.json`,
+además de los comprobantes de PostgreSQL, HTTP y navegador ya enumerados.
+
+Límites registrados: la reanudación v1 se provoca con SQL controlado sobre una
+fila de esta instalación; el worker de la imagen la completa al arrancar. La
+imagen es local y el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 
