@@ -3964,6 +3964,13 @@
         "rendimiento-020/report.json"
       ]
     },
+    "CLOSE-rendimiento-021": {
+      "evidence": "vigente",
+      "scope": "child-operation groups by exact op/description through an immutable occurrence reference, optional project, window independence and zero-transaction groups",
+      "evidence_files": [
+        "rendimiento-016/aggregate-sample-tests.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

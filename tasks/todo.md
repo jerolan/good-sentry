@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -020
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -021
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-021. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-022. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1853,7 +1853,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-018](../SPEC.md#close-rendimiento-018) | Sentry spans and native telemetry reads: The detail JSON has sample matching the reference above; projectName,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-019](../SPEC.md#close-rendimiento-019) | Sentry spans and native telemetry reads: For legacy transactions, read the selected event's nested spans array… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 018) |
 | [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-021](../SPEC.md#close-rendimiento-021) | Sentry spans and native telemetry reads: The child-operation statistics increment groups spans by exact operat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-021](../SPEC.md#close-rendimiento-021) | Sentry spans and native telemetry reads: The child-operation statistics increment groups spans by exact operat… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 016) |
 | [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7407,6 +7407,28 @@ capturas `rendimiento-020/*.png`.
 Límites registrados: la aceptación usa Chromium headless con permisos explícitos
 de portapapeles; el flujo manual en un navegador de escritorio no se repite. El
 CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: estadísticas de operaciones hijas
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-021. Se reutiliza la
+ejecución de 016: `git diff 7ad5551..05d6264 -- internal cmd static third_party go.mod go.sum Dockerfile`
+no muestra cambios de producto.
+
+| Elemento del criterio | Comprobante en `rendimiento-016/aggregate-sample-tests.log` |
+|---|---|
+| Agrupación por operación y descripción exactas | `TestTransactionSpanGroupsHTTPContract` agrupa `db`/SELECT cart, `cache`/load y la fila sin nombre |
+| Mismo nombre y operación de transacción, organización y proyecto opcional | La prueba consulta con y sin `project` y conserva conteos por grupo |
+| Ventana temporal de la transacción | Usa la ventana 2020 y rechaza ventanas inválidas con 400 |
+| Referencia de ocurrencia inmutable | La misma referencia responde con una ventana anterior explícita y la fila resultante queda vacía pero con `transactionCount` 1 |
+| Grupo filtrado con cero transacciones | `out-of-window pending event` devuelve grupo vacío sin 404 |
+| Extracción legacy de la operación raíz | `TestTransactionSpanGroupsRootWindowsReferenceAndOrganizationScope` conserva valores no string y descripciones vacías sin inventar métricas |
+| Sin cambio al detalle ni inferencia de grafo | La prueba solo lee span-groups y no altera la ocurrencia |
+
+Evidencia: `test-results/closure-20261025/rendimiento-016/aggregate-sample-tests.log`.
+
+Límites registrados: no se repite la ejecución al no haber cambios de producto;
+el comprobante es de API/HTTP. El CI público y la imagen final siguen pendientes
+para la auditoría final.
 
 ### Comprobante de integración documental
 
