@@ -6,7 +6,7 @@ labels: [wayfinder:grilling]
 parent: WF-0001
 assignee: jerolan
 claim_session: 01a17668-8461-7c71-bb8a-c64f02f890be
-blocked_by: [WF-0002, WF-0003, WF-0008]
+blocked_by: [WF-0002, WF-0003, WF-0008, WF-0009]
 ---
 
 ## Question
@@ -242,3 +242,15 @@ Propuestas pendientes de aprobación:
 La investigación factual distingue errores/logs archivados y spans en Parquet.
 No hay aún comprobante de equivalencia de GoodSentry para cada tipo. No se
 infiere implementación, ausencia de soporte ni una exclusión aprobada.
+
+## Discussion, conditional Java scope
+
+2026-10-25, America/Mexico_City. El usuario expresó que Java parece comenzar
+a exceder el alcance y condicionó su inclusión a que sea una capacidad
+buscada/fundamental y una pieza trivial o conocida. Esto no constituye una
+aprobación incondicional del criterio Java propuesto ni una exclusión.
+Se investiga [utilidad y esfuerzo del contexto Java](0009-viabilidad-contexto-java.md)
+antes de recomendar una decisión. La presencia en el anuncio de GlitchTip
+no prueba por sí sola necesidad, demanda o bajo esfuerzo en GoodSentry.
+La propuesta de archivo y retención queda pendiente de respuesta inequívoca;
+no se atribuye aprobación al "Ok" que precede a la objeción sobre Java.
