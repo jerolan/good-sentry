@@ -91,8 +91,12 @@ func (s *Server) compatibleProjectEnvironment(w http.ResponseWriter, r *http.Req
 }
 
 func (s *Server) compatibleUpdateProjectEnvironment(w http.ResponseWriter, r *http.Request) {
-	access, valid := s.projectWriteAccess(w, r)
+	access, valid := s.managementAccess(w, r)
 	if !valid {
+		return
+	}
+	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "admin" {
+		failure(w, 403, "Organization owner or admin permission required")
 		return
 	}
 	if _, valid := discoveryNoQuery(w, r); !valid {

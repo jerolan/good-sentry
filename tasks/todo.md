@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-085 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-086 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1925,7 +1925,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-082](../SPEC.md#close-identidad-082) | Compatible project update and deletion: POST/DELETE /api/0/projects/{org}/{project}/teams/{team}/ add or remov… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-083](../SPEC.md#close-identidad-083) | Compatible project update and deletion: GlitchTip-specific POST /api/0/organizations/{org}/members/{member}/se… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-084](../SPEC.md#close-identidad-084) | Compatible project update and deletion: Additive049_project_environments.sql creates project-scoped environmen… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-085](../SPEC.md#close-identidad-085) | Compatible project update and deletion: GET /api/0/projects/{org}/{project}/environments/ and its /{name}/ det… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-085](../SPEC.md#close-identidad-085) | Compatible project update and deletion: GET /api/0/projects/{org}/{project}/environments/ and its /{name}/ det… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-086](../SPEC.md#close-identidad-086) | Compatible project update and deletion: The read-only people surface is GET /api/0/organizations/{org}/members… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-087](../SPEC.md#close-identidad-087) | Compatible project update and deletion: Organization people use OrganizationUserSchema with the real user id,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-088](../SPEC.md#close-identidad-088) | Compatible project update and deletion: GET /api/0/organizations/{org}/members/{member}/ returns the same Orga… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5034,6 +5034,33 @@ todas las ocurrencias lo están.
 Evidencia: `test-results/closure-20261025/identidad-083-084-go.log` con los
 owners de transferencia, entornos, visibilidad y migración 049, más el cambio en
 `internal/server/compat_management.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: rutas de entornos por proyecto
+
+Selección registrada antes de trabajar: CLOSE-identidad-085. Candidata
+`d887008`.
+
+Resultado observado: la lista y el detalle de entornos por proyecto exigen
+`project:read` o sesión de propietario, administrador o miembro dentro del
+grant, y la lista aplica `visibility` estricta con paginación y enlaces
+prefijados. El `PUT` acepta `{isHidden}` o el formato de GlitchTip
+`{name,isHidden}` con nombre igual a la ruta, rechaza renombrar, campos
+desconocidos, cuerpos sin `isHidden`, nombres inválidos con controles o barras,
+consultas y entornos inexistentes con 400/404 según corresponda, y responde con
+`{id:null,name,isHidden}`.
+
+La revisión detectó que el handler admitía también sesiones de manager cuando el
+contrato limita la actualización a propietario o administrador (o un token
+`project:write`): se ajustó la comprobación y el owner ahora cubre 403 para
+miembro y manager, 403 para un token de solo lectura, 200 para un token de
+escritura y los rechazos estrictos de cuerpo. Los owners de store cubren la
+preservación y reapertura de 049, las uniones en vivo y la agregación de
+visibilidad.
+
+Evidencia: `test-results/closure-20261025/identidad-085-go.log` y el cambio en
+`internal/server/compat_environments.go` con su owner ampliado.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

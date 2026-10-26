@@ -3372,6 +3372,13 @@
       "evidence_files": [
         "identidad-083-084-go.log"
       ]
+    },
+    "CLOSE-identidad-085": {
+      "evidence": "vigente",
+      "scope": "project environment detail and update routes with owner/admin authority and strict bodies",
+      "evidence_files": [
+        "identidad-085-go.log"
+      ]
     }
   },
   "commands": [

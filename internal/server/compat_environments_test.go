@@ -48,6 +48,9 @@ func TestCompatibleEnvironmentsHTTP(t *testing.T) {
 	f.request(t, memberClient, "GET", projectBase, "", nil, 200)
 	f.request(t, memberClient, "PUT", memberPath, `{"isHidden":true}`, memberHeaders, 403)
 	f.request(t, f.client, "PUT", memberPath, `{"isHidden":true}`, nil, 403)
+	insertDiscoveryMember(t, f, "environment-manager@test", "Environment manager", "manager")
+	envManagerClient, envManagerCSRF := loginManagementMember(t, f, "environment-manager@test")
+	f.request(t, envManagerClient, "PUT", memberPath, `{"isHidden":true}`, http.Header{"X-CSRF-Token": {envManagerCSRF}}, 403)
 	var hidden store.CompatibleEnvironmentProject
 	if err := json.Unmarshal(f.request(t, f.client, "PUT", memberPath, `{"isHidden":true}`, csrf, 200), &hidden); err != nil || !hidden.IsHidden || hidden.Name != "production" || hidden.ID != nil {
 		t.Fatalf("hide environment: %+v %v", hidden, err)
