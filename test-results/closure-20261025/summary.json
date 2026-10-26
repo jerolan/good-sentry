@@ -3726,6 +3726,13 @@
       "evidence_files": [
         "sourcemaps-013-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-014": {
+      "evidence": "vigente",
+      "scope": "artifact chunk negotiation, SYSB bundle decoding, real CLI upload and observed map typing",
+      "evidence_files": [
+        "sourcemaps-014-go.log"
+      ]
     }
   },
   "commands": [

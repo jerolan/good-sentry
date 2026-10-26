@@ -157,3 +157,21 @@ func TestParseBundleOptionalReleaseAndDist(t *testing.T) {
 		}
 	}
 }
+func TestBundleSourceMapsAcceptsObservedCLIMinifiedMapEntries(t *testing.T) {
+	const id = "b46af6a2-df98-5d0a-a0d4-a0e6f69bd1be"
+	const body = `{"version":3,"sources":["index.js"],"names":[],"mappings":"AAAA"}`
+	bundle := artifact.Bundle{DebugID: id, Files: []artifact.BundleFile{
+		{Name: "files/a/index.min.js", Type: "minified_source", URL: "~/index.min.js", Headers: map[string]string{"sourcemap": "index.min.js.map"}},
+		{Name: "files/a/index.min.js.map", Type: "minified_source", URL: "~/index.min.js.map", Data: []byte(body)},
+	}}
+	maps, err := artifact.BundleSourceMaps(bundle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(maps) != 1 || maps[0].Name != "~/index.min.js.map" || string(maps[0].Data) != body {
+		t.Fatalf("observed CLI bundle maps=%+v", maps)
+	}
+	if !reflect.DeepEqual(maps[0].CodeFiles, []string{"~/index.min.js"}) {
+		t.Fatalf("observed CLI bundle script links=%+v", maps[0].CodeFiles)
+	}
+}

@@ -1451,8 +1451,8 @@ CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
 CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
-CLOSE-sourcemaps-013 queda vigente. Siguiente acción: CLOSE-sourcemaps-014.
-No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-013 y -014 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-015. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1710,7 +1710,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir el CLI contra la imagen y verificar upgrade/reinicio |
 | [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-013](../SPEC.md#close-sourcemaps-013) | Compatible release files: The view is backed by the existing release-scoped source_maps rows, not a duplicate… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-014](../SPEC.md#close-sourcemaps-014) | JavaScript artifacts: The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at /api/0/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-014](../SPEC.md#close-sourcemaps-014) | JavaScript artifacts: The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at /api/0/organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-015](../SPEC.md#close-sourcemaps-015) | JavaScript artifacts: The modern JavaScript upload increment connects exact GET/POST /api/0/organizations/{org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-016](../SPEC.md#close-sourcemaps-016) | JavaScript artifacts: Negotiate an absolute upload URL derived from the configured public domain/prefix, hashA… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-017](../SPEC.md#close-sourcemaps-017) | JavaScript artifacts: Persist chunks in PostgreSQL with organization, checksum, bytes, size and expiry; migrat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6375,6 +6375,48 @@ Evidencia: `test-results/closure-20261025/sourcemaps-013-go.log` y el cambio en
 `internal/server/compat_release_files_test.go`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: flujo de artefactos y bundles SYSB
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-014. Candidata
+`ce12a0b`.
+
+Resultado observado: el owner HTTP cubre la negociación de chunks, el ensamblado
+con checksum/orden/proyectos/versión/dist, la subida multipart de chunks
+faltantes, la repetición del ensamblado, los límites de entrada y la frontera de
+credencial. Los owners del decodificador cubren el prefijo `SYSB` v2, el ZIP con
+`manifest.json`, URL/tipo/cabeceras por archivo, la separación del debug ID de
+bundle, miembros duplicados, absolutos o con traversal, miembros referenciados
+ausentes y los límites de entrada, expansión y número de entradas. La corrida
+comprende 27 passes.
+
+La prueba real con `sentry-cli 3.8.0` reveló un defecto: el manifiesto emitido
+etiqueta el archivo `.map` como `minified_source`, no como `source_map`, y el
+decodificador solo aceptaba el tipo explícito. El ensamblado respondía éxito y
+guardaba el chunk, pero no almacenaba ningún mapa ni creaba la release. Se
+corrigió para aceptar también entradas `minified_source` cuya URL termina en
+`.map`, sin tratarlas además como scripts. Tras la corrección, la misma subida
+real deja la release `cli-bundle-2` con `~/index.min.js.map` (146 bytes)
+visible en la API de archivos.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Negociación, ensamblado y chunks faltantes | HTTP `TestArtifactUploadsHTTPContract` |
+| Estrictos de checksum, proyectos, versión y dist | HTTP `TestArtifactUploadsHTTPContract` |
+| SYSB v2, manifiesto y debug IDs por archivo | artefacto `TestParseBundlePreservesFilesAndSeparatesTheirDebugIDs`, `TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs` |
+| Miembros inseguros, duplicados y ausentes | artefacto `TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers`, `TestParseBundleRejectsMalformedInputAndManifest` |
+| Límites de entrada, expansión y entradas | artefacto `TestParseBundleEnforcesInputAndExpansionLimits` |
+| Forma real del CLI (`.map` como `minified_source`) | artefacto `TestBundleSourceMapsAcceptsObservedCLIMinifiedMapEntries` (nuevo) |
+| Subida real del CLI y archivo resultante | `sourcemaps-014-go.log` (CLI 3.8.0, release `cli-bundle-2`) |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-014-go.log` y los cambios
+en `internal/artifact/bundle_maps.go` y su test.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. Este
+decodificador no acredita por sí solo la simbolización completa ni la API de
+subida como aceptación global; esas condiciones viven en sus propios criterios.
 
 ### Comprobante de integración documental
 

@@ -16,7 +16,7 @@ import (
 func BundleSourceMaps(bundle Bundle) ([]SourceMap, error) {
 	maps := make([]SourceMap, 0)
 	for _, file := range bundle.Files {
-		if file.Type != "source_map" {
+		if !bundleSourceMapFile(file) {
 			continue
 		}
 		if err := bundleArtifactURL(file.URL); err != nil {
@@ -35,6 +35,9 @@ func BundleSourceMaps(bundle Bundle) ([]SourceMap, error) {
 	links := make([]scriptLink, 0)
 	for _, file := range bundle.Files {
 		if file.Type != "minified_source" {
+			continue
+		}
+		if bundleSourceMapFile(file) {
 			continue
 		}
 		id, err := bundleFileDebugID(file)
@@ -103,6 +106,15 @@ func BundleSourceMaps(bundle Bundle) ([]SourceMap, error) {
 		maps[i].CodeFiles = slices.Compact(maps[i].CodeFiles)
 	}
 	return maps, nil
+}
+
+// bundleSourceMapFile accepts the explicit type and the emitted CLI form, which
+// labels a bundled .map entry as a minified source.
+func bundleSourceMapFile(file BundleFile) bool {
+	if file.Type == "source_map" {
+		return true
+	}
+	return file.Type == "minified_source" && strings.HasSuffix(strings.ToLower(file.URL), ".map")
 }
 
 func bundleArtifactURL(value string) error {
