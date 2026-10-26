@@ -1,0 +1,50 @@
+{
+  "run": "run1",
+  "all": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "3",
+      "2",
+      "1"
+    ]
+  },
+  "service": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "3",
+      "2",
+      "1"
+    ]
+  },
+  "environment": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "3",
+      "2",
+      "1"
+    ]
+  },
+  "textWarn": {
+    "status": 200,
+    "total": 1,
+    "ids": [
+      "2"
+    ]
+  },
+  "trace": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "3",
+      "2",
+      "1"
+    ]
+  },
+  "detailStatus": 200,
+  "exactInt64InDetail": true,
+  "detailSource": "sentry",
+  "detailTrace": "4ed48fcee3819e0d1fcf712ec1400600"
+}

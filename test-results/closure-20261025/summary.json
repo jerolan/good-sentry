@@ -2809,6 +2809,15 @@
         "logs-001-011-go.log",
         "log-retention-acceptance.json"
       ]
+    },
+    "CLOSE-logs-029": {
+      "evidence": "vigente",
+      "scope": "real Go SDK 0.50.0 logs with typed values, filters, trace link, UI and restart persistence",
+      "evidence_files": [
+        "logs-go-api.json",
+        "logs-go-ui/report.json",
+        "logs-go-ui-restart/report.json"
+      ]
     }
   },
   "commands": [

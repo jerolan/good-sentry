@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-029 (logs con el SDK Go 0.50.0). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-030 (logs con el SDK Python 2.72.0). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -2082,7 +2082,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-212](../SPEC.md#close-errores-212) | Go 0.50.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-213](../SPEC.md#close-errores-213) | Go 0.50.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras rein… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-037](../SPEC.md#close-rendimiento-037) | Go 0.50.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación de… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-029](../SPEC.md#close-logs-029) | Go 0.50.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-logs-029](../SPEC.md#close-logs-029) | Go 0.50.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-214](../SPEC.md#close-errores-214) | Python 2.72.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-215](../SPEC.md#close-errores-215) | Python 2.72.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-038](../SPEC.md#close-rendimiento-038) | Python 2.72.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegació… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4231,6 +4231,28 @@ Evidencia: `test-results/closure-20261025/logs-001-011-go.log`,
 
 Límites registrados: el CI público sigue pendiente para la auditoría final; no se
 afirma recuperación automática ni archivado en frío.
+
+### Ejecución 2026-10-26: logs reales con el SDK Go 0.50.0
+
+Selección registrada antes de trabajar: CLOSE-logs-029. Candidata `81a4baf`.
+
+Resultado observado: el SDK oficial v0.50.0 (fijado en `tests/compat/go.mod` y
+resuelto desde la caché local) emitió tres logs reales por DSN —info, warn y
+error— con atributos tipados (cadena, entero de 64 bits
+`9223372036854775807`, booleano y doble), servicio y entorno proyectados, y
+correlación real de traza y span. La API nativa devuelve las tres filas
+filtrando por texto (`warn` aísla una), servicio, entorno y traza; el detalle
+conserva los dígitos exactos del entero, la traza y `source:"sentry"`. En
+Chromium la lista no muestra insignia OTLP, la divulgación de atributos conserva
+el entero exacto, el enlace abre la vista de traza y el filtro por servicio
+selecciona los registros, todo a 320/768/1440 sin desbordes. Tras reiniciar la
+aplicación siguen las tres filas y la comprobación de navegador vuelve a pasar.
+
+Evidencia: `test-results/closure-20261025/logs-go-api.json`,
+`logs-go-ui/report.json`, `logs-go-ui-restart/report.json` y el driver
+`tests/compat/logssdk/main.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 
