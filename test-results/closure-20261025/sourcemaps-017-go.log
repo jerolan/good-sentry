@@ -1,0 +1,24 @@
+=== RUN   TestArtifactDeploymentOptions
+=== RUN   TestArtifactDeploymentOptions/defaults
+=== RUN   TestArtifactDeploymentOptions/minimum_policy
+=== RUN   TestArtifactDeploymentOptions/large_deployment
+--- PASS: TestArtifactDeploymentOptions (0.00s)
+    --- PASS: TestArtifactDeploymentOptions/defaults (0.00s)
+    --- PASS: TestArtifactDeploymentOptions/minimum_policy (0.00s)
+    --- PASS: TestArtifactDeploymentOptions/large_deployment (0.00s)
+PASS
+ok  	goodsentry/internal/config	0.005s
+=== RUN   TestArtifactCleanupIntervalClampsDerivedSweep
+--- PASS: TestArtifactCleanupIntervalClampsDerivedSweep (0.00s)
+PASS
+ok  	goodsentry/internal/jobs	0.005s
+=== RUN   TestArtifactChunkStagingQuotaAndExpiry
+--- PASS: TestArtifactChunkStagingQuotaAndExpiry (0.53s)
+=== RUN   TestArtifactChunkConcurrentQuotaAndCleanup
+--- PASS: TestArtifactChunkConcurrentQuotaAndCleanup (0.73s)
+=== RUN   TestArtifactMigrationPreservesExistingMaps
+--- PASS: TestArtifactMigrationPreservesExistingMaps (0.50s)
+=== RUN   TestArtifactSourceMapsCoalesceEquivalentSelectors
+--- PASS: TestArtifactSourceMapsCoalesceEquivalentSelectors (0.50s)
+PASS
+ok  	goodsentry/internal/store	2.271s

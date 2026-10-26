@@ -1451,8 +1451,8 @@ CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
 CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
-CLOSE-sourcemaps-013 a -016 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-017. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-013 a -018 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-019. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1713,8 +1713,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-014](../SPEC.md#close-sourcemaps-014) | JavaScript artifacts: The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at /api/0/organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-015](../SPEC.md#close-sourcemaps-015) | JavaScript artifacts: The modern JavaScript upload increment connects exact GET/POST /api/0/organizations/{org… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-016](../SPEC.md#close-sourcemaps-016) | JavaScript artifacts: Negotiate an absolute upload URL derived from the configured public domain/prefix, hashA… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-017](../SPEC.md#close-sourcemaps-017) | JavaScript artifacts: Persist chunks in PostgreSQL with organization, checksum, bytes, size and expiry; migrat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-sourcemaps-018](../SPEC.md#close-sourcemaps-018) | JavaScript artifacts: Assembly accepts one bounded JSON object with required checksum, nonempty ordered chunks… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-017](../SPEC.md#close-sourcemaps-017) | JavaScript artifacts: Persist chunks in PostgreSQL with organization, checksum, bytes, size and expiry; migrat… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-sourcemaps-018](../SPEC.md#close-sourcemaps-018) | JavaScript artifacts: Assembly accepts one bounded JSON object with required checksum, nonempty ordered chunks… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-019](../SPEC.md#close-sourcemaps-019) | JavaScript artifacts: Use source_map file URLs as map names/source-resolution bases, never ZIP member paths or… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-020](../SPEC.md#close-sourcemaps-020) | JavaScript artifacts: Materialize maps for all deduplicated authorized projects in one transaction. Enforce AR… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6484,6 +6484,78 @@ Mapa de comprobantes:
 Evidencia: `test-results/closure-20261025/sourcemaps-015-go.log`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: staging de chunks y política de artefactos
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-017. Candidata
+`a505bd2`.
+
+Resultado observado: los chunks viven en PostgreSQL con organización, checksum,
+bytes, tamaño y expiración; la migración 011 añade la tabla de staging y los
+alias de archivos de código con valor vacío por defecto sin reescribir bytes,
+checksums ni marcas de tiempo de los mapas existentes. La configuración expone
+`ARTIFACT_CHUNK_TTL_HOURS` (24 por defecto, 1..168),
+`ARTIFACT_STAGING_MAX_BYTES` (256 MiB, 1 MiB..1 TiB y al menos el cuerpo HTTP)
+y `ARTIFACT_MAX_MAP_RECORDS` (1000, 1..100000), y falla al arrancar con valores
+fuera de rango. El cálculo e inserción de cuota se serializa por organización,
+se reclaman primero las filas expiradas, solo cuentan los bytes no expirados y
+un exceso devuelve 413 sin lote parcial. La limpieza arranca con el servicio,
+usa lotes acotados con `SKIP LOCKED` y un intervalo de TTL/24 acotado entre un
+minuto y una hora; los chunks expirados dejan de servir al ensamblado antes de
+su borrado físico. Los chunks completos se conservan hasta expirar para
+reutilización y reinicio.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Tabla 011 y alias sin reescritura | store `TestArtifactMigrationPreservesExistingMaps`, `TestArtifactSourceMapsCoalesceEquivalentSelectors` |
+| Defaults, rangos y fallo de configuración | config `TestArtifactDeploymentOptions` |
+| Cuota serializada, expiración y 413 sin parciales | store `TestArtifactChunkStagingQuotaAndExpiry` |
+| Limpieza acotada y concurrente | store `TestArtifactChunkConcurrentQuotaAndCleanup` |
+| Intervalo TTL/24 acotado | jobs `TestArtifactCleanupIntervalClampsDerivedSweep` (nuevo) |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-017-go.log` y los cambios
+en `internal/jobs/artifact_chunks.go` y su test.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. Esta
+expiración es de staging temporal y no implementa retención de telemetría.
+
+### Ejecución 2026-10-26: validación del ensamblado
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-018. Candidata
+`a505bd2`.
+
+Resultado observado: el ensamblado acepta un único objeto JSON acotado con
+checksum obligatorio, chunks ordenados no vacíos y proyectos no vacíos, más
+versión/dist nulos opcionales; rechaza campos desconocidos, nulos o malformados,
+digests inválidos y más de 1000 referencias. La versión usa la identidad exacta
+de release y `dist` admite hasta 200 bytes UTF-8 sin NUL. La autorización,
+tamaños y bytes se leen en una instantánea repeatable-read; los chunks faltantes
+se devuelven distintos y en orden de primera aparición. Las longitudes,
+incluidas referencias repetidas, caben en el cuerpo antes de asignar; la
+concatenación respeta el orden y verifica el SHA-1 completo. Los fallos de
+identidad devuelven 200 con `state:error` y detalle acotado, los presupuestos
+agotados 413, y ningún fallo deja un conjunto parcial. Un ensamblado completo
+responde `state:ok` solo tras confirmar los mapas de todos los proyectos y la
+repetición inmediata vuelve a responder `ok`.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Objeto estricto, nulos y campos desconocidos | HTTP `TestArtifactUploadsHTTPContract` (subtests de ensamblado) |
+| Límite de 1000 chunks/proyectos | HTTP `TestArtifactUploadsHTTPContract` |
+| Versión y `dist` | HTTP `TestArtifactUploadsHTTPContract` |
+| Faltantes distintos y ordenados | HTTP `TestArtifactUploadsHTTPContract` |
+| Error acotado y 413 sin parciales | HTTP `TestArtifactUploadsHTTPContract` |
+| Multi-proyecto y repetición inmediata | HTTP `TestArtifactUploadsHTTPContract` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-015-go.log` (mismos
+owners de ensamblado) y `sourcemaps-017-go.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. No
+se requiere cola, caché ni sidecar.
 
 ### Comprobante de integración documental
 

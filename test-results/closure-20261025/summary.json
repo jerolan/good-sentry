@@ -3747,6 +3747,21 @@
       "evidence_files": [
         "sourcemaps-015-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-017": {
+      "evidence": "vigente",
+      "scope": "chunk staging migration, artifact policy, quota serialization and cleanup interval",
+      "evidence_files": [
+        "sourcemaps-017-go.log"
+      ]
+    },
+    "CLOSE-sourcemaps-018": {
+      "evidence": "vigente",
+      "scope": "synchronous assembly validation, ordered missing chunks, budgets and multi-project commit",
+      "evidence_files": [
+        "sourcemaps-015-go.log",
+        "sourcemaps-017-go.log"
+      ]
     }
   },
   "commands": [

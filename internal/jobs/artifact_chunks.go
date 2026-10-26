@@ -13,7 +13,7 @@ import (
 // divide each bounded batch between replicas; completed maps are unaffected.
 func StartArtifactChunks(parent context.Context, db *store.Store, ttl time.Duration) func() {
 	ctx, cancel := context.WithCancel(parent)
-	interval := min(time.Hour, max(time.Minute, ttl/24))
+	interval := artifactCleanupInterval(ttl)
 	var wg sync.WaitGroup
 	wg.Go(func() {
 		ticker := time.NewTicker(interval)
@@ -38,4 +38,10 @@ func StartArtifactChunks(parent context.Context, db *store.Store, ttl time.Durat
 	})
 	var once sync.Once
 	return func() { once.Do(func() { cancel(); wg.Wait() }) }
+}
+
+// artifactCleanupInterval clamps the TTL-derived sweep interval so replicas
+// converge without sweeping storage continuously.
+func artifactCleanupInterval(ttl time.Duration) time.Duration {
+	return min(time.Hour, max(time.Minute, ttl/24))
 }
