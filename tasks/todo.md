@@ -1442,10 +1442,10 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024 y 026–032 ya están
+bloques detallados 014–049 siguen pendientes; 014–024, 026–032 y 034 ya están
 vigentes y 025/033 están bloqueadas por publicación/CI de la misma fuente.
-Siguiente acción: CLOSE-identidad-034 (migración TOTP y RFC6238). No se declara
-aceptación ni cierre del producto. El avance se informa por
+Siguiente acción: CLOSE-identidad-035 (challenge TOTP/recovery y login). No se
+declara aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
 
@@ -1498,7 +1498,7 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-031](../SPEC.md#close-identidad-031) | Account email and single-use password recovery: POST /api/v1/account/password/reset/request is public but requ… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de reset |
 | [CLOSE-identidad-032](../SPEC.md#close-identidad-032) | Account email and single-use password recovery: The reset form consumes a resetToken query parameter without p… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del formulario |
 | [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | implementada (local) | bloqueada | Publicar y repetir copia/reinicio/CI sobre la fuente; luego cerrar |
-| [CLOSE-identidad-034](../SPEC.md#close-identidad-034) | Two-factor authentication: Additive migration 053_user_totp.sql adds nullable users.totp_secret (AES-256-GCM c… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-034](../SPEC.md#close-identidad-034) | Two-factor authentication: Additive migration 053_user_totp.sql adds nullable users.totp_secret (AES-256-GCM c… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios TOTP |
 | [CLOSE-identidad-035](../SPEC.md#close-identidad-035) | Two-factor authentication: POST /api/v1/login keeps its strict body and identical Invalid email or password re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-036](../SPEC.md#close-identidad-036) | Two-factor authentication: GET /api/v1/me/two-factor reports enabled, pending and recoveryCodesRemaining for t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-037](../SPEC.md#close-identidad-037) | Two-factor authentication: The Account view exposes the two-factor state, the manual-entry secret and otpauth… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3344,6 +3344,27 @@ Evidencia: `test-results/closure-20261025/recovery-ui/`,
 
 Siguiente acción: CLOSE-identidad-034 (migración TOTP 053 y reglas RFC6238),
 que es independiente de la publicación.
+
+### Ejecución 2026-10-26: TOTP 053 y RFC6238
+
+Selección registrada antes de trabajar: CLOSE-identidad-034, siguiente en el
+plan. Candidata `922c32f`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de los cinco tests de store y de `totp.go`/`053_user_totp.sql`.
+
+Resultado observado: 053 añade columnas TOTP nullable, `user_recovery_codes`
+y `login_challenges` sin reescribir usuarios. `totpBox` deriva AES-256-GCM de
+`SECRET_KEY` con etiqueta fija; el secreto plano solo existe en enrollment y en
+memoria durante la comprobación. RFC6238 usa HMAC-SHA1, seis dígitos, paso de
+30s, ventana ±1 y comparación en tiempo constante; el store rechaza cualquier
+paso menor o igual al último aceptado, por lo que un código observado no se
+repite. Enrollment, challenge único, intentos/expiración, recovery codes de un
+solo uso y generación se cubren con PostgreSQL real y `-race`. Subresultados
+pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/totp.log`.
+
+Siguiente acción: CLOSE-identidad-035 (login con challenge TOTP/recovery,
+strict body, cinco fallos y sesión), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

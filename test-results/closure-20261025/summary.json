@@ -517,6 +517,17 @@
         "unlock": "publish/CI the candidate and repeat the copied-image/restart acceptance"
       },
       "evidence_files": ["account-mail/tests.log", "recovery-ui/report.json", "recovery-ui/*.png"]
+    },
+    "CLOSE-identidad-034": {
+      "evidence": "vigente",
+      "scope": "053 TOTP schema, sealed secret, RFC6238 parameters and replay rejection",
+      "covered": [
+        "additive nullable TOTP columns plus recovery codes and login challenges",
+        "AES-256-GCM label-derived secret; plaintext only in enrollment/check memory",
+        "HMAC-SHA1 six digits 30 seconds, window ±1, constant-time compare",
+        "store refuses step at or below the last accepted step; enrollment/challenge/recovery tests pass"
+      ],
+      "evidence_files": ["identity/totp.log"]
     }
   },
   "commands": [
