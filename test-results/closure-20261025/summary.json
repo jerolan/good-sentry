@@ -632,6 +632,55 @@
         "HTTP role failures and team membership behavior"
       ],
       "evidence_files": ["identity/tenancy.log"]
+    },
+    "CLOSE-identidad-045": {
+      "evidence": "vigente",
+      "scope": "037 invitation schema, preservation and delivery fields",
+      "covered": [
+        "037/manager-team migration preserves rows and reopens",
+        "delivery, organization, email, role, teams, token hash/ciphertext, generation, expiry, state and timestamps",
+        "no rewrite of prior rows"
+      ],
+      "evidence_files": ["invitations/tests.log"]
+    },
+    "CLOSE-identidad-046": {
+      "evidence": "vigente",
+      "scope": "invitation role matrix and last-owner/authority rules",
+      "covered": [
+        "owner and manager invitation boundaries",
+        "last-owner and role mutation rules",
+        "team assignments and authority"
+      ],
+      "evidence_files": ["invitations/tests.log"]
+    },
+    "CLOSE-identidad-047": {
+      "evidence": "vigente",
+      "scope": "public request/accept routes same-origin, no bearer and replay/cancel",
+      "covered": [
+        "same-origin public token routes",
+        "no bearer acceptance",
+        "replay and cancellation behavior"
+      ],
+      "evidence_files": ["invitations/tests.log"]
+    },
+    "CLOSE-identidad-048": {
+      "evidence": "vigente",
+      "scope": "compatible invitation acceptance route",
+      "covered": [
+        "GET/POST /api/0/accept maps to the native acceptance",
+        "new and existing identities accepted"
+      ],
+      "evidence_files": ["invitations/tests.log"]
+    },
+    "CLOSE-identidad-049": {
+      "evidence": "vigente",
+      "scope": "pure token/MIME, PostgreSQL migration/participation and HTTP acceptance owners",
+      "covered": [
+        "token/MIME validation",
+        "real PostgreSQL migration, teams and participation",
+        "HTTP acceptance, replay, cancellation and secondary verified email"
+      ],
+      "evidence_files": ["invitations/tests.log"]
     }
   },
   "commands": [

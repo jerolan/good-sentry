@@ -1442,12 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024, 026–032 y 034–044 ya
-están vigentes y 025/033 están bloqueadas por publicación/CI. Siguiente acción:
-CLOSE-identidad-045 (migración 037 de invitaciones). No se declara aceptación
-ni cierre del producto. El avance se informa por criterios/evidencia, sin
-porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
-producto ni borran este registro.
+bloques detallados 014–049 están vigentes, salvo 025/033 bloqueadas por
+publicación/CI. Siguiente acción: CLOSE-identidad-050 (OIDC opcional), inicio
+de la familia de identidad externa. No se declara aceptación ni cierre del
+producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1509,11 +1509,11 @@ producto ni borran este registro.
 | [CLOSE-identidad-042](../SPEC.md#close-identidad-042) | Organization people and teams: GET/POST /api/v1/organizations/{org}/teams lists or creates teams; GET/PATCH/DE… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de equipos |
 | [CLOSE-identidad-043](../SPEC.md#close-identidad-043) | Organization people and teams: POST/DELETE /api/v1/organizations/{org}/teams/{team}/members/{member} adds/remo… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de members |
 | [CLOSE-identidad-044](../SPEC.md#close-identidad-044) | Organization people and teams: Pure/API checks own canonical IDs and strict bodies. Real PostgreSQL owns owner… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de People |
-| [CLOSE-identidad-045](../SPEC.md#close-identidad-045) | Organization invitations: Additive migration037 after036 stores organization email invitations: delivery ID, o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-046](../SPEC.md#close-identidad-046) | Organization invitations: Owners may invite owner, manager, admin or member; managers may invite manager, admi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-047](../SPEC.md#close-identidad-047) | Organization invitations: Public request/accept routes are same-origin, contain no bearer authentication and r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-048](../SPEC.md#close-identidad-048) | Compatible invitation acceptance: GET/POST /api/0/accept/{invitation}/{token}/ maps GlitchTip's invitation-acc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-049](../SPEC.md#close-identidad-049) | Compatible invitation acceptance: Acceptance owners are pure token/MIME tests, real PostgreSQL migration/parti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-045](../SPEC.md#close-identidad-045) | Organization invitations: Additive migration037 after036 stores organization email invitations: delivery ID, o… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 037 |
+| [CLOSE-identidad-046](../SPEC.md#close-identidad-046) | Organization invitations: Owners may invite owner, manager, admin or member; managers may invite manager, admi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de roles |
+| [CLOSE-identidad-047](../SPEC.md#close-identidad-047) | Organization invitations: Public request/accept routes are same-origin, contain no bearer authentication and r… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
+| [CLOSE-identidad-048](../SPEC.md#close-identidad-048) | Compatible invitation acceptance: GET/POST /api/0/accept/{invitation}/{token}/ maps GlitchTip's invitation-acc… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios compatibles |
+| [CLOSE-identidad-049](../SPEC.md#close-identidad-049) | Compatible invitation acceptance: Acceptance owners are pure token/MIME tests, real PostgreSQL migration/parti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de aceptación |
 | [CLOSE-identidad-050](../SPEC.md#close-identidad-050) | OpenID Connect sign-in: OIDC is disabled unless GOODSENTRY_OIDC_ISSUER, GOODSENTRY_OIDC_CLIENT_ID and GOODSENT… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-051](../SPEC.md#close-identidad-051) | OpenID Connect sign-in: GET /auth/oidc/start creates random state, nonce and PKCE verifier values, stores an H… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-052](../SPEC.md#close-identidad-052) | OpenID Connect sign-in: Additive045 stores provider, subject, normalized email, user and login instants with u… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3480,6 +3480,29 @@ Evidencia: `test-results/closure-20261025/identity/tenancy.log` y
 
 Siguiente acción: CLOSE-identidad-045 (migración 037 de invitaciones y
 contratos de entrega), primer bloque detallado de invitaciones.
+
+### Ejecución 2026-10-26: invitaciones detalladas
+
+Selección registrada antes de trabajar: CLOSE-identidad-045 a -049, en orden
+del plan. Candidata `ca5f417`; producto sin cambios desde `54db6e4`. La
+evidencia proviene de `invitations/tests.log` con PostgreSQL/HTTP `-race`.
+
+Resultado observado: 037 y la migración de equipos de manager preservan filas
+y reabren; la invitación guarda delivery ID, organización, correo, rol,
+equipos, hash/ciphertext del token, generación, expiración, estado e instantes
+de entrega. La matriz de roles permite owner→owner/manager/admin/member y
+manager→manager/admin/member, con autoridad y último owner probados; las rutas
+públicas de request/accept exigen mismo origen, no aceptan bearer y responden
+con el contrato de aceptación. La ruta compatible `/api/0/accept/...` mapea la
+aceptación para identidades nuevas y existentes; los tests cubren validación
+de token, MIME, equipos por ID, replay/cancelación y aceptación de correo
+secundario verificado sin duplicar cuentas. Los owners de aceptación
+pure/PG/HTTP están representados en el mismo log. Subresultados pendientes de
+los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/invitations/tests.log`.
+
+Siguiente acción: CLOSE-identidad-050 (OIDC opcional), siguiente familia.
 
 ### Comprobante de integración documental
 
