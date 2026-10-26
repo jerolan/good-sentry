@@ -1,0 +1,20 @@
+{
+  "criteria": ["CLOSE-errores-209", "CLOSE-errores-210", "CLOSE-errores-211"],
+  "date": "2026-10-26",
+  "product_revision": "7ff40b0",
+  "fresh_tests": {
+    "event": "PASS in 0.007s (formats, nullable fields, age precision, grouping and malformed batches)",
+    "security_http": "PASS in 1.271s (prefixed routes, preflight, admission and reads)",
+    "server_full": "PASS in 122.113s (existing SDK, feedback and alert regressions)"
+  },
+  "covered": {
+    "209": "exact and configured-prefix security routes, legacy/reporting/json media, enabled project key with sentry_key, conflicting credentials rejected, bounded release/environment/client metadata, CORS and ingestion byte/report limits",
+    "210": "whole-batch validation before writes, csp-violation only, kebab/camel normalization, preserved extensions and original nulls, exact numeric age arithmetic, query/fragment-free grouping and independent event identities",
+    "211": "pure format/grouping/invalid-batch cases, real prefixed HTTP/PostgreSQL capture and reads, current-key failures, media/body bounds, no writes for malformed input, preflight and full existing server regressions"
+  },
+  "evidence": ["event.log", "server.log", "server-full.log", "summary.json"],
+  "limits": [
+    "The public CI and final-image audit remain pending for the final candidate.",
+    "The product is not declared complete."
+  ]
+}

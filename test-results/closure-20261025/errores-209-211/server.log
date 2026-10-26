@@ -1,0 +1,6 @@
+=== RUN   TestSecurityReportRoutesAndPreflight
+--- PASS: TestSecurityReportRoutesAndPreflight (0.00s)
+=== RUN   TestSecurityReportCaptureAuthAndReads
+--- PASS: TestSecurityReportCaptureAuthAndReads (1.26s)
+PASS
+ok  	goodsentry/internal/server	1.271s

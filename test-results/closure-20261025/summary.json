@@ -433,6 +433,9 @@
     "CLOSE-errores-206": {"evidence": "pendiente (final image/CI)", "scope": "aggregate modern-feedback acceptance on the final copied image; only historical receipts exist", "evidence_files": ["errores-182-205/image/functional-acceptance.json"]},
     "CLOSE-errores-207": {"evidence": "vigente", "scope": "compatible attachment routes, scoped credentials, snapshot selection, stable decimal/native identities and preserved retries", "evidence_files": ["errores-207-208/store.log", "errores-207-208/server.log"]},
     "CLOSE-errores-208": {"evidence": "vigente", "scope": "bounded public metadata/truncation, cursors/Link pagination, filters, download/HEAD, safe MIME and strict admission", "evidence_files": ["errores-207-208/store.log", "errores-207-208/server.log"]},
+    "CLOSE-errores-209": {"evidence": "vigente", "scope": "prefixed CSP/reporting routes, media/key admission, CORS and ingestion bounds", "evidence_files": ["errores-209-211/server.log"]},
+    "CLOSE-errores-210": {"evidence": "vigente", "scope": "whole-batch validation, kebab/camel normalization, numeric age, grouping and independent occurrences", "evidence_files": ["errores-209-211/event.log", "errores-209-211/server.log"]},
+    "CLOSE-errores-211": {"evidence": "vigente", "scope": "pure/HTTP/PostgreSQL CSP acceptance and full server regressions", "evidence_files": ["errores-209-211/server-full.log"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",

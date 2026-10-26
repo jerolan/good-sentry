@@ -1472,10 +1472,12 @@ histórica de navegador/imagen. CLOSE-errores-163 queda vigente por la paridad
 conjunta de ambos incrementos.
 CLOSE-errores-207 y -208 quedan vigentes con sus owners frescos de almacén y
 HTTP.
+CLOSE-errores-209 a -211 quedan vigentes con formatos puros, HTTP/PostgreSQL y
+la suite completa del servidor.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-errores-209. No se declara
+runtime preservado. Siguiente acción: CLOSE-errores-212. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2107,9 +2109,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-207](../SPEC.md#close-errores-207) | Current authorized delivery and compatible attachments (2026-10-18): Implement public Sentry attachment list/r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-208](../SPEC.md#close-errores-208) | Current authorized delivery and compatible attachments (2026-10-18): Lists cap projected filename to 2048 Unic… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-067](../SPEC.md#close-operacion-067) | Current authorized delivery and compatible attachments (2026-10-18): Simplify the README and move all detailed… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-209](../SPEC.md#close-errores-209) | Browser CSP reporting: Public browser security reports are part of error tracking. Implement both exact /api/{… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-210](../SPEC.md#close-errores-210) | Browser CSP reporting: Validate every report before starting writes. Support csp-violation only; reject unsupp… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-211](../SPEC.md#close-errores-211) | Browser CSP reporting: Acceptance requires pure format/grouping/invalid-batch cases, real prefixed HTTP+Postgr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-209](../SPEC.md#close-errores-209) | Browser CSP reporting: Public browser security reports are part of error tracking. Implement both exact /api/{… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-210](../SPEC.md#close-errores-210) | Browser CSP reporting: Validate every report before starting writes. Support csp-violation only; reject unsupp… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-211](../SPEC.md#close-errores-211) | Browser CSP reporting: Acceptance requires pure format/grouping/invalid-batch cases, real prefixed HTTP+Postgr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-212](../SPEC.md#close-errores-212) | Go 0.50.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-213](../SPEC.md#close-errores-213) | Go 0.50.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras rein… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-037](../SPEC.md#close-rendimiento-037) | Go 0.50.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación de… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -9409,7 +9411,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-errores-209. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-errores-212. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9429,7 +9431,27 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-errores-209. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-errores-212. El producto sigue
+incompleto.
+
+### Ejecución 2026-10-26: reporte CSP del navegador
+
+Selección registrada antes de trabajar: CLOSE-errores-209 a -211. Revisión de
+producto `7ff40b0`; formatos puros, HTTP con PostgreSQL real y la suite completa
+del servidor se ejecutaron de nuevo.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 209 | Rutas exactas/prefijadas, media legacy/Reporting/JSON, `sentry_key`, credenciales conflictivas, metadatos acotados, CORS y límites | `TestSecurityReportRoutesAndPreflight`; `TestSecurityReportCaptureAuthAndReads` |
+| 210 | Validación previa a escribir, solo `csp-violation`, normalización kebab/camel, nulls y extensiones, edad numérica exacta, agrupación y ocurrencias independientes | `TestSecurityReportBrowserFormatsAndGrouping`; `TestSecurityReportModernNullableFieldsRetainNull`; `TestSecurityReportModernNumericAgePreservesElapsedTimeAndOriginal`; `TestSecurityReportRejectsMalformedWholeBatch` |
+| 211 | Aceptación pura, HTTP/PostgreSQL prefijado, clave actual, límites, cero escrituras ante lote inválido, preflight y regresiones SDK/feedback/alertas | `event.log`; `server.log`; `server-full.log` |
+
+Evidencia fresca: `test-results/closure-20261025/errores-209-211/{event,server,server-full}.log`
+y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
+seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
+
+Límites registrados: el CI público y la imagen final siguen pendientes para la
+auditoría de cierre. Siguiente acción: CLOSE-errores-212. El producto sigue
 incompleto.
 
 ### Comprobante de integración documental
