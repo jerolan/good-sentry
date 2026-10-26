@@ -4222,6 +4222,13 @@
         "uptime-019/config-policy.log"
       ]
     },
+    "CLOSE-uptime-020": {
+      "evidence": "vigente",
+      "scope": "uptime UI defaults, real HTTP/TCP states, heartbeat copy/history, pause/edit/resume, member read-only access, delete confirmation and feature-disabled/responsive behavior",
+      "evidence_files": [
+        "uptime-020/report.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

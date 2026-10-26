@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-020. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-021. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1876,7 +1876,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-017](../SPEC.md#close-uptime-017) | Sentry spans and native telemetry reads: Claim one due enabled monitor with FOR UPDATE SKIP LOCKED, assign a r… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013) |
 | [CLOSE-uptime-018](../SPEC.md#close-uptime-018) | Sentry spans and native telemetry reads: An opaque random 128-bit heartbeat capability is exposed as heartbeat… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-019](../SPEC.md#close-uptime-019) | Sentry spans and native telemetry reads: Block private, loopback, link-local, unspecified and multicast destin… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-020](../SPEC.md#close-uptime-020) | Sentry spans and native telemetry reads: The Tailwind UI lists monitor status, target, interval and last check… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-020](../SPEC.md#close-uptime-020) | Sentry spans and native telemetry reads: The Tailwind UI lists monitor status, target, interval and last check… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-021](../SPEC.md#close-uptime-021) | Sentry spans and native telemetry reads: The SSL monitor increment uses the public SSL enum, independently def… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-022](../SPEC.md#close-uptime-022) | Sentry spans and native telemetry reads: Accept native type: SSL with an absolute https://host:port origin, op… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-023](../SPEC.md#close-uptime-023) | Sentry spans and native telemetry reads: Each SSL check creates a new TCP connection through the existing nett… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8235,6 +8235,31 @@ Evidencia: `test-results/closure-20261025/uptime-019/network-policy.log` y
 Límites registrados: el apagado del flag elimina rutas y workers según la
 configuración; la UI apagada pertenece a 020. Las pruebas de red se ejecutaron
 fuera del sandbox. El CI público y la imagen final siguen pendientes.
+
+### Ejecución 2026-10-26: UI de uptime y permisos
+
+Selección registrada antes de trabajar: CLOSE-uptime-020. Candidata
+`102ce15`. Owner `tests/compat/browser-uptime.mjs` con fixtures
+locales reales (HTTP 200/500, TCP) y una segunda instancia con uptime apagado.
+
+| Comprobación | Resultado |
+|---|---|
+| Defaults documentados, campos condicionales y entradas rechazadas conservadas | Pasa |
+| HTTP real: caída y recuperación | Pasa |
+| Heartbeat: expiración, recuperación, copia de URL y 25 filas de historial | Pasa |
+| Pausa, edición y reanudación | Pasa |
+| TCP real hasta up confirmado | Pasa |
+| Miembro real: estado/historial sin controles de escritura | Pasa tras crear el miembro por invitación |
+| Borrado con confirmación concreta | Cancela sin efecto y borra solo los seleccionados |
+| Instancia con uptime apagado | Oculta navegación y retira el acceso a la API de monitores |
+| Responsive | Capturas a 320, 768 y 1440 px sin errores de página ni peticiones fallidas |
+
+Evidencia: `test-results/closure-20261025/uptime-020/report.json` y las
+capturas del mismo directorio.
+
+Límites registrados: los monitores SSL aparecen en el esquema y su
+comportamiento se verifica en 021 a 026; esta ejecución no repite su UI.
+El CI público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
