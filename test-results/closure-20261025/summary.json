@@ -3950,6 +3950,13 @@
         "rendimiento-016/aggregate-sample-tests.log"
       ]
     },
+    "CLOSE-rendimiento-019": {
+      "evidence": "vigente",
+      "scope": "legacy nested span order/ordinals, description-name fallback, time normalization and duration rules; standalone projectTrace paging beyond 1000 spans",
+      "evidence_files": [
+        "rendimiento-018/detail-tests.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

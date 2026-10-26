@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -018
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -019
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-019. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-020. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1851,7 +1851,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-016](../SPEC.md#close-rendimiento-016) | Sentry spans and native telemetry reads: The next detail increment opens a concrete stored transaction occurre… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-017](../SPEC.md#close-rendimiento-017) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-018](../SPEC.md#close-rendimiento-018) | Sentry spans and native telemetry reads: The detail JSON has sample matching the reference above; projectName,… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-019](../SPEC.md#close-rendimiento-019) | Sentry spans and native telemetry reads: For legacy transactions, read the selected event's nested spans array… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-019](../SPEC.md#close-rendimiento-019) | Sentry spans and native telemetry reads: For legacy transactions, read the selected event's nested spans array… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 018) |
 | [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-021](../SPEC.md#close-rendimiento-021) | Sentry spans and native telemetry reads: The child-operation statistics increment groups spans by exact operat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7332,6 +7332,32 @@ Evidencia: `test-results/closure-20261025/rendimiento-018/detail-tests.log` y
 Límites registrados: el comprobante es de API y almacén; la presentación en UI
 se ejecuta en los criterios siguientes. El CI público y la imagen final siguen
 pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: spans legacy y segmentos completos
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-019. Se reutiliza la
+ejecución de 018: `git diff c981bdf..c08ed53 -- internal cmd static third_party go.mod go.sum Dockerfile`
+no muestra cambios de producto.
+
+| Elemento del criterio | Comprobante en `rendimiento-018/detail-tests.log` |
+|---|---|
+| Orden del arreglo y ordinales uno a uno | `TestTransactionDetailLegacyPreservesRawOrderTimingAndRestart` conserva 53 hijos y sus identificadores 1..n |
+| Descripción con fallback a nombre | El primer hijo usa `SELECT <cart>` e ignora `name` cuando hay descripción; la descripción vacía no se sustituye; un número cae a `fallback` |
+| `spanScope` de transacción y arreglo ausente | La prueba valida `transaction` y el caso sin arreglo como cero hijos |
+| Tiempos numéricos y RFC3339 con zona | Segundos Unix y `1970-01-01T02:00:10.750000999+02:00` se normalizan a UTC con microsegundos |
+| Duración solo con tiempos válidos y fin ≥ inicio | Los hijos sin reloj o invertidos quedan sin duración; el resto expone milisegundos |
+| Sin cambios de ingestión ni reescritura histórica | La prueba usa el payload original y conserva `data` y campos desconocidos |
+| Segmento: `projectTrace` y todas las páginas | `TestTransactionDetailStandaloneTracePagesAcrossEnvelopes` pagina 1003 spans en 21 páginas con `spanCount` constante y `hasMore` correcto |
+| Parent IDs explícitos y atributos tipados | Los hijos conservan `parentSpanId` y `attributes` sin inferir ascendencia |
+| Alcance por proyecto y traza exactos | `TestTransactionDetailMembershipKindSegmentAndTenantScope` pasa |
+
+Evidencia: `test-results/closure-20261025/rendimiento-018/detail-tests.log`.
+
+Límites registrados: la consistencia de la instantánea de lectura se apoya en la
+implementación de una sola consulta y en los conteos constantes de las 21
+páginas; no se provoca una escritura concurrente en esta prueba. La
+reconstrucción entre proyectos sigue en criterios posteriores. El CI público y
+la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
