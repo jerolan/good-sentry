@@ -420,3 +420,65 @@ func TestCredentialIssuanceWaitsAndRechecksUnderRepeatableReadDefault(t *testing
 		})
 	}
 }
+
+func TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		trigger string
+	}{
+		{
+			name: "after revocation statement",
+			trigger: `CREATE TRIGGER password_change_failure AFTER UPDATE ON api_tokens
+ FOR EACH ROW EXECUTE FUNCTION password_change_failure()`,
+		},
+		{
+			name: "deferred commit",
+			trigger: `CREATE CONSTRAINT TRIGGER password_change_failure AFTER UPDATE ON users
+ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION password_change_failure()`,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, db, owner, org, _ := telemetryStore(t)
+			if err := db.CreateSession(ctx, owner.ID, owner.AuthGeneration, "rollback-session", "rollback-csrf", time.Now().Add(time.Hour)); err != nil {
+				t.Fatal(err)
+			}
+			_, hash, prefix := apiTokenCredentials("rollback-token")
+			if _, err := db.CreateAPIToken(ctx, owner.ID, owner.AuthGeneration, org.Slug, APITokenInput{Name: "Rollback token", Scopes: []string{"project:read"}, ExpiresInDays: 1}, hash, prefix); err != nil {
+				t.Fatal(err)
+			}
+			before, err := db.UserByID(ctx, owner.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := db.pool.Exec(ctx, `CREATE FUNCTION password_change_failure() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN RAISE EXCEPTION 'fixture password change failure'; END $$;`); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := db.pool.Exec(ctx, tc.trigger); err != nil {
+				t.Fatal(err)
+			}
+			if err := db.ChangePassword(ctx, owner.ID, owner.AuthGeneration, []byte("replacement-password-hash")); err == nil {
+				t.Fatal("password change committed despite the injected failure")
+			}
+			after, err := db.UserByID(ctx, owner.ID)
+			if err != nil || after.AuthGeneration != before.AuthGeneration || !reflect.DeepEqual(after.PasswordHash, before.PasswordHash) {
+				t.Fatalf("user changed after rollback: before=%+v after=%+v err=%v", before, after, err)
+			}
+			var sessions, activeTokens int
+			if err := db.pool.QueryRow(ctx, `SELECT
+ (SELECT count(*) FROM sessions WHERE user_id=$1::bigint),
+ (SELECT count(*) FROM api_tokens WHERE user_id=$1::bigint AND revoked_at IS NULL)`, owner.ID).Scan(&sessions, &activeTokens); err != nil {
+				t.Fatal(err)
+			}
+			if sessions != 1 || activeTokens != 1 {
+				t.Fatalf("partial revocation survived rollback: sessions=%d activeTokens=%d", sessions, activeTokens)
+			}
+			if _, csrf, err := db.Session(ctx, "rollback-session"); err != nil || csrf != "rollback-csrf" {
+				t.Fatalf("rolled-back session=%q err=%v", csrf, err)
+			}
+			if grant, err := db.AuthenticateAPIToken(ctx, hash); err != nil || grant.User.ID != owner.ID {
+				t.Fatalf("rolled-back token=%+v err=%v", grant, err)
+			}
+		})
+	}
+}

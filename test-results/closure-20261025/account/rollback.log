@@ -1,0 +1,8 @@
+=== RUN   TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure
+=== RUN   TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure/after_revocation_statement
+=== RUN   TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure/deferred_commit
+--- PASS: TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure (0.88s)
+    --- PASS: TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure/after_revocation_statement (0.44s)
+    --- PASS: TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure/deferred_commit (0.44s)
+PASS
+ok  	goodsentry/internal/store	1.897s

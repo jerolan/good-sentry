@@ -1442,12 +1442,11 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–023 ya están vigentes.
-Siguiente acción: CLOSE-identidad-024 (PostgreSQL real: aislamiento, bloqueos,
-dos cambios, rollback y commit diferido). No se declara aceptación ni cierre
-del producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+bloques detallados 014–049 siguen pendientes; 014–024 ya están vigentes.
+Siguiente acción: CLOSE-identidad-025 (HTTP real, navegador y copia de imagen
+con reinicio). No se declara aceptación ni cierre del producto. El avance se
+informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1488,7 +1487,7 @@ este registro.
 | [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de cookie |
 | [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de la vista Account |
-| [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de transacciones |
 | [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3123,6 +3122,34 @@ Evidencia: `test-results/closure-20261025/account-owner/`,
 Siguiente acción: CLOSE-identidad-024 (PostgreSQL real de 035, aislamiento,
 bloqueos, dos cambios, rollback y commit diferido), con dependencias locales
 resueltas.
+
+### Ejecución 2026-10-26: PostgreSQL real de contraseña
+
+Selección registrada antes de trabajar: CLOSE-identidad-024, siguiente en el
+plan. Candidata `082c948`; producto sin cambios desde `54db6e4`. La unidad
+añade el owner que faltaba para el fallo en COMMIT diferido y el rollback tras
+revocar.
+
+Procedimiento reproducible con PostgreSQL desechable y `-race`: los seis tests
+de `generations.log` más el nuevo
+`TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure`, que instala
+un trigger de fallo después de la revocación y otro constraint trigger
+diferido al COMMIT.
+
+Resultado observado: 035 preserva y reabre; el aislamiento se fuerza a Read
+Committed; las comprobaciones de generación, el borrado de todas las sesiones,
+la revocación de tokens en varias organizaciones, los `revoked_at` previos y la
+preservación de otro usuario/claves SDK pasan. Las dos ordenaciones emisor/cambio
+y dos cambios concurrentes tienen el resultado especificado. El nuevo test
+demuestra que un fallo después de borrar sesiones/revocar tokens, y un fallo
+diferido en el COMMIT, revierten hash, generación, sesiones y tokens por
+completo, sin filas parciales. Una generación nueva puede emitir y consumir
+sesión y token. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account/{generations.log,rollback.log}`.
+
+Siguiente acción: CLOSE-identidad-025 (HTTP real, navegador y copia de imagen
+con reinicio) antes de la publicación del incremento.
 
 ### Comprobante de integración documental
 

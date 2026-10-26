@@ -401,6 +401,17 @@
         "320/768/1440 without overflow or page errors"
       ],
       "evidence_files": ["account-owner/report.json", "account-member/report.json", "account-noorg/report.json", "account-owner/*.png", "account-member/*.png", "account-noorg/*.png"]
+    },
+    "CLOSE-identidad-024": {
+      "evidence": "vigente",
+      "scope": "real PostgreSQL coverage for 035, isolation, generation checks, revocation, interleavings and rollback",
+      "covered": [
+        "035 preservation/reopen; explicit isolation; generation and stale-session checks",
+        "all sessions and cross-organization tokens revoked; prior revocations and unrelated rows preserved",
+        "both issuer/change orderings, two concurrent changes and fresh-generation issuance",
+        "new injected failure after revocation and deferred COMMIT failure roll back all state"
+      ],
+      "evidence_files": ["account/generations.log", "account/rollback.log"]
     }
   },
   "commands": [
