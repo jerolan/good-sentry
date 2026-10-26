@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-127 (release/next-release resolution). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-139 (mute condicional). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1661,18 +1661,18 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-124](../SPEC.md#close-errores-124) | Native merge, original partitions and unmerge: The store owns MergeIssues(ctx,userID,orgSlug,ids) returning Is… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-125](../SPEC.md#close-errores-125) | Native merge, original partitions and unmerge: The original responsive issue list adds member checkboxes and m… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-126](../SPEC.md#close-errores-126) | Native merge, original partitions and unmerge: Owning PostgreSQL tests prove partition/raw preservation, flatt… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-127](../SPEC.md#close-errores-127) | Native release-anchored and next-release resolution: Complete both native release-resolution modes with the ex… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-128](../SPEC.md#close-errores-128) | Native release-anchored and next-release resolution: Native session/CSRF PATCH issue adds resolution, requirin… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-129](../SPEC.md#close-errores-129) | Native release-anchored and next-release resolution: Omitted resolution preserves an already resolved policy;… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-130](../SPEC.md#close-errores-130) | Native release-anchored and next-release resolution: Implement internal/releaseorder.Compare(a,b string)(int,b… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-131](../SPEC.md#close-errores-131) | Native release-anchored and next-release resolution: For chosen mode, exact version equality stays resolved ev… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-132](../SPEC.md#close-errores-132) | Native release-anchored and next-release resolution: For next mode, eligible binding is a different open proje… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-133](../SPEC.md#close-errores-133) | Native release-anchored and next-release resolution: A bound next version always regresses on exact equality,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-134](../SPEC.md#close-errores-134) | Native release-anchored and next-release resolution: Additive migration014 owns one issue_resolutions row per… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-135](../SPEC.md#close-errores-135) | Native release-anchored and next-release resolution: Stage the private frequency hook: prepare receipt/context… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-136](../SPEC.md#close-errores-136) | Native release-anchored and next-release resolution: Extend always-on issue maintenance: expired mute claims r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-137](../SPEC.md#close-errores-137) | Native release-anchored and next-release resolution: Add session GET /api/v1/issues/{issue}/releases?query=&pa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-138](../SPEC.md#close-errores-138) | Native release-anchored and next-release resolution: Comparison tests own independent grammar/precedence/class… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-127](../SPEC.md#close-errores-127) | Native release-anchored and next-release resolution: Complete both native release-resolution modes with the ex… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-128](../SPEC.md#close-errores-128) | Native release-anchored and next-release resolution: Native session/CSRF PATCH issue adds resolution, requirin… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-129](../SPEC.md#close-errores-129) | Native release-anchored and next-release resolution: Omitted resolution preserves an already resolved policy;… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-130](../SPEC.md#close-errores-130) | Native release-anchored and next-release resolution: Implement internal/releaseorder.Compare(a,b string)(int,b… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-131](../SPEC.md#close-errores-131) | Native release-anchored and next-release resolution: For chosen mode, exact version equality stays resolved ev… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-132](../SPEC.md#close-errores-132) | Native release-anchored and next-release resolution: For next mode, eligible binding is a different open proje… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-133](../SPEC.md#close-errores-133) | Native release-anchored and next-release resolution: A bound next version always regresses on exact equality,… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-134](../SPEC.md#close-errores-134) | Native release-anchored and next-release resolution: Additive migration014 owns one issue_resolutions row per… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-135](../SPEC.md#close-errores-135) | Native release-anchored and next-release resolution: Stage the private frequency hook: prepare receipt/context… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-136](../SPEC.md#close-errores-136) | Native release-anchored and next-release resolution: Extend always-on issue maintenance: expired mute claims r… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-137](../SPEC.md#close-errores-137) | Native release-anchored and next-release resolution: Add session GET /api/v1/issues/{issue}/releases?query=&pa… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-138](../SPEC.md#close-errores-138) | Native release-anchored and next-release resolution: Comparison tests own independent grammar/precedence/class… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-139](../SPEC.md#close-errores-139) | Native conditional mute: Deliver timed, additional-event and additional-user mute before release-anchored/next… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-140](../SPEC.md#close-errores-140) | Native conditional mute: Compatible individual and bulk issue updates accept ignoreWindow at the top level or… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-141](../SPEC.md#close-errores-141) | Native conditional mute: Occurrence-window progress uses server receipt instants, never SDK timestamps or loca… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4009,6 +4009,30 @@ Evidencia: `test-results/closure-20261025/errores-113-119.log` y
 `merge-ui/`; contrato `tests/compat/issue_merge_browser.mjs`.
 
 Siguiente acción: CLOSE-errores-127 (resolución release-anchored/next-release).
+
+### Ejecución 2026-10-26: resolución por release
+
+Selección registrada antes de trabajar: CLOSE-errores-127 a -138. Candidata
+`979233b`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners store/HTTP y de `internal/releaseorder`.
+
+Resultado observado: PATCH nativo añade resolution release/next-release con
+status resolved, selectores exactos inmutables y distinción entre campo
+omitido y null; la política elegida conserva igualdad exacta y la política
+next elige una release abierta posterior, congela la frontera y produce una
+sola regresión al capturar. 014 persiste una fila por issue con referencias
+inmutables, migraciones/reopen y hooks de frecuencia; la maintenance atiende
+mutes vencidos. La ruta de candidates pagina/busca releases con query estricta.
+`releaseorder.Compare` cubre gramática semántica, precedencia, clasificación,
+Unicode, overflow e incomparables; el wire de resolución devuelve la release
+almacenada. Cierres/fallos de metadata no rompen el no-op. Subresultados
+pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-127-135.log` y
+`releaseorder.log`.
+
+Siguiente acción: CLOSE-errores-139 (mute condicional y ventanas), siguiente
+familia.
 
 ### Comprobante de integración documental
 

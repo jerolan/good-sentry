@@ -2246,6 +2246,102 @@
         "merge-ui/*.png",
         "tests/compat/issue_merge_browser.mjs"
       ]
+    },
+    "CLOSE-errores-127": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-128": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-129": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-130": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-131": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-132": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-133": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-134": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-135": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-136": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-137": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-138": {
+      "evidence": "vigente",
+      "scope": "release-anchored/next-release resolution, migration, repair and comparator",
+      "evidence_files": [
+        "errores-127-135.log",
+        "releaseorder.log"
+      ]
     }
   },
   "commands": [
