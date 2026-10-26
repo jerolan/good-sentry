@@ -1093,6 +1093,42 @@
         "unlock": "run the pinned official SDK/CLI/browser/image acceptance and publish matching source/CI"
       },
       "evidence_files": ["errores-027-031.log", "issue-delete/report.json"]
+    },
+    "CLOSE-errores-034": {
+      "evidence": "vigente",
+      "scope": "compatible hash listing and future-only detachment",
+      "covered": ["full/summary pages and cursor Links", "exact signature reset", "historical events retained"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-035": {
+      "evidence": "vigente",
+      "scope": "DELETE 202 future-route removal and new-generation routing",
+      "covered": ["202 response", "future route removed only", "new generation after reset"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-036": {
+      "evidence": "vigente",
+      "scope": "019 issue_hash_routes migration/backfill/constraints",
+      "covered": ["preserves legacy membership", "backfills routes", "inconsistent ownership rejected atomically"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-037": {
+      "evidence": "vigente",
+      "scope": "capture retry serialization and reset ordering",
+      "covered": ["capture before reset stays historical", "canceled/concurrent reset", "no lost generation"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-038": {
+      "evidence": "vigente",
+      "scope": "native/compatible merge flattening and route history",
+      "covered": ["merged membership retained", "original partitions and aliases", "future routing"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-039": {
+      "evidence": "vigente",
+      "scope": "exact GET/DELETE hash routes and strict bodies",
+      "covered": ["exact routes", "strict query/body admission", "prefixed Links and authoritative scopes"]
+      ,"evidence_files": ["errores-034-039.log"]
     }
   },
   "commands": [

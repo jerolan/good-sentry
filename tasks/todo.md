@@ -1443,12 +1443,11 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005 y 007–032 están vigentes y 033 bloqueada. 006
-espera sus proveedores de releases/artefactos/nativo/CLI. Siguiente acción:
-CLOSE-errores-034 (hashes y reset futuro). No se declara aceptación ni cierre
-del producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+publicación/CI; errores 001–005, 007–032 y 034–039 están vigentes y 033
+bloqueada; 006 espera proveedores de releases/artefactos/nativo/CLI. Siguiente
+acción: CLOSE-alertas-001. No se declara aceptación ni cierre del producto. El
+avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1569,12 +1568,12 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-031](../SPEC.md#close-errores-031) | Permanent issue discard: Use the public Sentry issue update API(https://docs.sentry.io/api/events/update-an-is… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de API |
 | [CLOSE-errores-032](../SPEC.md#close-errores-032) | Permanent issue discard: Owning PostgreSQL checks cover020 checksum/reopen/all old-row preservation, actual fu… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de SQL/tests |
 | [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
-| [CLOSE-errores-034](../SPEC.md#close-errores-034) | Compatible hashes and future grouping reset: Complete compatible hash listing and future-only detachment, incl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-035](../SPEC.md#close-errores-035) | Compatible hashes and future grouping reset: The observed GlitchTip DELETE202 removes a signature's future rou… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-036](../SPEC.md#close-errores-036) | Compatible hashes and future grouping reset: Add migration019_issue_hash_routes.sql. Create issue_hash_routes… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-037](../SPEC.md#close-errores-037) | Compatible hashes and future grouping reset: Ingest retains retry advisory serialization and the existing earl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-038](../SPEC.md#close-errores-038) | Compatible hashes and future grouping reset: Native and compatible merges continue to flatten issue membership… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-039](../SPEC.md#close-errores-039) | Compatible hashes and future grouping reset: Register exact GET and DELETE /api/0/organizations/{org}/issues/{… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-034](../SPEC.md#close-errores-034) | Compatible hashes and future grouping reset: Complete compatible hash listing and future-only detachment, incl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de hashes |
+| [CLOSE-errores-035](../SPEC.md#close-errores-035) | Compatible hashes and future grouping reset: The observed GlitchTip DELETE202 removes a signature's future rou… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 202 |
+| [CLOSE-errores-036](../SPEC.md#close-errores-036) | Compatible hashes and future grouping reset: Add migration019_issue_hash_routes.sql. Create issue_hash_routes… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 019 |
+| [CLOSE-errores-037](../SPEC.md#close-errores-037) | Compatible hashes and future grouping reset: Ingest retains retry advisory serialization and the existing earl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ingesta |
+| [CLOSE-errores-038](../SPEC.md#close-errores-038) | Compatible hashes and future grouping reset: Native and compatible merges continue to flatten issue membership… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de merge |
+| [CLOSE-errores-039](../SPEC.md#close-errores-039) | Compatible hashes and future grouping reset: Register exact GET and DELETE /api/0/organizations/{org}/issues/{… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
 | [CLOSE-errores-040](../SPEC.md#close-errores-040) | Compatible hashes and future grouping reset: GET accepts only scalar limit, cursor and full, rejecting duplica… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-041](../SPEC.md#close-errores-041) | Compatible hashes and future grouping reset: latestEvent is the newest retained event by occurrence timestamp… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-042](../SPEC.md#close-errores-042) | Compatible hashes and future grouping reset: DELETE accepts only repeated id parameters,1..1000 supplied UUID… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3741,6 +3740,27 @@ Evidencia: `test-results/closure-20261025/errores-027-031.log`,
 `errores-015-026.log` e `issue-delete/`.
 
 Siguiente acción: CLOSE-errores-034 (hashes y reset futuro de grouping).
+
+### Ejecución 2026-10-26: hashes compatibles y reset futuro
+
+Selección registrada antes de trabajar: CLOSE-errores-034 a -039. Candidata
+`5fed26d`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners de migración, concurrencia, autorización y HTTP con `-race`.
+
+Resultado observado: 019 crea `issue_hash_routes` y backfill sin reescribir
+issue membership; una fila inconsistente se rechaza atómicamente. La lista
+compatible pagina entradas full/summary con cursor, límite y Links, y el reset
+elimina solo la ruta futura de la firma, conservando eventos históricos y
+permitiendo una nueva generación. Captura/reset concurrentes se ordenan con el
+gate advisory y un reset cancelado no pierde la generación. La autorización
+compatible, sesión/Bearer, scopes, alias mergedInto y filtros se conservan. Las
+rutas exactas GET/DELETE y sus bodies estrictos se prueban con sus owners.
+Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-034-039.log`.
+
+Siguiente acción: la familia de errores queda cerrada salvo 006/033 por sus
+proveedores/publicación; continuar con alertas desde CLOSE-alertas-001.
 
 ### Comprobante de integración documental
 
