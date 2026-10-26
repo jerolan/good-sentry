@@ -5487,7 +5487,7 @@ error en `main`; no se arranca un proceso completo con la cuenta suspendida.
 ### Ejecución 2026-10-26: API y sección de usuarios de instancia
 
 Selección registrada antes de trabajar: CLOSE-identidad-099. Candidata
-`72e56f0`.
+`9dcb02b`.
 
 Resultado observado: con `ENABLE_ADMIN=true`, `GET /api/v1/admin/users`
 devuelve una página de 25 por defecto con `data`, `total`, `page` y
