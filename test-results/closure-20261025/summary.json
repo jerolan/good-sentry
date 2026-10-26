@@ -4432,6 +4432,15 @@
         "nativo-007/summary.json"
       ]
     },
+    "CLOSE-nativo-008": {
+      "evidence": "vigente",
+      "scope": "Memory64ListStream 64-bit offset and size validation, list-wide base advancement, overflow resistance, truncation and no-panic bounds",
+      "evidence_files": [
+        "nativo-008/memory64.log",
+        "nativo-008/native.log",
+        "nativo-008/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

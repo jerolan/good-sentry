@@ -269,6 +269,74 @@ func TestParseMinidumpValidatesMemory64FileRanges(t *testing.T) {
 	})
 }
 
+func TestParseMinidumpMemory64ListAdvancesBase(t *testing.T) {
+	system := make([]byte, 2)
+	binary.LittleEndian.PutUint16(system, cpuArchAMD64)
+	threads := make([]byte, 4+48)
+	binary.LittleEndian.PutUint32(threads, 1)
+	binary.LittleEndian.PutUint32(threads[4:], 1)
+	memory := make([]byte, 48)
+	binary.LittleEndian.PutUint64(memory, 2)
+	binary.LittleEndian.PutUint64(memory[16:], 0x1000)
+	binary.LittleEndian.PutUint64(memory[24:], 4)
+	binary.LittleEndian.PutUint64(memory[32:], 0x2000)
+	binary.LittleEndian.PutUint64(memory[40:], 4)
+	context := make([]byte, amd64ContextSize)
+	payload := []byte("AAAABBBB")
+	streams := [][]byte{system, threads, memory}
+	headerSize := 32 + len(streams)*12
+	data := make([]byte, headerSize)
+	locations := make([]uint32, len(streams))
+	for index, body := range streams {
+		locations[index] = uint32(len(data))
+		data = append(data, body...)
+	}
+	contextRVA := uint32(len(data))
+	data = append(data, context...)
+	payloadRVA := uint32(len(data))
+	data = append(data, payload...)
+	binary.LittleEndian.PutUint32(threads[44:], amd64ContextSize)
+	binary.LittleEndian.PutUint32(threads[48:], contextRVA)
+	binary.LittleEndian.PutUint64(memory[8:], uint64(payloadRVA))
+	copy(data[locations[1]:], threads)
+	copy(data[locations[2]:], memory)
+	binary.LittleEndian.PutUint32(data, minidumpSignature)
+	binary.LittleEndian.PutUint16(data[4:], minidumpVersion)
+	binary.LittleEndian.PutUint32(data[8:], uint32(len(streams)))
+	binary.LittleEndian.PutUint32(data[12:], 32)
+	types := []uint32{streamSystemInfo, streamThreadList, streamMemory64}
+	for index, body := range streams {
+		offset := 32 + index*12
+		binary.LittleEndian.PutUint32(data[offset:], types[index])
+		binary.LittleEndian.PutUint32(data[offset+4:], uint32(len(body)))
+		binary.LittleEndian.PutUint32(data[offset+8:], locations[index])
+	}
+	crash, err := ParseMinidump(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(crash.stack) != 2 || crash.stack[0].start != 0x1000 || crash.stack[1].start != 0x2000 || string(crash.stack[0].data) != "AAAA" || string(crash.stack[1].data) != "BBBB" {
+		t.Fatalf("Memory64 list did not advance its base RVA: %+v", crash.stack)
+	}
+}
+
+func TestParseMinidumpMemory64TruncatedDescriptors(t *testing.T) {
+	data := buildMemory64Minidump(44, 0)
+	binary.LittleEndian.PutUint64(data[44:], 2)
+	var parseErr error
+	var panicValue any
+	func() {
+		defer func() { panicValue = recover() }()
+		_, parseErr = ParseMinidump(data)
+	}()
+	if panicValue != nil {
+		t.Fatalf("ParseMinidump panicked on truncated Memory64 descriptors: %v", panicValue)
+	}
+	if parseErr == nil {
+		t.Fatal("ParseMinidump accepted a truncated Memory64 descriptor list")
+	}
+}
+
 func TestParseMinidumpUsesExceptionStreamThreadContext(t *testing.T) {
 	t.Run("preferred over matching thread context even before ThreadList", func(t *testing.T) {
 		data := buildAMD64Minidump()

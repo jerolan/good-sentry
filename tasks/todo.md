@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -007 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -008 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-008. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-009. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1734,7 +1734,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8783,6 +8783,26 @@ Evidencia: `test-results/closure-20261025/nativo-007/native.log` y
 Límites registrados: PostgreSQL desechable y binario local; no se usó la imagen
 final ni el CI público. La aceptación con SDK nativo real pertenece a criterios
 posteriores. La imagen y el CI siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: rangos Memory64 del Minidump
+
+Selección registrada antes de trabajar: CLOSE-nativo-008. Revisión de producto
+`27fbdb8`; este incremento añade pruebas y documentación, sin cambios de
+producto.
+
+| Elemento | Comprobante |
+|---|---|
+| Offset de 64 bits dentro del archivo y tamaño frente a los bytes restantes | `TestParseMinidumpValidatesMemory64FileRanges` (`size_past_end`, `base_past_end`, `valid_in_file_range`) |
+| Sin suma de offset propensa a desbordamiento | `TestParseMinidumpValidatesMemory64FileRanges/addition_overflow` |
+| El RVA base avanza por el tamaño de cada descriptor | `TestParseMinidumpMemory64ListAdvancesBase` (dos rangos y bytes `AAAA`/`BBBB`) |
+| Lista truncada devuelve error sin pánico | `TestParseMinidumpMemory64TruncatedDescriptors` |
+| Descriptor fuera de archivo devuelve error sin pánico | `TestParseMinidumpValidatesMemory64FileRanges` (recuperación de pánico en cada caso) |
+
+Evidencia: `test-results/closure-20261025/nativo-008/memory64.log` y
+`native.log`.
+
+Límites registrados: los fixtures son sintéticos y no se usó la imagen final ni
+el CI público. La imagen y el CI siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

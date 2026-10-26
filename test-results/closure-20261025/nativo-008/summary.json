@@ -1,0 +1,38 @@
+{
+  "criteria": ["CLOSE-nativo-008"],
+  "date": "2026-10-26",
+  "product_revision": "27fbdb8",
+  "note": "This receipt adds Memory64 boundary tests and documentation. The Minidump parser is unchanged.",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64"
+  },
+  "owners": [
+    "TestParseMinidumpValidatesMemory64FileRanges",
+    "TestParseMinidumpMemory64ListAdvancesBase",
+    "TestParseMinidumpMemory64TruncatedDescriptors"
+  ],
+  "covered": [
+    "each Memory64 descriptor's 64-bit file offset is validated against the dump length before slicing",
+    "the descriptor size is compared with the remaining file bytes",
+    "offset addition cannot overflow into an in-file range",
+    "the list-wide base RVA advances by each descriptor's size: two ranges read AAAABBBB at the correct distinct offsets",
+    "a truncated descriptor list returns a parse error without panic",
+    "out-of-file descriptors return a parse error without panic or partial memory ranges on success"
+  ],
+  "observed": {
+    "memory64": "PASS in 0.005s",
+    "native": "PASS in 0.769s",
+    "vet": "PASS for ./internal/native"
+  },
+  "limits": [
+    "Fixtures are synthetic Minidumps, not the final image or a real SDK crash.",
+    "No public CI or external publication was exercised in this increment.",
+    "The product is not declared an acceptance candidate or closed."
+  ],
+  "evidence": [
+    "memory64.log",
+    "native.log",
+    "summary.json"
+  ]
+}
