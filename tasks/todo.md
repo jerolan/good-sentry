@@ -1502,11 +1502,13 @@ go-sdk 1.8.0 y la aceptación pública histórica como apoyo.
 CLOSE-operacion-058 a -066 quedan vigentes con harnesses, layout, estilo, fuzz,
 SDKs y verificación; 067 espera publicación/registro autorizados.
 CLOSE-operacion-067 conserva el bloqueo de publicación remota; la siguiente
-acción ejecutable es CLOSE-operacion-068 (archivo de errores, backend local).
+acción ejecutable es CLOSE-lectores-004 (Grafana). CLOSE-sourcemaps-028 a -031
+quedan vigentes. CLOSE-operacion-068 sigue pendiente de una nueva capa de
+archivo de errores, no sólo de comprobantes.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-068. No se declara
+runtime preservado. Siguiente acción: CLOSE-lectores-004. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2212,10 +2214,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-094](../SPEC.md#close-operacion-094) | Persistencia de datos, artefactos y configuración tras reinicio. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-095](../SPEC.md#close-operacion-095) | Backup y restauración en entorno independiente, conservando datos, artefactos y configuración necesarios. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-096](../SPEC.md#close-operacion-096) | Disponibilidad real de funciones opcionales y verificaciones de imagen, concurrencia y recuperación existentes… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-sourcemaps-028](../SPEC.md#close-sourcemaps-028) | Crear y finalizar una release con sentry-cli 3.8.0. No requiere conexión automática con repositorios. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-sourcemaps-029](../SPEC.md#close-sourcemaps-029) | Asociar metadatos locales de commits y registrar un deploy con sentry-cli 3.8.0. No requiere conexión automáti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-sourcemaps-030](../SPEC.md#close-sourcemaps-030) | Consultar en API/UI la misma versión, proyectos, archivos y eventos asociados. No requiere conexión automática… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-sourcemaps-031](../SPEC.md#close-sourcemaps-031) | Subida, listado, acceso y eliminación de artefactos sin borrar datos ajenos, con permisos, reintentos y persis… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-028](../SPEC.md#close-sourcemaps-028) | Crear y finalizar una release con sentry-cli 3.8.0. No requiere conexión automática con repositorios. | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
+| [CLOSE-sourcemaps-029](../SPEC.md#close-sourcemaps-029) | Asociar metadatos locales de commits y registrar un deploy con sentry-cli 3.8.0. No requiere conexión automáti… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
+| [CLOSE-sourcemaps-030](../SPEC.md#close-sourcemaps-030) | Consultar en API/UI la misma versión, proyectos, archivos y eventos asociados. No requiere conexión automática… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
+| [CLOSE-sourcemaps-031](../SPEC.md#close-sourcemaps-031) | Subida, listado, acceso y eliminación de artefactos sin borrar datos ajenos, con permisos, reintentos y persis… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
 | [CLOSE-errores-220](../SPEC.md#close-errores-220) | Conservar y comprobar los flujos de adjuntos, incluidos almacenamiento, listados, acceso/descarga y controles… | implementada | vigente | Comprobante 2026-10-26 abajo (207-208 + 035-043) |
 | [CLOSE-errores-221](../SPEC.md#close-errores-221) | Conservar y comprobar los flujos de feedback legado, transporte, asociación, reportes y UI contratados. | implementada | vigente | Comprobante 2026-10-26 abajo (164-181) |
 | [CLOSE-errores-222](../SPEC.md#close-errores-222) | Conservar y comprobar los flujos de feedback moderno, categoría, asociación, retención, lectura e interfaz con… | implementada | vigente | Comprobante 2026-10-26 abajo (182-205) |
@@ -9440,7 +9442,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-operacion-068. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-lectores-004. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9460,7 +9462,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-068. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-lectores-004. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9480,7 +9482,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-068. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-lectores-004. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9511,7 +9513,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-068. El producto
+público siguen pendientes. Siguiente acción: CLOSE-lectores-004. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9540,7 +9542,7 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-068. El producto
+público siguen pendientes. Siguiente acción: CLOSE-lectores-004. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Node 11.7.0
@@ -9569,7 +9571,7 @@ Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-068. El producto
+público siguen pendientes. Siguiente acción: CLOSE-lectores-004. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Browser 11.7.0
@@ -9598,7 +9600,7 @@ Evidencia: `test-results/closure-20261025/errores-218-219/` con el fixture, el
 hash del bundle, las capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-068. El producto
+público siguen pendientes. Siguiente acción: CLOSE-lectores-004. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: filas paraguas de conservación
@@ -9615,7 +9617,7 @@ composición de owners frescos e históricos ya registrados.
 
 Límites registrados: las capturas de navegador de 179/181 y 196–198/203 son
 históricas y se repiten en la candidata final; 206, la copia de 4569 filas y el
-CI público siguen pendientes. Siguiente acción: CLOSE-operacion-068. El producto
+CI público siguen pendientes. Siguiente acción: CLOSE-lectores-004. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: navegador real a 320, 768 y 1440
@@ -9668,7 +9670,7 @@ resultado del CLI, el informe de navegador, capturas, CI/imagen históricos y
 `summary.json`.
 
 Límites registrados: las aceptaciones de CLI/navegador/CI son históricas y se
-repiten en la candidata final. Siguiente acción: CLOSE-operacion-068. El producto
+repiten en la candidata final. Siguiente acción: CLOSE-lectores-004. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: matriz de API de gestión y SDKs
@@ -9744,7 +9746,7 @@ Evidencia: `test-results/closure-20261025/operacion-049-055/` con logs,
 Límites registrados: CLOSE-operacion-056 sigue abierto porque exige la imagen
 con volumen limpio a través de archivo/consulta/reinicio/expiración, S3 real o
 compatible, suite completa con race/vet/build, CI público e imágenes
-publicadas. Siguiente acción: CLOSE-operacion-068. El producto sigue incompleto.
+publicadas. Siguiente acción: CLOSE-lectores-004. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: estado de OIDC y administración global
 
@@ -9820,8 +9822,31 @@ informes y `summary.json`.
 
 Límites registrados: CLOSE-operacion-067 sigue abierto porque la publicación
 actual del registro y la verificación remota multiarquitectura requieren
-autorización externa. Siguiente acción: CLOSE-operacion-068. El producto sigue
+autorización externa. Siguiente acción: CLOSE-lectores-004. El producto sigue
 incompleto.
+
+### Ejecución 2026-10-26: releases, commits, deploys y artefactos
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-028 a -031. Revisión
+`d5a8b5b`; owners HTTP frescos y aceptaciones CLI/imagen/navegador históricas.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 028 | CLI 3.8.0 crea/finaliza release y la identidad sobrevive la actualización | `cli-lifecycle-report.json`; `server.log` |
+| 029 | Commits locales y deploy reales, repetibles y persistentes tras reinicio | `cli-lifecycle-report.json`; `TestCompatibleIssueCommitsHTTPContract` |
+| 030 | Misma versión/proyectos/archivos/eventos en API y Chromium 320/768/1440, owner/member | `browser-report.json`; `TestReleaseHTTPContract` |
+| 031 | Upload/list/detail/delete acotado, idempotente y sin borrar datos ajenos | `release-files-report.json`; `TestCompatibleReleaseFilesHTTP` |
+
+Resultado observado: los tres owners HTTP pasan en 4.169 s. El CLI real cubre
+create/finalize/list, commits, deploy y restart; el navegador conserva versión,
+páginas de historial y permisos; los archivos se listan con SHA-1 exacto y el
+delete devuelve 204 sin tocar archivos no seleccionados.
+
+Evidencia: `test-results/closure-20261025/sourcemaps-028-031/`.
+
+Límites registrados: los recibos CLI/imagen/navegador son históricos y se
+repiten en la candidata final; la conexión automática con repositorios sigue
+aplazada. Siguiente acción: CLOSE-lectores-004. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 

@@ -1,0 +1,25 @@
+{
+  "criteria": ["CLOSE-sourcemaps-028", "CLOSE-sourcemaps-029", "CLOSE-sourcemaps-030", "CLOSE-sourcemaps-031"],
+  "date": "2026-10-26",
+  "product_revision": "d5a8b5b",
+  "fresh_tests": {
+    "server": "PASS in 4.169s: TestReleaseHTTPContract, TestCompatibleIssueCommitsHTTPContract and TestCompatibleReleaseFilesHTTP"
+  },
+  "covered": {
+    "028": "official sentry-cli 3.8.0 creates, finalizes and lists a shared release; the actual image upgrade preserves durable identity and prior data",
+    "029": "official CLI associates local Git commit metadata and records a completed deploy; repeated CLI operations are idempotent and survive an app-only restart",
+    "030": "the same version, projects, release files and associated events appear through the API and real Chromium at 320/768/1440, with owner and member permission states",
+    "031": "artifact upload/list/detail/delete is project/organization scoped, retries identically, removes only matching files and preserves unrelated release/source-map data"
+  },
+  "observed": {
+    "cli": "sentry-cli 3.8.0 real lifecycle commands and image restart from container-releases",
+    "release_files": "list/detail/delete 204 with exact SHA-1 and scoped token from acceptance-release-files-20261021",
+    "browser": "owner/member overview/detail, 25+1 pagination, safe hostile version, UTC finalize and independent commits/deploys at 320/768/1440"
+  },
+  "evidence": ["server.log", "cli-lifecycle-report.json", "release-files-report.json", "browser-report.json", "summary.json"],
+  "limits": [
+    "The CLI/image/browser receipts are historical and repeat on the final candidate.",
+    "Repository-provider discovery is explicitly out of scope (sourcemaps-033 deferred).",
+    "The product is not declared complete."
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "ok": true,
+  "baseURL": "http://host.docker.internal:18005/",
+  "organization": "browser-workspace-mv8mb7ib",
+  "projectIds": [
+    "66",
+    "67"
+  ],
+  "version": "  Release / mv905isw-145f63 <img src=x onerror=\"window.__releaseUnsafe=1\"> 雪  ",
+  "checks": [
+    "Exact spaced/slashed version create, retained server validation, safe ref/URL/status, UTC finalize and explicit int64 commit set work; list filters/back and independent25+1 commit/deploy pages survive reload",
+    "Real member reads metadata and both history pages without write controls; project/source-map navigation accepts exact255 Unicode identities, removal deletes only matching maps, confirmed whole deletion returns to preserved filters, and release-write credentials remain opt-in"
+  ],
+  "screenshots": [
+    "/workspace/test-results/browser-releases-final/owner-release-overview-320.png",
+    "/workspace/test-results/browser-releases-final/owner-release-detail-320.png",
+    "/workspace/test-results/browser-releases-final/owner-release-overview-768.png",
+    "/workspace/test-results/browser-releases-final/owner-release-detail-768.png",
+    "/workspace/test-results/browser-releases-final/owner-release-overview-1440.png",
+    "/workspace/test-results/browser-releases-final/owner-release-detail-1440.png",
+    "/workspace/test-results/browser-releases-final/independent-pages-overview-320.png",
+    "/workspace/test-results/browser-releases-final/independent-pages-detail-320.png",
+    "/workspace/test-results/browser-releases-final/independent-pages-overview-768.png",
+    "/workspace/test-results/browser-releases-final/independent-pages-detail-768.png",
+    "/workspace/test-results/browser-releases-final/independent-pages-overview-1440.png",
+    "/workspace/test-results/browser-releases-final/independent-pages-detail-1440.png",
+    "/workspace/test-results/browser-releases-final/member-release-overview-320.png",
+    "/workspace/test-results/browser-releases-final/member-release-detail-320.png",
+    "/workspace/test-results/browser-releases-final/member-release-overview-768.png",
+    "/workspace/test-results/browser-releases-final/member-release-detail-768.png",
+    "/workspace/test-results/browser-releases-final/member-release-overview-1440.png",
+    "/workspace/test-results/browser-releases-final/member-release-detail-1440.png",
+    "/workspace/test-results/browser-releases-final/delete-confirmation-overview-320.png",
+    "/workspace/test-results/browser-releases-final/delete-confirmation-overview-768.png",
+    "/workspace/test-results/browser-releases-final/delete-confirmation-overview-1440.png"
+  ],
+  "dimensions": [
+    {
+      "name": "owner-release",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "owner-release",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "owner-release",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "independent-pages",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "independent-pages",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "independent-pages",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "member-release",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "member-release",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "member-release",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "delete-confirmation",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "delete-confirmation",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "delete-confirmation",
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://host.docker.internal:18005/api/0/organizations/browser-workspace-mv8mb7ib/releases/"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://host.docker.internal:18005/api/0/organizations/browser-workspace-mv8mb7ib/releases/%20%20Release%20%2F%20mv905isw-145f63%20%3Cimg%20src%3Dx%20onerror%3D%22window.__releaseUnsafe%3D1%22%3E%20%E9%9B%AA%20%20/commits/"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://host.docker.internal:18005/api/0/organizations/browser-workspace-mv8mb7ib/releases/%20%20Release%20%2F%20mv905isw-145f63%20%3Cimg%20src%3Dx%20onerror%3D%22window.__releaseUnsafe%3D1%22%3E%20%E9%9B%AA%20%20/deploys/"
+    }
+  ],
+  "badResponses": [
+    {
+      "url": "http://host.docker.internal:18005/api/0/organizations/browser-workspace-mv8mb7ib/releases/",
+      "status": 400
+    },
+    {
+      "url": "http://host.docker.internal:18005/api/0/organizations/browser-workspace-mv8mb7ib/releases/%20%20Release%20%2F%20mv905isw-145f63%20%3Cimg%20src%3Dx%20onerror%3D%22window.__releaseUnsafe%3D1%22%3E%20%E9%9B%AA%20%20/commits/",
+      "status": 400
+    },
+    {
+      "url": "http://host.docker.internal:18005/api/0/organizations/browser-workspace-mv8mb7ib/releases/%20%20Release%20%2F%20mv905isw-145f63%20%3Cimg%20src%3Dx%20onerror%3D%22window.__releaseUnsafe%3D1%22%3E%20%E9%9B%AA%20%20/deploys/",
+      "status": 400
+    }
+  ]
+}

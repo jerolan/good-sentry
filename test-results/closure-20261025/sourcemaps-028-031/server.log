@@ -1,0 +1,8 @@
+=== RUN   TestCompatibleIssueCommitsHTTPContract
+--- PASS: TestCompatibleIssueCommitsHTTPContract (0.67s)
+=== RUN   TestCompatibleReleaseFilesHTTP
+--- PASS: TestCompatibleReleaseFilesHTTP (1.37s)
+=== RUN   TestReleaseHTTPContract
+--- PASS: TestReleaseHTTPContract (2.12s)
+PASS
+ok  	goodsentry/internal/server	4.169s
