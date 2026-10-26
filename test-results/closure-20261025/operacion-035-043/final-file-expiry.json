@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "deleted": {
+    "source_maps": 2,
+    "attachments": 3,
+    "envelope_items": 7
+  },
+  "allOtherRowsExact": true,
+  "beforeRows": 4386,
+  "afterRows": 4374,
+  "bothFeaturesDisabledDuringExpiry": true,
+  "enabledCandidateReturnedWithAllRowsExact": true,
+  "sourceMapListEmpty": true,
+  "allThreeHistoricalEventsRetained": true,
+  "independentTraceAPIReadable": true,
+  "disabledPeerPreservedStopped": "gs-file-retention-disabled-20261017"
+}

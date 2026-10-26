@@ -1,0 +1,10 @@
+{
+  "phase": "before",
+  "passed": false,
+  "dimensions": [],
+  "downloads": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "failedRequests": [],
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(hostile&&empty&&long)\n\n    at file:///C:/Users/jerom/iCloudDrive/Documents/Workspace/SentryGo/.tmp/file-retention-acceptance/attachments-browser.mjs:35:10"
+}

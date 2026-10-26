@@ -1,0 +1,94 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.13kB 0.0s done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/golang:1.27.2
+#3 DONE 0.5s
+
+#2 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+#2 DONE 1.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context:
+#4 transferring context: 107B done
+#4 DONE 0.3s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [build 5/8] ADD --checksum=sha256:dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 /usr/local/bin/tailwindcss
+#6 DONE 0.0s
+
+#7 [stage-1 1/4] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+#7 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+#7 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab 0.4s done
+#7 DONE 0.5s
+
+#8 [build 1/8] FROM docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8
+#8 resolve docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8 0.4s done
+#8 DONE 0.4s
+
+#5 [internal] load build context
+#5 transferring context: 135.82MB 4.6s
+#5 transferring context: 181.60MB 6.6s done
+#5 DONE 6.9s
+
+#9 [build 5/8] ADD --checksum=sha256:dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 /usr/local/bin/tailwindcss
+#9 CACHED
+
+#10 [build 2/8] WORKDIR /src
+#10 CACHED
+
+#11 [build 3/8] COPY go.mod go.sum ./
+#11 CACHED
+
+#12 [build 4/8] RUN go mod download
+#12 CACHED
+
+#13 [build 6/8] RUN chmod 0755 /usr/local/bin/tailwindcss
+#13 CACHED
+
+#14 [build 7/8] COPY . .
+#14 DONE 25.8s
+
+#15 [build 8/8] RUN printf '%s\n'       'd69de07c7463bb1f41548e2688f88ee105cdadf9779fce5b3c47b3bfaa6be472  third_party/daisyui/daisyui.mjs'       'e48a35d8326d650181ca600560e8520cf6b44cf9242bbd9d45825607e641f251  third_party/daisyui/daisyui-theme.mjs'     | sha256sum -c -     && tailwindcss -i internal/server/web/styles.css -o internal/server/web/app.css --minify     && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /goodsentry ./cmd/goodsentry     && mkdir /data
+#15 1.123 third_party/daisyui/daisyui.mjs: OK
+#15 1.123 third_party/daisyui/daisyui-theme.mjs: OK
+#15 1.850 ≈ tailwindcss v4.3.3
+#15 1.857 
+#15 2.200 Done in 340ms
+#15 DONE 18.0s
+
+#7 [stage-1 1/4] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+#7 CACHED
+
+#16 [stage-1 2/4] COPY --from=build /goodsentry /goodsentry
+#16 DONE 0.6s
+
+#17 [stage-1 3/4] COPY --from=build --chown=65532:65532 /data /data
+#17 DONE 0.5s
+
+#18 [stage-1 4/4] COPY third_party/daisyui/LICENSE /licenses/daisyui-LICENSE
+#18 DONE 0.4s
+
+#19 exporting to image
+#19 exporting layers
+#19 exporting layers 1.6s done
+#19 exporting manifest sha256:c5fe860a487222f7ebabec21c758acd971ecf08a9d9890ddb5acfb60aac53417
+#19 exporting manifest sha256:c5fe860a487222f7ebabec21c758acd971ecf08a9d9890ddb5acfb60aac53417 0.2s done
+#19 exporting config sha256:48072d08687e77967403166092a7dde43ec3a8fcf685881d40cadf25d2d971e2
+#19 exporting config sha256:48072d08687e77967403166092a7dde43ec3a8fcf685881d40cadf25d2d971e2 0.1s done
+#19 exporting attestation manifest sha256:410fc4c89916e56261577815046941bc7a755301aee30fbe8e8fa552773c9d6e
+#19 exporting attestation manifest sha256:410fc4c89916e56261577815046941bc7a755301aee30fbe8e8fa552773c9d6e 0.2s done
+#19 exporting manifest list sha256:0426c8b8a03114e7d16b6961277d183b320c186273818fe0e43f5781757b7f5c
+#19 exporting manifest list sha256:0426c8b8a03114e7d16b6961277d183b320c186273818fe0e43f5781757b7f5c 0.1s done
+#19 naming to docker.io/library/goodsentry:file-retention-20261017
+#19 naming to docker.io/library/goodsentry:file-retention-20261017 done
+#19 unpacking to docker.io/library/goodsentry:file-retention-20261017
+#19 unpacking to docker.io/library/goodsentry:file-retention-20261017 0.6s done
+#19 DONE 3.1s

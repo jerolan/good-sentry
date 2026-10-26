@@ -1,0 +1,42 @@
+{
+  "passed": true,
+  "exactRestartRows": 4374,
+  "events": 533,
+  "canonicalBatches": 28,
+  "migrationReceipts": 27,
+  "tables": 38,
+  "separateRecoveryRowsStillExact": 4406,
+  "all4342SourceRowsAndElevenProtectedRuntimeStatesExact": true,
+  "allSixPriorAuditsPass": true,
+  "image": "sha256:9f30b1ca42a2fbd2b55dac29d9f00a9c71bce829506f0a92dd4606a592f0499e",
+  "imageBytes": 31201169,
+  "staticLinuxAmd64Go": "1.27.2",
+  "user": "65532:65532",
+  "binarySHA256": "e132306ef8b7140e6c378edbc695a806c260f29228913147c09786fc9eefcded",
+  "caCertificates": 150,
+  "licenseExact": true,
+  "assets": [
+    {
+      "file": "app.js",
+      "sha256": "7a2b7ea5a94e486d43ea297322564e08be4d56df6003081212dc3eb25ed1da1b"
+    },
+    {
+      "file": "app.css",
+      "sha256": "6dda9f883940dbe3c8de0a9161a6e1da459be3394a5418cf6e61401060d0fb75"
+    },
+    {
+      "file": "alerts.js",
+      "sha256": "361ba7899138b2a4cc9abd3920bc7371972ef8e038f0751cb1b790748740c2a2"
+    },
+    {
+      "file": "releases.js",
+      "sha256": "2825c9737c1699948e3a7a0dfa1cb6246e9961f5169f76a4b2a18bfa7df48cb4"
+    },
+    {
+      "file": "hashes.js",
+      "sha256": "fec66875525ab46ee8cb2b8e253a28d7b44ab04de7a3ac54cbfcad7856406c86"
+    }
+  ],
+  "memoryUnmeasured": true,
+  "allFourOwnedPeersPreservedStopped": true
+}

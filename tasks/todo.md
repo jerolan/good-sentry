@@ -1462,10 +1462,12 @@ CLOSE-operacion-024 y -025 quedan vigentes como prerrequisitos de configuración
 las clases file/release siguen abiertas.
 CLOSE-operacion-026 a -034 quedan vigentes; 032 es histórico y 034 mantiene
 abierto el proveedor de archivos.
+CLOSE-operacion-035 a -043 quedan vigentes; 043 es histórico y se revalida en
+la candidata final.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-035. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-044. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1821,15 +1823,15 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-032](../SPEC.md#close-operacion-032) | Release metadata retention: Acceptance requires full native PostgreSQL integration/vet and Linux race, a fresh… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
 | [CLOSE-operacion-033](../SPEC.md#close-operacion-033) | Release metadata retention: Extend the existing deployment and telemetry-retention configuration owners, not a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-034](../SPEC.md#close-operacion-034) | Release metadata retention: Before activating either cleanup class, primary must elaborate its complete owners… | implementada (contrato) | vigente | Comprobante 2026-10-26 abajo; proveedor de archivos sigue abierto |
-| [CLOSE-operacion-035](../SPEC.md#close-operacion-035) | Completed-file retention: This increment consumes Config.FileRetentionDays for the currently implemented durab… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-036](../SPEC.md#close-operacion-036) | Completed-file retention: Use each existing created_at as its first durable file receipt; retries of a still-p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-037](../SPEC.md#close-operacion-037) | Completed-file retention: Store.CleanupFiles(ctx, days) returns committed source-map, attachment and opaque-it… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-038](../SPEC.md#close-operacion-038) | Completed-file retention: Before any source-map row lock/deletion, take the existing per-project/release artif… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-039](../SPEC.md#close-operacion-039) | Completed-file retention: All source-map writers must use the existing artifact gate for their project/release… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-040](../SPEC.md#close-operacion-040) | Completed-file retention: SourceMaps already preflights and reads bytes/aliases in one repeatable-read snapsho… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-041](../SPEC.md#close-operacion-041) | Completed-file retention: Run StartFileRetention unconditionally through the existing in-process retention lif… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-042](../SPEC.md#close-operacion-042) | Completed-file retention: The real PostgreSQL owning tests must cover independent file/event clocks and curren… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-043](../SPEC.md#close-operacion-043) | Completed-file retention: Acceptance requires full native integration/vet and Linux race, a fresh actual appli… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-035](../SPEC.md#close-operacion-035) | Completed-file retention: This increment consumes Config.FileRetentionDays for the currently implemented durab… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-036](../SPEC.md#close-operacion-036) | Completed-file retention: Use each existing created_at as its first durable file receipt; retries of a still-p… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-037](../SPEC.md#close-operacion-037) | Completed-file retention: Store.CleanupFiles(ctx, days) returns committed source-map, attachment and opaque-it… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-038](../SPEC.md#close-operacion-038) | Completed-file retention: Before any source-map row lock/deletion, take the existing per-project/release artif… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-039](../SPEC.md#close-operacion-039) | Completed-file retention: All source-map writers must use the existing artifact gate for their project/release… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-040](../SPEC.md#close-operacion-040) | Completed-file retention: SourceMaps already preflights and reads bytes/aliases in one repeatable-read snapsho… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-041](../SPEC.md#close-operacion-041) | Completed-file retention: Run StartFileRetention unconditionally through the existing in-process retention lif… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-042](../SPEC.md#close-operacion-042) | Completed-file retention: The real PostgreSQL owning tests must cover independent file/event clocks and curren… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-043](../SPEC.md#close-operacion-043) | Completed-file retention: Acceptance requires full native integration/vet and Linux race, a fresh actual appli… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
 | [CLOSE-errores-156](../SPEC.md#close-errores-156) | Native event attachment access: Attachments are already admitted atomically with their parent SDK receipt, but… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-157](../SPEC.md#close-errores-157) | Native event attachment access: Add session-authenticated GET /api/v1/issues/{issue}/events/{event}/attachment… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-158](../SPEC.md#close-errores-158) | Native event attachment access: Expose Store.IssueEventAttachments(ctx,userID,issueID,eventID,page) and Store.… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -9285,6 +9287,32 @@ Límites registrados: 026–031 y 033 tienen pruebas frescas; 032 es aceptación
 histórica y debe repetir imagen/CI en la candidata final. El proveedor de
 archivos completados y las capacidades posteriores siguen abiertos. No se
 modificó ninguna baseline original.
+
+### Ejecución 2026-10-26: retención de archivos completados
+
+Selección registrada antes de trabajar: CLOSE-operacion-035 a -043. Revisión de
+producto `f952c8d`; proveedor, lifecycle y configuración se ejecutaron de nuevo.
+La aceptación de imagen/navegador/CI de 043 conserva su comprobante histórico.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 035 | La clase file posee source_maps, attachments y envelope_items; no toca eventos, issues, releases, logs, spans, monitor history ni artifact_chunks | `TestFileRetentionReceiptsPreserveIndependentState`; `store.log` |
+| 036 | `created_at` inmutable, defaults `clock_timestamp`, índices y migración 026; cutoff 86400s y frontera retenida | `TestFileRetentionRechecksFrozenCutoffAndReplacedHashes`; `TestFileRetentionMigration026PreservesAndReopens` |
+| 037 | `CleanupFiles` con try-lock, 250 por tabla, gates de proyecto y sin locks de receipt/issue/event/parent | `TestFileRetentionBoundedProgress`; `TestFileRetentionSkipsLockedRowsAndBusyMaintainer` |
+| 038 | Gates de artefacto tras project gates, recheck `SKIP LOCKED`, rollback conjunto y generaciones frescas same-hash | `TestFileRetentionOrdersMultiProjectBundle`; `TestFileRetentionLateFailureAndCancellation` |
+| 039 | Writers de source map (incluido debug-ID-only) usan el gate existente sin retry loop | `TestFileRetentionOrdersDebugOnlyUpload`; `TestFileRetentionOrdersMultiProjectBundle` |
+| 040 | Snapshot repeatable-read para captura en vuelo; frames/historial/alertas persistidos exactos y retries frescos | `TestFileRetentionPreservesInFlightMapSnapshot`; `TestFileRetentionOrdersCaptureAndStandaloneItems` |
+| 041 | `StartFileRetention` en lifecycle compartido con backlog, idle, retry y cancelación | `TestRetentionWorkersDrainRetryAndStop/files`; `jobs.log` |
+| 042 | Owners reales para clocks, selectores, retries, presupuestos, blockers, cutoff congelado, orden de uploads, snapshot, fallo/cancelación y migración | Lista de owners en `operacion-035-043/summary.json` |
+| 043 | Imagen histórica 9f30b1ca: 2 source maps, 3 attachments y 7 items expirados; 4374 filas/533 eventos/28 batches/27 migraciones; 4406 recuperadas; browser/CI | `operacion-035-043/{final-runtime,final-file-expiry,ci-runs,functional-ci-success}.json/log`; `browser/*` |
+
+Evidencia: `test-results/closure-20261025/operacion-035-043/{config,store,jobs}.log`,
+`summary.json` y los JSON/logs históricos copiados de `file-retention-20261017`.
+
+Límites registrados: 035–042 tienen pruebas frescas; 043 es aceptación histórica
+y debe repetir imagen/CI en la candidata final. El almacenamiento nativo de
+debug files/minidumps y los tipos futuros siguen separados. No se modificó
+ninguna baseline original.
 
 ### Comprobante de integración documental
 

@@ -1,0 +1,47 @@
+{
+  "criteria": ["CLOSE-operacion-035", "CLOSE-operacion-036", "CLOSE-operacion-037", "CLOSE-operacion-038", "CLOSE-operacion-039", "CLOSE-operacion-040", "CLOSE-operacion-041", "CLOSE-operacion-042", "CLOSE-operacion-043"],
+  "date": "2026-10-26",
+  "product_revision": "f952c8d",
+  "fresh_tests": {"store": "PASS in 10.783s", "jobs": "PASS in 0.952s", "config": "PASS in 0.005s"},
+  "covered": {
+    "CLOSE-operacion-035": "FileRetentionDays owns source_maps, event attachments and opaque envelope_items; events, issues, releases, logs, spans, monitor history and artifact_chunks are not deleted by this class.",
+    "CLOSE-operacion-036": "created_at is the immutable first durable receipt; migration 026 changes only defaults to clock_timestamp and adds created_at,id indexes; strict 86400-second cutoff and exact boundary retention.",
+    "CLOSE-operacion-037": "CleanupFiles returns three committed counts, uses :file-retention try-lock, freezes 250 per table, takes issue-project gates and never locks receipts/issues/events/parents.",
+    "CLOSE-operacion-038": "Source-map artifact gates are taken after project gates and before row locks; frozen IDs are rechecked under SKIP LOCKED; all three classes roll back together and fresh same-hash generations survive.",
+    "CLOSE-operacion-039": "SaveSourceMap and bundle writers use the existing artifact gate for every selector, including debug-ID-only empty releases, without adding an upload retry loop.",
+    "CLOSE-operacion-040": "SourceMaps keeps its repeatable-read snapshot; in-flight capture survives deletion and later captures see survivors; persisted frames/history/alerts remain exact and retries create fresh child receipts.",
+    "CLOSE-operacion-041": "StartFileRetention runs in the shared lifecycle with startup/backlog, idle, retry and cancellation even with logs/uptime disabled.",
+    "CLOSE-operacion-042": "Real PostgreSQL owners cover independent clocks, mixed selectors, retries/conflicts, preserved history, orphan items, 601-row bounds, blockers, frozen cutoff, upload ordering, snapshot survival, late failure/cancellation and migration 026.",
+    "CLOSE-operacion-043": "Historical image 9f30b1ca expires two source maps, three attachments and seven opaque items, preserves all historical events/telemetry, restores 4406 rows and leaves 4374 rows/533 events/28 batches/27 migrations; browser, public source and CI pass."
+  },
+  "owners": [
+    "TestFileRetentionReceiptsPreserveIndependentState",
+    "TestFileRetentionBoundedProgress",
+    "TestFileRetentionRechecksFrozenCutoffAndReplacedHashes",
+    "TestFileRetentionMigration026PreservesAndReopens",
+    "TestFileRetentionOrdersMultiProjectBundle",
+    "TestFileRetentionOrdersDebugOnlyUpload",
+    "TestFileRetentionOrdersCaptureAndStandaloneItems",
+    "TestFileRetentionPreservesInFlightMapSnapshot",
+    "TestFileRetentionLateFailureAndCancellation",
+    "TestFileRetentionSkipsLockedRowsAndBusyMaintainer",
+    "TestRetentionWorkersDrainRetryAndStop",
+    "TestTelemetryRetentionConfiguration"
+  ],
+  "historical_image_ci": {
+    "image": "sha256:9f30b1ca42a2fbd2b55dac29d9f00a9c71bce829506f0a92dd4606a592f0499e",
+    "run": 39095358406,
+    "rows": 4374,
+    "events": 533,
+    "canonical_batches": 28,
+    "migrations": 27,
+    "recovery_rows": 4406,
+    "deleted": {"source_maps": 2, "attachments": 3, "envelope_items": 7}
+  },
+  "limits": [
+    "035-042 have fresh store/config/lifecycle evidence; 043 is historical image/browser/CI acceptance and must be repeated on the final candidate.",
+    "Native debug-file/minidump storage and future file types remain separately required.",
+    "The product is not declared complete."
+  ],
+  "evidence": ["config.log", "store.log", "jobs.log", "final-runtime.json", "final-file-expiry.json", "final-file-selected.json", "first-expiry.json", "sdk-recovery.json", "file-recovery.json", "ci-runs.json", "functional-ci-success.log", "build.log", "attachment-api-0.json", "attachment-api-1.json", "browser/*.json", "summary.json"]
+}

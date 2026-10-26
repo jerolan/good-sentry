@@ -1,0 +1,44 @@
+=== RUN   TestTelemetryRetentionConfiguration
+=== RUN   TestTelemetryRetentionConfiguration/defaults
+=== RUN   TestTelemetryRetentionConfiguration/existing_master_inherits
+=== RUN   TestTelemetryRetentionConfiguration/legacy_master_inherits
+=== RUN   TestTelemetryRetentionConfiguration/explicit_master_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_log_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_log_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_transaction_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_transaction_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_event_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_event_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_uptime_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_uptime_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_file_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_file_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_release_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_release_wins
+=== RUN   TestTelemetryRetentionConfiguration/empty_explicit_values_fall_through
+=== RUN   TestTelemetryRetentionConfiguration/independent_classes
+=== RUN   TestTelemetryRetentionConfiguration/minimum
+=== RUN   TestTelemetryRetentionConfiguration/maximum
+--- PASS: TestTelemetryRetentionConfiguration (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/defaults (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/existing_master_inherits (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_master_inherits (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_master_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_log_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_log_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_transaction_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_transaction_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_event_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_event_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_uptime_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_uptime_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_file_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_file_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_release_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_release_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/empty_explicit_values_fall_through (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/independent_classes (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/minimum (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/maximum (0.00s)
+PASS
+ok  	goodsentry/internal/config	0.005s

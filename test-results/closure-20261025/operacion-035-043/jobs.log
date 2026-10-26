@@ -1,0 +1,13 @@
+=== RUN   TestRetentionWorkersDrainRetryAndStop
+=== RUN   TestRetentionWorkersDrainRetryAndStop/files
+2026/10/26 16:09:56 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=250 attachments=250 items=250
+2026/10/26 16:09:56 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=250 attachments=250 items=250
+2026/10/26 16:09:56 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=101 attachments=101 items=101
+2026/10/26 16:09:56 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=3 attachments=3 items=3
+2026/10/26 16:09:56 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=2 attachments=2 items=2
+2026/10/26 16:09:56 ERROR File retention pass failed entryPoint=file_retention_worker operation=cleanup_files
+2026/10/26 16:09:56 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=1 attachments=1 items=1
+--- PASS: TestRetentionWorkersDrainRetryAndStop (0.95s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/files (0.95s)
+PASS
+ok  	goodsentry/internal/jobs	0.952s

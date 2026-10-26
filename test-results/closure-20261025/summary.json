@@ -327,6 +327,51 @@
       "scope": "release ownership/receipt/lifecycle/concurrency/recovery contracts elaborated; completed-file provider remains open",
       "evidence_files": ["operacion-026-034/summary.json"]
     },
+    "CLOSE-operacion-035": {
+      "evidence": "vigente",
+      "scope": "file class owns source maps, attachments and opaque items only, with independent telemetry/release/monitor history",
+      "evidence_files": ["operacion-035-043/store.log", "operacion-035-043/summary.json"]
+    },
+    "CLOSE-operacion-036": {
+      "evidence": "vigente",
+      "scope": "immutable created_at receipt, migration 026 defaults/indexes, strict 86400-second cutoff and boundary retention",
+      "evidence_files": ["operacion-035-043/store.log", "operacion-035-043/summary.json"]
+    },
+    "CLOSE-operacion-037": {
+      "evidence": "vigente",
+      "scope": "three-count atomic file cleanup with schema try-lock, 250 per table, project gates and no receipt/issue/event/parent locks",
+      "evidence_files": ["operacion-035-043/store.log", "operacion-035-043/summary.json"]
+    },
+    "CLOSE-operacion-038": {
+      "evidence": "vigente",
+      "scope": "artifact gates after project gates, skip-locked recheck, all-class rollback and fresh same-hash generations",
+      "evidence_files": ["operacion-035-043/store.log", "operacion-035-043/summary.json"]
+    },
+    "CLOSE-operacion-039": {
+      "evidence": "vigente",
+      "scope": "source-map and bundle writers use the existing artifact gate for every selector including debug-ID-only empty releases",
+      "evidence_files": ["operacion-035-043/store.log", "operacion-035-043/summary.json"]
+    },
+    "CLOSE-operacion-040": {
+      "evidence": "vigente",
+      "scope": "repeatable-read map snapshot, in-flight capture survival, exact persisted history and fresh child receipt retries",
+      "evidence_files": ["operacion-035-043/store.log", "operacion-035-043/summary.json"]
+    },
+    "CLOSE-operacion-041": {
+      "evidence": "vigente",
+      "scope": "StartFileRetention in the shared lifecycle with backlog/idle/retry/cancel behavior",
+      "evidence_files": ["operacion-035-043/jobs.log", "operacion-035-043/summary.json"]
+    },
+    "CLOSE-operacion-042": {
+      "evidence": "vigente",
+      "scope": "real PostgreSQL file-retention owners for clocks, selectors, retries, bounds, blockers, cutoff, ordering, snapshot, rollback and migration 026",
+      "evidence_files": ["operacion-035-043/store.log", "operacion-035-043/summary.json"]
+    },
+    "CLOSE-operacion-043": {
+      "evidence": "vigente (historical 9f30b1ca)",
+      "scope": "historical image acceptance: 2 maps/3 attachments/7 items expired, 4374 rows/533 events/28 batches/27 migrations, 4406 recovery rows, browser and matching CI",
+      "evidence_files": ["operacion-035-043/final-runtime.json", "operacion-035-043/final-file-expiry.json", "operacion-035-043/ci-runs.json", "operacion-035-043/functional-ci-success.log", "operacion-035-043/browser/empty.json"]
+    },
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
