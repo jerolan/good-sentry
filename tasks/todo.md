@@ -1442,12 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024, 026–032, 034 y 035 ya
+bloques detallados 014–049 siguen pendientes; 014–024, 026–032 y 034–036 ya
 están vigentes y 025/033 están bloqueadas por publicación/CI. Siguiente acción:
-CLOSE-identidad-036 (endpoints de estado/enrollment/disable/recovery). No se
-declara aceptación ni cierre del producto. El avance se informa por
-criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
-Goal no completan el producto ni borran este registro.
+CLOSE-identidad-037 (UI de 2FA y challenge). No se declara aceptación ni cierre
+del producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1500,7 +1500,7 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | implementada (local) | bloqueada | Publicar y repetir copia/reinicio/CI sobre la fuente; luego cerrar |
 | [CLOSE-identidad-034](../SPEC.md#close-identidad-034) | Two-factor authentication: Additive migration 053_user_totp.sql adds nullable users.totp_secret (AES-256-GCM c… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios TOTP |
 | [CLOSE-identidad-035](../SPEC.md#close-identidad-035) | Two-factor authentication: POST /api/v1/login keeps its strict body and identical Invalid email or password re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de challenge |
-| [CLOSE-identidad-036](../SPEC.md#close-identidad-036) | Two-factor authentication: GET /api/v1/me/two-factor reports enabled, pending and recoveryCodesRemaining for t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-036](../SPEC.md#close-identidad-036) | Two-factor authentication: GET /api/v1/me/two-factor reports enabled, pending and recoveryCodesRemaining for t… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de endpoints |
 | [CLOSE-identidad-037](../SPEC.md#close-identidad-037) | Two-factor authentication: The Account view exposes the two-factor state, the manual-entry secret and otpauth… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-038](../SPEC.md#close-identidad-038) | Two-factor authentication: Additive migration 073_organization_require_2fa.sql adds organizations.require_2fa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-039](../SPEC.md#close-identidad-039) | Two-factor authentication: When any current organization requires two-factor authentication and the account ha… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3387,6 +3387,28 @@ Evidencia: `test-results/closure-20261025/identity/totp-login.log`.
 
 Siguiente acción: CLOSE-identidad-036 (GET/POST/confirm/delete de 2FA y
 recovery codes), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: endpoints de estado 2FA
+
+Selección registrada antes de trabajar: CLOSE-identidad-036, siguiente en el
+plan. Candidata `8301b2c`; producto sin cambios desde `54db6e4`. La evidencia
+proviene del test de estado y del lifecycle de enrollment.
+
+Resultado observado: `GET /api/v1/me/two-factor` reporta `enabled`, `pending` y
+`recoveryCodesRemaining`; `POST` inicia enrollment y devuelve secreto base32 y
+URI `otpauth://` una vez; `POST /confirm` exige código vigente, confirma y
+entrega los recovery codes una sola vez; `DELETE` exige contraseña actual y
+limpia secreto, confirmación, último paso y códigos; `POST /recovery-codes`
+exige contraseña y reemplaza los códigos. Las mutaciones pasan por sesión,
+mismo origen y CSRF, y `writeJSON` fija `Cache-Control: no-store` en las
+respuestas privadas. El estado está disponible sin sesión en modo abierto. Los
+tests de lifecycle, recovery codes y generación pasan. Subresultados pendientes
+del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/{totp-state.log,totp.log}`.
+
+Siguiente acción: CLOSE-identidad-037 (UI de 2FA y challenge de login), con
+dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

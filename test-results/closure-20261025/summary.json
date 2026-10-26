@@ -539,6 +539,17 @@
         "credential change invalidates a pending challenge"
       ],
       "evidence_files": ["identity/totp-login.log"]
+    },
+    "CLOSE-identidad-036": {
+      "evidence": "vigente",
+      "scope": "two-factor state, enrollment, confirmation, disable and recovery-code endpoints",
+      "covered": [
+        "state reports enabled/pending/recoveryCodesRemaining",
+        "enrollment returns secret/otpauth once; confirm returns recovery codes once",
+        "disable and regeneration require the current password",
+        "mutations use session/same-origin/CSRF and no-store JSON"
+      ],
+      "evidence_files": ["identity/totp-state.log", "identity/totp.log"]
     }
   },
   "commands": [
