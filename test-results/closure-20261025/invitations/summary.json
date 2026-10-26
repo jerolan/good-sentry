@@ -1,0 +1,32 @@
+{
+  "criterion": "CLOSE-identidad-013",
+  "date": "2026-10-26",
+  "candidate": "1957658",
+  "product_revision": "54db6e48bf2e52e9a84efe397e3e5b44c27e4d91",
+  "environment": {
+    "go": "1.27.2",
+    "postgres": "18, disposable goodsentry-closure-20261026"
+  },
+  "tests": [
+    "TestInvitationMigration037PreservesPriorRowsAndReopens",
+    "TestManagerInvitationTeamsMigrationPreservesStateAndReopens",
+    "TestInvitationDeliveryAcceptanceReplayAndCancellation",
+    "TestCompatibleInvitationAcceptsExistingAndVerifiedSecondaryAccounts",
+    "TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance",
+    "TestOrganizationInvitationHTTPContract",
+    "TestCompatibleInvitationHTTPAcceptance",
+    "TestCompatibleOrganizationInvitationMutationHTTP"
+  ],
+  "observed": [
+    "037 and manager-team migration preserve prior rows and reopen",
+    "owner/admin roles, last-owner and team management are covered by the HTTP contract",
+    "invitations issue, deliver, accept, replay and cancel correctly",
+    "existing and verified secondary identities are accepted without duplicate accounts",
+    "team assignments follow team IDs through acceptance",
+    "compatible acceptance works for authorized recipients"
+  ],
+  "limits": [
+    "No real external mail provider receipt; the contract defers provider receipts.",
+    "Detailed invitation blocks 045-049 remain pending."
+  ]
+}

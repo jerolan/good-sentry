@@ -1440,14 +1440,14 @@ CLOSE-operacion-012 (arquitectura, durabilidad, UI real, Compose, configuración
 modos de autenticación, features/correo/uploads y RSS), y CLOSE-identidad-001 a
 CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
-CLOSE-identidad-008 a CLOSE-identidad-012 (generaciones, cambio de contraseña,
-correo de cuenta y recuperación); sus comprobantes están abajo y los bloques
-detallados 014–033 siguen pendientes. Siguiente acción: CLOSE-identidad-013
-(invitaciones de membership, roles, último owner y aceptación), con
-dependencias locales resueltas. No se declara aceptación ni cierre del
-producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
+correo, recuperación e invitaciones); sus comprobantes están abajo y los
+bloques detallados 014–049 siguen pendientes. Siguiente acción:
+CLOSE-identidad-014 (migración 035, campo de generación, preservación y
+exclusión de JSON), iniciando los bloques detallados. No se declara aceptación
+ni cierre del producto. El avance se informa por criterios/evidencia, sin
+porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
+producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1477,7 +1477,7 @@ este registro.
 | [CLOSE-identidad-010](../SPEC.md#close-identidad-010) | Account credential generations and authenticated password changes: fila 2, / account-password / A signed-in us… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 020–026 pendientes |
 | [CLOSE-identidad-011](../SPEC.md#close-identidad-011) | Account credential generations and authenticated password changes: fila 3, / account-mail / Purpose-specific a… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 027–033 pendientes |
 | [CLOSE-identidad-012](../SPEC.md#close-identidad-012) | Account credential generations and authenticated password changes: fila 4, / account-recovery / Email request… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 027–033 pendientes |
-| [CLOSE-identidad-013](../SPEC.md#close-identidad-013) | Account credential generations and authenticated password changes: fila 5, / membership-invitations / Owner/ad… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-013](../SPEC.md#close-identidad-013) | Account credential generations and authenticated password changes: fila 5, / membership-invitations / Owner/ad… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 045–049 pendientes |
 | [CLOSE-identidad-014](../SPEC.md#close-identidad-014) | Account credential generations and authenticated password changes: Additive migration035 after034 adds users.a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-015](../SPEC.md#close-identidad-015) | Account credential generations and authenticated password changes: Both production issuers must require the ge… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-016](../SPEC.md#close-identidad-016) | Account credential generations and authenticated password changes: Session and API-token issuance use an expli… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2847,6 +2847,39 @@ Evidencia: `test-results/closure-20261025/account-mail/`
 Siguiente acción: CLOSE-identidad-013 (invitaciones de membership, roles,
 último owner y aceptación de identidades nuevas/existentes), con dependencias
 locales resueltas.
+
+### Ejecución 2026-10-26: invitaciones y roles
+
+Selección registrada antes de trabajar: CLOSE-identidad-013, siguiente en el
+plan. Candidata `1957658`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad ejecuta migraciones, roles, entrega, aceptación,
+replay, cancelación y equipos de invitación.
+
+Procedimiento reproducible con PostgreSQL 18 desechable y `-race`:
+`TestInvitationMigration037PreservesPriorRowsAndReopens`,
+`TestManagerInvitationTeamsMigrationPreservesStateAndReopens`,
+`TestInvitationDeliveryAcceptanceReplayAndCancellation`,
+`TestCompatibleInvitationAcceptsExistingAndVerifiedSecondaryAccounts`,
+`TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance`,
+`TestOrganizationInvitationHTTPContract`,
+`TestCompatibleInvitationHTTPAcceptance` y
+`TestCompatibleOrganizationInvitationMutationHTTP`.
+
+Resultado observado: 037 y la migración de equipos de manager preservan filas
+y reabren. El contrato HTTP cubre owner/admin, reglas de rol, último owner,
+equipos y mutaciones; la entrega/aceptación/cancelación y el replay se
+comportan según el contrato. Una identidad existente o un correo secundario
+verificado acepta sin crear una cuenta duplicada, y las asignaciones de equipo
+siguen los IDs a través de la aceptación. Los recibos reales de proveedor de
+correo quedan aplazados por la excepción 112; se usan los transportes locales.
+Los bloques detallados 045–049 siguen pendientes y no se declaran cerrados.
+
+Evidencia: `test-results/closure-20261025/invitations/`
+(`summary.json`, `tests.log`).
+
+Siguiente acción: CLOSE-identidad-014 (migración 035, campo de generación,
+preservación y exclusión de JSON), iniciando los bloques detallados de
+credenciales.
 
 ### Comprobante de integración documental
 

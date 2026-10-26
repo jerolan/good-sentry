@@ -280,6 +280,18 @@
         "old session and password fail; new password signs in; replay returns 400"
       ],
       "evidence_files": ["account-mail/summary.json", "account-mail/tests.log"]
+    },
+    "CLOSE-identidad-013": {
+      "evidence": "vigente",
+      "scope": "membership and team management, invitation issuance, delivery, acceptance, replay and cancellation",
+      "covered": [
+        "037 and manager-team migrations preserve and reopen",
+        "owner/admin roles, last-owner protection and team management",
+        "invitation acceptance for new and existing verified identities",
+        "team assignments follow IDs through acceptance",
+        "compatible acceptance and mutation HTTP contracts"
+      ],
+      "evidence_files": ["invitations/summary.json", "invitations/tests.log"]
     }
   },
   "commands": [
