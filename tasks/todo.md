@@ -1442,11 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–020 ya están vigentes.
-Siguiente acción: CLOSE-identidad-021 (verificación de hash/generación y
-errores 400/401/503). No se declara aceptación ni cierre del producto. El
-avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo
-y presupuesto de un Goal no completan el producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014–021 ya están vigentes.
+Siguiente acción: CLOSE-identidad-022 (204 tras commit, cookie expirada y
+secretos fuera de respuestas). No se declara aceptación ni cierre del producto.
+El avance se informa por criterios/evidencia, sin porcentaje de casillas;
+tiempo y presupuesto de un Goal no completan el producto ni borran este
+registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1484,7 +1485,7 @@ y presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-018](../SPEC.md#close-identidad-018) | Account credential generations and authenticated password changes: When issuance acquires its user SHARE lock… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de interleaving |
 | [CLOSE-identidad-019](../SPEC.md#close-identidad-019) | Account credential generations and authenticated password changes: The need for a fresh statement snapshot fol… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de aislamiento |
 | [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
-| [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3047,6 +3048,31 @@ Evidencia: `test-results/closure-20261025/account/route.log` y
 Siguiente acción: CLOSE-identidad-021 (verificación de hash/generación,
 errores 400/401/503 y bcrypt fuera de la transacción), con dependencias
 locales resueltas.
+
+### Ejecución 2026-10-26: verificación y errores de contraseña
+
+Selección registrada antes de trabajar: CLOSE-identidad-021, siguiente en el
+plan. Candidata `aca1ed5`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `route.log`, `generations.log` y la inspección del handler.
+
+Resultado observado: el handler carga hash y generación por el ID admitido;
+si la generación difiere devuelve 401 antes de aceptar el hash nuevo. Compara
+la contraseña actual con bcrypt y calcula el reemplazo con `DefaultCost` antes
+de la transacción de escritura, pasando la generación original al store. Una
+entrada malformada o contraseña actual incorrecta devuelve 400 y no cambia
+estado; una identidad obsoleta/eliminada devuelve 401 sin cookie; sesión o
+CSRF/origen inválidos conservan 401/403; `report` responde 503 genérico sin
+filtrar hash, contraseña ni generación. Login y creación nativa traducen
+`ErrCredentialsChanged` a 401 genérico, no a un conflicto engañoso. Los tests
+de emisión obsoleta y el owner HTTP cubren esos caminos. Subresultados
+pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account/route.log` y
+`account/generations.log`.
+
+Siguiente acción: CLOSE-identidad-022 (204 solo tras commit, expiración de
+cookie y ausencia de secretos en respuestas), con dependencias locales
+resueltas.
 
 ### Comprobante de integración documental
 

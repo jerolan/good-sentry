@@ -368,6 +368,17 @@
         "same password still performs revocation; owner HTTP cases pass"
       ],
       "evidence_files": ["account/route.log"]
+    },
+    "CLOSE-identidad-021": {
+      "evidence": "vigente",
+      "scope": "generation/hash verification, bcrypt outside the write transaction and error mapping",
+      "covered": [
+        "generation mismatch returns 401 before accepting the newer hash",
+        "current password compared with bcrypt; replacement hashed with DefaultCost outside the transaction",
+        "malformed/wrong password 400 without state change; stale identity 401; invalid session/CSRF 401/403",
+        "storage 503 is generic; login/token stale generation is 401, not conflict"
+      ],
+      "evidence_files": ["account/route.log", "account/generations.log"]
     }
   },
   "commands": [
