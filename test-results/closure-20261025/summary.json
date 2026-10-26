@@ -4260,6 +4260,15 @@
         "uptime-013/scheduler-store.log"
       ]
     },
+    "CLOSE-uptime-025": {
+      "evidence": "vigente",
+      "scope": "migration 033 preservation, native SSL create/read, shared claims/state behavior, SSL dialog labels and hidden HTTP fields",
+      "evidence_files": [
+        "uptime-025/migration-033.log",
+        "uptime-025/ssl-api.json",
+        "uptime-025/ssl-dialog.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

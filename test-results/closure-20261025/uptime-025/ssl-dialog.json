@@ -1,0 +1,8 @@
+{
+  "checks": {
+    "httpsLabel": true,
+    "explainsTrust": true,
+    "hidesHttpFields": true
+  },
+  "ok": true
+}

@@ -1,0 +1,4 @@
+=== RUN   TestMonitorSSLMigration033PreservesAndReopens
+--- PASS: TestMonitorSSLMigration033PreservesAndReopens (1.03s)
+PASS
+ok  	goodsentry/internal/store	1.037s

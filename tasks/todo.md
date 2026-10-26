@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-025. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-026. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1881,7 +1881,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-022](../SPEC.md#close-uptime-022) | Sentry spans and native telemetry reads: Accept native type: SSL with an absolute https://host:port origin, op… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-023](../SPEC.md#close-uptime-023) | Sentry spans and native telemetry reads: Each SSL check creates a new TCP connection through the existing nett… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-024](../SPEC.md#close-uptime-024) | Sentry spans and native telemetry reads: Share one configured deadline across resolution, connect and handshak… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013/023) |
-| [CLOSE-uptime-025](../SPEC.md#close-uptime-025) | Sentry spans and native telemetry reads: Add SSL to the database kind constraint in additive033 without rewrit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-025](../SPEC.md#close-uptime-025) | Sentry spans and native telemetry reads: Add SSL to the database kind constraint in additive033 without rewrit… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-026](../SPEC.md#close-uptime-026) | Sentry spans and native telemetry reads: Extend owning configuration tests for accepted origins and distinct r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-004](../SPEC.md#close-alertas-004) | Sentry spans and native telemetry reads: Alert rules use error counts over a rolling window and notify on thre… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-005](../SPEC.md#close-alertas-005) | Sentry spans and native telemetry reads: The first alert workflow uses owner/admin native project-scoped /api/… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -8337,6 +8337,28 @@ Evidencia: `test-results/closure-20261025/uptime-023/ssl-trust.log` y
 Límites registrados: el cierre inmediato del socket TCP tras cada resultado es
 una propiedad de implementación del prober; las pruebas verifican el plazo, la
 cancelación y el resultado. El CI público y la imagen final siguen pendientes.
+
+### Ejecución 2026-10-26: migración 033 y UI de SSL
+
+Selección registrada antes de trabajar: CLOSE-uptime-025. Candidata
+`be04e45`.
+
+| Elemento | Resultado |
+|---|---|
+| Migración 033 sin reescribir filas | `TestMonitorSSLMigration033PreservesAndReopens` |
+| API nativa crea y lee SSL | 201 y lectura con `type=SSL` y URL preservada |
+| Claims, pausa y estado como cualquier sonda | `TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases` y `TestMonitorThresholdResetRecoveryAndHistory` |
+| Diálogo nativo con opción SSL | Etiqueta `HTTPS origin` y explicación de confianza, hostname y validez actual |
+| Campos HTTP ocultos en SSL | Sin estado ni cuerpo esperado en el diálogo |
+| Razón humana para `tls_error` | `app.js` muestra “Certificate or secure connection failed” y conserva el código almacenado |
+
+Evidencia: `test-results/closure-20261025/uptime-025/migration-033.log`,
+`uptime-025/ssl-api.json`, `uptime-025/ssl-dialog.json` y
+`uptime-025/ssl-dialog.png`.
+
+Límites registrados: la etiqueta humana de `tls_error` se verifica por la
+implementación de la UI, no con un fallo TLS real renderizado en navegador en
+esta ejecución. El CI público y la imagen final siguen pendientes.
 
 ### Comprobante de integración documental
 
