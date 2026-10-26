@@ -3,10 +3,12 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"goodsentry/internal/store"
 )
@@ -46,6 +48,22 @@ func TestCompatiblePeopleTeamsAndProjectRelationsHTTP(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, f.client, "GET", orgBase+"/members/?limit=1", "", nil, 200), &memberPage); err != nil || len(memberPage) != 1 {
 		t.Fatalf("member page: %+v %v", memberPage, err)
 	}
+	if _, err := f.db.InviteMember(f.ctx, f.owner.ID, f.org.Slug, "pending-person@test", "member", strings.Repeat("ab", 32), bytes.Repeat([]byte{1}, 92), 7*24*time.Hour); err != nil {
+		t.Fatal(err)
+	}
+	var people []map[string]any
+	if err := json.Unmarshal(f.request(t, f.client, "GET", orgBase+"/members/", "", nil, 200), &people); err != nil {
+		t.Fatal(err)
+	}
+	pending := false
+	for _, person := range people {
+		if person["pending"] == true && person["email"] == "pending-person@test" {
+			pending = true
+		}
+	}
+	if !pending {
+		t.Fatalf("owner did not see the pending invitation: %+v", people)
+	}
 	if link := keyLink(t, f, orgBase+"/members/?limit=1"); !strings.Contains(link, "/good"+orgBase+"/members/?") || !strings.Contains(link, `rel="next"`) {
 		t.Fatalf("member Link: %q", link)
 	}
@@ -76,6 +94,15 @@ func TestCompatiblePeopleTeamsAndProjectRelationsHTTP(t *testing.T) {
 	memberClient, _ := loginManagementMember(t, f, "member@compat-people-http.test")
 	if err := json.Unmarshal(f.request(t, memberClient, "GET", orgBase+"/members/", "", nil, 200), &members); err != nil || len(members) != 2 {
 		t.Fatalf("member reads organization people: %+v %v", members, err)
+	}
+	var memberPeople []map[string]any
+	if err := json.Unmarshal(f.request(t, memberClient, "GET", orgBase+"/members/", "", nil, 200), &memberPeople); err != nil {
+		t.Fatal(err)
+	}
+	for _, person := range memberPeople {
+		if person["pending"] == true {
+			t.Fatalf("member saw a pending invitation: %+v", person)
+		}
 	}
 	f.request(t, memberClient, "GET", orgBase+"/teams/", "", nil, 200)
 

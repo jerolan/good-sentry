@@ -3379,6 +3379,20 @@
       "evidence_files": [
         "identidad-085-go.log"
       ]
+    },
+    "CLOSE-identidad-086": {
+      "evidence": "vigente",
+      "scope": "read-only people surface, schemas and pending invitations",
+      "evidence_files": [
+        "identidad-086-087-go.log"
+      ]
+    },
+    "CLOSE-identidad-087": {
+      "evidence": "vigente",
+      "scope": "read-only people surface, schemas and pending invitations",
+      "evidence_files": [
+        "identidad-086-087-go.log"
+      ]
     }
   },
   "commands": [

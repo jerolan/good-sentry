@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-086 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-088 (detalle y mutaciones de miembro). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1926,8 +1926,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-083](../SPEC.md#close-identidad-083) | Compatible project update and deletion: GlitchTip-specific POST /api/0/organizations/{org}/members/{member}/se… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-084](../SPEC.md#close-identidad-084) | Compatible project update and deletion: Additive049_project_environments.sql creates project-scoped environmen… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-085](../SPEC.md#close-identidad-085) | Compatible project update and deletion: GET /api/0/projects/{org}/{project}/environments/ and its /{name}/ det… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-086](../SPEC.md#close-identidad-086) | Compatible project update and deletion: The read-only people surface is GET /api/0/organizations/{org}/members… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-087](../SPEC.md#close-identidad-087) | Compatible project update and deletion: Organization people use OrganizationUserSchema with the real user id,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-086](../SPEC.md#close-identidad-086) | Compatible project update and deletion: The read-only people surface is GET /api/0/organizations/{org}/members… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-087](../SPEC.md#close-identidad-087) | Compatible project update and deletion: Organization people use OrganizationUserSchema with the real user id,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-088](../SPEC.md#close-identidad-088) | Compatible project update and deletion: GET /api/0/organizations/{org}/members/{member}/ returns the same Orga… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-089](../SPEC.md#close-identidad-089) | Compatible project update and deletion: Real PostgreSQL covers organization/member/team visibility, ordered te… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-090](../SPEC.md#close-identidad-090) | Compatible project update and deletion: Additive040 expands the API-token scope constraint with org:write. Exi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5061,6 +5061,34 @@ visibilidad.
 
 Evidencia: `test-results/closure-20261025/identidad-085-go.log` y el cambio en
 `internal/server/compat_environments.go` con su owner ampliado.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: personas, equipos y esquemas
+
+Selección registrada antes de trabajar: CLOSE-identidad-086 y -087. Candidata
+`8ec6f94`.
+
+Resultado observado: las rutas de lectura de personas —miembros, equipos,
+detalle de equipo, sus miembros y proyectos, y los equipos de un proyecto—
+exigen membresía actual o grants `org:read`/`project:read` con los mismos
+límites que el descubrimiento; un equipo ajeno o inexistente devuelve 404 y las
+listas aplican `limit`/`per_page`/`cursor` estrictos con enlaces prefijados
+`rel="next"`. Los esquemas usan datos reales: usuario con correo, rol, nombre de
+rol, creación, campos anidados, `isOwner` y slugs de equipo ordenados; el equipo
+expone creación, estado y recuento de miembros y sus proyectos asignados; la
+relación proyecto-equipo devuelve `{id,slug}`; y el detalle de organización
+lista los accesos soportados, incluidos los de manager (`org:write`,
+`member:write`, `team:write`, `project:write`).
+
+Añadí al owner de personas la comprobación de invitaciones pendientes: el
+propietario ve una invitación creada en estado pendiente con `pending:true` y su
+correo, mientras una sesión de miembro no ve ninguna entrada pendiente. También
+se cubre el rechazo estricto de parámetros y el 404 de equipos ajenos.
+
+Evidencia: `test-results/closure-20261025/identidad-086-087-go.log` con los
+owners de personas, gestión de miembros, accesos y store, además del owner
+ampliado en `internal/server/compat_people_test.go`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 
