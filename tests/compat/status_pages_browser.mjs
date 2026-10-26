@@ -1,0 +1,53 @@
+// Browser owner: native status-page create, public link, edit and confirmed delete.
+// The primary supplies a disposable instance, owner credentials and a monitor.
+import assert from 'node:assert/strict';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE);
+const base = new URL(process.env.GOODSENTRY_TEST_URL);
+const email = process.env.GOODSENTRY_TEST_EMAIL, password = process.env.GOODSENTRY_TEST_PASSWORD;
+const monitorName = process.env.GOODSENTRY_MONITOR_NAME;
+const output = resolve(process.env.GOODSENTRY_TEST_OUTPUT || 'test-results/status-pages-browser');
+assert.ok(email && password && monitorName, 'Provide owner credentials and an existing monitor name');
+await mkdir(output, { recursive: true, mode: 0o700 });
+
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+const login = await context.request.post(new URL('api/v1/login', base).href, { headers: { Origin: base.origin }, data: { email, password } });
+assert.equal(login.status(), 200, 'Owner signs in');
+const me = await login.json();
+const organization = me.organizations[0].slug;
+const page = await context.newPage();
+page.setDefaultTimeout(20000);
+const checks = [];
+await page.goto(new URL('?view=monitors&org=' + organization, base).href, { waitUntil: 'domcontentloaded' });
+await page.getByRole('heading', { name: 'Status pages', exact: true }).waitFor();
+await page.getByRole('button', { name: 'Create status page', exact: true }).click();
+const dialog = page.getByRole('dialog');
+await dialog.getByLabel('Name', { exact: true }).fill('UI status page');
+await dialog.getByLabel('Publish without sign-in').check();
+await dialog.getByRole('checkbox', { name: monitorName }).check();
+await dialog.getByRole('button', { name: 'Create status page', exact: true }).click();
+await page.getByRole('row').filter({ hasText: 'UI status page' }).first().waitFor();
+const row = page.getByRole('row').filter({ hasText: 'UI status page' }).first();
+assert.ok((await row.innerText()).includes('Public'));
+const href = await row.getByRole('link', { name: 'Open' }).getAttribute('href');
+assert.match(String(href), /\/status\/ui-status-page$/);
+checks.push('Create publishes the page with a public /status link');
+await row.getByRole('button', { name: 'Edit', exact: true }).click();
+await dialog.getByLabel('Name', { exact: true }).fill('UI status edited');
+await dialog.getByRole('button', { name: 'Save status page', exact: true }).click();
+await page.getByRole('row').filter({ hasText: 'UI status edited' }).first().waitFor();
+checks.push('Edit renames the page in place');
+const edited = page.getByRole('row').filter({ hasText: 'UI status edited' }).first();
+await edited.getByRole('button', { name: 'Delete', exact: true }).click();
+await dialog.getByRole('heading', { name: 'Delete status page', exact: true }).waitFor();
+assert.ok((await dialog.innerText()).includes('public page will stop working'));
+await dialog.getByRole('button', { name: 'Delete permanently', exact: true }).click();
+await page.getByRole('row').filter({ hasText: 'UI status edited' }).waitFor({ state: 'detached' });
+checks.push('Delete requires explicit confirmation and removes the page');
+await page.screenshot({ path: resolve(output, 'status-page-ui.png'), fullPage: true });
+await writeFile(resolve(output, 'report.json'), JSON.stringify({ ok: true, checks, organization }, null, 2) + '\n', { mode: 0o600 });
+await browser.close();
+console.log(JSON.stringify({ ok: true, checks }));

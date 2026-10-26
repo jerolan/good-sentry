@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "checks": [
+    "Create publishes the page with a public /status link",
+    "Edit renames the page in place",
+    "Delete requires explicit confirmation and removes the page"
+  ],
+  "organization": "ui-002"
+}

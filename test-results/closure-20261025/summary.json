@@ -4135,6 +4135,15 @@
         "uptime-001/status-page-member-foreign.json"
       ]
     },
+    "CLOSE-uptime-002": {
+      "evidence": "vigente",
+      "scope": "public status HTML and JSON without leaks, private/missing 404, and native UI create, public link, edit and confirmed delete",
+      "evidence_files": [
+        "uptime-002/public-view.json",
+        "uptime-002/ui.json",
+        "uptime-002/report.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

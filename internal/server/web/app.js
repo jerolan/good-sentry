@@ -2198,7 +2198,8 @@
         node('td', {}, String((page.monitors || []).length)),
         node('td', {}, node('div', { class: 'actions' },
           page.isPublic ? node('a', { class: 'btn button small', href: base + '/status/' + encodeURIComponent(page.slug), target: '_blank', rel: 'noopener' }, 'Open') : null,
-          manage ? button('Edit', () => openStatusPageDialog(monitors, page), 'small') : null))));
+          manage ? button('Edit', () => openStatusPageDialog(monitors, page), 'small') : null,
+          manage ? button('Delete', () => openDeleteStatusPageDialog(page), 'small') : null))));
       panel.append(node('div', { class: 'table-scroll' }, node('table', {},
         node('thead', {}, node('tr', {}, ['Status page', 'Visibility', 'Monitors', 'Actions'].map(name => node('th', { scope: 'col' }, name)))),
         node('tbody', {}, rows))));
@@ -2243,6 +2244,36 @@
     dialog.addEventListener('close', () => dialog.remove(), { once: true });
     dialog.showModal();
     name.input.focus();
+  }
+
+  function openDeleteStatusPageDialog(page) {
+    const dialog = node('dialog', { class: 'monitor-dialog', 'aria-labelledby': 'delete-status-page-title' });
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const remove = node('button', { type: 'button', class: 'btn button danger' }, 'Delete permanently');
+    const cancel = button('Cancel', () => dialog.close());
+    remove.addEventListener('click', async () => {
+      remove.disabled = true;
+      error.textContent = '';
+      try {
+        await request(statusPagePath(page.slug), { method: 'DELETE' });
+        dialog.close();
+        await loadRoute();
+        notify('Status page deleted.');
+      } catch (failure) {
+        formError(error, failure);
+        remove.disabled = false;
+      }
+    });
+    dialog.append(
+      node('header', {}, node('h2', { id: 'delete-status-page-title' }, 'Delete status page'), button('Close', () => dialog.close(), 'small')),
+      node('div', { class: 'form-stack' }, error,
+        node('p', {}, 'Delete ' + page.name + '? Its public page will stop working.'),
+        node('div', { class: 'dialog-actions' }, cancel, remove)),
+    );
+    document.body.append(dialog);
+    dialog.addEventListener('close', () => dialog.remove(), { once: true });
+    dialog.showModal();
+    remove.focus();
   }
 
   function monitorConfiguration(monitor) {
