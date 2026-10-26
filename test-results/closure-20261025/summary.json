@@ -357,6 +357,17 @@
         "session and token issuers both recheck; no sleeps or production hooks"
       ],
       "evidence_files": ["account/generations.log"]
+    },
+    "CLOSE-identidad-020": {
+      "evidence": "vigente",
+      "scope": "native prefix-aware password route, strict body and byte bounds",
+      "covered": [
+        "session/CSRF/same-origin middleware; bearer or DSN alone is insufficient",
+        "one JSON object, unknown fields and trailing data rejected, 1 MiB cap",
+        "current 1-72 bytes; new 12-72 UTF-8 bytes; no trimming",
+        "same password still performs revocation; owner HTTP cases pass"
+      ],
+      "evidence_files": ["account/route.log"]
     }
   },
   "commands": [

@@ -1442,11 +1442,11 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–019 ya están vigentes.
-Siguiente acción: CLOSE-identidad-020 (ruta nativa, cuerpo estricto y límites
-en bytes). No se declara aceptación ni cierre del producto. El avance se
-informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014–020 ya están vigentes.
+Siguiente acción: CLOSE-identidad-021 (verificación de hash/generación y
+errores 400/401/503). No se declara aceptación ni cierre del producto. El
+avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo
+y presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1483,7 +1483,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-017](../SPEC.md#close-identidad-017) | Account credential generations and authenticated password changes: Password change uses explicit pgx.ReadCommi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ChangePassword |
 | [CLOSE-identidad-018](../SPEC.md#close-identidad-018) | Account credential generations and authenticated password changes: When issuance acquires its user SHARE lock… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de interleaving |
 | [CLOSE-identidad-019](../SPEC.md#close-identidad-019) | Account credential generations and authenticated password changes: The need for a fresh statement snapshot fol… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de aislamiento |
-| [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3022,6 +3022,31 @@ Evidencia: `test-results/closure-20261025/account/generations.log`.
 
 Siguiente acción: CLOSE-identidad-020 (ruta nativa de contraseña, cuerpo
 estricto y límites en bytes), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: ruta y cuerpo de contraseña
+
+Selección registrada antes de trabajar: CLOSE-identidad-020, siguiente en el
+plan. Candidata `1b3f519`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `TestAccountDSNCaptureAndTriage` con `-race` y PostgreSQL
+desechable.
+
+Resultado observado: `POST /api/v1/account/password` se registra bajo el
+prefijo y pasa por el middleware nativo de sesión/CSRF/mismo origen; un bearer
+o DSN solo no autoriza la ruta y el manejo nativo de cookie no se sustituye por
+la precedencia compatible. `bodyJSON` limita a 1 MiB, desactiva campos
+desconocidos y exige un único objeto JSON. `currentPassword` se admite de 1 a
+72 bytes y `newPassword` de 12 a 72 bytes UTF-8, sin trim; la misma contraseña
+es válida y ejecuta la revocación completa. El owner HTTP comprueba 403 sin
+CSRF, 400 por contraseña actual incorrecta, 400 por multibyte fuera de límite y
+400 por campo desconocido/trailing, y 204 en el camino válido. Subresultados
+pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account/route.log` y
+`internal/server/account.go`/`server.go`.
+
+Siguiente acción: CLOSE-identidad-021 (verificación de hash/generación,
+errores 400/401/503 y bcrypt fuera de la transacción), con dependencias
+locales resueltas.
 
 ### Comprobante de integración documental
 
