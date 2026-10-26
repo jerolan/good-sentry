@@ -3896,6 +3896,13 @@
         "rendimiento-007/lifecycle.log"
       ]
     },
+    "CLOSE-rendimiento-012": {
+      "evidence": "vigente",
+      "scope": "standalone span v2 ingestion, trace reads, typed attributes, segment aggregates, deduplication, strict admission and legacy transaction preservation",
+      "evidence_files": [
+        "rendimiento-012/report.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

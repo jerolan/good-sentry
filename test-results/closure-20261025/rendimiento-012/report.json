@@ -1,0 +1,61 @@
+{
+  "checks": [
+    "Standalone span v2 batch with item_count is accepted",
+    "Trace read resolves segment and children with sentry.* operation, release and environment",
+    "Raw span JSON keeps typed attributes",
+    "Segment contributes one transaction count and latency; children do not inflate it",
+    "Repeated batch is deduplicated by project/trace/span identity",
+    "Batch count, content type, identifiers and timestamps are admitted strictly",
+    "Traditional transaction ingestion and aggregates remain intact"
+  ],
+  "responses": [
+    {
+      "route": "/envelope",
+      "status": 200,
+      "itemCount": 3,
+      "itemError": null
+    },
+    {
+      "route": "/envelope",
+      "status": 200,
+      "itemCount": 3,
+      "itemError": null
+    },
+    {
+      "route": "/envelope",
+      "status": 400,
+      "itemCount": 1,
+      "itemError": "invalid span payload: item_count does not match span items"
+    },
+    {
+      "route": "/envelope",
+      "status": 415,
+      "itemCount": 1,
+      "itemError": "Unsupported span content type"
+    },
+    {
+      "route": "/envelope",
+      "status": 400,
+      "itemCount": 1,
+      "itemError": "invalid span payload: item 0: trace_id and span_id require 32 and 16 lowercase hexadecimal digits"
+    },
+    {
+      "route": "/envelope",
+      "status": 400,
+      "itemCount": 1,
+      "itemError": "invalid span payload: item 0: span ends before it starts"
+    }
+  ],
+  "trace": {
+    "nodeCount": 3,
+    "resolved": 2,
+    "root": {
+      "op": "compat.segment",
+      "release": "spanv2@1",
+      "environment": "test",
+      "duration": 49.999,
+      "childCount": 2
+    }
+  },
+  "ok": true
+}

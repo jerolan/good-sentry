@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007 y
--041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-012. No se declara
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012
+y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
+runtime preservado. Siguiente acción: CLOSE-rendimiento-013. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1844,7 +1844,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-026](../SPEC.md#close-logs-026) | Native OTLP log reception: The original Tailwind/daisyUI Projects view gains a per-project OpenTelemetry discl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-027](../SPEC.md#close-logs-027) | Native OTLP log reception: Acceptance owners: pure internal/otlp consumer tests prove actual binary/JSON equiv… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-028](../SPEC.md#close-logs-028) | Native OTLP log reception: Run the actual official Python SDK1.45.1 with opentelemetry-exporter-otlp-proto-htt… | implementada (local) | bloqueada | Restaurar la copia de 4010 filas/524 eventos o autorizar una línea base nueva y CI público |
-| [CLOSE-rendimiento-012](../SPEC.md#close-rendimiento-012) | Sentry spans and native telemetry reads: Current JavaScript SDKs use standalone span v2 envelopes by default.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-012](../SPEC.md#close-rendimiento-012) | Sentry spans and native telemetry reads: Current JavaScript SDKs use standalone span v2 envelopes by default.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-013](../SPEC.md#close-rendimiento-013) | Sentry spans and native telemetry reads: The telemetry UI exposes transaction aggregates and paginated log fil… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-014](../SPEC.md#close-rendimiento-014) | Sentry spans and native telemetry reads: The next telemetry slice adds native start and end query parameters t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-015](../SPEC.md#close-rendimiento-015) | Sentry spans and native telemetry reads: Add UI presets for last hour, 24 hours, seven days and 30 days, with… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7149,6 +7149,34 @@ criterios.
   restauración de los backups preservados en un entorno aislado.
 - Siguiente acción: CLOSE-rendimiento-012, primer criterio independiente de la
   cola.
+
+### Ejecución 2026-10-26: ingestión de spans v2 y lecturas de traza
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-012. Candidata
+`d1d1cc9`. Procedimiento reproducible: `tests/compat/span_v2_ingest.mjs`
+contra PostgreSQL 18 desechable y el binario local, con envelopes
+`type=span`, `content_type=application/vnd.sentry.items.span.v2+json`,
+`item_count` y un arreglo `items` v2.
+
+Resultados observados:
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Lote de spans v2 aceptado | 3 items aceptados en una sola escritura |
+| Traza y relaciones | 3 nodos y 2 relaciones resueltas; segmento con 2 hijos resueltos |
+| Atributos tipados | El nodo crudo conserva `sentry.release` como string y `custom.count` como entero 7 |
+| Operación, release y entorno | `compat.segment`, `spanv2@1` y `test` leídos de `sentry.*` |
+| Agregados de segmento | 1 transacción y 50 ms; los hijos no inflan el conteo |
+| Deduplicación | El reenvío idéntico mantiene 3 nodos y 1 transacción |
+| Admisión estricta | `item_count` incorrecto devuelve 400, content type incorrecto 415, identificador inválido 400 y fin anterior al inicio 400 |
+| Transacción tradicional | Sigue agregando 1 evento `http.server` |
+
+Evidencia: `test-results/closure-20261025/rendimiento-012/report.json`.
+
+Límites registrados: las lecturas de traza en UI y el resto de contratos nativos
+siguen en CLOSE-rendimiento-013 a -036; los flujos reales Node y Browser con
+spans v2 siguen en -039 y -040. El CI público y la imagen final siguen
+pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
