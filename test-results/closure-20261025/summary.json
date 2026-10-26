@@ -3657,6 +3657,13 @@
       "evidence_files": [
         "sourcemaps-004-006-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-005": {
+      "evidence": "vigente",
+      "scope": "release ordering, filters, cursor links and native listing",
+      "evidence_files": [
+        "sourcemaps-004-006-go.log"
+      ]
     }
   },
   "commands": [

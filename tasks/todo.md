@@ -1449,8 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 a -004 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-005. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -005 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-006. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1699,7 +1699,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-002](../SPEC.md#close-sourcemaps-002) | Release lifecycle, commit metadata and deploys: An exact release version is1..255 Unicode characters excluding… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-003](../SPEC.md#close-sourcemaps-003) | Release lifecycle, commit metadata and deploys: Expose compatible organization GET/POST /api/0/organizations/{… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-004](../SPEC.md#close-sourcemaps-004) | Release lifecycle, commit metadata and deploys: Release JSON returns string id, version, shortVersion (the exa… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-005](../SPEC.md#close-sourcemaps-005) | Release lifecycle, commit metadata and deploys: List releases by dateCreated descending then numeric id descen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-005](../SPEC.md#close-sourcemaps-005) | Release lifecycle, commit metadata and deploys: List releases by dateCreated descending then numeric id descen… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-006](../SPEC.md#close-sourcemaps-006) | Release lifecycle, commit metadata and deploys: Support organization GET/POST .../releases/{version}/commits/,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-007](../SPEC.md#close-sourcemaps-007) | Release lifecycle, commit metadata and deploys: Persist an organization/name repository identity whenever expl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6053,6 +6053,37 @@ Mapa de comprobantes:
 
 Evidencia: `test-results/closure-20261025/sourcemaps-004-006-go.log` con nueve
 owners.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: listado, filtros y paginación de releases
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-005. Candidata
+`67f0925`.
+
+Resultado observado: el listado ordena por `dateCreated` descendente y luego id
+numérico descendente. Acepta filtros repetidos `project` (`-1` o ausencia como
+todos los autorizados), `environment` exacto y `query` literal de subcadena sin
+distinguir mayúsculas hasta 200 caracteres; las rutas de proyecto fijan el
+proyecto y rechazan filtros `project` en conflicto con 400. El entorno se deriva
+de errores, transacciones, spans independientes o deploys visibles sin ampliar el
+acceso. `per_page` admite 1..100 con 100 por defecto, el alias `limit` comparte
+rango y la combinación conflictiva devuelve 400. Los cursores canónicos y los
+enlaces `Link` prefijados continúan la página con los mismos filtros. La ruta
+nativa de sesión devuelve `{data,page,pageSize:25,hasMore}` con página
+1..1000000 y aplica un único filtro de proyecto, consulta o entorno.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Orden y filtros repetidos de proyecto, entorno y consulta | HTTP `TestReleaseHTTPContract` |
+| Proyecto fijado y conflicto de filtro | HTTP `TestReleaseHTTPContract` |
+| `per_page`, alias `limit` y rechazos | HTTP `TestReleaseHTTPContract` |
+| Cursores y enlaces prefijados con filtros | HTTP `TestReleaseHTTPContract` |
+| Listado nativo con 25 filas y `hasMore` | HTTP `TestReleaseHTTPContract` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-004-006-go.log`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 
