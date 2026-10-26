@@ -1,0 +1,70 @@
+=== RUN   TestCompatibleDiscoveryMembershipScopeSearchAndPagination
+--- PASS: TestCompatibleDiscoveryMembershipScopeSearchAndPagination (0.41s)
+=== RUN   TestCompatibleInvitationValidation
+--- PASS: TestCompatibleInvitationValidation (0.44s)
+=== RUN   TestCompatibleInvitationAcceptsExistingAndVerifiedSecondaryAccounts
+--- PASS: TestCompatibleInvitationAcceptsExistingAndVerifiedSecondaryAccounts (0.74s)
+=== RUN   TestProjectTeamsMigration048PreservesLegacyRelations
+--- PASS: TestProjectTeamsMigration048PreservesLegacyRelations (0.73s)
+=== RUN   TestCompatibleManagementOrganizationAndProjectKeys
+--- PASS: TestCompatibleManagementOrganizationAndProjectKeys (0.59s)
+=== RUN   TestCreateCompatibleProjectInTeam
+--- PASS: TestCreateCompatibleProjectInTeam (0.45s)
+=== RUN   TestCompatibleProjectTeamAssignmentMultipleRelations
+--- PASS: TestCompatibleProjectTeamAssignmentMultipleRelations (0.66s)
+=== RUN   TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries
+--- PASS: TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries (0.73s)
+=== RUN   TestCreateCompatibleOrganizationOwnershipTeamAndAuthority
+--- PASS: TestCreateCompatibleOrganizationOwnershipTeamAndAuthority (0.59s)
+=== RUN   TestCompatibleOrganizationPeopleTeamsAndProjects
+--- PASS: TestCompatibleOrganizationPeopleTeamsAndProjects (0.57s)
+=== RUN   TestCompatibleTeamMutationsPreserveProjectRelations
+--- PASS: TestCompatibleTeamMutationsPreserveProjectRelations (1.04s)
+=== RUN   TestCompatibleOrganizationMemberDetailAndTeamMembership
+--- PASS: TestCompatibleOrganizationMemberDetailAndTeamMembership (0.58s)
+=== RUN   TestSetCompatibleOrganizationOwnerTransfersSingleOwner
+--- PASS: TestSetCompatibleOrganizationOwnerTransfersSingleOwner (0.75s)
+=== RUN   TestInvitationMigration037PreservesPriorRowsAndReopens
+--- PASS: TestInvitationMigration037PreservesPriorRowsAndReopens (1.04s)
+=== RUN   TestManagerInvitationTeamsMigrationPreservesStateAndReopens
+--- PASS: TestManagerInvitationTeamsMigrationPreservesStateAndReopens (0.88s)
+=== RUN   TestInvitationDeliveryAcceptanceReplayAndCancellation
+--- PASS: TestInvitationDeliveryAcceptanceReplayAndCancellation (0.54s)
+=== RUN   TestPeopleMembershipsTeamsAndLastOwner
+--- PASS: TestPeopleMembershipsTeamsAndLastOwner (0.62s)
+=== RUN   TestConcurrentOwnerDemotionsRetainOneOwner
+--- PASS: TestConcurrentOwnerDemotionsRetainOneOwner (0.55s)
+PASS
+ok  	goodsentry/internal/store	11.937s
+=== RUN   TestCompatibleInvitationHTTPAcceptance
+--- PASS: TestCompatibleInvitationHTTPAcceptance (0.94s)
+=== RUN   TestCompatibleInvitationHTTPBearerAndSecondaryEmail
+--- PASS: TestCompatibleInvitationHTTPBearerAndSecondaryEmail (0.63s)
+=== RUN   TestCompatibleTeamMutationsHTTP
+--- PASS: TestCompatibleTeamMutationsHTTP (0.76s)
+=== RUN   TestCompatibleOrganizationInvitationMutationHTTP
+--- PASS: TestCompatibleOrganizationInvitationMutationHTTP (0.65s)
+=== RUN   TestCompatibleOrganizationUpdateDeleteHTTP
+--- PASS: TestCompatibleOrganizationUpdateDeleteHTTP (0.74s)
+=== RUN   TestCompatibleManagementOrganizationAndProjectKeysHTTP
+--- PASS: TestCompatibleManagementOrganizationAndProjectKeysHTTP (0.76s)
+=== RUN   TestCreateCompatibleOrganizationHTTP
+--- PASS: TestCreateCompatibleOrganizationHTTP (2.07s)
+=== RUN   TestCompatibleSetOrganizationOwnerHTTP
+--- PASS: TestCompatibleSetOrganizationOwnerHTTP (0.65s)
+=== RUN   TestCompatiblePeopleTeamsAndProjectRelationsHTTP
+--- PASS: TestCompatiblePeopleTeamsAndProjectRelationsHTTP (0.67s)
+=== RUN   TestCompatibleOrganizationMemberManagementHTTP
+--- PASS: TestCompatibleOrganizationMemberManagementHTTP (0.97s)
+=== RUN   TestOrganizationInvitationHTTPContract
+--- PASS: TestOrganizationInvitationHTTPContract (2.49s)
+=== RUN   TestPeopleAndTeamHTTPContract
+--- PASS: TestPeopleAndTeamHTTPContract (0.62s)
+=== RUN   TestCompatibleProjectTeamRelationshipHTTP
+--- PASS: TestCompatibleProjectTeamRelationshipHTTP (0.63s)
+PASS
+ok  	goodsentry/internal/server	12.584s
+=== RUN   TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance
+--- PASS: TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance (0.53s)
+PASS
+ok  	goodsentry/internal/store	0.540s

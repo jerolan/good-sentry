@@ -1445,7 +1445,9 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-089 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -089 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-090
+(siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1929,7 +1931,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-086](../SPEC.md#close-identidad-086) | Compatible project update and deletion: The read-only people surface is GET /api/0/organizations/{org}/members… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-087](../SPEC.md#close-identidad-087) | Compatible project update and deletion: Organization people use OrganizationUserSchema with the real user id,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-088](../SPEC.md#close-identidad-088) | Compatible project update and deletion: GET /api/0/organizations/{org}/members/{member}/ returns the same Orga… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-089](../SPEC.md#close-identidad-089) | Compatible project update and deletion: Real PostgreSQL covers organization/member/team visibility, ordered te… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-089](../SPEC.md#close-identidad-089) | Compatible project update and deletion: Real PostgreSQL covers organization/member/team visibility, ordered te… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-090](../SPEC.md#close-identidad-090) | Compatible project update and deletion: Additive040 expands the API-token scope constraint with org:write. Exi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-091](../SPEC.md#close-identidad-091) | Compatible project update and deletion: Additive migration062 extends membership and invitation role constrain… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-092](../SPEC.md#close-identidad-092) | Compatible project update and deletion: Compatible team mutations are POST /api/0/organizations/{org}/teams/ w… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5119,6 +5121,63 @@ Evidencia: `test-results/closure-20261025/identidad-088-go.log` con los owners
 HTTP de gestión de miembros, detalle de equipo y transferencia de propiedad.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: matriz de personas y equipos
+
+Selección registrada antes de trabajar: CLOSE-identidad-089. Candidata
+`79b2759`.
+
+Resultado observado: la matriz del criterio se ejecutó contra PostgreSQL real,
+HTTP real y Chromium. En la base desechable, los owners de store cubren la
+visibilidad de organización, miembro y equipo, el orden de equipos y de
+miembros, los límites de manager y administrador, la privacidad, detalle,
+cancelación, asignación de equipos y aceptación de invitaciones pendientes, los
+recuentos y asignaciones de proyecto en varios equipos, el backfill y la
+reapertura de 048 y el aislamiento de tokens por organización y proyecto. En
+HTTP se cubren las rutas con barra final, el detalle, el rol, el borrado y las
+mutaciones de equipo del miembro, la creación, el detalle, la cancelación y la
+aceptación de invitaciones, `me`, el último propietario, la jerarquía de roles,
+el CSRF de sesión, los scopes `org:read`, `org:write` y `project:read`, las
+organizaciones ajenas, los equipos desconocidos, la paginación estricta y los
+enlaces prefijados. Chromium recorre la vista de propietario a 320/768/1440 con
+la invitación pendiente real, crea y renombra «Alpha team», añade y quita al
+miembro, cambia su rol a manager con el aviso correspondiente y borra el equipo
+tras confirmar, sin desbordamiento de página ni errores de consola.
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Visibilidad de organización, miembro y equipo | store `TestCompatibleOrganizationPeopleTeamsAndProjects` |
+| Orden de equipos y de miembros | store `TestCompatibleOrganizationPeopleTeamsAndProjects`, `TestCompatibleOrganizationMemberDetailAndTeamMembership` |
+| Límites de manager y administrador | store `TestCompatibleOrganizationMemberDetailAndTeamMembership`, `TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries`; HTTP `TestCompatibleOrganizationMemberManagementHTTP` |
+| Privacidad y detalle de invitación pendiente | store `TestCompatibleInvitationValidation`, `TestCompatibleInvitationAcceptsExistingAndVerifiedSecondaryAccounts`; HTTP `TestCompatibleOrganizationInvitationMutationHTTP` |
+| Cancelación y asignación de equipos de invitación | store `TestInvitationDeliveryAcceptanceReplayAndCancellation`, `TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance` |
+| Aceptación de invitación con equipos | store `TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance`; HTTP `TestCompatibleInvitationHTTPAcceptance` |
+| Recuentos y asignaciones de proyecto en varios equipos | store `TestCompatibleProjectTeamAssignmentMultipleRelations`, `TestCompatibleTeamMutationsPreserveProjectRelations` |
+| Backfill y reapertura de 048 | store `TestProjectTeamsMigration048PreservesLegacyRelations` |
+| Aislamiento de token por organización y proyecto | store `TestCompatibleManagementOrganizationAndProjectKeys`; HTTP `TestCompatibleManagementOrganizationAndProjectKeysHTTP` |
+| Rutas con barra final | HTTP `TestCompatiblePeopleTeamsAndProjectRelationsHTTP` |
+| Detalle, rol, borrado y equipos del miembro | HTTP `TestCompatibleOrganizationMemberManagementHTTP`, `TestPeopleAndTeamHTTPContract` |
+| Creación, detalle y cancelación de invitación | HTTP `TestCompatibleOrganizationInvitationMutationHTTP` |
+| `self`/`me` | HTTP `TestCompatibleOrganizationMemberManagementHTTP` |
+| Último propietario y jerarquía de roles | HTTP `TestCompatibleOrganizationMemberManagementHTTP`, `TestPeopleAndTeamHTTPContract`, `TestCompatibleSetOrganizationOwnerHTTP` |
+| CSRF de sesión | HTTP `TestPeopleAndTeamHTTPContract`, `TestCreateCompatibleOrganizationHTTP` |
+| Scopes `org:read`, `org:write` y `project:read` | HTTP `TestCompatibleTeamMutationsHTTP`, `TestCompatibleOrganizationInvitationMutationHTTP`, `TestCompatiblePeopleTeamsAndProjectRelationsHTTP` |
+| Organizaciones ajenas y equipos desconocidos | HTTP `TestCompatiblePeopleTeamsAndProjectRelationsHTTP`, `TestCompatibleOrganizationMemberManagementHTTP` |
+| Paginación estricta y enlaces prefijados | HTTP `TestCompatiblePeopleTeamsAndProjectRelationsHTTP` |
+| Vista de propietario, equipos y rol en Chromium | `people-ui/report.json` y nueve capturas |
+
+Evidencia: `test-results/closure-20261025/identidad-089-go.log` con 32 owners,
+31 en la corrida conjunta más el de asignaciones de equipo de invitación, que
+quedó fuera del primer patrón por un nombre mal escrito y se ejecutó aparte; y
+`test-results/closure-20261025/people-ui/` con `report.json` y las capturas de
+320/768/1440 de la vista de personas, del detalle de equipo y del estado tras el
+borrado.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+primera corrida de Chromium falló por un selector ambiguo del propio guion y se
+repitió con el ámbito del equipo; la base desechable se reinició antes de
+sembrar la organización. La tabla de miembros exige desplazamiento horizontal en
+320 px, sin desbordar la página.
 
 ### Comprobante de integración documental
 

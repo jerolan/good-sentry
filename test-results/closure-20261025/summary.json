@@ -3400,6 +3400,23 @@
       "evidence_files": [
         "identidad-088-go.log"
       ]
+    },
+    "CLOSE-identidad-089": {
+      "evidence": "vigente",
+      "scope": "real PostgreSQL, HTTP and responsive Chromium matrix for people, teams, invitations and project relations",
+      "evidence_files": [
+        "identidad-089-go.log",
+        "people-ui/report.json",
+        "people-ui/people-overview-320.png",
+        "people-ui/people-overview-768.png",
+        "people-ui/people-overview-1440.png",
+        "people-ui/team-detail-320.png",
+        "people-ui/team-detail-768.png",
+        "people-ui/team-detail-1440.png",
+        "people-ui/people-after-delete-320.png",
+        "people-ui/people-after-delete-768.png",
+        "people-ui/people-after-delete-1440.png"
+      ]
     }
   },
   "commands": [
