@@ -451,6 +451,7 @@
     "CLOSE-operacion-098": {"evidence": "vigente", "scope": "real Chromium approved flows at 768px", "evidence_files": ["operacion-097-099/report.json", "operacion-097-099/issues-768.png"]},
     "CLOSE-operacion-099": {"evidence": "vigente", "scope": "real Chromium approved flows at 1440px", "evidence_files": ["operacion-097-099/report.json", "operacion-097-099/issues-1440.png"]},
     "CLOSE-lectores-001": {"evidence": "vigente (fresh owners, historical CLI/browser/CI)", "scope": "official sentry-wizard hash, authenticated organization selection, encrypted transfer, project/DSN payload and one-day project:releases credential", "evidence_files": ["lectores-001/server.log", "lectores-001/official-cli-result.json", "lectores-001/browser-report.json", "lectores-001/public-acceptance.json"]},
+    "CLOSE-lectores-002": {"evidence": "vigente (composed)", "scope": "supported /api/0 management matrix, published endpoint/SDK documentation and fresh official-SDK drop-in", "evidence_files": ["errores-209-211/server-full.log", "lectores-002/summary.json"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
