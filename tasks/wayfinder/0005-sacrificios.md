@@ -4,8 +4,8 @@ title: Decidir qué capacidades de Sentry se aplazan
 status: open
 labels: [wayfinder:grilling]
 parent: WF-0001
-assignee: null
-claim_session: null
+assignee: jerolan
+claim_session: 01a175c3-902d-7420-acd0-fc155e823ca5
 blocked_by: [WF-0004]
 ---
 
@@ -28,3 +28,33 @@ de la prueba nativa real. No duplicar ni revertir esos acuerdos por inferencia.
 Reconciliar las brechas históricas contra el alcance y la evidencia vigentes;
 una casilla abierta no demuestra por sí sola funcionalidad ausente. Conservar
 las capacidades ya implementadas y los controles existentes.
+
+## Working discussion
+
+2026-10-25, America/Mexico_City. Sesión 01a175c3-902d-7420-acd0-fc155e823ca5.
+Se retoma tras el cierre de los flujos. Propuestas pendientes de aprobación:
+
+1. Aplazar conexión automática con repositorios y descubrimiento remoto de
+   commits. Conservar releases, metadatos locales de commits y deploys ya
+   aprobados. Consecuencia: el usuario o su CI suministra esos metadatos.
+   Evidencia: docs/compatibility.md, Current gaps; SPEC.md, Public provenance,
+   contratos públicos de releases. La complejidad no está medida.
+2. Aplazar WebAuthn como segundo factor. Conservar TOTP, códigos de recuperación
+   y controles existentes, incluido require2FA en trabajo activo. Consecuencia:
+   no exigir llaves físicas o passkeys como segundo factor para este cierre.
+   Evidencia: docs/compatibility.md, Current gaps; SPEC.md, Two-factor
+   authentication. La complejidad no está medida.
+3. Aplazar throttling global de eventos por organización. Conservar muestreo
+   por proyecto y cuotas por clave existentes. Consecuencia: el cierre no
+   exige una política común de muestreo de eventos para todos los proyectos
+   de una organización. Evidencia: docs/compatibility.md, Available capabilities and
+   limits; SPEC.md, Compatible project update and deletion. La complejidad
+   no está medida.
+
+Las propuestas son decisiones de límite de alcance, no bloqueos técnicos
+probados. No se afirma que estén ausentes en GlitchTip. Si una contradice el
+mínimo congelado, su aprobación debe registrarse como excepción expresa.
+No se propone eliminar código ni debilitar controles. No se aplazan por
+inferencia políticas adicionales de issues, recibos externos, archivo frío
+ni otros flujos aprobados. Fuentes Java y prueba nativa mantienen su dueño
+en la decisión de flujos. No se cierra esta issue sin respuesta del usuario.
