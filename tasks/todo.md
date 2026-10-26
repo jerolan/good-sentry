@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -030
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -031
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-031. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-032. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1863,7 +1863,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 026/029) |
-| [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7680,6 +7680,28 @@ Evidencia: `test-results/closure-20261025/rendimiento-026/projection-tests.log` 
 Límites registrados: no se repite la ejecución al no haber cambios de producto;
 el comprobante cubre almacén y HTTP. El CI público y la imagen final siguen
 pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: identidad y relaciones del grafo de traza
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-031. Candidata
+`0a202a4`. Pruebas sobre PostgreSQL 18 desechable:
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Identidad `event-<row>`, `event-<row>-<ordinal>` y `span-<row>` | `TestTraceResolvesMixedSourcesWithoutGuessingContainerParents` y `TestTraceEqualTimeOrderUsesNumericProjectSourceRowAndOrdinal` pasan |
+| Ordinal 0 en raíces/standalone y 1+ en hijos | La prueba de orden numérico conserva ordinales y orden estable |
+| Padre ausente con `parentId` vacío y `parentPage` 0 | Cubierto por la prueba de fuentes mixtas |
+| Traza solo error/log con tiempos nulos | Cubierto por las lecturas de traza ya registradas (029) |
+| Duplicados/ausentes/malformados como nodos distintos | La prueba de fuentes mixtas no adivina contenedores ni ancestros |
+| Preferencia por el mismo proyecto, ambigüedad y ciclo | `TestTraceExplicitParentPreferenceAmbiguityAndAllCycleEdges` enlaza solo candidatos únicos y desenlaza aristas de ciclo |
+| 16 hex en mayúsculas o minúsculas sin reescribir | Cubierto por el contrato HTTP de 029 |
+| Sin inferencia de contenedores legacy o segmentos | La prueba de fuentes mixtas lo verifica |
+
+Evidencia: `test-results/closure-20261025/rendimiento-031/graph-identity.log`.
+
+Límites registrados: el comprobante es de almacén; la cascada visual sigue en
+criterios posteriores. El CI público y la imagen final siguen pendientes para la
+auditoría final.
 
 ### Comprobante de integración documental
 

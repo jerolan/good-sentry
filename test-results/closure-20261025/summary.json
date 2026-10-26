@@ -4042,6 +4042,13 @@
         "rendimiento-029/trace-graph.log"
       ]
     },
+    "CLOSE-rendimiento-031": {
+      "evidence": "vigente",
+      "scope": "stable storage node identities, explicit-parent-only resolution with same-project preference, ambiguity, cycle unlinking and no container inference",
+      "evidence_files": [
+        "rendimiento-031/graph-identity.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
