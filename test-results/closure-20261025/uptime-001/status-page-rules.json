@@ -1,0 +1,22 @@
+{
+  "monitor": 201,
+  "pageA": {
+    "status": 201,
+    "slug": "alpha-status"
+  },
+  "pageB": {
+    "status": 201,
+    "slug": "alpha-status-3a7584fa"
+  },
+  "collisionDistinct": true,
+  "renameKeepsSlug": true,
+  "compatiblePost": {
+    "status": 201,
+    "monitors": [],
+    "slug": "compat-status"
+  },
+  "compatibleStartsEmpty": true,
+  "unknownMonitor": 404,
+  "tooMany": 400,
+  "ok": true
+}

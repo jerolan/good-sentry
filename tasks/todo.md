@@ -1753,7 +1753,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | por contrastar | pendiente | Parcial: CRUD/persistencia verificados; faltan colisión de slug, monitor ajeno y límite 100 |
+| [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | por contrastar | pendiente | Parcial: CRUD, slug, POST compatible y límite 100 verificados; faltan roles y monitor de otra org |
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7961,6 +7961,23 @@ Pendiente de probar explícitamente: sufijo acotado ante colisión global de slu
 y estabilidad al renombrar; rechazo de monitores desconocidos, ajenos o de otra
 organización; `POST /api/0` compatible que empieza sin monitores y exige
 `org:write`; y el límite de 100 monitores en la actualización nativa.
+
+Comprobado después con `/tmp/gs-s001u.mjs` sobre una instalación limpia:
+
+| Regla | Resultado |
+|---|---|
+| Colisión de slug | `alpha-status` y `alpha-status-3a7584fa` para el mismo nombre |
+| Estabilidad al renombrar | Renombrar conserva el slug original |
+| `POST /api/0/organizations/{org}/status-pages/` | 201 con `monitors` vacío |
+| Monitor desconocido | 404, nunca se adjunta |
+| 101 monitores en actualización nativa | 400 |
+
+Evidencia adicional: `uptime-001/status-page-rules.json`.
+
+Siguen sin prueba específica las fronteras de rol (miembro listando pero sin
+crear, y `org:write` en el POST compatible) y un monitor real de otra
+organización; el 404 de un identificador desconocido y la consulta acotada por
+organización cubren la no-atribución.
 
 Evidencia: `test-results/closure-20261025/uptime-001/status-pages.log`.
 
