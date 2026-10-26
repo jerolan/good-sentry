@@ -1,0 +1,17 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Browser SDK logs acceptance</title></head>
+<body>
+<h1>Logs acceptance</h1>
+<script src="/build/sentry-11.7.0.js"></script>
+<script>
+window.__result = (async () => {
+  const dsn = new URLSearchParams(location.search).get('dsn');
+  Sentry.init({ dsn, environment: 'logs-browser-acceptance', release: 'logs-browser@11.7.0', tracesSampleRate: 1, enableLogs: true, sendDefaultPii: false, autoSessionTracking: false });
+  Sentry.logger.info('Browser SDK info log run1', { component: 'logs-browser', attempt: 11, healthy: false, ratio: 1.5, 'service.name': 'logs-browser-service' });
+  Sentry.logger.warn('Browser SDK warn log run1', { reason: 'filter-target', 'service.name': 'logs-browser-service' });
+  Sentry.logger.error('Browser SDK error log run1', { attempts: 4, 'service.name': 'logs-browser-service' });
+  const flushed = await Sentry.flush(8000);
+  return { flushed };
+})();
+</script>
+</body></html>

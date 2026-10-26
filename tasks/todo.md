@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-032 (logs con el SDK Browser 11.7.0). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-033 (exportador Python OTLP protobuf/HTTP 1.45.1). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -2094,7 +2094,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-218](../SPEC.md#close-errores-218) | Browser 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-219](../SPEC.md#close-errores-219) | Browser 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-040](../SPEC.md#close-rendimiento-040) | Browser 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegaci… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-032](../SPEC.md#close-logs-032) | Browser 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enla… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-logs-032](../SPEC.md#close-logs-032) | Browser 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enla… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-026](../SPEC.md#close-sourcemaps-026) | Node 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar error r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-027](../SPEC.md#close-sourcemaps-027) | Browser 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar erro… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-041](../SPEC.md#close-rendimiento-041) | Comprobar cantidades y errores contra un conjunto controlado y resultados esperados explícitos, conservando lo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4299,6 +4299,32 @@ vive en `tests/compat/logs_node.mjs`.
 Límites registrados: el SDK Node envía el span padre solo como atributo
 `sentry.trace.parent_span_id`, de modo que la columna derivada de span queda
 vacía aunque la traza sí se correlaciona y el enlace funciona. El CI público
+sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: logs reales con el SDK Browser 11.7.0
+
+Selección registrada antes de trabajar: CLOSE-logs-032. Candidata `fe93737`.
+
+Resultado observado: el SDK oficial `@sentry/browser` 11.7.0, empaquetado con
+esbuild desde el paquete npm, envió un sobre real con tres registros
+`application/vnd.sentry.items.log+json` (info, warn y error) con atributos
+tipados —entero, booleano y doble, además de cadenas—, servicio
+`logs-browser-service`, entorno `logs-browser-acceptance`, release
+`logs-browser@11.7.0` y traza generada por el SDK. La API nativa filtra por
+texto (tres filas, `warn` una), servicio, entorno y traza; el detalle conserva
+los tipos y `source:"sentry"`. En Chromium la lista muestra las tres filas sin
+insignia OTLP, la divulgación de atributos conserva los tipos, el enlace abre la
+vista de traza y el filtro por servicio las selecciona a 320/768/1440. Tras
+reiniciar la aplicación siguen las tres filas y la comprobación vuelve a pasar.
+
+Evidencia: `test-results/closure-20261025/logs-browser-api.json`,
+`logs-browser-ui/report.json`, `logs-browser-ui-restart/report.json` y la
+página/driver en `tests/compat/browser_logs/`.
+
+Límites registrados: el `bundle.min.js` del CDN en 11.7.0 no incluye el emisor
+de logs —solo envía la sesión—, por lo que la captura usa el paquete npm
+empaquetado; y el SDK lleva el span padre solo como atributo, así que la columna
+derivada de span queda vacía aunque la traza se correlaciona. El CI público
 sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
