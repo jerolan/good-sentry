@@ -3101,6 +3101,16 @@
       "evidence_files": [
         "alerts-slack-ui/report.json"
       ]
+    },
+    "CLOSE-alertas-021": {
+      "evidence": "bloqueada",
+      "scope": "Slack acceptance matrix locally green; provider closure needs an authorized Slack channel and publication",
+      "evidence_files": [
+        "alertas-021-go.log",
+        "alerts-slack-ui/report.json",
+        "alertas-slack.json"
+      ],
+      "blocked": "Falta un canal de Slack autorizado y autorización de publicación/CI."
     }
   },
   "commands": [
