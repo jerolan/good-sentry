@@ -1,0 +1,14 @@
+=== RUN   TestAlertClaimsRetryBackoffAndTokenFencing
+--- PASS: TestAlertClaimsRetryBackoffAndTokenFencing (0.71s)
+=== RUN   TestAlertExpiredClaimsRecoverOrStopAtAttemptBudget
+--- PASS: TestAlertExpiredClaimsRecoverOrStopAtAttemptBudget (0.45s)
+=== RUN   TestAlertOutcomesPersistSuccessPermanentAndAttemptExhaustion
+--- PASS: TestAlertOutcomesPersistSuccessPermanentAndAttemptExhaustion (0.46s)
+=== RUN   TestAlertReplacementCancelsWorkAndRetainsSnapshots
+--- PASS: TestAlertReplacementCancelsWorkAndRetainsSnapshots (0.48s)
+=== RUN   TestErrorAlertsUseReceiptCrossingCooldownAndEnvironment
+--- PASS: TestErrorAlertsUseReceiptCrossingCooldownAndEnvironment (0.66s)
+=== RUN   TestUptimeAlertsOnlyQueueConfirmedProjectTransitions
+--- PASS: TestUptimeAlertsOnlyQueueConfirmedProjectTransitions (0.66s)
+PASS
+ok  	goodsentry/internal/store	3.437s

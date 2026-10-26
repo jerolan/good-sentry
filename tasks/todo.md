@@ -1505,6 +1505,8 @@ CLOSE-operacion-067 conserva el bloqueo de publicación remota; la siguiente
 acción ejecutable es CLOSE-operacion-068 (archivo de errores). CLOSE-sourcemaps-028
 a -031 y CLOSE-lectores-004 a -007 quedan vigentes. 068 sigue pendiente de una
 nueva capa de archivo de errores, no sólo de comprobantes.
+CLOSE-alertas-037 a -039 quedan vigentes con cola, transiciones y webhook
+genérico probados frescos.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
@@ -2197,9 +2199,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-089](../SPEC.md#close-operacion-089) | Archivo de spans, backend compatible S3: consulta durante retención mediante lectores UI/API aplicables, con f… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-090](../SPEC.md#close-operacion-090) | Archivo de spans, backend compatible S3: persistencia y consulta tras reinicio. Comprobante propio del tipo y… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-091](../SPEC.md#close-operacion-091) | Archivo de spans, backend compatible S3: eliminación al vencer el plazo contratado. Comprobante propio del tip… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-037](../SPEC.md#close-alertas-037) | Regla de frecuencia de errores: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entrega… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-038](../SPEC.md#close-alertas-038) | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-039](../SPEC.md#close-alertas-039) | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payloa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-037](../SPEC.md#close-alertas-037) | Regla de frecuencia de errores: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entrega… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-038](../SPEC.md#close-alertas-038) | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-039](../SPEC.md#close-alertas-039) | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payloa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | implementada (local) | vigente | Comprobante 2026-10-26 abajo; CI público queda para la auditoría final |
 | [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -9871,6 +9873,28 @@ Evidencia: `test-results/closure-20261025/lectores-004-007/`.
 Límites registrados: los recibos de Grafana y de la imagen publicada son
 históricos y se repiten en la candidata final. Siguiente acción:
 CLOSE-operacion-068. El producto sigue incompleto.
+
+### Ejecución 2026-10-26: alertas de frecuencia, uptime y webhook
+
+Selección registrada antes de trabajar: CLOSE-alertas-037 a -039. Revisión
+`287129d`; owners de cola y entrega se repitieron sobre PostgreSQL desechable
+y receptores HTTP locales.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 037 | Frecuencia con umbral, cooldown, entorno, destinatarios, cola durable e historial | `store.log`; `TestErrorAlertsUseReceiptCrossingCooldownAndEnvironment`; `TestAlert*` |
+| 038 | Transición de uptime sólo ante transiciones confirmadas, con cola/reintentos | `store.log`; `TestUptimeAlertsOnlyQueueConfirmedProjectTransitions` |
+| 039 | Receptor HTTP independiente, JSON y correlación, ACK y reintentos | `notify.log`; `TestGenericWebhookBodyPreserved`; `TestGenericWebhookAcknowledgmentIgnoresBody`; `TestWebhookDelivery` |
+
+Resultado observado: almacenamiento 3.437 s y notify 1.026 s. La cola conserva
+fencing, backoff, expiración, agotamiento y cancelación; el webhook genérico
+recibe el cuerpo exacto y no acredita un proveedor específico.
+
+Evidencia: `test-results/closure-20261025/alertas-037-039/`, incluyendo el fallo
+inicial por base ausente y su repetición verde.
+
+Límites registrados: los canales externos específicos siguen fuera de esta fila.
+Siguiente acción: CLOSE-operacion-068. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 
