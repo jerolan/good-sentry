@@ -1,0 +1,51 @@
+{
+  "sdk": "otlp-http-protobuf 1.45.1",
+  "all": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "30",
+      "29",
+      "28"
+    ]
+  },
+  "service": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "30",
+      "29",
+      "28"
+    ]
+  },
+  "environment": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "30",
+      "29",
+      "28"
+    ]
+  },
+  "textWarn": {
+    "status": 200,
+    "total": 1,
+    "ids": [
+      "29"
+    ]
+  },
+  "trace": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "30",
+      "29",
+      "28"
+    ]
+  },
+  "detailStatus": 200,
+  "typedIntegerInDetail": true,
+  "detailSource": "otlp",
+  "detailTrace": "9c6c851b08ba5720e4dafcb7ab6a0716",
+  "detailService": "otlp-exporter-service"
+}
