@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-alertas-001. No se declara
+runtime preservado. Siguiente acción: CLOSE-alertas-002. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -8385,6 +8385,24 @@ el árbol sigue sin publicar y no hay CA externa autorizada.
 - Condición de desbloqueo: publicación autorizada con CI coincidente, imagen
   aislada reiniciada y objetivo externo con CA propia.
 - Siguiente acción: CLOSE-alertas-001, criterio independiente de la cola.
+
+### Ejecución 2026-10-26: API compatible de alertas
+
+Selección registrada antes de trabajar: CLOSE-alertas-001. Candidata
+`ad88ed5`.
+
+| Elemento | Resultado |
+|---|---|
+| Rutas compatibles GET/POST/PUT/DELETE | `TestCompatibleProjectAlertsContract` |
+| Slug dentro del grant antes del ID de proyecto | Cubierto por la prueba de alcance |
+| Lecturas `project:read`, escrituras `project:write` más owner/admin | `TestCompatibleProjectAlertsTokenScopes` |
+| Paginación estricta, validación y cola de test | `TestCompatibleProjectAlertsPaginationValidationAndTestQueue` |
+
+Evidencia: `test-results/closure-20261025/alertas-001/compat-alerts.log`.
+
+Límites registrados: la entrega externa y los mapeos de destinatarios viven en
+002/003. El CI público y la imagen final siguen pendientes para la auditoría
+final.
 
 ### Comprobante de integración documental
 

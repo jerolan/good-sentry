@@ -4280,6 +4280,13 @@
         "uptime-025/ssl-dialog.json"
       ]
     },
+    "CLOSE-alertas-001": {
+      "evidence": "vigente",
+      "scope": "compatible alert CRUD with grant-scoped project resolution, read/write authority, strict pagination and test queue",
+      "evidence_files": [
+        "alertas-001/compat-alerts.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
