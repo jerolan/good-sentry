@@ -227,6 +227,38 @@
         "320/768/1440 captures without overflow"
       ],
       "evidence_files": ["token-ui/summary.json", "token-ui/run.log", "token-ui/app.log", "token-ui/*.png"]
+    },
+    "CLOSE-identidad-008": {
+      "evidence": "vigente",
+      "scope": "shared credential-generation and password-change revocation boundary; owner/member change without mail",
+      "covered": [
+        "password change increments the generation and revokes sessions and personal tokens across organizations",
+        "owner and member can change their own password through the real Account UI without email",
+        "recovery and invitations remain separate handlers"
+      ],
+      "evidence_files": ["account/summary.json", "account/generations.log", "account-owner/report.json", "account-member/report.json"]
+    },
+    "CLOSE-identidad-009": {
+      "evidence": "vigente",
+      "scope": "login/bootstrap and native API-token issuance retain the observed authentication generation",
+      "covered": [
+        "035 migration preservation and reopen",
+        "stale or missing generation inserts no credential",
+        "session and API-token issuers recheck after waiting under an explicit Read Committed transaction",
+        "password change atomically invalidates every owned credential"
+      ],
+      "evidence_files": ["account/generations.log", "account/summary.json"]
+    },
+    "CLOSE-identidad-010": {
+      "evidence": "vigente",
+      "scope": "signed-in user changes the password through API and Account UI, then signs in again",
+      "covered": [
+        "owner and member confirmation mismatch keeps the form",
+        "204 clears the form and shows sign-in",
+        "another session and the old password fail; the new password signs in",
+        "three responsive widths without overflow"
+      ],
+      "evidence_files": ["account-owner/report.json", "account-member/report.json", "account-owner/*.png", "account-member/*.png"]
     }
   },
   "commands": [

@@ -1,0 +1,33 @@
+{
+  "criteria": ["CLOSE-identidad-008", "CLOSE-identidad-009", "CLOSE-identidad-010"],
+  "date": "2026-10-26",
+  "candidate": "758d644",
+  "product_revision": "54db6e48bf2e52e9a84efe397e3e5b44c27e4d91",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64",
+    "postgres": "18, disposable container goodsentry-closure-20261026",
+    "app": "candidate binary in GOODSENTRY_AUTH=required on 127.0.0.1:18098",
+    "browser": "Playwright 1.55.0 Chromium 1187, headless"
+  },
+  "store_owners": [
+    "TestAuthGenerationMigration035PreservesCredentialsAndReopens",
+    "TestCredentialIssuanceRejectsStaleGenerationAtomically",
+    "TestPasswordChangeRevokesEveryOwnedCredentialAtomically",
+    "TestConcurrentPasswordChangesHaveOneWinner",
+    "TestPasswordChangeGenerationOverflowRollsBackCredentials",
+    "TestCredentialIssuanceWaitsAndRechecksUnderRepeatableReadDefault"
+  ],
+  "store_result": "all pass under -race in 4.716s; explicit Read Committed override covers the Repeatable Read default pool",
+  "browser_flows": {
+    "owner": "confirmation mismatch, three widths, 204, other session 401, old password 401, new password 200",
+    "member": "same flow with a member account and membership; clear form and success message",
+    "screenshots": "account-owner/*.png and account-member/*.png at 320/768/1440"
+  },
+  "scope_notes": [
+    "The password route resolves the admitted user ID without a role gate, so owner, admin and member share it; the store admin fixture verifies unrelated role credentials are preserved.",
+    "Password change is independent of account mail; recovery and invitations are separate handlers and remain covered by later criteria.",
+    "Detailed obligations 014-026 remain pending even though the table-row result is proven."
+  ],
+  "evidence": ["generations.log", "summary.json", "account-owner/report.json", "account-member/report.json"]
+}

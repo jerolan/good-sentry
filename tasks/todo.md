@@ -1435,23 +1435,18 @@ Ejecución autorizada por instrucción del usuario el 2026-10-25. Se revisaron
 Git, índice y reclamaciones antes de editar: no había criterio reclamado, la
 candidata probada fue `54db6e48bf2e52e9a84efe397e3e5b44c27e4d91` y el único
 archivo ajeno era `tests/compat/otlp_python_smoke.py`, sin seguimiento y sin
-tocar. Se eligieron, en orden del plan, CLOSE-operacion-004, CLOSE-operacion-005
-y CLOSE-operacion-006; después se completaron CLOSE-operacion-007 con Chromium
-real y un estado de permiso, CLOSE-operacion-008 con el Compose público, la
-imagen construida y PostgreSQL externo, CLOSE-operacion-009 con el loader y
-los alias, CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
-sesiones, CLOSE-operacion-011 con features, correo, uploads y secretos, y
-CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
-y CLOSE-identidad-002 con memberships, equipos y alcance, y
-CLOSE-identidad-003 con credenciales de automatización, y CLOSE-identidad-004
-con grants e invalidación, CLOSE-identidad-005 con proyectos compatibles y
-paginación, CLOSE-identidad-007 con consultas malformadas y cursor máximo, y
-CLOSE-identidad-006 con la vista nativa de API tokens. Sus comprobantes
-vigentes están abajo. Siguiente acción: CLOSE-identidad-008 (tabla de
-generaciones de credenciales y cambios de contraseña), con dependencias
-locales resueltas. No se declara aceptación ni cierre del producto. El avance
-se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+tocar. Se completaron, en orden del plan, CLOSE-operacion-004 a
+CLOSE-operacion-012 (arquitectura, durabilidad, UI real, Compose, configuración,
+modos de autenticación, features/correo/uploads y RSS), y CLOSE-identidad-001 a
+CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
+lecturas compatibles, paginación y vista de API tokens). Después se abrieron
+CLOSE-identidad-008 a CLOSE-identidad-010 (generaciones de credenciales y
+cambio de contraseña); sus comprobantes están abajo y los bloques detallados
+014–026 siguen pendientes. Siguiente acción: CLOSE-identidad-011 (correo de
+cuenta y recuperación), con dependencias locales resueltas. No se declara
+aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1476,9 +1471,9 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-005](../SPEC.md#close-identidad-005) | Runtime and workspace contracts: Consume these credentials through Sentry-compatible GET /api/0/organizations/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas compatibles |
 | [CLOSE-identidad-006](../SPEC.md#close-identidad-006) | Runtime and workspace contracts: Add an owner/admin-only API tokens view to the existing original Tailwind/dai… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de la vista |
 | [CLOSE-identidad-007](../SPEC.md#close-identidad-007) | Runtime and workspace contracts: Malformed percent encoding or other invalid URL query syntax returns400 rathe… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de paginación |
-| [CLOSE-identidad-008](../SPEC.md#close-identidad-008) | Account credential generations and authenticated password changes: This workspace increment supplies the share… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-009](../SPEC.md#close-identidad-009) | Account credential generations and authenticated password changes: fila 1, / credential-generation / Login/boo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-010](../SPEC.md#close-identidad-010) | Account credential generations and authenticated password changes: fila 2, / account-password / A signed-in us… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-008](../SPEC.md#close-identidad-008) | Account credential generations and authenticated password changes: This workspace increment supplies the share… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 014–026 pendientes |
+| [CLOSE-identidad-009](../SPEC.md#close-identidad-009) | Account credential generations and authenticated password changes: fila 1, / credential-generation / Login/boo… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 014–019 pendientes |
+| [CLOSE-identidad-010](../SPEC.md#close-identidad-010) | Account credential generations and authenticated password changes: fila 2, / account-password / A signed-in us… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 020–026 pendientes |
 | [CLOSE-identidad-011](../SPEC.md#close-identidad-011) | Account credential generations and authenticated password changes: fila 3, / account-mail / Purpose-specific a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-012](../SPEC.md#close-identidad-012) | Account credential generations and authenticated password changes: fila 4, / account-recovery / Email request… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-013](../SPEC.md#close-identidad-013) | Account credential generations and authenticated password changes: fila 5, / membership-invitations / Owner/ad… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2774,6 +2769,52 @@ Evidencia: `test-results/closure-20261025/token-ui/`
 
 Siguiente acción: CLOSE-identidad-008 (tabla de generaciones de credenciales y
 cambios autenticados de contraseña), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: generaciones y cambio de contraseña
+
+Selección registrada antes de trabajar: CLOSE-identidad-008, -009 y -010, en
+orden del plan. Candidata `758d644`; producto sin cambios desde `54db6e4`. No
+había criterio reclamado. La unidad ejecuta los owners de generación y el flujo
+real de contraseña para owner y member.
+
+Procedimiento reproducible con PostgreSQL 18 desechable y `-race`:
+`TestAuthGenerationMigration035PreservesCredentialsAndReopens`,
+`TestCredentialIssuanceRejectsStaleGenerationAtomically`,
+`TestPasswordChangeRevokesEveryOwnedCredentialAtomically`,
+`TestConcurrentPasswordChangesHaveOneWinner`,
+`TestPasswordChangeGenerationOverflowRollsBackCredentials` y
+`TestCredentialIssuanceWaitsAndRechecksUnderRepeatableReadDefault`; después,
+`node tests/compat/account_browser.mjs` con una cuenta owner y una member
+reales, cada una con otra sesión abierta.
+
+Resultado observado: 035 se aplica y reabre preservando hashes, IDs, sesiones,
+tokens, grants, memberships y recibos. La emisión de sesión y de token nativo
+exige la generación observada; una generación obsoleta o ausente no inserta
+credencial. El cambio de contraseña usa Read Committed explícito, bloquea al
+usuario `FOR UPDATE`, reemplaza el hash, incrementa la generación una vez,
+elimina todas sus sesiones y revoca sus tokens personales en todas las
+organizaciones, incluyendo expirados no revocados, sin tocar los ya revocados
+ni credenciales/claves de otros usuarios. Dos cambios concurrentes tienen un
+solo ganador; el desbordamiento de bigint revierte todo. El pool con default
+Repeatable Read se anula explícitamente y ambos tipos de emisión revalidan tras
+la espera. En Chromium, owner y member cambian su propia contraseña sin correo:
+la confirmación distinta conserva el formulario, el 204 limpia el estado y
+muestra el login, la otra sesión devuelve 401, la contraseña anterior 401 y la
+nueva 200; las capturas cubren 320/768/1440 sin desbordamiento. La ruta no
+tiene puerta por rol y el fixture admin del owner store demuestra que sus
+credenciales ajenas se conservan. Recuperación e invitaciones son handlers
+separados y permanecen en 011–013.
+
+Los resultados de fila 008, 009 y 010 quedan vigentes. Los bloques detallados
+014–026 siguen pendientes y se ejecutarán como criterios propios; esta unidad
+no los declara cerrados.
+
+Evidencia: `test-results/closure-20261025/account/`
+(`summary.json`, `generations.log`) y las capturas/reportes de
+`account-owner/` y `account-member/`. No se guardaron contraseñas ni hashes.
+
+Siguiente acción: CLOSE-identidad-011 (correo de cuenta purpose-specific,
+outbox y entrega SMTP real), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
