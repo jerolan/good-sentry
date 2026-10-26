@@ -265,36 +265,46 @@ func (s *Server) finishOIDCFlow(w http.ResponseWriter, r *http.Request, client *
 	http.Redirect(w, r, s.cfg.Prefix+"/", http.StatusSeeOther)
 }
 
-// socialApp resolves a public application by its stable provider identity.
-func (s *Server) socialApp(r *http.Request) (store.SocialApp, *oidcClient, bool) {
+// loadSocialApp resolves a public application and its unsealed client secret by
+// its stable provider identity.
+func (s *Server) loadSocialApp(r *http.Request) (store.SocialApp, string, bool) {
 	app, err := s.db.SocialAppByProviderID(r.Context(), r.PathValue("app"))
 	if err != nil {
-		return store.SocialApp{}, nil, false
+		return store.SocialApp{}, "", false
 	}
 	secret, err := s.social.open(app.ClientSecret)
 	if err != nil {
 		slog.Error("social application secret is unreadable", "app", app.ProviderID)
-		return store.SocialApp{}, nil, false
+		return store.SocialApp{}, "", false
 	}
-	client := newOIDCClient(app.ServerURL, app.ClientID, string(secret), s.socialCallbackURL(app.ProviderID), oidcDefaultScopes)
-	return app, client, true
+	return app, string(secret), true
 }
 
 func (s *Server) socialStart(w http.ResponseWriter, r *http.Request) {
-	app, client, ok := s.socialApp(r)
+	app, secret, ok := s.loadSocialApp(r)
 	if !ok {
 		s.oidcRedirectError(w, r)
 		return
 	}
+	if app.Provider == "github" || app.Provider == "gitlab" {
+		s.startSocialOAuth2Flow(w, r, app, secret)
+		return
+	}
+	client := newOIDCClient(app.ServerURL, app.ClientID, secret, s.socialCallbackURL(app.ProviderID), oidcDefaultScopes)
 	s.startOIDCFlow(w, r, client, app.ProviderID)
 }
 
 func (s *Server) socialCallback(w http.ResponseWriter, r *http.Request) {
-	app, client, ok := s.socialApp(r)
+	app, secret, ok := s.loadSocialApp(r)
 	if !ok {
 		s.oidcRedirectError(w, r)
 		return
 	}
+	if app.Provider == "github" || app.Provider == "gitlab" {
+		s.finishSocialOAuth2Flow(w, r, app, secret)
+		return
+	}
+	client := newOIDCClient(app.ServerURL, app.ClientID, secret, s.socialCallbackURL(app.ProviderID), oidcDefaultScopes)
 	s.finishOIDCFlow(w, r, client, app.ProviderID, "social:"+app.ProviderID, true, app.OrganizationID)
 }
 

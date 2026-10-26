@@ -70,7 +70,7 @@ For interactive source-map setup, run `npx @sentry/wizard@8.0.1 --url http://loc
 | Performance and logs | Transactions, spans, trace waterfalls, compatible transaction-group/detail/trend/span, N+1, Grafana `stats_v2` and compatible log list/detail/resource/stat reads, typed logs and OTLP/HTTP log ingestion. |
 | Uptime and alerts | HTTP, TCP, SSL certificate and heartbeat monitors with compatible heartbeat endpoints, public status pages; email and webhooks with durable retries. |
 | Cold span storage | Optional local or S3-compatible Parquet archive; old spans remain queryable and expire on the same transaction-retention deadline. |
-| Accounts and teams | Password changes, email recovery, optional TOTP two-factor sign-in with single-use recovery codes, GlitchTip-compatible account API tokens, recovery codes and invitation acceptance, verified secondary sign-in addresses, Account-page deletion with typed confirmation, optional instance OIDC, per-organization OpenID Connect sign-in applications, member roles, single-use invitations, atomic owner transfer and multi-team projects. |
+| Accounts and teams | Password changes, email recovery, optional TOTP two-factor sign-in with single-use recovery codes, GlitchTip-compatible account API tokens, recovery codes and invitation acceptance, verified secondary sign-in addresses, Account-page deletion with typed confirmation, optional instance OIDC, per-organization OpenID Connect, GitHub and GitLab sign-in applications, member roles, single-use invitations, atomic owner transfer and multi-team projects. |
 | Integration API | Sentry-compatible discovery and management for users, organizations, projects, members, teams and environments; `sentry-wizard` handoff, current-account deletion with sole-owner protection, opt-in organization creation, organization rename/delete, member invitation/cancellation, project-team associations, project event sampling, project-key DSNs with rate limits, plus scoped automation credentials. Optional generated OpenAPI docs and instance-admin account management are available behind explicit flags. |
 | MCP | Opt-in Model Context Protocol server with 17 organization, issue, log, alert, monitor and performance tools; OAuth PKCE or scoped API tokens. |
 | Deployment | One non-root application image, PostgreSQL, automatic migrations, cookie-free local open mode and an opt-in `required` setup/login mode for public exposure. |
@@ -86,7 +86,7 @@ Optional **Administration** provides organization-level operational summaries an
 
 ## Project status
 
-GoodSentry is in active development. **Full Sentry compatibility and GlitchTip feature parity are not complete.** Remaining work includes broader native crash formats, remaining management routes, repository integrations, social-provider setup, advanced administration and final requirement auditing. The [website](https://jerolan.github.io/good-sentry/) shows the current interface feature by feature; the [compatibility guide](docs/compatibility.md) describes tested workflows and limits.
+GoodSentry is in active development. **Full Sentry compatibility and GlitchTip feature parity are not complete.** Remaining work includes broader native crash formats, remaining management routes, repository integrations, additional social-provider presets, advanced administration and final requirement auditing. The [website](https://jerolan.github.io/good-sentry/) shows the current interface feature by feature; the [compatibility guide](docs/compatibility.md) describes tested workflows and limits.
 
 ## Development
 

@@ -16,7 +16,7 @@ import (
 
 // This real-database boundary owns organization application durability,
 // provider-identity uniqueness, containment and cascade cleanup.
-func socialAppFixture(t *testing.T) (context.Context, *Store, *pgx.Conn, User, Organization, Organization) {
+func socialAppFixture(t *testing.T) (context.Context, *Store, *pgx.Conn, User, Organization, Organization, string) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	t.Cleanup(cancel)
@@ -59,11 +59,11 @@ func socialAppFixture(t *testing.T) (context.Context, *Store, *pgx.Conn, User, O
 	if err = sql.QueryRow(ctx, "INSERT INTO organizations(slug,name) VALUES('second-social','Second social') RETURNING id::text").Scan(&secondID); err != nil {
 		t.Fatal(err)
 	}
-	return ctx, db, sql, owner, org, Organization{ID: secondID, Slug: "second-social", Name: "Second social"}
+	return ctx, db, sql, owner, org, Organization{ID: secondID, Slug: "second-social", Name: "Second social"}, u.String()
 }
 
 func TestSocialAppsPersistAndStayContained(t *testing.T) {
-	ctx, db, sql, _, org, second := socialAppFixture(t)
+	ctx, db, sql, _, org, second, _ := socialAppFixture(t)
 	app, err := db.CreateSocialApp(ctx, org.ID, SocialAppInput{
 		ProviderID: "social-apps-abc123", Provider: "openid_connect", Brand: "openid_connect",
 		Name: "Corp SSO", ClientID: "client-1", ClientSecret: []byte("sealed-secret"), ServerURL: "https://issuer.example.test",
@@ -126,5 +126,37 @@ func TestSocialAppsPersistAndStayContained(t *testing.T) {
 	}
 	if _, err = db.SocialAppByProviderID(ctx, app.ProviderID); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("cascade cleanup=%v", err)
+	}
+}
+
+func TestSocialOAuth2ProviderMigrationPreservesExistingApps(t *testing.T) {
+	ctx, db, sql, _, org, _, dsn := socialAppFixture(t)
+	existing, err := db.CreateSocialApp(ctx, org.ID, SocialAppInput{
+		ProviderID: "migration-existing", Provider: "openid_connect", Brand: "openid_connect", Name: "Existing SSO",
+		ClientID: "existing-client", ClientSecret: []byte("existing-secret"), ServerURL: "https://issuer.example.test",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = sql.Exec(ctx, `ALTER TABLE social_apps DROP CONSTRAINT social_apps_provider_check;
+		ALTER TABLE social_apps ADD CONSTRAINT social_apps_provider_check CHECK (provider IN ('openid_connect','google'));
+		DELETE FROM schema_migrations WHERE version=70`); err != nil {
+		t.Fatal(err)
+	}
+	db.Close()
+	reopened, err := Open(ctx, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(reopened.Close)
+	preserved, err := reopened.SocialAppByProviderID(ctx, existing.ProviderID)
+	if err != nil || preserved.Name != existing.Name || string(preserved.ClientSecret) != string(existing.ClientSecret) {
+		t.Fatalf("preserved app=%+v err=%v", preserved, err)
+	}
+	if _, err = reopened.CreateSocialApp(ctx, org.ID, SocialAppInput{
+		ProviderID: "migration-github", Provider: "github", Brand: "github", Name: "GitHub",
+		ClientID: "github-client", ClientSecret: []byte("github-secret"), ServerURL: "https://github.com",
+	}); err != nil {
+		t.Fatalf("create GitHub application after migration: %v", err)
 	}
 }

@@ -18,11 +18,12 @@ const (
 	socialAppClientMax = 191
 	socialAppIssuerMax = 500
 	socialGoogleIssuer = "https://accounts.google.com"
+	socialGitHubURL    = "https://github.com"
+	socialGitLabURL    = "https://gitlab.com"
 )
 
-// compatibleSocialApp is the published organization application shape. Every
-// choice runs on the OpenID Connect machinery, so provider is constant and
-// brand records the requested preset.
+// compatibleSocialApp is the published organization application shape. The
+// provider selects OIDC or an OAuth2 profile flow; brand is the UI preset.
 type compatibleSocialApp struct {
 	ID          int64   `json:"id"`
 	Provider    string  `json:"provider"`
@@ -55,7 +56,7 @@ func (s *Server) registerSocialAppRoutes(mux *routeMux) {
 func (s *Server) socialAppView(orgSlug string, app store.SocialApp) compatibleSocialApp {
 	serverURL, callback := app.ServerURL, s.socialCallbackURL(app.ProviderID)
 	view := compatibleSocialApp{
-		Provider: "openid_connect", ProviderID: app.ProviderID, Name: app.Name, ClientID: app.ClientID,
+		Provider: app.Provider, ProviderID: app.ProviderID, Name: app.Name, ClientID: app.ClientID,
 		ServerURL: &serverURL, CallbackURL: &callback, LoginURL: s.socialLoginURL(orgSlug), Brand: app.Brand,
 	}
 	if id, err := parsePositiveInt64Value(app.ID); err == nil {
@@ -160,6 +161,10 @@ func compatibleSocialBrand(value string) (string, bool) {
 		return "openid_connect", true
 	case "google":
 		return "google", true
+	case "github":
+		return "github", true
+	case "gitlab":
+		return "gitlab", true
 	default:
 		return "", false
 	}
@@ -179,7 +184,7 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 	}
 	brand, valid := compatibleSocialBrand(input.Provider)
 	if !valid {
-		failure(w, 400, "Provider must be openid_connect or google")
+		failure(w, 400, "Provider must be openid_connect, google, github or gitlab")
 		return
 	}
 	if !compatibleSocialText(input.Name, socialAppNameMax) || strings.TrimSpace(input.Name) == "" {
@@ -194,7 +199,17 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 		failure(w, 400, "Client secret must contain 1 to 191 characters without controls")
 		return
 	}
-	issuer := socialGoogleIssuer
+	issuer := ""
+	provider := "openid_connect"
+	switch brand {
+	case "google":
+		issuer = socialGoogleIssuer
+	case "github":
+		issuer, provider = socialGitHubURL, "github"
+	case "gitlab":
+		issuer, provider = socialGitLabURL, "gitlab"
+	case "openid_connect":
+	}
 	if input.ServerURL != nil && strings.TrimSpace(*input.ServerURL) != "" {
 		var valid bool
 		if issuer, valid = compatibleSocialIssuer(*input.ServerURL); !valid {
@@ -218,7 +233,7 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 			return
 		}
 		app, err = s.db.CreateSocialApp(r.Context(), access.OrganizationID, store.SocialAppInput{
-			ProviderID: providerID, Provider: "openid_connect", Brand: brand, Name: strings.TrimSpace(input.Name),
+			ProviderID: providerID, Provider: provider, Brand: brand, Name: strings.TrimSpace(input.Name),
 			ClientID: input.ClientID, ClientSecret: sealed, ServerURL: issuer,
 		})
 		if errors.Is(err, store.ErrConflict) {

@@ -110,6 +110,21 @@ organization invitation. OIDC-only accounts have no local password until the
 owner completes account recovery. The provider secret and raw identity tokens
 are never sent to the browser.
 
+### Organization social sign-in
+
+Owners and admins can add sign-in applications per organization from the
+Organization view. OpenID Connect uses the application's issuer and callback;
+GitHub and GitLab use OAuth2 with PKCE. GitHub verifies the primary verified
+email from its API. GitLab requires an active, confirmed account. Both default
+to their hosted service and accept a self-hosted HTTPS server URL.
+
+Copy the callback URL shown after saving into the provider application. Share
+`<GOODSENTRY_DOMAIN>/login/<organization-slug>`; it opens the workspace sign-in
+page with the configured buttons. Client secrets remain sealed at rest and are
+never returned by the management API or rendered in the browser. Provider
+accounts that do not expose a verified email are rejected instead of linked by
+an unverified address.
+
 ## Scoped API tokens
 
 Owners and admins can open **API tokens** to create a credential, select projects and set its lifetime. The secret appears once; copy it before dismissing or leaving the view. Tokens expire after 90 days by default, with a selectable lifetime of 1–366 days. Revocation takes effect on subsequent requests. An all-project credential also includes projects created later; a restricted credential keeps only its selected projects.

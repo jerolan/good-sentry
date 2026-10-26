@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// SocialApp is one organization-managed OpenID Connect application. The client
+// SocialApp is one organization-managed OIDC or OAuth2 application. The client
 // secret is stored sealed and is only opened by the sign-in flow.
 type SocialApp struct {
 	ID             string
