@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -018 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -019 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-019. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-020. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1745,7 +1745,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-016](../SPEC.md#close-nativo-016) | CFI extended dereference: Add RISC-V64 minidump support for Breakpad architecture 0x8006 and Crashpad Minidump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-017](../SPEC.md#close-nativo-017) | CFI extended dereference: RISC-V64 ELF CFI accepts little-endian ELF64 EM_RISCV .eh_frame or .debug_frame and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8949,6 +8949,31 @@ Evidencia: `test-results/closure-20261025/nativo-018/pdb.log` y `native.log`.
 Límites registrados: PDB legado/Portable y el desenrollado nativo completo
 siguen fuera de este slice. No se usó la imagen final ni el CI público; la
 imagen y el CI siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: líneas fuente C13
+
+Selección registrada antes de trabajar: CLOSE-nativo-019. Revisión de producto
+`61cce68`; este incremento añade pruebas de C11, subsections desconocidas,
+columnas y límite de nombre, sin cambiar el parser.
+
+| Elemento | Comprobante |
+|---|---|
+| `C13ByteSize` tras símbolo/C11; solo C13 produce líneas y C11+C13 invalida | `TestPDBC11OnlyProducesNoSourceLines`; `TestPDBC11AndC13TogetherRejected` |
+| `DEBUG_S_LINES`, `DEBUG_S_FILECHKSMS` y `DEBUG_S_STRINGTABLE`; otras subsections bien enmarcadas se omiten | `TestParseNativePDBC13SourceLines`; `TestPDBC13SkipsUnknownFramedSubsection` |
+| Nombres por string table del módulo o `/names` global | `TestParseNativePDBC13SourceLines` (`module string table` y `global PDB names stream`) |
+| name index en un límite de checksum válido | `TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/missing_checksum_entry` |
+| Sección PE one-based, offset, code size y offsets de línea | `TestParseNativePDBC13SourceLines`; `TestPDBC13LineRangesStayWithinTheirFileBlocks` |
+| Asociación al procedimiento y recorte por rango | `TestParseNativePDBC13SourceLines`; `TestParseNativePDBC13KeepsSourceLinesWithinTheirModule`; `TestPDBC13LineRangesStayWithinTheirFileBlocks` |
+| Columnas validadas y no devueltas | `TestPDBC13ColumnsAreValidatedButNotReturned` |
+| Ortografía de filename sin normalizar | `TestParseNativePDBC13SourceLines` (`C:\src\crash.cc`) |
+| Límites 65 536 subsections, 1 000 000 líneas, 65 536 archivos, 1 000 000 rangos y 4096 bytes por nombre | `TestPDBC13EnforcesRecordBudgets`; `TestPDBStringLengthBudget` |
+| Framing inválido, string/checksum ausente, rango inválido u offsets decrecientes invalidan todo el PDB | `TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols` |
+
+Evidencia: `test-results/closure-20261025/nativo-019/c13.log` y `native.log`.
+
+Límites registrados: MSF legado/Portable y demangling siguen fuera. No se usó
+la imagen final ni el CI público; la imagen y el CI siguen pendientes para la
+auditoría final.
 
 ### Comprobante de integración documental
 

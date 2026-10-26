@@ -4504,6 +4504,11 @@
       "scope": "classic MSF 7 PDB geometry, block sizes, stream/module/section/record budgets, six procedure kinds, GUID+age identity, PE section conversion, spelling and archive members",
       "evidence_files": ["nativo-018/pdb.log", "nativo-018/native.log", "nativo-018/summary.json"]
     },
+    "CLOSE-nativo-019": {
+      "evidence": "vigente",
+      "scope": "C13 source-line subsections, module/global strings, checksum boundaries, PE range mapping, procedure clipping, columns, bounds and fail-closed malformed input",
+      "evidence_files": ["nativo-019/c13.log", "nativo-019/native.log", "nativo-019/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

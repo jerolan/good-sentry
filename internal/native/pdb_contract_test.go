@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"testing"
+
+	"goodsentry/internal/testfixture/nativepdb"
 )
 
 func buildMinimalPDBMSF(blockSize uint32) []byte {
@@ -90,5 +92,80 @@ func TestPDBSectionsBudget(t *testing.T) {
 func TestPDBOversizedFile(t *testing.T) {
 	if _, _, ok := parsePDBSymbols(make([]byte, maxPDBBytes+1)); ok {
 		t.Fatal("a file above 64MiB was accepted")
+	}
+}
+
+func TestPDBC13SkipsUnknownFramedSubsection(t *testing.T) {
+	data := make([]byte, 28)
+	binary.LittleEndian.PutUint32(data, 0x7777)
+	binary.LittleEndian.PutUint32(data[4:], 0)
+	binary.LittleEndian.PutUint32(data[8:], 0xf3) // DEBUG_S_STRINGTABLE
+	binary.LittleEndian.PutUint32(data[12:], 4)
+	binary.LittleEndian.PutUint32(data[20:], 0xf4) // DEBUG_S_FILECHKSMS
+	binary.LittleEndian.PutUint32(data[24:], 0)
+	lines, files, mappings := 0, 0, 0
+	got, ok := parsePDBC13(data, nil, nil, nil, nil, &lines, &files, &mappings)
+	if !ok || len(got) != 0 {
+		t.Fatalf("unknown framed subsection was not skipped: ok=%v lines=%+v", ok, got)
+	}
+}
+
+func TestPDBStringLengthBudget(t *testing.T) {
+	valid := append([]byte{0}, bytes.Repeat([]byte{'a'}, maxPDBProcedureName)...)
+	valid = append(valid, 0)
+	if name, ok := pdbStringAt(valid, 1); !ok || len(name) != maxPDBProcedureName {
+		t.Fatal("a 4096-byte filename was rejected")
+	}
+	tooLong := append([]byte{0}, bytes.Repeat([]byte{'a'}, maxPDBProcedureName+1)...)
+	tooLong = append(tooLong, 0)
+	if _, ok := pdbStringAt(tooLong, 1); ok {
+		t.Fatal("a filename above 4096 bytes was accepted")
+	}
+}
+
+func TestPDBC11OnlyProducesNoSourceLines(t *testing.T) {
+	fixture := nativepdb.WithSourceLines(true)
+	data := append([]byte(nil), fixture.Data...)
+	moduleInfo := fixture.DBIBlock*512 + 64
+	binary.LittleEndian.PutUint32(data[moduleInfo+40:], 4)
+	binary.LittleEndian.PutUint32(data[moduleInfo+44:], 0)
+	objects := ParseDebugObjects("c11.pdb", data)
+	if len(objects) != 1 || len(objects[0].Functions) == 0 {
+		t.Fatalf("C11-only PDB lost its procedures: %+v", objects)
+	}
+	for _, function := range objects[0].Functions {
+		if function.Line >= 0 {
+			t.Fatalf("C11-only PDB produced a source line: %+v", function)
+		}
+	}
+}
+
+func TestPDBC11AndC13TogetherRejected(t *testing.T) {
+	fixture := nativepdb.WithSourceLines(true)
+	data := append([]byte(nil), fixture.Data...)
+	binary.LittleEndian.PutUint32(data[fixture.DBIBlock*512+64+40:], 4)
+	if objects := ParseDebugObjects("mixed.pdb", data); len(objects) != 0 {
+		t.Fatalf("C11 and C13 together produced partial symbols: %+v", objects)
+	}
+}
+
+func TestPDBC13ColumnsAreValidatedButNotReturned(t *testing.T) {
+	data := make([]byte, 36)
+	binary.LittleEndian.PutUint16(data[4:], 1)
+	binary.LittleEndian.PutUint16(data[6:], 1) // columns present
+	binary.LittleEndian.PutUint32(data[8:], 0x20)
+	binary.LittleEndian.PutUint32(data[12:], 0) // checksum boundary
+	binary.LittleEndian.PutUint32(data[16:], 1)
+	binary.LittleEndian.PutUint32(data[20:], 24)
+	binary.LittleEndian.PutUint32(data[24:], 0)
+	binary.LittleEndian.PutUint32(data[28:], 42)
+	binary.LittleEndian.PutUint16(data[32:], 7)
+	binary.LittleEndian.PutUint16(data[34:], 9)
+	sections := []pdbSection{{virtualSize: 0x100, virtualAddr: 0x1000, rawSize: 0x100, flags: pdbPESectionExecute}}
+	functions := newPDBFunctionIndex([]SymbolFunction{{Start: 0x1000, End: 0x1020, Name: "CrashFunction", Line: -1}})
+	lineCount, mappingCount := 0, 0
+	got, ok := parsePDBC13Lines(data, map[uint32]string{0: `C:srccrash.cc`}, sections, functions, &lineCount, &mappingCount)
+	if !ok || len(got) != 1 || got[0].File != `C:srccrash.cc` || got[0].Line != 42 {
+		t.Fatalf("column-bearing line block: ok=%v functions=%+v", ok, got)
 	}
 }

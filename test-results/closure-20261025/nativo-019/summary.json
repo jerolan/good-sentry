@@ -1,0 +1,41 @@
+{
+  "criteria": ["CLOSE-nativo-019"],
+  "date": "2026-10-26",
+  "product_revision": "61cce68",
+  "note": "This increment adds C11, unknown-subsection, column and filename-bound tests. The C13 parser is unchanged.",
+  "owners": [
+    "TestPDBC11OnlyProducesNoSourceLines",
+    "TestPDBC11AndC13TogetherRejected",
+    "TestPDBC13SkipsUnknownFramedSubsection",
+    "TestPDBC13ColumnsAreValidatedButNotReturned",
+    "TestPDBStringLengthBudget",
+    "TestParseNativePDBC13SourceLines",
+    "TestPDBC13LineRangesStayWithinTheirFileBlocks",
+    "TestParseNativePDBC13KeepsSourceLinesWithinTheirModule",
+    "TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols",
+    "TestPDBC13EnforcesRecordBudgets"
+  ],
+  "covered": [
+    "a module's C13ByteSize is read after its symbol and C11 bytes; C11-only data produces procedures without source lines and C11+C13 together invalidates the PDB",
+    "DEBUG_S_LINES, DEBUG_S_FILECHKSMS and DEBUG_S_STRINGTABLE are consumed; other well-framed subsection kinds are skipped safely",
+    "checksum filenames resolve through the module string table or the PDB /names global string table",
+    "a line block's name index must be a checksum-record boundary",
+    "one-based PE sections, relocation offsets, code size and line offsets resolve against an executable section",
+    "source locations attach to procedures from that module, span to the next offset or contribution end and are clipped to the procedure range",
+    "columns are structurally parsed and omitted from the returned symbol fields",
+    "filename spelling is preserved without path normalization",
+    "boundaries of 65536 subsections, 1000000 source lines, 65536 checksum files, 1000000 line mappings and 4096-byte names are enforced",
+    "invalid framing, missing strings/checksums, invalid ranges and decreasing line offsets return no partial symbols"
+  ],
+  "observed": {
+    "c13": "PASS in 0.008s",
+    "native": "PASS in 0.969s",
+    "vet": "PASS for ./internal/native"
+  },
+  "limits": [
+    "Legacy MSF, Portable PDB and demangling remain outside this slice.",
+    "No final image, public CI or external SDK crash was exercised in this increment.",
+    "The product is not declared an acceptance candidate or closed."
+  ],
+  "evidence": ["c13.log", "native.log", "summary.json"]
+}
