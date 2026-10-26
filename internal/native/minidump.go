@@ -216,11 +216,13 @@ func ParseMinidump(data []byte) (Crash, error) {
 			}
 			for i := uint64(0); i < n; i++ {
 				addr, size := mr.u64(), mr.u64()
-				if size > uint64(len(data)) || base+size > uint64(len(data)) {
+				fileSize := uint64(len(data))
+				if base > fileSize || size > fileSize-base {
 					return crash, errors.New("minidump memory range exceeds file")
 				}
-				ranges = append(ranges, memoryRange{addr, data[base : base+size]})
-				base += size
+				end := base + size
+				ranges = append(ranges, memoryRange{addr, data[int(base):int(end)]})
+				base = end
 			}
 			if mr.err != nil {
 				return crash, mr.err

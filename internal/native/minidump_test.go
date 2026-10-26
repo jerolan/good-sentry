@@ -84,6 +84,23 @@ func buildAMD64MinidumpWithContext(contextSize int, xstate bool) []byte {
 	return buf
 }
 
+func buildMemory64Minidump(fileRVA, size uint64) []byte {
+	const streamRVA = 44
+	data := make([]byte, streamRVA+32+1)
+	binary.LittleEndian.PutUint32(data, minidumpSignature)
+	binary.LittleEndian.PutUint16(data[4:], minidumpVersion)
+	binary.LittleEndian.PutUint32(data[8:], 1)
+	binary.LittleEndian.PutUint32(data[12:], 32)
+	binary.LittleEndian.PutUint32(data[32:], streamMemory64)
+	binary.LittleEndian.PutUint32(data[36:], 32)
+	binary.LittleEndian.PutUint32(data[40:], streamRVA)
+	binary.LittleEndian.PutUint64(data[streamRVA:], 1)
+	binary.LittleEndian.PutUint64(data[streamRVA+8:], fileRVA)
+	binary.LittleEndian.PutUint64(data[streamRVA+16:], 0x1000)
+	binary.LittleEndian.PutUint64(data[streamRVA+24:], size)
+	return data
+}
+
 func minidumpStream(t *testing.T, data []byte, typ uint32) (entry, body, size int) {
 	t.Helper()
 	count := int(binary.LittleEndian.Uint32(data[8:]))
@@ -200,6 +217,43 @@ func TestParseMinidumpAndBreakpadSymbols(t *testing.T) {
 	if crash.Frames[0].Function != "CrashFunction" || crash.Frames[0].File != "C:\\src\\crash.cc" || crash.Frames[0].Line != 42 {
 		t.Fatalf("symbolication: %+v", crash.Frames[0])
 	}
+}
+
+func TestParseMinidumpValidatesMemory64FileRanges(t *testing.T) {
+	const fileSize = uint64(44 + 32 + 1)
+	for _, test := range []struct {
+		name string
+		base uint64
+		size uint64
+	}{
+		{name: "addition_overflow", base: ^uint64(0), size: 1},
+		{name: "size_past_end", base: fileSize - 1, size: 2},
+		{name: "base_past_end", base: fileSize + 1, size: 0},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var parseErr error
+			var panicValue any
+			func() {
+				defer func() { panicValue = recover() }()
+				_, parseErr = ParseMinidump(buildMemory64Minidump(test.base, test.size))
+			}()
+			if panicValue != nil {
+				t.Fatalf("ParseMinidump panicked on a malformed Memory64 file range: %v", panicValue)
+			}
+			if parseErr == nil {
+				t.Fatal("ParseMinidump accepted a malformed Memory64 file range")
+			}
+			if !strings.Contains(parseErr.Error(), "minidump memory range exceeds file") {
+				t.Fatalf("ParseMinidump returned %v, want an out-of-file range error", parseErr)
+			}
+		})
+	}
+	t.Run("valid_in_file_range", func(t *testing.T) {
+		_, err := ParseMinidump(buildMemory64Minidump(fileSize-1, 1))
+		if err != nil && strings.Contains(err.Error(), "minidump memory range exceeds file") {
+			t.Fatalf("ParseMinidump rejected a valid in-file Memory64 range: %v", err)
+		}
+	})
 }
 
 func TestParseMinidumpUsesExceptionStreamThreadContext(t *testing.T) {

@@ -503,3 +503,13 @@ Apply the CIE `data_alignment_factor` to the signed LEB128 operand of `DW_CFA_de
 3. Verify overflow rejection and preserve existing native unwind, full Go, vet/build and exact-source CI/image gates through `gh`.
 
 Status (2026-10-26 UTC): complete at `5b8ad1915557fc748dc4efbee06cc72191cc961c`. Focused signed-CFA regressions, full native race suite, full Go suite, integration-tag vet, trim-path app build, gofmt and diff checks pass. Exact-source [CI 40249096930](https://github.com/jerolan/good-sentry/actions/runs/40249096930) passed formatting, vet, PostgreSQL integration/race tests and app image build. [Image workflow 40249517100](https://github.com/jerolan/good-sentry/actions/runs/40249517100) published linux/amd64 and linux/arm64 at OCI index digest `sha256:34a6507b2ee05c07714547139a089270797faf9d74caad53b00dfbf8feb0a441`.
+
+## Minidump Memory64 range bounds
+
+Reject Memory64 file ranges whose offsets or sizes exceed the dump, using subtraction-based checks before slicing so 64-bit addition cannot wrap into a panic.
+
+1. Add a malformed Memory64 fixture with an initial file RVA of the maximum `uint64` value and a one-byte descriptor; demonstrate that the current parser panics.
+2. Validate each current file offset against the dump length and each declared size against the remaining bytes before slicing or advancing.
+3. Verify malformed input returns an error, existing native parser tests pass under race detection, and full Go/vet/build/public CI and amd64/arm64 image gates remain green through `gh`.
+
+Local validation (2026-10-26): confirmed the old parser panicked on the maximum-`uint64` RVA; deliberately weakening the guard reproduced panics for every malformed range case. The focused and full native race suites, full `go test ./... -count=1` suite with loopback access, integration-tag vet, trim-path app build, gofmt and diff checks pass. Exact-source CI and image publication remain pending.
