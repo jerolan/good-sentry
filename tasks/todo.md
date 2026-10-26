@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-068 (siguiente criterio de descubrimiento). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-070 (detalle de organización y claves de proyecto). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1908,8 +1908,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-065](../SPEC.md#close-identidad-065) | Compatible discovery surface: Organization JSON uses the public case-sensitive require2FA boolean from the per… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-066](../SPEC.md#close-identidad-066) | Compatible discovery surface: Expose the read-only discovery routes used by Sentry-compatible clients: authent… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-067](../SPEC.md#close-identidad-067) | Compatible discovery surface: Organization responses use the public OpenAPI OrganizationSchema fields with rea… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-068](../SPEC.md#close-identidad-068) | Compatible discovery surface: List routes accept strict limit or per_page from1..100 (not both with different… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-069](../SPEC.md#close-identidad-069) | Compatible discovery surface: These routes are read-only and add no schema, feature worker or external integra… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-068](../SPEC.md#close-identidad-068) | Compatible discovery surface: List routes accept strict limit or per_page from1..100 (not both with different… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-069](../SPEC.md#close-identidad-069) | Compatible discovery surface: These routes are read-only and add no schema, feature worker or external integra… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-070](../SPEC.md#close-identidad-070) | Compatible organization detail and project keys: Additive039_compat_management.sql supplies the remaining read… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-071](../SPEC.md#close-identidad-071) | Compatible organization detail and project keys: GET /api/0/organizations/{org}/ returns the live Organization… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-072](../SPEC.md#close-identidad-072) | Compatible organization detail and project keys: Project-key routes are GET/POST /api/0/projects/{org}/{projec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4776,6 +4776,29 @@ con su organización autorizada, usuario con correo como usuario, creación y
 
 Evidencia: `test-results/closure-20261025/identidad-065-067-go.log`,
 `identidad-065-cli.txt` y `identidad-065-organizations.json`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: paginación, filtros y ajustes del descubrimiento
+
+Selección registrada antes de trabajar: CLOSE-identidad-068 y -069. Candidata
+`22c66bd`.
+
+Resultado observado: el owner HTTP cubre `limit`/`per_page` de 1 a 100 con
+rechazo de valores distintos simultáneos, cursor canónico, filtros
+`query`/`owner` y 400 para parámetros desconocidos, repetidos, fuera de rango
+o con codificación inválida (`%zz`). Las listas devuelven un `Link` público
+prefijado con `rel="next"` y el cursor canónico tanto para organizaciones como
+para proyectos. Los objetos de usuario, raíz y licencia se emiten en sus rutas
+con barra final; los ajustes públicos informan solo nombre real de instancia,
+versión, entorno, estado deshabilitado de facturación, social, registro y
+creación de organizaciones, y las features activas, mientras la respuesta por
+organización mantiene la lista social vacía para no enumerar slugs, y el enlace
+de soporte apunta al gestor de incidencias público. Las rutas son de solo
+lectura y no añaden esquema, worker ni integración externa.
+
+Evidencia: `test-results/closure-20261025/identidad-065-067-go.log`, el mismo
+owner que ejercita paginación, filtros, enlaces y ajustes.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

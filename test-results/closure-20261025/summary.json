@@ -3249,6 +3249,20 @@
         "identidad-065-cli.txt",
         "identidad-065-organizations.json"
       ]
+    },
+    "CLOSE-identidad-068": {
+      "evidence": "vigente",
+      "scope": "discovery pagination, filters, prefixed links and settings content",
+      "evidence_files": [
+        "identidad-065-067-go.log"
+      ]
+    },
+    "CLOSE-identidad-069": {
+      "evidence": "vigente",
+      "scope": "discovery pagination, filters, prefixed links and settings content",
+      "evidence_files": [
+        "identidad-065-067-go.log"
+      ]
     }
   },
   "commands": [
