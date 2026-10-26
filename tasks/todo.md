@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -092 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-093
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -093 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-094
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1935,7 +1935,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-090](../SPEC.md#close-identidad-090) | Compatible project update and deletion: Additive040 expands the API-token scope constraint with org:write. Exi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-091](../SPEC.md#close-identidad-091) | Compatible project update and deletion: Additive migration062 extends membership and invitation role constrain… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-092](../SPEC.md#close-identidad-092) | Compatible project update and deletion: Compatible team mutations are POST /api/0/organizations/{org}/teams/ w… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-093](../SPEC.md#close-identidad-093) | Compatible project update and deletion: Real PostgreSQL covers040 token preservation/reopen, org:write issuanc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-093](../SPEC.md#close-identidad-093) | Compatible project update and deletion: Real PostgreSQL covers040 token preservation/reopen, org:write issuanc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-094](../SPEC.md#close-identidad-094) | Compatible project update and deletion: PUT /api/0/organizations/{org}/ accepts only OrganizationInSchema {nam… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-095](../SPEC.md#close-identidad-095) | Compatible project update and deletion: POST /api/0/organizations/ is available only when GOODSENTRY_ENABLE_OR… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-096](../SPEC.md#close-identidad-096) | Compatible project update and deletion: Real PostgreSQL covers rename preservation, invalid names and owner/ma… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5299,6 +5299,33 @@ Mapa de comprobantes:
 
 Evidencia: `test-results/closure-20261025/identidad-092-go.log` con cinco
 owners y el cambio en `internal/store/compat_people_test.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: aceptación conjunta de equipo, token y roles
+
+Selección registrada antes de trabajar: CLOSE-identidad-093. Candidata
+`26a888b`.
+
+Resultado observado: la corrida conjunta reúne los owners que sustentan el
+criterio. En PostgreSQL real: preservación y reapertura de 040 con recepción de
+su checksum, emisión y autenticación de `org:write`, renombrado de equipo con
+identificador, instante de creación y proyectos intactos, y protección del
+equipo por defecto. En HTTP real: controles de sesión de propietario, manager,
+administrador y miembro, diferencia de capacidad entre Bearer `org:read` y
+`org:write`, respuesta, privacidad, duplicado y entradas malformadas de
+invitaciones, aceptación con asignación de equipos, creación, renombrado y
+borrado de equipos con rechazo del equipo por defecto. La gestión de estas
+mutaciones en navegador queda fuera de este criterio y se cubrió por separado en
+CLOSE-identidad-089 y -090. La base de roles es GlitchTip 6.2.6 estable, con las
+tres referencias registradas en el contrato; GoodSentry mantiene la decisión
+explícita de transferencia de propiedad e invitaciones de propietario solo para
+el propietario, invitaciones de administrador y `org:write` como alias Bearer.
+La pertenencia a equipos sigue siendo metadato sin autorización de proyecto ni
+de eventos.
+
+Evidencia: `test-results/closure-20261025/identidad-093-go.log` con nueve
+owners y los comprobantes individuales de -089 a -092.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

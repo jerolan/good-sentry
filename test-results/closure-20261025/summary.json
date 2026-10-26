@@ -3445,6 +3445,13 @@
       "evidence_files": [
         "identidad-092-go.log"
       ]
+    },
+    "CLOSE-identidad-093": {
+      "evidence": "vigente",
+      "scope": "combined acceptance for migration 040, team mutations, role baseline and invitation flows",
+      "evidence_files": [
+        "identidad-093-go.log"
+      ]
     }
   },
   "commands": [
