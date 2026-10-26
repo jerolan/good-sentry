@@ -1442,8 +1442,8 @@ imagen construida y PostgreSQL externo, CLOSE-operacion-009 con el loader y
 los alias, CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
 sesiones, CLOSE-operacion-011 con features, correo, uploads y secretos, y
 CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
-abajo. Siguiente acción: CLOSE-identidad-001 (health/readiness, setup,
-sesiones, hashes, cookies, CSRF, bearer tokens y claves SDK), con dependencias
+abajo. Siguiente acción: CLOSE-identidad-002 (memberships, equipos, proyectos,
+autorización por alcance, bootstrap cerrado e IDs opacos), con dependencias
 locales resueltas. No se declara aceptación ni cierre del producto. El avance
 se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1464,7 +1464,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-operacion-010](../SPEC.md#close-operacion-010) | Deployment and configuration: GOODSENTRY_AUTH defaults to disabled for frictionless local startup. If SECRET_K… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de auth/sesiones |
 | [CLOSE-operacion-011](../SPEC.md#close-operacion-011) | Deployment and configuration: An empty VALKEY_URL selects PostgreSQL-only operation. Optional features must re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de features/correo |
 | [CLOSE-operacion-012](../SPEC.md#close-operacion-012) | Deployment and configuration: Memory target: measure application RSS under an explicit repeatable workload and… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ingestión |
-| [CLOSE-identidad-001](../SPEC.md#close-identidad-001) | Runtime and workspace contracts: Provide /healthz for process health and /readyz for database readiness. Setup… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-001](../SPEC.md#close-identidad-001) | Runtime and workspace contracts: Provide /healthz for process health and /readyz for database readiness. Setup… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de sesiones/tokens |
 | [CLOSE-identidad-002](../SPEC.md#close-identidad-002) | Runtime and workspace contracts: Organizations contain memberships and teams. Projects belong to an organizati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-003](../SPEC.md#close-identidad-003) | Runtime and workspace contracts: The automation-credential prerequisite belongs to workspace, before compatibl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-004](../SPEC.md#close-identidad-004) | Runtime and workspace contracts: An omitted or empty project list explicitly grants all current and future org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2547,6 +2547,45 @@ Evidencia: `test-results/closure-20261025/rss/`
 Siguiente acción: CLOSE-identidad-001 (health/readiness, setup, sesiones,
 hash de contraseña, cookies, CSRF, bearer tokens y claves SDK), con
 dependencias locales resueltas.
+
+### Ejecución 2026-10-26: salud, cuentas, sesiones y credenciales
+
+Selección registrada antes de trabajar: CLOSE-identidad-001, siguiente en el
+orden del plan. Candidata `7a95724`; producto sin cambios desde `54db6e4`. No
+había criterio reclamado. La unidad no cambia producto; contrasta los
+comprobantes existentes y ejecuta los owners de credenciales y recuperación.
+
+Procedimiento reproducible: reutilizar `/healthz` y `/readyz` del criterio 006;
+el setup/login/logout real de `browser.mjs` en modo `required` del criterio 007;
+`TestPasswordResetEnqueueDeliveryConsumptionAndRevocation`,
+`TestAPITokenAdministrationAndAtomicProjectBoundary`,
+`TestAPITokenHTTPContract` y `TestReleaseHTTPContract` con `-race` y PostgreSQL
+desechable; revisión de `auth.go`, `credentials.go`, el middleware de sesión,
+los tokens de proyecto y el esquema.
+
+Resultado observado: `/healthz` responde 200 con el proceso vivo y `/readyz`
+200 con PostgreSQL, 503 cuando la base se detiene y 200 al recuperarse. El
+setup crea el primer owner y la organización sin contraseña compartida; las
+contraseñas de setup, login, invitación, recuperación y cambio usan bcrypt
+`DefaultCost`. Una sesión es un valor aleatorio de 32 bytes en hexadecimal,
+se guarda como HMAC-SHA256 con `SECRET_KEY`, expira a los siete días y usa
+cookie `HttpOnly`, `SameSite=Lax` y `Secure` cuando el dominio es HTTPS. Las
+mutaciones de navegador exigen mismo origen y `X-CSRF-Token`. Los bearer de
+gestión se guardan como HMAC-SHA256, tienen prefijo identificable, expiración,
+revocación y alcance por organización/proyecto; un bearer no puede leer ni
+emitir credenciales nativas y un token de gestión no sirve como clave SDK. Las
+claves SDK solo autentican ingestión y no conceden lecturas ni mutaciones de
+gestión. La recuperación de contraseña encola, consume una vez y revoca las
+sesiones existentes. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/tests.log`, más los
+comprobantes de 006 (salud/readiness), 007 (setup/login/logout), 010 (CSRF) y
+las capturas del login requerido. No se guardaron contraseñas, sesiones ni
+CSRF.
+
+Siguiente acción: CLOSE-identidad-002 (memberships, equipos, proyectos,
+autorización por alcance, bootstrap cerrado e IDs opacos), con dependencias
+locales resueltas.
 
 ### Comprobante de integración documental
 

@@ -135,6 +135,20 @@
         "PostgreSQL memory excluded and operational target not claimed"
       ],
       "evidence_files": ["rss/summary.json", "rss/workload.json", "rss/app.log", "rss/workload-sha256.txt"]
+    },
+    "CLOSE-identidad-001": {
+      "evidence": "vigente",
+      "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
+      "covered": [
+        "healthz and readyz, including 503 while PostgreSQL is down and recovery",
+        "first owner and organization created without a shared password",
+        "bcrypt DefaultCost for user password flows",
+        "opaque hashed sessions with seven-day expiry, HttpOnly, SameSite=Lax and Secure under HTTPS",
+        "same-origin and CSRF protection for browser mutations",
+        "Hashed, revocable, scoped management bearer tokens that cannot read native account data",
+        "SDK keys authorize ingestion only and cannot manage releases"
+      ],
+      "evidence_files": ["identity/tests.log", "lifecycle.log", "readiness-negative.log", "browser/report.json"]
     }
   },
   "commands": [
