@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -033
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-034. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-034 (UI de traceMatch). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1866,7 +1866,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 029) |
-| [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | por contrastar | pendiente | Parcial: API canonical/exact verificada; falta la UI de Logs |
 | [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7744,6 +7744,29 @@ Evidencia: `test-results/closure-20261025/rendimiento-029/trace-graph.log`.
 Límites registrados: no se repite la ejecución al no haber cambios de producto;
 el comprobante es de API. El CI público y la imagen final siguen pendientes para
 la auditoría final.
+
+### Avance parcial 2026-10-26: coincidencia canónica de traza en logs
+
+CLOSE-rendimiento-034 sigue pendiente. La API queda verificada; falta la
+comportamiento de la UI de Logs.
+
+| Elemento del criterio | Resultado |
+|---|---|
+| `traceMatch=canonical` sobre logs almacenados en mayúsculas | `TestTraceHTTPContract` devuelve la fila con el identificador histórico y sin reescribir el payload |
+| `exact`, ausente o vacío mantiene coincidencia exacta | La prueba consulta en mayúsculas con `exact` y obtiene vacío |
+| Modo desconocido o canónico con traza ausente/malformada devuelve 400 | La prueba cubre `other`, canónico sin traza, canónico con `invalid` y con longitud extra |
+| Opción tipada en el filtro de logs | Verificado en el código de servidor y almacén (`LogFilter`) |
+
+Falta: demostrar en navegador que el enlace traza→logs selecciona el modo
+canónico y todo el tiempo almacenado, que el modo se muestra y sobrevive a
+paginación, recarga y aplicación de filtros, y que limpiar filtros, escribir una
+traza no hexadecimal o usar la navegación ordinaria vuelve a coincidencia
+exacta.
+
+Evidencia parcial: `test-results/closure-20261025/rendimiento-029/trace-graph.log`.
+
+Siguiente paso: ejecutar el owner de traza en navegador que cubre estos estados
+y registrar su comprobante.
 
 ### Comprobante de integración documental
 
