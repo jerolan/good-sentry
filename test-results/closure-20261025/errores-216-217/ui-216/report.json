@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "url": "http://127.0.0.1:18092/?view=issues&issue=8&org=default-organization",
+  "issueID": "8",
+  "expected": [
+    "Node SDK error run216",
+    "errors-node-acceptance",
+    "errors-node@1.0.0",
+    "errors-node-run216",
+    "errors-node-user-run216"
+  ],
+  "widths": [
+    {
+      "width": 320,
+      "documentWidth": 320,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-216-217/ui-216/issue-320.png"
+    },
+    {
+      "width": 768,
+      "documentWidth": 768,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-216-217/ui-216/issue-768.png"
+    },
+    {
+      "width": 1440,
+      "documentWidth": 1440,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-216-217/ui-216/issue-1440.png"
+    }
+  ],
+  "errors": [],
+  "failedRequests": []
+}

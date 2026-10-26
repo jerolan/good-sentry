@@ -1,0 +1,42 @@
+{
+  "criteria": ["CLOSE-errores-216", "CLOSE-errores-217"],
+  "date": "2026-10-26",
+  "product_revision": "0b11476",
+  "environment": {
+    "server": "local binary on 127.0.0.1:18092",
+    "database": "disposable PostgreSQL 18 on 127.0.0.1:18358",
+    "sdk": "official @sentry/node 11.7.0 with its default network transport",
+    "browser": "Chromium through the test-only Playwright runtime",
+    "auth": "disabled/open mode"
+  },
+  "covered": {
+    "216": "real Node exception delivered by DSN with SDK 11.7.0, environment errors-node-acceptance, release errors-node@1.0.0, component/run tags, acceptance context, user, Error value and stack trace; native API and Chromium show the same issue at 320/768/1440",
+    "217": "three fingerprinted Node events form one issue with count 3; two acknowledgements of one event ID leave count 1; a later retry after resolve preserves count, status and resolvedAt; message/environment/tag/project/release filters work; resolve/reopen/ignore/resolve+assign transitions work; restart preserves status, count, assignment, tags, environment and release in API and UI"
+  },
+  "observed": {
+    "event_id_216": "9f298cec6f6c4d96a0d63727e020040f",
+    "group_event_ids": ["2c0c8a94811c47be928302c6ff180b2a", "dbcf1bc4178546c69dc668aa31eb8335", "a14b831654d14ef19854c8df7f7c15b5"],
+    "group_count": 3,
+    "retry_event_id": "33333333333333333333333333333333",
+    "retry_count": 1,
+    "restart_status": "resolved",
+    "restart_count": 3
+  },
+  "commands": [
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run216 GOODSENTRY_ERRORS_MODE=single GOODSENTRY_NODE_SDK=<@sentry/node> node tests/compat/errorsnode/main.mjs",
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run217group GOODSENTRY_ERRORS_MODE=group GOODSENTRY_ERRORS_COUNT=3 node tests/compat/errorsnode/main.mjs",
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run217retry GOODSENTRY_ERRORS_MODE=retry GOODSENTRY_ERRORS_EVENT_ID=33333333333333333333333333333333 node tests/compat/errorsnode/main.mjs",
+    "node tests/compat/errorsgo/ui.mjs with GOODSENTRY_ISSUE_ID and GOODSENTRY_UI_EXPECT"
+  ],
+  "evidence": [
+    "node-sdk-216.json", "node-api.json", "node-issues.json", "ui-216/report.json", "ui-216/issue-320.png", "ui-216/issue-768.png", "ui-216/issue-1440.png",
+    "node-group.json", "node-group-retry-issues.json", "node-retry.json", "node-search.json", "node-triage.txt",
+    "node-retry-triage-before.json", "node-retry-after-triage.json", "node-retry-triage-after.json",
+    "node-restart-issue9.json", "node-restart-issue10.json", "ui-restart/report.json", "ui-restart/issue-320.png", "ui-restart/issue-768.png", "ui-restart/issue-1440.png",
+    "app.log", "summary.json"
+  ],
+  "limits": [
+    "The final copied image, 4569-row audit and matching public CI remain pending.",
+    "The product is not declared complete."
+  ]
+}

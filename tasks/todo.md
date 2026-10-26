@@ -1478,10 +1478,12 @@ CLOSE-errores-212 y -213 quedan vigentes con el SDK Go 0.50.0 real, API/UI,
 agrupación, retry idempotente, filtros, triaje y reinicio persistente.
 CLOSE-errores-214 y -215 quedan vigentes con el SDK Python 2.72.0 real bajo el
 mismo guion de agrupación, retry, filtros, triaje y reinicio.
+CLOSE-errores-216 y -217 quedan vigentes con el SDK Node 11.7.0 real bajo el
+mismo guion.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-errores-216. No se declara
+runtime preservado. Siguiente acción: CLOSE-errores-218. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2124,8 +2126,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-215](../SPEC.md#close-errores-215) | Python 2.72.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-038](../SPEC.md#close-rendimiento-038) | Python 2.72.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegació… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-030](../SPEC.md#close-logs-030) | Python 2.72.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlac… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-216](../SPEC.md#close-errores-216) | Node 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-217](../SPEC.md#close-errores-217) | Node 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-216](../SPEC.md#close-errores-216) | Node 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-217](../SPEC.md#close-errores-217) | Node 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras re… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-039](../SPEC.md#close-rendimiento-039) | Node 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-031](../SPEC.md#close-logs-031) | Node 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-218](../SPEC.md#close-errores-218) | Browser 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9415,7 +9417,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-errores-216. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-errores-218. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9435,7 +9437,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-errores-216. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-errores-218. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9455,7 +9457,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-errores-216. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-errores-218. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9486,7 +9488,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-errores-216. El producto
+público siguen pendientes. Siguiente acción: CLOSE-errores-218. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9515,7 +9517,36 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-errores-216. El producto
+público siguen pendientes. Siguiente acción: CLOSE-errores-218. El producto
+sigue incompleto.
+
+### Ejecución 2026-10-26: error real con SDK Node 11.7.0
+
+Selección registrada antes de trabajar: CLOSE-errores-216 y -217. Revisión de
+producto `0b11476`; `@sentry/node 11.7.0` con transporte de red por defecto,
+servidor y PostgreSQL desechables y Chromium real.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 216 | Excepción real por DSN con SDK 11.7.0, tags, contexto, usuario, entorno, release y stack trace; recuperable en API y UI a 320/768/1440 | `tests/compat/errorsnode/main.mjs`; `node-sdk-216.json`; `node-api.json`; `ui-216/report.json` |
+| 217 | Tres eventos con una firma forman un issue de conteo 3; dos envíos del mismo ID dejan conteo 1; retry posterior al resolve conserva conteo, estado y `resolvedAt` | `node-group.json`; `node-group-retry-issues.json`; `node-retry.json`; `node-retry-triage-*.json` |
+| 217 | Búsqueda y filtros por mensaje, entorno, tag, proyecto y release; resolve/reopen/ignore/assignment; persistencia tras reinicio | `node-search.json`; `node-triage.txt`; `node-restart-issue9.json`; `node-restart-issue10.json`; `ui-restart/report.json`; `app.log` |
+
+Resultado observado: el evento `9f298cec6f6c4d96a0d63727e020040f` conserva
+`sentry.javascript.node 11.7.0`, `errors-node-acceptance`,
+`errors-node@1.0.0`, los tags `component`/`acceptance.run`, el contexto
+`acceptance`, el usuario y el `Error`; API y Chromium muestran los mismos
+valores sin errores ni desbordes. Los tres eventos agrupados quedan en un issue
+con conteo 3. El ID `33333333333333333333333333333333` enviado dos veces
+mantiene conteo 1 antes y después del triaje. Los filtros devuelven los issues
+esperados. Tras reiniciar el mismo binario sobre la misma base y volumen, los
+issues conservan estado `resolved`, conteo, asignación, tags, entorno y release.
+
+Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
+capturas 320/768/1440, los recibos API y `summary.json`.
+
+Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
+público siguen pendientes. Siguiente acción: CLOSE-errores-218. El producto
 sigue incompleto.
 
 ### Comprobante de integración documental

@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "url": "http://127.0.0.1:18092/?view=issues&issue=9&org=default-organization",
+  "issueID": "9",
+  "expected": [
+    "Node SDK grouped error run217",
+    "errors-node-acceptance",
+    "errors-node@1.0.0",
+    "errors-node-run217group",
+    "GoodSentry Owner",
+    "resolved",
+    "Reopen"
+  ],
+  "widths": [
+    {
+      "width": 320,
+      "documentWidth": 320,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-216-217/ui-restart/issue-320.png"
+    },
+    {
+      "width": 768,
+      "documentWidth": 768,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-216-217/ui-restart/issue-768.png"
+    },
+    {
+      "width": 1440,
+      "documentWidth": 1440,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-216-217/ui-restart/issue-1440.png"
+    }
+  ],
+  "errors": [],
+  "failedRequests": []
+}

@@ -1,0 +1,18 @@
+{
+  "id": "10",
+  "status": "resolved",
+  "count": 1,
+  "resolvedAt": "2026-10-26T23:04:22.353162Z",
+  "eventIDs": [
+    "33333333333333333333333333333333"
+  ],
+  "event": {
+    "event_id": "33333333333333333333333333333333",
+    "tags": {
+      "component": "errors-node",
+      "acceptance.run": "errors-node-run217retry"
+    },
+    "environment": "errors-node-acceptance",
+    "release": "errors-node@1.0.0"
+  }
+}
