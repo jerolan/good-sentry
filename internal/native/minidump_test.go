@@ -2789,6 +2789,10 @@ func TestParseNestedDebugArchivesAndSymbolicate(t *testing.T) {
 	layerTwo := buildTestZIP(t, []testTARFile{{Name: "layer-one.tar", Data: nestedTAR}})
 	layerThree := gzipTestArchive(t, buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "layer-two.zip", Data: layerTwo}}))
 	fourLayers := buildTestZIP(t, []testTARFile{{Name: "layer-three.tar.gz", Data: layerThree}})
+	eightLayers := fourLayers
+	for depth := 5; depth <= 8; depth++ {
+		eightLayers = buildTestZIP(t, []testTARFile{{Name: fmt.Sprintf("layer-%d.zip", depth-1), Data: eightLayers}})
+	}
 	cases := []struct {
 		name string
 		data []byte
@@ -2797,6 +2801,7 @@ func TestParseNestedDebugArchivesAndSymbolicate(t *testing.T) {
 		{name: "zip inside tar", data: buildTestTAR(t, tar.FormatUSTAR, []testTARFile{{Name: "nested.zip", Data: nestedZIP}})},
 		{name: "gzip tar inside zip", data: buildTestZIP(t, []testTARFile{{Name: "nested.tar.gz", Data: nestedGzipTAR}})},
 		{name: "four mixed layers", data: fourLayers},
+		{name: "eight mixed layers", data: eightLayers},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -2824,10 +2829,10 @@ func TestParseNestedDebugArchivesAndSymbolicate(t *testing.T) {
 
 	tooDeep := buildTestZIP(t, []testTARFile{
 		{Name: "valid.sym", Data: symbol},
-		{Name: "layer-four.zip", Data: fourLayers},
+		{Name: "layer-eight.zip", Data: eightLayers},
 	})
 	if objects := ParseDebugObjects("too-deep.tar", tooDeep); len(objects) != 0 {
-		t.Fatalf("archive deeper than four layers returned partial symbols: %+v", objects)
+		t.Fatalf("archive deeper than eight layers returned partial symbols: %+v", objects)
 	}
 	malformedNested := buildTestTAR(t, tar.FormatUSTAR, []testTARFile{
 		{Name: "valid.sym", Data: symbol},

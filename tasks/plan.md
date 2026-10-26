@@ -483,3 +483,13 @@ Complete the DWARF 5 `DW_OP_xderef` operations without pretending the captured p
 3. Run the focused native race suite, integration-tag vet, trim-path build, full project verification and exact-source GitHub CI/image publication through `gh`.
 
 Status (2026-10-25 UTC): complete at `71a957e9a0bdd2014031f12c417946cf1cf34a3c`. Local native race tests, full Go suite, integration-tag vet, trim-path build and diff check pass. [CI 40245600629](https://github.com/jerolan/good-sentry/actions/runs/40245600629) passed formatting, vet, PostgreSQL integration/race tests and image build. [Image workflow 40245972410](https://github.com/jerolan/good-sentry/actions/runs/40245972410) published amd64/arm64 at manifest digest `sha256:8f39fbce5c657b1e8fe852001d334ce163e670f73007f3d95b091062d1f8ebc5`.
+
+## Native nested debug archive depth
+
+Raise bounded ZIP/TAR/gzip-TAR discovery from four to eight layers to accept more deeply wrapped symbol bundles. Keep the shared 256 logical-entry and 128 MiB expanded-byte budgets, count nested containers and descendants together, and reject a ninth layer or malformed child archive atomically without partial symbols.
+
+1. Extend the existing nested archive symbolication owner with mixed eight-layer success and nine-layer rejection alongside a valid sibling.
+2. Raise the single depth bound while preserving shared budgets and no-partial results.
+3. Verify native race tests, integration-tag vet, trim-path build, full suite, diff checks and exact-source CI/image publication through `gh`.
+
+Status (2026-10-25 UTC): local implementation and verification complete. The previous four-layer parser failed the new eight-layer case; eight-layer source-line symbolication and ninth-layer atomic rejection now pass. Native race, full `go test ./... -count=1`, integration-tag vet, trim-path build and `git diff --check` pass. Exact-source CI and image publication remain pending.
