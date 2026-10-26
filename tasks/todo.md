@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-alertas-011. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-001. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -8587,6 +8587,29 @@ Evidencia: `test-results/closure-20261025/alertas-010/config.log` y
 Límites registrados: el orden de parada de workers antes de cerrar PostgreSQL
 se apoya en el ciclo de vida de `main`; no hay una prueba dedicada de ese
 orden en esta ejecución. El CI público y la imagen final siguen pendientes.
+
+### Ejecución 2026-10-26: historial y UI de alertas
+
+Selección registrada antes de trabajar: CLOSE-alertas-011. Candidata
+`9061d89`. Owner `tests/compat/browser-alerts.mjs` con un webhook
+local que responde 204 y un miembro real creado por invitación.
+
+| Comprobación | Resultado |
+|---|---|
+| Módulo separado, defaults, controles de destinatario y validación retenida | Pasa |
+| Filtros de proyecto/regla en URL | Pasa |
+| Test encola de verdad y muestra intento completado 204 y estado sent | Pasa |
+| Captura/entorno real y paginación de 25 entregas tras recarga | Pasa |
+| Pausa/activación, tipo inmutable y borrado con confirmación | Pasa |
+| Miembro real sin navegación, controles ni metadatos de destino | Pasa |
+| Responsive | Capturas a 320, 768 y 1440 px sin errores de página ni peticiones fallidas |
+
+Evidencia: `test-results/closure-20261025/alertas-011/report.json` y sus
+capturas.
+
+Límites registrados: el webhook es un receptor local; no se envía a un proveedor
+externo real. El CI público y la imagen final siguen pendientes para la
+auditoría final.
 
 ### Comprobante de integración documental
 

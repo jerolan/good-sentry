@@ -4355,6 +4355,13 @@
         "alertas-008/payload-transport.log"
       ]
     },
+    "CLOSE-alertas-011": {
+      "evidence": "vigente",
+      "scope": "alert UI module with retained inputs, truthful queue/attempt display, 25-row delivery history, pause/immutable-kind/delete and member restrictions",
+      "evidence_files": [
+        "alertas-011/report.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

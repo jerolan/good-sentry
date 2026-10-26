@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "checks": [
+    "Module loads; documented defaults, recipient controls, retained validation and project/rule URL filters work",
+    "Test action queues normally; real204 delivery, completed attempt and sent status are visible",
+    "Real capture/environment matching and 25-row delivery pagination persist through reload",
+    "Pause/enable, immutable-kind edit and concrete delete confirmation work",
+    "Real member has no alert navigation, controls or destination metadata on direct URL"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-create-form-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-create-form-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-create-form-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-rule-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-rule-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-rule-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-delivery-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-delivery-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-delivery-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-capture-sent-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-capture-sent-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-capture-sent-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-history-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-history-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-history-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-member-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-member-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/alertas-011/alert-member-1440.png"
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "location": "http://127.0.0.1:19207/api/v1/me"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "location": "http://127.0.0.1:19207/api/v1/organizations/alerts-011/projects/3/alerts"
+    }
+  ]
+}
