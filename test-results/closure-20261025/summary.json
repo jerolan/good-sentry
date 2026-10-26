@@ -3186,6 +3186,42 @@
         "alertas-022-025-go.log"
       ],
       "blocked": "Faltan recibos reales de cada proveedor y autorización de publicación/CI."
+    },
+    "CLOSE-alertas-032": {
+      "evidence": "vigente",
+      "scope": "Mattermost recipient admission, migration058, payload and acknowledgment",
+      "evidence_files": [
+        "alertas-032-036-go.log"
+      ]
+    },
+    "CLOSE-alertas-033": {
+      "evidence": "vigente",
+      "scope": "Mattermost recipient admission, migration058, payload and acknowledgment",
+      "evidence_files": [
+        "alertas-032-036-go.log"
+      ]
+    },
+    "CLOSE-alertas-034": {
+      "evidence": "vigente",
+      "scope": "Mattermost recipient admission, migration058, payload and acknowledgment",
+      "evidence_files": [
+        "alertas-032-036-go.log"
+      ]
+    },
+    "CLOSE-alertas-035": {
+      "evidence": "vigente",
+      "scope": "Mattermost recipient admission, migration058, payload and acknowledgment",
+      "evidence_files": [
+        "alertas-032-036-go.log"
+      ]
+    },
+    "CLOSE-alertas-036": {
+      "evidence": "bloqueada",
+      "scope": "Mattermost UI and acceptance; real receipt unavailable",
+      "evidence_files": [
+        "alertas-032-036-go.log"
+      ],
+      "blocked": "Falta un recibo real de Mattermost autorizado."
     }
   },
   "commands": [

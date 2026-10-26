@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-032 (Mattermost como proveedor). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-065 (descubrimiento compatible). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1900,11 +1900,11 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-029](../SPEC.md#close-alertas-029) | Additional provider webhooks: ntfy receives the summary and canonical URL as a UTF-8 plain-text POST of at mos… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-030](../SPEC.md#close-alertas-030) | Additional provider webhooks: Zulip uses its documented Slack-compatible incoming webhook URL and receives {"t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-031](../SPEC.md#close-alertas-031) | Additional provider webhooks: The Alert dialog exposes each provider type beside Slack, labels the destination… | implementada (local) | bloqueada | Recibos reales de cada proveedor y publicación/CI |
-| [CLOSE-alertas-032](../SPEC.md#close-alertas-032) | Mattermost incoming webhooks: GlitchTip supports Mattermost incoming-webhook alert recipients. GoodSentry adds… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-033](../SPEC.md#close-alertas-033) | Mattermost incoming webhooks: Additive migration 058_mattermost_alerts.sql expands only alert_deliveries_recip… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-034](../SPEC.md#close-alertas-034) | Mattermost incoming webhooks: POST Content-Type: application/json with {"text": summary plus resource link}. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-035](../SPEC.md#close-alertas-035) | Mattermost incoming webhooks: Mattermost succeeds only for HTTP 200 with a complete response body that trims t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-036](../SPEC.md#close-alertas-036) | Mattermost incoming webhooks: Expose Mattermost in the existing Alert dialog with its own label/help and a rem… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-032](../SPEC.md#close-alertas-032) | Mattermost incoming webhooks: GlitchTip supports Mattermost incoming-webhook alert recipients. GoodSentry adds… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-033](../SPEC.md#close-alertas-033) | Mattermost incoming webhooks: Additive migration 058_mattermost_alerts.sql expands only alert_deliveries_recip… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-034](../SPEC.md#close-alertas-034) | Mattermost incoming webhooks: POST Content-Type: application/json with {"text": summary plus resource link}. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-035](../SPEC.md#close-alertas-035) | Mattermost incoming webhooks: Mattermost succeeds only for HTTP 200 with a complete response body that trims t… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-036](../SPEC.md#close-alertas-036) | Mattermost incoming webhooks: Expose Mattermost in the existing Alert dialog with its own label/help and a rem… | implementada (local) | bloqueada | Recibo real de Mattermost autorizado |
 | [CLOSE-identidad-065](../SPEC.md#close-identidad-065) | Compatible discovery surface: Organization JSON uses the public case-sensitive require2FA boolean from the per… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-066](../SPEC.md#close-identidad-066) | Compatible discovery surface: Expose the read-only discovery routes used by Sentry-compatible clients: authent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-067](../SPEC.md#close-identidad-067) | Compatible discovery surface: Organization responses use the public OpenAPI OrganizationSchema fields with rea… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4725,6 +4725,33 @@ Bloqueo registrado para CLOSE-alertas-031: exige Chromium cubriendo todas las
 opciones, aceptación sobre imagen desechable con reinicio y recibos reales de
 cada proveedor, ninguno disponible ni autorizado aquí. Desbloqueo: destinos
 reales autorizados y publicación/CI.
+
+### Ejecución 2026-10-26: Mattermost como proveedor
+
+Selección registrada antes de trabajar: CLOSE-alertas-032 a -036. Candidata
+`f859b06`.
+
+Resultado observado: `mattermost` existe como tipo explícito con la misma
+admisión de URL, recorte, secreto, visibilidad, política de red, snapshot,
+clasificación de reintento y límites de intentos que el resto de webhooks. La
+migración `058_mattermost_alerts.sql` solo amplía la restricción de tipo y su
+owner conserva reglas, destinos, payloads, intentos, estado y recibos previos.
+El POST usa `application/json` con `{"text": …}`, resumen escapado en
+Markdown, cada `@` neutralizado con U+200B, un enlace Markdown «View in
+GoodSentry» con la URL canónica, límite de 4000 caracteres y truncado solo del
+resumen; un enlace que no cabe por sí solo falla como `invalid_payload`.
+Mattermost solo se considera entregado con 200 y cuerpo recortado `ok`, con
+lectura acotada a 4096 bytes, sin exponer el cuerpo y sin añadir semántica de
+`Retry-After`. Los owners de mensaje, contexto, escapado, límites,
+reconocimiento y migración pasan con `-race` (79 subpruebas).
+
+Evidencia: `test-results/closure-20261025/alertas-032-036-go.log`.
+
+Bloqueo registrado para CLOSE-alertas-036: la exposición en el diálogo y el
+roundtrip en navegador están implementados, pero el criterio exige además un
+recibo real de Mattermost, que no está disponible ni autorizado. Desbloqueo: un
+destino Mattermost autorizado; la aceptación local de imagen y la publicación
+exacta ya figuran en el propio criterio.
 
 ### Comprobante de integración documental
 
