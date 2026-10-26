@@ -3957,6 +3957,13 @@
         "rendimiento-018/detail-tests.log"
       ]
     },
+    "CLOSE-rendimiento-020": {
+      "evidence": "vigente",
+      "scope": "transaction occurrence UI for legacy and segment samples, safe raw rendering, paging, navigation, member access and logs-disabled layout at 320/768/1440",
+      "evidence_files": [
+        "rendimiento-020/report.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -019
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -020
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-020 (intento fallido registrado). No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-021. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1852,7 +1852,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-017](../SPEC.md#close-rendimiento-017) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-018](../SPEC.md#close-rendimiento-018) | Sentry spans and native telemetry reads: The detail JSON has sample matching the reference above; projectName,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-019](../SPEC.md#close-rendimiento-019) | Sentry spans and native telemetry reads: For legacy transactions, read the selected event's nested spans array… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 018) |
-| [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | implementada | fallida | Reparar aceptación de navegador; ver intento 2026-10-26 |
+| [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-021](../SPEC.md#close-rendimiento-021) | Sentry spans and native telemetry reads: The child-operation statistics increment groups spans by exact operat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7379,6 +7379,34 @@ registrado como fallido con captura y error en
 Siguiente paso: diagnosticar el estado de copia de la traza (permisos de
 portapapeles o carrera del aviso) sin reducir las comprobaciones del contrato, y
 repetir la aceptación completa. No se marca el criterio como vigente.
+
+### Ejecución 2026-10-26: detalle de ocurrencia en la UI (reparado)
+
+Tras el intento fallido registrado arriba, se corrigieron tres problemas del
+arnés sin reducir las comprobaciones: el ayudante de definiciones acepta valores
+repetidos legítimos, el contexto de Chromium recibe permisos de portapapeles y
+la captura fuerza el origen del documento antes de comprobarlo. La aceptación
+completa pasa contra 18170 (logs activos) y 18171 (logs desactivados), ambos
+sobre la misma base.
+
+Resultados observados:
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Muestra legacy desde agregados de todos los proyectos | Abre el proyecto real; tiempos, padre, contexto, texto inseguro y enteros de 64 bits se muestran seguros |
+| Identidades y tiempos ausentes o malformados | Se muestran como no disponibles sin romper el acceso |
+| Paginación 50+1, recarga, atrás y enlaces relacionados | Conservan origen, ventana y proyecto |
+| Segmento autónomo | Incluye otro segmento y un span fuera de ventana con su padre real; refresco, recarga, atrás y paginación conservan identidad inmutable y limpian el sample al navegar |
+| Miembro real de la organización | Lee ambos formatos por la UI |
+| Logs desactivados | Ambos formatos se renderizan, el copiado de traza funciona y se ocultan enlaces de logs/navegación |
+| Diseño responsivo | Sin desbordamiento a 320, 768 y 1440 px; sin errores de página, consola ni peticiones fallidas |
+
+Evidencia: `test-results/closure-20261025/rendimiento-020/report.json` y las
+capturas `rendimiento-020/*.png`.
+
+Límites registrados: la aceptación usa Chromium headless con permisos explícitos
+de portapapeles; el flujo manual en un navegador de escritorio no se repite. El
+CI público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

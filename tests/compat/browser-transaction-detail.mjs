@@ -33,7 +33,7 @@ const literalJSON = value => JSON.stringify(value).replaceAll('"INT64_MAX_LITERA
 let page, projectA, projectB, organization, failure;
 
 async function session(target, loginEmail, loginPassword, label) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'en-US', reducedMotion: 'reduce' });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'en-US', reducedMotion: 'reduce', permissions: ['clipboard-read', 'clipboard-write'] });
   const response = await context.request.post(new URL('api/v1/login', target).href, { headers: { Origin: target.origin }, data: { email: loginEmail, password: loginPassword } });
   assert.equal(response.status(), 200, `${label} authenticates against the real server`);
   const me = await response.json();
@@ -62,7 +62,7 @@ async function capture(tab, name, withContext = false) {
   await tab.getByRole('status').filter({ hasText: 'Trace ID copied.' }).waitFor({ state: 'hidden' });
   for (const width of [320, 768, 1440]) {
     await tab.setViewportSize({ width, height: 1000 });
-    await tab.getByRole('heading', { level: 1 }).focus(); await tab.keyboard.press('Control+Home'); await tab.mouse.click(5, 5);
+    await tab.getByRole('heading', { level: 1 }).focus(); await tab.evaluate(() => window.scrollTo(0, 0)); await tab.mouse.click(5, 5);
     assert.equal(await tab.evaluate(() => scrollY), 0, 'Overview starts at the document origin');
     const size = await tab.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth }));
     dimensions.push({ name, ...size }); assert.equal(size.document, size.viewport, `${name} fits ${width}px`);
