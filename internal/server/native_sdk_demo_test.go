@@ -169,6 +169,11 @@ func TestNativeSDKDemoCrashSymbolicates(t *testing.T) {
 	if eventID == "" {
 		t.Fatalf("Crashpad event did not resolve goodsentry_demo_crash to main.c with a positive line; last frames=%+v images=%+v", lastFrames, lastImages)
 	}
+	var issueID string
+	if err := f.sql.QueryRow(f.ctx, `SELECT i.id::text FROM events e JOIN issues i ON i.id=e.issue_id
+		WHERE e.project_id=$1::bigint AND e.event_id=$2`, f.project.ID, eventID).Scan(&issueID); err != nil || issueID == "" {
+		t.Fatalf("native SDK event has no issue link: %v", err)
+	}
 
 	var attachmentCount, envelopeItemCount int
 	if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM attachments WHERE project_id=$1::bigint AND event_id=$2`, f.project.ID, eventID).Scan(&attachmentCount); err != nil {

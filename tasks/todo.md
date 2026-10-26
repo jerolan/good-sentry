@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -026 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -027 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-027. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-028. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2148,7 +2148,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-037](../SPEC.md#close-alertas-037) | Regla de frecuencia de errores: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entrega… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-038](../SPEC.md#close-alertas-038) | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-039](../SPEC.md#close-alertas-039) | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payloa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | implementada (local) | vigente | Comprobante 2026-10-26 abajo; CI público queda para la auditoría final |
 | [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -9125,6 +9125,28 @@ Evidencia: `test-results/closure-20261025/nativo-026/sdk-demo.log` y
 Límites registrados: la ejecución fue local con PostgreSQL desechable; el CI
 público y la imagen final siguen pendientes para la auditoría final. Esto prueba
 un flujo local del SDK, no toda la matriz de arquitecturas/formas nativas.
+
+### Ejecución 2026-10-26: crash real Linux/amd64
+
+Selección registrada antes de trabajar: CLOSE-nativo-027. Revisión de producto
+`ddde6e8`; el incremento añade al demo la comprobación de que el evento nativo
+queda vinculado a una fila de issue.
+
+| Elemento | Comprobante |
+|---|---|---|
+| `sentry-native` 0.17.4/Crashpad y símbolos del mismo ELF/DWARF | `examples/sentry-native/CMakeLists.txt`; `TestNativeSDKDemoCrashSymbolicates` |
+| Subida autenticada del ejecutable exacto y crash intencional con el mismo binario/DSN | `TestNativeSDKDemoCrashSymbolicates` |
+| Evento e issue con `goodsentry_demo_crash`, `main.c` y línea positiva | `TestNativeSDKDemoCrashSymbolicates`; `sdk-issue.log` |
+| Vínculo evento→issue verificado en PostgreSQL | `TestNativeSDKDemoCrashSymbolicates` (`events e JOIN issues i`) |
+| Bytes del dump descartados | `TestNativeSDKDemoCrashSymbolicates` (attachments y envelope items cero) |
+| Repetición con `-race` | `sdk-issue-race.log` |
+
+Evidencia: `test-results/closure-20261025/nativo-027/sdk-issue.log` y
+`sdk-issue-race.log`.
+
+Límites registrados: ejecución local con PostgreSQL desechable; CI público e
+imagen final siguen pendientes para la auditoría final. No se exige otro crash
+real por cada combinación de arquitectura.
 
 ### Comprobante de integración documental
 
