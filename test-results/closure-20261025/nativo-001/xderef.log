@@ -1,0 +1,52 @@
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-1
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-2
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-3
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-4
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-1
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-2
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-3
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-4
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-5
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-6
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-7
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-8
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/nonzero_address_space
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_address-space_identifier
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_address
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_size_operand
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/zero_size
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/size_larger_than_pointer
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/size_larger_than_four-byte_pointer
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/read_beyond_captured_bytes
+--- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-1 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-2 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-3 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-4 (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-1 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-2 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-3 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-4 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-5 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-6 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-7 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-8 (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/nonzero_address_space (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_address-space_identifier (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_address (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_size_operand (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/zero_size (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/size_larger_than_pointer (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/size_larger_than_four-byte_pointer (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/read_beyond_captured_bytes (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.004s

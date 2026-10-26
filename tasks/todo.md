@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-001. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-002. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1726,7 +1726,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8610,6 +8610,24 @@ capturas.
 Límites registrados: el webhook es un receptor local; no se envía a un proveedor
 externo real. El CI público y la imagen final siguen pendientes para la
 auditoría final.
+
+### Ejecución 2026-10-26: dereferencia extendida CFI
+
+Selección registrada antes de trabajar: CLOSE-nativo-001. Candidata
+`3102b99`.
+
+| Elemento | Comprobante |
+|---|---|
+| `DW_OP_xderef` (0x18) usa el espacio de direcciones capturado | `TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace` |
+| `DW_OP_xderef_size` (0x95) para cada tamaño soportado | Subtests `xderef-size-N` |
+| Espacio de direcciones distinto de cero | Caso `nonzero address space` |
+| Operandos ausentes o tamaño cero rechazados | Casos `missing address-space identifier`, `missing address`, `missing size operand` y `zero size` |
+
+Evidencia: `test-results/closure-20261025/nativo-001/xderef.log`.
+
+Límites registrados: la prueba es pura de evaluación CFI; el crash nativo real
+pertenece a los criterios de aceptación del SDK nativo. El CI público y la
+imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

@@ -4362,6 +4362,13 @@
         "alertas-011/report.json"
       ]
     },
+    "CLOSE-nativo-001": {
+      "evidence": "vigente",
+      "scope": "CFI extended dereference with captured address space, sized variants and rejection of missing operands or zero size",
+      "evidence_files": [
+        "nativo-001/xderef.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
