@@ -1,9 +1,19 @@
+=== RUN   TestX86ELFFrameUnwinds
+--- PASS: TestX86ELFFrameUnwinds (0.00s)
+=== RUN   TestARM64ELFFrameUnwinds
+--- PASS: TestARM64ELFFrameUnwinds (0.00s)
 === RUN   TestARM32EHABIFrameOperationBound
 --- PASS: TestARM32EHABIFrameOperationBound (0.00s)
 === RUN   TestARM32DefaultCFIRegisters
 --- PASS: TestARM32DefaultCFIRegisters (0.00s)
+=== RUN   TestARM32EHABIEntryBound
+--- PASS: TestARM32EHABIEntryBound (0.04s)
+=== RUN   TestARM32EHABIOperationByteBound
+--- PASS: TestARM32EHABIOperationByteBound (0.07s)
 === RUN   TestMachODSYMDebugFrameUnwinds
 --- PASS: TestMachODSYMDebugFrameUnwinds (0.00s)
+=== RUN   TestMachOARM64DebugFrameUnwinds
+--- PASS: TestMachOARM64DebugFrameUnwinds (0.00s)
 === RUN   TestARM32CFIUnwindsUsingRestoredRegisters
 === RUN   TestARM32CFIUnwindsUsingRestoredRegisters/restore_callee-saved_r4
 === RUN   TestARM32CFIUnwindsUsingRestoredRegisters/unavailable_saved_r4_stops
@@ -253,11 +263,11 @@
 === RUN   TestCFIIndirectCIEPersonalityEncodingUnwinds
 --- PASS: TestCFIIndirectCIEPersonalityEncodingUnwinds (0.00s)
 === RUN   TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation
-=== RUN   TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/pointer_crosses_augmentation
 === RUN   TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/truncated_pointer
+=== RUN   TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/pointer_crosses_augmentation
 --- PASS: TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation (0.00s)
-    --- PASS: TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/pointer_crosses_augmentation (0.00s)
     --- PASS: TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/truncated_pointer (0.00s)
+    --- PASS: TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/pointer_crosses_augmentation (0.00s)
 === RUN   TestCFIIndirectFDEPointerEncodingRemainsUnsupported
 --- PASS: TestCFIIndirectFDEPointerEncodingRemainsUnsupported (0.00s)
 === RUN   TestCFIExpressionRejectsRegisterIDTruncation
@@ -359,18 +369,18 @@
 === RUN   TestParseCFIECIEV4AddressAndSegmentSizes
 === RUN   TestParseCFIECIEV4AddressAndSegmentSizes/address_size_4
 === RUN   TestParseCFIECIEV4AddressAndSegmentSizes/address_size_8
-=== RUN   TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_address_size
 === RUN   TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_segment_size
 === RUN   TestParseCFIECIEV4AddressAndSegmentSizes/truncated_sizes
+=== RUN   TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_address_size
 --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes (0.00s)
     --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/address_size_4 (0.00s)
     --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/address_size_8 (0.00s)
-    --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_address_size (0.00s)
     --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_segment_size (0.00s)
     --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/truncated_sizes (0.00s)
+    --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_address_size (0.00s)
 === RUN   TestCFIParserRejectsTruncatedSection
 --- PASS: TestCFIParserRejectsTruncatedSection (0.00s)
 === RUN   TestSymbolicatePrefersExactPDBProcedureToPublicFallback
 --- PASS: TestSymbolicatePrefersExactPDBProcedureToPublicFallback (0.00s)
 PASS
-ok  	goodsentry/internal/native	0.010s
+ok  	goodsentry/internal/native	0.127s

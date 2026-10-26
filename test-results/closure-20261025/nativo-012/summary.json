@@ -1,16 +1,21 @@
 {
   "criteria": ["CLOSE-nativo-012"],
-  "evidence": "parcial",
+  "evidence": "vigente",
   "date": "2026-10-26",
   "product_revision": "2fb3064",
-  "note": "This increment fixes empty-section selection for ELF/Mach-O CFI and adds ARM32 operation/default tests. The criterion remains partial because several explicit architecture fixtures and two numeric EHABI bounds are not covered.",
+  "note": "This increment fixes empty-section selection for ELF/Mach-O CFI and adds x86/ARM64 ELF, ARM64 Mach-O, ARM32 operation/default and EHABI bound tests.",
   "environment": {
     "go": "1.27.2",
     "os": "linux/amd64"
   },
   "owners": [
     "TestMachODSYMDebugFrameUnwinds",
+    "TestMachOARM64DebugFrameUnwinds",
+    "TestX86ELFFrameUnwinds",
+    "TestARM64ELFFrameUnwinds",
     "TestARM32EHABIFrameOperationBound",
+    "TestARM32EHABIEntryBound",
+    "TestARM32EHABIOperationByteBound",
     "TestARM32DefaultCFIRegisters",
     "TestCFIUnwindsWithoutFramePointer",
     "TestARM32CFIUnwindsUsingRestoredRegisters",
@@ -46,27 +51,23 @@
     "ELF AMD64 and ARM32 DWARF CFI plus ARM32 EHABI inline/extab entries, VSP/core-register operations and CANTUNWIND/unsupported fail-closed behavior",
     "RISC-V64 ELF CFI with the alternate return column and architecture matching",
     "Mach-O AMD64 CFI from a dSYM __debug_frame even when __eh_frame exists but is empty",
+    "ELF x86 and ARM64 CFI from synthetic .debug_frame fixtures",
+    "Mach-O ARM64 CFI from a synthetic __debug_frame",
     "CIE v4 address-size 4/8 and rejection of nonzero segment selectors, unsupported sizes and truncation",
     "ARM32 same-value defaults for r4-r8, r10, r11 and r13; r9 undefined unless described; explicit rules preserved",
     "the 256-operation per-frame EHABI bound (256 succeeds, 257 fails)",
+    "the 262144-entry .ARM.exidx per-file bound (262144 accepted, 262145 rejected)",
+    "the 16MiB decoded EHABI operation-byte bound (under budget accepted, over budget rejected)",
     "CFI expression branch, shift, signed arithmetic, modulo, stack, LEB, pointer-encoding, personality, register/stack-value, dereference, address-width and implicit-value behaviors",
     "signed factored offsets, signal-frame return addresses, truncated CFI and unknown/unsupported rules fail without partial unwind state",
     "stored Breakpad, ELF, Mach-O/dSYM and bounded archive formats remain consumed with the 25-file/64MiB symbol budget"
   ],
-  "gaps": [
-    "No fixture exercises ELF CFI for x86.",
-    "No fixture exercises ELF CFI for ARM64.",
-    "No fixture exercises Mach-O ARM64 CFI.",
-    "The 262144-entry .ARM.exidx per-file bound has no test.",
-    "The 16MiB decoded EHABI operation-byte bound has no test."
-  ],
   "observed": {
-    "cfi": "PASS in 0.010s",
-    "native": "PASS in 0.708s",
+    "cfi": "PASS in 0.127s",
+    "native": "PASS in 0.837s",
     "vet": "PASS for ./internal/native"
   },
   "limits": [
-    "The criterion is partial; it is not recorded as vigente.",
     "No final image, public CI or external SDK crash was exercised in this increment.",
     "The product is not declared an acceptance candidate or closed."
   ],

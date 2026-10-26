@@ -4466,8 +4466,8 @@
       ]
     },
     "CLOSE-nativo-012": {
-      "evidence": "parcial",
-      "scope": "frame-pointer and CFI reconstruction, ARM32 defaults/256-op bound and Mach-O __debug_frame fix; x86/ARM64 ELF, ARM64 Mach-O and 262144/16MiB EHABI bounds remain open",
+      "evidence": "vigente",
+      "scope": "frame-pointer and CFI reconstruction across ELF/Mach-O for AMD64/x86/ARM32/ARM64/RISC-V64, ARM32 defaults and operation/entry/byte bounds, and the populated __debug_frame selection fix",
       "evidence_files": [
         "nativo-012/cfi.log",
         "nativo-012/native.log",

@@ -1154,38 +1154,7 @@ func buildARM32ELFWithCFI(savedR4Offset int64) []byte {
 }
 
 func buildARM32ELFWithSection(sectionData []byte) []byte {
-	const (
-		elfHeaderSize     = 52
-		sectionHeaderSize = 40
-	)
-	sectionNames := []byte("\x00.shstrtab\x00.debug_frame\x00")
-	sectionNamesOffset := elfHeaderSize
-	sectionDataOffset := (sectionNamesOffset + len(sectionNames) + 3) &^ 3
-	sectionTableOffset := (sectionDataOffset + len(sectionData) + 3) &^ 3
-	data := make([]byte, sectionTableOffset+3*sectionHeaderSize)
-	copy(data[sectionNamesOffset:], sectionNames)
-	copy(data[sectionDataOffset:], sectionData)
-	copy(data[:4], []byte{0x7f, 'E', 'L', 'F'})
-	data[4], data[5], data[6] = byte(elf.ELFCLASS32), byte(elf.ELFDATA2LSB), 1
-	binary.LittleEndian.PutUint16(data[16:], uint16(elf.ET_REL))
-	binary.LittleEndian.PutUint16(data[18:], uint16(elf.EM_ARM))
-	binary.LittleEndian.PutUint32(data[20:], 1)
-	binary.LittleEndian.PutUint32(data[32:], uint32(sectionTableOffset))
-	binary.LittleEndian.PutUint16(data[40:], elfHeaderSize)
-	binary.LittleEndian.PutUint16(data[46:], sectionHeaderSize)
-	binary.LittleEndian.PutUint16(data[48:], 3)
-	binary.LittleEndian.PutUint16(data[50:], 1)
-	writeSection := func(index int, name, kind, offset, size, alignment uint32) {
-		start := sectionTableOffset + index*sectionHeaderSize
-		binary.LittleEndian.PutUint32(data[start:], name)
-		binary.LittleEndian.PutUint32(data[start+4:], kind)
-		binary.LittleEndian.PutUint32(data[start+16:], offset)
-		binary.LittleEndian.PutUint32(data[start+20:], size)
-		binary.LittleEndian.PutUint32(data[start+32:], alignment)
-	}
-	writeSection(1, 1, uint32(elf.SHT_STRTAB), uint32(sectionNamesOffset), uint32(len(sectionNames)), 1)
-	writeSection(2, 11, uint32(elf.SHT_PROGBITS), uint32(sectionDataOffset), uint32(len(sectionData)), 4)
-	return data
+	return buildELF32DebugFrame(elf.EM_ARM, sectionData)
 }
 
 func TestParseARM32MinidumpUsesLinkRegisterWithoutFramePointer(t *testing.T) {
