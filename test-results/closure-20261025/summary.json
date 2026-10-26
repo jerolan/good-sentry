@@ -470,6 +470,17 @@
         "token never returned/logged/telemetried"
       ],
       "evidence_files": ["account-mail/tests.log"]
+    },
+    "CLOSE-identidad-030": {
+      "evidence": "vigente",
+      "scope": "single account-mail worker, MIME and SMTP delivery with retries and secret-safe logs",
+      "covered": [
+        "worker claims the outbox with a lease and sends a plain-text reset link",
+        "MIME/console and unsafe-input tests pass",
+        "SMTP delivery, temporary/permanent outcomes, TLS and credential protection pass",
+        "retry/expiry/stale lease and sent-before-redemption pass"
+      ],
+      "evidence_files": ["account-mail/tests.log"]
     }
   },
   "commands": [

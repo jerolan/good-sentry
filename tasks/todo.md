@@ -1442,10 +1442,10 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024 y 026–029 ya están
+bloques detallados 014–049 siguen pendientes; 014–024 y 026–030 ya están
 vigentes y 025 está bloqueada por publicación/CI de la misma fuente. Siguiente
-acción: CLOSE-identidad-030 (worker de correo, MIME y entrega/reintentos). No
-se declara aceptación ni cierre del producto. El avance se informa por
+acción: CLOSE-identidad-031 (redención del reset y revocación). No se declara
+aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
 
@@ -1494,7 +1494,7 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 036 |
 | [CLOSE-identidad-028](../SPEC.md#close-identidad-028) | Account email and single-use password recovery: register and login screens expose a password-reset request for… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de request |
 | [CLOSE-identidad-029](../SPEC.md#close-identidad-029) | Account email and single-use password recovery: A reset token is 32 random bytes as64 lowercase hex digits. St… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de criptografía |
-| [CLOSE-identidad-030](../SPEC.md#close-identidad-030) | Account email and single-use password recovery: The one application worker sends a plain-text MIME message thr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-030](../SPEC.md#close-identidad-030) | Account email and single-use password recovery: The one application worker sends a plain-text MIME message thr… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del worker |
 | [CLOSE-identidad-031](../SPEC.md#close-identidad-031) | Account email and single-use password recovery: POST /api/v1/account/password/reset/request is public but requ… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-032](../SPEC.md#close-identidad-032) | Account email and single-use password recovery: The reset form consumes a resetToken query parameter without p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3270,6 +3270,26 @@ Evidencia: `test-results/closure-20261025/account-mail/tests.log`.
 
 Siguiente acción: CLOSE-identidad-030 (worker de correo, MIME y entrega
 SMTP/reintentos), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: worker y MIME de recuperación
+
+Selección registrada antes de trabajar: CLOSE-identidad-030, siguiente en el
+plan. Candidata `a2d730c`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `account-mail/tests.log` y de `internal/jobs/account_mail.go`.
+
+Resultado observado: un único worker de la aplicación reclama el outbox con
+lease, envía un MIME de texto con enlace `resetToken`, respeta intentos y
+reintentos, y registra `sent`/`failed` sin exponer el token en logs. Los tests
+de `accountmail` cubren MIME/console y rechazo de entradas inseguras; los de
+SMTP cubren entrega real de loopback, respuestas temporales/permanentes, TLS
+obligatorio y protección de credenciales; el test de store cubre retry, expiry
+y lease viejo; el HTTP confirma que la entrega llega a `sent` antes de redimir.
+Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account-mail/tests.log`.
+
+Siguiente acción: CLOSE-identidad-031 (redacción del reset, token único,
+generación y revocación), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
