@@ -1,0 +1,9 @@
+PASS 200 transactions default window
+PASS 200 transactions offset zone with nanoseconds
+PASS 400 transactions incomplete range
+PASS 400 transactions empty start
+PASS 400 transactions reversed range
+PASS 400 transactions beyond 366 days
+PASS 200 logs default without restriction
+PASS 200 logs bounded half-open range
+PASS 400 logs incomplete range

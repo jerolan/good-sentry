@@ -3911,6 +3911,14 @@
         "rendimiento-013/api-integer.json"
       ]
     },
+    "CLOSE-rendimiento-014": {
+      "evidence": "vigente",
+      "scope": "native start/end windows with zones and nanoseconds, defaults, half-open filtering and strict 400 admission",
+      "evidence_files": [
+        "rendimiento-014/http-window.json",
+        "rendimiento-014/window-tests.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

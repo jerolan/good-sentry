@@ -1,0 +1,12 @@
+=== RUN   TestLogsFilterHalfOpenTimeWindowExactServiceAndScope
+--- PASS: TestLogsFilterHalfOpenTimeWindowExactServiceAndScope (0.48s)
+=== RUN   TestTraceTimingBoundsPreservePartialReversedAndZeroIntervals
+--- PASS: TestTraceTimingBoundsPreservePartialReversedAndZeroIntervals (0.70s)
+=== RUN   TestTransactionSpanGroupsRootWindowsReferenceAndOrganizationScope
+--- PASS: TestTransactionSpanGroupsRootWindowsReferenceAndOrganizationScope (0.50s)
+PASS
+ok  	goodsentry/internal/store	1.692s
+=== RUN   TestCompatibleLogFilterWindowRules
+--- PASS: TestCompatibleLogFilterWindowRules (0.00s)
+PASS
+ok  	goodsentry/internal/server	0.014s

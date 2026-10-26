@@ -1,0 +1,65 @@
+[
+  {
+    "name": "transactions default window",
+    "status": 200,
+    "expect": 200,
+    "pass": true,
+    "detail": "[]\n"
+  },
+  {
+    "name": "transactions offset zone with nanoseconds",
+    "status": 200,
+    "expect": 200,
+    "pass": true,
+    "detail": "[]\n"
+  },
+  {
+    "name": "transactions incomplete range",
+    "status": 400,
+    "expect": 400,
+    "pass": true,
+    "detail": "{\"detail\":\"Start and end must both be RFC3339 timestamps with an explicit time zone\"}\n"
+  },
+  {
+    "name": "transactions empty start",
+    "status": 400,
+    "expect": 400,
+    "pass": true,
+    "detail": "{\"detail\":\"Start and end must both be RFC3339 timestamps with an explicit time zone\"}\n"
+  },
+  {
+    "name": "transactions reversed range",
+    "status": 400,
+    "expect": 400,
+    "pass": true,
+    "detail": "{\"detail\":\"Start must precede end by at most 366 days, at microsecond precision\"}\n"
+  },
+  {
+    "name": "transactions beyond 366 days",
+    "status": 400,
+    "expect": 400,
+    "pass": true,
+    "detail": "{\"detail\":\"Start must precede end by at most 366 days, at microsecond precision\"}\n"
+  },
+  {
+    "name": "logs default without restriction",
+    "status": 200,
+    "expect": 200,
+    "pass": true,
+    "detail": "[]\n"
+  },
+  {
+    "name": "logs bounded half-open range",
+    "status": 200,
+    "expect": 200,
+    "pass": true,
+    "detail": "[]\n"
+  },
+  {
+    "name": "logs incomplete range",
+    "status": 400,
+    "expect": 400,
+    "pass": true,
+    "detail": "{\"detail\":\"Start and end must both be RFC3339 timestamps with an explicit time zone\"}\n"
+  }
+]
