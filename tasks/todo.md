@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -012 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -017 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-013. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-018. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1739,11 +1739,11 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-013](../SPEC.md#close-nativo-013) | CFI extended dereference: Scalar CFI expressions support DW_OP_implicit_value with an unsigned-LEB128 byte len… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-nativo-014](../SPEC.md#close-nativo-014) | CFI extended dereference: Decode CFI ULEB128 and SLEB128 operands without truncation: accept only values repre… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-nativo-016](../SPEC.md#close-nativo-016) | CFI extended dereference: Add RISC-V64 minidump support for Breakpad architecture 0x8006 and Crashpad Minidump… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-nativo-017](../SPEC.md#close-nativo-017) | CFI extended dereference: RISC-V64 ELF CFI accepts little-endian ELF64 EM_RISCV .eh_frame or .debug_frame and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-013](../SPEC.md#close-nativo-013) | CFI extended dereference: Scalar CFI expressions support DW_OP_implicit_value with an unsigned-LEB128 byte len… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-014](../SPEC.md#close-nativo-014) | CFI extended dereference: Decode CFI ULEB128 and SLEB128 operands without truncation: accept only values repre… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-016](../SPEC.md#close-nativo-016) | CFI extended dereference: Add RISC-V64 minidump support for Breakpad architecture 0x8006 and Crashpad Minidump… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-017](../SPEC.md#close-nativo-017) | CFI extended dereference: RISC-V64 ELF CFI accepts little-endian ELF64 EM_RISCV .eh_frame or .debug_frame and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8898,6 +8898,29 @@ Evidencia: `test-results/closure-20261025/nativo-012/cfi.log` y `native.log`.
 Límites registrados: las pruebas son unitarias y de integración nativa; no se
 usó la imagen final ni el CI público. La imagen y el CI siguen pendientes para
 la auditoría final.
+
+### Ejecución 2026-10-26: límites CFI y RISC-V64
+
+Selección registrada antes de trabajar: CLOSE-nativo-013 a CLOSE-nativo-017.
+Revisión de producto `92cb086`; no hizo falta cambiar producto: los owners
+existentes cubren cada cláusula. Este incremento solo añade documentación y
+comprobantes.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 013 | `DW_OP_implicit_value` de 1 al ancho de puntero, zero-extend y bloques inválidos; semántica de `DW_CFA_expression`/`val_expression` | `TestCFIExpressionImplicitValues`; `TestCFIRegisterExpressionsHonorStackValue` |
+| 014 | ULEB/SLEB sin truncamiento, formatos LEB de puntero EH y rechazo de registros mayores que `uint32` | `TestCFILEB128ReadersRejectOverflow`; `TestReadCFIPointerLEBFormats`; `TestCFILEBPointerEncodingUnwinds`; `TestCFIExpressionRejectsRegisterIDTruncation`; `TestApplyCFIInstructionsRejectsRegisterIDTruncation` |
+| 015 | Personalidad CIE `P` con `indirect`, campo consumido sin dereferenciar, truncamiento rechazado y FDE indirecto no soportado | `TestCFIIndirectCIEPersonalityEncodingUnwinds`; `TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation`; `TestCFIIndirectFDEPointerEncodingRemainsUnsupported` |
+| 016 | Contexto RISC-V64 528/version1/flags, x0–x31, cadena de frame records, fallback LR y tope de 64 | `TestParseRISCV64MinidumpContext`; `TestParseRISCV64RejectsInvalidContexts`; `TestRISCV64FrameRecordsAndLinkRegisterFallback`; `TestRISCV64FrameRecordChainStopsAt64Frames`; `TestRISCV64FrameRecordsRejectInvalidLinks`; `TestNativeRISCV64MinidumpIngestion` |
+| 017 | CFI ELF RISC-V64, columna de retorno, propagación de registros enteros y parada ante estado no soportado | `TestRISCV64ELFCFIUsesReturnColumnAndRestoredRegisters` |
+
+Evidencia: `test-results/closure-20261025/nativo-013/implicit.log`,
+`nativo-014/leb.log`, `nativo-015/personality.log`, `nativo-016/riscv.log` y
+`nativo-017/riscv-cfi.log`.
+
+Límites registrados: no se usó la imagen final ni el CI público. La aceptación
+con SDK nativo real y la imagen final siguen pendientes para la auditoría
+final.
 
 ### Comprobante de integración documental
 

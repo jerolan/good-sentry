@@ -4474,6 +4474,31 @@
         "nativo-012/summary.json"
       ]
     },
+    "CLOSE-nativo-013": {
+      "evidence": "vigente",
+      "scope": "DW_OP_implicit_value scalar length, zero extension, invalid blocks and expression/value-expression semantics",
+      "evidence_files": ["nativo-013/implicit.log", "nativo-013/summary.json"]
+    },
+    "CLOSE-nativo-014": {
+      "evidence": "vigente",
+      "scope": "bounded ULEB/SLEB readers, LEB EH pointer formats and rejection of register IDs above uint32",
+      "evidence_files": ["nativo-014/leb.log", "nativo-014/summary.json"]
+    },
+    "CLOSE-nativo-015": {
+      "evidence": "vigente",
+      "scope": "indirect CIE personality consumption, malformed augmentation rejection and unsupported indirect FDE pointers",
+      "evidence_files": ["nativo-015/personality.log", "nativo-015/summary.json"]
+    },
+    "CLOSE-nativo-016": {
+      "evidence": "vigente",
+      "scope": "RISC-V64 Minidump context, frame-record chain, LR fallback, bounds and end-to-end ingestion",
+      "evidence_files": ["nativo-016/riscv.log", "nativo-016/summary.json"]
+    },
+    "CLOSE-nativo-017": {
+      "evidence": "vigente",
+      "scope": "RISC-V64 ELF CFI return column, integer register propagation and fail-closed unsupported state",
+      "evidence_files": ["nativo-017/riscv-cfi.log", "nativo-017/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

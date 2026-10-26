@@ -1,0 +1,4 @@
+=== RUN   TestRISCV64ELFCFIUsesReturnColumnAndRestoredRegisters
+--- PASS: TestRISCV64ELFCFIUsesReturnColumnAndRestoredRegisters (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.003s

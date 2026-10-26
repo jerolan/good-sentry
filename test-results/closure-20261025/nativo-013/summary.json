@@ -1,0 +1,16 @@
+{
+  "criteria": ["CLOSE-nativo-013"],
+  "date": "2026-10-26",
+  "product_revision": "92cb086",
+  "note": "No production or test change was needed; the existing implicit-value owners cover the contract.",
+  "owners": ["TestCFIExpressionImplicitValues", "TestCFIRegisterExpressionsHonorStackValue"],
+  "covered": [
+    "DW_OP_implicit_value reads an unsigned-LEB length and block for every length from 1 through the 4- or 8-byte pointer width",
+    "the block is zero-extended little-endian and its final byte is not treated as an opcode",
+    "zero, truncated, unterminated or wider-than-pointer blocks are rejected",
+    "DW_CFA_val_expression uses the scalar as the register value; DW_CFA_expression keeps address semantics unless DW_OP_stack_value is terminal"
+  ],
+  "observed": {"native": "PASS in 0.005s"},
+  "limits": ["No final image or public CI was exercised.", "The product is not declared an acceptance candidate or closed."],
+  "evidence": ["implicit.log", "summary.json"]
+}
