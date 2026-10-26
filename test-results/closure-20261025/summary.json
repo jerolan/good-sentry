@@ -4339,6 +4339,14 @@
         "alertas-008/payload-transport.log"
       ]
     },
+    "CLOSE-alertas-009": {
+      "evidence": "vigente",
+      "scope": "delivery states, fenced leases, attempt history, retry backoff, expired-claim recovery, bounded cleanup and HTTP/SMTP classification",
+      "evidence_files": [
+        "alertas-009/queue-states.log",
+        "alertas-008/payload-transport.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

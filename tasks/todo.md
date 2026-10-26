@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-alertas-009. No se declara
+runtime preservado. Siguiente acción: CLOSE-alertas-010. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -8546,6 +8546,27 @@ Límites registrados: los proveedores específicos tienen sus propias pruebas de
 forma; el formato genérico es independiente. La resolución de prefijos de ruta
 se apoya en la URL relativa almacenada y el dominio configurado. El CI público y
 la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: estados y reintentos de entrega
+
+Selección registrada antes de trabajar: CLOSE-alertas-009. Candidata
+`571ac8e`.
+
+| Elemento | Comprobante |
+|---|---|
+| Claims con lease, token de fencing y backoff | `TestAlertClaimsRetryBackoffAndTokenFencing` |
+| Claims expirados y presupuesto de intentos | `TestAlertExpiredClaimsRecoverOrStopAtAttemptBudget` |
+| Resultados sent/permanent/agotado e historial de intentos | `TestAlertOutcomesPersistSuccessPermanentAndAttemptExhaustion` |
+| Limpieza acotada de backlog vencido | `TestAlertClaimBoundsExpiredBacklogCleanup` |
+| Reemplazo cancela y conserva historia | `TestAlertReplacementCancelsWorkAndRetainsSnapshots` |
+| Clasificación HTTP/SMTP, timeouts y cancelación | `internal/notify/transport_test.go` |
+
+Evidencia: `test-results/closure-20261025/alertas-009/queue-states.log` y
+`test-results/closure-20261025/alertas-008/payload-transport.log`.
+
+Límites registrados: las pruebas de transporte usan receptores locales; la
+entrega externa real pertenece a 010. El CI público y la imagen final siguen
+pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
