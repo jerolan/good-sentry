@@ -1,0 +1,95 @@
+name: Native SDK demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/native-demo.yml'
+      - 'examples/sentry-native/**'
+      - 'internal/event/**'
+      - 'internal/native/**'
+      - 'internal/protocol/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'internal/config/**'
+      - 'internal/server/api_tokens.go'
+      - 'internal/server/compat_auth.go'
+      - 'internal/server/compat_account_tokens_test.go'
+      - 'internal/server/compat_management_test.go'
+      - 'internal/server/debug_files.go'
+      - 'internal/server/issues_resolution_test.go'
+      - 'internal/server/minidump.go'
+      - 'internal/server/native_sdk_demo_test.go'
+      - 'internal/store/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/native-demo.yml'
+      - 'examples/sentry-native/**'
+      - 'internal/event/**'
+      - 'internal/native/**'
+      - 'internal/protocol/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'internal/config/**'
+      - 'internal/server/api_tokens.go'
+      - 'internal/server/compat_auth.go'
+      - 'internal/server/compat_account_tokens_test.go'
+      - 'internal/server/compat_management_test.go'
+      - 'internal/server/debug_files.go'
+      - 'internal/server/issues_resolution_test.go'
+      - 'internal/server/minidump.go'
+      - 'internal/server/native_sdk_demo_test.go'
+      - 'internal/store/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-demo-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  crashpad-symbolication:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: goodsentry_ci
+          POSTGRES_DB: goodsentry_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U goodsentry_ci -d goodsentry_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+      GOTOOLCHAIN: local
+      GOODSENTRY_NATIVE_DEMO_BINARY: /tmp/goodsentry-native-demo-build/goodsentry-native-demo
+      GOODSENTRY_NATIVE_DEMO_HANDLER: /tmp/goodsentry-native-demo-build/crashpad_handler
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.27.2'
+          cache-dependency-path: go.sum
+      - name: Install native SDK build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes cmake g++ gcc libcurl4-openssl-dev zlib1g-dev
+      - name: Configure the pinned Sentry Native SDK demo
+        run: cmake -S examples/sentry-native -B /tmp/goodsentry-native-demo-build -DCMAKE_BUILD_TYPE=Release
+      - name: Build the demo and Crashpad handler
+        run: cmake --build /tmp/goodsentry-native-demo-build --parallel 2
+      - name: Send and symbolicate a real SDK crash through GoodSentry
+        run: go test -race -tags=integration ./internal/server -run '^TestNativeSDKDemoCrashSymbolicates$' -count=1

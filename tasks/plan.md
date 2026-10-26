@@ -508,7 +508,7 @@ Status (2026-10-26 UTC): complete at `5b8ad1915557fc748dc4efbee06cc72191cc961c`.
 
 Add `examples/sentry-native`, a runnable Linux/amd64 C application that fetches official `sentry-native` 0.17.4 with Crashpad, compiles a stable named crash function with DWARF, and ships the matching `crashpad_handler` beside the app. Document project creation, `project:releases` symbol upload of the exact executable, the intentional SDK crash, and checking its symbolicated function/source line in GoodSentry. Keep all traffic local to GoodSentry and do not retain the native dump.
 
-Verify the example builds against the pinned SDK and produces a real Crashpad event in a disposable GoodSentry/PostgreSQL environment. Upload the executable through the authenticated debug-file HTTP route before crashing; require exact function, source path and positive line resolution by the same ELF Debug ID, and verify no dump is retained. Keep the parent native task open after this Linux/amd64 receipt.
+Verify the example builds against the pinned SDK and produces a real Crashpad event in a disposable GoodSentry/PostgreSQL environment. Upload the executable through the authenticated debug-file HTTP route before crashing; require exact function, source path and positive line resolution by the same ELF Debug ID, and verify no dump is retained. A dedicated path-triggered Actions workflow owns this cross-language receipt. Keep the parent native task open after this Linux/amd64 receipt.
 
 ## Minidump Memory64 range bounds
 
