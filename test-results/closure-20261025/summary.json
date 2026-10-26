@@ -4117,6 +4117,14 @@
         "rendimiento-039/ui.json"
       ]
     },
+    "CLOSE-rendimiento-040": {
+      "evidence": "vigente",
+      "scope": "real Browser 11.7.0 pageload segment in API and UI with identity, parent/child, timing, breakdown and trace navigation",
+      "evidence_files": [
+        "rendimiento-040/browser-trace.json",
+        "rendimiento-040/ui.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

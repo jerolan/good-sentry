@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -039
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-040. No se declara
+runtime preservado. Siguiente acción: auditoría final de rendimiento y cierre del contrato. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2104,7 +2104,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-031](../SPEC.md#close-logs-031) | Node 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-218](../SPEC.md#close-errores-218) | Browser 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-219](../SPEC.md#close-errores-219) | Browser 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-040](../SPEC.md#close-rendimiento-040) | Browser 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegaci… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-040](../SPEC.md#close-rendimiento-040) | Browser 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegaci… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-032](../SPEC.md#close-logs-032) | Browser 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enla… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-026](../SPEC.md#close-sourcemaps-026) | Node 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar error r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-027](../SPEC.md#close-sourcemaps-027) | Browser 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar erro… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -7925,6 +7925,26 @@ Selección registrada antes de trabajar: CLOSE-rendimiento-039. Candidata
 Evidencia: `rendimiento-039/node-trace.json` (nombre histórico del
 archivo, contenido Node), `rendimiento-039/ui.json` y
 `rendimiento-039/node-trace-ui.png`.
+
+Límites registrados: la UI se ejecutó en Chromium headless sobre una instalación
+local; el CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Cierre 2026-10-26: Browser 11.7.0 en API y UI
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-040. Candidata
+`c454835`. Bundle oficial con SRI
+`4hVyRtcJfOjrFnfkkeOAlFOf15CvnDo0eQmbzzGuWjstMU6bsoKrVJWx1YIHYTRX`.
+
+| Comprobación | Resultado |
+|---|---|
+| Traza real del SDK oficial | `8d81c737f133495b9b8a506fecb8057f`: 3 nodos, 2 relaciones, raíz `segment` `pageload` de 2.4 ms |
+| Hijos y tiempos | `db.query` «SELECT browser trace» 0.3 ms y `http.client` «GET browser trace» 0.2 ms, profundidad 1 y padre resuelto |
+| Agregado en Transactions | `browser-trace-040`, count 1, 2.4 ms, con ocurrencia y View trace |
+| Ocurrencia | Muestra los dos hijos reales del navegador |
+| Navegación a traza | Abre `traceView=8d81c737f133495b9b8a506fecb8057f` con `sampleSource=span&sample=2` y `returnView=transactions` |
+
+Evidencia: `rendimiento-040/browser-trace.json`,
+`rendimiento-040/ui.json` y `rendimiento-040/browser-trace-ui.png`.
 
 Límites registrados: la UI se ejecutó en Chromium headless sobre una instalación
 local; el CI público y la imagen final siguen pendientes para la auditoría final.
