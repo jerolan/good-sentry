@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -029
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -030
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-030. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-031. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1862,7 +1862,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 026/029) |
 | [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7656,6 +7656,30 @@ Evidencia: `test-results/closure-20261025/rendimiento-029/trace-graph.log`.
 Límites registrados: la cascada de UI y la reconstrucción visual completa siguen
 en criterios posteriores. El CI público y la imagen final siguen pendientes para
 la auditoría final.
+
+### Ejecución 2026-10-26: metadatos de traza versión 2
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-030. Se reutilizan las
+pruebas de 026 y 029; `git diff 172cd95..9cea3ff -- internal cmd static third_party go.mod go.sum Dockerfile`
+no muestra cambios de producto.
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Migración 008 añade identidad raíz, padre, operación, estado y tiempos | `TestTraceProjectionUpgradePreservesStatisticsDuringCancellation` parte del estado versión 1 y lo eleva |
+| Payload original preservado | La prueba compara el JSON almacenado tras la proyección |
+| Versión 2 atómica con estadísticas y reemplazo del derivado | La misma prueba verifica la transacción única y la sustitución |
+| Trabajador procesa versiones 0/1 con un evento y SKIP LOCKED | `TestTracePendingVersionOneAndForeignScope` y la prueba de proyección pasan |
+| Estadísticas v1 legibles mientras faltan metadatos | La prueba de instantánea mantiene los agregados |
+| 503 con Retry-After 2 en traza y nodo pendientes | `TestTraceHTTPContract` cubre las versiones pendientes con 503, cabecera 2 y sin datos |
+| Índices de búsqueda por traza | `008_trace_metadata.sql` crea `events_trace_case`, `logs_trace_case` y `spans_trace_lookup` |
+| Deduplicación y transportes sin cambios | La prueba de proyección no altera la identidad de ingestión |
+
+Evidencia: `test-results/closure-20261025/rendimiento-026/projection-tests.log` y
+`test-results/closure-20261025/rendimiento-029/trace-graph.log`.
+
+Límites registrados: no se repite la ejecución al no haber cambios de producto;
+el comprobante cubre almacén y HTTP. El CI público y la imagen final siguen
+pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

@@ -4034,6 +4034,14 @@
         "rendimiento-029/trace-graph.log"
       ]
     },
+    "CLOSE-rendimiento-030": {
+      "evidence": "vigente",
+      "scope": "migration 008 trace metadata, atomic version-2 projection, worker compatibility, pending 503 Retry-After and case-insensitive trace indexes",
+      "evidence_files": [
+        "rendimiento-026/projection-tests.log",
+        "rendimiento-029/trace-graph.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
