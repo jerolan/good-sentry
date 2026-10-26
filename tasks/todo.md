@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-021. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-022. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1877,7 +1877,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-018](../SPEC.md#close-uptime-018) | Sentry spans and native telemetry reads: An opaque random 128-bit heartbeat capability is exposed as heartbeat… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-019](../SPEC.md#close-uptime-019) | Sentry spans and native telemetry reads: Block private, loopback, link-local, unspecified and multicast destin… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-020](../SPEC.md#close-uptime-020) | Sentry spans and native telemetry reads: The Tailwind UI lists monitor status, target, interval and last check… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-021](../SPEC.md#close-uptime-021) | Sentry spans and native telemetry reads: The SSL monitor increment uses the public SSL enum, independently def… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-021](../SPEC.md#close-uptime-021) | Sentry spans and native telemetry reads: The SSL monitor increment uses the public SSL enum, independently def… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-022](../SPEC.md#close-uptime-022) | Sentry spans and native telemetry reads: Accept native type: SSL with an absolute https://host:port origin, op… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-023](../SPEC.md#close-uptime-023) | Sentry spans and native telemetry reads: Each SSL check creates a new TCP connection through the existing nett… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-024](../SPEC.md#close-uptime-024) | Sentry spans and native telemetry reads: Share one configured deadline across resolution, connect and handshak… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8260,6 +8260,24 @@ capturas del mismo directorio.
 Límites registrados: los monitores SSL aparecen en el esquema y su
 comportamiento se verifica en 021 a 026; esta ejecución no repite su UI.
 El CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: contrato del monitor SSL
+
+Selección registrada antes de trabajar: CLOSE-uptime-021. Candidata
+`230dd51`.
+
+| Elemento | Resultado |
+|---|---|
+| OpenAPI público conservado | `test-results/goal-ssl-contract/openapi.json` con SHA-256 `7b60511c4823a0dfe2b82fe1cdb16e5c5d092c250bb5b9ac87a8e842df948360`, idéntico al declarado |
+| Documentación de uptime conservada | `test-results/goal-ssl-contract/uptime-monitoring.html` |
+| Enumeración SSL publicada y gramática no publicada | El extracto `monitor-contract-extract.json` y la SPEC registran la decisión local |
+| Comportamiento definido por GoodSentry | Gramática, verificación TLS y mapeo de resultados se verifican en 022 a 026 |
+
+Evidencia: `test-results/goal-ssl-contract/`.
+
+Límites registrados: este criterio acredita la procedencia y la decisión, no la
+aceptación de comportamiento, que vive en los criterios siguientes. El CI
+público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

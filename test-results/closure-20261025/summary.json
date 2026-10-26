@@ -4229,6 +4229,15 @@
         "uptime-020/report.json"
       ]
     },
+    "CLOSE-uptime-021": {
+      "evidence": "vigente",
+      "scope": "SSL monitor decision with the pinned public OpenAPI/documentation and the explicit local grammar and verification choices",
+      "evidence_files": [
+        "../goal-ssl-contract/openapi.json",
+        "../goal-ssl-contract/uptime-monitoring.html",
+        "../goal-ssl-contract/monitor-contract-extract.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
