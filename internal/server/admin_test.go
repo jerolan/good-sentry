@@ -63,6 +63,25 @@ func TestInstanceUserAdministrationHTTPAuthorizationAndUpdates(t *testing.T) {
 	f.request(t, memberClient, "GET", "/api/v1/admin/overview", "", nil, 200)
 	f.request(t, memberClient, "GET", "/api/v1/admin/users", "", nil, 403)
 
+	filtered := f.request(t, f.client, "GET", "/api/v1/admin/users?query=ORG-admin", "", nil, 200)
+	var filteredPage struct {
+		Data  []map[string]any `json:"data"`
+		Total int              `json:"total"`
+	}
+	if err := json.Unmarshal(filtered, &filteredPage); err != nil || filteredPage.Total != 1 || len(filteredPage.Data) != 1 || filteredPage.Data[0]["email"] != "org-admin@example.test" {
+		t.Fatalf("case-insensitive filter: %s err=%v", filtered, err)
+	}
+	empty := f.request(t, f.client, "GET", "/api/v1/admin/users?query=no-such-account", "", nil, 200)
+	if err := json.Unmarshal(empty, &filteredPage); err != nil || filteredPage.Total != 0 || len(filteredPage.Data) != 0 {
+		t.Fatalf("unmatched filter: %s err=%v", empty, err)
+	}
+	f.request(t, f.client, "GET", "/api/v1/admin/users?query="+strings.Repeat("a", 101), "", nil, 400)
+	f.request(t, f.client, "GET", "/api/v1/admin/users?query=bad%00name", "", nil, 400)
+	second := f.request(t, f.client, "GET", "/api/v1/admin/users?perPage=1&page=2", "", nil, 200)
+	if err := json.Unmarshal(second, &page); err != nil || page.Total != 2 || page.Page != 2 || page.PerPage != 1 || len(page.Data) != 1 {
+		t.Fatalf("second admin user page: %s err=%v", second, err)
+	}
+
 	csrf := http.Header{"X-CSRF-Token": {f.csrf}, "Origin": {"https://public.example.test"}}
 	updated := f.request(t, f.client, "PATCH", "/api/v1/admin/users/"+memberID, `{"isInstanceAdmin":true}`, csrf, 200)
 	var projection map[string]any

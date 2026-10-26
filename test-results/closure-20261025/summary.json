@@ -3486,6 +3486,24 @@
         "organization-ui/after-delete-768.png",
         "organization-ui/after-delete-1440.png"
       ]
+    },
+    "CLOSE-identidad-097": {
+      "evidence": "vigente",
+      "scope": "organization-scoped overview separated from global instance authority",
+      "evidence_files": [
+        "identidad-098-go.log"
+      ]
+    },
+    "CLOSE-identidad-098": {
+      "evidence": "vigente",
+      "scope": "migration 064, first-owner bootstrap, CLI grant and UI grant/revoke",
+      "evidence_files": [
+        "identidad-098-go.log",
+        "admin-users-ui/report.json",
+        "admin-users-ui/admin-users-320.png",
+        "admin-users-ui/admin-users-768.png",
+        "admin-users-ui/admin-users-1440.png"
+      ]
     }
   },
   "commands": [

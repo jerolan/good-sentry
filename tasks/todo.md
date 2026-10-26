@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -096 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-097
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -098 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-099
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1991,8 +1991,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-lectores-001](../SPEC.md#close-lectores-001) | Integrations and compatibility limits: The official sentry-wizard flow is supported through GET /api/0/wizard/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-lectores-002](../SPEC.md#close-lectores-002) | Integrations and compatibility limits: Management API routes use /api/0 where compatible with published Sentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-lectores-003](../SPEC.md#close-lectores-003) | Integrations and compatibility limits: ENABLE_OPENAPI=true exposes GET /api/openapi.json as an OpenAPI 3.1 doc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-097](../SPEC.md#close-identidad-097) | Instance user administration: Extend the opt-in ENABLE_ADMIN surface with account operations inspired by Glitc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-098](../SPEC.md#close-identidad-098) | Instance user administration: Add users.is_instance_admin boolean NOT NULL DEFAULT false and users.is_active b… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-097](../SPEC.md#close-identidad-097) | Instance user administration: Extend the opt-in ENABLE_ADMIN surface with account operations inspired by Glitc… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-098](../SPEC.md#close-identidad-098) | Instance user administration: Add users.is_instance_admin boolean NOT NULL DEFAULT false and users.is_active b… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-099](../SPEC.md#close-identidad-099) | Instance user administration: When ENABLE_ADMIN=true, expose GET /api/v1/admin/users and PATCH /api/v1/admin/u… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-100](../SPEC.md#close-identidad-100) | Instance user administration: Every list and update rechecks that the current account is active and an instanc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-101](../SPEC.md#close-identidad-101) | Instance user administration: Once an instance administrator exists, serialized updates and the existing self-… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5425,6 +5425,64 @@ sin organización.
 Límites registrados: el CI público sigue pendiente para la auditoría final. El
 estado posterior al borrado se capturó con una única organización en una base
 desechable.
+
+### Ejecución 2026-10-26: autoridad global separada de la organización
+
+Selección registrada antes de trabajar: CLOSE-identidad-097. Candidata
+`01e58bf`.
+
+Resultado observado: el overview de administración conserva su alcance
+organizacional y responde 404 con `ENABLE_ADMIN=false`; con el flag activo,
+muestra solo las organizaciones donde el actor es propietario o administrador.
+La administración de usuarios es una autoridad global distinta: un
+administrador de organización ve el overview con 200 pero
+`GET /api/v1/admin/users` responde 403 mientras no tenga el bit de instancia,
+y un miembro tampoco lo obtiene. Los roles de organización y los scopes de token
+Bearer no conceden estas rutas.
+
+Evidencia: `test-results/closure-20261025/identidad-098-go.log` con
+`TestAdministrationIsOptInAndOrganizationScoped`,
+`TestInstanceUserAdministrationHTTPAuthorizationAndUpdates` y
+`TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: esquema, bootstrap y CLI de administración
+
+Selección registrada antes de trabajar: CLOSE-identidad-098. Candidata
+`01e58bf`.
+
+Resultado observado: la migración 064 añade `is_instance_admin` e
+`is_active` sin reescribir cuentas, conserva el owner existente como activo y
+sin privilegio global, mantiene sesiones y tokens y deja el recibo con su
+checksum; en ese estado heredado sin administradores, la administración de
+usuarios responde 403 a todos. El bootstrap de primera cuenta en una base vacía
+crea el owner como administrador de instancia, mientras un owner implícito
+posterior no se promueve. `goodsentry admin grant --email` promueve una cuenta
+existente y activa, no crea cuentas ausentes (404), rechaza cuentas inactivas
+(403), es idempotente y habilita la lista al administrador concedido. Un owner
+implícito configurado e inactivo devuelve error al arrancar en modo abierto. El
+Administration view permite conceder y revocar el privilegio con «Make admin» y
+«Remove admin», suspender y reactivar desde el navegador.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Migración 064 aditiva y recibos exactos | store `TestInstanceUserAdminMigration064PreservesExistingAccountsAndCredentials` |
+| Estado heredado sin administradores: API no disponible | store `TestInstanceUserAdminMigration064PreservesExistingAccountsAndCredentials` |
+| Bootstrap del primer owner y owner implícito posterior no promovido | store `TestInstanceUserAdminBootstrapAndGrant` |
+| CLI promueve solo cuentas existentes y activas, idempotente | cmd `TestAdminGrantCommandPromotesExistingActiveAccount`; store `TestInstanceUserAdminBootstrapAndGrant` |
+| Arranque rechaza el owner implícito inactivo | store `TestInstanceUserAdminBootstrapAndGrant` y propagación en `cmd/goodsentry/main.go` |
+| Conceder y revocar desde la UI | `admin-users-ui/report.json` y capturas 320/768/1440 |
+
+Evidencia: `test-results/closure-20261025/identidad-098-go.log` con los
+owners de store, servidor y CLI, más
+`test-results/closure-20261025/admin-users-ui/`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. El
+fallo de arranque se prueba en el owner de store y en la propagación directa del
+error en `main`; no se arranca un proceso completo con la cuenta suspendida.
 
 ### Comprobante de integración documental
 

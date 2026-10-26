@@ -110,6 +110,9 @@ func TestInstanceUserAdminMigration064PreservesExistingAccountsAndCredentials(t 
 	if grant, err := reopened.AuthenticateAPIToken(ctx, tokenHash); err != nil || grant.User.ID != owner.ID {
 		t.Fatalf("064 changed existing API token: grant=%+v err=%v", grant, err)
 	}
+	if _, err := reopened.AdminUsers(ctx, owner.ID, "", 1, 25); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("zero-admin instance served user administration: %v", err)
+	}
 	var checksum string
 	if err := reopened.pool.QueryRow(ctx, `SELECT checksum FROM schema_migrations WHERE version=64`).Scan(&checksum); err != nil {
 		t.Fatal(err)
@@ -131,6 +134,9 @@ func TestInstanceUserAdminBootstrapAndGrant(t *testing.T) {
 	second := insertAdminTestUser(t, db, "existing-admin@example.test", "Existing account")
 	if granted, err := db.GrantInstanceAdmin(ctx, second.Email); err != nil || !granted {
 		t.Fatalf("first legacy grant failed: granted=%t err=%v", granted, err)
+	}
+	if page, err := db.AdminUsers(ctx, second.ID, "", 1, 25); err != nil || page.Total < 2 {
+		t.Fatalf("granted administrator could not list users: %+v %v", page, err)
 	}
 	if granted, err := db.GrantInstanceAdmin(ctx, second.Email); err != nil || granted {
 		t.Fatalf("repeat grant was not a no-op: granted=%t err=%v", granted, err)
