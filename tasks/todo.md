@@ -1458,10 +1458,12 @@ vigentes. CLOSE-operacion-013 a -023 quedan vigentes; 019, 021, 022 y 023
 conservan comprobantes históricos que se revalidan en la candidata final.
 CLOSE-uptime-006 a -012 quedan vigentes; 010 y 012 conservan comprobantes
 históricos a revalidar en la candidata final.
+CLOSE-operacion-024 y -025 quedan vigentes como prerrequisitos de configuración;
+las clases file/release siguen abiertas.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-024. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-026. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1806,8 +1808,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-010](../SPEC.md#close-uptime-010) | Uptime check retention: Keep the current MonitorChecks authorization, completed_at/id ordering, transition-onl… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
 | [CLOSE-uptime-011](../SPEC.md#close-uptime-011) | Uptime check retention: StartUptimeRetention runs unconditionally inside the one application process through t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
-| [CLOSE-operacion-024](../SPEC.md#close-operacion-024) | File and release retention prerequisites: Completed-file and release retention remain required after the four… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-025](../SPEC.md#close-operacion-025) | File and release retention prerequisites: First add typed Config.FileRetentionDays and Config.ReleaseRetention… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-024](../SPEC.md#close-operacion-024) | File and release retention prerequisites: Completed-file and release retention remain required after the four… | implementada (prerrequisito) | vigente | Comprobante 2026-10-26 abajo; clases file/release siguen abiertas |
+| [CLOSE-operacion-025](../SPEC.md#close-operacion-025) | File and release retention prerequisites: First add typed Config.FileRetentionDays and Config.ReleaseRetention… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-026](../SPEC.md#close-operacion-026) | Release metadata retention: Release age is the first server receipt of its organization/version identity, rele… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-027](../SPEC.md#close-operacion-027) | Release metadata retention: Add Store.CleanupReleases(ctx,days)(removed int64,error). One transaction first ta… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-028](../SPEC.md#close-operacion-028) | Release metadata retention: Release writers need the same identity gate before their first INSERT/lookup, in r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9233,6 +9235,27 @@ Límites registrados: 006–009 y 011 tienen pruebas frescas; 010 y 012 son
 aceptación histórica y deben repetir navegador/imagen/CI en la candidata final.
 No se usó ni se modificó ninguna baseline original. El producto sigue
 incompleto.
+
+### Ejecución 2026-10-26: prerrequisitos de archivos y releases
+
+Selección registrada antes de trabajar: CLOSE-operacion-024 y -025. Revisión de
+producto `4c99da4`; no hizo falta cambiar producto: la configuración tipada ya
+existe y el owner de configuración la cubre.
+
+| Elemento | Comprobante |
+|---|---|
+| 024: file/release siguen exigidos tras las cuatro clases de telemetría; TTL temporal de chunks es independiente | `TestTelemetryRetentionConfiguration`; este registro conserva las clases abiertas |
+| 025: `FileRetentionDays` resuelve GoodSentry, GlitchTip y master validado | `TestTelemetryRetentionConfiguration` (`legacy_file_override`, `explicit_file_wins`, `independent_classes`) |
+| 025: `ReleaseRetentionDays` resuelve GoodSentry, GlitchTip y default 365, independiente de master/file | `TestTelemetryRetentionConfiguration` (`legacy_release_override`, `explicit_release_wins`, `independent_classes`) |
+| 025: vacíos caen al siguiente nivel; solo el valor ganador se parsea como entero 1..3650 antes de abrir puerto | `TestTelemetryRetentionConfiguration` (`empty_explicit_values_fall_through`, casos de rango) |
+| 025: no se añade caller de cleanup ni se anuncia la clase como implementada | Auditoría de `config.Load`; el registro mantiene 026+ pendientes |
+
+Evidencia: `test-results/closure-20261025/operacion-024-025/config.log` y
+`summary.json`.
+
+Límites registrados: esta entrada solo acredita el prerrequisito de
+configuración. La retención real de archivos y releases sigue abierta en 026+.
+El producto no se declara completo.
 
 ### Comprobante de integración documental
 

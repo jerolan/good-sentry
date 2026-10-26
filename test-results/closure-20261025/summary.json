@@ -272,6 +272,16 @@
       "scope": "historical image acceptance: 13 owned checks expired, independent probes/heartbeats recovered, 4305 baseline rows and 4331 recovery rows exact",
       "evidence_files": ["uptime-006-012/final-runtime.json", "uptime-006-012/final-expiry.json", "uptime-006-012/recovery.json", "uptime-006-012/ci-success.log"]
     },
+    "CLOSE-operacion-024": {
+      "evidence": "vigente",
+      "scope": "file/release retention prerequisite remains open, public names/defaults recorded and temporary chunk TTL independent",
+      "evidence_files": ["operacion-024-025/config.log", "operacion-024-025/summary.json"]
+    },
+    "CLOSE-operacion-025": {
+      "evidence": "vigente",
+      "scope": "typed file/release retention lifetimes with deterministic precedence, empty fallthrough and 1..3650 bounds without a cleanup caller",
+      "evidence_files": ["operacion-024-025/config.log", "operacion-024-025/summary.json"]
+    },
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
