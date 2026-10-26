@@ -30,6 +30,15 @@ GOODSENTRY_IMAGE=goodsentry:local docker compose up --build -d
 
 The application-memory baseline starts the public image with a disposable PostgreSQL database and runs the official Go 0.50.0, Python 2.72.0, Node 11.7.0 and Chromium Browser 11.7.0 error/transaction/typed-log tests concurrently. The kernel reports the application process's VmRSS and VmHWM; PostgreSQL memory is excluded. On the `sha-8160b3` image, the maximum observed application RSS was **24.4 MiB**. This is a transport-load baseline, not a retention-capacity or hostile-traffic benchmark.
 
+The current-source RSS workload uses only the public envelope boundary:
+`GOODSENTRY_LOAD_DSN=<project-dsn> python3 tests/compat/rss_workload.py`.
+With 1,600 error events, 4,000 typed logs and 100 transactions carrying five
+spans each from 16 concurrent workers, all 2,100 requests were accepted. On
+2026-10-26, the candidate process started at 28.75 MiB VmRSS, reached
+**34.47 MiB** after the load and reported 34.47 MiB VmHWM; PostgreSQL memory is
+excluded. This measures ingestion memory, not the 256-512 MB operational
+target, retention capacity or hostile traffic.
+
 The product landing lives in [site](../site). [GitHub Pages Actions](../.github/workflows/pages.yml) publishes that directory from `main` or a manual dispatch. Preview it locally with:
 
 ```sh

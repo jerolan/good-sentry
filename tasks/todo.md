@@ -1440,9 +1440,10 @@ y CLOSE-operacion-006; después se completaron CLOSE-operacion-007 con Chromium
 real y un estado de permiso, CLOSE-operacion-008 con el Compose público, la
 imagen construida y PostgreSQL externo, CLOSE-operacion-009 con el loader y
 los alias, CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
-sesiones, y CLOSE-operacion-011 con features, correo, uploads y secretos. Sus
-comprobantes vigentes están abajo. Siguiente acción: CLOSE-operacion-012 (RSS
-bajo una carga explícita y publicación del resultado), con dependencias
+sesiones, CLOSE-operacion-011 con features, correo, uploads y secretos, y
+CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
+abajo. Siguiente acción: CLOSE-identidad-001 (health/readiness, setup,
+sesiones, hashes, cookies, CSRF, bearer tokens y claves SDK), con dependencias
 locales resueltas. No se declara aceptación ni cierre del producto. El avance
 se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1462,7 +1463,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-operacion-009](../SPEC.md#close-operacion-009) | Deployment and configuration: Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del loader |
 | [CLOSE-operacion-010](../SPEC.md#close-operacion-010) | Deployment and configuration: GOODSENTRY_AUTH defaults to disabled for frictionless local startup. If SECRET_K… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de auth/sesiones |
 | [CLOSE-operacion-011](../SPEC.md#close-operacion-011) | Deployment and configuration: An empty VALKEY_URL selects PostgreSQL-only operation. Optional features must re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de features/correo |
-| [CLOSE-operacion-012](../SPEC.md#close-operacion-012) | Deployment and configuration: Memory target: measure application RSS under an explicit repeatable workload and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-012](../SPEC.md#close-operacion-012) | Deployment and configuration: Memory target: measure application RSS under an explicit repeatable workload and… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ingestión |
 | [CLOSE-identidad-001](../SPEC.md#close-identidad-001) | Runtime and workspace contracts: Provide /healthz for process health and /readyz for database readiness. Setup… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-002](../SPEC.md#close-identidad-002) | Runtime and workspace contracts: Organizations contain memberships and teams. Projects belong to an organizati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-003](../SPEC.md#close-identidad-003) | Runtime and workspace contracts: The automation-credential prerequisite belongs to workspace, before compatibl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2515,6 +2516,37 @@ Evidencia: `test-results/closure-20261025/operations/tests.log` y el diff de
 
 Siguiente acción: CLOSE-operacion-012 (RSS bajo una carga explícita y
 publicación del resultado), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: RSS bajo carga explícita
+
+Selección registrada antes de trabajar: CLOSE-operacion-012, siguiente en el
+plan. Candidata `de8130d`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad añade `tests/compat/rss_workload.py`, un generador
+reproducible que usa solo el límite público de envelopes, y publica la medición.
+
+Procedimiento reproducible: arrancar el binario de la candidata en modo abierto
+con PostgreSQL desechable; crear un proyecto por la API; ejecutar
+`GOODSENTRY_LOAD_DSN=<dsn> python3 tests/compat/rss_workload.py`; leer
+`VmRSS`/`VmHWM` de `/proc/<pid>/status` antes y después. El workload envía
+1,600 errores, 4,000 logs tipados y 100 transacciones con cinco spans cada una,
+desde 16 workers concurrentes: 2,100 peticiones.
+
+Resultado observado: 2,100/2,100 peticiones aceptadas con estado 200, cero
+fallos, 12.85s y 163.4 peticiones/s. VmRSS pasó de 29,444 KB (28.75 MiB) a
+35,300 KB (34.47 MiB); VmHWM fue 35,300 KB (34.47 MiB). La memoria de
+PostgreSQL queda excluida. La base retuvo 1,700 eventos (1,600 errores y 100
+transacciones), 4,000 logs y 1,600 issues; la proyección de spans es
+asíncrona y no forma parte de la afirmación de memoria. El resultado se publicó
+en `docs/development.md`, que mantiene la distinción entre esta carga de
+ingestión y el objetivo operativo de 256-512 MB. Subresultados pendientes del
+bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/rss/`
+(`summary.json`, `workload.json`, `app.log`, `workload-sha256.txt`).
+
+Siguiente acción: CLOSE-identidad-001 (health/readiness, setup, sesiones,
+hash de contraseña, cookies, CSRF, bearer tokens y claves SDK), con
+dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

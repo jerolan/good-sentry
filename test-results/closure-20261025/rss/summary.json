@@ -1,0 +1,52 @@
+{
+  "criterion": "CLOSE-operacion-012",
+  "date": "2026-10-26",
+  "timezone": "America/Mexico_City",
+  "candidate": "de8130d",
+  "product_revision": "54db6e48bf2e52e9a84efe397e3e5b44c27e4d91",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64",
+    "postgres": "18, disposable container goodsentry-closure-20261025",
+    "application": "host binary built from the candidate with GOODSENTRY_AUTH=disabled",
+    "database": "goodsentry_memory"
+  },
+  "workload": {
+    "script": "tests/compat/rss_workload.py",
+    "sha256": "0b6bd1336b4a3cd9bcaf1dbdcf2241e0c772b637582e6c2c81ad95712ead5af8",
+    "command": "GOODSENTRY_LOAD_DSN=<project-dsn> python3 tests/compat/rss_workload.py",
+    "requests": 2100,
+    "error_events": 1600,
+    "typed_logs": 4000,
+    "transactions": 100,
+    "spans_per_transaction": 5,
+    "workers": 16,
+    "elapsed_seconds": 12.85,
+    "requests_per_second": 163.4,
+    "accepted": 2100,
+    "failed": 0
+  },
+  "memory": {
+    "source": "/proc/<pid>/status VmRSS and VmHWM; PostgreSQL memory excluded",
+    "baseline_kb": 29444,
+    "after_kb": 35300,
+    "peak_kb": 35300,
+    "baseline_mib": 28.75,
+    "after_mib": 34.47,
+    "peak_mib": 34.47,
+    "baseline_bytes": 30150656,
+    "after_bytes": 36147200,
+    "peak_bytes": 36147200
+  },
+  "retained_rows": {
+    "events": 1700,
+    "logs": 4000,
+    "issues": 1600,
+    "spans_projected_immediately": 0
+  },
+  "limits": [
+    "This is an ingestion-memory baseline, not the 256-512 MB operational target and not a retention or hostile-traffic benchmark.",
+    "Span projection is asynchronous; the immediate span count is not part of the memory claim.",
+    "The workload ran on the host binary from the candidate, not a container; the product code is the same as the linked image."
+  ]
+}

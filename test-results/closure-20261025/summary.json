@@ -124,6 +124,17 @@
         "local development defaults are documented separately"
       ],
       "evidence_files": ["operations/tests.log", "docs/getting-started.md diff"]
+    },
+    "CLOSE-operacion-012": {
+      "evidence": "vigente",
+      "scope": "application RSS under an explicit repeatable envelope workload, published in docs/development.md",
+      "covered": [
+        "repeatable script tests/compat/rss_workload.py",
+        "2,100 requests accepted: 1,600 errors, 4,000 logs and 100 transactions with five spans each from 16 workers",
+        "VmRSS 28.75 MiB baseline to 34.47 MiB after load; VmHWM 34.47 MiB",
+        "PostgreSQL memory excluded and operational target not claimed"
+      ],
+      "evidence_files": ["rss/summary.json", "rss/workload.json", "rss/app.log", "rss/workload-sha256.txt"]
     }
   },
   "commands": [

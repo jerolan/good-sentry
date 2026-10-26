@@ -1,0 +1,16 @@
+{
+  "requests": 2100,
+  "errors": 1600,
+  "logs": 4000,
+  "transactions": 100,
+  "workers": 16,
+  "elapsed_seconds": 12.85,
+  "requests_per_second": 163.4,
+  "statuses": {
+    "error:200": 1600,
+    "log:200": 400,
+    "transaction:200": 100
+  },
+  "failures": [],
+  "failure_count": 0
+}
