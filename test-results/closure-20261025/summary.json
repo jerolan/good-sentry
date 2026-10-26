@@ -3431,6 +3431,13 @@
         "tokens-ui/token-list-768.png",
         "tokens-ui/token-list-1440.png"
       ]
+    },
+    "CLOSE-identidad-091": {
+      "evidence": "vigente",
+      "scope": "manager roles, invitation team assignments and acceptance",
+      "evidence_files": [
+        "identidad-091-go.log"
+      ]
     }
   },
   "commands": [

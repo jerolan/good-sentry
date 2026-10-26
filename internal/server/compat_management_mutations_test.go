@@ -70,7 +70,7 @@ func TestCompatibleOrganizationInvitationMutationHTTP(t *testing.T) {
 		t.Fatal(err)
 	}
 	var invitation compatibleInvitationView
-	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "POST", mailPath, `{"email":"invitee@management.test","orgRole":"admin"}`, http.Header{"X-CSRF-Token": {mailCSRF}}, 201), &invitation); err != nil || invitation.ID == "" || invitation.Email != "invitee@management.test" || !invitation.Pending || invitation.Role != "admin" || invitation.RoleName != "Admin" {
+	if err := json.Unmarshal(mailCall(t, f.ctx, mailClient, mailServer, "POST", mailPath, `{"email":"invitee@management.test","orgRole":"admin"}`, http.Header{"X-CSRF-Token": {mailCSRF}}, 201), &invitation); err != nil || invitation.ID == "" || invitation.Email != "invitee@management.test" || !invitation.Pending || invitation.User != nil || invitation.InviteLink != nil || invitation.Role != "admin" || invitation.RoleName != "Admin" {
 		t.Fatalf("compatible invitation: %+v %v", invitation, err)
 	}
 	mailCall(t, f.ctx, mailClient, mailServer, "POST", mailPath, `{"email":"invitee@management.test","orgRole":"admin"}`, http.Header{"X-CSRF-Token": {mailCSRF}}, 409)

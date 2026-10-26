@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -090 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-091
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -091 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-092
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1933,7 +1933,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-088](../SPEC.md#close-identidad-088) | Compatible project update and deletion: GET /api/0/organizations/{org}/members/{member}/ returns the same Orga… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-089](../SPEC.md#close-identidad-089) | Compatible project update and deletion: Real PostgreSQL covers organization/member/team visibility, ordered te… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-090](../SPEC.md#close-identidad-090) | Compatible project update and deletion: Additive040 expands the API-token scope constraint with org:write. Exi… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-091](../SPEC.md#close-identidad-091) | Compatible project update and deletion: Additive migration062 extends membership and invitation role constrain… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-091](../SPEC.md#close-identidad-091) | Compatible project update and deletion: Additive migration062 extends membership and invitation role constrain… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-092](../SPEC.md#close-identidad-092) | Compatible project update and deletion: Compatible team mutations are POST /api/0/organizations/{org}/teams/ w… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-093](../SPEC.md#close-identidad-093) | Compatible project update and deletion: Real PostgreSQL covers040 token preservation/reopen, org:write issuanc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-094](../SPEC.md#close-identidad-094) | Compatible project update and deletion: PUT /api/0/organizations/{org}/ accepts only OrganizationInSchema {nam… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5220,6 +5220,51 @@ Límites registrados: el CI público sigue pendiente para la auditoría final. E
 token del navegador se emitió dos veces por una repetición del guion para
 encuadrar la fila de la lista; la base es desechable y solo se capturaron
 prefijos, nunca secretos.
+
+### Ejecución 2026-10-26: roles con manager y equipos de invitación
+
+Selección registrada antes de trabajar: CLOSE-identidad-091. Candidata
+`8ba8ae0`.
+
+Resultado observado: la migración 062 amplía las restricciones de membresía e
+invitación con `manager`, crea `organization_invitation_teams` con claves
+foráneas en cascada y el owner de store comprueba que la reapertura conserva
+usuarios, organización, proyectos, credenciales y recibos 001–061, con el
+checksum de 062 intacto. La asignación de equipos de una invitación pendiente se
+persiste por ID antes de aceptarla y desaparece al borrar el equipo; la
+aceptación añade la membresía de equipo en la misma transacción, y el endpoint
+de miembros del equipo devuelve al invitado ya aceptado. La respuesta de
+`POST /api/0/organizations/{org}/members/` declara `pending:true`,
+`user:null` e `inviteLink:null`, y propietarios, managers y administradores ven
+la invitación pendiente en la lista de personas mientras un miembro no la ve.
+Las entradas `teamRoles` estrictas, la colisión de invitación pendiente con 409,
+la omisión de slugs desconocidos y ajenos, el reenvío deshabilitado con 400 y el
+403 de administrador sobre un equipo donde no participa siguen cubiertos por el
+owner HTTP.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Restricciones de rol con `manager` en membresías e invitaciones | store `TestManagerInvitationTeamsMigrationPreservesStateAndReopens` |
+| Estado previo y recibos 001–061 exactos, checksum de 062 | store `TestManagerInvitationTeamsMigrationPreservesStateAndReopens` |
+| Persistencia por ID y cascada al borrar el equipo | store `TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance` |
+| Aceptación con membresías de equipo en la misma transacción | store `TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance`; HTTP `TestCompatibleInvitationHTTPAcceptance` |
+| Respuesta con `pending`, `user:null` e `inviteLink:null` | HTTP `TestCompatibleOrganizationInvitationMutationHTTP` |
+| Visibilidad para propietario, manager y administrador | HTTP `TestCompatiblePeopleTeamsAndProjectRelationsHTTP` |
+| `teamRoles` estricto, 409, 400 de reenvío y 403 de administrador | HTTP `TestCompatibleOrganizationInvitationMutationHTTP` |
+| Inspección pública con slugs de equipo y aceptación única | HTTP `TestCompatibleInvitationHTTPAcceptance` |
+
+Evidencia: `test-results/closure-20261025/identidad-091-go.log` con siete
+owners y los cambios en
+`internal/store/compat_invitations_test.go`,
+`internal/server/compat_invitations_test.go`,
+`internal/server/compat_management_mutations_test.go` y
+`internal/server/compat_people_test.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+`gofmt` retiró una línea en blanco sobrante en el owner de personas; no cambia
+comportamiento.
 
 ### Comprobante de integración documental
 

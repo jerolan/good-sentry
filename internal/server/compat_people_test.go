@@ -113,6 +113,26 @@ func TestCompatiblePeopleTeamsAndProjectRelationsHTTP(t *testing.T) {
 	projectHeaders := http.Header{"Authorization": {"Bearer " + projectToken}}
 	f.request(t, http.DefaultClient, "GET", projectTeams, "", projectHeaders, 200)
 	f.request(t, http.DefaultClient, "GET", orgBase+"/members/", "", projectHeaders, 403)
+	for _, actor := range []struct{ email, name, role string }{
+		{"pending-admin@compat-people-http.test", "Pending admin", "admin"},
+		{"pending-manager@compat-people-http.test", "Pending manager", "manager"},
+	} {
+		insertDiscoveryMember(t, f, actor.email, actor.name, actor.role)
+		client, _ := loginManagementMember(t, f, actor.email)
+		var listed []map[string]any
+		if err := json.Unmarshal(f.request(t, client, "GET", orgBase+"/members/", "", nil, 200), &listed); err != nil {
+			t.Fatal(err)
+		}
+		visible := false
+		for _, person := range listed {
+			if person["pending"] == true && person["email"] == "pending-person@test" {
+				visible = true
+			}
+		}
+		if !visible {
+			t.Fatalf("%s did not see the pending invitation: %+v", actor.role, listed)
+		}
+	}
 
 	var secondOrgID string
 	if err := f.sql.QueryRow(f.ctx, `INSERT INTO organizations(slug,name) VALUES('people-second','People second') RETURNING id::text`).Scan(&secondOrgID); err != nil {
@@ -239,7 +259,6 @@ func TestCompatibleOrganizationMemberManagementHTTP(t *testing.T) {
 	f.request(t, memberClient, "GET", invitationBase, "", nil, 404)
 	f.request(t, f.client, "PUT", invitationBase, `{"orgRole":"admin"}`, csrf, 400)
 	f.request(t, f.client, "DELETE", invitationBase, "", csrf, 204)
-
 
 	readToken := issueManagementToken(t, f, f.org.Slug, "Member read", []string{"org:read"}, []string{f.project.ID})
 	readHeaders := http.Header{"Authorization": {"Bearer " + readToken}}

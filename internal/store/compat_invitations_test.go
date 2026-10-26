@@ -157,6 +157,10 @@ func TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	var pendingAssignments int
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM organization_invitation_teams WHERE invitation_id=$1`, item.ID).Scan(&pendingAssignments); err != nil || pendingAssignments != 1 {
+		t.Fatalf("pending assignment rows=%d err=%v", pendingAssignments, err)
+	}
 	var pending CompatibleOrganizationUser
 	pending, err = db.CompatibleOrganizationInvitationMember(ctx, owner.ID, org.Slug, item.ID)
 	if err != nil || !pending.Pending || len(pending.Teams) != 1 || pending.Teams[0] != onCall.Slug {
@@ -189,6 +193,10 @@ func TestInvitationTeamAssignmentsFollowTeamIDsThroughAcceptance(t *testing.T) {
 	}
 	if err = db.DeleteTeam(ctx, owner.ID, org.Slug, doomed.ID); err != nil {
 		t.Fatal(err)
+	}
+	var doomedAssignments int
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM organization_invitation_teams WHERE team_id=$1::bigint`, doomed.ID).Scan(&doomedAssignments); err != nil || doomedAssignments != 0 {
+		t.Fatalf("deleted team retained assignment rows=%d err=%v", doomedAssignments, err)
 	}
 	if _, _, err = db.AcceptInvitation(ctx, doomedHash, "", 0, "Deleted team invitee", []byte("password-hash")); err != nil {
 		t.Fatalf("accept after assigned team deletion: %v", err)

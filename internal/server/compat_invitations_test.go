@@ -98,6 +98,19 @@ func TestCompatibleInvitationHTTPAcceptance(t *testing.T) {
 	if !accepted.AcceptInvite || accepted.OrgUser.ID != inviteeID || accepted.OrgUser.Pending || accepted.OrgUser.User == nil || accepted.OrgUser.User.Email != "compat-http@example.test" || accepted.OrgUser.Organization.Slug != f.org.Slug || len(accepted.OrgUser.Teams) != 1 || accepted.OrgUser.Teams[0] != onCall.Slug {
 		t.Fatalf("accepted=%+v", accepted)
 	}
+	var teamMembers []store.CompatibleOrganizationUser
+	if err := json.Unmarshal(f.request(t, f.client, "GET", "/api/0/teams/"+f.org.Slug+"/on-call/members/", "", nil, 200), &teamMembers); err != nil {
+		t.Fatal(err)
+	}
+	joined := false
+	for _, member := range teamMembers {
+		if member.ID == inviteeID {
+			joined = true
+		}
+	}
+	if !joined {
+		t.Fatalf("accepted invitee absent from team members: %+v", teamMembers)
+	}
 	f.request(t, invitee, "POST", path, `{"acceptInvite":true}`, nil, 403)
 
 	other, otherToken := createSentInvitation(t, f, "expected-other@example.test", "member")
