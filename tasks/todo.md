@@ -1444,8 +1444,8 @@ CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
-y 101–111 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-139 (mute condicional). No se declara aceptación ni cierre del producto. El avance se
+y 101–111, y 139–149 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-150 (asignación, comentarios y actividad de triage). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1673,17 +1673,17 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-136](../SPEC.md#close-errores-136) | Native release-anchored and next-release resolution: Extend always-on issue maintenance: expired mute claims r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-137](../SPEC.md#close-errores-137) | Native release-anchored and next-release resolution: Add session GET /api/v1/issues/{issue}/releases?query=&pa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-138](../SPEC.md#close-errores-138) | Native release-anchored and next-release resolution: Comparison tests own independent grammar/precedence/class… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-139](../SPEC.md#close-errores-139) | Native conditional mute: Deliver timed, additional-event and additional-user mute before release-anchored/next… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-140](../SPEC.md#close-errores-140) | Native conditional mute: Compatible individual and bulk issue updates accept ignoreWindow at the top level or… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-141](../SPEC.md#close-errores-141) | Native conditional mute: Occurrence-window progress uses server receipt instants, never SDK timestamps or loca… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-142](../SPEC.md#close-errores-142) | Native conditional mute: Additive migration065 stores one server receipt instant per qualifying occurrence in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-143](../SPEC.md#close-errores-143) | Native conditional mute: Extend native session/CSRF-protected issue PATCH with optional ignore. It requires ex… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-144](../SPEC.md#close-errores-144) | Native conditional mute: Issue DTOs add nullable ignore:{minutes,count,userCount,window,userWindow,until,remai… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-145](../SPEC.md#close-errores-145) | Native conditional mute: Additive migration013 creates issue_ignores with one row per issue, optional positive… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-146](../SPEC.md#close-errores-146) | Native conditional mute: Run an always-on in-process issue maintenance worker, independent of uptime/log inges… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-147](../SPEC.md#close-errores-147) | Native conditional mute: Ignored issues, both indefinite and conditional, suppress new frequency-rule deliveri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-148](../SPEC.md#close-errores-148) | Native conditional mute: The original issue detail adds a labeled mute form for minutes/count/additional users… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-149](../SPEC.md#close-errores-149) | Native conditional mute: Owning PostgreSQL proof covers deadline receipt bounds, same-policy idempotence, assi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-139](../SPEC.md#close-errores-139) | Native conditional mute: Deliver timed, additional-event and additional-user mute before release-anchored/next… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-140](../SPEC.md#close-errores-140) | Native conditional mute: Compatible individual and bulk issue updates accept ignoreWindow at the top level or… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-141](../SPEC.md#close-errores-141) | Native conditional mute: Occurrence-window progress uses server receipt instants, never SDK timestamps or loca… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-142](../SPEC.md#close-errores-142) | Native conditional mute: Additive migration065 stores one server receipt instant per qualifying occurrence in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-143](../SPEC.md#close-errores-143) | Native conditional mute: Extend native session/CSRF-protected issue PATCH with optional ignore. It requires ex… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-144](../SPEC.md#close-errores-144) | Native conditional mute: Issue DTOs add nullable ignore:{minutes,count,userCount,window,userWindow,until,remai… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-145](../SPEC.md#close-errores-145) | Native conditional mute: Additive migration013 creates issue_ignores with one row per issue, optional positive… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-146](../SPEC.md#close-errores-146) | Native conditional mute: Run an always-on in-process issue maintenance worker, independent of uptime/log inges… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-147](../SPEC.md#close-errores-147) | Native conditional mute: Ignored issues, both indefinite and conditional, suppress new frequency-rule deliveri… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-148](../SPEC.md#close-errores-148) | Native conditional mute: The original issue detail adds a labeled mute form for minutes/count/additional users… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-149](../SPEC.md#close-errores-149) | Native conditional mute: Owning PostgreSQL proof covers deadline receipt bounds, same-policy idempotence, assi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-150](../SPEC.md#close-errores-150) | Native assignment, comments and recorded triage activity: Complete native assignment, comment management and v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-151](../SPEC.md#close-errores-151) | Native assignment, comments and recorded triage activity: Keep unresolved/resolved/ignored. Extend issue DTOs… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-152](../SPEC.md#close-errores-152) | Native assignment, comments and recorded triage activity: Resolve records database clock_timestamp() after acq… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4033,6 +4033,57 @@ Evidencia: `test-results/closure-20261025/errores-127-135.log` y
 
 Siguiente acción: CLOSE-errores-139 (mute condicional y ventanas), siguiente
 familia.
+
+### Ejecución 2026-10-26: mute condicional y ventanas
+
+Selección registrada antes de trabajar: CLOSE-errores-139 a -149. Candidata
+`3773e35`; el mute nativo, su DTO, migraciones, worker y UI no cambian desde
+`6946fe9` (ventanas rodantes de usuario) y `eb3fc07` (ventanas de conteo).
+Los comprobantes de navegador y de SDK se generaron el 2026-10-25 10:31 sobre
+un árbol que ya contenía ambos commits; desde entonces solo cambian campos
+compartidos de validación de otras familias. Los owners `TestIssueIgnore*` de
+store y HTTP se reejecutaron hoy sobre `3773e35` con `-race` y
+`-tags=integration` contra PostgreSQL desechable.
+
+Resultado observado: PATCH compatible individual y bulk aceptan
+`ignoreWindow`/nivel superior o `statusDetails` con copia duplicada
+consistente, solo con conteo positivo, rango 1..10080 y acknowledgment que
+serializa la ventana solo cuando está configurada (140). El progreso usa
+`clock_timestamp()` tras el lock de la fila, un recibo por ocurrencia única,
+intervalo inclusivo `[now - ventana, now]`, poda de recibos antiguos, expiración
+en la misma transacción y `remaining` recalculado en lectura sin mutar estado
+(141). La migración 065 persiste recibos sin evento, usuario ni payload, con
+cascada y poda acotada bajo lock; merge/unmerge conservan el progreso solo en la
+raíz activa y una política sin cambios lo preserva (142). El PATCH nativo con
+sesión y CSRF admite `ignore` con status `ignored` obligatorio, condiciones
+positivas int32, `userWindow` 1..10080 dependiente de `userCount`, rechazo
+estricto de duplicados/nulos/flotantes/exponentes/booleanos/cadenas/vacíos y
+no-op con misma política, deadline, baseline y actividad (143). El DTO expone
+`ignore` con minutos, conteos, ventanas, `until`, `remaining` y
+`userRemaining`; las condiciones son OR con prioridad duration, count,
+user_count; el N-ésimo error o usuario reabre antes de evaluar alertas y los
+duplicados no avanzan nada (144). Las migraciones 013/063/066 conservan filas
+legacy, digests y actividad histórica, y registran una sola actividad
+`unignored` automática nullable con `eventID` solo cuando una captura la causa
+(145). El worker de mantenimiento reclama con `FOR UPDATE OF i SKIP LOCKED`,
+revalida tras el claim, poda ventanas en lotes acotados, converge con
+replicas/capturas/cambios manuales y se cancela y une al apagar (146). La
+supresión de entregas por regla de frecuencia se evalúa antes de bloquear reglas
+con outbox durable, sin replay del umbral cruzado y con elegibilidad ordinaria
+en la captura que desmutea (147). La UI de detalle ofrece el formulario
+etiquetado, deadline y restantes, actividad legible, borradores preservados,
+errores 400 editables y guardas de navegación (148).
+
+Evidencia: `test-results/closure-20261025/errores-139-149.log`;
+`test-results/ignore-browser-userwindow-20261025/report.json` con 27 capturas
+320/768/1440 y 7 comprobaciones; `test-results/ignore-sdk-userwindow-20261025/report.json`
+con el SDK oficial 11.7.0 y capturas tardías/duplicadas reales.
+
+Límites registrados: el fixture de navegador de esa corrida no incluía la issue
+vencida por worker (`durationIssueID` nulo), de modo que el vencimiento por
+duración se apoya en los owners de store; y CLOSE-errores-149 mantiene para la
+auditoría final la imagen final con upgrade/reinicio, CI remoto, landing
+desplegada y la suite completa sobre la revisión aceptada.
 
 ### Comprobante de integración documental
 

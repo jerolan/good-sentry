@@ -1,0 +1,206 @@
+{
+  "passed": true,
+  "fixtureType": "independently authored wire captures; official SDK acceptance is separate",
+  "issueID": "3",
+  "events": [
+    "ab323060b6ce864594c0a0f1d6c29f40",
+    "9a6425662e85a450913d70328ec8d5f9",
+    "04feea13dd872ff429408f157ada21a4",
+    "6d42b1cc92700d9dfaeea79a9b815bf2",
+    "773f84159475e340210530bac6065f68",
+    "773f84159475e340210530bac6065f68",
+    "63a9dc90df6a5cbe70124570ad42e0c9",
+    "23f9a93f9c163f512d49e87ffc1e9a5b",
+    "ba8cf63ad7a5ae0465656728b2b785a5"
+  ],
+  "checks": [
+    "Empty/overflow conditions show editable errors, preserve input and safely render the owned capture",
+    "Combined OR conditions show actual local/UTC deadline and remaining; retry and assignment preserve current policy, mute drafts and comment draft",
+    "An actual server400 from one deliberately invalid outbound PATCH retains the newer editable draft without changing the saved condition",
+    "The rolling window remains in the editable draft, survives a held request, advances on server captures and appears in automatic count-expiry activity",
+    "New identified SDK users consume the threshold once; repeated, duplicate and anonymous captures do not, and automatic activity names the user-count reason",
+    "Clearing a saved condition sends explicit null, keeps Ignore indefinitely, disables redundant clear and persists on reload",
+    "A late mute response leaves sidebar navigation intact; browser Back restores actual saved policy and comment draft"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/client-validation-draft-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/client-validation-draft-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/client-validation-draft-1440.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/combined-current-deadline-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/combined-current-deadline-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/combined-current-deadline-1440.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/real400-newer-draft-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/real400-newer-draft-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/real400-newer-draft-1440.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/successful-pending-draft-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/successful-pending-draft-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/successful-pending-draft-1440.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/remaining-one-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/remaining-one-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/remaining-one-1440.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/automatic-count-activity-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/automatic-count-activity-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/automatic-count-activity-1440.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/automatic-user-count-activity-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/automatic-user-count-activity-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/automatic-user-count-activity-1440.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/indefinite-mute-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/indefinite-mute-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/indefinite-mute-1440.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/back-after-pending-navigation-320.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/back-after-pending-navigation-768.png",
+    "/home/dev/projects/SentryGo/test-results/ignore-browser-userwindow-20261025/back-after-pending-navigation-1440.png"
+  ],
+  "dimensions": [
+    {
+      "name": "client-validation-draft",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "client-validation-draft",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "client-validation-draft",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "combined-current-deadline",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "combined-current-deadline",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "combined-current-deadline",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "real400-newer-draft",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "real400-newer-draft",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "real400-newer-draft",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "successful-pending-draft",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "successful-pending-draft",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "successful-pending-draft",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "remaining-one",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "remaining-one",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "remaining-one",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "automatic-count-activity",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "automatic-count-activity",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "automatic-count-activity",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "automatic-user-count-activity",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "automatic-user-count-activity",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "automatic-user-count-activity",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "indefinite-mute",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "indefinite-mute",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "indefinite-mute",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "back-after-pending-navigation",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "back-after-pending-navigation",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "back-after-pending-navigation",
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "badResponses": [
+    {
+      "url": "http://localhost:18080/api/v1/issues/3",
+      "status": 400,
+      "expected": true
+    }
+  ],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "expected": true
+    }
+  ]
+}

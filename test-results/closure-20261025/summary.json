@@ -678,7 +678,7 @@
       "covered": [
         "additive nullable TOTP columns plus recovery codes and login challenges",
         "AES-256-GCM label-derived secret; plaintext only in enrollment/check memory",
-        "HMAC-SHA1 six digits 30 seconds, window \u00b11, constant-time compare",
+        "HMAC-SHA1 six digits 30 seconds, window ±1, constant-time compare",
         "store refuses step at or below the last accepted step; enrollment/challenge/recovery tests pass"
       ],
       "evidence_files": [
@@ -2341,6 +2341,105 @@
       "evidence_files": [
         "errores-127-135.log",
         "releaseorder.log"
+      ]
+    },
+    "CLOSE-errores-139": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-140": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-141": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-142": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-143": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-144": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-145": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-146": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-147": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-148": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
+      ]
+    },
+    "CLOSE-errores-149": {
+      "evidence": "vigente",
+      "scope": "native conditional mute: timed, count, user and rolling-window conditions",
+      "evidence_files": [
+        "errores-139-149.log",
+        "ignore-browser-userwindow-20261025/report.json",
+        "ignore-sdk-userwindow-20261025/report.json"
       ]
     }
   },

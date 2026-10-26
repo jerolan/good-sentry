@@ -1,0 +1,240 @@
+=== RUN   TestIssueIgnoreSuppressesNewFrequencyQueue
+--- PASS: TestIssueIgnoreSuppressesNewFrequencyQueue (0.52s)
+=== RUN   TestIssueIgnoreCountRetriesNoOpAndLateUniqueCaptures
+--- PASS: TestIssueIgnoreCountRetriesNoOpAndLateUniqueCaptures (0.83s)
+=== RUN   TestIssueIgnoreRollingWindowLifecycle
+--- PASS: TestIssueIgnoreRollingWindowLifecycle (0.71s)
+=== RUN   TestIssueIgnoreRollingWindowIncludesLowerBound
+--- PASS: TestIssueIgnoreRollingWindowIncludesLowerBound (0.53s)
+=== RUN   TestIssueIgnoreDurationCatchUpWorkerORAndAtomicValidation
+--- PASS: TestIssueIgnoreDurationCatchUpWorkerORAndAtomicValidation (0.71s)
+=== RUN   TestIssueIgnoreDeadlineRangeClearAndNewBaseline
+--- PASS: TestIssueIgnoreDeadlineRangeClearAndNewBaseline (0.75s)
+=== RUN   TestIssueIgnoreUnmutingCaptureOrdinaryEligibilityAndQueuedHistory
+--- PASS: TestIssueIgnoreUnmutingCaptureOrdinaryEligibilityAndQueuedHistory (0.58s)
+=== RUN   TestIssueIgnoreLockWaitRechecksPolicyAndWorkerSkipsRenewal
+--- PASS: TestIssueIgnoreLockWaitRechecksPolicyAndWorkerSkipsRenewal (0.63s)
+=== RUN   TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts
+--- PASS: TestIssueIgnoreMigrationPreservesLegacyRowsAndReceipts (0.60s)
+=== RUN   TestIssueIgnoreUserWindowMigrationPreservesAndReopens
+--- PASS: TestIssueIgnoreUserWindowMigrationPreservesAndReopens (0.70s)
+=== RUN   TestIssueIgnoreDrainContinuesAcrossConcurrentRenewal
+--- PASS: TestIssueIgnoreDrainContinuesAcrossConcurrentRenewal (8.61s)
+=== RUN   TestIssueIgnoreUserCountLifecycle
+--- PASS: TestIssueIgnoreUserCountLifecycle (0.73s)
+=== RUN   TestIssueIgnoreRollingUserWindowLifecycle
+--- PASS: TestIssueIgnoreRollingUserWindowLifecycle (0.65s)
+=== RUN   TestIssueIgnoreRollingUserWindowPolicyProgress
+--- PASS: TestIssueIgnoreRollingUserWindowPolicyProgress (0.72s)
+=== RUN   TestIssueIgnoreRollingUserWindowIncludesLowerBound
+--- PASS: TestIssueIgnoreRollingUserWindowIncludesLowerBound (0.53s)
+PASS
+ok  	goodsentry/internal/store	18.798s
+=== RUN   TestIssueIgnoreHTTPContract
+=== RUN   TestIssueIgnoreHTTPContract/valid_conditional_mute_response
+=== RUN   TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries
+=== RUN   TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/minutes=1
+=== RUN   TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/minutes=2147483647
+=== RUN   TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/count=1
+=== RUN   TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/count=2147483647
+=== RUN   TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/userCount=1
+=== RUN   TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/userCount=2147483647
+=== RUN   TestIssueIgnoreHTTPContract/rolling_count_window_boundaries
+=== RUN   TestIssueIgnoreHTTPContract/rolling_user_window_boundaries
+=== RUN   TestIssueIgnoreHTTPContract/omission_preserves_and_explicit_null_clears
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_00
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_01
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_02
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_03
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_04
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_05
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_06
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_07
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_08
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_09
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_10
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_11
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_12
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_13
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_14
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_15
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_16
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_17
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_18
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_19
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_20
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_21
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_22
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_23
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_24
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_25
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_26
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_27
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_28
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_29
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_30
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_31
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_32
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_33
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_34
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_35
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_36
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_37
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_38
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_39
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_40
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_41
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_42
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_43
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_44
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_45
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_46
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_47
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_48
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_49
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_50
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_51
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_52
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_53
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_54
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_55
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_56
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_57
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_58
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_59
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_60
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_61
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_62
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_63
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_64
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_65
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_66
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_67
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_68
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_69
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_70
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_71
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_72
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_73
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_74
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_75
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_76
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_77
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_78
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_79
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_80
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_81
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_82
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_83
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_84
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_85
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_86
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_87
+=== RUN   TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_88
+=== RUN   TestIssueIgnoreHTTPContract/native_session_CSRF_and_target_guards
+--- PASS: TestIssueIgnoreHTTPContract (0.98s)
+    --- PASS: TestIssueIgnoreHTTPContract/valid_conditional_mute_response (0.04s)
+    --- PASS: TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries (0.08s)
+        --- PASS: TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/minutes=1 (0.01s)
+        --- PASS: TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/minutes=2147483647 (0.01s)
+        --- PASS: TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/count=1 (0.01s)
+        --- PASS: TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/count=2147483647 (0.01s)
+        --- PASS: TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/userCount=1 (0.02s)
+        --- PASS: TestIssueIgnoreHTTPContract/single_conditions_nullable_fields_and_integer_boundaries/userCount=2147483647 (0.01s)
+    --- PASS: TestIssueIgnoreHTTPContract/rolling_count_window_boundaries (0.02s)
+    --- PASS: TestIssueIgnoreHTTPContract/rolling_user_window_boundaries (0.03s)
+    --- PASS: TestIssueIgnoreHTTPContract/omission_preserves_and_explicit_null_clears (0.06s)
+    --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission (0.16s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_00 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_01 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_02 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_03 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_04 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_05 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_06 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_07 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_08 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_09 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_10 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_11 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_12 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_13 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_14 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_15 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_16 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_17 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_18 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_19 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_20 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_21 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_22 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_23 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_24 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_25 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_26 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_27 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_28 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_29 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_30 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_31 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_32 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_33 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_34 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_35 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_36 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_37 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_38 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_39 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_40 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_41 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_42 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_43 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_44 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_45 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_46 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_47 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_48 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_49 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_50 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_51 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_52 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_53 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_54 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_55 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_56 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_57 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_58 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_59 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_60 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_61 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_62 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_63 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_64 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_65 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_66 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_67 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_68 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_69 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_70 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_71 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_72 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_73 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_74 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_75 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_76 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_77 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_78 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_79 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_80 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_81 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_82 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_83 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_84 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_85 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_86 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_87 (0.00s)
+        --- PASS: TestIssueIgnoreHTTPContract/strict_JSON_and_compatible_status_admission/reject_88 (0.00s)
+    --- PASS: TestIssueIgnoreHTTPContract/native_session_CSRF_and_target_guards (0.03s)
+PASS
+ok  	goodsentry/internal/server	2.004s
