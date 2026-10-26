@@ -127,3 +127,29 @@ no reproduce esa prueba ni certifica su vigencia en revisiones posteriores.
 
 Siguen pendientes clientes de MCP, GitLab y Java, plataformas nativas y
 resultados completos por familia. La decisión permanece abierta.
+
+## Resolution comments, Grafana clarification
+
+2026-10-25, America/Mexico_City.
+Tras aclarar que GoodSentry expone endpoints compatibles consultados por el
+plugin Sentry de un Grafana externo, el usuario respondió "Ok bien entonces si".
+Queda confirmado ese alcance de la integración de lectura y las versiones
+aprobadas. Grafana no se incorpora al producto ni a sus dependencias de runtime.
+
+## Next round, native acceptance
+
+Propuesta pendiente: usar Linux/amd64 con sentry-native 0.17.4 y Crashpad
+como plataforma representativa exigida para la prueba nativa real completa.
+El crash debe proceder del mismo ELF/DWARF que se subió, producir un issue
+con función goodsentry_demo_crash, archivo main.c y línea positiva, y no
+conservar los bytes del minidump. La investigación y tasks/todo.md registran
+una ejecución real de ese flujo; su reutilización depende de la revisión
+acreditada y de los cambios que puedan invalidarla.
+
+Se propone conservar la cobertura y regresiones de los formatos y
+arquitecturas ya soportados, sin exigir un crash real adicional por cada
+combinación como condición de cierre. Esta última limitación necesita
+aprobación expresa, pues hay pendientes históricos de comprobantes en varias
+arquitecturas. No se declaran resueltos por aprobar el demo representativo
+los otros pendientes nativos de CFI, archivos o servidores de símbolos.
+Contexto Java sigue como una incertidumbre distinta.
