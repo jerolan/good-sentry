@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -038
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -039
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-039. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-040. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2100,7 +2100,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-030](../SPEC.md#close-logs-030) | Python 2.72.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlac… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-216](../SPEC.md#close-errores-216) | Node 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-217](../SPEC.md#close-errores-217) | Node 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-039](../SPEC.md#close-rendimiento-039) | Node 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-039](../SPEC.md#close-rendimiento-039) | Node 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-031](../SPEC.md#close-logs-031) | Node 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-218](../SPEC.md#close-errores-218) | Browser 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-219](../SPEC.md#close-errores-219) | Browser 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7905,6 +7905,26 @@ Selección registrada antes de trabajar: CLOSE-rendimiento-038. Candidata
 Evidencia: `rendimiento-038/python-trace.json`,
 `rendimiento-038/ui.json` y `rendimiento-038/python-trace-ui.png` (captura
 de la traza Python).
+
+Límites registrados: la UI se ejecutó en Chromium headless sobre una instalación
+local; el CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Cierre 2026-10-26: Node 11.7.0 en API y UI
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-039. Candidata
+`6c4ce0e`.
+
+| Comprobación | Resultado |
+|---|---|
+| Traza real del SDK oficial | `8d2fbae3798a454db970761c7af2aa6e`: 3 nodos, 2 relaciones, raíz `segment` `http.server` de 11.185 ms |
+| Hijos y tiempos | `db.query` «SELECT node trace» 5.681 ms y `http.client` «GET node trace» 3.34 ms, profundidad 1 y padre resuelto |
+| Agregado en Transactions | `node-trace-036`, count 1, 11.2 ms, con ocurrencia y View trace |
+| Ocurrencia | Muestra los dos hijos reales |
+| Navegación a traza | Abre `traceView=8d2fbae3798a454db970761c7af2aa6e` con `sampleSource=span&sample=2` y `returnView=transactions` |
+
+Evidencia: `rendimiento-039/node-trace.json` (nombre histórico del
+archivo, contenido Node), `rendimiento-039/ui.json` y
+`rendimiento-039/node-trace-ui.png`.
 
 Límites registrados: la UI se ejecutó en Chromium headless sobre una instalación
 local; el CI público y la imagen final siguen pendientes para la auditoría final.

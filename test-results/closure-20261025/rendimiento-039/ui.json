@@ -1,0 +1,23 @@
+{
+  "checks": [
+    {
+      "step": "aggregate",
+      "ok": true,
+      "text": "node-trace-036\thttp.server\t1\t0\t11.2 ms\t11.2 ms\t11.2 ms\tOct 26, 12:12 PM\t\n8d2fbae3798a454db970761c7af2aa6e\nCopy\nView trac"
+    },
+    {
+      "step": "occurrence",
+      "ok": true,
+      "children": [
+        "SELECT node trace",
+        "GET node trace"
+      ]
+    },
+    {
+      "step": "trace",
+      "ok": true,
+      "url": "http://127.0.0.1:18183/?view=transactions&org=go-037&project=1&sampleSource=span&sample=2&traceView=8d2fbae3798a454db970761c7af2aa6e&returnView=transactions"
+    }
+  ],
+  "ok": true
+}

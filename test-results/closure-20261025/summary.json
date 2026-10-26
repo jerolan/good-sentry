@@ -4109,6 +4109,14 @@
         "rendimiento-038/ui.json"
       ]
     },
+    "CLOSE-rendimiento-039": {
+      "evidence": "vigente",
+      "scope": "real Sentry Node 11.7.0 standalone segment in API and UI with identity, parent/child, timing, breakdown and trace navigation",
+      "evidence_files": [
+        "rendimiento-039/node-trace.json",
+        "rendimiento-039/ui.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

@@ -1,0 +1,28 @@
+{
+  "status": 200,
+  "nodeCount": 3,
+  "resolved": 2,
+  "root": {
+    "kind": "segment",
+    "op": "http.server",
+    "duration": 11.185,
+    "childCount": 2
+  },
+  "children": [
+    {
+      "op": "db.query",
+      "description": "SELECT node trace",
+      "depth": 1,
+      "parentStatus": "resolved",
+      "duration": 5.681
+    },
+    {
+      "op": "http.client",
+      "description": "GET node trace",
+      "depth": 1,
+      "parentStatus": "resolved",
+      "duration": 3.34
+    }
+  ],
+  "ok": true
+}
