@@ -4269,6 +4269,17 @@
         "uptime-025/ssl-dialog.json"
       ]
     },
+    "CLOSE-uptime-026": {
+      "evidence": "bloqueada",
+      "scope": "local SSL owners complete; isolated image/restart, external CA target and publication/CI remain required",
+      "evidence_files": [
+        "uptime-022/ssl-grammar.log",
+        "uptime-023/ssl-trust.log",
+        "uptime-025/migration-033.log",
+        "uptime-025/ssl-api.json",
+        "uptime-025/ssl-dialog.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

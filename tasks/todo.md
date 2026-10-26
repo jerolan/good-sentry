@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-026. No se declara
+runtime preservado. Siguiente acción: CLOSE-alertas-001. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1882,7 +1882,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-023](../SPEC.md#close-uptime-023) | Sentry spans and native telemetry reads: Each SSL check creates a new TCP connection through the existing nett… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-024](../SPEC.md#close-uptime-024) | Sentry spans and native telemetry reads: Share one configured deadline across resolution, connect and handshak… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013/023) |
 | [CLOSE-uptime-025](../SPEC.md#close-uptime-025) | Sentry spans and native telemetry reads: Add SSL to the database kind constraint in additive033 without rewrit… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-026](../SPEC.md#close-uptime-026) | Sentry spans and native telemetry reads: Extend owning configuration tests for accepted origins and distinct r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-026](../SPEC.md#close-uptime-026) | Sentry spans and native telemetry reads: Extend owning configuration tests for accepted origins and distinct r… | implementada | bloqueada | Bloqueo: imagen/backup/reinicio, CA externo y publicación; ver sección 2026-10-26 |
 | [CLOSE-alertas-004](../SPEC.md#close-alertas-004) | Sentry spans and native telemetry reads: Alert rules use error counts over a rolling window and notify on thre… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-005](../SPEC.md#close-alertas-005) | Sentry spans and native telemetry reads: The first alert workflow uses owner/admin native project-scoped /api/… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-006](../SPEC.md#close-alertas-006) | Sentry spans and native telemetry reads: Frequency means all non-transaction issue events in the project, incl… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -8359,6 +8359,32 @@ Evidencia: `test-results/closure-20261025/uptime-025/migration-033.log`,
 Límites registrados: la etiqueta humana de `tls_error` se verifica por la
 implementación de la UI, no con un fallo TLS real renderizado en navegador en
 esta ejecución. El CI público y la imagen final siguen pendientes.
+
+### Bloqueo 2026-10-26: aceptación SSL completa (CLOSE-uptime-026)
+
+CLOSE-uptime-026 queda bloqueado, no aceptado. Comprobantes locales ya
+vigentes:
+
+| Elemento | Comprobante |
+|---|---|
+| Gramática y rechazos | `uptime-022/ssl-grammar.log` |
+| TLS real, hostname/raíz/expiración/rotación y timeout | `uptime-023/ssl-trust.log` |
+| Trabajador real registra un resultado SSL | `TestMonitorWorkersProbeRecoverAndStop` con su tramo SSL y reinicio |
+| Migración 033 y API nativa | `uptime-025/migration-033.log` y `uptime-025/ssl-api.json` |
+| Diálogo SSL | `uptime-025/ssl-dialog.json` |
+
+Causa: el contrato exige además una imagen aislada con base nueva y reinicio,
+un objetivo con CA externa, la UI responsiva específica de SSL y publicación
+con CI público. Ninguna de esas condiciones está disponible en esta ejecución:
+el árbol sigue sin publicar y no hay CA externa autorizada.
+
+- Dependencia: publicación/imagen y acceso a un objetivo con CA externa.
+- Responsable: propietario de publicación y del entorno externo.
+- Intentos: se completaron los owners locales; la UI responsiva SSL y la
+  imagen/CA no se intentaron por falta de esa dependencia.
+- Condición de desbloqueo: publicación autorizada con CI coincidente, imagen
+  aislada reiniciada y objetivo externo con CA propia.
+- Siguiente acción: CLOSE-alertas-001, criterio independiente de la cola.
 
 ### Comprobante de integración documental
 
