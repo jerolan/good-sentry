@@ -3512,6 +3512,20 @@
         "identidad-099-go.log",
         "admin-users-ui/report.json"
       ]
+    },
+    "CLOSE-identidad-100": {
+      "evidence": "vigente",
+      "scope": "actor recheck under the admin lock, CSRF, open-auth protection and feature routing",
+      "evidence_files": [
+        "identidad-100-go.log"
+      ]
+    },
+    "CLOSE-identidad-101": {
+      "evidence": "vigente",
+      "scope": "suspension revocation, last active administrator and account deletion serialization",
+      "evidence_files": [
+        "identidad-101-go.log"
+      ]
     }
   },
   "commands": [

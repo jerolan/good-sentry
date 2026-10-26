@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -099 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-100
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -101 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-102
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1994,8 +1994,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-097](../SPEC.md#close-identidad-097) | Instance user administration: Extend the opt-in ENABLE_ADMIN surface with account operations inspired by Glitc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-098](../SPEC.md#close-identidad-098) | Instance user administration: Add users.is_instance_admin boolean NOT NULL DEFAULT false and users.is_active b… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-099](../SPEC.md#close-identidad-099) | Instance user administration: When ENABLE_ADMIN=true, expose GET /api/v1/admin/users and PATCH /api/v1/admin/u… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-100](../SPEC.md#close-identidad-100) | Instance user administration: Every list and update rechecks that the current account is active and an instanc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-101](../SPEC.md#close-identidad-101) | Instance user administration: Once an instance administrator exists, serialized updates and the existing self-… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-100](../SPEC.md#close-identidad-100) | Instance user administration: Every list and update rechecks that the current account is active and an instanc… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-101](../SPEC.md#close-identidad-101) | Instance user administration: Once an instance administrator exists, serialized updates and the existing self-… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-102](../SPEC.md#close-identidad-102) | Instance user administration: The first-owner/admin bootstrap must be serialized with user creation. The first… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-103](../SPEC.md#close-identidad-103) | Instance user administration: Acceptance uses real PostgreSQL migration from063 and reopen, store concurrency… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-049](../SPEC.md#close-operacion-049) | Instance user administration: Optional MCP uses Streamable HTTP with authenticated scoped access to issues, lo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5521,6 +5521,65 @@ Límites registrados: el CI público sigue pendiente para la auditoría final. L
 captura de 320 px muestra el encabezado y las primeras secciones; la tabla de
 cuentas se revisó en 768 y 1440 y el desbordamiento se comprobó en los tres
 anchos.
+
+### Ejecución 2026-10-26: autorización, bloqueo y admisión de instancia
+
+Selección registrada antes de trabajar: CLOSE-identidad-100. Candidata
+`f97e55e`.
+
+Resultado observado: cada lista y actualización revalida la cuenta actual contra
+storage; un actor suspendido o degradado mientras esperaba el bloqueo compartido
+de administración recibe el rechazo al obtener el turno, porque la comprobación
+se repite con una instantánea fresca después de `pg_advisory_xact_lock`. Las
+mutaciones por sesión exigen CSRF y mismo origen, y `ENABLE_ADMIN=false` deja
+las rutas ausentes con 404. En modo abierto el propietario implícito sigue siendo
+el actor, conserva CSRF y origen, y no puede desactivarse ni degradarse; un
+propietario implícito configurado que esté inactivo hace fallar el arranque en
+lugar de reactivarse solo.
+
+Evidencia: `test-results/closure-20261025/identidad-100-go.log` con
+`TestInstanceAdminRechecksActorAfterWaitingForSerializationLock`,
+`TestInstanceUserAdministrationHTTPAuthorizationAndUpdates` y
+`TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. El
+fallo de arranque se evidencia en el owner de store y en la propagación directa
+del error desde `cmd/goodsentry/main.go`; no se arranca un proceso completo con
+la cuenta suspendida.
+
+### Ejecución 2026-10-26: suspensión, últimos administradores y borrado
+
+Selección registrada antes de trabajar: CLOSE-identidad-101. Candidata
+`f97e55e`.
+
+Resultado observado: la suspensión incrementa la generación de autenticación,
+marca la cuenta inactiva, retira el privilegio de instancia, borra sesiones y
+desafíos de acceso y revoca tokens de organización, tokens de cuenta compatibles
+y refresh OAuth; la reactivación no revive ninguna credencial ni el privilegio.
+Un emisor de credenciales que esperaba detrás de la suspensión observa el estado
+inactivo y falla, y la rotación OAuth bloquea la fila del usuario antes del
+refresh. Las actualizaciones serializadas rechazan dejar cero administradores
+activos, y el borrado de cuenta toma el mismo bloqueo de administración y
+devuelve el conflicto de último administrador, también bajo carrera. Las rutas
+de creación OIDC e invitaciones respetan el orden de bloqueos de cuenta y
+organización.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Último administrador en actualizaciones | store `TestInstanceUserAdminSearchSuspensionAndLastAdmin` |
+| Último administrador en borrado de cuenta | store `TestCompatibleUserDeletionRetainsOrganizationOwnerAndCascadesAccount`, `TestConcurrentCompatibleUserDeletionRetainsOneOrganizationOwner` |
+| Revocación completa al suspender y no reaparición al reactivar | store `TestInstanceUserAdminSearchSuspensionAndLastAdmin` |
+| Emisor esperando detrás de la suspensión | store `TestSuspensionWaitsForCredentialIssuerAndRevokesItsCommit` |
+| Rotación OAuth tras el bloqueo de cuenta | store `TestOAuthRefreshRotationLocksUserBeforeRefreshToken` |
+| Orden de bloqueos en OIDC e invitaciones | store `TestOIDCAutoCreateSerializesWithFirstOwnerBootstrap`, `TestInvitationSignupWaitsForCreationLockBeforeOrganizationLock`, `TestExistingUserInvitationLocksAccountBeforeOrganization`, `TestNewSignupInvitationDuplicateCheckDoesNotWaitOnLockedAccount` |
+
+Evidencia: `test-results/closure-20261025/identidad-101-go.log` con nueve
+owners.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+carrera se prueba con bloqueos reales en PostgreSQL, no con un reloj simulado.
 
 ### Comprobante de integración documental
 
