@@ -6,9 +6,14 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
+	"time"
+
+	"goodsentry/internal/event"
 )
 
 func TestDebugFileStorageDeduplicationAndScope(t *testing.T) {
@@ -24,6 +29,13 @@ func TestDebugFileStorageDeduplicationAndScope(t *testing.T) {
 	duplicate, err := db.SaveDebugFile(ctx, access, project.ID, "duplicate.sym", "sym", "0123456789ABCDEF0", "x86_64", "example.sym", sha, nil, nil, content)
 	if err != nil || duplicate.ID != file.ID {
 		t.Fatalf("debug file dedup: %+v %v", duplicate, err)
+	}
+	if duplicate.Headers["format"] != "breakpad" || duplicate.Data["version"] != float64(1) {
+		t.Fatalf("duplicate replaced stored metadata: %+v", duplicate)
+	}
+	stored, err := db.DebugSymbolFiles(ctx, project.ID)
+	if err != nil || len(stored) != 1 || stored[0].Name != "example.sym" || string(stored[0].Content) != string(content) {
+		t.Fatalf("stored original bytes: %+v %v", stored, err)
 	}
 	files, err := db.DebugFiles(ctx, access, project.ID, 0, 10)
 	if err != nil || len(files) != 1 || files[0].ID != file.ID || files[0].Headers == nil || files[0].Data == nil {
@@ -41,6 +53,11 @@ func TestDebugFileStorageDeduplicationAndScope(t *testing.T) {
 	if _, err := db.SaveDebugFile(ctx, access, project.ID, "bad.sym", "sym", "", "", "bad.sym", "not-sha1", nil, nil, content); err == nil {
 		t.Fatal("invalid hash accepted")
 	}
+	oversized := []byte("oversized name content")
+	oversizedHash := sha1.Sum(oversized)
+	if _, err := db.SaveDebugFile(ctx, access, project.ID, strings.Repeat("n", 513), "sym", "", "", "bad.sym", hex.EncodeToString(oversizedHash[:]), nil, nil, oversized); err == nil {
+		t.Fatal("oversized name accepted")
+	}
 	foreign := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, Role: "owner", AllProjects: false, ProjectIDs: []int64{0}}
 	if _, err := db.DebugFiles(ctx, foreign, project.ID, 0, 10); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("project scope error: %v", err)
@@ -49,6 +66,17 @@ func TestDebugFileStorageDeduplicationAndScope(t *testing.T) {
 
 func TestDebugFileMigration042PreservesProjectsAndReopens(t *testing.T) {
 	ctx, db, _, _, project := telemetryStore(t)
+	ev, err := event.Normalize(json.RawMessage(`{"event_id":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"migration 042 telemetry","platform":"native"}`), "", time.Now().UTC())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := db.Ingest(ctx, project.ID, ev); err != nil {
+		t.Fatal(err)
+	}
+	var telemetryBefore string
+	if err := db.pool.QueryRow(ctx, `SELECT to_jsonb(e)::text FROM events e WHERE project_id=$1::bigint`, project.ID).Scan(&telemetryBefore); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := db.pool.Exec(ctx, `DROP TABLE debug_files; DELETE FROM schema_migrations WHERE version=42`); err != nil {
 		t.Fatal(err)
 	}
@@ -62,10 +90,14 @@ func TestDebugFileMigration042PreservesProjectsAndReopens(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		var after, receipt string
+		var after, telemetryAfter, receipt string
 		if err := reopened.pool.QueryRow(ctx, `SELECT to_jsonb(p)::text FROM projects p WHERE id=$1::bigint`, project.ID).Scan(&after); err != nil || after != before {
 			reopened.Close()
 			t.Fatalf("042 changed project: %v", err)
+		}
+		if err := reopened.pool.QueryRow(ctx, `SELECT to_jsonb(e)::text FROM events e WHERE project_id=$1::bigint`, project.ID).Scan(&telemetryAfter); err != nil || telemetryAfter != telemetryBefore {
+			reopened.Close()
+			t.Fatalf("042 changed telemetry: %v", err)
 		}
 		if err := reopened.pool.QueryRow(ctx, `SELECT checksum FROM schema_migrations WHERE version=42`).Scan(&receipt); err != nil {
 			reopened.Close()

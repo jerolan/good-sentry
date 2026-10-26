@@ -4369,6 +4369,16 @@
         "nativo-001/xderef.log"
       ]
     },
+    "CLOSE-nativo-002": {
+      "evidence": "vigente",
+      "scope": "migration 042 project-scoped debug files, SHA-1 deduplication, compatible GET/POST dsyms with pagination, body and CSRF bounds, and upgrade/reopen preservation",
+      "evidence_files": [
+        "nativo-002/store.log",
+        "nativo-002/server.log",
+        "nativo-002/artifact-access.log",
+        "nativo-002/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

@@ -1453,9 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 y -002 quedan
+vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-002. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-003. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1727,7 +1728,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8628,6 +8629,29 @@ Evidencia: `test-results/closure-20261025/nativo-001/xderef.log`.
 Límites registrados: la prueba es pura de evaluación CFI; el crash nativo real
 pertenece a los criterios de aceptación del SDK nativo. El CI público y la
 imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: almacenamiento compatible de debug files
+
+Selección registrada antes de trabajar: CLOSE-nativo-002. Revisión de producto
+`3cfc664`; este incremento solo añade pruebas y documentación, sin cambios de
+producto, esquema ni imagen.
+
+| Elemento | Comprobante |
+|---|---|
+| Migración aditiva 042 con UUID, SHA-1, bytes originales y metadatos acotados | `TestDebugFileStorageDeduplicationAndScope` |
+| Duplicado por SHA-1 conserva identidad, metadatos y bytes originales | `TestDebugFileStorageDeduplicationAndScope`; `TestCompatibleDebugFileUploadListAndPermissions` |
+| Alcance por proyecto y rechazo de hash, nombre y selección inválidos | `TestDebugFileStorageDeduplicationAndScope` |
+| Proyecto y evento preexistentes sobreviven 042 y dos reaperturas | `TestDebugFileMigration042PreservesProjectsAndReopens` |
+| GET/POST compatibles, multipart único, límite de cuerpo y paginación | `TestCompatibleDebugFileUploadListAndPermissions`; `TestCompatibleDebugFilePagingBoundsAndCSRF` |
+| Grants `project:releases`, owner/admin y CSRF de sesión | `TestCompatibleDebugFileUploadListAndPermissions`; `TestCompatibleDebugFilePagingBoundsAndCSRF`; `TestArtifactUploadCurrentRoleOrganizationAndProjectScope` |
+
+Evidencia: `test-results/closure-20261025/nativo-002/store.log`,
+`server.log` y `artifact-access.log`.
+
+Límites registrados: la carga durable no demuestra simbolización nativa; el
+emparejamiento de objetos, la reprocesión y el ensamblado por chunks pertenecen
+a CLOSE-nativo-003 y CLOSE-nativo-004. La imagen final y el CI público siguen
+pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
