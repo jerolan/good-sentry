@@ -2818,6 +2818,15 @@
         "logs-go-ui/report.json",
         "logs-go-ui-restart/report.json"
       ]
+    },
+    "CLOSE-logs-030": {
+      "evidence": "vigente",
+      "scope": "real Python SDK 2.72.0 logs with typed values, filters, trace link, UI and restart persistence",
+      "evidence_files": [
+        "logs-python-api.json",
+        "logs-python-ui/report.json",
+        "logs-python-ui-restart/report.json"
+      ]
     }
   },
   "commands": [

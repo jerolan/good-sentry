@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-030 (logs con el SDK Python 2.72.0). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-031 (logs con el SDK Node 11.7.0). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -2086,7 +2086,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-214](../SPEC.md#close-errores-214) | Python 2.72.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-215](../SPEC.md#close-errores-215) | Python 2.72.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-038](../SPEC.md#close-rendimiento-038) | Python 2.72.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegació… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-030](../SPEC.md#close-logs-030) | Python 2.72.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlac… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-logs-030](../SPEC.md#close-logs-030) | Python 2.72.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlac… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-216](../SPEC.md#close-errores-216) | Node 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-217](../SPEC.md#close-errores-217) | Node 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-039](../SPEC.md#close-rendimiento-039) | Node 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4251,6 +4251,29 @@ aplicación siguen las tres filas y la comprobación de navegador vuelve a pasar
 Evidencia: `test-results/closure-20261025/logs-go-api.json`,
 `logs-go-ui/report.json`, `logs-go-ui-restart/report.json` y el driver
 `tests/compat/logssdk/main.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: logs reales con el SDK Python 2.72.0
+
+Selección registrada antes de trabajar: CLOSE-logs-030. Candidata `39de036`.
+
+Resultado observado: el SDK oficial 2.72.0, instalado en un entorno virtual
+propio, emitió tres logs reales por DSN (info, warn y error) con atributos
+explícitos —`service.name`, `component`, el entero exacto
+`9223372036854775807`, booleano y doble, además de `reason` y `attempt`—,
+entorno `logs-python-acceptance`, release `logs-python@2.72.0` y correlación
+real de traza y span. La API nativa filtra por texto (tres filas, `warn` una),
+servicio, entorno y traza; el detalle conserva los dígitos exactos del entero y
+`source:"sentry"`. En Chromium la lista muestra las tres filas sin insignia
+OTLP, la divulgación de atributos conserva el entero exacto, el enlace abre la
+vista de traza y el filtro por servicio las selecciona, a 320/768/1440 sin
+desbordes. Tras reiniciar la aplicación siguen las tres filas y la comprobación
+vuelve a pasar.
+
+Evidencia: `test-results/closure-20261025/logs-python-api.json`,
+`logs-python-ui/report.json`, `logs-python-ui-restart/report.json` y el driver
+`tests/compat/logs_python.py`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 
