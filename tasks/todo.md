@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-076 (actualización y borrado de proyecto). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-077 (siguiente criterio de gestión compatible). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1916,7 +1916,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-073](../SPEC.md#close-identidad-073) | Compatible organization detail and project keys: Key creation preserves the generated public key only in the D… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-074](../SPEC.md#close-identidad-074) | Compatible organization detail and project keys: The native Projects view offers a project-scoped SDK-key mana… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-075](../SPEC.md#close-identidad-075) | Compatible organization detail and project keys: Real PostgreSQL owns039/041 preservation/reopen, UUID/team-cl… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-076](../SPEC.md#close-identidad-076) | Compatible project update and deletion: PUT /api/0/projects/{org}/{project}/ accepts project name and platform… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-076](../SPEC.md#close-identidad-076) | Compatible project update and deletion: PUT /api/0/projects/{org}/{project}/ accepts project name and platform… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-077](../SPEC.md#close-identidad-077) | Compatible project update and deletion: Additive061 stores each project's event_throttle_rate with a default o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-078](../SPEC.md#close-identidad-078) | Compatible project update and deletion: The native project UI exposes Edit and permanent-delete confirmation t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-079](../SPEC.md#close-identidad-079) | Compatible project update and deletion: GET/POST /api/0/organizations/{org}/repos/ exposes the existing organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4882,6 +4882,28 @@ Evidencia: `test-results/closure-20261025/project-keys-ui/report.json`,
 Límites registrados: la publicación de imagen de fuente exacta sigue siendo una
 compuerta de release separada, y el CI público queda pendiente para la auditoría
 final.
+
+### Ejecución 2026-10-26: actualización y borrado compatible de proyecto
+
+Selección registrada antes de trabajar: CLOSE-identidad-076. Candidata
+`58243a2`.
+
+Resultado observado: `PUT /api/0/projects/{org}/{project}/` acepta nombre y
+plataforma con `eventThrottleRate` opcional; los valores fuera de 0..100
+devuelven 400, la omisión y el `null` explícito conservan la tasa guardada y el
+cero la desactiva. El identificador y el slug permanecen inmutables tras
+renombrar. `DELETE` usa la misma autoridad y deja el proyecto inaccesible con
+404; su cascada elimina las claves del proyecto (comprobado con conteo en base) y
+el resto cuelga de las claves foráneas existentes. La autoridad compartida exige
+rol de propietario, manager o administrador en sesión, o un token
+`project:write` restringido al proyecto; el owner de creación ya verifica el 403
+de un miembro y la denegación de un token de solo lectura.
+
+Evidencia: `test-results/closure-20261025/identidad-076-go.log` con el owner
+ampliado de actualización y borrado junto a los de creación y relación de
+equipo.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

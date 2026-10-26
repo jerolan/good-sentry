@@ -1,0 +1,8 @@
+=== RUN   TestProjectUpdateAndDeleteHTTP
+--- PASS: TestProjectUpdateAndDeleteHTTP (0.72s)
+=== RUN   TestCreateCompatibleProjectHTTP
+--- PASS: TestCreateCompatibleProjectHTTP (0.74s)
+=== RUN   TestCompatibleProjectTeamRelationshipHTTP
+--- PASS: TestCompatibleProjectTeamRelationshipHTTP (0.75s)
+PASS
+ok  	goodsentry/internal/server	3.251s

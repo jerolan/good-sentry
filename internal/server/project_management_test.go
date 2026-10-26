@@ -39,8 +39,20 @@ func TestProjectUpdateAndDeleteHTTP(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, f.client, "PUT", compatible, `{"name":"Compatible rename","platform":"node","eventThrottleRate":37}`, csrf, 200), &compatibleProject); err != nil || compatibleProject["name"] != "Compatible rename" || compatibleProject["eventThrottleRate"] != float64(37) {
 		t.Fatalf("compatible project update=%+v err=%v", compatibleProject, err)
 	}
+	if compatibleProject["slug"] != f.project.Slug || compatibleProject["id"] != f.project.ID {
+		t.Fatalf("rename changed immutable identity: %+v", compatibleProject)
+	}
 	if err := json.Unmarshal(f.request(t, f.client, "GET", compatible, "", nil, 200), &compatibleProject); err != nil || compatibleProject["eventThrottleRate"] != float64(37) {
 		t.Fatalf("compatible project throttle persistence=%+v err=%v", compatibleProject, err)
+	}
+	// Omission and explicit null preserve the saved rate; zero disables it.
+	for _, body := range []string{`{"name":"Omit rate"}`, `{"name":"Null rate","eventThrottleRate":null}`} {
+		if err := json.Unmarshal(f.request(t, f.client, "PUT", compatible, body, csrf, 200), &compatibleProject); err != nil || compatibleProject["eventThrottleRate"] != float64(37) {
+			t.Fatalf("throttle preservation=%+v err=%v body=%s", compatibleProject, err, body)
+		}
+	}
+	if err := json.Unmarshal(f.request(t, f.client, "PUT", compatible, `{"name":"Zero rate","eventThrottleRate":0}`, csrf, 200), &compatibleProject); err != nil || compatibleProject["eventThrottleRate"] != float64(0) {
+		t.Fatalf("throttle disable=%+v err=%v", compatibleProject, err)
 	}
 	f.request(t, f.client, "PUT", compatible, `{"name":"Invalid rate","platform":"node","eventThrottleRate":-1}`, csrf, 400)
 	f.request(t, f.client, "PUT", compatible, `{"name":"Invalid rate","platform":"node","eventThrottleRate":101}`, csrf, 400)
@@ -52,6 +64,10 @@ func TestProjectUpdateAndDeleteHTTP(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.request(t, f.client, "DELETE", "/api/0/projects/"+f.org.Slug+"/"+second.Slug+"/", "", csrf, 204)
+	var remainingKeys int
+	if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM project_keys WHERE project_id=$1::bigint`, second.ID).Scan(&remainingKeys); err != nil || remainingKeys != 0 {
+		t.Fatalf("deleted project keys=%d err=%v", remainingKeys, err)
+	}
 	if _, err := f.db.ManagementProject(f.ctx, store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}, second.ID); !errors.Is(err, store.ErrNotFound) {
 		t.Fatalf("compatible project deletion=%v", err)
 	}

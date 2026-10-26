@@ -3309,6 +3309,13 @@
         "identidad-074-075-go.log",
         "identidad-keys-rotation.json"
       ]
+    },
+    "CLOSE-identidad-076": {
+      "evidence": "vigente",
+      "scope": "compatible project update, throttle semantics, immutable identity and deletion cascade",
+      "evidence_files": [
+        "identidad-076-go.log"
+      ]
     }
   },
   "commands": [
