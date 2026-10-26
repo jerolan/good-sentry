@@ -3554,6 +3554,17 @@
         "auth-modes/report.json",
         "auth-modes/open-report.json"
       ]
+    },
+    "CLOSE-identidad-105": {
+      "evidence": "vigente",
+      "scope": "password recovery through the local mail sink in API and browser",
+      "evidence_files": [
+        "identidad-105-go.log",
+        "password-recovery/report.json",
+        "password-recovery/reset-request-1440.png",
+        "password-recovery/reset-form-1440.png",
+        "password-recovery/post-reset-1440.png"
+      ]
     }
   },
   "commands": [

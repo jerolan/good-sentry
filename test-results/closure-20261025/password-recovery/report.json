@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "checks": [
+    "Recovery request returns the neutral notice",
+    "Single-use link resets the password",
+    "The new password signs in and reaches the dashboard"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/reset-request-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/reset-request-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/reset-request-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/reset-form-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/reset-form-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/reset-form-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/post-reset-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/post-reset-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/password-recovery/post-reset-1440.png"
+  ],
+  "pageErrors": []
+}

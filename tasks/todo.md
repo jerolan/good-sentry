@@ -1447,7 +1447,7 @@ publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
 releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
-CLOSE-identidad-104 queda vigente. Siguiente acción: CLOSE-identidad-105
+CLOSE-identidad-104 y -105 quedan vigentes. Siguiente acción: CLOSE-identidad-106
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -2142,7 +2142,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-107](../SPEC.md#close-identidad-107) | API y navegador: comprobar OIDC y aplicaciones SSO con controles y pruebas locales, con los resultados y contr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-108](../SPEC.md#close-identidad-108) | API y navegador: comprobar organizaciones, equipos y miembros, con los resultados y controles de sus contratos… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5683,6 +5683,28 @@ Evidencia: `test-results/closure-20261025/identidad-104-go.log` y
 `test-results/closure-20261025/auth-modes/` con dos informes y quince capturas.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: recuperación de contraseña y correo local
+
+Selección registrada antes de trabajar: CLOSE-identidad-105. Candidata
+`d624cb0`.
+
+Resultado observado: el formulario de recuperación pide el correo y responde con
+el aviso neutro; el correo local llega por la consola con un enlace de un solo
+uso, y el navegador completa el cambio de contraseña y entra al panel con la
+contraseña nueva. Las tres pantallas (solicitud, formulario de nueva contraseña
+y panel posterior) se capturaron a 320/768/1440 sin desbordamiento. El owner HTTP
+cubre 202 tanto para correo existente como ausente, la entrega local, el uso
+único con rechazo de repetición, la validación de longitud y el origen/CSRF.
+
+Evidencia: `test-results/closure-20261025/identidad-105-go.log` y
+`test-results/closure-20261025/password-recovery/` con `report.json` y nueve
+capturas.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. El
+correo de consola imprime el cuerpo en quoted-printable sin decodificar; el
+guion de aceptación decodifica `=3D` y los saltos suaves antes de abrir el
+enlace, igual que un cliente de correo real. No se modificó producto por esto.
 
 ### Comprobante de integración documental
 
