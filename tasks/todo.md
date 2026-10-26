@@ -1437,11 +1437,11 @@ candidata probada fue `54db6e48bf2e52e9a84efe397e3e5b44c27e4d91` y el único
 archivo ajeno era `tests/compat/otlp_python_smoke.py`, sin seguimiento y sin
 tocar. Se eligieron, en orden del plan, CLOSE-operacion-004, CLOSE-operacion-005
 y CLOSE-operacion-006; después se completaron CLOSE-operacion-007 con Chromium
-real y un estado de permiso, y CLOSE-operacion-008 con el Compose público, la
-imagen construida y PostgreSQL externo. Sus comprobantes vigentes están abajo.
-Siguiente acción: CLOSE-operacion-009 (configuración canónica, alias y
-precedencia), con dependencias locales resueltas; después CLOSE-operacion-010
-(modo abierto/autenticado, sesiones y CSRF). No se declara aceptación ni cierre
+real y un estado de permiso, CLOSE-operacion-008 con el Compose público, la
+imagen construida y PostgreSQL externo, y CLOSE-operacion-009 con el loader y
+los alias. Sus comprobantes vigentes están abajo. Siguiente acción:
+CLOSE-operacion-010 (modo abierto/autenticado, sesiones, CSRF y aislamiento),
+cuyas dependencias locales están resueltas. No se declara aceptación ni cierre
 del producto. El avance se informa por criterios/evidencia, sin porcentaje de
 casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
 este registro.
@@ -1458,7 +1458,7 @@ este registro.
 | [CLOSE-operacion-006](../SPEC.md#close-operacion-006) | Architecture: HTTP, workers and scheduler stop on termination signals and close database connections. Startup… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de arranque o migraciones |
 | [CLOSE-operacion-007](../SPEC.md#close-operacion-007) | Architecture: Serve an original, responsive application UI with a compact sidebar, neutral surfaces, a teal ac… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI/estilos |
 | [CLOSE-operacion-008](../SPEC.md#close-operacion-008) | Deployment and configuration: Default HTTP port is 8000. docker compose up -d pulls the verified public applic… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de imagen/Compose |
-| [CLOSE-operacion-009](../SPEC.md#close-operacion-009) | Deployment and configuration: Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-009](../SPEC.md#close-operacion-009) | Deployment and configuration: Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del loader |
 | [CLOSE-operacion-010](../SPEC.md#close-operacion-010) | Deployment and configuration: GOODSENTRY_AUTH defaults to disabled for frictionless local startup. If SECRET_K… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-011](../SPEC.md#close-operacion-011) | Deployment and configuration: An empty VALKEY_URL selects PostgreSQL-only operation. Optional features must re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-012](../SPEC.md#close-operacion-012) | Deployment and configuration: Memory target: measure application RSS under an explicit repeatable workload and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2399,6 +2399,41 @@ Siguiente acción: CLOSE-operacion-009, comprobar la configuración canónica,
 alias y precedencia contra el loader y sus tests; después CLOSE-operacion-010
 (modos abierto/autenticado, sesiones y CSRF), cuyas dependencias de PostgreSQL
 están disponibles.
+
+### Ejecución 2026-10-26: configuración canónica, alias y precedencia
+
+Selección registrada antes de trabajar: CLOSE-operacion-009, siguiente en el
+plan. Candidata `708fc8f`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad añade únicamente un test de precedencia del
+dominio; el loader ya implementaba el contrato.
+
+Procedimiento reproducible:
+`go test ./internal/config -run '^(TestDeploymentConfiguration|TestFeatureAliasesAndRuntimeOptions|TestDomainAliasPrecedence|TestOpenModeGeneratesAndReusesPersistentSecret|TestRequiredAuthNeedsExplicitSecret)$' -v`
+y, con PostgreSQL desechable,
+`go test -tags=integration ./internal/server -run '^(TestOpenAPIIsOptInAndReflectsRegisteredRoutes|TestAdministrationIsOptInAndOrganizationScoped|TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner)$' -v`.
+Revisión de `internal/config/config.go` para las variables canónicas, `alias`,
+`firstSet`, `SERVER_ROLE` y los flags; revisión de `server.go` para las rutas
+opt-in.
+
+Resultado observado: pasan los casos de `DATABASE_URL`, `SECRET_KEY`,
+`GOODSENTRY_DOMAIN`/`GLITCHTIP_DOMAIN`, `PORT`, `EMAIL_URL`,
+`DEFAULT_FROM_EMAIL`, `VALKEY_URL` y flags `GOODSENTRY_ENABLE_*`. El alias de
+dominio usa `GOODSENTRY_DOMAIN` cuando está definido y `GLITCHTIP_DOMAIN` si no;
+el nuevo test comprueba ambas direcciones y la normalización del prefijo. Los
+alias de logs, uptime, MCP y DuckDB/archivo usan el nombre GoodSentry primero;
+el test existente prueba la precedencia explícita de MCP y de creación de
+organizaciones. `SERVER_ROLE=all_in_one` se acepta y un rol distinto se rechaza
+con error. `ENABLE_OPENAPI` y `ENABLE_ADMIN` solo registran sus superficies
+cuando están activos; los tests opt-in/disabled pasan. La creación de
+organizaciones vale `false` por defecto, acepta `ENABLE_ORGANIZATION_CREATION`
+y respeta `GOODSENTRY_ENABLE_ORGANIZATION_CREATION=false` sobre el alias.
+Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/config/loader-tests.log` y
+`surfaces-tests.log`; el test nuevo está en `internal/config/config_test.go`.
+
+Siguiente acción: CLOSE-operacion-010 (modo abierto/autenticado, sesiones,
+CSRF y aislamiento), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

@@ -356,6 +356,30 @@ func TestFeatureAliasesAndRuntimeOptions(t *testing.T) {
 	}
 }
 
+func TestDomainAliasPrecedence(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://goodsentry:local@localhost/goodsentry")
+	t.Setenv("SECRET_KEY", strings.Repeat("a", 64))
+	t.Setenv("GLITCHTIP_DOMAIN", "https://legacy.example.test/monitoring/")
+	t.Setenv("GOODSENTRY_DOMAIN", "")
+
+	legacy, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if legacy.Domain != "https://legacy.example.test/monitoring" || legacy.Prefix != "/monitoring" {
+		t.Fatalf("legacy domain = %q prefix = %q", legacy.Domain, legacy.Prefix)
+	}
+
+	t.Setenv("GOODSENTRY_DOMAIN", "https://current.example.test/app/")
+	current, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if current.Domain != "https://current.example.test/app" || current.Prefix != "/app" {
+		t.Fatalf("current domain = %q prefix = %q", current.Domain, current.Prefix)
+	}
+}
+
 // The deployment loader owns precedence and integer admission. These cases
 // catch ignored aliases, stale inherited lifetimes, or a lower-priority
 // invalid value overriding an explicit setting. No runtime cleanup is claimed.

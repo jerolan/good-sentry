@@ -83,6 +83,18 @@
         "public image starts against an externally managed PostgreSQL URL"
       ],
       "evidence_files": ["compose/summary.json", "compose/config-default.json", "compose/config-local.json", "compose/pull-public.log", "compose/up-public.log", "compose/up-source-build.log", "compose/image-build.log", "compose/setup.json", "compose/me.json", "compose/me-after-restart.json"]
+    },
+    "CLOSE-operacion-009": {
+      "evidence": "vigente",
+      "scope": "canonical configuration variables, migration aliases, precedence, server role and opt-in surfaces",
+      "covered": [
+        "DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL_URL, DEFAULT_FROM_EMAIL, VALKEY_URL and GOODSENTRY_ENABLE_* flags load",
+        "GLITCHTIP_DOMAIN and GLITCHTIP_ENABLE_LOGS/UPTIME/MCP/DUCKDB aliases resolve with GoodSentry names first",
+        "SERVER_ROLE=all_in_one accepted and other roles rejected",
+        "ENABLE_OPENAPI and ENABLE_ADMIN control only GoodSentry surfaces and are opt-in",
+        "GOODSENTRY_ENABLE_ORGANIZATION_CREATION defaults false, accepts the GlitchTip alias and wins over it"
+      ],
+      "evidence_files": ["config/loader-tests.log", "config/surfaces-tests.log"]
     }
   },
   "commands": [

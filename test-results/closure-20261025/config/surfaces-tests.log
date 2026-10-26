@@ -1,0 +1,16 @@
+=== RUN   TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner
+--- PASS: TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner (0.51s)
+=== RUN   TestOpenAPIIsOptInAndReflectsRegisteredRoutes
+=== RUN   TestOpenAPIIsOptInAndReflectsRegisteredRoutes/disabled
+=== RUN   TestOpenAPIIsOptInAndReflectsRegisteredRoutes/enabled
+--- PASS: TestOpenAPIIsOptInAndReflectsRegisteredRoutes (0.95s)
+    --- PASS: TestOpenAPIIsOptInAndReflectsRegisteredRoutes/disabled (0.49s)
+    --- PASS: TestOpenAPIIsOptInAndReflectsRegisteredRoutes/enabled (0.46s)
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped/disabled
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped/enabled
+--- PASS: TestAdministrationIsOptInAndOrganizationScoped (0.97s)
+    --- PASS: TestAdministrationIsOptInAndOrganizationScoped/disabled (0.48s)
+    --- PASS: TestAdministrationIsOptInAndOrganizationScoped/enabled (0.49s)
+PASS
+ok  	goodsentry/internal/server	2.433s
