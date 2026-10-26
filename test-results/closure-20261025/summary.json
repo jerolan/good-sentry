@@ -313,6 +313,17 @@
         "stale issuance tests reject changed generations"
       ],
       "evidence_files": ["account/generations.log"]
+    },
+    "CLOSE-identidad-016": {
+      "evidence": "vigente",
+      "scope": "explicit Read Committed issuance, user/membership/project locks and dedicated generation error",
+      "covered": [
+        "CreateSession and CreateAPIToken use Read Committed and FOR SHARE on the user",
+        "changed/missing generation returns ErrCredentialsChanged without insert",
+        "token issuance locks sorted selected projects after membership and before the credential",
+        "scope, role, expiry, secret and CSRF behavior preserved"
+      ],
+      "evidence_files": ["account/generations.log"]
     }
   },
   "commands": [
