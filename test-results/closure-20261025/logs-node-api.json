@@ -1,0 +1,51 @@
+{
+  "sdk": "sentry.node 11.7.0",
+  "all": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "21",
+      "20",
+      "19"
+    ]
+  },
+  "service": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "21",
+      "20",
+      "19"
+    ]
+  },
+  "environment": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "21",
+      "20",
+      "19"
+    ]
+  },
+  "textWarn": {
+    "status": 200,
+    "total": 1,
+    "ids": [
+      "20"
+    ]
+  },
+  "trace": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "21",
+      "20",
+      "19"
+    ]
+  },
+  "detailStatus": 200,
+  "typedIntegerInDetail": true,
+  "detailSource": "sentry",
+  "detailTrace": "c88ecffbf09b4c3e80d4869113e2c155",
+  "detailService": "logs-node-service"
+}

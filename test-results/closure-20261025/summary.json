@@ -2827,6 +2827,15 @@
         "logs-python-ui/report.json",
         "logs-python-ui-restart/report.json"
       ]
+    },
+    "CLOSE-logs-031": {
+      "evidence": "vigente",
+      "scope": "real Node SDK 11.7.0 logs with typed values, filters, trace link, UI and restart persistence",
+      "evidence_files": [
+        "logs-node-api.json",
+        "logs-node-ui/report.json",
+        "logs-node-ui-restart/report.json"
+      ]
     }
   },
   "commands": [

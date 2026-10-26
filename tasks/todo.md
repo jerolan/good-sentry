@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-031 (logs con el SDK Node 11.7.0). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-032 (logs con el SDK Browser 11.7.0). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -2090,7 +2090,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-216](../SPEC.md#close-errores-216) | Node 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-217](../SPEC.md#close-errores-217) | Node 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-039](../SPEC.md#close-rendimiento-039) | Node 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-031](../SPEC.md#close-logs-031) | Node 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-logs-031](../SPEC.md#close-logs-031) | Node 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-218](../SPEC.md#close-errores-218) | Browser 11.7.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-219](../SPEC.md#close-errores-219) | Browser 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-040](../SPEC.md#close-rendimiento-040) | Browser 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegaci… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4276,6 +4276,30 @@ Evidencia: `test-results/closure-20261025/logs-python-api.json`,
 `tests/compat/logs_python.py`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: logs reales con el SDK Node 11.7.0
+
+Selección registrada antes de trabajar: CLOSE-logs-031. Candidata `357218d`.
+
+Resultado observado: el SDK oficial `@sentry/node` 11.7.0 emitió tres logs
+reales por DSN (info, warn y error) dentro de un span, con atributos tipados
+—entero, booleano y doble, además de cadenas—, servicio
+`logs-node-service`, entorno `logs-node-acceptance`, release
+`logs-node@11.7.0` y traza correlacionada. La API nativa filtra por texto (tres
+filas, `warn` una), servicio, entorno y traza; el detalle conserva el entero
+tipado y `source:"sentry"`. En Chromium la lista muestra las tres filas sin
+insignia OTLP, la divulgación de atributos conserva los tipos, el enlace abre la
+vista de traza y el filtro por servicio las selecciona a 320/768/1440. Tras
+reiniciar la aplicación siguen las tres filas y la comprobación vuelve a pasar.
+
+Evidencia: `test-results/closure-20261025/logs-node-api.json`,
+`logs-node-ui/report.json` y `logs-node-ui-restart/report.json`; el driver
+vive en `tests/compat/logs_node.mjs`.
+
+Límites registrados: el SDK Node envía el span padre solo como atributo
+`sentry.trace.parent_span_id`, de modo que la columna derivada de span queda
+vacía aunque la traza sí se correlaciona y el enlace funciona. El CI público
+sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

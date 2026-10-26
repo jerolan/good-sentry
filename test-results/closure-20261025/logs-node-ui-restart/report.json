@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "checks": [
+    "Logs lists the three real Node SDK records with service, environment and no OTLP badge",
+    "The SDK attributes disclosure keeps the typed integer, boolean and double entries",
+    "The stored trace link opens the correlated trace view",
+    "The service filter selects the real Node SDK records"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-rows-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-rows-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-rows-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-attributes-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-attributes-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-attributes-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-trace-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-trace-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/logs-node-ui-restart/logs-node-trace-1440.png"
+  ],
+  "pageErrors": [],
+  "requestFailures": []
+}
