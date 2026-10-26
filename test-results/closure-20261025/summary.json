@@ -3979,6 +3979,14 @@
         "rendimiento-014/window-tests.log"
       ]
     },
+    "CLOSE-rendimiento-023": {
+      "evidence": "vigente",
+      "scope": "compatible span-groups and N+1 authority, project containment, paired window admission, public metric fields and threshold/prefix rejection",
+      "evidence_files": [
+        "rendimiento-023/compat-span-groups.log",
+        "performance-api-041-044/report.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

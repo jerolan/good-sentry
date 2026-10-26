@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -022
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -023
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-023. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-024. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1855,7 +1855,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-021](../SPEC.md#close-rendimiento-021) | Sentry spans and native telemetry reads: The child-operation statistics increment groups spans by exact operat… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 016) |
 | [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 014/016) |
-| [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7453,6 +7453,29 @@ Límites registrados: la instantánea repetible de metadata, conteos y páginas 
 una propiedad de la implementación y de los conteos constantes observados; no
 se provoca una escritura concurrente en esta prueba. El CI público y la imagen
 final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: API compatible de span-groups y N+1
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-023. Candidata
+`6800e34`. Procedimiento reproducible sobre PostgreSQL 18 desechable y el
+comprobante controlado de 041 a 044.
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Autoridad Bearer `event:read` o sesión de miembro | `TestCompatibleSpanGroupsAndNPlusOneHTTP`: sin credenciales 401; token con `event:read` y sesión leen |
+| Filtros de proyecto repetidos dentro del grant | El token limitado obtiene 404 con un proyecto oculto y con la lista mixta |
+| Ventana emparejada y límites de admisión | 400 para ventana inválida, `start` repetido, `project=0`, `sort=bad`, `limit=0`, `limit=101` y claves desconocidas |
+| Campos públicos de span-groups | `performance-api-041-044/report.json` valida `op`, `description`, `count`, `avgDuration`, `p95Duration` y `totalTime` |
+| N+1 con umbral y prefijo de operación | 400 para `threshold=1`, `NaN`, `101`, `op=` y `limit=0`; el caso válido agrega 30 spans, 5 transacciones y 6 por transacción |
+| Promedio ponderado y tiempo total | Los valores controlados del comprobante coinciden con el cálculo declarado |
+
+Evidencia: `test-results/closure-20261025/rendimiento-023/compat-span-groups.log` y
+`test-results/closure-20261025/performance-api-041-044/report.json`.
+
+Límites registrados: el redondeo de un umbral fraccionario y el default de 24 h
+para estas rutas compatibles no se sondean por separado en esta ejecución; se
+apoyan en la validación compartida y en el comprobante de 014. El CI público y
+la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
