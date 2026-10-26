@@ -1,0 +1,20 @@
+=== RUN   TestCompatibleManagementOrganizationAndProjectKeysHTTP
+--- PASS: TestCompatibleManagementOrganizationAndProjectKeysHTTP (1.30s)
+=== RUN   TestProjectKeyRateAPIAndIngest429
+--- PASS: TestProjectKeyRateAPIAndIngest429 (0.70s)
+=== RUN   TestOTLPProjectKeyRateLimit429
+--- PASS: TestOTLPProjectKeyRateLimit429 (0.59s)
+=== RUN   TestProjectThrottleRejectsSentryAndOTLPRequests
+--- PASS: TestProjectThrottleRejectsSentryAndOTLPRequests (0.72s)
+PASS
+ok  	goodsentry/internal/server	4.367s
+=== RUN   TestCompatibilityManagementMigration039PreservesRowsAndReopens
+--- PASS: TestCompatibilityManagementMigration039PreservesRowsAndReopens (0.94s)
+=== RUN   TestCompatibleManagementOrganizationAndProjectKeys
+--- PASS: TestCompatibleManagementOrganizationAndProjectKeys (0.46s)
+=== RUN   TestProjectKeyRateUsageMigration041PreservesKeysAndReopens
+--- PASS: TestProjectKeyRateUsageMigration041PreservesKeysAndReopens (1.02s)
+=== RUN   TestProjectKeyRateAdmissionAndWindowReset
+--- PASS: TestProjectKeyRateAdmissionAndWindowReset (2.27s)
+PASS
+ok  	goodsentry/internal/store	5.792s

@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-074 (gestor de claves en la vista Projects). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-076 (actualización y borrado de proyecto). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1914,8 +1914,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-071](../SPEC.md#close-identidad-071) | Compatible organization detail and project keys: GET /api/0/organizations/{org}/ returns the live Organization… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-072](../SPEC.md#close-identidad-072) | Compatible organization detail and project keys: Project-key routes are GET/POST /api/0/projects/{org}/{projec… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-073](../SPEC.md#close-identidad-073) | Compatible organization detail and project keys: Key creation preserves the generated public key only in the D… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-074](../SPEC.md#close-identidad-074) | Compatible organization detail and project keys: The native Projects view offers a project-scoped SDK-key mana… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-075](../SPEC.md#close-identidad-075) | Compatible organization detail and project keys: Real PostgreSQL owns039/041 preservation/reopen, UUID/team-cl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-074](../SPEC.md#close-identidad-074) | Compatible organization detail and project keys: The native Projects view offers a project-scoped SDK-key mana… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-075](../SPEC.md#close-identidad-075) | Compatible organization detail and project keys: Real PostgreSQL owns039/041 preservation/reopen, UUID/team-cl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-076](../SPEC.md#close-identidad-076) | Compatible project update and deletion: PUT /api/0/projects/{org}/{project}/ accepts project name and platform… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-077](../SPEC.md#close-identidad-077) | Compatible project update and deletion: Additive061 stores each project's event_throttle_rate with a default o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-078](../SPEC.md#close-identidad-078) | Compatible project update and deletion: The native project UI exposes Edit and permanent-delete confirmation t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4856,6 +4856,32 @@ de ingesta, OTLP, limitación por proyecto, admisión y ventana, migración 041 
 limpieza (17 subpruebas en total, sin fallos).
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: gestor de claves y rotación
+
+Selección registrada antes de trabajar: CLOSE-identidad-074 y -075. Candidata
+`0e84951`.
+
+Resultado observado: la vista Projects expone un gestor de claves etiquetado.
+En Chromium pasan cinco comprobaciones —crear una clave con límite y DSN
+copiable, editar límite y estado, confirmar el borrado permanente y paginar en
+ambas direcciones con los cursores `Link`— sin errores de página. El owner HTTP
+cubre el reparto por rol (miembro solo lectura; propietario, manager y admin con
+mutaciones), los alcances Bearer, los cuerpos y consultas estrictos, el DSN con
+secreto vacío y los 404 de IDs desconocidos o de otro proyecto; los de store
+cubren la preservación y reapertura de 039/041, la reasignación de UUID y reloj
+de equipo, el aislamiento entre proyectos, la admisión atómica de cuota, el
+reinicio de ventana y la limpieza acotada. La rotación se verificó con ingesta
+real: la clave original acepta eventos, una segunda clave se crea y también
+ingesta, desactivar la primera devuelve 403, reactivarla vuelve a 200, el
+borrado devuelve 204 y su uso pasa a 403 mientras la segunda sigue activa.
+
+Evidencia: `test-results/closure-20261025/project-keys-ui/report.json`,
+`identidad-074-075-go.log` y `identidad-keys-rotation.json`.
+
+Límites registrados: la publicación de imagen de fuente exacta sigue siendo una
+compuerta de release separada, y el CI público queda pendiente para la auditoría
+final.
 
 ### Comprobante de integración documental
 

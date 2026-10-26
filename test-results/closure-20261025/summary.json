@@ -3291,6 +3291,24 @@
       "evidence_files": [
         "identidad-073-go.log"
       ]
+    },
+    "CLOSE-identidad-074": {
+      "evidence": "vigente",
+      "scope": "native project key manager, acceptance matrix and overlapping-key rotation",
+      "evidence_files": [
+        "project-keys-ui/report.json",
+        "identidad-074-075-go.log",
+        "identidad-keys-rotation.json"
+      ]
+    },
+    "CLOSE-identidad-075": {
+      "evidence": "vigente",
+      "scope": "native project key manager, acceptance matrix and overlapping-key rotation",
+      "evidence_files": [
+        "project-keys-ui/report.json",
+        "identidad-074-075-go.log",
+        "identidad-keys-rotation.json"
+      ]
     }
   },
   "commands": [
