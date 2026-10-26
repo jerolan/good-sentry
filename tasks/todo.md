@@ -1442,12 +1442,11 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–017 ya están vigentes.
-Siguiente acción: CLOSE-identidad-018 (ordenamientos, dos cambios, admisión
-obsoleta y nueva generación). No se declara aceptación ni cierre del producto.
-El avance se informa por criterios/evidencia, sin porcentaje de casillas;
-tiempo y presupuesto de un Goal no completan el producto ni borran este
-registro.
+bloques detallados 014–049 siguen pendientes; 014–018 ya están vigentes.
+Siguiente acción: CLOSE-identidad-019 (justificación Read Committed y prueba
+real de interleaving). No se declara aceptación ni cierre del producto. El
+avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo
+y presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1482,7 +1481,7 @@ registro.
 | [CLOSE-identidad-015](../SPEC.md#close-identidad-015) | Account credential generations and authenticated password changes: Both production issuers must require the ge… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de emisores |
 | [CLOSE-identidad-016](../SPEC.md#close-identidad-016) | Account credential generations and authenticated password changes: Session and API-token issuance use an expli… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de locks |
 | [CLOSE-identidad-017](../SPEC.md#close-identidad-017) | Account credential generations and authenticated password changes: Password change uses explicit pgx.ReadCommi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ChangePassword |
-| [CLOSE-identidad-018](../SPEC.md#close-identidad-018) | Account credential generations and authenticated password changes: When issuance acquires its user SHARE lock… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-018](../SPEC.md#close-identidad-018) | Account credential generations and authenticated password changes: When issuance acquires its user SHARE lock… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de interleaving |
 | [CLOSE-identidad-019](../SPEC.md#close-identidad-019) | Account credential generations and authenticated password changes: The need for a fresh statement snapshot fol… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2978,6 +2977,30 @@ Evidencia: `test-results/closure-20261025/account/generations.log`;
 
 Siguiente acción: CLOSE-identidad-018 (ordenamientos emisor/cambio, dos
 cambios, admisión obsoleta y nueva generación), con dependencias locales
+resueltas.
+
+### Ejecución 2026-10-26: interleavings emisor/cambio
+
+Selección registrada antes de trabajar: CLOSE-identidad-018, siguiente en el
+plan. Candidata `904a89c`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `generations.log` y del flujo real de contraseña.
+
+Resultado observado: cuando la emisión adquiere primero el SHARE, el cambio
+espera y luego invalida la credencial confirmada; cuando el cambio gana, la
+emisión que esperaba observa la nueva generación y falla sin insertar. El test
+de espera cubre sesión y token, incluido el pool con default Repeatable Read.
+Dos cambios concurrentes con la misma generación tienen un solo ganador. Una
+sesión admitida antes de la revocación conserva el semántica de petición en
+vuelo, pero no puede emitir una credencial nueva después del cambio; las
+autenticaciones posteriores fallan y el login con la nueva contraseña obtiene
+una sesión utilizable (verificado también en el navegador). Subresultados
+pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account/generations.log` y
+`account/`.
+
+Siguiente acción: CLOSE-identidad-019 (justificación de Read Committed frente
+a Repeatable Read y prueba de interleaving real), con dependencias locales
 resueltas.
 
 ### Comprobante de integración documental

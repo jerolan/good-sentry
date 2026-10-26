@@ -336,6 +336,17 @@
         "bigint overflow rolls back; commit uncertainty is not retried"
       ],
       "evidence_files": ["account/generations.log"]
+    },
+    "CLOSE-identidad-018": {
+      "evidence": "vigente",
+      "scope": "issuer/change interleavings, concurrent changes and stale-admission behavior",
+      "covered": [
+        "issuer-first waits then invalidates the committed credential",
+        "change-first makes the waiting issuer fail without a row",
+        "two changes with the same generation have one winner",
+        "pre-revocation admission cannot issue a fresh credential; later login succeeds with the new password"
+      ],
+      "evidence_files": ["account/generations.log", "account-owner/report.json", "account-member/report.json"]
     }
   },
   "commands": [
