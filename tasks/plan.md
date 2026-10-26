@@ -535,3 +535,62 @@ Status (2026-10-26 UTC): complete at `47f87980192354365236c31ed1383c75cec7f335`.
 Add migration073 for a persisted organization `require2FA` setting. Enabling it requires the acting owner/admin to have confirmed TOTP. Once set, members without confirmed TOTP can only read `/api/v1/me`, log out or enroll/confirm a second factor; native session APIs, compatible/Bearer APIs, MCP and OAuth consent are blocked. The browser shows a focused enrollment gate and resumes the dashboard after confirmation. Disabling the account second factor is rejected while any joined organization requires it. Verify organization update admission, member session and Bearer blocking before and after enrollment, OAuth/MCP containment, open mode, migration/reopen, full PostgreSQL/race, vet, build, UI syntax, exact-source CI and multi-architecture publication.
 
 Status (2026-10-26 UTC): implementation, focused PostgreSQL/HTTP/MCP tests and the full local gates pass. Exact-source public CI and image publication remain the closing gate.
+
+
+<a id="closure-order-v1"></a>
+
+## Orden del cierre aprobado
+
+La autoridad es [SPEC.md#closure-contract-v1](../SPEC.md#closure-contract-v1).
+Este orden organiza los criterios registrados en
+[todo.md#closure-evidence-v1](todo.md#closure-evidence-v1); no sustituye sus resultados
+ni las dependencias particulares de los contratos anteriores. La integración
+actual es documental. Implementación, aceptación completa y cualquier operación
+sobre Goals quedan fuera de esta sesión por instrucción del usuario.
+
+1. Revisar instrucciones, Git/índice/reclamaciones y vigencia de evidencia contra
+   la revisión candidata. Contrastar fuentes y comprobantes históricos por ID,
+   sin promover casillas antiguas a evidencia vigente. Registrar dependencias,
+   bloqueos, invalidaciones y siguiente acción antes de ejecutar cada unidad.
+2. Resolver prerrequisitos de operación e identidad: configuración, PostgreSQL,
+   migraciones, credenciales, modos abierto/autenticado, aislamiento y controles.
+   Conservar los contratos detallados de administración, personas y 2FA.
+3. Cubrir errores y triage para cada SDK fijado, incluyendo adjuntos, feedback,
+   CSP y todos los contratos particulares. Luego releases, commits locales,
+   deploys, artefactos y mapas Node/Browser con CLI, persistencia y permisos.
+4. Cubrir rendimiento y logs, sus lectores y agregados, OTLP protobuf/JSON,
+   relaciones de traza y N+1 con resultados controlados. Un SDK no aplicable
+   requiere justificación contractual, nunca un skip contado como éxito.
+5. Cubrir tipos de uptime con scheduler real, transiciones y recuperación.
+   Después, reglas y entrega HTTP/SMTP locales y webhook genérico independiente
+   con correlación e intentos. Los recibos de proveedores aplazados no bloquean.
+6. Cubrir contratos nativos y crash Linux/amd64 representativo. Mantener formatos,
+   arquitecturas y regresiones sin exigir otro crash real por cada combinación.
+7. Cubrir las 17 herramientas MCP por cliente Go oficial y el ciclo OAuth/token.
+   Cubrir API/lectores y Grafana fijado con recibo real, alcance y revocación.
+   La comprobación real GitLab está aplazada expresamente.
+8. Cubrir archivo/retención por errores, logs, transacciones y spans, cada tipo en
+   local y compatible S3, con consulta/filtros/permisos, reinicio y vencimiento.
+   El archivo spans-only histórico no acredita los demás tipos ni los excluye.
+9. Cubrir imagen/arranque limpio, actualización desde versión publicada fijada,
+   concurrencia/recuperación y backup restaurado en entorno independiente.
+   Revisar UI real a 320/768/1440 y los checks específicos de cada contrato.
+10. Solo en ejecución autorizada, auditar cada requisito sobre candidata e imagen
+    identificadas, pasar los checks de SPEC, revisar invalidaciones finales y
+    ajustar documentación/afirmaciones a los comprobantes. Cumplir las condiciones
+    de publicación vigentes. Un fallo, bloqueo o prueba pendiente impide el cierre.
+
+Elegir el primer criterio exigible sin evidencia vigente y dependencias resueltas
+en este orden; a igualdad, por ID. Los criterios transversales se ejecutan cuando
+sus proveedores estén disponibles; registrar esas dependencias concretas al
+seleccionarlos. Si uno está bloqueado, avanzar en otro independiente. Tras dos
+intentos distintos sin progreso en la misma causa, registrar lo aprendido y no
+repetir sin evidencia nueva. Si no queda trabajo independiente, dejar bloqueo,
+responsable, condición de desbloqueo y la intervención concreta necesaria.
+
+Se mantienen los incrementos y comprobantes históricos que siguen a los planes
+anteriores. Los pendientes de repositorios automáticos, WebAuthn, muestreo global,
+fuentes Java y recibos externos se interpretan según las excepciones canónicas;
+no son exclusiones adicionales ni permiten eliminar funciones o controles.
+Cada incremento futuro actualiza evidencia, invalidaciones y siguiente acción,
+con commit atómico propio en main, preservando concurrencia y autorizaciones.
