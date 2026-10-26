@@ -3919,6 +3919,14 @@
         "rendimiento-014/window-tests.log"
       ]
     },
+    "CLOSE-rendimiento-015": {
+      "evidence": "vigente",
+      "scope": "UI presets, absolute UTC bounds, window metadata coherence, reload persistence and trace-to-log range preservation; reuses the 013 receipt on an unchanged product tree",
+      "evidence_files": [
+        "rendimiento-013/report.json",
+        "rendimiento-013/api-integer.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

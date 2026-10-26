@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -014
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -015
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-015. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-016. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1847,7 +1847,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-012](../SPEC.md#close-rendimiento-012) | Sentry spans and native telemetry reads: Current JavaScript SDKs use standalone span v2 envelopes by default.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-013](../SPEC.md#close-rendimiento-013) | Sentry spans and native telemetry reads: The telemetry UI exposes transaction aggregates and paginated log fil… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-014](../SPEC.md#close-rendimiento-014) | Sentry spans and native telemetry reads: The next telemetry slice adds native start and end query parameters t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-015](../SPEC.md#close-rendimiento-015) | Sentry spans and native telemetry reads: Add UI presets for last hour, 24 hours, seven days and 30 days, with… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-015](../SPEC.md#close-rendimiento-015) | Sentry spans and native telemetry reads: Add UI presets for last hour, 24 hours, seven days and 30 days, with… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013) |
 | [CLOSE-rendimiento-016](../SPEC.md#close-rendimiento-016) | Sentry spans and native telemetry reads: The next detail increment opens a concrete stored transaction occurre… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-017](../SPEC.md#close-rendimiento-017) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-018](../SPEC.md#close-rendimiento-018) | Sentry spans and native telemetry reads: The detail JSON has sample matching the reference above; projectName,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7241,6 +7241,30 @@ normalización a microsegundos UTC y los defaults quedan cubiertos por las
 pruebas y las sondas. Las ventanas de UI (presets y metadata) siguen en
 CLOSE-rendimiento-015. El CI público y la imagen final siguen pendientes para
 la auditoría final.
+
+### Ejecución 2026-10-26: presets y metadata de ventana en la UI
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-015. Se reutiliza el
+comprobante de CLOSE-rendimiento-013 tras comparar revisiones: la candidata
+probada fue `18a3851` y `git diff 18a3851..25bec59 -- internal cmd static third_party go.mod go.sum Dockerfile`
+no muestra cambios de producto, por lo que la ejecución sigue siendo válida.
+
+| Elemento del criterio | Comprobante en `rendimiento-013/report.json` |
+|---|---|
+| Presets de 1 h, 24 h, 7 días y 30 días con opción de default del endpoint | "All four presets store absolute UTC ranges, reuse bounds across filter/reload and reset pages; endpoint default removes bounds" |
+| `window` solo si la etiqueta coincide con la duración real | "Custom URL ranges retain precise UTC display, reject mismatched preset labels and clear with sidebar navigation" |
+| Intervalo UTC activo y rangos absolutos por URL | mismos dos chequeos |
+| Navegación traza→logs conserva el rango | "Custom half-open interval ... preserves trace-to-log bounds" |
+| Filtros de servicio y tiempo sobreviven recarga y reinician página | presets y filtros combinados del mismo comprobante |
+| Inclusión en el inicio, exclusión en el fin y agregación mixta | "Custom half-open interval includes the start, excludes the end, combines legacy/segment aggregates without child counts" |
+| Proyecto, nivel, entorno, texto, traza y enteros exactos preservados | filtros combinados y `api-integer.json` de 013 |
+
+Evidencia reutilizada: `test-results/closure-20261025/rendimiento-013/report.json`,
+capturas `rendimiento-013/*.png` y `rendimiento-013/api-integer.json`.
+
+Límites registrados: no se repitió la ejecución de navegador porque el árbol de
+producto no cambió; el comprobante conserva las capturas a 320, 768 y 1440 px.
+El CI público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
