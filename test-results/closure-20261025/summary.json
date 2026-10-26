@@ -3851,6 +3851,14 @@
         "rendimiento-001/restart.log"
       ]
     },
+    "CLOSE-rendimiento-002": {
+      "evidence": "vigente",
+      "scope": "legacy transactions and standalone spans share the configured retention class, with master inheritance and combined removal",
+      "evidence_files": [
+        "rendimiento-002/store-retention.log",
+        "rendimiento-002/config-tests.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

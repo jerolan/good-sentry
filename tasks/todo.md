@@ -1453,8 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 y -041 a -044
-quedan vigentes. Siguiente acción: CLOSE-rendimiento-002. No se declara
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001, -002 y
+-041 a -044 quedan vigentes. Siguiente acción: CLOSE-rendimiento-003. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1771,7 +1771,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-009](../SPEC.md#close-logs-009) | Compatible retained-log API: GET /api/0/organizations/{org}/logs/ serves the published GlitchTip log shape fro… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-010](../SPEC.md#close-logs-010) | Compatible retained-log API: Admission is session or Bearer event:read/event:write. Repeated project filters m… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-011](../SPEC.md#close-logs-011) | Compatible retained-log API: Pages are keyset ordered by timestamp DESC,id DESC with a default limit100 and a… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-002](../SPEC.md#close-rendimiento-002) | Transaction and standalone-span retention: Transaction/span retention is the next required class after accepte… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-002](../SPEC.md#close-rendimiento-002) | Transaction and standalone-span retention: Transaction/span retention is the next required class after accepte… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-003](../SPEC.md#close-rendimiento-003) | Transaction and standalone-span retention: The configuration prerequisite adds Config.TransactionRetentionDays… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-004](../SPEC.md#close-rendimiento-004) | Transaction and standalone-span retention: The storage contract is Store.CleanupTransactions(ctx, days), retur… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-005](../SPEC.md#close-rendimiento-005) | Transaction and standalone-span retention: Under those project gates and pinned event rows, delete envelope_it… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6986,6 +6986,44 @@ controlados, no con los SDK oficiales; los flujos reales Go/Python/Node/Browser
 (CLOSE-rendimiento-037 a -040), las lecturas de traza 012 a 036 y la aceptación
 de retención de transacciones 002 a 011 siguen pendientes. El CI público y la
 imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: retención compartida de transacciones y spans
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-002. Candidata
+`24a1242`. Esta entrada fija la clase de retención y su comprobante; no
+adelanta la aceptación detallada de la configuración ni de la limpieza, que
+pertenecen a CLOSE-rendimiento-003 a -011.
+
+Decisión registrada: tras la retención de logs ya aceptada, las transacciones
+legacy y los spans independientes comparten la clase
+`GLITCHTIP_TRANSACTION_RETENTION_DAYS`, con
+`GOODSENTRY_TRANSACTION_RETENTION_DAYS` como alias propio y herencia del
+maestro. Es una agrupación local de GoodSentry y no afirma que GlitchTip
+documente una limpieza de spans equivalente.
+
+Comprobantes observados:
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Herencia y precedencia de la clase | `TestTelemetryRetentionConfiguration` pasa |
+| Una pasada cubre transacciones legacy y spans independientes | `TestTransactionRetentionReceiptAgeAndIndependentData` elimina 1 recepción y 1 span (1/1) |
+| Datos independientes conservados | La misma prueba conserva errores, logs, lotes OTLP, releases y artefactos ajenos |
+| Límites, rollback, bloqueos y migración | `TestTransactionRetentionBoundsAndLateFailureRollback`, `TestTransactionRetentionSkipsLockedReceiptsAndBusyMaintainer`, `TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion`, `TestTransactionRetentionSkipsActiveProjectorAndRemovesItsCommittedProjection`, `TestTransactionRetentionCancellationRollsBackLegacyAndChildren` y `TestTransactionRetentionMigration023PreservesRowsAndReopens` pasan |
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Clase compartida y eliminación de ambas formas | `rendimiento-002/store-retention.log` |
+| Herencia y precedencia configurable | `rendimiento-002/config-tests.log` |
+
+Evidencia: `test-results/closure-20261025/rendimiento-002/`.
+
+Límites registrados: la configuración efectiva, la limpieza acotada y la
+aceptación con imagen/backup siguen en CLOSE-rendimiento-003 a -011. La
+retención de errores, uptime, archivos, releases y el archivado frío permanecen
+clases independientes. El CI público y la imagen final siguen pendientes para
+la auditoría final.
 
 ### Comprobante de integración documental
 
