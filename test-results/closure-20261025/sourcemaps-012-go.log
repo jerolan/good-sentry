@@ -1,0 +1,10 @@
+=== RUN   TestCompatibleReleaseFilesHTTP
+--- PASS: TestCompatibleReleaseFilesHTTP (0.90s)
+=== RUN   TestReleaseHTTPContract
+--- PASS: TestReleaseHTTPContract (1.97s)
+PASS
+ok  	goodsentry/internal/server	2.873s
+=== RUN   TestReleaseFilesListDetailDeleteAndScope
+--- PASS: TestReleaseFilesListDetailDeleteAndScope (0.45s)
+PASS
+ok  	goodsentry/internal/store	0.455s

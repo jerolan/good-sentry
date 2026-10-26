@@ -3712,6 +3712,13 @@
         "releases-011/release-independent-pages-1440.png",
         "releases-011/release-member-1440.png"
       ]
+    },
+    "CLOSE-sourcemaps-012": {
+      "evidence": "vigente",
+      "scope": "compatible release file routes with session owner/admin deletion and bearer grants",
+      "evidence_files": [
+        "sourcemaps-012-go.log"
+      ]
     }
   },
   "commands": [

@@ -113,6 +113,10 @@ func (s *Server) compatibleDeleteReleaseFile(w http.ResponseWriter, r *http.Requ
 	if !valid {
 		return
 	}
+	if _, bearer := r.Context().Value(apiGrantKey{}).(store.APITokenGrant); !bearer && access.Role != "owner" && access.Role != "admin" {
+		failure(w, 403, "Organization owner or admin permission required")
+		return
+	}
 	if r.URL.RawQuery != "" {
 		failure(w, 400, "Release file deletion accepts no query parameters")
 		return

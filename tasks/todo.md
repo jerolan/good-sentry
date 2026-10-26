@@ -1450,8 +1450,8 @@ vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
 CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
-final/CI con su comprobante local abajo. Siguiente acción: CLOSE-sourcemaps-012.
-No se declara aceptación ni cierre del producto. El avance se
+final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
+Siguiente acción: CLOSE-sourcemaps-013. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1707,7 +1707,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir el CLI contra la imagen y verificar upgrade/reinicio |
-| [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-013](../SPEC.md#close-sourcemaps-013) | Compatible release files: The view is backed by the existing release-scoped source_maps rows, not a duplicate… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-014](../SPEC.md#close-sourcemaps-014) | JavaScript artifacts: The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at /api/0/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-015](../SPEC.md#close-sourcemaps-015) | JavaScript artifacts: The modern JavaScript upload increment connects exact GET/POST /api/0/organizations/{org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6300,6 +6300,48 @@ construcción/publicación y CI. Responsable: instrucción del usuario. Intentos
 uno local con binario y PostgreSQL real; ninguno de publicación. Siguiente
 acción tras desbloquear: construir la imagen, repetir el CLI y el
 upgrade/reinicio, y ejecutar CI exacto.
+
+### Ejecución 2026-10-26: archivos compatibles de release
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-012. Candidata
+`9dcb02b` (comprobante previo `dc3d4bf`; sin cambios de producto desde
+entonces salvo esta corrección).
+
+Resultado observado: las rutas de organización y proyecto exponen listado,
+detalle y borrado de archivos de release respaldados por las filas
+`source_maps`. Exigen `project:releases`; las lecturas de sesión usan la
+membresía actual y las de Bearer quedan acotadas a su organización y grant de
+proyectos. El listado ordena por recepción más reciente y id numérico
+descendente, pagina con `limit`/`per_page` 1..100 y cursor de desplazamiento
+con enlaces prefijados, y cada elemento devuelve id, creación UTC, SHA-1 de los
+bytes, `headers` nulo, nombre y tamaño. La ruta de proyecto restringe a ese
+proyecto; la de organización incluye los proyectos autorizados. Un id ausente,
+ajeno o de otro proyecto devuelve 404 y uno malformado o una consulta extra
+devuelve 400. La identidad exacta de 255 caracteres, incluidos espacios, se
+conserva en estas rutas. El borrado elimina solo la fila seleccionada.
+
+La revisión detectó que una sesión de manager podía borrar archivos de release:
+el contrato exige autoridad nativa de propietario o administrador para sesiones.
+Se corrigió el handler para devolver 403 a manager y se mantuvo el borrado por
+Bearer con `project:releases` y el grant de proyecto correspondiente.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Rutas, campos y SHA-1 | HTTP `TestCompatibleReleaseFilesHTTP` |
+| Orden más reciente primero | HTTP `TestCompatibleReleaseFilesHTTP` (aserción añadida) |
+| Paginación, límites, cursor y 400 | HTTP `TestCompatibleReleaseFilesHTTP` (aserciones añadidas) |
+| Proyecto ajeno o id ausente 404 | HTTP `TestCompatibleReleaseFilesHTTP` |
+| Identidad exacta de 255 caracteres | HTTP `TestCompatibleReleaseFilesHTTP` (aserción añadida) |
+| Sesión de manager sin autoridad de borrado | HTTP `TestCompatibleReleaseFilesHTTP` (aserción añadida) y corrección en `compat_release_files.go` |
+| Borrado Bearer acotado y de una sola fila | HTTP `TestCompatibleReleaseFilesHTTP` (aserción añadida) |
+| Alcance de store y borrado por proyecto | store `TestReleaseFilesListDetailDeleteAndScope` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-012-go.log` y los cambios
+en `internal/server/compat_release_files.go` y su owner.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

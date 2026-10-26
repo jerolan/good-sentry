@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -44,6 +45,9 @@ func TestCompatibleReleaseFilesHTTP(t *testing.T) {
 	if err := json.Unmarshal(f.request(t, f.client, "GET", orgPath, "", nil, 200), &organizationFiles); err != nil || len(organizationFiles) != 2 {
 		t.Fatalf("organization files=%+v err=%v", organizationFiles, err)
 	}
+	if organizationFiles[0].ID != second.ID || organizationFiles[1].ID != first.ID {
+		t.Fatalf("organization files are not newest-first: %+v", organizationFiles)
+	}
 	byID := map[string]releaseFileWire{}
 	for _, file := range organizationFiles {
 		byID[file.ID] = file
@@ -71,6 +75,21 @@ func TestCompatibleReleaseFilesHTTP(t *testing.T) {
 	f.request(t, f.client, "GET", orgPath+"999999999/", "", nil, 404)
 	f.request(t, f.client, "GET", orgPath+"?unknown=1", "", nil, 400)
 	f.request(t, f.client, "GET", "/api/0/organizations/"+f.org.Slug+"/releases/bad%00version/files/", "", nil, 400)
+	for _, query := range []string{"limit=0", "limit=101", "per_page=0", "per_page=101", "limit=1&per_page=2", "cursor=bad"} {
+		f.request(t, f.client, "GET", orgPath+"?"+query, "", nil, 400)
+	}
+	f.request(t, f.client, "GET", projectPath+second.ID+"/", "", nil, 404)
+
+	exactVersion := " " + strings.Repeat("界", 253) + " "
+	exactMap, _, err := f.db.SaveSourceMap(f.ctx, f.owner.ID, f.org.Slug, f.project.ID, "~/exact.map", exactVersion, "", "", []byte(`{"version":3,"sources":[],"names":[],"mappings":""}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	exactPath := "/api/0/projects/" + f.org.Slug + "/" + f.project.Slug + "/releases/" + url.PathEscape(exactVersion) + "/files/"
+	var exactFiles []releaseFileWire
+	if err := json.Unmarshal(f.request(t, f.client, "GET", exactPath, "", nil, 200), &exactFiles); err != nil || len(exactFiles) != 1 || exactFiles[0].ID != exactMap.ID {
+		t.Fatalf("255-character exact release files=%+v err=%v", exactFiles, err)
+	}
 
 	readToken := issueManagementToken(t, f, f.org.Slug, "Release file reader", []string{"project:releases"}, []string{f.project.ID})
 	readHeaders := http.Header{"Authorization": {"Bearer " + readToken}}
@@ -83,6 +102,16 @@ func TestCompatibleReleaseFilesHTTP(t *testing.T) {
 	member, memberCSRF := loginManagementMember(t, f, "release-file-member@test")
 	f.request(t, member, "GET", orgPath, "", nil, 200)
 	f.request(t, member, "DELETE", orgPath+first.ID+"/", "", http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
+	insertDiscoveryMember(t, f, "release-file-manager@test", "Release file manager", "manager")
+	manager, managerCSRF := loginManagementMember(t, f, "release-file-manager@test")
+	f.request(t, manager, "DELETE", orgPath+second.ID+"/", "", http.Header{"X-CSRF-Token": {managerCSRF}}, 403)
+	writeToken := issueManagementToken(t, f, f.org.Slug, "Release file writer", []string{"project:releases"}, []string{f.project.ID})
+	third, _, err := f.db.SaveSourceMap(f.ctx, f.owner.ID, f.org.Slug, f.project.ID, "~/third.map", version, "", "", []byte(`{"version":3,"sources":["third.ts"],"names":[],"mappings":"CCCC"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.request(t, http.DefaultClient, "DELETE", orgPath+third.ID+"/", "", http.Header{"Authorization": {"Bearer " + writeToken}}, 204)
+	f.request(t, f.client, "GET", orgPath+third.ID+"/", "", nil, 404)
 	f.request(t, f.client, "DELETE", orgPath+first.ID+"/?unknown=1", "", http.Header{"X-CSRF-Token": {f.csrf}}, 400)
 	f.request(t, f.client, "DELETE", orgPath+first.ID+"/", "", http.Header{"X-CSRF-Token": {f.csrf}}, 204)
 	f.request(t, f.client, "GET", orgPath+first.ID+"/", "", nil, 404)
