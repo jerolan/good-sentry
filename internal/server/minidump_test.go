@@ -687,6 +687,67 @@ func TestNativeMinidumpEnvelopeAttachment(t *testing.T) {
 			}
 		})
 	}
+	duplicateEventsID := "bf2e63929e354414adf9be81211c98aa"
+	duplicateWire := makeEnvelope(duplicateEventsID, makeEvent(duplicateEventsID, "native"), attachedDump{attachmentType: "event.minidump", filename: "duplicate-events.dmp", data: dump})
+	duplicateEventHeader, err := json.Marshal(map[string]any{"type": "event", "length": len(makeEvent(duplicateEventsID, "native"))})
+	if err != nil {
+		t.Fatal(err)
+	}
+	duplicateWire = append(duplicateWire, duplicateEventHeader...)
+	duplicateWire = append(duplicateWire, '\n')
+	duplicateWire = append(duplicateWire, makeEvent(duplicateEventsID, "native")...)
+	duplicateWire = append(duplicateWire, '\n')
+	if status, body := post(duplicateWire); status != http.StatusBadRequest {
+		t.Fatalf("duplicate event items status=%d body=%s", status, body)
+	}
+	var duplicateRows int
+	if err := f.sql.QueryRow(f.ctx, "SELECT count(*) FROM events WHERE project_id=$1::bigint AND event_id=$2", f.project.ID, duplicateEventsID).Scan(&duplicateRows); err != nil || duplicateRows != 0 {
+		t.Fatalf("duplicate event envelope committed %d rows: %v", duplicateRows, err)
+	}
+	if err := f.sql.QueryRow(f.ctx, "SELECT count(*) FROM attachments WHERE project_id=$1::bigint AND event_id=$2", f.project.ID, duplicateEventsID).Scan(&duplicateRows); err != nil || duplicateRows != 0 {
+		t.Fatalf("duplicate event envelope committed %d attachments: %v", duplicateRows, err)
+	}
+
+	withoutExceptionID := "c02e63929e354414adf9be81211c98aa"
+	var withoutException map[string]json.RawMessage
+	if err := json.Unmarshal(makeEvent(withoutExceptionID, "native"), &withoutException); err != nil {
+		t.Fatal(err)
+	}
+	delete(withoutException, "exception")
+	withoutExceptionEvent, err := json.Marshal(withoutException)
+	if err != nil {
+		t.Fatal(err)
+	}
+	generatedStatus, generatedBody := post(makeEnvelope(withoutExceptionID, withoutExceptionEvent, attachedDump{attachmentType: "event.minidump", filename: "no-exception.dmp", data: dump}))
+	if generatedStatus != http.StatusOK {
+		t.Fatalf("native envelope without exception status=%d body=%s", generatedStatus, generatedBody)
+	}
+	var generatedData []byte
+	if err := f.sql.QueryRow(f.ctx, `SELECT data FROM events WHERE project_id=$1::bigint AND event_id=$2`, f.project.ID, withoutExceptionID).Scan(&generatedData); err != nil {
+		t.Fatal(err)
+	}
+	var generated struct {
+		Exception struct {
+			Values []struct {
+				Type       string `json:"type"`
+				Stacktrace struct {
+					Frames []struct {
+						Function string `json:"function"`
+					} `json:"frames"`
+				} `json:"stacktrace"`
+			} `json:"values"`
+		} `json:"exception"`
+	}
+	if err := json.Unmarshal(generatedData, &generated); err != nil {
+		t.Fatal(err)
+	}
+	if len(generated.Exception.Values) == 0 || generated.Exception.Values[0].Type == "" || len(generated.Exception.Values[0].Stacktrace.Frames) == 0 || generated.Exception.Values[0].Stacktrace.Frames[0].Function != "CrashFunction" {
+		t.Fatalf("native event without exception did not receive the generated stack: %+v", generated.Exception)
+	}
+	var generatedAttachments int
+	if err := f.sql.QueryRow(f.ctx, "SELECT count(*) FROM attachments WHERE project_id=$1::bigint AND event_id=$2", f.project.ID, withoutExceptionID).Scan(&generatedAttachments); err != nil || generatedAttachments != 0 {
+		t.Fatalf("generated native event retained the Minidump: %d %v", generatedAttachments, err)
+	}
 
 	ordinaryID := "be2e63929e354414adf9be81211c98aa"
 	status, body := post(makeEnvelope(ordinaryID, makeEvent(ordinaryID, "native"), attachedDump{filename: "unmarked.dmp", data: dump}))
@@ -696,6 +757,27 @@ func TestNativeMinidumpEnvelopeAttachment(t *testing.T) {
 	var ordinaryRows int
 	if err := f.sql.QueryRow(f.ctx, "SELECT count(*) FROM attachments WHERE project_id::text=$1 AND event_id=$2 AND data=$3", f.project.ID, ordinaryID, dump).Scan(&ordinaryRows); err != nil || ordinaryRows != 1 {
 		t.Fatalf("unmarked .dmp attachment rows=%d err=%v", ordinaryRows, err)
+	}
+	var beforeOversized int
+	if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM events WHERE project_id=$1::bigint`, f.project.ID).Scan(&beforeOversized); err != nil {
+		t.Fatal(err)
+	}
+	request, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/envelope/?sentry_version=7&sentry_key="+f.project.PublicKey, bytes.NewReader(bytes.Repeat([]byte(" "), (1<<20)+1)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("Content-Type", "application/x-sentry-envelope")
+	oversizedResponse, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	oversizedResponse.Body.Close()
+	if oversizedResponse.StatusCode != http.StatusRequestEntityTooLarge {
+		t.Fatalf("oversized envelope=%d", oversizedResponse.StatusCode)
+	}
+	var afterOversized int
+	if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM events WHERE project_id=$1::bigint`, f.project.ID).Scan(&afterOversized); err != nil || afterOversized != beforeOversized {
+		t.Fatalf("oversized envelope stored events: before=%d after=%d err=%v", beforeOversized, afterOversized, err)
 	}
 }
 

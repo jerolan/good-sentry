@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -010 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -011 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-011. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-012. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1737,7 +1737,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-013](../SPEC.md#close-nativo-013) | CFI extended dereference: Scalar CFI expressions support DW_OP_implicit_value with an unsigned-LEB128 byte len… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-014](../SPEC.md#close-nativo-014) | CFI extended dereference: Decode CFI ULEB128 and SLEB128 operands without truncation: accept only values repre… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8843,6 +8843,30 @@ Evidencia: `test-results/closure-20261025/nativo-010/legacy-arm64.log`.
 
 Límites registrados: los fixtures son sintéticos y no se usó la imagen final ni
 el CI público. La imagen y el CI siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: envelope nativo con Minidump adjunto
+
+Selección registrada antes de trabajar: CLOSE-nativo-011. Revisión de producto
+`53292b1`; este incremento extiende pruebas HTTP y documentación, sin cambios de
+producto.
+
+| Elemento | Comprobante |
+|---|---|
+| Exactamente un item `event` nativo y como máximo un `event.minidump` | `TestNativeMinidumpEnvelopeAttachment` (éxito, evento duplicado, evento ausente, evento no nativo) |
+| Minidump malformado rechaza antes de confirmar evento o hijo | `TestNativeMinidumpEnvelopeAttachment/malformed_dump` |
+| Identidad, timestamp, nivel, mensaje, tags, contextos y otros campos SDK preservados | `TestNativeMinidumpEnvelopeAttachment` |
+| Primer exception conserva tipo, valor, mecanismo y datos; su stack se reemplaza y simboliza | `TestNativeMinidumpEnvelopeAttachment` |
+| Evento sin excepción recibe la excepción nativa generada | `TestNativeMinidumpEnvelopeAttachment` (caso sin excepción) |
+| `debug_meta.images` prefiere el Minidump, deduplica por `(debug_id,image_addr)` y conserva imágenes del cliente | `TestNativeMinidumpEnvelopeAttachment` |
+| El Minidump tipado no se persiste; un adjunto no marcado conserva su comportamiento | `TestNativeMinidumpEnvelopeAttachment` |
+| Envelope sobre `MAX_BODY_BYTES` responde 413 sin evento | `TestNativeMinidumpEnvelopeAttachment` |
+
+Evidencia: `test-results/closure-20261025/nativo-011/envelope.log`.
+
+Límites registrados: PostgreSQL desechable y binario local; no se usó la imagen
+final ni el CI público. La aceptación con el SDK nativo real pertenece a
+criterios posteriores. La imagen y el CI siguen pendientes para la auditoría
+final.
 
 ### Comprobante de integración documental
 

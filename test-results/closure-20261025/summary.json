@@ -4457,6 +4457,14 @@
         "nativo-010/summary.json"
       ]
     },
+    "CLOSE-nativo-011": {
+      "evidence": "vigente",
+      "scope": "native envelope item rules, typed Minidump merge and symbolication, exception and image preservation, generated exception and non-persistence",
+      "evidence_files": [
+        "nativo-011/envelope.log",
+        "nativo-011/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
