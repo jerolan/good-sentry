@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-026 (formato de Microsoft Teams). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-032 (Mattermost como proveedor). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1894,12 +1894,12 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-023](../SPEC.md#close-alertas-023) | Additional provider webhooks: Additive038_provider_alerts.sql expands only alert_deliveries_recipient_type_che… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-024](../SPEC.md#close-alertas-024) | Additional provider webhooks: All six providers receive the same human-readable summary as Slack: GoodSentry:… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-025](../SPEC.md#close-alertas-025) | Additional provider webhooks: Discord receives JSON with a top-level content of the summary, one newline and t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-026](../SPEC.md#close-alertas-026) | Additional provider webhooks: Microsoft Teams receives a MessageCard with @type:MessageCard, @context:https://… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-027](../SPEC.md#close-alertas-027) | Additional provider webhooks: Google Chat receives {"text": summary + newline + canonical URL} with HTML-signi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-028](../SPEC.md#close-alertas-028) | Additional provider webhooks: Feishu receives {"msg_type":"text","content":{"text": summary + newline + canoni… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-029](../SPEC.md#close-alertas-029) | Additional provider webhooks: ntfy receives the summary and canonical URL as a UTF-8 plain-text POST of at mos… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-030](../SPEC.md#close-alertas-030) | Additional provider webhooks: Zulip uses its documented Slack-compatible incoming webhook URL and receives {"t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-031](../SPEC.md#close-alertas-031) | Additional provider webhooks: The Alert dialog exposes each provider type beside Slack, labels the destination… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-026](../SPEC.md#close-alertas-026) | Additional provider webhooks: Microsoft Teams receives a MessageCard with @type:MessageCard, @context:https://… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-027](../SPEC.md#close-alertas-027) | Additional provider webhooks: Google Chat receives {"text": summary + newline + canonical URL} with HTML-signi… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-028](../SPEC.md#close-alertas-028) | Additional provider webhooks: Feishu receives {"msg_type":"text","content":{"text": summary + newline + canoni… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-029](../SPEC.md#close-alertas-029) | Additional provider webhooks: ntfy receives the summary and canonical URL as a UTF-8 plain-text POST of at mos… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-030](../SPEC.md#close-alertas-030) | Additional provider webhooks: Zulip uses its documented Slack-compatible incoming webhook URL and receives {"t… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-031](../SPEC.md#close-alertas-031) | Additional provider webhooks: The Alert dialog exposes each provider type beside Slack, labels the destination… | implementada (local) | bloqueada | Recibos reales de cada proveedor y publicación/CI |
 | [CLOSE-alertas-032](../SPEC.md#close-alertas-032) | Mattermost incoming webhooks: GlitchTip supports Mattermost incoming-webhook alert recipients. GoodSentry adds… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-033](../SPEC.md#close-alertas-033) | Mattermost incoming webhooks: Additive migration 058_mattermost_alerts.sql expands only alert_deliveries_recip… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-034](../SPEC.md#close-alertas-034) | Mattermost incoming webhooks: POST Content-Type: application/json with {"text": summary plus resource link}. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4694,6 +4694,37 @@ Evidencia: `test-results/closure-20261025/alertas-022-025-go.log` y
 `alertas-discord.json`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: formatos de Teams, Google Chat, Feishu, ntfy y Zulip
+
+Selección registrada antes de trabajar: CLOSE-alertas-026 a -031. Candidata
+`5b7e3bb`.
+
+Resultado observado: los owners de proveedor pasan con `-race` (142 subpruebas
+en la corrida compartida). Teams emite un `MessageCard` con `@type`,
+`@context`, resumen plano de hasta 150 caracteres, sección `markdown:false` de
+hasta 3000 con el resumen, salto y URL canonicalizada, y una acción `OpenUri`
+«View in GoodSentry»; el truncado recae solo en el resumen. Google Chat envía
+`{"text": resumen + "\n" + URL}` con ampersands y corchetes escapados y hasta
+4096 caracteres. Feishu usa `msg_type:text` con contenido acotado a 3000 y
+corchetes «defanged», y exige 200 con `code` o `StatusCode` numérico cero,
+tratando otro 2xx, cuerpo inválido o código distinto como fallo permanente
+`feishu_response`. ntfy envía texto UTF-8 de hasta 4096 bytes con
+`Content-Type: text/plain; charset=UTF-8`, `Title` de hasta 200 caracteres y
+`Click` con la URL, ignorando el cuerpo de cualquier 2xx. Zulip usa el formato
+compatible con Slack, acota a 3000 y neutraliza menciones insertando un carácter
+de ancho cero tras `@`, exigiendo 200 con `result:"success"`. Los tests cubren
+además escapado de menciones y HTML, límites Unicode, contexto por tipo y JSON
+genérico intacto.
+
+Evidencia: `test-results/closure-20261025/alertas-022-025-go.log` (owners de
+mensajes, contexto, escapado, reconocimiento y configuración) y
+`alertas-discord.json` para la entrega real del proveedor ya cerrado.
+
+Bloqueo registrado para CLOSE-alertas-031: exige Chromium cubriendo todas las
+opciones, aceptación sobre imagen desechable con reinicio y recibos reales de
+cada proveedor, ninguno disponible ni autorizado aquí. Desbloqueo: destinos
+reales autorizados y publicación/CI.
 
 ### Comprobante de integración documental
 

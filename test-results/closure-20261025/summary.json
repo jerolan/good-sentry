@@ -3143,6 +3143,49 @@
         "alertas-022-025-go.log",
         "alertas-discord.json"
       ]
+    },
+    "CLOSE-alertas-026": {
+      "evidence": "vigente",
+      "scope": "provider-specific payload formats and bounds",
+      "evidence_files": [
+        "alertas-022-025-go.log"
+      ]
+    },
+    "CLOSE-alertas-027": {
+      "evidence": "vigente",
+      "scope": "provider-specific payload formats and bounds",
+      "evidence_files": [
+        "alertas-022-025-go.log"
+      ]
+    },
+    "CLOSE-alertas-028": {
+      "evidence": "vigente",
+      "scope": "provider-specific payload formats and bounds",
+      "evidence_files": [
+        "alertas-022-025-go.log"
+      ]
+    },
+    "CLOSE-alertas-029": {
+      "evidence": "vigente",
+      "scope": "provider-specific payload formats and bounds",
+      "evidence_files": [
+        "alertas-022-025-go.log"
+      ]
+    },
+    "CLOSE-alertas-030": {
+      "evidence": "vigente",
+      "scope": "provider-specific payload formats and bounds",
+      "evidence_files": [
+        "alertas-022-025-go.log"
+      ]
+    },
+    "CLOSE-alertas-031": {
+      "evidence": "bloqueada",
+      "scope": "provider UI and acceptance matrix; real provider receipts unavailable",
+      "evidence_files": [
+        "alertas-022-025-go.log"
+      ],
+      "blocked": "Faltan recibos reales de cada proveedor y autorización de publicación/CI."
     }
   },
   "commands": [
