@@ -1,0 +1,55 @@
+{
+  "anonymous": 401,
+  "aliases": [
+    {
+      "monitorType": "Ping",
+      "status": 201,
+      "readBack": "Ping",
+      "id": 1
+    },
+    {
+      "monitorType": "GET",
+      "status": 201,
+      "readBack": "GET",
+      "id": 2
+    },
+    {
+      "monitorType": "POST",
+      "status": 201,
+      "readBack": "POST",
+      "id": 3
+    },
+    {
+      "monitorType": "TCP",
+      "status": 201,
+      "readBack": "TCP Port",
+      "id": 4
+    },
+    {
+      "monitorType": "Heartbeat",
+      "status": 201,
+      "readBack": "Heartbeat",
+      "id": 5
+    },
+    {
+      "monitorType": "SSL",
+      "status": 201,
+      "readBack": "SSL",
+      "id": 6
+    }
+  ],
+  "aliasesOK": true,
+  "detailStatus": 200,
+  "preserve": {
+    "status": 200,
+    "name": "Renamed only",
+    "url": "https://example.test/health",
+    "interval": 3600,
+    "kind": "Ping"
+  },
+  "preservesOmitted": true,
+  "immutable": 409,
+  "tokenRead": 200,
+  "tokenCreate": 403,
+  "ok": true
+}

@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-003. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-004. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1755,7 +1755,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-005](../SPEC.md#close-uptime-005) | Compatible uptime monitors: Additive057 gives every monitor a stable UUID endpoint identity and a unique index… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-001](../SPEC.md#close-alertas-001) | Compatible project alerts: GET/POST /api/0/projects/{org}/{project}/alerts/ and PUT/DELETE .../alerts/{id}/ ex… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -8021,6 +8021,27 @@ Evidencia: `uptime-002/ui.json`, `uptime-002/report.json`,
 Límites registrados: la UI se ejecutó en Chromium headless; las pruebas de
 servidor y almacén siguen pasando tras el cambio. El CI público y la imagen
 final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: API compatible de monitores
+
+Selección registrada antes de trabajar: CLOSE-uptime-003. Candidata
+`1e979a2`.
+
+| Comprobación | Resultado |
+|---|---|
+| `TestCompatibleMonitorContract` | Pasa: crear, listar, detalle, actualizar y checks; `environmentID` se rechaza con 400 |
+| Alias de tipo | `Ping`, `GET`, `POST`, `TCP`→`TCP Port`, `Heartbeat` y `SSL` se crean con 201 y se leen con su alias canónico |
+| Autoridad | Anónimo 401; token `org:read` lista con 200 y no puede crear (403) |
+| PUT con campos omitidos | Conserva URL e intervalo originales y renombra |
+| Cambio de tipo | Rechazado con 409 |
+| Detalle | 200 con la identidad y estado del monitor creado |
+
+Evidencia: `test-results/closure-20261025/uptime-003/compat-monitors.json` y
+`test-results/closure-20261025/uptime-003/compat-monitor-contract.log`.
+
+Límites registrados: el cuerpo compatible no acepta `enabled`; se ajustó la
+sonda a los campos publicados y el resto de la matriz pasó. El CI público y la
+imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

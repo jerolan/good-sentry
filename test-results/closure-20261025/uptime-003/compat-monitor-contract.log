@@ -1,0 +1,4 @@
+=== RUN   TestCompatibleMonitorContract
+--- PASS: TestCompatibleMonitorContract (0.53s)
+PASS
+ok  	goodsentry/internal/server	0.535s

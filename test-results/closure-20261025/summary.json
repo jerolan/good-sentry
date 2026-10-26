@@ -4144,6 +4144,14 @@
         "uptime-002/report.json"
       ]
     },
+    "CLOSE-uptime-003": {
+      "evidence": "vigente",
+      "scope": "compatible monitor CRUD with type aliases, anonymous/token authority, omitted-field preservation and immutable kind",
+      "evidence_files": [
+        "uptime-003/compat-monitors.json",
+        "uptime-003/compat-monitor-contract.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
