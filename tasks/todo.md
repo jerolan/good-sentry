@@ -1443,11 +1443,12 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005 ya están vigentes. 006 espera sus proveedores
-de releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-007 (issue
-search). No se declara aceptación ni cierre del producto. El avance se informa
-por criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de
-un Goal no completan el producto ni borran este registro.
+publicación/CI; errores 001–005 y 007–012 ya están vigentes. 006 espera sus
+proveedores de releases/artefactos/nativo/CLI. Siguiente acción:
+CLOSE-errores-013/014 (UI y Chromium de filtros combinados). No se declara
+aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1541,12 +1542,12 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-004](../SPEC.md#close-errores-004) | Ingestion contract: Persist errors/messages with timestamps, exception chains, stack frames, breadcrumbs, tags… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de captura |
 | [CLOSE-errores-005](../SPEC.md#close-errores-005) | Issues and artifacts: Default grouping is an independently designed stable hash of exception type and normaliz… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de grouping |
 | [CLOSE-errores-006](../SPEC.md#close-errores-006) | Issues and artifacts: Merge groups without losing events or their original grouping keys; subsequent events fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-007](../SPEC.md#close-errores-007) | Issue search, historical filters and pages: Complete the existing native session-authenticated GET /api/v1/org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-008](../SPEC.md#close-errores-008) | Issue search, historical filters and pages: The native query accepts single project, query, status, environmen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-009](../SPEC.md#close-errores-009) | Issue search, historical filters and pages: Search accepts free text plus intersected key:value terms. Bare ke… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-010](../SPEC.md#close-errores-010) | Issue search, historical filters and pages: Keep domain values explicit with IssueSearch{Text string; Terms Is… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-011](../SPEC.md#close-errores-011) | Issue search, historical filters and pages: Evaluate explicit environment/release, event-level structured term… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-012](../SPEC.md#close-errores-012) | Issue search, historical filters and pages: Organization membership/selected-project authorization, count and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-007](../SPEC.md#close-errores-007) | Issue search, historical filters and pages: Complete the existing native session-authenticated GET /api/v1/org… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de búsqueda |
+| [CLOSE-errores-008](../SPEC.md#close-errores-008) | Issue search, historical filters and pages: The native query accepts single project, query, status, environmen… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de query |
+| [CLOSE-errores-009](../SPEC.md#close-errores-009) | Issue search, historical filters and pages: Search accepts free text plus intersected key:value terms. Bare ke… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de gramática |
+| [CLOSE-errores-010](../SPEC.md#close-errores-010) | Issue search, historical filters and pages: Keep domain values explicit with IssueSearch{Text string; Terms Is… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener dominio tipado |
+| [CLOSE-errores-011](../SPEC.md#close-errores-011) | Issue search, historical filters and pages: Evaluate explicit environment/release, event-level structured term… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de selección |
+| [CLOSE-errores-012](../SPEC.md#close-errores-012) | Issue search, historical filters and pages: Organization membership/selected-project authorization, count and… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de authz |
 | [CLOSE-errores-013](../SPEC.md#close-errores-013) | Issue search, historical filters and pages: Extend the existing responsive Issues form with release, All statu… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-014](../SPEC.md#close-errores-014) | Issue search, historical filters and pages: Real Chromium at320/768/1440 must verify combined historical/tag/r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-015](../SPEC.md#close-errores-015) | Compatible issue deletion: Implement complete individual and bounded bulk error-issue deletion, usable through… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3643,6 +3644,29 @@ Evidencia: `test-results/closure-20261025/errors-grouping.log`.
 Siguiente acción: CLOSE-errores-006 queda a la espera de sus proveedores de
 releases/artefactos/nativo/CLI; avanzar en CLOSE-errores-007 (issue search) y
 los criterios independientes de la familia mientras tanto.
+
+### Ejecución 2026-10-26: búsqueda de issues y snapshots
+
+Selección registrada antes de trabajar: CLOSE-errores-007 a -012. Candidata
+`0834dbb`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners de gramática, store y HTTP con `-race`.
+
+Resultado observado: la query nativa acepta un solo proyecto, texto, estado,
+entorno, release, orden, página y categoría; rechaza duplicados, valores
+inválidos y percent-encoding roto. La gramática soporta texto libre, términos
+`key:value` intersectados, listas/OR, negación, wildcard y literales citados;
+las claves desconocidas quedan como texto y no se inventan alias. La evaluación
+usa la misma ocurrencia histórica para entorno/release/tags, el estado es
+independiente del evento elegido y un snapshot consistente sobrevive a triage
+concurrente. Membership y proyecto se validan; count/pages se calculan sobre el
+snapshot autorizado. `IssueSearch` mantiene valores tipados explícitos. Los
+tests cubren límites Unicode, SQL-looking values, malformed grammar y 1M de
+página. Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/issue-search.log`.
+
+Siguiente acción: CLOSE-errores-013/014 (formulario y Chromium de filtros
+combinados), que requieren una corrida de navegador específica.
 
 ### Comprobante de integración documental
 

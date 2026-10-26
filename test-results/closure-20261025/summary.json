@@ -868,6 +868,63 @@
         "merge/unmerge preserve partitions and history"
       ],
       "evidence_files": ["errors-grouping.log"]
+    },
+    "CLOSE-errores-007": {
+      "evidence": "vigente",
+      "scope": "native session issue search, filters, ordering and pages",
+      "covered": [
+        "single project/text/status/environment/release/sort/page/category",
+        "membership/project authorization and snapshot counts",
+        "invalid/duplicate/encoding inputs rejected"
+      ],
+      "evidence_files": ["issue-search.log"]
+    },
+    "CLOSE-errores-008": {
+      "evidence": "vigente",
+      "scope": "native query admission and duplicates",
+      "covered": [
+        "strict query/selector/status/sort/page bounds",
+        "duplicate or unknown parameters rejected"
+      ],
+      "evidence_files": ["issue-search.log"]
+    },
+    "CLOSE-errores-009": {
+      "evidence": "vigente",
+      "scope": "free text and intersected key:value grammar",
+      "covered": [
+        "quotes, lists/OR, negation, wildcard and literals",
+        "bare keys stay message; no invented aliases",
+        "SQL-looking values remain literal"
+      ],
+      "evidence_files": ["issue-search.log"]
+    },
+    "CLOSE-errores-010": {
+      "evidence": "vigente",
+      "scope": "explicit typed IssueSearch domain values",
+      "covered": [
+        "typed text/terms/status/environment/release/sort/page values",
+        "no implicit coercion"
+      ],
+      "evidence_files": ["issue-search.log"]
+    },
+    "CLOSE-errores-011": {
+      "evidence": "vigente",
+      "scope": "same-occurrence event predicates, status independence and snapshot",
+      "covered": [
+        "environment/release/structured terms evaluated on one occurrence",
+        "status independent from matching event",
+        "snapshot survives concurrent triage"
+      ],
+      "evidence_files": ["issue-search.log"]
+    },
+    "CLOSE-errores-012": {
+      "evidence": "vigente",
+      "scope": "organization/selected-project authorization, counts and pages",
+      "covered": [
+        "membership and project boundary",
+        "count/pages over authorized snapshot"
+      ],
+      "evidence_files": ["issue-search.log"]
     }
   },
   "commands": [
