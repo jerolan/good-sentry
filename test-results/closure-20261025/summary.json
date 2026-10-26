@@ -4509,6 +4509,11 @@
       "scope": "C13 source-line subsections, module/global strings, checksum boundaries, PE range mapping, procedure clipping, columns, bounds and fail-closed malformed input",
       "evidence_files": ["nativo-019/c13.log", "nativo-019/native.log", "nativo-019/summary.json"]
     },
+    "CLOSE-nativo-020": {
+      "evidence": "vigente",
+      "scope": "private-stripped PDB GSS S_PUB32 scan, Section Map mapping, public ranges, GSI/PSI independence, descriptor and record bounds and fail-closed framing",
+      "evidence_files": ["nativo-020/public.log", "nativo-020/native.log", "nativo-020/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

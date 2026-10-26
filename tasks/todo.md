@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -019 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -020 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-020. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-021. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1746,7 +1746,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-017](../SPEC.md#close-nativo-017) | CFI extended dereference: RISC-V64 ELF CFI accepts little-endian ELF64 EM_RISCV .eh_frame or .debug_frame and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8974,6 +8974,28 @@ Evidencia: `test-results/closure-20261025/nativo-019/c13.log` y `native.log`.
 Límites registrados: MSF legado/Portable y demangling siguen fuera. No se usó
 la imagen final ni el CI público; la imagen y el CI siguen pendientes para la
 auditoría final.
+
+### Ejecución 2026-10-26: símbolos públicos de PDB recortado
+
+Selección registrada antes de trabajar: CLOSE-nativo-020. Revisión de producto
+`3563717`; este incremento añade pruebas del presupuesto de descriptores y de
+la independencia de GSI/PSI, sin cambiar el parser.
+
+| Elemento | Comprobante |
+|---|---|
+| Solo con DBI `ArePrivateSymbolsStripped`; sin él no se infieren públicos | `TestParseNativePDBPublicSymbolsFromStrippedPDB` (variante unstripped) |
+| Escaneo del GSS por `S_PUB32`, sin requerir GSI/PSI | `TestParseNativePDBPublicSymbolsFromStrippedPDB`; `TestPDBPublicSymbolsDoNotNeedGSIOrPSI` |
+| `cvpsfFunction`, nombre preservado y dirección imagen-relativa vía Section Map | `TestParseNativePDBPublicSymbolsFromStrippedPDB` |
+| Descriptores selector, absoluto y grupo rechazados | `TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols` |
+| Rango hasta el siguiente público o el final del descriptor | `TestParseNativePDBPublicSymbolsFromStrippedPDB` (`PublicFirst`/`PublicSecond`) |
+| Procedimientos y líneas exactas tienen prioridad sobre el fallback público | `TestSymbolicatePrefersExactPDBProcedureToPublicFallback` |
+| Límites 64MiB, 1 000 000 registros, 200 000 públicos, 512 descriptores y 4096 bytes | `TestPDBOversizedFile`; `TestParseNativePDBPublicSymbolsEnforcesStreamBudgets`; `TestPDBSectionMapBudget`; `TestPDBStringLengthBudget` |
+| Framing, alineación F1/F2/F3, referencias y aritmética inválidas no devuelven símbolos | `TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols`; `TestParseNativePDBPublicSymbolsRejectsExcessiveAlignmentPadding` |
+
+Evidencia: `test-results/closure-20261025/nativo-020/public.log` y `native.log`.
+
+Límites registrados: no se usó la imagen final ni el CI público; la imagen y el
+CI siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

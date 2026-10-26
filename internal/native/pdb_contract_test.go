@@ -169,3 +169,29 @@ func TestPDBC13ColumnsAreValidatedButNotReturned(t *testing.T) {
 		t.Fatalf("column-bearing line block: ok=%v functions=%+v", ok, got)
 	}
 }
+
+func TestPDBSectionMapBudget(t *testing.T) {
+	build := func(count int) []byte {
+		data := make([]byte, 4+count*20)
+		binary.LittleEndian.PutUint16(data, uint16(count))
+		binary.LittleEndian.PutUint16(data[2:], uint16(count))
+		return data
+	}
+	if entries, ok := parsePDBSectionMap(build(maxPDBSections)); !ok || len(entries) != maxPDBSections {
+		t.Fatal("512 Section Map descriptors were rejected")
+	}
+	if _, ok := parsePDBSectionMap(build(maxPDBSections + 1)); ok {
+		t.Fatal("513 Section Map descriptors were accepted")
+	}
+}
+
+func TestPDBPublicSymbolsDoNotNeedGSIOrPSI(t *testing.T) {
+	fixture := nativepdb.WithPublicOnlySymbols()
+	data := append([]byte(nil), fixture.Data...)
+	binary.LittleEndian.PutUint16(data[fixture.DBIBlock*512+12:], 0xffff)
+	binary.LittleEndian.PutUint16(data[fixture.DBIBlock*512+16:], 0xffff)
+	objects := ParseDebugObjects("stripped.pdb", data)
+	if len(objects) != 1 || len(objects[0].Functions) != 2 {
+		t.Fatalf("public scan depended on GSI/PSI: %+v", objects)
+	}
+}
