@@ -1454,7 +1454,8 @@ final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007 y
--041 a -044 quedan vigentes. Siguiente acción: CLOSE-rendimiento-008. No se declara
+-041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
+runtime preservado. Siguiente acción: CLOSE-rendimiento-012. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1777,10 +1778,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-005](../SPEC.md#close-rendimiento-005) | Transaction and standalone-span retention: Under those project gates and pinned event rows, delete envelope_it… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-006](../SPEC.md#close-rendimiento-006) | Transaction and standalone-span retention: Delete standalone spans independently, with no trace-wide cascade.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-007](../SPEC.md#close-rendimiento-007) | Transaction and standalone-span retention: Migration023 adds only receipt-order indexes on events(created_at,i… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-008](../SPEC.md#close-rendimiento-008) | Transaction and standalone-span retention: Acceptance requires real PostgreSQL expiry based on receipt age wit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-009](../SPEC.md#close-rendimiento-009) | Transaction and standalone-span retention: The transaction/span runtime acceptance on2026-10-17 uses new candi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-010](../SPEC.md#close-rendimiento-010) | Transaction and standalone-span retention: The same candidate cleans the remaining fixtures with logs and upti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-011](../SPEC.md#close-rendimiento-011) | Transaction and standalone-span retention: Transaction/span acceptance closes at functional eea9788c236fe8a738… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-008](../SPEC.md#close-rendimiento-008) | Transaction and standalone-span retention: Acceptance requires real PostgreSQL expiry based on receipt age wit… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
+| [CLOSE-rendimiento-009](../SPEC.md#close-rendimiento-009) | Transaction and standalone-span retention: The transaction/span runtime acceptance on2026-10-17 uses new candi… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
+| [CLOSE-rendimiento-010](../SPEC.md#close-rendimiento-010) | Transaction and standalone-span retention: The same candidate cleans the remaining fixtures with logs and upti… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
+| [CLOSE-rendimiento-011](../SPEC.md#close-rendimiento-011) | Transaction and standalone-span retention: Transaction/span acceptance closes at functional eea9788c236fe8a738… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
 | [CLOSE-operacion-013](../SPEC.md#close-operacion-013) | Error-event retention: After accepted logs and transaction/spans, error-event retention remains required. The… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-014](../SPEC.md#close-operacion-014) | Error-event retention: The accepted configuration prerequisite activates no deletion and adds no worker. Its e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-015](../SPEC.md#close-operacion-015) | Error-event retention: Store.CleanupEvents(ctx, days) returns a committed removal count and error. In one Post… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7124,6 +7125,30 @@ Límites registrados: la aceptación con imagen nueva, restauración de backup,
 runtime preservado y CI público sigue en CLOSE-rendimiento-008 a -011 y no se
 adelanta aquí. El CI público y la imagen final siguen pendientes para la
 auditoría final.
+
+### Bloqueo 2026-10-26: aceptación con imagen de la retención de transacciones
+
+CLOSE-rendimiento-008 a -011 quedan bloqueados, no aceptados. Los comprobantes
+locales de CLOSE-rendimiento-002 a -007 siguen siendo vigentes para sus propios
+criterios.
+
+- Causa: el contrato exige construir una imagen nueva, restaurar un backup
+  lógico en una base aislada para comprobar vencimiento y reinicio, restaurar un
+  backup previo al vencimiento y "verify exact public source and matching CI"
+  antes de cerrar. Además, 009 y 010 dependen del runtime preservado
+  `goodsentry_transaction_retention_20261017` (4235 filas, 529 eventos,
+  28 lotes) y de un backup previo de 4262 filas.
+- Dependencia: autorización de publicación para imagen y CI público, más los
+  volúmenes/backups preservados de esa ejecución.
+- Responsable: propietario de publicación y conservación de esos backups.
+- Intentos: inventario local de Docker con `goodsentry:closure-20261026` y
+  `ghcr.io/jerolan/good-sentry:main`, sin contenedor ni volumen del runtime
+  2026-10-17; árbol 161 commits por delante de `origin/main` sin push, por
+  lo que no existe CI público coincidente.
+- Condición de desbloqueo: publicación autorizada que produzca CI coincidente y
+  restauración de los backups preservados en un entorno aislado.
+- Siguiente acción: CLOSE-rendimiento-012, primer criterio independiente de la
+  cola.
 
 ### Comprobante de integración documental
 
