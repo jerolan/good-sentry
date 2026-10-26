@@ -4539,6 +4539,11 @@
       "scope": "Crashpad minidump auth without sentry_version, version-7 constraint, full-body gzip, independent compressed/expanded limits and pre-persistence rejection",
       "evidence_files": ["nativo-025/protocol.log", "nativo-025/server.log", "nativo-025/summary.json"]
     },
+    "CLOSE-nativo-026": {
+      "evidence": "vigente (local)",
+      "scope": "real sentry-native 0.17.4 Crashpad crash, exact ELF upload, goodsentry_demo_crash/main.c/positive line by Debug ID and no retained dump",
+      "evidence_files": ["nativo-026/sdk-demo.log", "nativo-026/sdk-demo-race.log", "nativo-026/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

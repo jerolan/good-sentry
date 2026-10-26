@@ -1,0 +1,4 @@
+=== RUN   TestNativeSDKDemoCrashSymbolicates
+--- PASS: TestNativeSDKDemoCrashSymbolicates (1.93s)
+PASS
+ok  	goodsentry/internal/server	1.945s
