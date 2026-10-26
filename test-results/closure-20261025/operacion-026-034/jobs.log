@@ -1,0 +1,14 @@
+=== RUN   TestRetentionWorkersDrainRetryAndStop
+=== RUN   TestRetentionWorkersDrainRetryAndStop/releases
+2026/10/26 16:04:20 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=250
+2026/10/26 16:04:20 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=250
+2026/10/26 16:04:20 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=101
+2026/10/26 16:04:20 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=3
+2026/10/26 16:04:20 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=2
+2026/10/26 16:04:20 ERROR Release retention pass failed entryPoint=release_retention_worker operation=cleanup_releases
+2026/10/26 16:04:20 ERROR Release retention pass failed entryPoint=release_retention_worker operation=cleanup_releases
+2026/10/26 16:04:20 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=1
+--- PASS: TestRetentionWorkersDrainRetryAndStop (1.05s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/releases (1.05s)
+PASS
+ok  	goodsentry/internal/jobs	1.059s

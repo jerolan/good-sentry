@@ -1,0 +1,1123 @@
+﻿2026-10-18T04:35:59.7480081Z Current runner version: '2.337.0'
+2026-10-18T04:35:59.7500721Z ##[group]Runner Image Provisioner
+2026-10-18T04:35:59.7501475Z Hosted Compute Agent
+2026-10-18T04:35:59.7502022Z Version: 20261012.601
+2026-10-18T04:35:59.7502739Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-18T04:35:59.7503329Z Build Date: 2026-10-12T17:48:21Z
+2026-10-18T04:35:59.7503926Z Worker ID: {e82fcbdc-213b-4736-9cdb-8a41bacfe0e6}
+2026-10-18T04:35:59.7504524Z Region: westus3
+2026-10-18T04:35:59.7505032Z Cloud: Azure
+2026-10-18T04:35:59.7505490Z ##[endgroup]
+2026-10-18T04:35:59.7506665Z ##[group]Operating System
+2026-10-18T04:35:59.7507224Z Ubuntu
+2026-10-18T04:35:59.7507686Z 24.04.5
+2026-10-18T04:35:59.7508079Z LTS
+2026-10-18T04:35:59.7508929Z ##[endgroup]
+2026-10-18T04:35:59.7509385Z ##[group]Runner Image
+2026-10-18T04:35:59.7509900Z Image: ubuntu-24.04
+2026-10-18T04:35:59.7510404Z Version: 20261012.334.1
+2026-10-18T04:35:59.7511473Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-18T04:35:59.7512885Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-18T04:35:59.7513683Z ##[endgroup]
+2026-10-18T04:35:59.7514639Z ##[group]GITHUB_TOKEN Permissions
+2026-10-18T04:35:59.7516219Z Contents: read
+2026-10-18T04:35:59.7516760Z Metadata: read
+2026-10-18T04:35:59.7517201Z ##[endgroup]
+2026-10-18T04:35:59.7519020Z Secret source: Actions
+2026-10-18T04:35:59.7519764Z Cache mode: write
+2026-10-18T04:35:59.7520397Z Prepare workflow directory
+2026-10-18T04:35:59.7871470Z Prepare all required actions
+2026-10-18T04:35:59.7910883Z Getting action download info
+2026-10-18T04:36:00.0644574Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-18T04:36:00.1786854Z Download action repository 'actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e' (SHA:b7ad1dad31e06c5925ef5d2fc7ad053ef454303e)
+2026-10-18T04:36:01.1438943Z Complete job name: verify
+2026-10-18T04:36:01.1860827Z ##[group]Checking docker version
+2026-10-18T04:36:01.1871356Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2026-10-18T04:36:01.2428939Z '1.48'
+2026-10-18T04:36:01.2438014Z Docker daemon API version: '1.48'
+2026-10-18T04:36:01.2438663Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2026-10-18T04:36:01.2574562Z '1.48'
+2026-10-18T04:36:01.2585600Z Docker client API version: '1.48'
+2026-10-18T04:36:01.2591341Z ##[endgroup]
+2026-10-18T04:36:01.2593865Z ##[group]Clean up resources from previous jobs
+2026-10-18T04:36:01.2598233Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=5fb0d1"
+2026-10-18T04:36:01.2718507Z ##[command]/usr/bin/docker network prune --force --filter "label=5fb0d1"
+2026-10-18T04:36:01.2827520Z ##[endgroup]
+2026-10-18T04:36:01.2828182Z ##[group]Create local container network
+2026-10-18T04:36:01.2837151Z ##[command]/usr/bin/docker network create --label 5fb0d1 github_network_6d7b35730860448bacff5edf99d93859
+2026-10-18T04:36:01.3298884Z 0ab3390a9a78c8731d48e155da0320c8fe38091efaee9fb70c24d2ca1e04bca5
+2026-10-18T04:36:01.3311222Z ##[endgroup]
+2026-10-18T04:36:01.3332437Z ##[group]Starting postgres service container
+2026-10-18T04:36:01.3349177Z ##[command]/usr/bin/docker pull postgres:18
+2026-10-18T04:36:02.1236250Z 18: Pulling from library/postgres
+2026-10-18T04:36:02.3478222Z ecc510c1e359: Pulling fs layer
+2026-10-18T04:36:02.3479599Z 4a3cafbebf6d: Pulling fs layer
+2026-10-18T04:36:02.3480652Z 28ced28a309b: Pulling fs layer
+2026-10-18T04:36:02.3481535Z ab69e2551985: Pulling fs layer
+2026-10-18T04:36:02.3482596Z 1f04dfa92b9f: Pulling fs layer
+2026-10-18T04:36:02.3483533Z 5a487c9461a5: Pulling fs layer
+2026-10-18T04:36:02.3484453Z e0d4a6e58470: Pulling fs layer
+2026-10-18T04:36:02.3485166Z 496ce2ef5b2f: Pulling fs layer
+2026-10-18T04:36:02.3485868Z c8145e79cc2b: Pulling fs layer
+2026-10-18T04:36:02.3486615Z 06ea90d3bcc9: Pulling fs layer
+2026-10-18T04:36:02.3487369Z dc25540d793f: Pulling fs layer
+2026-10-18T04:36:02.3488456Z 7967f593457f: Pulling fs layer
+2026-10-18T04:36:02.3489189Z d23c975c4693: Pulling fs layer
+2026-10-18T04:36:02.3489949Z ab69e2551985: Waiting
+2026-10-18T04:36:02.3491034Z 1f04dfa92b9f: Waiting
+2026-10-18T04:36:02.3491933Z 5a487c9461a5: Waiting
+2026-10-18T04:36:02.3493011Z e0d4a6e58470: Waiting
+2026-10-18T04:36:02.3493883Z 496ce2ef5b2f: Waiting
+2026-10-18T04:36:02.3494742Z c8145e79cc2b: Waiting
+2026-10-18T04:36:02.3495611Z 06ea90d3bcc9: Waiting
+2026-10-18T04:36:02.3496487Z dc25540d793f: Waiting
+2026-10-18T04:36:02.3497357Z 7967f593457f: Waiting
+2026-10-18T04:36:02.3498231Z d23c975c4693: Waiting
+2026-10-18T04:36:02.5220840Z 4a3cafbebf6d: Verifying Checksum
+2026-10-18T04:36:02.5437939Z 4a3cafbebf6d: Download complete
+2026-10-18T04:36:02.5439486Z 28ced28a309b: Verifying Checksum
+2026-10-18T04:36:02.5441173Z 28ced28a309b: Download complete
+2026-10-18T04:36:02.6699896Z ecc510c1e359: Verifying Checksum
+2026-10-18T04:36:02.6701521Z ecc510c1e359: Download complete
+2026-10-18T04:36:02.7100777Z ab69e2551985: Verifying Checksum
+2026-10-18T04:36:02.7103271Z ab69e2551985: Download complete
+2026-10-18T04:36:02.7462885Z 1f04dfa92b9f: Download complete
+2026-10-18T04:36:02.8650582Z 5a487c9461a5: Verifying Checksum
+2026-10-18T04:36:02.8653846Z 5a487c9461a5: Download complete
+2026-10-18T04:36:02.8839302Z e0d4a6e58470: Verifying Checksum
+2026-10-18T04:36:02.8840820Z e0d4a6e58470: Download complete
+2026-10-18T04:36:02.9218707Z 496ce2ef5b2f: Verifying Checksum
+2026-10-18T04:36:02.9220432Z 496ce2ef5b2f: Download complete
+2026-10-18T04:36:03.0587669Z 06ea90d3bcc9: Verifying Checksum
+2026-10-18T04:36:03.0589452Z 06ea90d3bcc9: Download complete
+2026-10-18T04:36:03.0993119Z dc25540d793f: Verifying Checksum
+2026-10-18T04:36:03.0994265Z dc25540d793f: Download complete
+2026-10-18T04:36:03.2375426Z 7967f593457f: Verifying Checksum
+2026-10-18T04:36:03.2375832Z 7967f593457f: Download complete
+2026-10-18T04:36:03.2839808Z d23c975c4693: Verifying Checksum
+2026-10-18T04:36:03.2840250Z d23c975c4693: Download complete
+2026-10-18T04:36:03.3366806Z c8145e79cc2b: Verifying Checksum
+2026-10-18T04:36:03.3367266Z c8145e79cc2b: Download complete
+2026-10-18T04:36:03.5492610Z ecc510c1e359: Pull complete
+2026-10-18T04:36:04.9434293Z 4a3cafbebf6d: Pull complete
+2026-10-18T04:36:05.1741971Z 28ced28a309b: Pull complete
+2026-10-18T04:36:05.2185254Z ab69e2551985: Pull complete
+2026-10-18T04:36:05.6891490Z 1f04dfa92b9f: Pull complete
+2026-10-18T04:36:05.7854610Z 5a487c9461a5: Pull complete
+2026-10-18T04:36:05.7914237Z e0d4a6e58470: Pull complete
+2026-10-18T04:36:05.8006895Z 496ce2ef5b2f: Pull complete
+2026-10-18T04:36:09.7092697Z c8145e79cc2b: Pull complete
+2026-10-18T04:36:09.7406565Z 06ea90d3bcc9: Pull complete
+2026-10-18T04:36:09.7469890Z dc25540d793f: Pull complete
+2026-10-18T04:36:09.7578631Z 7967f593457f: Pull complete
+2026-10-18T04:36:09.7639015Z d23c975c4693: Pull complete
+2026-10-18T04:36:09.7665642Z Digest: sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336
+2026-10-18T04:36:09.7675020Z Status: Downloaded newer image for postgres:18
+2026-10-18T04:36:09.7681751Z docker.io/library/postgres:18
+2026-10-18T04:36:09.7731844Z ##[command]/usr/bin/docker create --name 876955206e90472d91f7b4204703d722_postgres18_98eabf --label 5fb0d1 --network github_network_6d7b35730860448bacff5edf99d93859 --network-alias postgres -p 5432:5432 --health-cmd "pg_isready -U goodsentry_ci -d goodsentry_ci" --health-interval 5s --health-timeout 3s --health-retries 20 -e "POSTGRES_USER=goodsentry_ci" -e "POSTGRES_DB=goodsentry_ci" -e "POSTGRES_HOST_AUTH_METHOD=trust" -e GITHUB_ACTIONS=true -e CI=true postgres:18
+2026-10-18T04:36:09.7927967Z ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:36:09.7947471Z ##[command]/usr/bin/docker start ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:36:09.9705246Z ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:36:09.9727640Z ##[command]/usr/bin/docker ps --all --filter id=ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2026-10-18T04:36:09.9844309Z ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d Up Less than a second (health: starting)
+2026-10-18T04:36:09.9864054Z ##[command]/usr/bin/docker port ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:36:09.9972993Z 5432/tcp -> 0.0.0.0:5432
+2026-10-18T04:36:09.9973541Z 5432/tcp -> [::]:5432
+2026-10-18T04:36:10.0018535Z ##[endgroup]
+2026-10-18T04:36:10.0027028Z ##[group]Waiting for all services to be ready
+2026-10-18T04:36:10.0037967Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:36:10.0154245Z starting
+2026-10-18T04:36:10.0171912Z postgres service is starting, waiting 2 seconds before checking again.
+2026-10-18T04:36:12.0171910Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:36:12.0275444Z starting
+2026-10-18T04:36:12.0285389Z postgres service is starting, waiting 3 seconds before checking again.
+2026-10-18T04:36:15.8220711Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:36:15.8327009Z healthy
+2026-10-18T04:36:15.8339456Z postgres service is healthy.
+2026-10-18T04:36:15.8340110Z ##[endgroup]
+2026-10-18T04:36:15.8567112Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-18T04:36:15.8567619Z with:
+2026-10-18T04:36:15.8567803Z   persist-credentials: false
+2026-10-18T04:36:15.8568034Z   repository: jerolan/good-sentry
+2026-10-18T04:36:15.8570047Z   token: ***
+2026-10-18T04:36:15.8570221Z   ssh-strict: true
+2026-10-18T04:36:15.8570400Z   ssh-user: git
+2026-10-18T04:36:15.8570557Z   clean: true
+2026-10-18T04:36:15.8570749Z   sparse-checkout-cone-mode: true
+2026-10-18T04:36:15.8570951Z   fetch-depth: 1
+2026-10-18T04:36:15.8571127Z   fetch-tags: false
+2026-10-18T04:36:15.8571295Z   show-progress: true
+2026-10-18T04:36:15.8571466Z   lfs: false
+2026-10-18T04:36:15.8571621Z   submodules: false
+2026-10-18T04:36:15.8571787Z   set-safe-directory: true
+2026-10-18T04:36:15.8571986Z   allow-unsafe-pr-checkout: false
+2026-10-18T04:36:15.8572485Z env:
+2026-10-18T04:36:15.8572770Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+2026-10-18T04:36:15.8573151Z   GOTOOLCHAIN: local
+2026-10-18T04:36:15.8573322Z ##[endgroup]
+2026-10-18T04:36:15.9430254Z Syncing repository: jerolan/good-sentry
+2026-10-18T04:36:15.9431343Z ##[group]Getting Git version info
+2026-10-18T04:36:15.9431671Z Working directory is '/home/runner/work/good-sentry/good-sentry'
+2026-10-18T04:36:15.9432390Z [command]/usr/bin/git version
+2026-10-18T04:36:15.9470799Z git version 2.55.0
+2026-10-18T04:36:15.9487252Z ##[endgroup]
+2026-10-18T04:36:15.9496644Z Temporarily overriding HOME='/home/runner/work/_temp/75f7534c-e806-41b9-985b-4b91c0b39015' before making global git config changes
+2026-10-18T04:36:15.9497605Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-18T04:36:15.9502775Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/good-sentry/good-sentry
+2026-10-18T04:36:15.9543378Z Deleting the contents of '/home/runner/work/good-sentry/good-sentry'
+2026-10-18T04:36:15.9546660Z ##[group]Determining repository object format
+2026-10-18T04:36:15.9547841Z ##[endgroup]
+2026-10-18T04:36:15.9548317Z ##[group]Initializing the repository
+2026-10-18T04:36:15.9551978Z [command]/usr/bin/git init /home/runner/work/good-sentry/good-sentry
+2026-10-18T04:36:15.9628703Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-18T04:36:15.9629480Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-18T04:36:15.9630226Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-18T04:36:15.9630934Z hint: call:
+2026-10-18T04:36:15.9631163Z hint:
+2026-10-18T04:36:15.9631533Z hint: 	git config --global init.defaultBranch <name>
+2026-10-18T04:36:15.9631925Z hint:
+2026-10-18T04:36:15.9632472Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-18T04:36:15.9633067Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-18T04:36:15.9633544Z hint:
+2026-10-18T04:36:15.9633816Z hint: 	git branch -m <name>
+2026-10-18T04:36:15.9634139Z hint:
+2026-10-18T04:36:15.9634542Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-18T04:36:15.9635243Z Initialized empty Git repository in /home/runner/work/good-sentry/good-sentry/.git/
+2026-10-18T04:36:15.9642894Z [command]/usr/bin/git remote add origin https://github.com/jerolan/good-sentry
+2026-10-18T04:36:15.9683602Z ##[endgroup]
+2026-10-18T04:36:15.9684098Z ##[group]Disabling automatic garbage collection
+2026-10-18T04:36:15.9687092Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-18T04:36:15.9713110Z ##[endgroup]
+2026-10-18T04:36:15.9713577Z ##[group]Setting up auth
+2026-10-18T04:36:15.9714030Z Removing SSH command configuration
+2026-10-18T04:36:15.9718591Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-18T04:36:15.9749211Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-18T04:36:16.0034478Z Removing HTTP extra header
+2026-10-18T04:36:16.0064073Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-18T04:36:16.0071269Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-18T04:36:16.0259852Z Removing includeIf entries pointing to credentials config files
+2026-10-18T04:36:16.0264455Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-18T04:36:16.0299371Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-18T04:36:16.0487863Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-18T04:36:16.0519614Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/good-sentry/good-sentry/.git.path /home/runner/work/_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config
+2026-10-18T04:36:16.0547762Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/good-sentry/good-sentry/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config
+2026-10-18T04:36:16.0578316Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config
+2026-10-18T04:36:16.0608212Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config
+2026-10-18T04:36:16.0634925Z ##[endgroup]
+2026-10-18T04:36:16.0635383Z ##[group]Fetching the repository
+2026-10-18T04:36:16.0640891Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +73f4c3342aa97ac0cae765c80c6d7639e362cfa0:refs/remotes/origin/main
+2026-10-18T04:36:17.0305998Z From https://github.com/jerolan/good-sentry
+2026-10-18T04:36:17.0306589Z  * [new ref]         73f4c3342aa97ac0cae765c80c6d7639e362cfa0 -> origin/main
+2026-10-18T04:36:17.0313923Z [command]/usr/bin/git branch --list --remote origin/main
+2026-10-18T04:36:17.0338335Z   origin/main
+2026-10-18T04:36:17.0345134Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2026-10-18T04:36:17.0367043Z 73f4c3342aa97ac0cae765c80c6d7639e362cfa0
+2026-10-18T04:36:17.0369944Z ##[endgroup]
+2026-10-18T04:36:17.0370291Z ##[group]Determining the checkout info
+2026-10-18T04:36:17.0371296Z ##[endgroup]
+2026-10-18T04:36:17.0374595Z [command]/usr/bin/git sparse-checkout disable
+2026-10-18T04:36:17.0421869Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-18T04:36:17.0450601Z ##[group]Checking out the ref
+2026-10-18T04:36:17.0454114Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-18T04:36:17.0768632Z Switched to a new branch 'main'
+2026-10-18T04:36:17.0772825Z branch 'main' set up to track 'origin/main'.
+2026-10-18T04:36:17.0779036Z ##[endgroup]
+2026-10-18T04:36:17.0827734Z [command]/usr/bin/git log -1 --format=%H
+2026-10-18T04:36:17.0848006Z 73f4c3342aa97ac0cae765c80c6d7639e362cfa0
+2026-10-18T04:36:17.0855513Z ##[group]Removing auth
+2026-10-18T04:36:17.0855768Z Removing SSH command configuration
+2026-10-18T04:36:17.0859060Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-18T04:36:17.0889046Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-18T04:36:17.1082582Z Removing HTTP extra header
+2026-10-18T04:36:17.1085493Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-18T04:36:17.1113987Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-18T04:36:17.1298017Z Removing includeIf entries pointing to credentials config files
+2026-10-18T04:36:17.1300093Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-18T04:36:17.1326111Z includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git.path
+2026-10-18T04:36:17.1326962Z includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git/worktrees/*.path
+2026-10-18T04:36:17.1327755Z includeif.gitdir:/github/workspace/.git.path
+2026-10-18T04:36:17.1328306Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-18T04:36:17.1333497Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git.path
+2026-10-18T04:36:17.1356596Z /home/runner/work/_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config
+2026-10-18T04:36:17.1380333Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-27ff0811\-bf9f\-4e65\-a05f\-4eaf2f9c118e\.config
+2026-10-18T04:36:17.1431287Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git/worktrees/*.path
+2026-10-18T04:36:17.1455302Z /home/runner/work/_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config
+2026-10-18T04:36:17.1464161Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/good-sentry/good-sentry/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-27ff0811\-bf9f\-4e65\-a05f\-4eaf2f9c118e\.config
+2026-10-18T04:36:17.1495145Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-18T04:36:17.1548817Z /github/runner_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config
+2026-10-18T04:36:17.1550075Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-27ff0811\-bf9f\-4e65\-a05f\-4eaf2f9c118e\.config
+2026-10-18T04:36:17.1581039Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-18T04:36:17.1603079Z /github/runner_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config
+2026-10-18T04:36:17.1608852Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-27ff0811\-bf9f\-4e65\-a05f\-4eaf2f9c118e\.config
+2026-10-18T04:36:17.1640137Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-18T04:36:17.1824010Z Removing credentials config '/home/runner/work/_temp/git-credentials-27ff0811-bf9f-4e65-a05f-4eaf2f9c118e.config'
+2026-10-18T04:36:17.1832421Z ##[endgroup]
+2026-10-18T04:36:17.2017898Z ##[group]Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+2026-10-18T04:36:17.2018210Z with:
+2026-10-18T04:36:17.2018387Z   go-version: 1.27.2
+2026-10-18T04:36:17.2018584Z   cache-dependency-path: go.sum
+2026-10-18T04:36:17.2018789Z   check-latest: false
+2026-10-18T04:36:17.2020717Z   token: ***
+2026-10-18T04:36:17.2020887Z   cache: true
+2026-10-18T04:36:17.2021045Z env:
+2026-10-18T04:36:17.2021322Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+2026-10-18T04:36:17.2021673Z   GOTOOLCHAIN: local
+2026-10-18T04:36:17.2021851Z ##[endgroup]
+2026-10-18T04:36:17.2953616Z Setup go version spec 1.27.2
+2026-10-18T04:36:17.2959016Z Attempting to download 1.27.2...
+2026-10-18T04:36:18.2301949Z matching 1.27.2...
+2026-10-18T04:36:18.2304292Z Acquiring 1.27.2 from https://github.com/actions/go-versions/releases/download/1.27.2-37875086547/go-1.27.2-linux-x64.tar.gz
+2026-10-18T04:36:18.6944667Z Extracting Go...
+2026-10-18T04:36:18.7036047Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/cef7a2a8-c69f-4b5b-ad17-b42052367208 -f /home/runner/work/_temp/abbf95ed-615b-4999-88f5-d109bb9700fa
+2026-10-18T04:36:20.1206919Z Successfully extracted go to /home/runner/work/_temp/cef7a2a8-c69f-4b5b-ad17-b42052367208
+2026-10-18T04:36:20.1207516Z Adding to the cache ...
+2026-10-18T04:36:25.2388360Z Successfully cached go to /opt/hostedtoolcache/go/1.27.2/x64
+2026-10-18T04:36:25.2389778Z Added go to the path
+2026-10-18T04:36:25.2391386Z Successfully set up Go version 1.27.2
+2026-10-18T04:36:25.2545427Z [command]/opt/hostedtoolcache/go/1.27.2/x64/bin/go env GOMODCACHE
+2026-10-18T04:36:25.2572900Z [command]/opt/hostedtoolcache/go/1.27.2/x64/bin/go env GOCACHE
+2026-10-18T04:36:25.2599489Z /home/runner/go/pkg/mod
+2026-10-18T04:36:25.2614094Z /home/runner/.cache/go-build
+2026-10-18T04:36:25.4640666Z Cache hit for: setup-go-Linux-x64-ubuntu24-go-1.27.2-14b971c58b648f439b355afa5405a4c7bb24ed518b84a53dab2915a208e88f36
+2026-10-18T04:36:26.7048106Z Received 29360128 of 196991203 (14.9%), 28.0 MBs/sec
+2026-10-18T04:36:27.7052985Z Received 125829120 of 196991203 (63.9%), 60.0 MBs/sec
+2026-10-18T04:36:28.7029052Z Received 196991203 of 196991203 (100.0%), 62.6 MBs/sec
+2026-10-18T04:36:28.7029509Z Cache Size: ~188 MB (196991203 B)
+2026-10-18T04:36:28.7117450Z [command]/usr/bin/tar -xf /home/runner/work/_temp/cd0aa5c5-954e-44e9-b61e-861aa57004c2/cache.tzst -P -C /home/runner/work/good-sentry/good-sentry --use-compress-program unzstd
+2026-10-18T04:36:29.4642923Z Cache restored successfully
+2026-10-18T04:36:29.4720608Z Cache restored from key: setup-go-Linux-x64-ubuntu24-go-1.27.2-14b971c58b648f439b355afa5405a4c7bb24ed518b84a53dab2915a208e88f36
+2026-10-18T04:36:29.4739706Z go version go1.27.2 linux/amd64
+2026-10-18T04:36:29.4739880Z 
+2026-10-18T04:36:29.4740142Z ##[group]go env
+2026-10-18T04:36:29.4841927Z AR='ar'
+2026-10-18T04:36:29.4842330Z CC='gcc'
+2026-10-18T04:36:29.4842587Z CGO_CFLAGS='-O2 -g'
+2026-10-18T04:36:29.4842906Z CGO_CPPFLAGS=''
+2026-10-18T04:36:29.4843181Z CGO_CXXFLAGS='-O2 -g'
+2026-10-18T04:36:29.4843455Z CGO_ENABLED='1'
+2026-10-18T04:36:29.4843713Z CGO_FFLAGS='-O2 -g'
+2026-10-18T04:36:29.4843976Z CGO_LDFLAGS='-O2 -g'
+2026-10-18T04:36:29.4844232Z CXX='g++'
+2026-10-18T04:36:29.4844472Z GCCGO='gccgo'
+2026-10-18T04:36:29.4844725Z GO111MODULE=''
+2026-10-18T04:36:29.4844966Z GOAMD64='v1'
+2026-10-18T04:36:29.4845207Z GOARCH='amd64'
+2026-10-18T04:36:29.4845459Z GOAUTH='netrc'
+2026-10-18T04:36:29.4845951Z GOBIN='/home/runner/go/bin'
+2026-10-18T04:36:29.4846181Z GOCACHE='/home/runner/.cache/go-build'
+2026-10-18T04:36:29.4846407Z GOCACHEPROG=''
+2026-10-18T04:36:29.4846570Z GODEBUG=''
+2026-10-18T04:36:29.4846770Z GOENV='/home/runner/.config/go/env'
+2026-10-18T04:36:29.4846987Z GOEXE=''
+2026-10-18T04:36:29.4847158Z GOEXPERIMENT=''
+2026-10-18T04:36:29.4847334Z GOFIPS140='off'
+2026-10-18T04:36:29.4847498Z GOFLAGS=''
+2026-10-18T04:36:29.4848193Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build1298391686=/tmp/go-build -gno-record-gcc-switches'
+2026-10-18T04:36:29.4848737Z GOHOSTARCH='amd64'
+2026-10-18T04:36:29.4848925Z GOHOSTOS='linux'
+2026-10-18T04:36:29.4849097Z GOINSECURE=''
+2026-10-18T04:36:29.4849337Z GOMOD='/home/runner/work/good-sentry/good-sentry/go.mod'
+2026-10-18T04:36:29.4849626Z GOMODCACHE='/home/runner/go/pkg/mod'
+2026-10-18T04:36:29.4849844Z GONOPROXY=''
+2026-10-18T04:36:29.4850008Z GONOSUMDB=''
+2026-10-18T04:36:29.4850173Z GOOS='linux'
+2026-10-18T04:36:29.4850341Z GOPACKAGESDRIVER=''
+2026-10-18T04:36:29.4850529Z GOPATH='/home/runner/go'
+2026-10-18T04:36:29.4850714Z GOPRIVATE=''
+2026-10-18T04:36:29.4850941Z GOPROXY='https://proxy.golang.org,direct'
+2026-10-18T04:36:29.4851216Z GOROOT='/opt/hostedtoolcache/go/1.27.2/x64'
+2026-10-18T04:36:29.4851462Z GOSUMDB='sum.golang.org'
+2026-10-18T04:36:29.4851652Z GOTELEMETRY='local'
+2026-10-18T04:36:29.4851874Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+2026-10-18T04:36:29.4852333Z GOTMPDIR=''
+2026-10-18T04:36:29.4852515Z GOTOOLCHAIN='local'
+2026-10-18T04:36:29.4852775Z GOTOOLDIR='/opt/hostedtoolcache/go/1.27.2/x64/pkg/tool/linux_amd64'
+2026-10-18T04:36:29.4853056Z GOVCS=''
+2026-10-18T04:36:29.4853225Z GOVERSION='go1.27.2'
+2026-10-18T04:36:29.4853398Z GOWORK=''
+2026-10-18T04:36:29.4853571Z PKG_CONFIG='pkg-config'
+2026-10-18T04:36:29.4853694Z 
+2026-10-18T04:36:29.4853972Z ##[endgroup]
+2026-10-18T04:36:29.5000737Z ##[group]Run unformatted=$(gofmt -l .)
+2026-10-18T04:36:29.5001067Z [36;1munformatted=$(gofmt -l .)[0m
+2026-10-18T04:36:29.5001320Z [36;1mif [ -n "$unformatted" ]; then[0m
+2026-10-18T04:36:29.5001556Z [36;1m  printf '%s\n' "$unformatted"[0m
+2026-10-18T04:36:29.5001770Z [36;1m  exit 1[0m
+2026-10-18T04:36:29.5001939Z [36;1mfi[0m
+2026-10-18T04:36:29.5158676Z shell: /usr/bin/bash -e {0}
+2026-10-18T04:36:29.5158905Z env:
+2026-10-18T04:36:29.5159222Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+2026-10-18T04:36:29.5159569Z   GOTOOLCHAIN: local
+2026-10-18T04:36:29.5159751Z ##[endgroup]
+2026-10-18T04:36:29.6119033Z ##[group]Run go vet ./...
+2026-10-18T04:36:29.6119279Z [36;1mgo vet ./...[0m
+2026-10-18T04:36:29.6177732Z shell: /usr/bin/bash -e {0}
+2026-10-18T04:36:29.6177951Z env:
+2026-10-18T04:36:29.6178254Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+2026-10-18T04:36:29.6178604Z   GOTOOLCHAIN: local
+2026-10-18T04:36:29.6178793Z ##[endgroup]
+2026-10-18T04:36:31.2246538Z ##[group]Run go test -race -tags=integration ./...
+2026-10-18T04:36:31.2246894Z [36;1mgo test -race -tags=integration ./...[0m
+2026-10-18T04:36:31.2304560Z shell: /usr/bin/bash -e {0}
+2026-10-18T04:36:31.2304771Z env:
+2026-10-18T04:36:31.2305083Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+2026-10-18T04:36:31.2305432Z   GOTOOLCHAIN: local
+2026-10-18T04:36:31.2305608Z ##[endgroup]
+2026-10-18T04:36:34.7531580Z ?   	goodsentry/cmd/goodsentry	[no test files]
+2026-10-18T04:36:34.7532721Z ok  	goodsentry/internal/artifact	(cached)
+2026-10-18T04:36:35.8094708Z ok  	goodsentry/internal/config	1.045s
+2026-10-18T04:36:35.8095409Z ok  	goodsentry/internal/event	(cached)
+2026-10-18T04:36:35.8096214Z ok  	goodsentry/internal/eventview	(cached)
+2026-10-18T04:36:43.6999072Z ok  	goodsentry/internal/jobs	8.940s
+2026-10-18T04:36:43.6999432Z ?   	goodsentry/internal/nettarget	[no test files]
+2026-10-18T04:36:43.6999812Z ok  	goodsentry/internal/notify	(cached)
+2026-10-18T04:36:43.7000079Z ok  	goodsentry/internal/otlp	1.063s
+2026-10-18T04:36:43.7000575Z ok  	goodsentry/internal/protocol	1.106s
+2026-10-18T04:36:43.7000830Z ok  	goodsentry/internal/releaseorder	(cached)
+2026-10-18T04:37:21.2723473Z ok  	goodsentry/internal/server	42.162s
+2026-10-18T04:38:31.4097587Z ok  	goodsentry/internal/store	112.255s
+2026-10-18T04:38:31.4097965Z ok  	goodsentry/internal/uptime	(cached)
+2026-10-18T04:38:31.4388553Z ##[group]Run docker build --tag goodsentry:ci .
+2026-10-18T04:38:31.4388892Z [36;1mdocker build --tag goodsentry:ci .[0m
+2026-10-18T04:38:31.4446384Z shell: /usr/bin/bash -e {0}
+2026-10-18T04:38:31.4446596Z env:
+2026-10-18T04:38:31.4446896Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+2026-10-18T04:38:31.4447247Z   GOTOOLCHAIN: local
+2026-10-18T04:38:31.4447421Z ##[endgroup]
+2026-10-18T04:38:31.8286683Z #0 building with "default" instance using docker driver
+2026-10-18T04:38:31.8287002Z 
+2026-10-18T04:38:31.8287198Z #1 [internal] load build definition from Dockerfile
+2026-10-18T04:38:31.8287569Z #1 transferring dockerfile: 1.13kB done
+2026-10-18T04:38:31.8287785Z #1 DONE 0.0s
+2026-10-18T04:38:31.8287882Z 
+2026-10-18T04:38:31.8288048Z #2 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+2026-10-18T04:38:32.0090761Z #2 ...
+2026-10-18T04:38:32.0090916Z 
+2026-10-18T04:38:32.0091176Z #3 [auth] library/golang:pull token for registry-1.docker.io
+2026-10-18T04:38:32.0091465Z #3 DONE 0.0s
+2026-10-18T04:38:32.1582829Z 
+2026-10-18T04:38:32.1583487Z #4 [internal] load metadata for docker.io/library/golang:1.27.2
+2026-10-18T04:38:32.6069768Z #4 DONE 0.9s
+2026-10-18T04:38:32.6069932Z 
+2026-10-18T04:38:32.6070141Z #2 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+2026-10-18T04:38:34.0551659Z #2 DONE 2.4s
+2026-10-18T04:38:34.1737483Z 
+2026-10-18T04:38:34.1739353Z #5 [internal] load .dockerignore
+2026-10-18T04:38:34.1740314Z #5 transferring context: 107B done
+2026-10-18T04:38:34.1741181Z #5 DONE 0.0s
+2026-10-18T04:38:34.1741287Z 
+2026-10-18T04:38:34.1742181Z #6 [internal] load build context
+2026-10-18T04:38:34.1742568Z #6 transferring context: 4.37MB 0.0s done
+2026-10-18T04:38:34.1742919Z #6 DONE 0.0s
+2026-10-18T04:38:34.1743071Z 
+2026-10-18T04:38:34.1743811Z #7 [stage-1 1/4] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+2026-10-18T04:38:34.1745016Z #7 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab done
+2026-10-18T04:38:34.1746016Z #7 sha256:52dcfbabb7457ea47c82f6e13af8c8a4a1d9f7b0145142b3ecab20f2b888411d 2.67kB / 2.67kB done
+2026-10-18T04:38:34.1746850Z #7 sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab 1.51kB / 1.51kB done
+2026-10-18T04:38:34.1747689Z #7 sha256:12aa113e298cbae388b298c0dc163fa1547beba948153b23eb9094e16a07a770 2.73kB / 2.73kB done
+2026-10-18T04:38:34.1748210Z #7 DONE 0.1s
+2026-10-18T04:38:34.1748307Z 
+2026-10-18T04:38:34.1748603Z #8 [build 1/8] FROM docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8
+2026-10-18T04:38:34.1749231Z #8 resolve docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8 done
+2026-10-18T04:38:34.1749787Z #8 sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671 11.53MB / 49.39MB 0.1s
+2026-10-18T04:38:34.1750285Z #8 sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 0B / 67.81MB 0.1s
+2026-10-18T04:38:34.1750773Z #8 sha256:99668476f0893c0b7a4f4c1b6d3913a3b966a4af7e275173e06bbf12e9bebb88 3.04kB / 3.04kB done
+2026-10-18T04:38:34.1751262Z #8 sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d 0B / 25.64MB 0.1s
+2026-10-18T04:38:34.1751794Z #8 sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8 9.70kB / 9.70kB done
+2026-10-18T04:38:34.1752529Z #8 sha256:2d658507a011f1eadc0114d7a421b312b2e77d9042a24036a26e267cc9231677 2.32kB / 2.32kB done
+2026-10-18T04:38:34.3737362Z #8 sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671 49.39MB / 49.39MB 0.3s
+2026-10-18T04:38:34.3738807Z #8 sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 42.99MB / 67.81MB 0.3s
+2026-10-18T04:38:34.3739916Z #8 sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d 25.64MB / 25.64MB 0.3s
+2026-10-18T04:38:34.4741629Z #8 sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 67.81MB / 67.81MB 0.4s
+2026-10-18T04:38:34.9737385Z #8 sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671 49.39MB / 49.39MB 0.8s done
+2026-10-18T04:38:34.9739532Z #8 sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 67.81MB / 67.81MB 0.9s done
+2026-10-18T04:38:34.9740520Z #8 sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d 25.64MB / 25.64MB 0.9s done
+2026-10-18T04:38:34.9741424Z #8 sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 0B / 71.15MB 0.9s
+2026-10-18T04:38:34.9742395Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 0B / 102.41MB 0.9s
+2026-10-18T04:38:34.9743318Z #8 sha256:801401a9a8ba22fe48ef647d8eed0d6d8adc41baabf2fae9057ff38b2622f35a 0B / 127B 0.9s
+2026-10-18T04:38:35.0741740Z #8 sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 19.92MB / 71.15MB 1.0s
+2026-10-18T04:38:35.0743939Z #8 sha256:801401a9a8ba22fe48ef647d8eed0d6d8adc41baabf2fae9057ff38b2622f35a 127B / 127B 1.0s done
+2026-10-18T04:38:35.0744795Z #8 extracting sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671
+2026-10-18T04:38:35.0745601Z #8 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 0B / 32B 1.0s
+2026-10-18T04:38:35.1751298Z #8 sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 71.15MB / 71.15MB 1.1s
+2026-10-18T04:38:35.1753105Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 31.46MB / 102.41MB 1.1s
+2026-10-18T04:38:35.1754385Z #8 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 32B / 32B 1.1s done
+2026-10-18T04:38:35.2771211Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 91.23MB / 102.41MB 1.2s
+2026-10-18T04:38:35.4410317Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 102.41MB / 102.41MB 1.3s
+2026-10-18T04:38:35.8760163Z #8 sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 71.15MB / 71.15MB 1.6s done
+2026-10-18T04:38:36.0903503Z #8 ...
+2026-10-18T04:38:36.0903693Z 
+2026-10-18T04:38:36.0904793Z #9 [build 5/8] ADD --checksum=sha256:dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 /usr/local/bin/tailwindcss
+2026-10-18T04:38:36.0905992Z #9 DONE 1.9s
+2026-10-18T04:38:36.0906141Z 
+2026-10-18T04:38:36.0907849Z #8 [build 1/8] FROM docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8
+2026-10-18T04:38:36.0908880Z #8 sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 102.41MB / 102.41MB 1.9s done
+2026-10-18T04:38:36.4147620Z #8 extracting sha256:4846f29007305297af653c57bf9b60ba8f676a38695c68d98460063442581671 1.4s done
+2026-10-18T04:38:36.4148492Z #8 extracting sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d
+2026-10-18T04:38:37.4717191Z #8 extracting sha256:62fe2e747f69f2f414c7e9eb1553155cf0a658398f0462557f458821dce2b29d 0.9s done
+2026-10-18T04:38:39.1528578Z #8 extracting sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af
+2026-10-18T04:38:41.0390440Z #8 extracting sha256:4dc3950125ebc9ed195e1101fc6c02e2fce113ba0f53bfb05b2cdf58747df9af 1.7s done
+2026-10-18T04:38:41.1124323Z #8 extracting sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e
+2026-10-18T04:38:43.0689193Z #8 extracting sha256:a6132307e9f8de84712b13dc48449cc6a8a80bc26e35b5c9dd04a6df2b23e85e 2.0s done
+2026-10-18T04:38:43.9238710Z #8 extracting sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2
+2026-10-18T04:38:47.4213168Z #8 extracting sha256:b2b6413ae8f393d11d32262c8dc6bd053dbaea3d074f95edd5605d3eb116e3c2 3.5s done
+2026-10-18T04:38:49.1442517Z #8 extracting sha256:801401a9a8ba22fe48ef647d8eed0d6d8adc41baabf2fae9057ff38b2622f35a
+2026-10-18T04:38:49.3397828Z #8 extracting sha256:801401a9a8ba22fe48ef647d8eed0d6d8adc41baabf2fae9057ff38b2622f35a done
+2026-10-18T04:38:49.3398423Z #8 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 done
+2026-10-18T04:38:49.3398805Z #8 DONE 15.1s
+2026-10-18T04:38:49.3398914Z 
+2026-10-18T04:38:49.3399004Z #10 [build 2/8] WORKDIR /src
+2026-10-18T04:38:49.3399213Z #10 DONE 0.0s
+2026-10-18T04:38:49.3399308Z 
+2026-10-18T04:38:49.3399406Z #11 [build 3/8] COPY go.mod go.sum ./
+2026-10-18T04:38:49.3399705Z #11 DONE 0.0s
+2026-10-18T04:38:49.3399848Z 
+2026-10-18T04:38:49.3399958Z #12 [build 4/8] RUN go mod download
+2026-10-18T04:38:51.4309716Z #12 DONE 2.2s
+2026-10-18T04:38:51.5819286Z 
+2026-10-18T04:38:51.5820370Z #13 [build 5/8] ADD --checksum=sha256:dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 /usr/local/bin/tailwindcss
+2026-10-18T04:38:52.0185877Z #13 DONE 0.6s
+2026-10-18T04:38:52.1695758Z 
+2026-10-18T04:38:52.1696281Z #14 [build 6/8] RUN chmod 0755 /usr/local/bin/tailwindcss
+2026-10-18T04:38:52.6793141Z #14 DONE 0.7s
+2026-10-18T04:38:52.8709319Z 
+2026-10-18T04:38:52.8710058Z #15 [build 7/8] COPY . .
+2026-10-18T04:38:52.8710432Z #15 DONE 0.1s
+2026-10-18T04:38:52.8710539Z 
+2026-10-18T04:38:52.8712197Z #16 [build 8/8] RUN printf '%s\n'       'd69de07c7463bb1f41548e2688f88ee105cdadf9779fce5b3c47b3bfaa6be472  third_party/daisyui/daisyui.mjs'       'e48a35d8326d650181ca600560e8520cf6b44cf9242bbd9d45825607e641f251  third_party/daisyui/daisyui-theme.mjs'     | sha256sum -c -     && tailwindcss -i internal/server/web/styles.css -o internal/server/web/app.css --minify     && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /goodsentry ./cmd/goodsentry     && mkdir /data
+2026-10-18T04:38:52.8713777Z #16 0.111 third_party/daisyui/daisyui.mjs: OK
+2026-10-18T04:38:52.8714095Z #16 0.111 third_party/daisyui/daisyui-theme.mjs: OK
+2026-10-18T04:38:53.0785328Z #16 0.177 ≈ tailwindcss v4.3.3
+2026-10-18T04:38:53.0785722Z #16 0.177 
+2026-10-18T04:38:53.0785978Z #16 0.319 Done in 141ms
+2026-10-18T04:39:09.4390462Z #16 DONE 16.7s
+2026-10-18T04:39:10.0482294Z 
+2026-10-18T04:39:10.0482974Z #17 [stage-1 2/4] COPY --from=build /goodsentry /goodsentry
+2026-10-18T04:39:10.2777685Z #17 DONE 0.2s
+2026-10-18T04:39:10.4416738Z 
+2026-10-18T04:39:10.4417472Z #18 [stage-1 3/4] COPY --from=build --chown=65532:65532 /data /data
+2026-10-18T04:39:10.4417963Z #18 DONE 0.0s
+2026-10-18T04:39:10.4418118Z 
+2026-10-18T04:39:10.4418404Z #19 [stage-1 4/4] COPY third_party/daisyui/LICENSE /licenses/daisyui-LICENSE
+2026-10-18T04:39:10.4418892Z #19 DONE 0.0s
+2026-10-18T04:39:10.4419032Z 
+2026-10-18T04:39:10.4419156Z #20 exporting to image
+2026-10-18T04:39:10.4419480Z #20 exporting layers
+2026-10-18T04:39:11.0068560Z #20 exporting layers 0.7s done
+2026-10-18T04:39:11.0194372Z #20 writing image sha256:842c1eaf78dede7b640906956b981ec887ba2c40021429b4f2fef2047271d4b3 done
+2026-10-18T04:39:11.0194997Z #20 naming to docker.io/library/goodsentry:ci done
+2026-10-18T04:39:11.0195249Z #20 DONE 0.7s
+2026-10-18T04:39:11.0306111Z Post job cleanup.
+2026-10-18T04:39:11.1277734Z [command]/opt/hostedtoolcache/go/1.27.2/x64/bin/go env GOMODCACHE
+2026-10-18T04:39:11.1316106Z [command]/opt/hostedtoolcache/go/1.27.2/x64/bin/go env GOCACHE
+2026-10-18T04:39:11.1342766Z /home/runner/go/pkg/mod
+2026-10-18T04:39:11.1359846Z /home/runner/.cache/go-build
+2026-10-18T04:39:11.1365381Z Cache hit occurred on the primary key setup-go-Linux-x64-ubuntu24-go-1.27.2-14b971c58b648f439b355afa5405a4c7bb24ed518b84a53dab2915a208e88f36, not saving cache.
+2026-10-18T04:39:11.1508606Z Post job cleanup.
+2026-10-18T04:39:11.2205107Z [command]/usr/bin/git version
+2026-10-18T04:39:11.2240516Z git version 2.55.0
+2026-10-18T04:39:11.2275413Z Temporarily overriding HOME='/home/runner/work/_temp/4d66e2e5-6b96-477b-9a47-5f7ca438bc9c' before making global git config changes
+2026-10-18T04:39:11.2276541Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-18T04:39:11.2279442Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/good-sentry/good-sentry
+2026-10-18T04:39:11.2306131Z Removing SSH command configuration
+2026-10-18T04:39:11.2311011Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-18T04:39:11.2339150Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-18T04:39:11.2541142Z Removing HTTP extra header
+2026-10-18T04:39:11.2549162Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-18T04:39:11.2576003Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-18T04:39:11.2790498Z Removing includeIf entries pointing to credentials config files
+2026-10-18T04:39:11.2796644Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-18T04:39:11.2829719Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-18T04:39:11.3140164Z Print service container logs: 876955206e90472d91f7b4204703d722_postgres18_98eabf
+2026-10-18T04:39:11.3144222Z ##[command]/usr/bin/docker logs --details ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:39:11.3264390Z  ********************************************************************************
+2026-10-18T04:39:11.3265087Z  The files belonging to this database system will be owned by user "postgres".
+2026-10-18T04:39:11.3265703Z  This user must also own the server process.
+2026-10-18T04:39:11.3276927Z  
+2026-10-18T04:39:11.3277349Z  The database cluster will be initialized with locale "en_US.utf8".
+2026-10-18T04:39:11.3277912Z  The default database encoding has accordingly been set to "UTF8".
+2026-10-18T04:39:11.3278407Z  The default text search configuration will be set to "english".
+2026-10-18T04:39:11.3278669Z  
+2026-10-18T04:39:11.3278831Z  Data page checksums are enabled.
+2026-10-18T04:39:11.3279025Z  
+2026-10-18T04:39:11.3279344Z  fixing permissions on existing directory /var/lib/postgresql/18/docker ... ok
+2026-10-18T04:39:11.3279669Z  creating subdirectories ... ok
+2026-10-18T04:39:11.3279919Z  selecting dynamic shared memory implementation ... posix
+2026-10-18T04:39:11.3280197Z  selecting default "max_connections" ... 100
+2026-10-18T04:39:11.3280447Z  selecting default "shared_buffers" ... 128MB
+2026-10-18T04:39:11.3280686Z  selecting default time zone ... Etc/UTC
+2026-10-18T04:39:11.3280916Z  creating configuration files ... ok
+2026-10-18T04:39:11.3281141Z  running bootstrap script ... ok
+2026-10-18T04:39:11.3281393Z  performing post-bootstrap initialization ... ok
+2026-10-18T04:39:11.3281649Z  syncing data to disk ... ok
+2026-10-18T04:39:11.3281843Z  
+2026-10-18T04:39:11.3281985Z  
+2026-10-18T04:39:11.3282347Z  Success. You can now start the database server using:
+2026-10-18T04:39:11.3282591Z  
+2026-10-18T04:39:11.3282805Z      pg_ctl -D /var/lib/postgresql/18/docker -l logfile start
+2026-10-18T04:39:11.3283062Z  
+2026-10-18T04:39:11.3283564Z  waiting for server to start....2026-10-18 04:36:10.881 UTC [54] LOG:  starting PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-18T04:39:11.3284243Z  2026-10-18 04:36:10.881 UTC [54] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-10-18T04:39:11.3284679Z  2026-10-18 04:36:10.891 UTC [60] LOG:  database system was shut down at 2026-10-18 04:36:10 UTC
+2026-10-18T04:39:11.3285407Z  2026-10-18 04:36:10.894 UTC [54] LOG:  database system is ready to accept connections
+2026-10-18T04:39:11.3285700Z   done
+2026-10-18T04:39:11.3285851Z  server started
+2026-10-18T04:39:11.3286015Z  CREATE DATABASE
+2026-10-18T04:39:11.3286179Z  
+2026-10-18T04:39:11.3286314Z  
+2026-10-18T04:39:11.3286566Z  /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+2026-10-18T04:39:11.3286876Z  
+2026-10-18T04:39:11.3287169Z  waiting for server to shut down...2026-10-18 04:36:11.067 UTC [54] LOG:  received fast shutdown request
+2026-10-18T04:39:11.3287593Z  .2026-10-18 04:36:11.067 UTC [54] LOG:  aborting any active transactions
+2026-10-18T04:39:11.3288049Z  2026-10-18 04:36:11.069 UTC [54] LOG:  background worker "logical replication launcher" (PID 63) exited with exit code 1
+2026-10-18T04:39:11.3288459Z  2026-10-18 04:36:11.069 UTC [58] LOG:  shutting down
+2026-10-18T04:39:11.3288757Z  2026-10-18 04:36:11.070 UTC [58] LOG:  checkpoint starting: shutdown immediate
+2026-10-18T04:39:11.3290151Z  2026-10-18 04:36:11.176 UTC [58] LOG:  checkpoint complete: wrote 943 buffers (5.8%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.070 s, sync=0.036 s, total=0.108 s; sync files=303, longest=0.035 s, average=0.001 s; distance=4352 kB, estimate=4352 kB; lsn=0/1BA1B58, redo lsn=0/1BA1B58
+2026-10-18T04:39:11.3291522Z  2026-10-18 04:36:11.185 UTC [54] LOG:  database system is shut down
+2026-10-18T04:39:11.3291888Z   done
+2026-10-18T04:39:11.3292211Z  server stopped
+2026-10-18T04:39:11.3292452Z  
+2026-10-18T04:39:11.3293000Z  PostgreSQL init process complete; ready for start up.
+2026-10-18T04:39:11.3293268Z  
+2026-10-18T04:39:11.3293591Z  WARNING: POSTGRES_HOST_AUTH_METHOD has been set to "trust". This will allow
+2026-10-18T04:39:11.3293981Z           anyone with access to the Postgres port to access your database without
+2026-10-18T04:39:11.3294347Z           a password, even if POSTGRES_PASSWORD is set. See PostgreSQL
+2026-10-18T04:39:11.3294627Z           documentation about "trust":
+2026-10-18T04:39:11.3294920Z           https://www.postgresql.org/docs/current/auth-trust.html
+2026-10-18T04:39:11.3295258Z           In Docker's default configuration, this is effectively any other
+2026-10-18T04:39:11.3295540Z           container on the same system.
+2026-10-18T04:39:11.3295745Z  
+2026-10-18T04:39:11.3295972Z           It is not recommended to use POSTGRES_HOST_AUTH_METHOD=trust. Replace
+2026-10-18T04:39:11.3296340Z           it with "-e POSTGRES_PASSWORD=password" instead to set a password in
+2026-10-18T04:39:11.3296627Z           "docker run".
+2026-10-18T04:39:11.3296836Z  ********************************************************************************
+2026-10-18T04:39:11.3297150Z  initdb: warning: enabling "trust" authentication for local connections
+2026-10-18T04:39:11.3297671Z  initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+2026-10-18T04:39:11.3298393Z  2026-10-18 04:36:11.293 UTC [1] LOG:  starting PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-18T04:39:11.3298942Z  2026-10-18 04:36:11.293 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-10-18T04:39:11.3299302Z  2026-10-18 04:36:11.293 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-10-18T04:39:11.3299697Z  2026-10-18 04:36:11.294 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-10-18T04:39:11.3300120Z  2026-10-18 04:36:11.297 UTC [76] LOG:  database system was shut down at 2026-10-18 04:36:11 UTC
+2026-10-18T04:39:11.3300504Z  2026-10-18 04:36:11.300 UTC [1] LOG:  database system is ready to accept connections
+2026-10-18T04:39:11.3300848Z  2026-10-18 04:36:39.629 UTC [143] ERROR:  declared retention failure
+2026-10-18T04:39:11.3301221Z  2026-10-18 04:36:39.629 UTC [143] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+2026-10-18T04:39:11.3301589Z  2026-10-18 04:36:39.629 UTC [143] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3302259Z  	 SELECT id FROM logs WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3302654Z  	 ) DELETE FROM logs l USING expired e WHERE l.id=e.id
+2026-10-18T04:39:11.3302950Z  2026-10-18 04:36:39.632 UTC [154] ERROR:  declared retention failure
+2026-10-18T04:39:11.3303324Z  2026-10-18 04:36:39.632 UTC [154] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+2026-10-18T04:39:11.3303686Z  2026-10-18 04:36:39.632 UTC [154] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3304054Z  	 SELECT id FROM logs WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3304405Z  	 ) DELETE FROM logs l USING expired e WHERE l.id=e.id
+2026-10-18T04:39:11.3304683Z  2026-10-18 04:36:40.221 UTC [167] ERROR:  declared retention failure
+2026-10-18T04:39:11.3305038Z  2026-10-18 04:36:40.221 UTC [167] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+2026-10-18T04:39:11.3305393Z  2026-10-18 04:36:40.221 UTC [167] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3305756Z  	 SELECT id FROM spans WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3306123Z  	 ) DELETE FROM spans s USING expired e WHERE s.id=e.id
+2026-10-18T04:39:11.3306407Z  2026-10-18 04:36:40.632 UTC [177] ERROR:  declared retention failure
+2026-10-18T04:39:11.3306775Z  2026-10-18 04:36:40.632 UTC [177] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+2026-10-18T04:39:11.3307323Z  2026-10-18 04:36:40.632 UTC [177] STATEMENT:  DELETE FROM events WHERE id=ANY($1::bigint[])
+2026-10-18T04:39:11.3307680Z  2026-10-18 04:36:40.644 UTC [178] ERROR:  declared retention failure
+2026-10-18T04:39:11.3308037Z  2026-10-18 04:36:40.644 UTC [178] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+2026-10-18T04:39:11.3308437Z  2026-10-18 04:36:40.644 UTC [178] STATEMENT:  DELETE FROM events WHERE id=ANY($1::bigint[])
+2026-10-18T04:39:11.3308778Z  2026-10-18 04:36:41.189 UTC [187] ERROR:  declared retention failure
+2026-10-18T04:39:11.3309131Z  2026-10-18 04:36:41.189 UTC [187] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+2026-10-18T04:39:11.3309483Z  2026-10-18 04:36:41.189 UTC [187] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3309888Z  	 SELECT id FROM monitor_checks WHERE completed_at<$1 ORDER BY completed_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3310319Z  	 ) DELETE FROM monitor_checks c USING expired e WHERE c.id=e.id
+2026-10-18T04:39:11.3310635Z  2026-10-18 04:36:41.877 UTC [196] ERROR:  declared retention failure
+2026-10-18T04:39:11.3310994Z  2026-10-18 04:36:41.877 UTC [196] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+2026-10-18T04:39:11.3311350Z  2026-10-18 04:36:41.877 UTC [196] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3311769Z  	 SELECT id FROM envelope_items WHERE id=ANY($1::text[]) AND created_at<$2 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3312420Z  	 ) DELETE FROM envelope_items item USING expired e WHERE item.id=e.id
+2026-10-18T04:39:11.3312757Z  2026-10-18 04:36:42.437 UTC [213] ERROR:  declared retention failure
+2026-10-18T04:39:11.3313115Z  2026-10-18 04:36:42.437 UTC [213] CONTEXT:  PL/pgSQL function fail_worker_cleanup() line 1 at RAISE
+2026-10-18T04:39:11.3313469Z  2026-10-18 04:36:42.437 UTC [213] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3313784Z  	 SELECT id FROM releases WHERE id=ANY($1::bigint[]) AND created_at<$2
+2026-10-18T04:39:11.3314086Z  	 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3314363Z  	) DELETE FROM releases r USING expired e WHERE r.id=e.id
+2026-10-18T04:39:11.3314700Z  2026-10-18 04:36:56.204 UTC [334] ERROR:  private-http-fixture-post-first-insert
+2026-10-18T04:39:11.3315125Z  2026-10-18 04:36:56.204 UTC [334] CONTEXT:  PL/pgSQL function reject_http_otlp_later_row() line 5 at RAISE
+2026-10-18T04:39:11.3315833Z  2026-10-18 04:36:56.204 UTC [334] STATEMENT:  INSERT INTO logs(project_id,timestamp,trace_id,span_id,level,body,service,environment,attributes,data,item_hash,otlp_batch_id,otlp_record_index)
+2026-10-18T04:39:11.3316563Z  	   VALUES($1,$2,$3,$4,$5,$6,$7,$8,'{}','{}',$9,$10,$11)
+2026-10-18T04:39:11.3316862Z  2026-10-18 04:36:58.414 UTC [371] ERROR:  invalid input syntax for type json
+2026-10-18T04:39:11.3317203Z  2026-10-18 04:36:58.414 UTC [371] DETAIL:  The input string ended unexpectedly.
+2026-10-18T04:39:11.3317537Z  2026-10-18 04:36:58.414 UTC [371] CONTEXT:  JSON data, line 1: {"type":
+2026-10-18T04:39:11.3317815Z  	unnamed portal parameter $5 = '...'
+2026-10-18T04:39:11.3318302Z  2026-10-18 04:36:58.414 UTC [371] STATEMENT:  INSERT INTO envelope_items(id,project_id,event_id,item_type,header,data) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO NOTHING
+2026-10-18T04:39:11.3318966Z  2026-10-18 04:37:02.073 UTC [422] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+2026-10-18T04:39:11.3319834Z  2026-10-18 04:37:02.073 UTC [422] DETAIL:  Failing row contains (3, 1, 1, Event reader, ef5e0d73205f33f5e0d8068a14bdedc3bc004f73974dd9dd76f3547d0d72414f, gs_6afbbada, {event:write}, f, 2026-10-18 04:37:02.069908+00, 2026-10-19 04:37:02.069908+00, null).
+2026-10-18T04:39:11.3320642Z  2026-10-18 04:37:02.073 UTC [422] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY[$1]::text[] WHERE id=$2
+2026-10-18T04:39:11.3321142Z  2026-10-18 04:37:02.074 UTC [422] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+2026-10-18T04:39:11.3322187Z  2026-10-18 04:37:02.074 UTC [422] DETAIL:  Failing row contains (3, 1, 1, Event reader, ef5e0d73205f33f5e0d8068a14bdedc3bc004f73974dd9dd76f3547d0d72414f, gs_6afbbada, {event:admin}, f, 2026-10-18 04:37:02.069908+00, 2026-10-19 04:37:02.069908+00, null).
+2026-10-18T04:39:11.3322997Z  2026-10-18 04:37:02.074 UTC [422] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY[$1]::text[] WHERE id=$2
+2026-10-18T04:39:11.3323406Z  2026-10-18 04:37:05.214 UTC [438] ERROR:  canceling statement due to user request
+2026-10-18T04:39:11.3323762Z  2026-10-18 04:37:05.214 UTC [438] STATEMENT:  SELECT pg_advisory_xact_lock($1)
+2026-10-18T04:39:11.3324215Z  2026-10-18 04:37:06.522 UTC [469] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+2026-10-18T04:39:11.3325138Z  2026-10-18 04:37:06.522 UTC [469] DETAIL:  Failing row contains (1, 1, 1, Established restricted credential, 5a8b2dacbf221ca954ea70acb7390a688b9e662c000d080d7d8cdaa172a5a9cf, gs_650a4b0a, {event:admin}, f, 2026-10-18 04:37:06.484658+00, 2026-11-17 04:37:06.484658+00, null).
+2026-10-18T04:39:11.3326008Z  2026-10-18 04:37:06.522 UTC [469] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY[$2]::text[] WHERE id=$1::bigint
+2026-10-18T04:39:11.3326519Z  2026-10-18 04:37:06.576 UTC [470] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+2026-10-18T04:39:11.3327356Z  2026-10-18 04:37:06.576 UTC [470] DETAIL:  Failing row contains (3, 1, 1, Opt-in deletion, 595a4aec386488720250494eb6396f1e2ae4624a7f07e51bd9ae7fcd5f1a52a7, gs_2165221e, {event:delete}, f, 2026-10-18 04:37:06.572414+00, 2026-10-19 04:37:06.572414+00, null).
+2026-10-18T04:39:11.3328166Z  2026-10-18 04:37:06.576 UTC [470] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY[$2]::text[] WHERE id=$1::bigint
+2026-10-18T04:39:11.3328806Z  2026-10-18 04:37:09.998 UTC [506] ERROR:  update or delete on table "issues" violates foreign key constraint "issue_delete_guard_issue_id_fkey" on table "issue_delete_guard"
+2026-10-18T04:39:11.3329429Z  2026-10-18 04:37:09.998 UTC [506] DETAIL:  Key (id)=(1) is still referenced from table "issue_delete_guard".
+2026-10-18T04:39:11.3329925Z  2026-10-18 04:37:09.998 UTC [506] STATEMENT:  DELETE FROM issues WHERE id=ANY($1::bigint[]) OR merged_into=ANY($1::bigint[])
+2026-10-18T04:39:11.3330471Z  2026-10-18 04:37:14.313 UTC [554] ERROR:  new row for relation "api_tokens" violates check constraint "api_tokens_scopes_check"
+2026-10-18T04:39:11.3331312Z  2026-10-18 04:37:14.313 UTC [554] DETAIL:  Failing row contains (3, 1, 1, Issue writer, fdf1ddafad8bdddaed3a31c33dacdae70a50b7214fe9f21153f5be7a4877c794, gs_89ce6f64, {event:admin}, f, 2026-10-18 04:37:14.309872+00, 2026-10-19 04:37:14.309872+00, null).
+2026-10-18T04:39:11.3332389Z  2026-10-18 04:37:14.313 UTC [554] STATEMENT:  UPDATE api_tokens SET scopes=ARRAY['event:admin']::text[] WHERE id=$1
+2026-10-18T04:39:11.3332805Z  2026-10-18 04:37:20.389 UTC [623] ERROR:  declared late recount failure
+2026-10-18T04:39:11.3333188Z  2026-10-18 04:37:20.389 UTC [623] CONTEXT:  PL/pgSQL function wait_error_recount() line 1 at RAISE
+2026-10-18T04:39:11.3333616Z  2026-10-18 04:37:20.389 UTC [623] STATEMENT:  WITH wanted AS (SELECT unnest($1::bigint[]) AS id),
+2026-10-18T04:39:11.3334069Z  	 totals AS (SELECT w.id,count(e.id) AS n,min(e.timestamp) AS first_seen,max(e.timestamp) AS last_seen
+2026-10-18T04:39:11.3334472Z  	 FROM wanted w LEFT JOIN events e ON e.issue_id=w.id GROUP BY w.id),
+2026-10-18T04:39:11.3334859Z  	 latest AS (SELECT DISTINCT ON (issue_id) issue_id,title,environment,release FROM events
+2026-10-18T04:39:11.3335261Z  	 WHERE issue_id=ANY($1::bigint[]) ORDER BY issue_id,timestamp DESC,id DESC)
+2026-10-18T04:39:11.3335741Z  	 UPDATE issues i SET count=t.n,first_seen=COALESCE(t.first_seen,i.first_seen),last_seen=COALESCE(t.last_seen,i.last_seen),
+2026-10-18T04:39:11.3336339Z  	 title=COALESCE(l.title,i.title),environment=COALESCE(l.environment,i.environment),release=COALESCE(l.release,i.release)
+2026-10-18T04:39:11.3336813Z  	 FROM totals t LEFT JOIN latest l ON l.issue_id=t.id WHERE i.id=t.id
+2026-10-18T04:39:11.3337265Z  2026-10-18 04:37:20.707 UTC [626] ERROR:  canceling statement due to user request
+2026-10-18T04:39:11.3337750Z  2026-10-18 04:37:20.707 UTC [626] CONTEXT:  SQL statement "SELECT pg_advisory_xact_lock(hashtextextended(TG_TABLE_SCHEMA,8349))"
+2026-10-18T04:39:11.3338205Z  	PL/pgSQL function wait_error_recount() line 1 at PERFORM
+2026-10-18T04:39:11.3338564Z  2026-10-18 04:37:20.707 UTC [626] STATEMENT:  WITH wanted AS (SELECT unnest($1::bigint[]) AS id),
+2026-10-18T04:39:11.3339014Z  	 totals AS (SELECT w.id,count(e.id) AS n,min(e.timestamp) AS first_seen,max(e.timestamp) AS last_seen
+2026-10-18T04:39:11.3339408Z  	 FROM wanted w LEFT JOIN events e ON e.issue_id=w.id GROUP BY w.id),
+2026-10-18T04:39:11.3339778Z  	 latest AS (SELECT DISTINCT ON (issue_id) issue_id,title,environment,release FROM events
+2026-10-18T04:39:11.3340167Z  	 WHERE issue_id=ANY($1::bigint[]) ORDER BY issue_id,timestamp DESC,id DESC)
+2026-10-18T04:39:11.3340644Z  	 UPDATE issues i SET count=t.n,first_seen=COALESCE(t.first_seen,i.first_seen),last_seen=COALESCE(t.last_seen,i.last_seen),
+2026-10-18T04:39:11.3341228Z  	 title=COALESCE(l.title,i.title),environment=COALESCE(l.environment,i.environment),release=COALESCE(l.release,i.release)
+2026-10-18T04:39:11.3341686Z  	 FROM totals t LEFT JOIN latest l ON l.issue_id=t.id WHERE i.id=t.id
+2026-10-18T04:39:11.3342015Z  2026-10-18 04:37:25.441 UTC [706] ERROR:  declared late file deletion failure
+2026-10-18T04:39:11.3342574Z  2026-10-18 04:37:25.441 UTC [706] CONTEXT:  PL/pgSQL function fail_file_retention() line 1 at RAISE
+2026-10-18T04:39:11.3342939Z  2026-10-18 04:37:25.441 UTC [706] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3343365Z  	 SELECT id FROM envelope_items WHERE id=ANY($1::text[]) AND created_at<$2 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3343810Z  	 ) DELETE FROM envelope_items item USING expired e WHERE item.id=e.id
+2026-10-18T04:39:11.3344142Z  2026-10-18 04:37:25.646 UTC [708] ERROR:  declared late file deletion failure
+2026-10-18T04:39:11.3344527Z  2026-10-18 04:37:25.646 UTC [708] CONTEXT:  PL/pgSQL function fail_file_retention() line 1 at RAISE
+2026-10-18T04:39:11.3344864Z  2026-10-18 04:37:25.646 UTC [708] STATEMENT:  commit
+2026-10-18T04:39:11.3345166Z  2026-10-18 04:37:29.766 UTC [750] ERROR:  canceling statement due to user request
+2026-10-18T04:39:11.3345688Z  2026-10-18 04:37:29.766 UTC [750] STATEMENT:  SELECT pg_advisory_xact_lock_shared(hashtextextended(current_schema()||':issue-group:'||$1::text,0))
+2026-10-18T04:39:11.3346351Z  2026-10-18 04:37:29.766 UTC [749] ERROR:  canceling statement due to user request
+2026-10-18T04:39:11.3346861Z  2026-10-18 04:37:29.766 UTC [749] STATEMENT:  SELECT pg_advisory_xact_lock_shared(hashtextextended(current_schema()||':issue-group:'||$1::text,0))
+2026-10-18T04:39:11.3347463Z  2026-10-18 04:37:30.890 UTC [765] ERROR:  new row for relation "issues" violates check constraint "issues_group_older_root"
+2026-10-18T04:39:11.3348186Z  2026-10-18 04:37:30.890 UTC [765] DETAIL:  Failing row contains (4, 1, legacy-no-raw, Legacy no raw, error, javascript, unresolved, 7, 2026-10-18 04:37:30+00, 2026-10-18 04:37:30+00, , , null, null, 4, null, 7).
+2026-10-18T04:39:11.3348842Z  2026-10-18 04:37:30.890 UTC [765] STATEMENT:  UPDATE issues SET merged_into=id WHERE id=$1::bigint
+2026-10-18T04:39:11.3349310Z  2026-10-18 04:37:31.194 UTC [777] ERROR:  issue groups require same-project roots older than their direct members
+2026-10-18T04:39:11.3349772Z  2026-10-18 04:37:31.194 UTC [777] CONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE
+2026-10-18T04:39:11.3350283Z  2026-10-18 04:37:31.194 UTC [777] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+2026-10-18T04:39:11.3350688Z  	DO $$
+2026-10-18T04:39:11.3350834Z  	BEGIN
+2026-10-18T04:39:11.3350983Z  	 IF EXISTS (
+2026-10-18T04:39:11.3351217Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+2026-10-18T04:39:11.3351735Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+2026-10-18T04:39:11.3352185Z  	 ) THEN
+2026-10-18T04:39:11.3352484Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+2026-10-18T04:39:11.3352824Z  	 END IF;
+2026-10-18T04:39:11.3352973Z  	 IF EXISTS (
+2026-10-18T04:39:11.3353185Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+2026-10-18T04:39:11.3353545Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+2026-10-18T04:39:11.3353929Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+2026-10-18T04:39:11.3354263Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+2026-10-18T04:39:11.3354537Z  	 ) THEN
+2026-10-18T04:39:11.3354774Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+2026-10-18T04:39:11.3355055Z  	 END IF;
+2026-10-18T04:39:11.3355202Z  	 IF EXISTS (
+2026-10-18T04:39:11.3355371Z  	  SELECT 1 FROM events e
+2026-10-18T04:39:11.3355589Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+2026-10-18T04:39:11.3355864Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+2026-10-18T04:39:11.3356238Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+2026-10-18T04:39:11.3356698Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+2026-10-18T04:39:11.3357056Z  	     OR (e.original_issue_id IS NOT NULL AND
+2026-10-18T04:39:11.3357460Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+2026-10-18T04:39:11.3357831Z  	 ) THEN
+2026-10-18T04:39:11.3358084Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+2026-10-18T04:39:11.3358396Z  	 END IF;
+2026-10-18T04:39:11.3358572Z  	END $$;
+2026-10-18T04:39:11.3358717Z  	
+2026-10-18T04:39:11.3358964Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+2026-10-18T04:39:11.3359332Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+2026-10-18T04:39:11.3359715Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+2026-10-18T04:39:11.3360121Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+2026-10-18T04:39:11.3360495Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+2026-10-18T04:39:11.3360915Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+2026-10-18T04:39:11.3361563Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+2026-10-18T04:39:11.3361962Z  	
+2026-10-18T04:39:11.3362405Z  2026-10-18 04:37:31.435 UTC [780] ERROR:  issue groups require same-project roots older than their direct members
+2026-10-18T04:39:11.3362884Z  2026-10-18 04:37:31.435 UTC [780] CONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE
+2026-10-18T04:39:11.3363387Z  2026-10-18 04:37:31.435 UTC [780] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+2026-10-18T04:39:11.3363775Z  	DO $$
+2026-10-18T04:39:11.3363919Z  	BEGIN
+2026-10-18T04:39:11.3364065Z  	 IF EXISTS (
+2026-10-18T04:39:11.3364300Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+2026-10-18T04:39:11.3364703Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+2026-10-18T04:39:11.3365043Z  	 ) THEN
+2026-10-18T04:39:11.3365315Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+2026-10-18T04:39:11.3365637Z  	 END IF;
+2026-10-18T04:39:11.3365795Z  	 IF EXISTS (
+2026-10-18T04:39:11.3366009Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+2026-10-18T04:39:11.3366368Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+2026-10-18T04:39:11.3366732Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+2026-10-18T04:39:11.3367183Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+2026-10-18T04:39:11.3367459Z  	 ) THEN
+2026-10-18T04:39:11.3367688Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+2026-10-18T04:39:11.3367973Z  	 END IF;
+2026-10-18T04:39:11.3368117Z  	 IF EXISTS (
+2026-10-18T04:39:11.3368277Z  	  SELECT 1 FROM events e
+2026-10-18T04:39:11.3368489Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+2026-10-18T04:39:11.3368772Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+2026-10-18T04:39:11.3369137Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+2026-10-18T04:39:11.3369591Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+2026-10-18T04:39:11.3369950Z  	     OR (e.original_issue_id IS NOT NULL AND
+2026-10-18T04:39:11.3370337Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+2026-10-18T04:39:11.3370719Z  	 ) THEN
+2026-10-18T04:39:11.3370969Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+2026-10-18T04:39:11.3371267Z  	 END IF;
+2026-10-18T04:39:11.3371410Z  	END $$;
+2026-10-18T04:39:11.3371554Z  	
+2026-10-18T04:39:11.3371798Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+2026-10-18T04:39:11.3372315Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+2026-10-18T04:39:11.3372711Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+2026-10-18T04:39:11.3373116Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+2026-10-18T04:39:11.3373483Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+2026-10-18T04:39:11.3373904Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+2026-10-18T04:39:11.3374424Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+2026-10-18T04:39:11.3374814Z  	
+2026-10-18T04:39:11.3375114Z  2026-10-18 04:37:31.673 UTC [783] ERROR:  issue groups require same-project roots older than their direct members
+2026-10-18T04:39:11.3375569Z  2026-10-18 04:37:31.673 UTC [783] CONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE
+2026-10-18T04:39:11.3376057Z  2026-10-18 04:37:31.673 UTC [783] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+2026-10-18T04:39:11.3376635Z  	DO $$
+2026-10-18T04:39:11.3376782Z  	BEGIN
+2026-10-18T04:39:11.3376924Z  	 IF EXISTS (
+2026-10-18T04:39:11.3377156Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+2026-10-18T04:39:11.3377564Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+2026-10-18T04:39:11.3377895Z  	 ) THEN
+2026-10-18T04:39:11.3378178Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+2026-10-18T04:39:11.3378511Z  	 END IF;
+2026-10-18T04:39:11.3378660Z  	 IF EXISTS (
+2026-10-18T04:39:11.3378871Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+2026-10-18T04:39:11.3379222Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+2026-10-18T04:39:11.3379585Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+2026-10-18T04:39:11.3379912Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+2026-10-18T04:39:11.3380186Z  	 ) THEN
+2026-10-18T04:39:11.3380415Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+2026-10-18T04:39:11.3380694Z  	 END IF;
+2026-10-18T04:39:11.3380843Z  	 IF EXISTS (
+2026-10-18T04:39:11.3381002Z  	  SELECT 1 FROM events e
+2026-10-18T04:39:11.3381209Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+2026-10-18T04:39:11.3381482Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+2026-10-18T04:39:11.3381958Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+2026-10-18T04:39:11.3382572Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+2026-10-18T04:39:11.3382924Z  	     OR (e.original_issue_id IS NOT NULL AND
+2026-10-18T04:39:11.3383316Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+2026-10-18T04:39:11.3383683Z  	 ) THEN
+2026-10-18T04:39:11.3383946Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+2026-10-18T04:39:11.3384249Z  	 END IF;
+2026-10-18T04:39:11.3384392Z  	END $$;
+2026-10-18T04:39:11.3384531Z  	
+2026-10-18T04:39:11.3384780Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+2026-10-18T04:39:11.3385158Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+2026-10-18T04:39:11.3385537Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+2026-10-18T04:39:11.3385949Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+2026-10-18T04:39:11.3386320Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+2026-10-18T04:39:11.3386740Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+2026-10-18T04:39:11.3387256Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+2026-10-18T04:39:11.3387662Z  	
+2026-10-18T04:39:11.3387955Z  2026-10-18 04:37:32.014 UTC [786] ERROR:  issue groups require same-project roots older than their direct members
+2026-10-18T04:39:11.3388422Z  2026-10-18 04:37:32.014 UTC [786] CONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE
+2026-10-18T04:39:11.3388915Z  2026-10-18 04:37:32.014 UTC [786] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+2026-10-18T04:39:11.3389299Z  	DO $$
+2026-10-18T04:39:11.3389455Z  	BEGIN
+2026-10-18T04:39:11.3389609Z  	 IF EXISTS (
+2026-10-18T04:39:11.3389846Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+2026-10-18T04:39:11.3390251Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+2026-10-18T04:39:11.3390576Z  	 ) THEN
+2026-10-18T04:39:11.3390842Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+2026-10-18T04:39:11.3391164Z  	 END IF;
+2026-10-18T04:39:11.3391448Z  	 IF EXISTS (
+2026-10-18T04:39:11.3391659Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+2026-10-18T04:39:11.3392021Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+2026-10-18T04:39:11.3392539Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+2026-10-18T04:39:11.3392892Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+2026-10-18T04:39:11.3393157Z  	 ) THEN
+2026-10-18T04:39:11.3393400Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+2026-10-18T04:39:11.3393680Z  	 END IF;
+2026-10-18T04:39:11.3393831Z  	 IF EXISTS (
+2026-10-18T04:39:11.3394005Z  	  SELECT 1 FROM events e
+2026-10-18T04:39:11.3394216Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+2026-10-18T04:39:11.3394493Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+2026-10-18T04:39:11.3394867Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+2026-10-18T04:39:11.3395327Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+2026-10-18T04:39:11.3395681Z  	     OR (e.original_issue_id IS NOT NULL AND
+2026-10-18T04:39:11.3396073Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+2026-10-18T04:39:11.3396444Z  	 ) THEN
+2026-10-18T04:39:11.3396696Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+2026-10-18T04:39:11.3397003Z  	 END IF;
+2026-10-18T04:39:11.3397280Z  	END $$;
+2026-10-18T04:39:11.3397429Z  	
+2026-10-18T04:39:11.3397676Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+2026-10-18T04:39:11.3398040Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+2026-10-18T04:39:11.3398419Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+2026-10-18T04:39:11.3398828Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+2026-10-18T04:39:11.3399209Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+2026-10-18T04:39:11.3399630Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+2026-10-18T04:39:11.3400155Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+2026-10-18T04:39:11.3400554Z  	
+2026-10-18T04:39:11.3400816Z  2026-10-18 04:37:32.266 UTC [789] ERROR:  issue group aliases must not have active triage state
+2026-10-18T04:39:11.3401241Z  2026-10-18 04:37:32.266 UTC [789] CONTEXT:  PL/pgSQL function inline_code_block line 15 at RAISE
+2026-10-18T04:39:11.3401738Z  2026-10-18 04:37:32.266 UTC [789] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+2026-10-18T04:39:11.3402251Z  	DO $$
+2026-10-18T04:39:11.3402398Z  	BEGIN
+2026-10-18T04:39:11.3402547Z  	 IF EXISTS (
+2026-10-18T04:39:11.3402783Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+2026-10-18T04:39:11.3403192Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+2026-10-18T04:39:11.3403518Z  	 ) THEN
+2026-10-18T04:39:11.3403792Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+2026-10-18T04:39:11.3404110Z  	 END IF;
+2026-10-18T04:39:11.3404253Z  	 IF EXISTS (
+2026-10-18T04:39:11.3404464Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+2026-10-18T04:39:11.3404810Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+2026-10-18T04:39:11.3405179Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+2026-10-18T04:39:11.3405509Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+2026-10-18T04:39:11.3405772Z  	 ) THEN
+2026-10-18T04:39:11.3406001Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+2026-10-18T04:39:11.3406286Z  	 END IF;
+2026-10-18T04:39:11.3406566Z  	 IF EXISTS (
+2026-10-18T04:39:11.3406738Z  	  SELECT 1 FROM events e
+2026-10-18T04:39:11.3406952Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+2026-10-18T04:39:11.3407234Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+2026-10-18T04:39:11.3407604Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+2026-10-18T04:39:11.3408064Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+2026-10-18T04:39:11.3408426Z  	     OR (e.original_issue_id IS NOT NULL AND
+2026-10-18T04:39:11.3408816Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+2026-10-18T04:39:11.3409185Z  	 ) THEN
+2026-10-18T04:39:11.3409444Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+2026-10-18T04:39:11.3409744Z  	 END IF;
+2026-10-18T04:39:11.3409887Z  	END $$;
+2026-10-18T04:39:11.3410035Z  	
+2026-10-18T04:39:11.3410291Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+2026-10-18T04:39:11.3410654Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+2026-10-18T04:39:11.3411035Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+2026-10-18T04:39:11.3411440Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+2026-10-18T04:39:11.3411810Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+2026-10-18T04:39:11.3412495Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+2026-10-18T04:39:11.3413030Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+2026-10-18T04:39:11.3413435Z  	
+2026-10-18T04:39:11.3413717Z  2026-10-18 04:37:32.517 UTC [792] ERROR:  issue events have inconsistent current or original ownership
+2026-10-18T04:39:11.3414159Z  2026-10-18 04:37:32.517 UTC [792] CONTEXT:  PL/pgSQL function inline_code_block line 26 at RAISE
+2026-10-18T04:39:11.3414664Z  2026-10-18 04:37:32.517 UTC [792] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+2026-10-18T04:39:11.3415053Z  	DO $$
+2026-10-18T04:39:11.3415198Z  	BEGIN
+2026-10-18T04:39:11.3415338Z  	 IF EXISTS (
+2026-10-18T04:39:11.3415571Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+2026-10-18T04:39:11.3415978Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+2026-10-18T04:39:11.3416303Z  	 ) THEN
+2026-10-18T04:39:11.3416574Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+2026-10-18T04:39:11.3416898Z  	 END IF;
+2026-10-18T04:39:11.3417045Z  	 IF EXISTS (
+2026-10-18T04:39:11.3417252Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+2026-10-18T04:39:11.3417602Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+2026-10-18T04:39:11.3417969Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+2026-10-18T04:39:11.3418297Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+2026-10-18T04:39:11.3418567Z  	 ) THEN
+2026-10-18T04:39:11.3418815Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+2026-10-18T04:39:11.3419096Z  	 END IF;
+2026-10-18T04:39:11.3419239Z  	 IF EXISTS (
+2026-10-18T04:39:11.3419405Z  	  SELECT 1 FROM events e
+2026-10-18T04:39:11.3419613Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+2026-10-18T04:39:11.3419890Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+2026-10-18T04:39:11.3420257Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+2026-10-18T04:39:11.3420710Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+2026-10-18T04:39:11.3421060Z  	     OR (e.original_issue_id IS NOT NULL AND
+2026-10-18T04:39:11.3421449Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+2026-10-18T04:39:11.3421933Z  	 ) THEN
+2026-10-18T04:39:11.3422379Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+2026-10-18T04:39:11.3422842Z  	 END IF;
+2026-10-18T04:39:11.3423062Z  	END $$;
+2026-10-18T04:39:11.3423208Z  	
+2026-10-18T04:39:11.3423515Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+2026-10-18T04:39:11.3423902Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+2026-10-18T04:39:11.3424285Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+2026-10-18T04:39:11.3424693Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+2026-10-18T04:39:11.3425076Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+2026-10-18T04:39:11.3425496Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+2026-10-18T04:39:11.3426022Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+2026-10-18T04:39:11.3426417Z  	
+2026-10-18T04:39:11.3426694Z  2026-10-18 04:37:32.773 UTC [795] ERROR:  issue events have inconsistent current or original ownership
+2026-10-18T04:39:11.3427131Z  2026-10-18 04:37:32.773 UTC [795] CONTEXT:  PL/pgSQL function inline_code_block line 26 at RAISE
+2026-10-18T04:39:11.3427759Z  2026-10-18 04:37:32.773 UTC [795] STATEMENT:  -- Refuse ambiguous legacy groupings before enforcing the native flat-star model.
+2026-10-18T04:39:11.3428157Z  	DO $$
+2026-10-18T04:39:11.3428306Z  	BEGIN
+2026-10-18T04:39:11.3428454Z  	 IF EXISTS (
+2026-10-18T04:39:11.3428689Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+2026-10-18T04:39:11.3429094Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+2026-10-18T04:39:11.3429420Z  	 ) THEN
+2026-10-18T04:39:11.3429693Z  	  RAISE EXCEPTION 'issue groups require same-project roots older than their direct members';
+2026-10-18T04:39:11.3430019Z  	 END IF;
+2026-10-18T04:39:11.3430198Z  	 IF EXISTS (
+2026-10-18T04:39:11.3430406Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+2026-10-18T04:39:11.3430749Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+2026-10-18T04:39:11.3431131Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+2026-10-18T04:39:11.3431471Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+2026-10-18T04:39:11.3431735Z  	 ) THEN
+2026-10-18T04:39:11.3431970Z  	  RAISE EXCEPTION 'issue group aliases must not have active triage state';
+2026-10-18T04:39:11.3432443Z  	 END IF;
+2026-10-18T04:39:11.3432603Z  	 IF EXISTS (
+2026-10-18T04:39:11.3432770Z  	  SELECT 1 FROM events e
+2026-10-18T04:39:11.3432991Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+2026-10-18T04:39:11.3433270Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+2026-10-18T04:39:11.3433656Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+2026-10-18T04:39:11.3434129Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+2026-10-18T04:39:11.3434491Z  	     OR (e.original_issue_id IS NOT NULL AND
+2026-10-18T04:39:11.3434886Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+2026-10-18T04:39:11.3435262Z  	 ) THEN
+2026-10-18T04:39:11.3435527Z  	  RAISE EXCEPTION 'issue events have inconsistent current or original ownership';
+2026-10-18T04:39:11.3435830Z  	 END IF;
+2026-10-18T04:39:11.3435973Z  	END $$;
+2026-10-18T04:39:11.3436120Z  	
+2026-10-18T04:39:11.3436378Z  	ALTER TABLE issues ADD CONSTRAINT issues_project_id_id_key UNIQUE(project_id,id);
+2026-10-18T04:39:11.3436738Z  	ALTER TABLE issues DROP CONSTRAINT issues_merged_into_fkey;
+2026-10-18T04:39:11.3437130Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_root_fkey FOREIGN KEY(project_id,merged_into)
+2026-10-18T04:39:11.3437668Z  	 REFERENCES issues(project_id,id) ON DELETE SET NULL (merged_into);
+2026-10-18T04:39:11.3438041Z  	ALTER TABLE issues ADD CONSTRAINT issues_group_older_root CHECK(merged_into<id);
+2026-10-18T04:39:11.3438471Z  	CREATE INDEX issues_group_members ON issues(merged_into,id) WHERE merged_into IS NOT NULL;
+2026-10-18T04:39:11.3438990Z  	CREATE INDEX events_origin_date ON events(original_issue_id,timestamp DESC,id DESC) WHERE original_issue_id IS NOT NULL;
+2026-10-18T04:39:11.3439385Z  	
+2026-10-18T04:39:11.3439825Z  2026-10-18 04:37:33.065 UTC [798] ERROR:  update or delete on table "issues" violates foreign key constraint "issue_hash_routes_origin_fkey" on table "issue_hash_routes"
+2026-10-18T04:39:11.3440471Z  2026-10-18 04:37:33.065 UTC [798] DETAIL:  Key (project_id, id)=(1, 3) is still referenced from table "issue_hash_routes".
+2026-10-18T04:39:11.3440908Z  2026-10-18 04:37:33.065 UTC [798] STATEMENT:  DELETE FROM issues WHERE id=$1::bigint
+2026-10-18T04:39:11.3441343Z  2026-10-18 04:37:33.349 UTC [802] ERROR:  issue hash route events have inconsistent current or original ownership
+2026-10-18T04:39:11.3441808Z  2026-10-18 04:37:33.349 UTC [802] CONTEXT:  PL/pgSQL function inline_code_block line 26 at RAISE
+2026-10-18T04:39:11.3442445Z  2026-10-18 04:37:33.349 UTC [802] STATEMENT:  -- Active signature routing requires the current historical groups to be valid.
+2026-10-18T04:39:11.3442833Z  	DO $$
+2026-10-18T04:39:11.3442978Z  	BEGIN
+2026-10-18T04:39:11.3443220Z  	 IF EXISTS (
+2026-10-18T04:39:11.3443467Z  	  SELECT 1 FROM issues i JOIN issues parent ON parent.id=i.merged_into
+2026-10-18T04:39:11.3443870Z  	  WHERE parent.project_id<>i.project_id OR parent.merged_into IS NOT NULL OR parent.id>=i.id
+2026-10-18T04:39:11.3444190Z  	 ) THEN
+2026-10-18T04:39:11.3444484Z  	  RAISE EXCEPTION 'issue hash routes require same-project roots older than their direct members';
+2026-10-18T04:39:11.3444820Z  	 END IF;
+2026-10-18T04:39:11.3444974Z  	 IF EXISTS (
+2026-10-18T04:39:11.3445188Z  	  SELECT 1 FROM issues i WHERE i.merged_into IS NOT NULL AND
+2026-10-18T04:39:11.3445547Z  	   (i.status<>'unresolved' OR i.resolved_at IS NOT NULL OR i.regressed_at IS NOT NULL
+2026-10-18T04:39:11.3445923Z  	    OR EXISTS(SELECT 1 FROM issue_ignores g WHERE g.issue_id=i.id)
+2026-10-18T04:39:11.3446251Z  	    OR EXISTS(SELECT 1 FROM issue_resolutions r WHERE r.issue_id=i.id))
+2026-10-18T04:39:11.3446523Z  	 ) THEN
+2026-10-18T04:39:11.3446768Z  	  RAISE EXCEPTION 'issue hash route aliases must not have active triage state';
+2026-10-18T04:39:11.3447058Z  	 END IF;
+2026-10-18T04:39:11.3447209Z  	 IF EXISTS (
+2026-10-18T04:39:11.3447372Z  	  SELECT 1 FROM events e
+2026-10-18T04:39:11.3447580Z  	  LEFT JOIN issues owner ON owner.id=e.issue_id
+2026-10-18T04:39:11.3447852Z  	  LEFT JOIN issues origin ON origin.id=e.original_issue_id
+2026-10-18T04:39:11.3448220Z  	  WHERE (e.kind='transaction' AND (e.issue_id IS NOT NULL OR e.original_issue_id IS NOT NULL))
+2026-10-18T04:39:11.3448686Z  	     OR (e.issue_id IS NOT NULL AND (owner.project_id<>e.project_id OR owner.merged_into IS NOT NULL))
+2026-10-18T04:39:11.3449043Z  	     OR (e.original_issue_id IS NOT NULL AND
+2026-10-18T04:39:11.3449435Z  	         (origin.project_id<>e.project_id OR e.issue_id IS NULL OR COALESCE(origin.merged_into,origin.id)<>e.issue_id))
+2026-10-18T04:39:11.3449801Z  	 ) THEN
+2026-10-18T04:39:11.3450082Z  	  RAISE EXCEPTION 'issue hash route events have inconsistent current or original ownership';
+2026-10-18T04:39:11.3450408Z  	 END IF;
+2026-10-18T04:39:11.3450554Z  	END $$;
+2026-10-18T04:39:11.3450696Z  	
+2026-10-18T04:39:11.3450856Z  	CREATE TABLE issue_hash_routes (
+2026-10-18T04:39:11.3451086Z  	 id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+2026-10-18T04:39:11.3451393Z  	 project_id bigint NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+2026-10-18T04:39:11.3451691Z  	 fingerprint text NOT NULL,
+2026-10-18T04:39:11.3451887Z  	 origin_issue_id bigint,
+2026-10-18T04:39:11.3452346Z  	 CONSTRAINT issue_hash_routes_project_fingerprint_key UNIQUE(project_id,fingerprint),
+2026-10-18T04:39:11.3452897Z  	 CONSTRAINT issue_hash_routes_origin_fkey FOREIGN KEY(project_id,origin_issue_id)
+2026-10-18T04:39:11.3453217Z  	  REFERENCES issues(project_id,id)
+2026-10-18T04:39:11.3453420Z  	);
+2026-10-18T04:39:11.3453691Z  	CREATE INDEX issue_hash_routes_origin ON issue_hash_routes(project_id,origin_issue_id,id)
+2026-10-18T04:39:11.3454031Z  	 WHERE origin_issue_id IS NOT NULL;
+2026-10-18T04:39:11.3454327Z  	INSERT INTO issue_hash_routes(project_id,fingerprint,origin_issue_id)
+2026-10-18T04:39:11.3454659Z  	 SELECT project_id,fingerprint,id FROM issues;
+2026-10-18T04:39:11.3454969Z  	ALTER TABLE issues DROP CONSTRAINT issues_project_id_fingerprint_key;
+2026-10-18T04:39:11.3455339Z  	CREATE INDEX issues_project_fingerprint ON issues(project_id,fingerprint);
+2026-10-18T04:39:11.3455626Z  	
+2026-10-18T04:39:11.3455860Z  2026-10-18 04:37:34.888 UTC [816] ERROR:  canceling statement due to user request
+2026-10-18T04:39:11.3456389Z  2026-10-18 04:37:34.888 UTC [816] STATEMENT:  SELECT pg_advisory_xact_lock_shared(hashtextextended(current_schema()||':issue-group:'||$1::text,0))
+2026-10-18T04:39:11.3456938Z  2026-10-18 04:37:49.663 UTC [942] ERROR:  could not obtain lock on row in relation "alert_rules"
+2026-10-18T04:39:11.3457391Z  2026-10-18 04:37:49.663 UTC [942] STATEMENT:  SELECT id FROM alert_rules WHERE id=$1::bigint FOR UPDATE NOWAIT
+2026-10-18T04:39:11.3458089Z  2026-10-18 04:38:01.074 UTC [1037] ERROR:  insert or update on table "otlp_log_batches" violates foreign key constraint "otlp_log_batches_project_id_fkey"
+2026-10-18T04:39:11.3458733Z  2026-10-18 04:38:01.074 UTC [1037] DETAIL:  Key (project_id)=(9223372036854775807) is not present in table "projects".
+2026-10-18T04:39:11.3459314Z  2026-10-18 04:38:01.074 UTC [1037] STATEMENT:  INSERT INTO otlp_log_batches(project_id,received_at,payload) VALUES($1,$2,$3) RETURNING id
+2026-10-18T04:39:11.3459814Z  2026-10-18 04:38:01.230 UTC [1039] ERROR:  fixture later insert observed prior OTLP row
+2026-10-18T04:39:11.3460244Z  2026-10-18 04:38:01.230 UTC [1039] CONTEXT:  PL/pgSQL function reject_otlp_fixture() line 4 at RAISE
+2026-10-18T04:39:11.3460932Z  2026-10-18 04:38:01.230 UTC [1039] STATEMENT:  INSERT INTO logs(project_id,timestamp,trace_id,span_id,level,body,service,environment,attributes,data,item_hash,otlp_batch_id,otlp_record_index)
+2026-10-18T04:39:11.3461523Z  	   VALUES($1,$2,$3,$4,$5,$6,$7,$8,'{}','{}',$9,$10,$11)
+2026-10-18T04:39:11.3461864Z  2026-10-18 04:38:01.479 UTC [1041] ERROR:  fixture deferred commit observed complete OTLP batch
+2026-10-18T04:39:11.3462431Z  2026-10-18 04:38:01.479 UTC [1041] CONTEXT:  PL/pgSQL function reject_otlp_fixture() line 3 at RAISE
+2026-10-18T04:39:11.3462779Z  2026-10-18 04:38:01.479 UTC [1041] STATEMENT:  commit
+2026-10-18T04:39:11.3463168Z  2026-10-18 04:38:01.942 UTC [1059] ERROR:  new row for relation "logs" violates check constraint "logs_otlp_reference"
+2026-10-18T04:39:11.3463883Z  2026-10-18 04:38:01.942 UTC [1059] DETAIL:  Failing row contains (4, 1, 2026-10-18 03:38:01.856477+00, , , unknown, relational-proof, , , {}, {}, invalid021-missing-index, 2026-10-18 04:38:01.942396+00, 1, null).
+2026-10-18T04:39:11.3464665Z  2026-10-18 04:38:01.942 UTC [1059] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+2026-10-18T04:39:11.3465143Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+2026-10-18T04:39:11.3465548Z  2026-10-18 04:38:01.943 UTC [1059] ERROR:  new row for relation "logs" violates check constraint "logs_otlp_reference"
+2026-10-18T04:39:11.3466241Z  2026-10-18 04:38:01.943 UTC [1059] DETAIL:  Failing row contains (5, 1, 2026-10-18 03:38:01.856477+00, , , unknown, relational-proof, , , {}, {}, invalid021-missing-batch, 2026-10-18 04:38:01.943153+00, null, 1).
+2026-10-18T04:39:11.3467000Z  2026-10-18 04:38:01.943 UTC [1059] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+2026-10-18T04:39:11.3467579Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+2026-10-18T04:39:11.3467966Z  2026-10-18 04:38:01.944 UTC [1059] ERROR:  new row for relation "logs" violates check constraint "logs_otlp_reference"
+2026-10-18T04:39:11.3468643Z  2026-10-18 04:38:01.944 UTC [1059] DETAIL:  Failing row contains (6, 1, 2026-10-18 03:38:01.856477+00, , , unknown, relational-proof, , , {}, {}, invalid021-negative-index, 2026-10-18 04:38:01.944035+00, 1, -1).
+2026-10-18T04:39:11.3469397Z  2026-10-18 04:38:01.944 UTC [1059] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+2026-10-18T04:39:11.3469860Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+2026-10-18T04:39:11.3470283Z  2026-10-18 04:38:01.945 UTC [1059] ERROR:  insert or update on table "logs" violates foreign key constraint "logs_otlp_project_batch"
+2026-10-18T04:39:11.3470846Z  2026-10-18 04:38:01.945 UTC [1059] DETAIL:  Key (project_id, otlp_batch_id)=(1, 2) is not present in table "otlp_log_batches".
+2026-10-18T04:39:11.3471450Z  2026-10-18 04:38:01.945 UTC [1059] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+2026-10-18T04:39:11.3471911Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+2026-10-18T04:39:11.3472471Z  2026-10-18 04:38:01.946 UTC [1059] ERROR:  duplicate key value violates unique constraint "logs_otlp_batch_record"
+2026-10-18T04:39:11.3473068Z  2026-10-18 04:38:01.946 UTC [1059] DETAIL:  Key (otlp_batch_id, otlp_record_index)=(1, 0) already exists.
+2026-10-18T04:39:11.3473624Z  2026-10-18 04:38:01.946 UTC [1059] STATEMENT:  INSERT INTO logs(project_id,timestamp,level,body,data,item_hash,otlp_batch_id,otlp_record_index)
+2026-10-18T04:39:11.3474089Z  	 VALUES($1,$2,'unknown','relational-proof','{}',$3,$4,$5)
+2026-10-18T04:39:11.3474374Z  2026-10-18 04:38:03.320 UTC [74] LOG:  checkpoint starting: wal
+2026-10-18T04:39:11.3474684Z  2026-10-18 04:38:06.607 UTC [1106] ERROR:  declared later release failure
+2026-10-18T04:39:11.3475083Z  2026-10-18 04:38:06.607 UTC [1106] CONTEXT:  PL/pgSQL function fail_release_retention() line 2 at RAISE
+2026-10-18T04:39:11.3475462Z  2026-10-18 04:38:06.607 UTC [1106] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3475778Z  	 SELECT id FROM releases WHERE id=ANY($1::bigint[]) AND created_at<$2
+2026-10-18T04:39:11.3476078Z  	 ORDER BY created_at,id FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3476355Z  	) DELETE FROM releases r USING expired e WHERE r.id=e.id
+2026-10-18T04:39:11.3476669Z  2026-10-18 04:38:06.949 UTC [1116] ERROR:  declared later release failure
+2026-10-18T04:39:11.3477054Z  2026-10-18 04:38:06.949 UTC [1116] CONTEXT:  PL/pgSQL function fail_release_retention() line 2 at RAISE
+2026-10-18T04:39:11.3477414Z  2026-10-18 04:38:06.949 UTC [1116] STATEMENT:  commit
+2026-10-18T04:39:11.3477705Z  2026-10-18 04:38:11.717 UTC [1163] ERROR:  declared batch deletion failure
+2026-10-18T04:39:11.3478097Z  2026-10-18 04:38:11.717 UTC [1163] CONTEXT:  PL/pgSQL function reject_retention_batch() line 1 at RAISE
+2026-10-18T04:39:11.3478484Z  2026-10-18 04:38:11.717 UTC [1163] STATEMENT:  WITH orphaned AS (
+2026-10-18T04:39:11.3478750Z  	 SELECT b.id FROM otlp_log_batches b
+2026-10-18T04:39:11.3479023Z  	 WHERE NOT EXISTS(SELECT 1 FROM logs l WHERE l.otlp_batch_id=b.id)
+2026-10-18T04:39:11.3479325Z  	 ORDER BY b.id LIMIT 250 FOR UPDATE OF b SKIP LOCKED
+2026-10-18T04:39:11.3479615Z  	 ) DELETE FROM otlp_log_batches b USING orphaned o WHERE b.id=o.id
+2026-10-18T04:39:11.3479963Z  2026-10-18 04:38:12.429 UTC [1170] ERROR:  canceling statement due to user request
+2026-10-18T04:39:11.3480447Z  2026-10-18 04:38:12.429 UTC [1170] CONTEXT:  SQL statement "SELECT pg_advisory_xact_lock(hashtextextended(TG_TABLE_SCHEMA,8347))"
+2026-10-18T04:39:11.3480900Z  	PL/pgSQL function wait_retention_batch() line 2 at PERFORM
+2026-10-18T04:39:11.3481204Z  2026-10-18 04:38:12.429 UTC [1170] STATEMENT:  WITH orphaned AS (
+2026-10-18T04:39:11.3481472Z  	 SELECT b.id FROM otlp_log_batches b
+2026-10-18T04:39:11.3481854Z  	 WHERE NOT EXISTS(SELECT 1 FROM logs l WHERE l.otlp_batch_id=b.id)
+2026-10-18T04:39:11.3482255Z  	 ORDER BY b.id LIMIT 250 FOR UPDATE OF b SKIP LOCKED
+2026-10-18T04:39:11.3482547Z  	 ) DELETE FROM otlp_log_batches b USING orphaned o WHERE b.id=o.id
+2026-10-18T04:39:11.3482874Z  2026-10-18 04:38:22.923 UTC [1285] ERROR:  canceling statement due to user request
+2026-10-18T04:39:11.3483335Z  2026-10-18 04:38:22.923 UTC [1285] CONTEXT:  SQL statement "SELECT pg_advisory_xact_lock(hashtextextended(TG_TABLE_SCHEMA,8348))"
+2026-10-18T04:39:11.3483793Z  	PL/pgSQL function wait_transaction_retention() line 2 at PERFORM
+2026-10-18T04:39:11.3484105Z  2026-10-18 04:38:22.923 UTC [1285] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3484486Z  	 SELECT id FROM spans WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3484869Z  	 ) DELETE FROM spans s USING expired e WHERE s.id=e.id
+2026-10-18T04:39:11.3485155Z  2026-10-18 04:38:23.448 UTC [1291] ERROR:  declared late span failure
+2026-10-18T04:39:11.3485557Z  2026-10-18 04:38:23.448 UTC [1291] CONTEXT:  PL/pgSQL function reject_transaction_retention() line 1 at RAISE
+2026-10-18T04:39:11.3485951Z  2026-10-18 04:38:23.448 UTC [1291] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3486315Z  	 SELECT id FROM spans WHERE created_at<$1 ORDER BY created_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3486673Z  	 ) DELETE FROM spans s USING expired e WHERE s.id=e.id
+2026-10-18T04:39:11.3487302Z  2026-10-18 04:38:26.877 UTC [1329] ERROR:  insert or update on table "transaction_span_operations" violates foreign key constraint "projection_guard"
+2026-10-18T04:39:11.3487881Z  2026-10-18 04:38:26.877 UTC [1329] DETAIL:  Key (op)=(db) is not present in table "projection_allowed_ops".
+2026-10-18T04:39:11.3488233Z  2026-10-18 04:38:26.877 UTC [1329] STATEMENT:  commit
+2026-10-18T04:39:11.3488686Z  2026-10-18 04:38:26.880 UTC [1329] ERROR:  insert or update on table "transaction_span_operations" violates foreign key constraint "projection_guard"
+2026-10-18T04:39:11.3489240Z  2026-10-18 04:38:26.880 UTC [1329] DETAIL:  Key (op)=(db) is not present in table "projection_allowed_ops".
+2026-10-18T04:39:11.3489581Z  2026-10-18 04:38:26.880 UTC [1329] STATEMENT:  commit
+2026-10-18T04:39:11.3489875Z  2026-10-18 04:38:29.405 UTC [1345] ERROR:  declared late check deletion failure
+2026-10-18T04:39:11.3490265Z  2026-10-18 04:38:29.405 UTC [1345] CONTEXT:  PL/pgSQL function wait_retention_check() line 2 at RAISE
+2026-10-18T04:39:11.3490638Z  2026-10-18 04:38:29.405 UTC [1345] STATEMENT:  WITH expired AS (
+2026-10-18T04:39:11.3491051Z  	 SELECT id FROM monitor_checks WHERE completed_at<$1 ORDER BY completed_at,id LIMIT 250 FOR UPDATE SKIP LOCKED
+2026-10-18T04:39:11.3491467Z  	 ) DELETE FROM monitor_checks c USING expired e WHERE c.id=e.id
+2026-10-18T04:39:11.3497054Z Stop and remove container: 876955206e90472d91f7b4204703d722_postgres18_98eabf
+2026-10-18T04:39:11.3501096Z ##[command]/usr/bin/docker rm --force ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:39:11.7037709Z ea5d7938228160e7372bdcdd75ff7905fa0fa9f1dcbfe73dcc8268f65117c97d
+2026-10-18T04:39:11.7059794Z Remove container network: github_network_6d7b35730860448bacff5edf99d93859
+2026-10-18T04:39:11.7063687Z ##[command]/usr/bin/docker network rm github_network_6d7b35730860448bacff5edf99d93859
+2026-10-18T04:39:11.8178622Z github_network_6d7b35730860448bacff5edf99d93859
+2026-10-18T04:39:11.8240492Z Cleaning up orphan processes
+

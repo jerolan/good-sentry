@@ -1,0 +1,31 @@
+{
+  "phase": "final-empty-complete",
+  "passed": false,
+  "dimensions": [
+    {
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "viewport": 1024,
+      "document": 1024
+    },
+    {
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "downloads": [
+    {
+      "kind": "retainedAttachment",
+      "bytesExact": true
+    }
+  ],
+  "errors": [],
+  "bad": [],
+  "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:18118/?org=otlp-acceptance-primary&view=issues&issue=1516\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:18118/?org=otlp-acceptance-primary&view=issues&issue=1516\", waiting until \"networkidle\"\u001b[22m\n\n    at C:\\Users\\jerom\\iCloudDrive\\Documents\\Workspace\\SentryGo\\.tmp\\release-retention-acceptance\\browser.mjs:41:13"
+}

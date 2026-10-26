@@ -1,0 +1,10 @@
+[
+  {
+    "id": 39097651020,
+    "name": "CI",
+    "head_sha": "73f4c3342aa97ac0cae765c80c6d7639e362cfa0",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/jerolan/good-sentry/actions/runs/39097651020"
+  }
+]

@@ -282,6 +282,51 @@
       "scope": "typed file/release retention lifetimes with deterministic precedence, empty fallthrough and 1..3650 bounds without a cleanup caller",
       "evidence_files": ["operacion-024-025/config.log", "operacion-024-025/summary.json"]
     },
+    "CLOSE-operacion-026": {
+      "evidence": "vigente",
+      "scope": "release age is the immutable first organization/version receipt; shared/open/archived scope and user/commit/deploy/SDK writes do not refresh it",
+      "evidence_files": ["operacion-026-034/store.log", "operacion-026-034/summary.json"]
+    },
+    "CLOSE-operacion-027": {
+      "evidence": "vigente",
+      "scope": "atomic 250-identity release cleanup with schema try-lock, frozen cutoff, per-identity gates, skip-locked rows and rollback",
+      "evidence_files": ["operacion-026-034/store.log", "operacion-026-034/summary.json"]
+    },
+    "CLOSE-operacion-028": {
+      "evidence": "vigente",
+      "scope": "writer identity gates before insert/lookup, waiting writers receive fresh receipts and cleanup never waits for writers",
+      "evidence_files": ["operacion-026-034/store.log", "operacion-026-034/summary.json"]
+    },
+    "CLOSE-operacion-029": {
+      "evidence": "vigente",
+      "scope": "release metadata cascade only; repositories, files, telemetry, issues, frames, snapshots and alerts preserved",
+      "evidence_files": ["operacion-026-034/store.log", "operacion-026-034/summary.json"]
+    },
+    "CLOSE-operacion-030": {
+      "evidence": "vigente",
+      "scope": "StartReleaseRetention in the shared lifecycle with backlog/idle/retry/cancel/replica behavior and committed removal logging",
+      "evidence_files": ["operacion-026-034/jobs.log", "operacion-026-034/summary.json"]
+    },
+    "CLOSE-operacion-031": {
+      "evidence": "vigente",
+      "scope": "release-retention test-authoring gate: owner-boundary metadata/cascade/age/batch/preservation/recovery plus separate concurrency/rollback/migration owners",
+      "evidence_files": ["operacion-026-034/store.log", "operacion-026-034/summary.json"]
+    },
+    "CLOSE-operacion-032": {
+      "evidence": "vigente (historical b5b4c3a6)",
+      "scope": "historical image acceptance: five identities expired, 4447 rows/540 events/28 batches/28 migrations, 4442 recovered, browser and matching CI",
+      "evidence_files": ["operacion-026-034/final-runtime.json", "operacion-026-034/final-expiry.json", "operacion-026-034/ci-runs.json", "operacion-026-034/functional-ci-success.log", "operacion-026-034/browser/final-empty-resumed.json"]
+    },
+    "CLOSE-operacion-033": {
+      "evidence": "vigente",
+      "scope": "file/release configuration defaults, aliases, explicit priority, empty fallthrough, class isolation, bounds and invalid selected values",
+      "evidence_files": ["operacion-026-034/config.log", "operacion-026-034/summary.json"]
+    },
+    "CLOSE-operacion-034": {
+      "evidence": "vigente",
+      "scope": "release ownership/receipt/lifecycle/concurrency/recovery contracts elaborated; completed-file provider remains open",
+      "evidence_files": ["operacion-026-034/summary.json"]
+    },
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",

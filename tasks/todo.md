@@ -1460,10 +1460,12 @@ CLOSE-uptime-006 a -012 quedan vigentes; 010 y 012 conservan comprobantes
 históricos a revalidar en la candidata final.
 CLOSE-operacion-024 y -025 quedan vigentes como prerrequisitos de configuración;
 las clases file/release siguen abiertas.
+CLOSE-operacion-026 a -034 quedan vigentes; 032 es histórico y 034 mantiene
+abierto el proveedor de archivos.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-026. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-035. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1810,15 +1812,15 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
 | [CLOSE-operacion-024](../SPEC.md#close-operacion-024) | File and release retention prerequisites: Completed-file and release retention remain required after the four… | implementada (prerrequisito) | vigente | Comprobante 2026-10-26 abajo; clases file/release siguen abiertas |
 | [CLOSE-operacion-025](../SPEC.md#close-operacion-025) | File and release retention prerequisites: First add typed Config.FileRetentionDays and Config.ReleaseRetention… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-026](../SPEC.md#close-operacion-026) | Release metadata retention: Release age is the first server receipt of its organization/version identity, rele… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-027](../SPEC.md#close-operacion-027) | Release metadata retention: Add Store.CleanupReleases(ctx,days)(removed int64,error). One transaction first ta… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-028](../SPEC.md#close-operacion-028) | Release metadata retention: Release writers need the same identity gate before their first INSERT/lookup, in r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-029](../SPEC.md#close-operacion-029) | Release metadata retention: Deleting release metadata cascades release_projects, release_commits, release_depl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-030](../SPEC.md#close-operacion-030) | Release metadata retention: Activate StartReleaseRetention unconditionally through the shared in-process lifec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-031](../SPEC.md#close-operacion-031) | Release metadata retention: Test authoring gate: the Store owner protects actual metadata/cascade removal, str… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-032](../SPEC.md#close-operacion-032) | Release metadata retention: Acceptance requires full native PostgreSQL integration/vet and Linux race, a fresh… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-033](../SPEC.md#close-operacion-033) | Release metadata retention: Extend the existing deployment and telemetry-retention configuration owners, not a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-034](../SPEC.md#close-operacion-034) | Release metadata retention: Before activating either cleanup class, primary must elaborate its complete owners… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-026](../SPEC.md#close-operacion-026) | Release metadata retention: Release age is the first server receipt of its organization/version identity, rele… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-027](../SPEC.md#close-operacion-027) | Release metadata retention: Add Store.CleanupReleases(ctx,days)(removed int64,error). One transaction first ta… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-028](../SPEC.md#close-operacion-028) | Release metadata retention: Release writers need the same identity gate before their first INSERT/lookup, in r… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-029](../SPEC.md#close-operacion-029) | Release metadata retention: Deleting release metadata cascades release_projects, release_commits, release_depl… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-030](../SPEC.md#close-operacion-030) | Release metadata retention: Activate StartReleaseRetention unconditionally through the shared in-process lifec… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-031](../SPEC.md#close-operacion-031) | Release metadata retention: Test authoring gate: the Store owner protects actual metadata/cascade removal, str… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-032](../SPEC.md#close-operacion-032) | Release metadata retention: Acceptance requires full native PostgreSQL integration/vet and Linux race, a fresh… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
+| [CLOSE-operacion-033](../SPEC.md#close-operacion-033) | Release metadata retention: Extend the existing deployment and telemetry-retention configuration owners, not a… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-034](../SPEC.md#close-operacion-034) | Release metadata retention: Before activating either cleanup class, primary must elaborate its complete owners… | implementada (contrato) | vigente | Comprobante 2026-10-26 abajo; proveedor de archivos sigue abierto |
 | [CLOSE-operacion-035](../SPEC.md#close-operacion-035) | Completed-file retention: This increment consumes Config.FileRetentionDays for the currently implemented durab… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-036](../SPEC.md#close-operacion-036) | Completed-file retention: Use each existing created_at as its first durable file receipt; retries of a still-p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-037](../SPEC.md#close-operacion-037) | Completed-file retention: Store.CleanupFiles(ctx, days) returns committed source-map, attachment and opaque-it… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9256,6 +9258,33 @@ Evidencia: `test-results/closure-20261025/operacion-024-025/config.log` y
 Límites registrados: esta entrada solo acredita el prerrequisito de
 configuración. La retención real de archivos y releases sigue abierta en 026+.
 El producto no se declara completo.
+
+### Ejecución 2026-10-26: retención de metadatos de releases
+
+Selección registrada antes de trabajar: CLOSE-operacion-026 a -034. Revisión de
+producto `c7ad520`; proveedor, lifecycle y configuración se ejecutaron de nuevo.
+La aceptación de imagen/navegador/CI de 032 conserva su comprobante histórico.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 026 | `created_at` como recibo inmutable de organización/versión; escrituras/commits/deploys/SDK no lo refrescan | `TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff`; `TestReleaseRetentionFreshIdentityClockAfterCleanupWait` |
+| 027 | Try-lock `:release-retention`, cutoff 24h, 250 identidades congeladas, gates por identidad y `SKIP LOCKED`; error/cancelación cero | `TestReleaseRetentionBoundedParentProgress`; `TestReleaseRetentionLateFailureAndCancellation` |
+| 028 | Writers toman el mismo gate antes del primer INSERT/lookup; el writer en espera obtiene recibo fresco | `TestReleaseRetentionFreshIdentityClockAfterCleanupWait`; `TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer` |
+| 029 | Cascada solo de metadata de release; archivos, telemetría, issues, frames, snapshots y alertas exactos | `TestReleaseRetentionPreservesFilesTelemetryAndPolicySnapshots` |
+| 030 | `StartReleaseRetention` en lifecycle compartido con backlog, idle, retry, cancelación, réplicas y log de removidos | `TestRetentionWorkersDrainRetryAndStop/releases`; `jobs.log` |
+| 031 | Gate de autoría de tests: owner real de metadata/cascada/edad/batch/preservación/recuperación y pruebas separadas de concurrencia/rollback/migración | Lista de owners en `operacion-026-034/summary.json` |
+| 032 | Imagen histórica b5b4c3a6: 5 identidades expiradas, 4447 filas/540 eventos/28 batches/28 migraciones, 4442 recuperadas, browser/CI | `operacion-026-034/{final-runtime,final-expiry,ci-runs,functional-ci-success}.json/log`; `browser/*` |
+| 033 | Configuración file/release: defaults, alias, prioridad, vacíos, aislamiento y límites | `TestTelemetryRetentionConfiguration`; `config.log` |
+| 034 | Contratos de ownership/recibo/lifecycle/concurrencia/recuperación elaborados; proveedor de archivos sigue abierto | SPEC 026–035; este registro |
+
+Evidencia: `test-results/closure-20261025/operacion-026-034/store.log`, `jobs.log`,
+`config.log`, `summary.json` y los JSON/logs históricos copiados de
+`release-retention-20261017`.
+
+Límites registrados: 026–031 y 033 tienen pruebas frescas; 032 es aceptación
+histórica y debe repetir imagen/CI en la candidata final. El proveedor de
+archivos completados y las capacidades posteriores siguen abiertos. No se
+modificó ninguna baseline original.
 
 ### Comprobante de integración documental
 

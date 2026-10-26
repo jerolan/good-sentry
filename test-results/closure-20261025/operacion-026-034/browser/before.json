@@ -1,0 +1,26 @@
+{
+  "phase": "before",
+  "passed": false,
+  "dimensions": [
+    {
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "viewport": 1024,
+      "document": 1024
+    },
+    {
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "downloads": [],
+  "errors": [],
+  "bad": [],
+  "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Chosen release: release-lifetime@1.0.0', { exact: true }) to be visible\u001b[22m\n\n    at C:\\Users\\jerom\\iCloudDrive\\Documents\\Workspace\\SentryGo\\.tmp\\release-retention-acceptance\\browser.mjs:30:69"
+}
