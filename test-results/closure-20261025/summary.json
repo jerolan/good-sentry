@@ -528,6 +528,17 @@
         "store refuses step at or below the last accepted step; enrollment/challenge/recovery tests pass"
       ],
       "evidence_files": ["identity/totp.log"]
+    },
+    "CLOSE-identidad-035": {
+      "evidence": "vigente",
+      "scope": "password challenge issuance, TOTP/recovery completion, failure limits and generation",
+      "covered": [
+        "login keeps strict body/generic error and issues a five-minute challenge without cookie",
+        "challenge completion accepts TOTP or one unused recovery code and creates one session",
+        "fifth failure/expiry/consumption/generation/unknown token return 401 without session",
+        "credential change invalidates a pending challenge"
+      ],
+      "evidence_files": ["identity/totp-login.log"]
     }
   },
   "commands": [

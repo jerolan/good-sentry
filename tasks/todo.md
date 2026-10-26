@@ -1442,9 +1442,9 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024, 026–032 y 034 ya están
-vigentes y 025/033 están bloqueadas por publicación/CI de la misma fuente.
-Siguiente acción: CLOSE-identidad-035 (challenge TOTP/recovery y login). No se
+bloques detallados 014–049 siguen pendientes; 014–024, 026–032, 034 y 035 ya
+están vigentes y 025/033 están bloqueadas por publicación/CI. Siguiente acción:
+CLOSE-identidad-036 (endpoints de estado/enrollment/disable/recovery). No se
 declara aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
@@ -1499,7 +1499,7 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-032](../SPEC.md#close-identidad-032) | Account email and single-use password recovery: The reset form consumes a resetToken query parameter without p… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del formulario |
 | [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | implementada (local) | bloqueada | Publicar y repetir copia/reinicio/CI sobre la fuente; luego cerrar |
 | [CLOSE-identidad-034](../SPEC.md#close-identidad-034) | Two-factor authentication: Additive migration 053_user_totp.sql adds nullable users.totp_secret (AES-256-GCM c… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios TOTP |
-| [CLOSE-identidad-035](../SPEC.md#close-identidad-035) | Two-factor authentication: POST /api/v1/login keeps its strict body and identical Invalid email or password re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-035](../SPEC.md#close-identidad-035) | Two-factor authentication: POST /api/v1/login keeps its strict body and identical Invalid email or password re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de challenge |
 | [CLOSE-identidad-036](../SPEC.md#close-identidad-036) | Two-factor authentication: GET /api/v1/me/two-factor reports enabled, pending and recoveryCodesRemaining for t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-037](../SPEC.md#close-identidad-037) | Two-factor authentication: The Account view exposes the two-factor state, the manual-entry secret and otpauth… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-038](../SPEC.md#close-identidad-038) | Two-factor authentication: Additive migration 073_organization_require_2fa.sql adds organizations.require_2fa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3365,6 +3365,28 @@ Evidencia: `test-results/closure-20261025/identity/totp.log`.
 
 Siguiente acción: CLOSE-identidad-035 (login con challenge TOTP/recovery,
 strict body, cinco fallos y sesión), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: login con segundo factor
+
+Selección registrada antes de trabajar: CLOSE-identidad-035, siguiente en el
+plan. Candidata `0646a1a`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de los tests HTTP de enrollment/login y cambio de credenciales.
+
+Resultado observado: `POST /api/v1/login` conserva cuerpo estricto y el mismo
+mensaje de credenciales inválidas; con secreto confirmado crea un challenge de
+cinco minutos y responde 200 con `twoFactorRequired`, token, métodos
+`totp`/`recovery` y sin cookie de sesión. `/api/v1/login/two-factor` exige
+JSON estricto, mismo origen y completa un único challenge con TOTP o un
+recovery code; el código de recuperación se marca usado en la misma transacción
+que crea la sesión. Un código incorrecto incrementa el contador; el quinto
+fallo, challenge expirado/consumido, generación cambiada o token desconocido
+devuelven 401 sin sesión. El test de cambio de credenciales confirma que un
+challenge obsoleto no autoriza. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/totp-login.log`.
+
+Siguiente acción: CLOSE-identidad-036 (GET/POST/confirm/delete de 2FA y
+recovery codes), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
