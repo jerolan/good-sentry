@@ -1,0 +1,60 @@
+=== RUN   TestAPITokenHTTPContract
+--- PASS: TestAPITokenHTTPContract (0.97s)
+=== RUN   TestCompatibleStatsV2HTTP
+--- PASS: TestCompatibleStatsV2HTTP (0.55s)
+=== RUN   TestIssueQueryHTTPContract
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/sort=bogus
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/sort=date&sort=freq
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/page=0
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/page=-1
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/page=01
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/page=1.5
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/page=1000001
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/page=bad
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/page=
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/unknown=value
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/project=01
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/project=0
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/project=-1
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/project=9223372036854775808
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/status=typo
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/status=resolved&status=ignored
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/query=%zz
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/query=%FF
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/query=%00
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/query=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/environment=%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/release=%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%
+=== RUN   TestIssueQueryHTTPContract/invalid_query_admission/query=region%3A%5Beu%2C%5D
+=== RUN   TestIssueQueryHTTPContract/historical_grammar_is_wired_to_native_read
+=== RUN   TestIssueQueryHTTPContract/scope_and_maximum_selector_wiring
+--- PASS: TestIssueQueryHTTPContract (0.53s)
+    --- PASS: TestIssueQueryHTTPContract/invalid_query_admission (0.02s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/sort=bogus (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/sort=date&sort=freq (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/page=0 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/page=-1 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/page=01 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/page=1.5 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/page=1000001 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/page=bad (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/page= (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/unknown=value (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/project=01 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/project=0 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/project=-1 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/project=9223372036854775808 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/status=typo (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/status=resolved&status=ignored (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/query=%zz (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/query=%FF (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/query=%00 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/query=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/environment=%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9 (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/release=%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3%A9%C3% (0.00s)
+        --- PASS: TestIssueQueryHTTPContract/invalid_query_admission/query=region%3A%5Beu%2C%5D (0.00s)
+    --- PASS: TestIssueQueryHTTPContract/historical_grammar_is_wired_to_native_read (0.01s)
+    --- PASS: TestIssueQueryHTTPContract/scope_and_maximum_selector_wiring (0.02s)
+PASS
+ok  	goodsentry/internal/server	2.060s

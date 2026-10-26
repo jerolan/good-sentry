@@ -464,6 +464,7 @@
     "CLOSE-mcp-001-077": {"evidence": "vigente", "scope": "optional MCP transport, 17 tools, scoped providers, OAuth lifecycle and official go-sdk v1.8.0 client", "evidence_files": ["mcp-001-077/server.log", "mcp-001-077/server-race.log", "mcp-001-077/config.log", "mcp-001-077/summary.json"]},
     "CLOSE-operacion-058-066": {"evidence": "vigente", "scope": "acceptance harnesses, source ownership, style, fuzzing, SDK/browser verification and clean delivery", "evidence_files": ["operacion-058-066/gofmt.txt", "operacion-058-066/fuzz-envelope.log", "operacion-058-066/fuzz-sourcemap.log", "operacion-058-066/summary.json"]},
     "CLOSE-sourcemaps-028-031": {"evidence": "vigente (fresh HTTP, historical CLI/image/browser)", "scope": "release lifecycle, commits/deploy, API/UI parity and scoped artifact upload/list/detail/delete", "evidence_files": ["sourcemaps-028-031/server.log", "sourcemaps-028-031/cli-lifecycle-report.json", "sourcemaps-028-031/browser-report.json", "sourcemaps-028-031/release-files-report.json"]},
+    "CLOSE-lectores-004-007": {"evidence": "vigente (fresh HTTP, historical Grafana/image)", "scope": "Grafana datasource connection, issue query, stats_v2 error series and revoked-token denial", "evidence_files": ["lectores-004-007/server.log", "lectores-004-007/grafana-query.json", "lectores-004-007/grafana-stats-v2-error-1h.json"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
