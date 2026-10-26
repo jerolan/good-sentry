@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-015. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-016. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1871,7 +1871,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-016](../SPEC.md#close-uptime-016) | Sentry spans and native telemetry reads: Persist monitor configuration/current state and append-only check his… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-017](../SPEC.md#close-uptime-017) | Sentry spans and native telemetry reads: Claim one due enabled monitor with FOR UPDATE SKIP LOCKED, assign a r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-018](../SPEC.md#close-uptime-018) | Sentry spans and native telemetry reads: An opaque random 128-bit heartbeat capability is exposed as heartbeat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8126,6 +8126,28 @@ Límites registrados: la prueba de servidor ejerce el flujo autenticado completo
 los casos límite de gramática de cada tipo viven en `TestConfigValidate`. La
 UI de monitores pertenece a 020. El CI público y la imagen final siguen
 pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: tiempos y plazos de uptime
+
+Selección registrada antes de trabajar: CLOSE-uptime-015. Candidata
+`e93561c`.
+
+| Elemento | Resultado |
+|---|---|
+| Recibo de heartbeat, plazo vencido y rearme | `TestHeartbeatReceiptFencesMissedCheckAndRearms` pasa |
+| Leases, fencing y vencimiento | `TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases` pasa |
+| Umbral, transición y recuperación | `TestMonitorThresholdResetRecoveryAndHistory` pasa |
+| Instantes UTC y JSON RFC3339 | `timestamptz` y las respuestas RFC3339 ya verificadas en 004 y 005 |
+| Intervalos transcurridos sin DST | Los intervalos son segundos transcurridos; no hay recurrencia civil |
+| Respuesta en milisegundos monotónicos | `responseTimeMs` proviene del prober y se conserva en el check |
+
+Evidencia: `test-results/closure-20261025/uptime-015/heartbeat-timing.log` y
+`test-results/closure-20261025/uptime-013/scheduler-store.log`.
+
+Límites registrados: el borde exacto de igualdad y la ausencia de gracia se
+apoyan en la implementación y en las pruebas de lease/rearme; no se añade un
+cronómetro civil. El CI público y la imagen final siguen pendientes para la
+auditoría final.
 
 ### Comprobante de integración documental
 

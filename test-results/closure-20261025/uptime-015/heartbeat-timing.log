@@ -1,0 +1,8 @@
+=== RUN   TestMonitorThresholdResetRecoveryAndHistory
+--- PASS: TestMonitorThresholdResetRecoveryAndHistory (0.53s)
+=== RUN   TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases
+--- PASS: TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases (0.88s)
+=== RUN   TestHeartbeatReceiptFencesMissedCheckAndRearms
+--- PASS: TestHeartbeatReceiptFencesMissedCheckAndRearms (0.54s)
+PASS
+ok  	goodsentry/internal/store	1.968s

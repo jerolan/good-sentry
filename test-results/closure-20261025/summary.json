@@ -4182,6 +4182,14 @@
         "uptime-014/native-monitors.log"
       ]
     },
+    "CLOSE-uptime-015": {
+      "evidence": "vigente",
+      "scope": "heartbeat receipt and rearm, expired leases and fencing, threshold recovery, UTC instants and monotonic response times",
+      "evidence_files": [
+        "uptime-015/heartbeat-timing.log",
+        "uptime-013/scheduler-store.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
