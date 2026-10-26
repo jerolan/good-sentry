@@ -3942,6 +3942,14 @@
         "rendimiento-013/report.json"
       ]
     },
+    "CLOSE-rendimiento-018": {
+      "evidence": "vigente",
+      "scope": "detail and span JSON shape with UTC times, millisecond durations, raw data, no fabricated identity or timing and malformed-child retention",
+      "evidence_files": [
+        "rendimiento-018/detail-tests.log",
+        "rendimiento-016/aggregate-sample-tests.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
