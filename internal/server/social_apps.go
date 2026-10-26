@@ -165,6 +165,8 @@ func compatibleSocialBrand(value string) (string, bool) {
 		return "github", true
 	case "gitlab":
 		return "gitlab", true
+	case "gitea":
+		return "gitea", true
 	default:
 		return "", false
 	}
@@ -184,7 +186,7 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 	}
 	brand, valid := compatibleSocialBrand(input.Provider)
 	if !valid {
-		failure(w, 400, "Provider must be openid_connect, google, github or gitlab")
+		failure(w, 400, "Provider must be openid_connect, google, github, gitlab or gitea")
 		return
 	}
 	if !compatibleSocialText(input.Name, socialAppNameMax) || strings.TrimSpace(input.Name) == "" {
@@ -208,6 +210,8 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 		issuer, provider = socialGitHubURL, "github"
 	case "gitlab":
 		issuer, provider = socialGitLabURL, "gitlab"
+	case "gitea":
+		provider = "gitea"
 	case "openid_connect":
 	}
 	if input.ServerURL != nil && strings.TrimSpace(*input.ServerURL) != "" {
@@ -216,8 +220,8 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 			failure(w, 400, "Server URL must be an https:// URL")
 			return
 		}
-	} else if brand == "openid_connect" {
-		failure(w, 400, "Server URL is required for OpenID Connect applications")
+	} else if brand == "openid_connect" || brand == "gitea" {
+		failure(w, 400, "Server URL is required for OpenID Connect and Gitea applications")
 		return
 	}
 	sealed, err := s.social.seal([]byte(*input.ClientSecret))

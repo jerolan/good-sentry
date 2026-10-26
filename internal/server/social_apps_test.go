@@ -195,7 +195,15 @@ func TestCompatibleSocialOAuth2AppsHTTP(t *testing.T) {
 	if gitlab.Provider != "gitlab" || gitlab.Brand != "gitlab" || gitlab.ServerURL == nil || *gitlab.ServerURL != "https://gitlab.example.test" {
 		t.Fatalf("GitLab app=%+v", gitlab)
 	}
+	var gitea compatibleSocialView
+	if err := json.Unmarshal(f.request(t, f.client, "POST", base, socialAppBody("Gitea", "gitea-client", "gitea-secret", "gitea", "https://gitea.example.test/"), csrf, 201), &gitea); err != nil {
+		t.Fatal(err)
+	}
+	if gitea.Provider != "gitea" || gitea.Brand != "gitea" || gitea.ServerURL == nil || *gitea.ServerURL != "https://gitea.example.test" {
+		t.Fatalf("Gitea app=%+v", gitea)
+	}
 	f.request(t, f.client, "POST", base, socialAppBody("Bad", "client", "secret", "github", "ftp://github.example.test"), csrf, 400)
+	f.request(t, f.client, "POST", base, socialAppBody("Gitea", "client", "secret", "gitea", ""), csrf, 400)
 	var updated compatibleSocialView
 	if err := json.Unmarshal(f.request(t, f.client, "PUT", base+itoaSocial(github.ID)+"/", socialAppBody("GitHub Enterprise", "gh-client", "", "", "https://github.example.test"), csrf, 200), &updated); err != nil {
 		t.Fatal(err)
@@ -210,16 +218,17 @@ type socialOAuth2TestProvider struct {
 	kind       string
 	verified   bool
 	confirmed  bool
+	active     bool
 	mu         sync.Mutex
 	challenges map[string]string
 }
 
 func newSocialOAuth2TestProvider(t *testing.T, kind string, verified, confirmed bool) *socialOAuth2TestProvider {
 	t.Helper()
-	provider := &socialOAuth2TestProvider{kind: kind, verified: verified, confirmed: confirmed, challenges: map[string]string{}}
+	provider := &socialOAuth2TestProvider{kind: kind, verified: verified, confirmed: confirmed, active: true, challenges: map[string]string{}}
 	mux := http.NewServeMux()
 	authPath, tokenPath := "/oauth/authorize", "/oauth/token"
-	if kind == "github" {
+	if kind == "github" || kind == "gitea" {
 		authPath, tokenPath = "/login/oauth/authorize", "/login/oauth/access_token"
 	}
 	mux.HandleFunc(authPath, provider.authorize)
@@ -227,6 +236,8 @@ func newSocialOAuth2TestProvider(t *testing.T, kind string, verified, confirmed 
 	if kind == "github" {
 		mux.HandleFunc("/api/v3/user", provider.githubUser)
 		mux.HandleFunc("/api/v3/user/emails", provider.githubEmails)
+	} else if kind == "gitea" {
+		mux.HandleFunc("/api/v1/user", provider.giteaUser)
 	} else {
 		mux.HandleFunc("/api/v4/user", provider.gitlabUser)
 	}
@@ -307,6 +318,15 @@ func (p *socialOAuth2TestProvider) gitlabUser(w http.ResponseWriter, r *http.Req
 	_ = json.NewEncoder(w).Encode(user)
 }
 
+func (p *socialOAuth2TestProvider) giteaUser(w http.ResponseWriter, r *http.Request) {
+	if !p.authorized(w, r) {
+		return
+	}
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"id": 4242, "login": "octocat", "full_name": "Octo User", "email": "oauth-member@resolution.test", "active": p.active,
+	})
+}
+
 func newSocialOAuth2TestServer(t *testing.T, f *resolutionHTTPFixture, provider *socialOAuth2TestProvider) (*httptest.Server, store.SocialApp) {
 	t.Helper()
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -347,6 +367,7 @@ func TestSocialOAuth2SignInCreatesOrganizationMember(t *testing.T) {
 	}{
 		{kind: "GitHub", provider: "github", email: "oauth-member@resolution.test", verified: true},
 		{kind: "GitLab", provider: "gitlab", email: "oauth-member@resolution.test", confirmed: true},
+		{kind: "Gitea", provider: "gitea", email: "oauth-member@resolution.test", verified: true},
 	} {
 		t.Run(test.kind, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
@@ -390,13 +411,16 @@ func TestSocialOAuth2RejectsUnverifiedProfiles(t *testing.T) {
 	for _, test := range []struct {
 		kind, provider      string
 		verified, confirmed bool
+		inactive            bool
 	}{
 		{kind: "GitHub", provider: "github"},
 		{kind: "GitLab", provider: "gitlab", verified: true},
+		{kind: "Gitea", provider: "gitea", verified: true, inactive: true},
 	} {
 		t.Run(test.kind, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			provider := newSocialOAuth2TestProvider(t, test.provider, test.verified, test.confirmed)
+			provider.active = !test.inactive
 			srv, app := newSocialOAuth2TestServer(t, f, provider)
 			jar, err := cookiejar.New(nil)
 			if err != nil {

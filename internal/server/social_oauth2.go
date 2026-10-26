@@ -31,6 +31,15 @@ type socialOAuth2Provider struct {
 	apiURL string
 }
 
+func isSocialOAuth2Provider(provider string) bool {
+	switch provider {
+	case "github", "gitlab", "gitea":
+		return true
+	default:
+		return false
+	}
+}
+
 func (s *Server) socialOAuth2Provider(app store.SocialApp, secret string) (socialOAuth2Provider, bool) {
 	base, err := url.Parse(strings.TrimSpace(app.ServerURL))
 	if err != nil || base.Scheme != "https" || base.Host == "" || base.User != nil || base.RawQuery != "" || base.Fragment != "" {
@@ -63,6 +72,16 @@ func (s *Server) socialOAuth2Provider(app store.SocialApp, secret string) (socia
 				AuthStyle: oauth2.AuthStyleInParams,
 			},
 			Scopes: []string{"read_user"},
+		}
+	case "gitea":
+		provider.apiURL = base.String()
+		provider.config = &oauth2.Config{
+			ClientID: app.ClientID, ClientSecret: secret, RedirectURL: callback,
+			Endpoint: oauth2.Endpoint{
+				AuthURL: base.String() + "/login/oauth/authorize", TokenURL: base.String() + "/login/oauth/access_token",
+				AuthStyle: oauth2.AuthStyleInParams,
+			},
+			Scopes: []string{"read:user"},
 		}
 	default:
 		return socialOAuth2Provider{}, false
@@ -211,6 +230,21 @@ func fetchSocialOAuth2Profile(ctx context.Context, provider socialOAuth2Provider
 			return socialOAuth2ProfileValue{}, errors.New("provider account is not active and confirmed")
 		}
 		return validSocialOAuth2Profile(user.ID, user.Email, user.Name, user.Username)
+	case "gitea":
+		var user struct {
+			ID       int64  `json:"id"`
+			Login    string `json:"login"`
+			FullName string `json:"full_name"`
+			Email    string `json:"email"`
+			Active   bool   `json:"active"`
+		}
+		if err := fetchSocialOAuth2JSON(ctx, client, provider.apiURL+"/api/v1/user", &user); err != nil {
+			return socialOAuth2ProfileValue{}, err
+		}
+		if !user.Active {
+			return socialOAuth2ProfileValue{}, errors.New("provider account is inactive")
+		}
+		return validSocialOAuth2Profile(user.ID, user.Email, user.FullName, user.Login)
 	default:
 		return socialOAuth2ProfileValue{}, errors.New("unsupported social OAuth2 provider")
 	}

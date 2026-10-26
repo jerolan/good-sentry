@@ -1250,7 +1250,7 @@
       const name = field('Application name', 'text', { name: 'name', required: true, maxlength: 40, value: app?.name || '' });
       const clientID = field('Client ID', 'text', { name: 'clientID', required: true, maxlength: 191, value: app?.clientID || '' });
       const clientSecret = field(editing ? 'New client secret (optional)' : 'Client secret', 'password', { name: 'clientSecret', autocomplete: 'new-password', maxlength: 191, ...(editing ? {} : { required: true }) });
-      const provider = selectField('Provider', [['openid_connect', 'OpenID Connect'], ['google', 'Google'], ['github', 'GitHub'], ['gitlab', 'GitLab']], app?.brand || 'openid_connect', {});
+      const provider = selectField('Provider', [['openid_connect', 'OpenID Connect'], ['google', 'Google'], ['github', 'GitHub'], ['gitlab', 'GitLab'], ['gitea', 'Gitea']], app?.brand || 'openid_connect', {});
       const serverURL = field('Issuer or server URL', 'url', { name: 'serverUrl', maxlength: 500, placeholder: 'https://issuer.example.com', value: app?.serverUrl || '' });
       const submit = node('button', { type: 'submit', class: 'btn button primary' }, editing ? 'Save application' : 'Add application');
       const form = node('form', { class: 'form-stack', 'aria-label': editing ? 'Edit single sign-on application' : 'Add single sign-on application' },
@@ -1258,7 +1258,7 @@
         dialogError, name.wrap, clientID.wrap, clientSecret.wrap, editing ? null : provider.wrap, serverURL.wrap,
         node('p', { class: 'small muted' }, editing
           ? 'Leave the secret or issuer URL empty to keep the stored value.'
-          : 'The server URL must be https when set. GitHub and GitLab default to their hosted services and accept a self-hosted server URL; OpenID Connect requires an issuer. Copy the callback URL shown after saving into your identity provider.'),
+          : 'The server URL must be https when set. GitHub and GitLab default to their hosted services and accept a self-hosted server URL; OpenID Connect requires an issuer and Gitea requires its server URL. Copy the callback URL shown after saving into your identity provider.'),
         node('div', { class: 'dialog-actions' }, button('Cancel', () => dialog.close()), submit));
       form.addEventListener('submit', async event => {
         event.preventDefault();
@@ -1334,7 +1334,7 @@
         if (manageSSO) actions.append(button('Edit', () => openSSODialog(app)), button('Delete', () => openDeleteSSO(app), 'danger'));
         children.push(node('div', { class: 'release-project', role: 'listitem' },
           node('div', {}, node('strong', {}, app.name),
-            node('span', { class: 'badge' }, app.brand === 'google' ? 'Google' : app.brand === 'github' ? 'GitHub' : app.brand === 'gitlab' ? 'GitLab' : 'OpenID Connect'),
+            node('span', { class: 'badge' }, app.brand === 'google' ? 'Google' : app.brand === 'github' ? 'GitHub' : app.brand === 'gitlab' ? 'GitLab' : app.brand === 'gitea' ? 'Gitea' : 'OpenID Connect'),
             node('div', { class: 'small muted mono wrap-anywhere' }, app.callbackUrl)),
           actions));
       }

@@ -286,7 +286,7 @@ func (s *Server) socialStart(w http.ResponseWriter, r *http.Request) {
 		s.oidcRedirectError(w, r)
 		return
 	}
-	if app.Provider == "github" || app.Provider == "gitlab" {
+	if isSocialOAuth2Provider(app.Provider) {
 		s.startSocialOAuth2Flow(w, r, app, secret)
 		return
 	}
@@ -300,7 +300,7 @@ func (s *Server) socialCallback(w http.ResponseWriter, r *http.Request) {
 		s.oidcRedirectError(w, r)
 		return
 	}
-	if app.Provider == "github" || app.Provider == "gitlab" {
+	if isSocialOAuth2Provider(app.Provider) {
 		s.finishSocialOAuth2Flow(w, r, app, secret)
 		return
 	}
