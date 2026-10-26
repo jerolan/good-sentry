@@ -1,0 +1,10 @@
+=== RUN   TestReleaseHTTPContract
+--- PASS: TestReleaseHTTPContract (1.97s)
+=== RUN   TestCompatibleRepositoriesHTTP
+--- PASS: TestCompatibleRepositoriesHTTP (0.54s)
+PASS
+ok  	goodsentry/internal/server	2.530s
+=== RUN   TestReleaseCommitRawOrderRepositoriesAndPreviousHead
+--- PASS: TestReleaseCommitRawOrderRepositoriesAndPreviousHead (0.83s)
+PASS
+ok  	goodsentry/internal/store	0.846s

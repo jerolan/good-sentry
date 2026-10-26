@@ -1449,8 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 a -006 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-007. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -007 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-008. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1701,7 +1701,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-004](../SPEC.md#close-sourcemaps-004) | Release lifecycle, commit metadata and deploys: Release JSON returns string id, version, shortVersion (the exa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-005](../SPEC.md#close-sourcemaps-005) | Release lifecycle, commit metadata and deploys: List releases by dateCreated descending then numeric id descen… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-006](../SPEC.md#close-sourcemaps-006) | Release lifecycle, commit metadata and deploys: Support organization GET/POST .../releases/{version}/commits/,… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-007](../SPEC.md#close-sourcemaps-007) | Release lifecycle, commit metadata and deploys: Persist an organization/name repository identity whenever expl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-007](../SPEC.md#close-sourcemaps-007) | Release lifecycle, commit metadata and deploys: Persist an organization/name repository identity whenever expl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6120,6 +6120,41 @@ Mapa de comprobantes:
 Evidencia: `test-results/closure-20261025/sourcemaps-004-006-go.log`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: repositorios y release anterior con commits
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-007. Candidata
+`3a8084d`.
+
+Resultado observado: un commit explícito con repositorio persiste la identidad
+organización/nombre, y la lista devuelve id y nombre como cadenas, creación
+real, URL nula o presente, estado activo y proveedor `manual` con el nombre
+«Manual commit metadata», que etiqueta metadatos suministrados sin fingir una
+integración externa. La lista se ordena por id numérico ascendente, pagina con
+el mismo contrato de cursor y consulta acotada, y solo muestra repositorios
+referenciados por releases visibles en el alcance del token: un repositorio de
+un proyecto invisible no aparece. `previous-with-commits` devuelve la release
+anterior más reciente por fecha e id con un conjunto de commits no vacío y un
+proyecto común dentro del alcance, incluyendo el `lastCommit.id` real, y
+responde 404 cuando no existe una release anterior con commits.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Persistencia y proyección del repositorio manual | HTTP `TestReleaseHTTPContract` |
+| Orden por id numérico ascendente | HTTP `TestReleaseHTTPContract` (aserción añadida) |
+| Visibilidad limitada al alcance de proyectos | HTTP `TestReleaseHTTPContract` (aserción añadida) |
+| Consulta, límite y cursor estrictos | HTTP `TestCompatibleRepositoriesHTTP` |
+| Anterior más reciente con commits y proyecto común | HTTP `TestReleaseHTTPContract`; store `TestReleaseCommitRawOrderRepositoriesAndPreviousHead` |
+| 404 sin release anterior con commits | HTTP `TestReleaseHTTPContract` (aserción añadida) |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-007-go.log` y el cambio en
+`internal/server/releases_test.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. No
+se acredita una integración de repositorio remoto; el proveedor es el etiquetado
+manual.
 
 ### Comprobante de integración documental
 

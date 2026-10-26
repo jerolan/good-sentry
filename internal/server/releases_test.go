@@ -15,6 +15,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -358,6 +359,26 @@ func TestReleaseHTTPContract(t *testing.T) {
 	if len(repositories) != 1 || repositories[0].ID == "" || repositories[0].Name != "wire-repo" || repositories[0].DateCreated.IsZero() || repositories[0].Provider.ID != "manual" || repositories[0].Provider.Name != "Manual commit metadata" || repositories[0].Status != "active" {
 		t.Fatal("repository endpoint did not describe actual manual metadata")
 	}
+	want("hidden repository release", call("POST", collection, create("Hidden repo release", []string{projects[2].ID}, map[string]any{"commits": []map[string]any{{"id": "hidden-commit", "repository": "hidden-repo"}}}), writeToken), 201)
+	var restrictedRepositories []store.ReleaseRepository
+	decode(want("restricted repository list", call("GET", "/api/0/organizations/"+org.Slug+"/repos/", "", restricted), 200), &restrictedRepositories)
+	if len(restrictedRepositories) != 1 || restrictedRepositories[0].Name != "wire-repo" {
+		t.Fatalf("repository from an invisible project leaked: %+v", restrictedRepositories)
+	}
+	var orderedRepositories []store.ReleaseRepository
+	decode(want("ordered repository list", call("GET", "/api/0/organizations/"+org.Slug+"/repos/", "", writeToken), 200), &orderedRepositories)
+	if len(orderedRepositories) != 2 {
+		t.Fatalf("ordered repository list=%+v", orderedRepositories)
+	}
+	previousRepositoryID := int64(0)
+	for _, repository := range orderedRepositories {
+		id, err := strconv.ParseInt(repository.ID, 10, 64)
+		if err != nil || id <= previousRepositoryID {
+			t.Fatalf("repositories are not ordered by numeric id: %+v", orderedRepositories)
+		}
+		previousRepositoryID = id
+	}
+	want("no earlier commit release", call("GET", detail+"previous-with-commits/", "", writeToken), 404)
 	want("create previous candidate", call("POST", collection, create("Previous head", []string{projects[0].ID}, map[string]any{"commits": []map[string]any{{"id": "prior-head", "repository": "wire-repo"}}}), writeToken), 201)
 	want("create target after prior", call("POST", projectCollection, create("Next head", nil, nil), writeToken), 201)
 	var previous wireRelease

@@ -3671,6 +3671,13 @@
       "evidence_files": [
         "sourcemaps-004-006-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-007": {
+      "evidence": "vigente",
+      "scope": "manual repository identities, scoped listing and previous-with-commits",
+      "evidence_files": [
+        "sourcemaps-007-go.log"
+      ]
     }
   },
   "commands": [
