@@ -12,14 +12,7 @@ on:
       - 'go.mod'
       - 'go.sum'
       - 'internal/config/**'
-      - 'internal/server/api_tokens.go'
-      - 'internal/server/compat_auth.go'
-      - 'internal/server/compat_account_tokens_test.go'
-      - 'internal/server/compat_management_test.go'
-      - 'internal/server/debug_files.go'
-      - 'internal/server/issues_resolution_test.go'
-      - 'internal/server/minidump.go'
-      - 'internal/server/native_sdk_demo_test.go'
+      - 'internal/server/**'
       - 'internal/store/**'
   pull_request:
     branches: [main]
@@ -32,14 +25,7 @@ on:
       - 'go.mod'
       - 'go.sum'
       - 'internal/config/**'
-      - 'internal/server/api_tokens.go'
-      - 'internal/server/compat_auth.go'
-      - 'internal/server/compat_account_tokens_test.go'
-      - 'internal/server/compat_management_test.go'
-      - 'internal/server/debug_files.go'
-      - 'internal/server/issues_resolution_test.go'
-      - 'internal/server/minidump.go'
-      - 'internal/server/native_sdk_demo_test.go'
+      - 'internal/server/**'
       - 'internal/store/**'
   workflow_dispatch:
 
