@@ -1442,9 +1442,9 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024 y 026–030 ya están
+bloques detallados 014–049 siguen pendientes; 014–024 y 026–031 ya están
 vigentes y 025 está bloqueada por publicación/CI de la misma fuente. Siguiente
-acción: CLOSE-identidad-031 (redención del reset y revocación). No se declara
+acción: CLOSE-identidad-032 (formulario de reset y 1024). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
@@ -1495,7 +1495,7 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-028](../SPEC.md#close-identidad-028) | Account email and single-use password recovery: register and login screens expose a password-reset request for… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de request |
 | [CLOSE-identidad-029](../SPEC.md#close-identidad-029) | Account email and single-use password recovery: A reset token is 32 random bytes as64 lowercase hex digits. St… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de criptografía |
 | [CLOSE-identidad-030](../SPEC.md#close-identidad-030) | Account email and single-use password recovery: The one application worker sends a plain-text MIME message thr… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del worker |
-| [CLOSE-identidad-031](../SPEC.md#close-identidad-031) | Account email and single-use password recovery: POST /api/v1/account/password/reset/request is public but requ… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-031](../SPEC.md#close-identidad-031) | Account email and single-use password recovery: POST /api/v1/account/password/reset/request is public but requ… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de reset |
 | [CLOSE-identidad-032](../SPEC.md#close-identidad-032) | Account email and single-use password recovery: The reset form consumes a resetToken query parameter without p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-034](../SPEC.md#close-identidad-034) | Two-factor authentication: Additive migration 053_user_totp.sql adds nullable users.totp_secret (AES-256-GCM c… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3290,6 +3290,30 @@ Evidencia: `test-results/closure-20261025/account-mail/tests.log`.
 
 Siguiente acción: CLOSE-identidad-031 (redacción del reset, token único,
 generación y revocación), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: redención del reset
+
+Selección registrada antes de trabajar: CLOSE-identidad-031, siguiente en el
+plan. Candidata `495d159`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `account-mail/tests.log` y de `internal/server/recovery.go`.
+
+Resultado observado: request y reset son públicos pero exigen mismo origen y
+JSON estricto; un bearer solo no autoriza y no se usa la sesión de otro
+usuario. La redención lee el token, bloquea primero al usuario `FOR UPDATE` y
+revalida la fila de reset con generación vigente, estado `sent`, no consumido
+y no expirado. En una transacción Read Committed reemplaza el hash, incrementa
+la generación, elimina todas las sesiones, revoca todos los tokens no revocados
+en todas las organizaciones, marca el reset consumido e invalida los demás
+resets no consumidos. Token obsoleto/expirado/consumido/ajeno/malformado
+devuelve 400 sin escrituras; éxito 204 y cookie expirada. El cambio de
+contraseña autenticado también borra resets pendientes. El HTTP test confirma
+old session/password 401 y new password 200, con replay 400. Subresultados
+pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account-mail/tests.log`.
+
+Siguiente acción: CLOSE-identidad-032 (formulario de reset, token en URL,
+estados y 1024), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

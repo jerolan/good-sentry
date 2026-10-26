@@ -481,6 +481,17 @@
         "retry/expiry/stale lease and sent-before-redemption pass"
       ],
       "evidence_files": ["account-mail/tests.log"]
+    },
+    "CLOSE-identidad-031": {
+      "evidence": "vigente",
+      "scope": "strict public reset request/redemption, user-first lock, generation/state checks and full revocation",
+      "covered": [
+        "same-origin, strict JSON and no bearer/session substitution",
+        "user FOR UPDATE then reset revalidation under Read Committed",
+        "hash/generation replacement, all sessions deleted, all unrevoked tokens revoked, reset consumed and siblings invalidated",
+        "invalid tokens 400 without writes; success 204; password change invalidates pending resets"
+      ],
+      "evidence_files": ["account-mail/tests.log"]
     }
   },
   "commands": [
