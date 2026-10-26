@@ -459,6 +459,17 @@
         "no caller-supplied destination or account-existence disclosure; 503 is generic"
       ],
       "evidence_files": ["account-mail/tests.log"]
+    },
+    "CLOSE-identidad-029": {
+      "evidence": "vigente",
+      "scope": "reset token entropy, HMAC storage, AES-GCM/AAD and validity rules",
+      "covered": [
+        "32 random bytes as 64 lowercase hex; only HMAC-SHA256 stored",
+        "AES-256-GCM with random nonce and token hash as AAD; malformed ciphertext rejected",
+        "usable only after sent, current generation, unconsumed and before 30-minute expiry",
+        "token never returned/logged/telemetried"
+      ],
+      "evidence_files": ["account-mail/tests.log"]
     }
   },
   "commands": [

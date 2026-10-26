@@ -1442,9 +1442,9 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024, 026–028 ya están
+bloques detallados 014–049 siguen pendientes; 014–024 y 026–029 ya están
 vigentes y 025 está bloqueada por publicación/CI de la misma fuente. Siguiente
-acción: CLOSE-identidad-029 (secreto de reset, HMAC/AES-GCM y expiración). No
+acción: CLOSE-identidad-030 (worker de correo, MIME y entrega/reintentos). No
 se declara aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
@@ -1493,7 +1493,7 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener la guía de no-rolling-upgrade |
 | [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 036 |
 | [CLOSE-identidad-028](../SPEC.md#close-identidad-028) | Account email and single-use password recovery: register and login screens expose a password-reset request for… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de request |
-| [CLOSE-identidad-029](../SPEC.md#close-identidad-029) | Account email and single-use password recovery: A reset token is 32 random bytes as64 lowercase hex digits. St… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-029](../SPEC.md#close-identidad-029) | Account email and single-use password recovery: A reset token is 32 random bytes as64 lowercase hex digits. St… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de criptografía |
 | [CLOSE-identidad-030](../SPEC.md#close-identidad-030) | Account email and single-use password recovery: The one application worker sends a plain-text MIME message thr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-031](../SPEC.md#close-identidad-031) | Account email and single-use password recovery: POST /api/v1/account/password/reset/request is public but requ… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-032](../SPEC.md#close-identidad-032) | Account email and single-use password recovery: The reset form consumes a resetToken query parameter without p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3250,6 +3250,26 @@ Evidencia: `test-results/closure-20261025/account-mail/tests.log` y
 
 Siguiente acción: CLOSE-identidad-029 (token de 64 hex, HMAC, AES-GCM/AAD,
 expiración de 30 minutos y no filtración), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: secreto y validez del reset
+
+Selección registrada antes de trabajar: CLOSE-identidad-029, siguiente en el
+plan. Candidata `6b44d74`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `account-mail/tests.log` y de `internal/accountmail/secretbox.go`.
+
+Resultado observado: `NewToken` genera 32 bytes aleatorios y los devuelve como
+64 hex minúsculas; el store solo guarda el HMAC-SHA256 con `SECRET_KEY`.
+`SecretBox` deriva AES-256-GCM de la clave, usa nonce aleatorio y liga el hash
+del token como AAD (`GoodSentry password reset v1:`), rechazando ciphertext
+truncado, cambiado o sin autenticar. El ciphertext solo vive en el outbox; el
+HTTP test comprueba el enlace de 64 hex, el estado `sent` antes de redimir, la
+expiración de 30 minutos en store, el consumo único y la generación vigente.
+Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account-mail/tests.log`.
+
+Siguiente acción: CLOSE-identidad-030 (worker de correo, MIME y entrega
+SMTP/reintentos), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
