@@ -4175,6 +4175,13 @@
         "uptime-013/scheduler-store.log"
       ]
     },
+    "CLOSE-uptime-014": {
+      "evidence": "vigente",
+      "scope": "native monitor routes with CSRF, defaults, capability URL, check shape, configuration validation and membership project scope",
+      "evidence_files": [
+        "uptime-014/native-monitors.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-014. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-015. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1870,7 +1870,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 034) |
 | [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-016](../SPEC.md#close-uptime-016) | Sentry spans and native telemetry reads: Persist monitor configuration/current state and append-only check his… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-017](../SPEC.md#close-uptime-017) | Sentry spans and native telemetry reads: Claim one due enabled monitor with FOR UPDATE SKIP LOCKED, assign a r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8106,6 +8106,26 @@ Límites registrados: las pruebas del prober necesitan red local y se ejecutaron
 fuera del sandbox; dentro del sandbox la primera pasada falló por red, no por
 producto. La UI de monitores pertenece a 020. El CI público y la imagen final
 siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: API nativa de monitores
+
+Selección registrada antes de trabajar: CLOSE-uptime-014. Candidata
+`486e54e`.
+
+| Elemento | Resultado |
+|---|---|
+| Rutas nativas con sesión y CSRF | `verifyUptimeWorkflow` dentro de `TestAccountDSNCaptureAndTriage` pasa: colección, detalle, actualización, pausa y borrado |
+| Defaults y URL de capacidad | La prueba valida la URL `/api/v1/heartbeat/` y la forma del check |
+| Validación de configuración | `TestConfigValidate` pasa, incluyendo rangos, tipo inmutable, destinos y cuerpos |
+| Proyecto opcional y pertenencia | Cubierto por la prueba de servidor y por `TestMonitorMembershipProjectScopeAndHistoryPagination` |
+| Feature flag de uptime | La prueba comprueba `features.uptime` y las rutas |
+
+Evidencia: `test-results/closure-20261025/uptime-014/native-monitors.log`.
+
+Límites registrados: la prueba de servidor ejerce el flujo autenticado completo;
+los casos límite de gramática de cada tipo viven en `TestConfigValidate`. La
+UI de monitores pertenece a 020. El CI público y la imagen final siguen
+pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
