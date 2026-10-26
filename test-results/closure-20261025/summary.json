@@ -561,6 +561,27 @@
         "320/768/1440 without page errors"
       ],
       "evidence_files": ["two-factor-ui/report.json", "two-factor-ui/*.png", "tests/compat/two_factor_browser.mjs"]
+    },
+    "CLOSE-identidad-038": {
+      "evidence": "vigente",
+      "scope": "organization require2FA migration, compatible update and owner enrollment precondition",
+      "covered": [
+        "073 adds require_2fa default false without rewriting rows",
+        "compatible detail/update accepts require2FA; enabling requires the actor's confirmed TOTP",
+        "native Organization view exposes the setting"
+      ],
+      "evidence_files": ["identity/require2fa.log"]
+    },
+    "CLOSE-identidad-039": {
+      "evidence": "vigente",
+      "scope": "global organization 2FA gate for sessions, bearer and MCP; enrollment and disable rules",
+      "covered": [
+        "me reports twoFactorRequired; project routes 403 for session and bearer",
+        "MCP rejects until TOTP enrollment is confirmed",
+        "enrollment restores access; disabling is rejected while required",
+        "gate does not disclose the triggering organization"
+      ],
+      "evidence_files": ["identity/require2fa.log"]
     }
   },
   "commands": [

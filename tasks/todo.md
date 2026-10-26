@@ -1442,9 +1442,9 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024 y 026–032 y 034–037 ya
+bloques detallados 014–049 siguen pendientes; 014–024, 026–032 y 034–039 ya
 están vigentes y 025/033 están bloqueadas por publicación/CI. Siguiente acción:
-CLOSE-identidad-038 (require2FA de organización). No se declara aceptación ni
+CLOSE-identidad-040 (People/teams, roles y 404). No se declara aceptación ni
 cierre del producto. El avance se informa por criterios/evidencia, sin
 porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
 producto ni borran este registro.
@@ -1502,8 +1502,8 @@ producto ni borran este registro.
 | [CLOSE-identidad-035](../SPEC.md#close-identidad-035) | Two-factor authentication: POST /api/v1/login keeps its strict body and identical Invalid email or password re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de challenge |
 | [CLOSE-identidad-036](../SPEC.md#close-identidad-036) | Two-factor authentication: GET /api/v1/me/two-factor reports enabled, pending and recoveryCodesRemaining for t… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de endpoints |
 | [CLOSE-identidad-037](../SPEC.md#close-identidad-037) | Two-factor authentication: The Account view exposes the two-factor state, the manual-entry secret and otpauth… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI 2FA |
-| [CLOSE-identidad-038](../SPEC.md#close-identidad-038) | Two-factor authentication: Additive migration 073_organization_require_2fa.sql adds organizations.require_2fa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-039](../SPEC.md#close-identidad-039) | Two-factor authentication: When any current organization requires two-factor authentication and the account ha… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-038](../SPEC.md#close-identidad-038) | Two-factor authentication: Additive migration 073_organization_require_2fa.sql adds organizations.require_2fa… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de require2FA |
+| [CLOSE-identidad-039](../SPEC.md#close-identidad-039) | Two-factor authentication: When any current organization requires two-factor authentication and the account ha… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del gate |
 | [CLOSE-identidad-040](../SPEC.md#close-identidad-040) | Organization people and teams: Organization members and project teams are managed through the native authentic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-041](../SPEC.md#close-identidad-041) | Organization people and teams: GET /api/v1/organizations/{org}/members returns {data:{id,name,email,role}} ord… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-042](../SPEC.md#close-identidad-042) | Organization people and teams: GET/POST /api/v1/organizations/{org}/teams lists or creates teams; GET/PATCH/DE… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3433,6 +3433,27 @@ Evidencia: `test-results/closure-20261025/two-factor-ui/` y
 
 Siguiente acción: CLOSE-identidad-038 (require2FA de organización y gate de
 owner/admin), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: require2FA de organización y gate
+
+Selección registrada antes de trabajar: CLOSE-identidad-038 y -039, siguientes
+en el plan. Candidata `e98d028`; producto sin cambios desde `54db6e4`. La
+evidencia proviene del test HTTP/MCP con PostgreSQL.
+
+Resultado observado: 073 añade `organizations.require_2fa` default false sin
+reescribir filas. El detalle/update compatible acepta `require2FA`; activarlo
+antes de que el owner tenga TOTP confirmado devuelve 409, y tras enrolarlo
+devuelve 200. Con la organización exigiendo 2FA, `/api/v1/me` reporta
+`twoFactorRequired`, las rutas de proyecto por sesión y por bearer devuelven
+403, y MCP rechaza la herramienta con un error de two-factor; tras confirmar
+TOTP, la sesión y MCP vuelven a 200. Desactivar el segundo factor con la
+organización exigiendo devuelve 409. El gate no expone qué organización lo
+disparó. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/require2fa.log`.
+
+Siguiente acción: CLOSE-identidad-040 (People/teams nativos, roles y 404),
+con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
