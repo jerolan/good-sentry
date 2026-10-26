@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-023. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-024. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1879,7 +1879,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-020](../SPEC.md#close-uptime-020) | Sentry spans and native telemetry reads: The Tailwind UI lists monitor status, target, interval and last check… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-021](../SPEC.md#close-uptime-021) | Sentry spans and native telemetry reads: The SSL monitor increment uses the public SSL enum, independently def… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-022](../SPEC.md#close-uptime-022) | Sentry spans and native telemetry reads: Accept native type: SSL with an absolute https://host:port origin, op… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-023](../SPEC.md#close-uptime-023) | Sentry spans and native telemetry reads: Each SSL check creates a new TCP connection through the existing nett… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-023](../SPEC.md#close-uptime-023) | Sentry spans and native telemetry reads: Each SSL check creates a new TCP connection through the existing nett… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-024](../SPEC.md#close-uptime-024) | Sentry spans and native telemetry reads: Share one configured deadline across resolution, connect and handshak… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-025](../SPEC.md#close-uptime-025) | Sentry spans and native telemetry reads: Add SSL to the database kind constraint in additive033 without rewrit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-026](../SPEC.md#close-uptime-026) | Sentry spans and native telemetry reads: Extend owning configuration tests for accepted origins and distinct r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8296,6 +8296,26 @@ Evidencia: `test-results/closure-20261025/uptime-022/ssl-grammar.log`.
 
 Límites registrados: la gramática se prueba en la validación pura, sin red. El
 CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: verificación TLS del monitor SSL
+
+Selección registrada antes de trabajar: CLOSE-uptime-023. Candidata
+`77b3bab`.
+
+| Elemento | Comprobante |
+|---|---|
+| HTTPS/DNS confiable y política de destino privado | `TestProbeSSLVerifiedCertificates/trusted_DNS_and_private_policy` |
+| IP confiable, hostname incorrecto, raíz no confiable, expirado y futuro | Subtests correspondientes |
+| Rotación de certificado en un nuevo check | `certificate_rotation` |
+| Protocolo por debajo de TLS 1.2 rechazado | `protocol_below_TLS_1.2` |
+| Handshake acotado y cancelación | `TestProbeSSLHandshakeTimeoutAndCancellation` |
+| Sin petición HTTP ni redirecciones | El cliente TLS se detiene tras el handshake (implementación y prueba de bytes) |
+
+Evidencia: `test-results/closure-20261025/uptime-023/ssl-trust.log`.
+
+Límites registrados: no se añade umbral de expiración anticipada ni revocación;
+la validez se comprueba al ejecutar el check. El CI público y la imagen final
+siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

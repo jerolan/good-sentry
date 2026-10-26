@@ -4245,6 +4245,13 @@
         "uptime-022/ssl-grammar.log"
       ]
     },
+    "CLOSE-uptime-023": {
+      "evidence": "vigente",
+      "scope": "real TLS handshake with system trust, hostname/IP/expiry/rotation checks, TLS 1.2 floor and no HTTP request",
+      "evidence_files": [
+        "uptime-023/ssl-trust.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
