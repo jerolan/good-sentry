@@ -1,0 +1,11 @@
+> Searching /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist
+> Found 2 files
+> Analyzing 2 sources
+> Injecting debug ids
+
+Source Map Debug ID Injection Report
+  Modified: The following source files have been modified to have debug ids
+    ec5853a8-839d-5590-95e6-cbdc19c774d4 - /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js
+  Modified: The following sourcemap files have been modified to have debug ids
+    ec5853a8-839d-5590-95e6-cbdc19c774d4 - /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js.map
+

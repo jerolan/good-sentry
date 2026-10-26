@@ -1,0 +1,492 @@
+{
+  "ok": true,
+  "run": "mvpffc0t-5cd5a8e436",
+  "cliCommands": [
+    {
+      "name": "cli-version",
+      "args": [
+        "--version"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "sentry-cli 3.8.0\n",
+      "stderr": ""
+    },
+    {
+      "name": "inject",
+      "args": [
+        "sourcemaps",
+        "inject",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Searching /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist\n> Found 2 files\n> Analyzing 2 sources\n> Injecting debug ids\n\nSource Map Debug ID Injection Report\n  Modified: The following source files have been modified to have debug ids\n    ec5853a8-839d-5590-95e6-cbdc19c774d4 - /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js\n  Modified: The following sourcemap files have been modified to have debug ids\n    ec5853a8-839d-5590-95e6-cbdc19c774d4 - /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js.map\n\n",
+      "stderr": "  INFO    2026-10-26 09:43:46.865508565 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"inject\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist\"\n  INFO    2026-10-26 09:43:46.866656780 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js.map (457 bytes)\n  INFO    2026-10-26 09:43:46.866741310 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js (99 bytes)\n  INFO    2026-10-26 09:43:46.866904659 -06:00 Analyzing completed in 0s\n"
+    },
+    {
+      "name": "upload-debug-only",
+      "args": [
+        "sourcemaps",
+        "upload",
+        "--wait",
+        "--url-prefix",
+        "http://127.0.0.1:38877/dist",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Found 2 files\n> Analyzing 2 sources\n> Rewriting sources\n> Adding source map references\n> Bundled 2 files for upload\n> Bundle ID: 4327be93-3f07-526b-b42f-462e54845816\n> Uploaded files to Sentry\n> File processing complete\n> Organization: browser-027\n> Projects: browser-app\n> Release: None\n> Dist: None\n> Upload type: artifact bundle\n\nSource Map Upload Report\n  Scripts\n    http://127.0.0.1:38877/dist/app.js (sourcemap at app.js.map, debug id ec5853a8-839d-5590-95e6-cbdc19c774d4)\n  Source Maps\n    http://127.0.0.1:38877/dist/app.js.map (debug id ec5853a8-839d-5590-95e6-cbdc19c774d4)\n",
+      "stderr": "  INFO    2026-10-26 09:43:46.877063201 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"upload\" \"--wait\" \"--url-prefix\" \"http://127.0.0.1:38877/dist\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist\"\n  INFO    2026-10-26 09:43:46.881401391 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js.map (508 bytes)\n  INFO    2026-10-26 09:43:46.881471241 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js (457 bytes)\n  INFO    2026-10-26 09:43:46.881605900 -06:00 Analyzing completed in 0s\n  INFO    2026-10-26 09:43:46.881669660 -06:00 Rewriting completed in 0s\n  INFO    2026-10-26 09:43:46.882558696 -06:00 Bundling completed in 0s\n  INFO    2026-10-26 09:43:46.882628205 -06:00 Optimizing completed in 0s\n  INFO    2026-10-26 09:43:46.887281744 -06:00 using 'gzip' compression for chunk upload\n  INFO    2026-10-26 09:43:46.902400053 -06:00 Uploading completed in 0.015s\n  INFO    2026-10-26 09:43:46.913761470 -06:00 Processing completed in 0.011s\n",
+      "bundleId": "4327be93-3f07-526b-b42f-462e54845816"
+    },
+    {
+      "name": "upload-duplicate",
+      "args": [
+        "sourcemaps",
+        "upload",
+        "--wait",
+        "--url-prefix",
+        "http://127.0.0.1:38877/dist",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Found 2 files\n> Analyzing 2 sources\n> Rewriting sources\n> Adding source map references\n> Bundled 2 files for upload\n> Bundle ID: 4327be93-3f07-526b-b42f-462e54845816\n> Nothing to upload, all files are on the server\n> File processing complete\n> Organization: browser-027\n> Projects: browser-app\n> Release: None\n> Dist: None\n> Upload type: artifact bundle\n\nSource Map Upload Report\n  Scripts\n    http://127.0.0.1:38877/dist/app.js (sourcemap at app.js.map, debug id ec5853a8-839d-5590-95e6-cbdc19c774d4)\n  Source Maps\n    http://127.0.0.1:38877/dist/app.js.map (debug id ec5853a8-839d-5590-95e6-cbdc19c774d4)\n",
+      "stderr": "  INFO    2026-10-26 09:43:46.937713377 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"upload\" \"--wait\" \"--url-prefix\" \"http://127.0.0.1:38877/dist\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist\"\n  INFO    2026-10-26 09:43:46.942110767 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js.map (508 bytes)\n  INFO    2026-10-26 09:43:46.942182347 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js (457 bytes)\n  INFO    2026-10-26 09:43:46.942318486 -06:00 Analyzing completed in 0s\n  INFO    2026-10-26 09:43:46.942382736 -06:00 Rewriting completed in 0s\n  INFO    2026-10-26 09:43:46.943240652 -06:00 Bundling completed in 0s\n  INFO    2026-10-26 09:43:46.943300031 -06:00 Optimizing completed in 0s\n  INFO    2026-10-26 09:43:46.975752259 -06:00 Processing completed in 0.014s\n",
+      "bundleId": "4327be93-3f07-526b-b42f-462e54845816"
+    },
+    {
+      "name": "upload-release-dist",
+      "args": [
+        "sourcemaps",
+        "upload",
+        "--wait",
+        "--url-prefix",
+        "http://127.0.0.1:38877/dist",
+        "--release",
+        "browser-mvpffc0t-5cd5a8e436",
+        "--dist",
+        "web",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Found 2 files\n> Analyzing 2 sources\n> Rewriting sources\n> Adding source map references\n> Bundled 2 files for upload\n> Bundle ID: 4327be93-3f07-526b-b42f-462e54845816\n> Uploaded files to Sentry\n> File processing complete\n> Organization: browser-027\n> Projects: browser-app\n> Release: browser-mvpffc0t-5cd5a8e436\n> Dist: web\n> Upload type: artifact bundle\n\nSource Map Upload Report\n  Scripts\n    http://127.0.0.1:38877/dist/app.js (sourcemap at app.js.map, debug id ec5853a8-839d-5590-95e6-cbdc19c774d4)\n  Source Maps\n    http://127.0.0.1:38877/dist/app.js.map (debug id ec5853a8-839d-5590-95e6-cbdc19c774d4)\n",
+      "stderr": "  INFO    2026-10-26 09:43:46.990476746 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"upload\" \"--wait\" \"--url-prefix\" \"http://127.0.0.1:38877/dist\" \"--release\" \"browser-mvpffc0t-5cd5a8e436\" \"--dist\" \"web\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist\"\n  INFO    2026-10-26 09:43:46.997870920 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js.map (508 bytes)\n  INFO    2026-10-26 09:43:46.997938620 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js (457 bytes)\n  INFO    2026-10-26 09:43:46.998092929 -06:00 Analyzing completed in 0s\n  INFO    2026-10-26 09:43:46.998158099 -06:00 Rewriting completed in 0s\n  INFO    2026-10-26 09:43:46.999065430 -06:00 Bundling completed in 0s\n  INFO    2026-10-26 09:43:46.999128690 -06:00 Optimizing completed in 0s\n  INFO    2026-10-26 09:43:47.006179477 -06:00 using 'gzip' compression for chunk upload\n  INFO    2026-10-26 09:43:47.022475235 -06:00 Uploading completed in 0.016s\n  INFO    2026-10-26 09:43:47.040094568 -06:00 Processing completed in 0.017s\n",
+      "bundleId": "4327be93-3f07-526b-b42f-462e54845816"
+    },
+    {
+      "name": "upload-legacy",
+      "args": [
+        "sourcemaps",
+        "upload",
+        "--wait",
+        "--release",
+        "browser-legacy-mvpffc0t-5cd5a8e436",
+        "--dist",
+        "legacy-web",
+        "--url-prefix",
+        "http://127.0.0.1:38877/legacy",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/legacy"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Found 2 files\n> Analyzing 2 sources\n> Rewriting sources\n> Adding source map references\n> Bundled 2 files for upload\n> Bundle ID: cbc4899f-d9d2-5936-8d3c-e1b281291f73\n> Uploaded files to Sentry\n> File processing complete\n> Organization: browser-027\n> Projects: browser-app\n> Release: browser-legacy-mvpffc0t-5cd5a8e436\n> Dist: legacy-web\n> Upload type: artifact bundle\n\nSource Map Upload Report\n  Scripts\n    http://127.0.0.1:38877/legacy/app-legacy.js (sourcemap at app-legacy.js.map)\n  Source Maps\n    http://127.0.0.1:38877/legacy/app-legacy.js.map\n",
+      "stderr": "  INFO    2026-10-26 09:43:47.603052063 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"upload\" \"--wait\" \"--release\" \"browser-legacy-mvpffc0t-5cd5a8e436\" \"--dist\" \"legacy-web\" \"--url-prefix\" \"http://127.0.0.1:38877/legacy\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/legacy\"\n  INFO    2026-10-26 09:43:47.607955827 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/legacy/app-legacy.js.map (469 bytes)\n  INFO    2026-10-26 09:43:47.608026987 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/legacy/app-legacy.js (106 bytes)\n  INFO    2026-10-26 09:43:47.608168136 -06:00 Analyzing completed in 0s\n  INFO    2026-10-26 09:43:47.608211576 -06:00 Rewriting completed in 0s\n  INFO    2026-10-26 09:43:47.609172441 -06:00 Bundling completed in 0s\n  INFO    2026-10-26 09:43:47.609237411 -06:00 Optimizing completed in 0s\n  INFO    2026-10-26 09:43:47.614496717 -06:00 using 'gzip' compression for chunk upload\n  INFO    2026-10-26 09:43:47.628364881 -06:00 Uploading completed in 0.013s\n  INFO    2026-10-26 09:43:47.643538485 -06:00 Processing completed in 0.015s\n"
+    }
+  ],
+  "captures": [
+    {
+      "stage": "debug-only",
+      "eventID": "3640ac3f656949e9bd6d47a9af7b6af2",
+      "issueId": "5",
+      "projectId": "1",
+      "expectMapped": true,
+      "sdkDebugImage": {
+        "type": "sourcemap",
+        "debug_id": "ec5853a8-839d-5590-95e6-cbdc19c774d4",
+        "code_file": "http://127.0.0.1:38877/dist/app.js"
+      },
+      "expectedRaw": {
+        "filename": "http://127.0.0.1:38877/dist/app.js",
+        "lineno": 3,
+        "colno": 47
+      },
+      "mapped": {
+        "colno": 1,
+        "in_app": true,
+        "lineno": 7,
+        "filename": "http://127.0.0.1:38877/dist/original-mvpffc0t-5cd5a8e436.js",
+        "function": "browserFailure",
+        "pre_context": [
+          "const component = 'browser-artifact-proof';",
+          "function browserFailure(message) {",
+          "  const precedingValue = 'independent browser source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real browser exception."
+        ],
+        "context_line": "  throw new Error(message);",
+        "post_context": [
+          "}",
+          "window.__runFailure = browserFailure;"
+        ]
+      },
+      "raw": {
+        "colno": 47,
+        "in_app": true,
+        "lineno": 3,
+        "filename": "http://127.0.0.1:38877/dist/app.js",
+        "function": "b"
+      },
+      "unchanged": null,
+      "release": null,
+      "dist": null,
+      "stack": [
+        "    at b (http://127.0.0.1:38877/dist/app.js:3:47)"
+      ]
+    },
+    {
+      "stage": "release-dist",
+      "eventID": "a71434eb18cd4896a27b0c5d2dd292dc",
+      "issueId": "5",
+      "projectId": "1",
+      "expectMapped": true,
+      "sdkDebugImage": {
+        "type": "sourcemap",
+        "debug_id": "ec5853a8-839d-5590-95e6-cbdc19c774d4",
+        "code_file": "http://127.0.0.1:38877/dist/app.js"
+      },
+      "expectedRaw": {
+        "filename": "http://127.0.0.1:38877/dist/app.js",
+        "lineno": 3,
+        "colno": 47
+      },
+      "mapped": {
+        "colno": 1,
+        "in_app": true,
+        "lineno": 7,
+        "filename": "http://127.0.0.1:38877/dist/original-mvpffc0t-5cd5a8e436.js",
+        "function": "browserFailure",
+        "pre_context": [
+          "const component = 'browser-artifact-proof';",
+          "function browserFailure(message) {",
+          "  const precedingValue = 'independent browser source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real browser exception."
+        ],
+        "context_line": "  throw new Error(message);",
+        "post_context": [
+          "}",
+          "window.__runFailure = browserFailure;"
+        ]
+      },
+      "raw": {
+        "colno": 47,
+        "in_app": true,
+        "lineno": 3,
+        "filename": "http://127.0.0.1:38877/dist/app.js",
+        "function": "b"
+      },
+      "unchanged": null,
+      "release": "browser-mvpffc0t-5cd5a8e436",
+      "dist": "web",
+      "stack": [
+        "    at b (http://127.0.0.1:38877/dist/app.js:3:47)"
+      ]
+    },
+    {
+      "stage": "wrong-project",
+      "eventID": "a761326feafd4721a5f3d5983531bcb2",
+      "issueId": "6",
+      "projectId": "2",
+      "expectMapped": false,
+      "sdkDebugImage": {
+        "type": "sourcemap",
+        "debug_id": "ec5853a8-839d-5590-95e6-cbdc19c774d4",
+        "code_file": "http://127.0.0.1:38877/dist/app.js"
+      },
+      "expectedRaw": {
+        "filename": "http://127.0.0.1:38877/dist/app.js",
+        "lineno": 3,
+        "colno": 47
+      },
+      "mapped": null,
+      "raw": null,
+      "unchanged": {
+        "colno": 47,
+        "in_app": true,
+        "lineno": 3,
+        "filename": "http://127.0.0.1:38877/dist/app.js",
+        "function": "b"
+      },
+      "release": "browser-mvpffc0t-5cd5a8e436",
+      "dist": "web",
+      "stack": [
+        "    at b (http://127.0.0.1:38877/dist/app.js:3:47)"
+      ]
+    },
+    {
+      "stage": "legacy-release-dist",
+      "eventID": "fcd6aedbaf044638a591fa56734967cb",
+      "issueId": "7",
+      "projectId": "1",
+      "expectMapped": true,
+      "sdkDebugImage": null,
+      "expectedRaw": {
+        "filename": "http://127.0.0.1:38877/legacy/app-legacy.js",
+        "lineno": 1,
+        "colno": 47
+      },
+      "mapped": {
+        "colno": 1,
+        "in_app": true,
+        "lineno": 7,
+        "filename": "http://127.0.0.1:38877/legacy/original-legacy-mvpffc0t-5cd5a8e436.js",
+        "function": "legacyFailure",
+        "pre_context": [
+          "const component = 'browser-artifact-legacy';",
+          "function legacyFailure(message) {",
+          "  const precedingValue = 'independent browser source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real browser exception."
+        ],
+        "context_line": "  throw new Error(message);",
+        "post_context": [
+          "}",
+          "window.__runFailure = legacyFailure;"
+        ]
+      },
+      "raw": {
+        "colno": 47,
+        "in_app": true,
+        "lineno": 1,
+        "filename": "http://127.0.0.1:38877/legacy/app-legacy.js",
+        "function": "l"
+      },
+      "unchanged": null,
+      "release": "browser-legacy-mvpffc0t-5cd5a8e436",
+      "dist": "legacy-web",
+      "stack": [
+        "    at l (http://127.0.0.1:38877/legacy/app-legacy.js:1:47)"
+      ]
+    },
+    {
+      "stage": "legacy-wrong-version",
+      "eventID": "6e0964777f0a410d8fa39f6e6b41aa0a",
+      "issueId": "8",
+      "projectId": "1",
+      "expectMapped": false,
+      "sdkDebugImage": null,
+      "expectedRaw": {
+        "filename": "http://127.0.0.1:38877/legacy/app-legacy.js",
+        "lineno": 1,
+        "colno": 47
+      },
+      "mapped": null,
+      "raw": null,
+      "unchanged": {
+        "colno": 47,
+        "in_app": true,
+        "lineno": 1,
+        "filename": "http://127.0.0.1:38877/legacy/app-legacy.js",
+        "function": "l"
+      },
+      "release": "browser-legacy-mvpffc0t-5cd5a8e436-wrong",
+      "dist": "legacy-web",
+      "stack": [
+        "    at l (http://127.0.0.1:38877/legacy/app-legacy.js:1:47)"
+      ]
+    },
+    {
+      "stage": "legacy-wrong-dist",
+      "eventID": "6e74046629db433bb6051e54c9727640",
+      "issueId": "8",
+      "projectId": "1",
+      "expectMapped": false,
+      "sdkDebugImage": null,
+      "expectedRaw": {
+        "filename": "http://127.0.0.1:38877/legacy/app-legacy.js",
+        "lineno": 1,
+        "colno": 47
+      },
+      "mapped": null,
+      "raw": null,
+      "unchanged": {
+        "colno": 47,
+        "in_app": true,
+        "lineno": 1,
+        "filename": "http://127.0.0.1:38877/legacy/app-legacy.js",
+        "function": "l"
+      },
+      "release": "browser-legacy-mvpffc0t-5cd5a8e436",
+      "dist": "legacy-web-wrong",
+      "stack": [
+        "    at l (http://127.0.0.1:38877/legacy/app-legacy.js:1:47)"
+      ]
+    }
+  ],
+  "cliVersion": "3.8.0",
+  "playwright": {
+    "entry": "file:///tmp/gs-playwright/node_modules/playwright/index.mjs",
+    "executable": "chrome",
+    "browserVersion": "140.0.7339.16"
+  },
+  "harness": {
+    "staticOrigin": "http://127.0.0.1:38877/",
+    "scriptURL": "http://127.0.0.1:38877/dist/app.js",
+    "legacyURL": "http://127.0.0.1:38877/legacy/app-legacy.js",
+    "bundle": {
+      "bytes": 162902,
+      "sha384": "sha384-4hVyRtcJfOjrFnfkkeOAlFOf15CvnDo0eQmbzzGuWjstMU6bsoKrVJWx1YIHYTRX",
+      "servedAt": "http://127.0.0.1:38877/vendor/sentry-11.7.0.min.js"
+    },
+    "debugIdProvenance": "sentry-cli 3.8.0 injection prefixes the official runtime shim that publishes _sentryDebugIds for the served script; the page adds no identity of its own."
+  },
+  "fileDebugId": "ec5853a8-839d-5590-95e6-cbdc19c774d4",
+  "expected": {
+    "sourceName": "original-mvpffc0t-5cd5a8e436.js",
+    "functionName": "browserFailure",
+    "lines": [
+      "'use strict';",
+      "const component = 'browser-artifact-proof';",
+      "function browserFailure(message) {",
+      "  const precedingValue = 'independent browser source context';",
+      "  const order = 42;",
+      "  // Known line immediately before the real browser exception.",
+      "  throw new Error(message);",
+      "}",
+      "window.__runFailure = browserFailure;"
+    ],
+    "contextLine": "  throw new Error(message);",
+    "preContext": [
+      "const component = 'browser-artifact-proof';",
+      "function browserFailure(message) {",
+      "  const precedingValue = 'independent browser source context';",
+      "  const order = 42;",
+      "  // Known line immediately before the real browser exception."
+    ],
+    "postContext": [
+      "}",
+      "window.__runFailure = browserFailure;"
+    ],
+    "source": "'use strict';\nconst component = 'browser-artifact-proof';\nfunction browserFailure(message) {\n  const precedingValue = 'independent browser source context';\n  const order = 42;\n  // Known line immediately before the real browser exception.\n  throw new Error(message);\n}\nwindow.__runFailure = browserFailure;"
+  },
+  "legacyExpected": {
+    "sourceName": "original-legacy-mvpffc0t-5cd5a8e436.js",
+    "functionName": "legacyFailure",
+    "lines": [
+      "'use strict';",
+      "const component = 'browser-artifact-legacy';",
+      "function legacyFailure(message) {",
+      "  const precedingValue = 'independent browser source context';",
+      "  const order = 42;",
+      "  // Known line immediately before the real browser exception.",
+      "  throw new Error(message);",
+      "}",
+      "window.__runFailure = legacyFailure;"
+    ],
+    "contextLine": "  throw new Error(message);",
+    "preContext": [
+      "const component = 'browser-artifact-legacy';",
+      "function legacyFailure(message) {",
+      "  const precedingValue = 'independent browser source context';",
+      "  const order = 42;",
+      "  // Known line immediately before the real browser exception."
+    ],
+    "postContext": [
+      "}",
+      "window.__runFailure = legacyFailure;"
+    ],
+    "source": "'use strict';\nconst component = 'browser-artifact-legacy';\nfunction legacyFailure(message) {\n  const precedingValue = 'independent browser source context';\n  const order = 42;\n  // Known line immediately before the real browser exception.\n  throw new Error(message);\n}\nwindow.__runFailure = legacyFailure;"
+  },
+  "releaseVariant": {
+    "version": "browser-mvpffc0t-5cd5a8e436",
+    "dist": "web"
+  },
+  "mapMetadata": {
+    "debugOnly": [
+      {
+        "id": "17",
+        "name": "http://127.0.0.1:38877/dist/app.js.map",
+        "release": "",
+        "dist": "",
+        "debugId": "ec5853a8839d559095e6cbdc19c774d4",
+        "checksum": "709492b0c216d3e8a97c3d7a8a973b2701a67941ba520ca6772f4d5b047f7da0",
+        "size": 508,
+        "dateCreated": "2026-10-26T09:43:46.909302-06:00",
+        "codeFiles": [
+          "http://127.0.0.1:38877/dist/app.js"
+        ]
+      }
+    ],
+    "duplicate": [
+      {
+        "id": "17",
+        "name": "http://127.0.0.1:38877/dist/app.js.map",
+        "release": "",
+        "dist": "",
+        "debugId": "ec5853a8839d559095e6cbdc19c774d4",
+        "checksum": "709492b0c216d3e8a97c3d7a8a973b2701a67941ba520ca6772f4d5b047f7da0",
+        "size": 508,
+        "dateCreated": "2026-10-26T09:43:46.909302-06:00",
+        "codeFiles": [
+          "http://127.0.0.1:38877/dist/app.js"
+        ]
+      }
+    ],
+    "releaseDist": [
+      {
+        "id": "17",
+        "name": "http://127.0.0.1:38877/dist/app.js.map",
+        "release": "",
+        "dist": "",
+        "debugId": "ec5853a8839d559095e6cbdc19c774d4",
+        "checksum": "709492b0c216d3e8a97c3d7a8a973b2701a67941ba520ca6772f4d5b047f7da0",
+        "size": 508,
+        "dateCreated": "2026-10-26T09:43:46.909302-06:00",
+        "codeFiles": [
+          "http://127.0.0.1:38877/dist/app.js"
+        ]
+      },
+      {
+        "id": "20",
+        "name": "http://127.0.0.1:38877/dist/app.js.map",
+        "release": "browser-mvpffc0t-5cd5a8e436",
+        "dist": "web",
+        "debugId": "ec5853a8839d559095e6cbdc19c774d4",
+        "checksum": "709492b0c216d3e8a97c3d7a8a973b2701a67941ba520ca6772f4d5b047f7da0",
+        "size": 508,
+        "dateCreated": "2026-10-26T09:43:47.033118-06:00",
+        "codeFiles": [
+          "http://127.0.0.1:38877/dist/app.js"
+        ]
+      }
+    ]
+  },
+  "legacyMetadata": [
+    {
+      "id": "21",
+      "name": "http://127.0.0.1:38877/legacy/app-legacy.js.map",
+      "release": "browser-legacy-mvpffc0t-5cd5a8e436",
+      "dist": "legacy-web",
+      "debugId": "",
+      "checksum": "9b319d32f1d53fc520cf7c70e22c4f81058a563c7459ba60297787b031bb61ea",
+      "size": 469,
+      "dateCreated": "2026-10-26T09:43:47.636502-06:00",
+      "codeFiles": [
+        "http://127.0.0.1:38877/legacy/app-legacy.js"
+      ]
+    }
+  ],
+  "releaseVariants": {
+    "main": {
+      "release": "browser-mvpffc0t-5cd5a8e436",
+      "dist": "web"
+    },
+    "legacy": {
+      "release": "browser-legacy-mvpffc0t-5cd5a8e436",
+      "dist": "legacy-web"
+    }
+  }
+}

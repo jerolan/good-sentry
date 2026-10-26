@@ -1,0 +1,113 @@
+{
+  "sdk": {
+    "name": "sentry.javascript.browser",
+    "version": "11.7.0",
+    "packages": [
+      {
+        "name": "cdn:@sentry/browser",
+        "version": "11.7.0"
+      }
+    ],
+    "settings": {
+      "infer_ip": "auto"
+    },
+    "integrations": [
+      "EventFilters",
+      "FunctionToString",
+      "ConversationId",
+      "BrowserApiErrors",
+      "Breadcrumbs",
+      "Console",
+      "GlobalHandlers",
+      "LinkedErrors",
+      "Dedupe",
+      "HttpContext",
+      "CultureContext",
+      "BrowserSession"
+    ]
+  },
+  "dist": "legacy-web",
+  "level": "error",
+  "release": "browser-legacy-mvpffc0t-5cd5a8e436",
+  "request": {
+    "url": "http://127.0.0.1:38877/blank.html",
+    "headers": {
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.16 Safari/537.36"
+    }
+  },
+  "contexts": {
+    "trace": {
+      "span_id": "81b4ad1bd59669ac",
+      "trace_id": "71d608726fba42f7a94bab46bcfcae8f"
+    },
+    "culture": {
+      "locale": "en-US",
+      "calendar": "gregory",
+      "timezone": "America/Mexico_City"
+    }
+  },
+  "event_id": "fcd6aedbaf044638a591fa56734967cb",
+  "platform": "javascript",
+  "exception": {
+    "values": [
+      {
+        "type": "Error",
+        "value": "GoodSentry browser mvpffc0t-5cd5a8e436 legacy-release-dist",
+        "mechanism": {
+          "type": "generic",
+          "handled": true
+        },
+        "stacktrace": {
+          "frames": [
+            {
+              "colno": 18,
+              "in_app": true,
+              "lineno": 12,
+              "filename": "http://127.0.0.1:38877/harness.js",
+              "function": "HTMLButtonElement.<anonymous>"
+            },
+            {
+              "colno": 1,
+              "in_app": true,
+              "lineno": 7,
+              "filename": "http://127.0.0.1:38877/legacy/original-legacy-mvpffc0t-5cd5a8e436.js",
+              "function": "legacyFailure",
+              "pre_context": [
+                "const component = 'browser-artifact-legacy';",
+                "function legacyFailure(message) {",
+                "  const precedingValue = 'independent browser source context';",
+                "  const order = 42;",
+                "  // Known line immediately before the real browser exception."
+              ],
+              "context_line": "  throw new Error(message);",
+              "post_context": [
+                "}",
+                "window.__runFailure = legacyFailure;"
+              ]
+            }
+          ]
+        },
+        "raw_stacktrace": {
+          "frames": [
+            {
+              "colno": 18,
+              "in_app": true,
+              "lineno": 12,
+              "filename": "http://127.0.0.1:38877/harness.js",
+              "function": "HTMLButtonElement.<anonymous>"
+            },
+            {
+              "colno": 47,
+              "in_app": true,
+              "lineno": 1,
+              "filename": "http://127.0.0.1:38877/legacy/app-legacy.js",
+              "function": "l"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "timestamp": 1793029427.764,
+  "environment": "browser-artifact"
+}

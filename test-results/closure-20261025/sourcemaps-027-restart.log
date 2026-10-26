@@ -1,0 +1,6 @@
+restart healthy true
+map metadata after restart 11
+debug-only {"eventID":"a71434eb18cd4896a27b0c5d2dd292dc","mapped":{"function":"browserFailure","filename":"http://127.0.0.1:38877/dist/original-mvpffc0t-5cd5a8e436.js","lineno":7,"context":"  throw new Error(message);"},"raw":{"filename":"http://127.0.0.1:38877/dist/app.js","lineno":3,"colno":47},"satisfied":true}
+release-dist {"eventID":"a71434eb18cd4896a27b0c5d2dd292dc","mapped":{"function":"browserFailure","filename":"http://127.0.0.1:38877/dist/original-mvpffc0t-5cd5a8e436.js","lineno":7,"context":"  throw new Error(message);"},"raw":{"filename":"http://127.0.0.1:38877/dist/app.js","lineno":3,"colno":47},"satisfied":true}
+legacy-release-dist {"eventID":"fcd6aedbaf044638a591fa56734967cb","mapped":{"function":"legacyFailure","filename":"http://127.0.0.1:38877/legacy/original-legacy-mvpffc0t-5cd5a8e436.js","lineno":7,"context":"  throw new Error(message);"},"raw":{"filename":"http://127.0.0.1:38877/legacy/app-legacy.js","lineno":1,"colno":47},"satisfied":true}
+persistence verified true

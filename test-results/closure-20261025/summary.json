@@ -3824,6 +3824,16 @@
         "artifact-cli-sdk-026/report.json",
         "sourcemaps-026-restart.log"
       ]
+    },
+    "CLOSE-sourcemaps-027": {
+      "evidence": "vigente",
+      "scope": "Browser 11.7.0 and sentry-cli 3.8.0 injection, upload, DebugID and release/dist selection, mapped browser capture, UI display and restart persistence",
+      "evidence_files": [
+        "browser-sdk-027/report.json",
+        "browser-sdk-027/issue-debug-only.png",
+        "browser-sdk-027/issue-legacy-release-dist.png",
+        "sourcemaps-027-restart.log"
+      ]
     }
   },
   "commands": [

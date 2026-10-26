@@ -1,0 +1,4 @@
+  INFO    2026-10-26 09:43:46.865508565 -06:00 sentry-cli was invoked with the following command line: "/tmp/sentry-cli-3.8.0" "sourcemaps" "inject" "/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist"
+  INFO    2026-10-26 09:43:46.866656780 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js.map (457 bytes)
+  INFO    2026-10-26 09:43:46.866741310 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js (99 bytes)
+  INFO    2026-10-26 09:43:46.866904659 -06:00 Analyzing completed in 0s

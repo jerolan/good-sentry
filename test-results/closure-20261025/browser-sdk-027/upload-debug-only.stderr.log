@@ -1,0 +1,10 @@
+  INFO    2026-10-26 09:43:46.877063201 -06:00 sentry-cli was invoked with the following command line: "/tmp/sentry-cli-3.8.0" "sourcemaps" "upload" "--wait" "--url-prefix" "http://127.0.0.1:38877/dist" "/home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist"
+  INFO    2026-10-26 09:43:46.881401391 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js.map (508 bytes)
+  INFO    2026-10-26 09:43:46.881471241 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/browser-sdk-027/build-mvpffc0t-5cd5a8e436/public/dist/app.js (457 bytes)
+  INFO    2026-10-26 09:43:46.881605900 -06:00 Analyzing completed in 0s
+  INFO    2026-10-26 09:43:46.881669660 -06:00 Rewriting completed in 0s
+  INFO    2026-10-26 09:43:46.882558696 -06:00 Bundling completed in 0s
+  INFO    2026-10-26 09:43:46.882628205 -06:00 Optimizing completed in 0s
+  INFO    2026-10-26 09:43:46.887281744 -06:00 using 'gzip' compression for chunk upload
+  INFO    2026-10-26 09:43:46.902400053 -06:00 Uploading completed in 0.015s
+  INFO    2026-10-26 09:43:46.913761470 -06:00 Processing completed in 0.011s

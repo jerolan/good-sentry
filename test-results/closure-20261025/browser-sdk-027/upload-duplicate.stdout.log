@@ -1,0 +1,19 @@
+> Found 2 files
+> Analyzing 2 sources
+> Rewriting sources
+> Adding source map references
+> Bundled 2 files for upload
+> Bundle ID: 4327be93-3f07-526b-b42f-462e54845816
+> Nothing to upload, all files are on the server
+> File processing complete
+> Organization: browser-027
+> Projects: browser-app
+> Release: None
+> Dist: None
+> Upload type: artifact bundle
+
+Source Map Upload Report
+  Scripts
+    http://127.0.0.1:38877/dist/app.js (sourcemap at app.js.map, debug id ec5853a8-839d-5590-95e6-cbdc19c774d4)
+  Source Maps
+    http://127.0.0.1:38877/dist/app.js.map (debug id ec5853a8-839d-5590-95e6-cbdc19c774d4)

@@ -1453,8 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -026 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-027. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-023 a -027 quedan vigentes. Siguiente acción:
+CLOSE-rendimiento-041. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -2105,7 +2105,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-040](../SPEC.md#close-rendimiento-040) | Browser 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegaci… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-logs-032](../SPEC.md#close-logs-032) | Browser 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enla… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-026](../SPEC.md#close-sourcemaps-026) | Node 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar error r… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-027](../SPEC.md#close-sourcemaps-027) | Browser 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar erro… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-027](../SPEC.md#close-sourcemaps-027) | Browser 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar erro… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-041](../SPEC.md#close-rendimiento-041) | Comprobar cantidades y errores contra un conjunto controlado y resultados esperados explícitos, conservando lo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-042](../SPEC.md#close-rendimiento-042) | Comprobar latencias y percentiles contratados contra un conjunto controlado y resultados esperados explícitos,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-043](../SPEC.md#close-rendimiento-043) | Comprobar tendencias contra un conjunto controlado y resultados esperados explícitos, conservando los contrato… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6823,6 +6823,64 @@ Evidencia: `test-results/closure-20261025/artifact-cli-sdk-026/` y
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 prueba se ejecuta sobre el binario local; la imagen final queda en el criterio
 de publicación.
+
+### Ejecución 2026-10-26: Browser 11.7.0 sobre artefactos inyectados y subidos
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-027. Candidata
+`5b987e3`, sin cambios de producto posteriores a la ejecución de
+CLOSE-sourcemaps-026. Entorno: PostgreSQL 18 desechable, binario local
+`/tmp/gs-goodsentry-orgui`, Chromium de la instalación fijada de Playwright,
+`sentry-cli 3.8.0` (SHA-256
+`13f8cb34ae01a6a272d7d7c22e277a105286615b4020de900ea95a8de47cdbb6`) y el
+bundle oficial `bundle.tracing.logs.metrics.min.js` de Browser 11.7.0
+(SHA-384 `4hVyRtcJfOjrFnfkkeOAlFOf15CvnDo0eQmbzzGuWjstMU6bsoKrVJWx1YIHYTRX`,
+servido desde el propio arnés para no depender de la CDN durante la captura).
+
+Procedimiento reproducible: `tests/compat/browser_sourcemaps_cli.mjs` recibe un
+fixture privado modo 0600, sirve un build minificado con su mapa y el bundle
+oficial, ejecuta `sentry-cli sourcemaps inject` sobre el directorio, sube los
+artefactos con `--url-prefix` (sin release/dist y después con release/dist) y
+repite la subida para comprobar que no duplica registros. Después, cada escenario
+abre un contexto de Chromium, carga el bundle y el build, inicializa el SDK
+oficial y dispara el error real desde un listener de clic; el SDK lo captura,
+se drena la cola y la API autenticada devuelve el evento. La inyección de
+3.8.0 antepone su shim oficial que publica `_sentryDebugIds`; el arnés no
+aporta identidad propia al script.
+
+Resultado observado: `report.json` registra éxito y seis capturas reales. Las
+tres variantes válidas muestran la función original `browserFailure` o
+`legacyFailure`, el archivo original, la línea 7, la columna 1 y el contexto
+anterior y posterior del throw, conservando en `raw_stacktrace` la trama
+minificada con su línea y columna reales. Las tres variantes inválidas no
+exponen archivo ni contexto originales y mantienen la trama minificada. Las dos
+capturas mapeadas de la UI muestran función, archivo, línea y contexto, y tras
+reiniciar el proceso las once filas de metadatos de mapas y los tres issues
+mapeados siguen resolviendo con la misma línea, contexto y trama cruda.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| CLI inyecta y sube los artefactos del build probado | `browser-sdk-027/report.json` (`inject`, `upload-debug-only`, `upload-duplicate`, `upload-release-dist`, `upload-legacy`) |
+| Error real de Browser 11.7.0 con función/archivo/línea/contexto originales | `report.json` (`debug-only`, `release-dist`, `legacy-release-dist`) e `issue-debug-only.png`, `issue-legacy-release-dist.png` |
+| Selección por Debug ID | `report.json` (`debug-only`: mapa sin release/dist e imagen `debug_meta`) |
+| Selección por release/dist | `report.json` (`legacy-release-dist`: build sin inyectar resuelto por URL, versión y dist) |
+| Artefacto correcto y aislamiento | `report.json` (`wrong-project`, `legacy-wrong-version`, `legacy-wrong-dist`) |
+| Persistencia tras reinicio | `sourcemaps-027-restart.log` |
+
+Regla observada y registrada: cuando el build lleva un Debug ID inyectado, esa
+identidad prevalece sobre release/dist, de modo que una versión o dist
+incorrectos seguirían mapeando por Debug ID. Por eso las variantes negativas de
+release/dist se comprueban sobre el build legacy carente de esa identidad, y se
+conserva un rechazo explícito de proyecto distinto.
+
+Evidencia: `test-results/closure-20261025/browser-sdk-027/` y
+`sourcemaps-027-restart.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+prueba se ejecuta sobre el binario local y la imagen final queda en el criterio
+de publicación. Las subidas usan el origen efímero del arnés local; no se
+publican URLs externas ni se conservan tokens o cookies en la evidencia.
 
 ### Comprobante de integración documental
 

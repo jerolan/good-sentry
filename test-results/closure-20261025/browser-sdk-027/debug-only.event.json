@@ -1,0 +1,120 @@
+{
+  "sdk": {
+    "name": "sentry.javascript.browser",
+    "version": "11.7.0",
+    "packages": [
+      {
+        "name": "cdn:@sentry/browser",
+        "version": "11.7.0"
+      }
+    ],
+    "settings": {
+      "infer_ip": "auto"
+    },
+    "integrations": [
+      "EventFilters",
+      "FunctionToString",
+      "ConversationId",
+      "BrowserApiErrors",
+      "Breadcrumbs",
+      "Console",
+      "GlobalHandlers",
+      "LinkedErrors",
+      "Dedupe",
+      "HttpContext",
+      "CultureContext",
+      "BrowserSession"
+    ]
+  },
+  "level": "error",
+  "request": {
+    "url": "http://127.0.0.1:38877/blank.html",
+    "headers": {
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.16 Safari/537.36"
+    }
+  },
+  "contexts": {
+    "trace": {
+      "span_id": "bc8bedd8f05787d3",
+      "trace_id": "685ec36e83ec434eb3a855b2c49816e1"
+    },
+    "culture": {
+      "locale": "en-US",
+      "calendar": "gregory",
+      "timezone": "America/Mexico_City"
+    }
+  },
+  "event_id": "3640ac3f656949e9bd6d47a9af7b6af2",
+  "platform": "javascript",
+  "exception": {
+    "values": [
+      {
+        "type": "Error",
+        "value": "GoodSentry browser mvpffc0t-5cd5a8e436 debug-only",
+        "mechanism": {
+          "type": "generic",
+          "handled": true
+        },
+        "stacktrace": {
+          "frames": [
+            {
+              "colno": 18,
+              "in_app": true,
+              "lineno": 12,
+              "filename": "http://127.0.0.1:38877/harness.js",
+              "function": "HTMLButtonElement.<anonymous>"
+            },
+            {
+              "colno": 1,
+              "in_app": true,
+              "lineno": 7,
+              "filename": "http://127.0.0.1:38877/dist/original-mvpffc0t-5cd5a8e436.js",
+              "function": "browserFailure",
+              "pre_context": [
+                "const component = 'browser-artifact-proof';",
+                "function browserFailure(message) {",
+                "  const precedingValue = 'independent browser source context';",
+                "  const order = 42;",
+                "  // Known line immediately before the real browser exception."
+              ],
+              "context_line": "  throw new Error(message);",
+              "post_context": [
+                "}",
+                "window.__runFailure = browserFailure;"
+              ]
+            }
+          ]
+        },
+        "raw_stacktrace": {
+          "frames": [
+            {
+              "colno": 18,
+              "in_app": true,
+              "lineno": 12,
+              "filename": "http://127.0.0.1:38877/harness.js",
+              "function": "HTMLButtonElement.<anonymous>"
+            },
+            {
+              "colno": 47,
+              "in_app": true,
+              "lineno": 3,
+              "filename": "http://127.0.0.1:38877/dist/app.js",
+              "function": "b"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "timestamp": 1793029427.182,
+  "debug_meta": {
+    "images": [
+      {
+        "type": "sourcemap",
+        "debug_id": "ec5853a8-839d-5590-95e6-cbdc19c774d4",
+        "code_file": "http://127.0.0.1:38877/dist/app.js"
+      }
+    ]
+  },
+  "environment": "browser-artifact"
+}
