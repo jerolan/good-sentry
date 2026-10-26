@@ -781,6 +781,42 @@
         "organization membership is created once"
       ],
       "evidence_files": ["identity/social.log"]
+    },
+    "CLOSE-identidad-061": {
+      "evidence": "vigente",
+      "scope": "056 account-token and recovery-code schema",
+      "covered": [
+        "additive 056 preserves prior rows",
+        "user-scoped tokens and recovery-code storage"
+      ],
+      "evidence_files": ["identity/account-tokens.log"]
+    },
+    "CLOSE-identidad-062": {
+      "evidence": "vigente",
+      "scope": "compatible user token list/create/delete",
+      "covered": [
+        "owner isolation, cursor pages and revocation",
+        "open-mode owner behavior"
+      ],
+      "evidence_files": ["identity/account-tokens.log"]
+    },
+    "CLOSE-identidad-063": {
+      "evidence": "vigente",
+      "scope": "user bearer authenticates compatible reads/writes without native access",
+      "covered": [
+        "bearer reads and scope",
+        "native account access remains denied"
+      ],
+      "evidence_files": ["identity/account-tokens.log"]
+    },
+    "CLOSE-identidad-064": {
+      "evidence": "vigente",
+      "scope": "compatible recovery-code generation and single-use lifecycle",
+      "covered": [
+        "GET/POST generate-recovery-codes",
+        "single-use consumption, replay and regeneration"
+      ],
+      "evidence_files": ["identity/account-tokens.log"]
     }
   },
   "commands": [

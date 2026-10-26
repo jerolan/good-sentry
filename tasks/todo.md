@@ -1442,12 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–060 están vigentes, salvo 025/033 bloqueadas por
-publicación/CI. Siguiente acción: CLOSE-identidad-061 (tokens de cuenta y
-recovery codes), última familia de identidad. No se declara aceptación ni
-cierre del producto. El avance se informa por criterios/evidencia, sin
-porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
-producto ni borran este registro.
+la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
+publicación/CI. Siguiente acción: CLOSE-errores-001 (ingesta store/envelope),
+inicio de la familia de errores. No se declara aceptación ni cierre del
+producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1525,10 +1525,10 @@ producto ni borran este registro.
 | [CLOSE-identidad-058](../SPEC.md#close-identidad-058) | Organization single sign-on applications: Organization applications also accept the github and gitlab presets.… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de presets |
 | [CLOSE-identidad-059](../SPEC.md#close-identidad-059) | Organization single sign-on applications: The microsoft preset keeps the stored openid_connect provider and de… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de Microsoft |
 | [CLOSE-identidad-060](../SPEC.md#close-identidad-060) | Organization single sign-on applications: Successful OAuth2 sign-in writes the same social:{providerID} identi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de identidad social |
-| [CLOSE-identidad-061](../SPEC.md#close-identidad-061) | Compatible user API tokens and recovery codes: Additive migration 056_account_tokens.sql stores user-scoped AP… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-062](../SPEC.md#close-identidad-062) | Compatible user API tokens and recovery codes: GET, POST /api/0/api-tokens/ and DELETE /api/0/api-tokens/{id}/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-063](../SPEC.md#close-identidad-063) | Compatible user API tokens and recovery codes: A user token also authenticates other compatible reads and writ… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-064](../SPEC.md#close-identidad-064) | Compatible user API tokens and recovery codes: GET, POST /api/0/generate-recovery-codes/ stage single-use acco… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-061](../SPEC.md#close-identidad-061) | Compatible user API tokens and recovery codes: Additive migration 056_account_tokens.sql stores user-scoped AP… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 056 |
+| [CLOSE-identidad-062](../SPEC.md#close-identidad-062) | Compatible user API tokens and recovery codes: GET, POST /api/0/api-tokens/ and DELETE /api/0/api-tokens/{id}/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
+| [CLOSE-identidad-063](../SPEC.md#close-identidad-063) | Compatible user API tokens and recovery codes: A user token also authenticates other compatible reads and writ… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de bearer |
+| [CLOSE-identidad-064](../SPEC.md#close-identidad-064) | Compatible user API tokens and recovery codes: GET, POST /api/0/generate-recovery-codes/ stage single-use acco… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de códigos |
 | [CLOSE-errores-001](../SPEC.md#close-errores-001) | Ingestion contract: Support POST /api/{project}/store/ and /api/{project}/envelope/, including deployments und… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-002](../SPEC.md#close-errores-002) | Ingestion contract: Envelope headers and item headers are one-line UTF-8 JSON. Item length counts bytes and pe… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-003](../SPEC.md#close-errores-003) | Ingestion contract: Accept identity, gzip, zlib-wrapped deflate, Brotli and Zstandard HTTP bodies. Support leg… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3546,6 +3546,27 @@ Evidencia: `test-results/closure-20261025/identity/social.log`.
 
 Siguiente acción: CLOSE-identidad-061 (tokens de cuenta y recovery codes),
 última familia de identidad antes de errores.
+
+### Ejecución 2026-10-26: tokens de cuenta y recovery codes
+
+Selección registrada antes de trabajar: CLOSE-identidad-061 a -064. Candidata
+`d0fa71b`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+tests store/server con `-race`.
+
+Resultado observado: 056 añade tokens de usuario y recovery codes preservando
+filas previas; `GET/POST /api/0/api-tokens/` y `DELETE /api/0/api-tokens/{id}/`
+crean, listan y revocan tokens de cuenta con página/orden y aislamiento por
+owner. Un token de usuario autentica otras lecturas compatibles y no concede
+la API nativa; la revocación lo invalida. `GET/POST
+/api/0/generate-recovery-codes/` entrega códigos de un solo uso y su lifecycle
+(consumo, replay y regeneración) pasa. El modo abierto mantiene el owner
+implícito para estos endpoints. Subresultados pendientes de los bloques:
+ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/account-tokens.log`.
+
+Siguiente acción: CLOSE-errores-001 (ingesta store/envelope) al cerrar la
+familia de identidad salvo los bloqueos de publicación 025/033.
 
 ### Comprobante de integración documental
 
