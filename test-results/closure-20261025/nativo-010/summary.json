@@ -1,0 +1,35 @@
+{
+  "criteria": ["CLOSE-nativo-010"],
+  "date": "2026-10-26",
+  "product_revision": "78e264d",
+  "note": "No production or test change was needed. The existing legacy ARM64 owners cover the contract; this receipt records their execution at the current revision.",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64"
+  },
+  "owners": [
+    "TestParseLegacyBreakpadARM64Minidump",
+    "TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes"
+  ],
+  "covered": [
+    "architecture 0x8003 with an exact 796-byte context and flags 0x80000002 or 0x80000006 is accepted",
+    "x29, SP and PC come from offsets 240, 256 and 264",
+    "floating-point fields are ignored for register recovery",
+    "795- and 797-byte contexts are rejected",
+    "a non-0x8003 architecture pair is rejected",
+    "flags without the integer bit or with unknown bits are rejected"
+  ],
+  "observed": {
+    "native": "PASS in 0.003s",
+    "failures": 0
+  },
+  "limits": [
+    "Fixtures are synthetic Minidumps, not the final image or a real SDK crash.",
+    "No public CI or external publication was exercised in this increment.",
+    "The product is not declared an acceptance candidate or closed."
+  ],
+  "evidence": [
+    "legacy-arm64.log",
+    "summary.json"
+  ]
+}

@@ -4449,6 +4449,14 @@
         "nativo-009/summary.json"
       ]
     },
+    "CLOSE-nativo-010": {
+      "evidence": "vigente",
+      "scope": "legacy Breakpad ARM64 architecture 0x8003, exact 796-byte context, accepted flags and rejection of invalid size, architecture or flags",
+      "evidence_files": [
+        "nativo-010/legacy-arm64.log",
+        "nativo-010/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

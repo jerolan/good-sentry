@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -009 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -010 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-010. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-011. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1736,7 +1736,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-013](../SPEC.md#close-nativo-013) | CFI extended dereference: Scalar CFI expressions support DW_OP_implicit_value with an unsigned-LEB128 byte len… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8820,6 +8820,26 @@ contrato. Este incremento solo añade documentación y el comprobante.
 | Streams parciales de 33 y 167 bytes fallan | `TestParseMinidumpRejectsMalformedExceptionThreadContexts/33-byte_partial_stream` y `/167-byte_partial_stream` |
 
 Evidencia: `test-results/closure-20261025/nativo-009/exception-context.log`.
+
+Límites registrados: los fixtures son sintéticos y no se usó la imagen final ni
+el CI público. La imagen y el CI siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: ARM64 legado de Breakpad
+
+Selección registrada antes de trabajar: CLOSE-nativo-010. Revisión de producto
+`78e264d`; no hizo falta cambiar producto: los dos owners existentes cubren el
+contrato. Este incremento solo añade documentación y el comprobante.
+
+| Elemento | Comprobante |
+|---|---|
+| Arquitectura `0x8003`, contexto exacto de 796 bytes y flags `0x80000002`/`0x80000006` | `TestParseLegacyBreakpadARM64Minidump` |
+| x29, SP y PC leídos en los offsets 240, 256 y 264 | `TestParseLegacyBreakpadARM64Minidump`; `assertARM64Minidump` |
+| Campos de punto flotante ignorados en el contexto aceptado | `TestParseLegacyBreakpadARM64Minidump` (área FP a cero) |
+| Tamaños 795 y 797 rechazados | `TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/context_too_short` y `/context_too_long` |
+| Arquitectura distinta rechazada | `TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/architecture_mismatch` |
+| Bit entero ausente (`0x80000004`) y flags desconocidos (`0x8000000e`) rechazados | `TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/integer_registers_absent` y `/unknown_context_flags` |
+
+Evidencia: `test-results/closure-20261025/nativo-010/legacy-arm64.log`.
 
 Límites registrados: los fixtures son sintéticos y no se usó la imagen final ni
 el CI público. La imagen y el CI siguen pendientes para la auditoría final.
