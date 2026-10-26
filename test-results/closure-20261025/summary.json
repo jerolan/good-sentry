@@ -4413,6 +4413,16 @@
         "nativo-005/summary.json"
       ]
     },
+    "CLOSE-nativo-006": {
+      "evidence": "vigente",
+      "scope": "DWARF line-table sequences, gaps, discontiguous ranges, source fallback, 262144 row/span bounds and ELF/Mach-O image-base normalization",
+      "evidence_files": [
+        "nativo-006/dwarf-lines.log",
+        "nativo-006/objects.log",
+        "nativo-006/native.log",
+        "nativo-006/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

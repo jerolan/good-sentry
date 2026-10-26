@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -005 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -006 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-006. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-007. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1732,7 +1732,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8731,6 +8731,30 @@ Límites registrados: es una prueba de parser y simbolización con símbolos
 sintéticos conforme al formato público; el archivo Breakpad real de la CLI se
 cubrió en CLOSE-nativo-004. La imagen final y el CI público siguen pendientes
 para la auditoría final.
+
+### Ejecución 2026-10-26: tablas de línea DWARF
+
+Selección registrada antes de trabajar: CLOSE-nativo-006. Revisión de producto
+`671b0fd`; este incremento añade un fixture DWARF sintético y documentación, sin
+cambios de producto.
+
+| Elemento | Comprobante |
+|---|---|
+| Fila normal aplica del inicio al siguiente PC; `end_sequence` cierra y no es una fuente | `TestDwarfLineSpansRespectSequencesGapsAndFallback` |
+| Sin puentes entre secuencias, huecos sin archivo ni rangos discontiguos | `TestDwarfLineSpansRespectSequencesGapsAndFallback` (secuencias 0x1000, 0x1020, 0x1080 y 0x10a0; dos rangos `split`) |
+| Intersección con rangos de subprograma y fallback de función sin fuente | `TestDwarfLineSpansRespectSequencesGapsAndFallback`; `Symbolicate` en 0x1025 y 0x105a |
+| Límite de 262 144 filas por unidad: sin spans, con funciones | `TestDwarfLineRowBoundOmitsSpansButKeepsFunctions` |
+| Límite de 262 144 spans por objeto: retiene funciones y deja de emitir spans | `TestDwarfObjectSpanBoundRetainsFunctions` |
+| Tabla malformada: omite spans de la unidad y conserva funciones | `TestDwarfDecreasingLineAddressKeepsFunctions` |
+| Direcciones en VA del objeto hasta la normalización por image base | `TestDwarfLineSpansRespectSequencesGapsAndFallback`; `TestParseELFObjectSymbols`; `TestParseMachODSYMObjectSymbols` |
+
+Evidencia: `test-results/closure-20261025/nativo-006/dwarf-lines.log`,
+`objects.log` y `native.log`.
+
+Límites registrados: el fixture DWARF es v4 y se construye en memoria con
+`debug/dwarf`; los contenedores ELF y Mach-O reales se comprueban con sus
+fixtures. No se usó la imagen final ni el CI público. La imagen y el CI siguen
+pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

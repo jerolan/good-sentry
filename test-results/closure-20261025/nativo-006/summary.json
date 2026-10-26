@@ -1,0 +1,45 @@
+{
+  "criteria": ["CLOSE-nativo-006"],
+  "date": "2026-10-26",
+  "product_revision": "671b0fd",
+  "note": "This receipt adds a synthetic DWARF line-table test and documentation. The DWARF mapping implementation is unchanged.",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64"
+  },
+  "owners": [
+    "TestDwarfLineSpansRespectSequencesGapsAndFallback",
+    "TestDwarfLineRowBoundOmitsSpansButKeepsFunctions",
+    "TestDwarfObjectSpanBoundRetainsFunctions",
+    "TestDwarfDecreasingLineAddressKeepsFunctions",
+    "TestParseELFObjectSymbols",
+    "TestParseMachODSYMObjectSymbols"
+  ],
+  "covered": [
+    "a non-end line row spans from its address to the next row; the end-sequence row closes the prior span and is not itself a source mapping",
+    "no span bridges end-sequence boundaries, a gap whose previous row has no file, or discontiguous subprogram ranges",
+    "line spans are intersected with each subprogram range and the complete function range remains as a source-free fallback",
+    "a frame outside line coverage resolves its function without a misleading file or line",
+    "more than 262144 line rows omit that compilation unit's source spans while preserving function ranges",
+    "the 262144 emitted-span object bound stops additional source spans while retaining both function ranges",
+    "a decreasing line address is treated as a malformed table and omits spans while preserving the function",
+    "line addresses remain in object virtual-address space and are normalized with the ELF and Mach-O image base by the existing container path"
+  ],
+  "observed": {
+    "dwarf_lines": "PASS in 0.145s",
+    "objects": "PASS in 0.005s",
+    "native": "PASS in 0.731s",
+    "vet": "PASS for ./internal/native"
+  },
+  "limits": [
+    "The synthetic fixture is DWARF v4; real ELF and Mach-O containers are covered by their existing fixtures.",
+    "No final image, public CI or external publication was exercised in this increment.",
+    "The product is not declared an acceptance candidate or closed."
+  ],
+  "evidence": [
+    "dwarf-lines.log",
+    "objects.log",
+    "native.log",
+    "summary.json"
+  ]
+}

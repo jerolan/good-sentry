@@ -1,0 +1,22 @@
+=== RUN   TestParseELFObjectSymbols
+=== RUN   TestParseELFObjectSymbols/function_entry
+=== RUN   TestParseELFObjectSymbols/first_line_final_instruction
+=== RUN   TestParseELFObjectSymbols/first_source_transition
+=== RUN   TestParseELFObjectSymbols/second_line_final_instruction
+=== RUN   TestParseELFObjectSymbols/second_source_transition
+=== RUN   TestParseELFObjectSymbols/main_entry
+=== RUN   TestParseELFObjectSymbols/next_source_transition
+=== RUN   TestParseELFObjectSymbols/final_sequence_instruction
+--- PASS: TestParseELFObjectSymbols (0.00s)
+    --- PASS: TestParseELFObjectSymbols/function_entry (0.00s)
+    --- PASS: TestParseELFObjectSymbols/first_line_final_instruction (0.00s)
+    --- PASS: TestParseELFObjectSymbols/first_source_transition (0.00s)
+    --- PASS: TestParseELFObjectSymbols/second_line_final_instruction (0.00s)
+    --- PASS: TestParseELFObjectSymbols/second_source_transition (0.00s)
+    --- PASS: TestParseELFObjectSymbols/main_entry (0.00s)
+    --- PASS: TestParseELFObjectSymbols/next_source_transition (0.00s)
+    --- PASS: TestParseELFObjectSymbols/final_sequence_instruction (0.00s)
+=== RUN   TestParseMachODSYMObjectSymbols
+--- PASS: TestParseMachODSYMObjectSymbols (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.005s

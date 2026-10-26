@@ -1,0 +1,10 @@
+=== RUN   TestDwarfLineSpansRespectSequencesGapsAndFallback
+--- PASS: TestDwarfLineSpansRespectSequencesGapsAndFallback (0.00s)
+=== RUN   TestDwarfLineRowBoundOmitsSpansButKeepsFunctions
+--- PASS: TestDwarfLineRowBoundOmitsSpansButKeepsFunctions (0.06s)
+=== RUN   TestDwarfObjectSpanBoundRetainsFunctions
+--- PASS: TestDwarfObjectSpanBoundRetainsFunctions (0.08s)
+=== RUN   TestDwarfDecreasingLineAddressKeepsFunctions
+--- PASS: TestDwarfDecreasingLineAddressKeepsFunctions (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.145s
