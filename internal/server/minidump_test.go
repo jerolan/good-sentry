@@ -135,6 +135,19 @@ func TestNativeMinidumpSymbolicationAndIngestion(t *testing.T) {
 	if err != nil || len(files) != 1 {
 		t.Fatalf("symbol storage should contain only the uploaded symbol: %+v %v", files, err)
 	}
+	var attachments int
+	if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM attachments WHERE project_id=$1::bigint`, f.project.ID).Scan(&attachments); err != nil || attachments != 0 {
+		t.Fatalf("raw minidump was stored as an attachment: %d %v", attachments, err)
+	}
+	countEvents := func() int {
+		t.Helper()
+		var count int
+		if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM events WHERE project_id=$1::bigint`, f.project.ID).Scan(&count); err != nil {
+			t.Fatal(err)
+		}
+		return count
+	}
+	beforeFailures := countEvents()
 
 	badBody, badType := minidumpForm(t, []byte("not a minidump"), nil)
 	req, _ = http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, badBody)
@@ -157,6 +170,48 @@ func TestNativeMinidumpSymbolicationAndIngestion(t *testing.T) {
 	res.Body.Close()
 	if res.StatusCode != http.StatusForbidden {
 		t.Fatalf("invalid minidump DSN=%d", res.StatusCode)
+	}
+	req, _ = http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, bytes.NewReader([]byte("not multipart")))
+	req.Header.Set("Content-Type", "multipart/form-data; boundary=absent")
+	res, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusBadRequest {
+		t.Fatalf("malformed minidump multipart=%d", res.StatusCode)
+	}
+	var missing bytes.Buffer
+	missingWriter := multipart.NewWriter(&missing)
+	if err := missingWriter.WriteField("sentry[release]", "native@missing"); err != nil {
+		t.Fatal(err)
+	}
+	if err := missingWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+	req, _ = http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, &missing)
+	req.Header.Set("Content-Type", missingWriter.FormDataContentType())
+	res, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusBadRequest {
+		t.Fatalf("minidump without upload field=%d", res.StatusCode)
+	}
+	overLimit := make([]byte, (1<<20)+1)
+	req, _ = http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, bytes.NewReader(overLimit))
+	req.Header.Set("Content-Type", "application/octet-stream")
+	res, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusRequestEntityTooLarge {
+		t.Fatalf("oversized minidump=%d", res.StatusCode)
+	}
+	if afterFailures := countEvents(); afterFailures != beforeFailures {
+		t.Fatalf("failed minidump requests stored events: before=%d after=%d", beforeFailures, afterFailures)
 	}
 }
 

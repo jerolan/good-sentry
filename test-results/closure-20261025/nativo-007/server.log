@@ -1,0 +1,6 @@
+=== RUN   TestNativeMinidumpSymbolicationAndIngestion
+--- PASS: TestNativeMinidumpSymbolicationAndIngestion (0.53s)
+=== RUN   TestNativeRISCV64MinidumpIngestion
+--- PASS: TestNativeRISCV64MinidumpIngestion (0.49s)
+PASS
+ok  	goodsentry/internal/server	1.032s

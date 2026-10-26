@@ -1,0 +1,108 @@
+=== RUN   TestParseMinidumpAndBreakpadSymbols
+--- PASS: TestParseMinidumpAndBreakpadSymbols (0.00s)
+=== RUN   TestCodeViewDebugIDRecognizesELFBuildID
+--- PASS: TestCodeViewDebugIDRecognizesELFBuildID (0.00s)
+=== RUN   TestParseMinidumpValidatesMemory64FileRanges
+=== RUN   TestParseMinidumpValidatesMemory64FileRanges/addition_overflow
+=== RUN   TestParseMinidumpValidatesMemory64FileRanges/size_past_end
+=== RUN   TestParseMinidumpValidatesMemory64FileRanges/base_past_end
+=== RUN   TestParseMinidumpValidatesMemory64FileRanges/valid_in_file_range
+--- PASS: TestParseMinidumpValidatesMemory64FileRanges (0.00s)
+    --- PASS: TestParseMinidumpValidatesMemory64FileRanges/addition_overflow (0.00s)
+    --- PASS: TestParseMinidumpValidatesMemory64FileRanges/size_past_end (0.00s)
+    --- PASS: TestParseMinidumpValidatesMemory64FileRanges/base_past_end (0.00s)
+    --- PASS: TestParseMinidumpValidatesMemory64FileRanges/valid_in_file_range (0.00s)
+=== RUN   TestParseMinidumpUsesExceptionStreamThreadContext
+=== RUN   TestParseMinidumpUsesExceptionStreamThreadContext/preferred_over_matching_thread_context_even_before_ThreadList
+=== RUN   TestParseMinidumpUsesExceptionStreamThreadContext/usable_without_a_ThreadList_context
+--- PASS: TestParseMinidumpUsesExceptionStreamThreadContext (0.00s)
+    --- PASS: TestParseMinidumpUsesExceptionStreamThreadContext/preferred_over_matching_thread_context_even_before_ThreadList (0.00s)
+    --- PASS: TestParseMinidumpUsesExceptionStreamThreadContext/usable_without_a_ThreadList_context (0.00s)
+=== RUN   TestParseMinidumpFallsBackWhenExceptionContextIsAbsent
+=== RUN   TestParseMinidumpFallsBackWhenExceptionContextIsAbsent/stream_size_32
+=== RUN   TestParseMinidumpFallsBackWhenExceptionContextIsAbsent/stream_size_168
+=== RUN   TestParseMinidumpFallsBackWhenExceptionContextIsAbsent/first_thread_when_exception_thread_is_absent
+--- PASS: TestParseMinidumpFallsBackWhenExceptionContextIsAbsent (0.00s)
+    --- PASS: TestParseMinidumpFallsBackWhenExceptionContextIsAbsent/stream_size_32 (0.00s)
+    --- PASS: TestParseMinidumpFallsBackWhenExceptionContextIsAbsent/stream_size_168 (0.00s)
+    --- PASS: TestParseMinidumpFallsBackWhenExceptionContextIsAbsent/first_thread_when_exception_thread_is_absent (0.00s)
+=== RUN   TestParseMinidumpRejectsMalformedExceptionThreadContexts
+=== RUN   TestParseMinidumpRejectsMalformedExceptionThreadContexts/partial_descriptor_size
+=== RUN   TestParseMinidumpRejectsMalformedExceptionThreadContexts/partial_descriptor_RVA
+=== RUN   TestParseMinidumpRejectsMalformedExceptionThreadContexts/context_range_outside_file
+=== RUN   TestParseMinidumpRejectsMalformedExceptionThreadContexts/unsupported_context_does_not_fall_back
+=== RUN   TestParseMinidumpRejectsMalformedExceptionThreadContexts/context_architecture_mismatch_does_not_fall_back
+=== RUN   TestParseMinidumpRejectsMalformedExceptionThreadContexts/33-byte_partial_stream
+=== RUN   TestParseMinidumpRejectsMalformedExceptionThreadContexts/167-byte_partial_stream
+--- PASS: TestParseMinidumpRejectsMalformedExceptionThreadContexts (0.00s)
+    --- PASS: TestParseMinidumpRejectsMalformedExceptionThreadContexts/partial_descriptor_size (0.00s)
+    --- PASS: TestParseMinidumpRejectsMalformedExceptionThreadContexts/partial_descriptor_RVA (0.00s)
+    --- PASS: TestParseMinidumpRejectsMalformedExceptionThreadContexts/context_range_outside_file (0.00s)
+    --- PASS: TestParseMinidumpRejectsMalformedExceptionThreadContexts/unsupported_context_does_not_fall_back (0.00s)
+    --- PASS: TestParseMinidumpRejectsMalformedExceptionThreadContexts/context_architecture_mismatch_does_not_fall_back (0.00s)
+    --- PASS: TestParseMinidumpRejectsMalformedExceptionThreadContexts/33-byte_partial_stream (0.00s)
+    --- PASS: TestParseMinidumpRejectsMalformedExceptionThreadContexts/167-byte_partial_stream (0.00s)
+=== RUN   TestParseMinidumpRejectsArchitectureContextMismatches
+=== RUN   TestParseMinidumpRejectsArchitectureContextMismatches/AMD64_context_declared_as_x86
+=== RUN   TestParseMinidumpRejectsArchitectureContextMismatches/x86_context_declared_as_AMD64
+--- PASS: TestParseMinidumpRejectsArchitectureContextMismatches (0.00s)
+    --- PASS: TestParseMinidumpRejectsArchitectureContextMismatches/AMD64_context_declared_as_x86 (0.00s)
+    --- PASS: TestParseMinidumpRejectsArchitectureContextMismatches/x86_context_declared_as_AMD64 (0.00s)
+=== RUN   TestParseAMD64MinidumpXStateExtension
+=== RUN   TestParseAMD64MinidumpXStateExtension/extension_144
+=== RUN   TestParseAMD64MinidumpXStateExtension/extension_16384
+--- PASS: TestParseAMD64MinidumpXStateExtension (0.00s)
+    --- PASS: TestParseAMD64MinidumpXStateExtension/extension_144 (0.00s)
+    --- PASS: TestParseAMD64MinidumpXStateExtension/extension_16384 (0.00s)
+=== RUN   TestParseAMD64MinidumpRejectsInvalidXStateExtensions
+=== RUN   TestParseAMD64MinidumpRejectsInvalidXStateExtensions/extension_without_XSTATE_flag
+=== RUN   TestParseAMD64MinidumpRejectsInvalidXStateExtensions/extension_exceeds_bound
+--- PASS: TestParseAMD64MinidumpRejectsInvalidXStateExtensions (0.00s)
+    --- PASS: TestParseAMD64MinidumpRejectsInvalidXStateExtensions/extension_without_XSTATE_flag (0.00s)
+    --- PASS: TestParseAMD64MinidumpRejectsInvalidXStateExtensions/extension_exceeds_bound (0.00s)
+=== RUN   TestParseX86MinidumpFromContextShape
+--- PASS: TestParseX86MinidumpFromContextShape (0.00s)
+=== RUN   TestParseX86MinidumpXStateExtension
+=== RUN   TestParseX86MinidumpXStateExtension/extension_144
+=== RUN   TestParseX86MinidumpXStateExtension/extension_16384
+--- PASS: TestParseX86MinidumpXStateExtension (0.00s)
+    --- PASS: TestParseX86MinidumpXStateExtension/extension_144 (0.00s)
+    --- PASS: TestParseX86MinidumpXStateExtension/extension_16384 (0.00s)
+=== RUN   TestParseX86MinidumpRejectsInvalidXStateExtensions
+=== RUN   TestParseX86MinidumpRejectsInvalidXStateExtensions/extension_without_XSTATE_flag
+=== RUN   TestParseX86MinidumpRejectsInvalidXStateExtensions/extension_exceeds_bound
+=== RUN   TestParseX86MinidumpRejectsInvalidXStateExtensions/context_architecture_mismatch
+--- PASS: TestParseX86MinidumpRejectsInvalidXStateExtensions (0.00s)
+    --- PASS: TestParseX86MinidumpRejectsInvalidXStateExtensions/extension_without_XSTATE_flag (0.00s)
+    --- PASS: TestParseX86MinidumpRejectsInvalidXStateExtensions/extension_exceeds_bound (0.00s)
+    --- PASS: TestParseX86MinidumpRejectsInvalidXStateExtensions/context_architecture_mismatch (0.00s)
+=== RUN   TestParseARM32MinidumpContext
+--- PASS: TestParseARM32MinidumpContext (0.00s)
+=== RUN   TestParseARM64Minidump
+--- PASS: TestParseARM64Minidump (0.00s)
+=== RUN   TestParseLegacyBreakpadARM64Minidump
+=== RUN   TestParseLegacyBreakpadARM64Minidump/flags_80000002
+=== RUN   TestParseLegacyBreakpadARM64Minidump/flags_80000006
+--- PASS: TestParseLegacyBreakpadARM64Minidump (0.00s)
+    --- PASS: TestParseLegacyBreakpadARM64Minidump/flags_80000002 (0.00s)
+    --- PASS: TestParseLegacyBreakpadARM64Minidump/flags_80000006 (0.00s)
+=== RUN   TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes
+=== RUN   TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/context_too_short
+=== RUN   TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/context_too_long
+=== RUN   TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/architecture_mismatch
+=== RUN   TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/integer_registers_absent
+=== RUN   TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/unknown_context_flags
+--- PASS: TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes (0.00s)
+    --- PASS: TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/context_too_short (0.00s)
+    --- PASS: TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/context_too_long (0.00s)
+    --- PASS: TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/architecture_mismatch (0.00s)
+    --- PASS: TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/integer_registers_absent (0.00s)
+    --- PASS: TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes/unknown_context_flags (0.00s)
+=== RUN   TestParseRISCV64MinidumpContext
+=== RUN   TestParseRISCV64MinidumpContext/flags_08000001
+=== RUN   TestParseRISCV64MinidumpContext/flags_08000003
+--- PASS: TestParseRISCV64MinidumpContext (0.00s)
+    --- PASS: TestParseRISCV64MinidumpContext/flags_08000001 (0.00s)
+    --- PASS: TestParseRISCV64MinidumpContext/flags_08000003 (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.010s

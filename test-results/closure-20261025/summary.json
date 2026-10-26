@@ -4423,6 +4423,15 @@
         "nativo-006/summary.json"
       ]
     },
+    "CLOSE-nativo-007": {
+      "evidence": "vigente",
+      "scope": "Minidump DSN route, field and body bounds, stream parsing, exception context selection and all five architecture contexts with BpEL identity",
+      "evidence_files": [
+        "nativo-007/native.log",
+        "nativo-007/server.log",
+        "nativo-007/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

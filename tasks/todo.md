@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -006 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -007 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-007. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-008. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1733,7 +1733,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8755,6 +8755,34 @@ Límites registrados: el fixture DWARF es v4 y se construye en memoria con
 `debug/dwarf`; los contenedores ELF y Mach-O reales se comprueban con sus
 fixtures. No se usó la imagen final ni el CI público. La imagen y el CI siguen
 pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: primera rebanada de procesamiento nativo
+
+Selección registrada antes de trabajar: CLOSE-nativo-007. Revisión de producto
+`0b9417c`; este incremento extiende pruebas HTTP y documentación, sin cambios de
+producto.
+
+| Elemento | Comprobante |
+|---|---|
+| Autenticación DSN por versión y clave; clave incorrecta 403 | `TestNativeMinidumpSymbolicationAndIngestion` |
+| Campo multipart `upload_file_minidump`, cuerpo gzip y campos extra acotados | `TestNativeMinidumpSymbolicationAndIngestion` |
+| Cuerpo sobre `MAX_BODY_BYTES` 413; multipart malformado o campo ausente 400 | `TestNativeMinidumpSymbolicationAndIngestion` |
+| Fallos no crean eventos ni adjuntos | `TestNativeMinidumpSymbolicationAndIngestion` |
+| Directorio, SystemInfo, ThreadList, ModuleList, Exception y Memory64 | `TestParseMinidumpAndBreakpadSymbols`; `TestParseMinidumpValidatesMemory64FileRanges` |
+| Contexto del hilo de excepción, preferencia y fallback acotado | `TestParseMinidumpUsesExceptionStreamThreadContext`; `TestParseMinidumpFallsBackWhenExceptionContextIsAbsent` |
+| Formatos parciales, RVA inválida o arquitectura distinta no hacen fallback | `TestParseMinidumpRejectsMalformedExceptionThreadContexts`; `TestParseMinidumpRejectsArchitectureContextMismatches` |
+| AMD64 1232 bytes y XSTATE 144/16384 con bandera 0x40; extensión inválida rechazada | `TestParseAMD64MinidumpXStateExtension`; `TestParseAMD64MinidumpRejectsInvalidXStateExtensions` |
+| x86 716 bytes, arquitectura 0 y XSTATE equivalente | `TestParseX86MinidumpFromContextShape`; `TestParseX86MinidumpXStateExtension`; `TestParseX86MinidumpRejectsInvalidXStateExtensions` |
+| ARM32, ARM64 y RISC-V64 distinguidos por su contexto | `TestParseARM32MinidumpContext`; `TestParseARM64Minidump`; `TestParseRISCV64MinidumpContext` |
+| ARM64 legado Breakpad 0x8003 y RISC-V64 de extremo a extremo | `TestParseLegacyBreakpadARM64Minidump`; `TestNativeRISCV64MinidumpIngestion` |
+| Identidad `BpEL` además de `RSDS` | `TestCodeViewDebugIDRecognizesELFBuildID` |
+
+Evidencia: `test-results/closure-20261025/nativo-007/native.log` y
+`server.log`.
+
+Límites registrados: PostgreSQL desechable y binario local; no se usó la imagen
+final ni el CI público. La aceptación con SDK nativo real pertenece a criterios
+posteriores. La imagen y el CI siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
