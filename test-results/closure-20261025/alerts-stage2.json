@@ -1,0 +1,73 @@
+{
+  "run": "2b1d83",
+  "org": "alerts-2b1d83",
+  "project": "2",
+  "ruleId": "3",
+  "deliveryId": "a5ac72482ff3be9c3b9581a88f69d3fc",
+  "first": [
+    {
+      "number": 1,
+      "startedAt": "2026-10-26T03:47:33.657335-06:00",
+      "completedAt": "2026-10-26T03:47:33.674263-06:00",
+      "status": "retry",
+      "reason": "http_status",
+      "statusCode": 500,
+      "elapsedMs": 1
+    }
+  ],
+  "second": [
+    {
+      "number": 1,
+      "startedAt": "2026-10-26T03:47:33.657335-06:00",
+      "completedAt": "2026-10-26T03:47:33.674263-06:00",
+      "status": "retry",
+      "reason": "http_status",
+      "statusCode": 500,
+      "elapsedMs": 1
+    },
+    {
+      "number": 2,
+      "startedAt": "2026-10-26T03:47:48.683765-06:00",
+      "completedAt": "2026-10-26T03:47:48.699371-06:00",
+      "status": "retry",
+      "reason": "http_status",
+      "statusCode": 500,
+      "elapsedMs": 1
+    }
+  ],
+  "final": {
+    "attempts": [
+      {
+        "number": 1,
+        "startedAt": "2026-10-26T03:47:33.657335-06:00",
+        "completedAt": "2026-10-26T03:47:33.674263-06:00",
+        "status": "retry",
+        "reason": "http_status",
+        "statusCode": 500,
+        "elapsedMs": 1
+      },
+      {
+        "number": 2,
+        "startedAt": "2026-10-26T03:47:48.683765-06:00",
+        "completedAt": "2026-10-26T03:47:48.699371-06:00",
+        "status": "retry",
+        "reason": "http_status",
+        "statusCode": 500,
+        "elapsedMs": 1
+      },
+      {
+        "number": 3,
+        "startedAt": "2026-10-26T03:48:18.755681-06:00",
+        "completedAt": "2026-10-26T03:48:18.765496-06:00",
+        "status": "delivered",
+        "reason": "accepted",
+        "statusCode": 200,
+        "elapsedMs": 1
+      }
+    ]
+  },
+  "member": {
+    "alerts": 403,
+    "deliveries": 403
+  }
+}

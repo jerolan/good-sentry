@@ -2944,6 +2944,83 @@
       "evidence_files": [
         "alertas-001-003-go.log"
       ]
+    },
+    "CLOSE-alertas-004": {
+      "evidence": "vigente",
+      "scope": "native alert rules, frequency/uptime triggers, durable deliveries with retries and browser UI",
+      "evidence_files": [
+        "alertas-001-003-go.log",
+        "alerts-stage1.json",
+        "alerts-stage2.json",
+        "alerts-uptime.json",
+        "alerts-ui/report.json"
+      ]
+    },
+    "CLOSE-alertas-005": {
+      "evidence": "vigente",
+      "scope": "native alert rules, frequency/uptime triggers, durable deliveries with retries and browser UI",
+      "evidence_files": [
+        "alertas-001-003-go.log",
+        "alerts-stage1.json",
+        "alerts-stage2.json",
+        "alerts-uptime.json",
+        "alerts-ui/report.json"
+      ]
+    },
+    "CLOSE-alertas-006": {
+      "evidence": "vigente",
+      "scope": "native alert rules, frequency/uptime triggers, durable deliveries with retries and browser UI",
+      "evidence_files": [
+        "alertas-001-003-go.log",
+        "alerts-stage1.json",
+        "alerts-stage2.json",
+        "alerts-uptime.json",
+        "alerts-ui/report.json"
+      ]
+    },
+    "CLOSE-alertas-007": {
+      "evidence": "vigente",
+      "scope": "native alert rules, frequency/uptime triggers, durable deliveries with retries and browser UI",
+      "evidence_files": [
+        "alertas-001-003-go.log",
+        "alerts-stage1.json",
+        "alerts-stage2.json",
+        "alerts-uptime.json",
+        "alerts-ui/report.json"
+      ]
+    },
+    "CLOSE-alertas-008": {
+      "evidence": "vigente",
+      "scope": "native alert rules, frequency/uptime triggers, durable deliveries with retries and browser UI",
+      "evidence_files": [
+        "alertas-001-003-go.log",
+        "alerts-stage1.json",
+        "alerts-stage2.json",
+        "alerts-uptime.json",
+        "alerts-ui/report.json"
+      ]
+    },
+    "CLOSE-alertas-009": {
+      "evidence": "vigente",
+      "scope": "native alert rules, frequency/uptime triggers, durable deliveries with retries and browser UI",
+      "evidence_files": [
+        "alertas-001-003-go.log",
+        "alerts-stage1.json",
+        "alerts-stage2.json",
+        "alerts-uptime.json",
+        "alerts-ui/report.json"
+      ]
+    },
+    "CLOSE-alertas-010": {
+      "evidence": "vigente",
+      "scope": "native alert rules, frequency/uptime triggers, durable deliveries with retries and browser UI",
+      "evidence_files": [
+        "alertas-001-003-go.log",
+        "alerts-stage1.json",
+        "alerts-stage2.json",
+        "alerts-uptime.json",
+        "alerts-ui/report.json"
+      ]
     }
   },
   "commands": [

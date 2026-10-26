@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-004 (alertas nativas y su UI). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-011 (historial de entregas, UI y SMTP local). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1872,13 +1872,13 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-024](../SPEC.md#close-uptime-024) | Sentry spans and native telemetry reads: Share one configured deadline across resolution, connect and handshak… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-025](../SPEC.md#close-uptime-025) | Sentry spans and native telemetry reads: Add SSL to the database kind constraint in additive033 without rewrit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-026](../SPEC.md#close-uptime-026) | Sentry spans and native telemetry reads: Extend owning configuration tests for accepted origins and distinct r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-004](../SPEC.md#close-alertas-004) | Sentry spans and native telemetry reads: Alert rules use error counts over a rolling window and notify on thre… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-005](../SPEC.md#close-alertas-005) | Sentry spans and native telemetry reads: The first alert workflow uses owner/admin native project-scoped /api/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-006](../SPEC.md#close-alertas-006) | Sentry spans and native telemetry reads: Frequency means all non-transaction issue events in the project, incl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-007](../SPEC.md#close-alertas-007) | Sentry spans and native telemetry reads: Add an optional environment string of at most 128 characters to monit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-008](../SPEC.md#close-alertas-008) | Sentry spans and native telemetry reads: Replacing configuration or deleting a rule cancels its pending/in-fli… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-009](../SPEC.md#close-alertas-009) | Sentry spans and native telemetry reads: Delivery states are pending, processing, sent, failed and canceled. S… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-010](../SPEC.md#close-alertas-010) | Sentry spans and native telemetry reads: Run alert workers in the same process with ALERT_WORKERS default 2, r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-004](../SPEC.md#close-alertas-004) | Sentry spans and native telemetry reads: Alert rules use error counts over a rolling window and notify on thre… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-005](../SPEC.md#close-alertas-005) | Sentry spans and native telemetry reads: The first alert workflow uses owner/admin native project-scoped /api/… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-006](../SPEC.md#close-alertas-006) | Sentry spans and native telemetry reads: Frequency means all non-transaction issue events in the project, incl… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-007](../SPEC.md#close-alertas-007) | Sentry spans and native telemetry reads: Add an optional environment string of at most 128 characters to monit… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-008](../SPEC.md#close-alertas-008) | Sentry spans and native telemetry reads: Replacing configuration or deleting a rule cancels its pending/in-fli… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-009](../SPEC.md#close-alertas-009) | Sentry spans and native telemetry reads: Delivery states are pending, processing, sent, failed and canceled. S… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-010](../SPEC.md#close-alertas-010) | Sentry spans and native telemetry reads: Run alert workers in the same process with ALERT_WORKERS default 2, r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-011](../SPEC.md#close-alertas-011) | Sentry spans and native telemetry reads: List project delivery history at /api/v1/organizations/{org}/projects… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-012](../SPEC.md#close-alertas-012) | Sentry spans and native telemetry reads: On 2026-10-14 the user explicitly authorized automatic delivery to ru… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-013](../SPEC.md#close-alertas-013) | Slack incoming webhooks: Provider-specific alerts are independent of SSL certificate monitors and account reco… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4424,6 +4424,44 @@ Evidencia: `test-results/closure-20261025/alertas-001-003-go.log` con los tres
 owners HTTP y la matriz de store/entrega/proveedores.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: alertas nativas, entregas y reintentos
+
+Selección registrada antes de trabajar: CLOSE-alertas-004 a -010. Candidata
+`a593d58`.
+
+Resultado observado: los owners de store, cola, configuración y proveedores
+pasan con `-race` (262 subpruebas), incluidas reclamación con token de arriendo,
+recuperación de arriendos vencidos, presupuesto de intentos, resultados
+permanentes, reemplazo que cancela trabajo pendiente y snapshots de destinos. La
+aceptación en una instancia real con receptor HTTP local mostró que un primer
+evento no dispara, el segundo cruza el umbral y crea dos entregas (webhook y
+correo) enviadas, y un tercer evento no genera nuevas entregas por el umbral y el
+cooldown. El webhook recibió `X-GoodSentry-Delivery-ID` y
+`X-GoodSentry-Event` y un payload versión 1 con regla, organización, proyecto,
+issue, `eventId`, conteo, ventana y URL al issue; el historial guarda el intento
+con código 200 y milisegundos.
+
+Con el receptor devolviendo 500, el primer intento quedó en `retry`, el segundo
+llegó 15 segundos después y el tercero 30 segundos después, ya con 200 y estado
+`delivered`. Un miembro real recibe 403 tanto en reglas como en entregas. Un
+monitor con entorno `uptime-alerts` produjo una entrega `uptime_down` al
+confirmarse la caída y otra `uptime_recovered` al recuperarse, con estado
+anterior y actual y URL a monitores; el estado inicial `up` no generó alerta.
+En Chromium, con un receptor local real, pasan seis comprobaciones —módulo,
+valores por defecto, validación retenida, filtros por URL, entrega 204 con
+intento completado, paginación de 25 entregas, caída y recuperación por entorno,
+pausa/edición/borrado y restricciones de miembro— con 24 capturas.
+
+Evidencia: `test-results/closure-20261025/alertas-001-003-go.log`,
+`alerts-stage1.json`, `alerts-stage2.json`, `alerts-uptime.json` y
+`alerts-ui/report.json`.
+
+Límites registrados: esta corrida usó `consolemail://` para el correo, que el
+contrato admite; la prueba con receptor SMTP local corresponde a
+CLOSE-alertas-011. El driver de navegador ahora tolera únicamente cancelaciones
+por navegación completa que él mismo provoca. El CI público sigue pendiente para
+la auditoría final.
 
 ### Comprobante de integración documental
 

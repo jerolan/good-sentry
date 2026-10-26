@@ -1,0 +1,18 @@
+{
+  "run": "2b1d83",
+  "org": "alerts-2b1d83",
+  "project": "2",
+  "monitor": "1",
+  "rule": "4",
+  "upState": "up",
+  "downDelivery": {
+    "id": "e548a8599eec562a34c34b5fd64f5ca3",
+    "status": "sent"
+  },
+  "recoveryDelivery": {
+    "id": "9f050d7ac7e662f8226a75d097b99c6c",
+    "status": "pending"
+  },
+  "downPayload": "{\"version\":1,\"id\":\"e548a8599eec562a34c34b5fd64f5ca3\",\"kind\":\"uptime_down\",\"occurredAt\":\"2026-10-26T03:48:42.853053-06:00\",\"rule\":{\"id\":\"4\",\"name\":\"Uptime alert acceptance\"},\"organization\":\"alerts-2b1d83\",\"project\":{\"id\":\"2\",\"name\":\"Retry acceptance 2b1d83\",\"slug\":\"retry-acceptance-2b1d83\"},\"monitor\":{\"id\":\"1\",\"name\":\"Uptime alerts monitor\",\"status\":\"down\",\"previousStatus\":\"up\"},\"environment\":\"uptime-alerts\",\"url\":\"http://127.0.0.1:18137/?view=monitors\\u0026org=alerts-2b1d83\\u0026monitor=1\"}",
+  "recoveryPayload": null
+}

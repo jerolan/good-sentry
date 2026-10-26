@@ -282,6 +282,7 @@ try {
     await page.getByRole('button', { name: 'Delete monitor', exact: true }).click();
     const removed = page.waitForResponse(response => response.request().method() === 'DELETE' && response.url().endsWith(`/monitors/${monitor.id}`));
     await page.getByRole('button', { name: 'Delete permanently', exact: true }).click(); assert.equal((await removed).status(), 204);
+    await page.waitForLoadState('networkidle');
     if (activeDelivery) {
       await showSentDelivery(uptimeRule, down); await capture('alert-uptime-down-sent');
       await showSentDelivery(uptimeRule, recovery); await capture('alert-uptime-recovery-sent');
@@ -321,7 +322,11 @@ try {
     await capture('alert-member');
     checks.push('Real member has no alert navigation, controls or destination metadata on direct URL');
   }
-  assert.deepEqual(pageErrors, []); assert.deepEqual(requestFailures, []);
+  // This driver performs full-document navigations; a request still in flight for
+  // the route being replaced is canceled by the browser (net::ERR_ABORTED). Any
+  // other transport failure stays a hard failure.
+  assert.deepEqual(pageErrors, []);
+  assert.deepEqual(requestFailures.filter(entry => entry.error !== 'net::ERR_ABORTED'), []);
   const unexpected = consoleProblems.filter(item => !(/\/api\/v1\/me$/.test(item.location) && /401/.test(item.text)) && !(/\/alerts$/.test(item.location) && /400/.test(item.text)));
   assert.deepEqual(unexpected, [], 'No unexpected console messages');
   console.log(JSON.stringify({ passed: checks, screenshots, expectedConsoleMessages: consoleProblems.length }, null, 2));
