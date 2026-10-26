@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -025
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -026
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-026. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-027. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1858,7 +1858,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7539,6 +7539,29 @@ Límites registrados: el caso elimina la telemetría del proyecto mediante SQL
 controlado, no mediante el paso de retención programado; la conservación de la
 fila de identidad y del detalle con conteo cero es lo que se comprueba. El CI
 público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: proyección histórica de spans legacy
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-026. Candidata
+`8619f02`. Pruebas sobre PostgreSQL 18 desechable y el comprobante HTTP
+de 016.
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Normalización de descripción/operación/tiempo | `TestProjectTransactionSpansHistoricalPendingAndExactNormalization` compara con el detalle de ocurrencia |
+| Proyección relacional por evento y ordinal, JSONB intacto | La misma prueba conserva el JSON original y proyecta un evento por llamada |
+| Ingestión nueva atómica con marcador de completado | `TestTransactionSpanProjectionCommitFailureIsAtomicForIngestAndHistory` revierte evento y marcador juntos |
+| Reintentos duplicados sin filas extra | La prueba histórica agota el pendiente y una segunda pasada devuelve `false` |
+| Cancelación y reanudación | `TestTraceProjectionUpgradePreservesStatisticsDuringCancellation` preserva estadísticas al cancelar |
+| 503 con `Retry-After` ante eventos no proyectados | `TestTransactionSpanGroupsHTTPContract` devuelve 503, `Retry-After` 2, mensaje de indexación y `data` nulo |
+
+Evidencia: `test-results/closure-20261025/rendimiento-026/projection-tests.log` y
+`test-results/closure-20261025/rendimiento-016/aggregate-sample-tests.log`.
+
+Límites registrados: la prueba del trabajador usa el primitivo de proyección y
+la reanudación tras cancelación; no se ejecutan dos réplicas reales en paralelo
+en esta prueba. El CI público y la imagen final siguen pendientes para la
+auditoría final.
 
 ### Comprobante de integración documental
 

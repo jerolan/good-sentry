@@ -4002,6 +4002,14 @@
         "rendimiento-025/zero-count.json"
       ]
     },
+    "CLOSE-rendimiento-026": {
+      "evidence": "vigente",
+      "scope": "legacy span projection with exact normalization, atomic ingestion and marker, bounded historical backfill, cancellation resumption and 503 Retry-After gate",
+      "evidence_files": [
+        "rendimiento-026/projection-tests.log",
+        "rendimiento-016/aggregate-sample-tests.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
