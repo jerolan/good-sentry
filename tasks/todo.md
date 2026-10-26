@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-uptime-027 (scheduler real de HEAD). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-operacion-068 (archivo de errores y backend local). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -2103,12 +2103,12 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-044](../SPEC.md#close-rendimiento-044) | Comprobar detección N+1 contra un conjunto controlado y resultados esperados explícitos, conservando los contr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-logs-033](../SPEC.md#close-logs-033) | Exportador Python OTLP protobuf/HTTP 1.45.1: logs reales, valores/tipos, severidad, búsqueda y filtros de tiem… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-034](../SPEC.md#close-logs-034) | Exportador Python OTLP JSON/HTTP 0.66b1: logs reales, valores/tipos, severidad, búsqueda y filtros de tiempo/s… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-027](../SPEC.md#close-uptime-027) | Scheduler real de HEAD: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monito… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-028](../SPEC.md#close-uptime-028) | Scheduler real de GET: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monitor… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-029](../SPEC.md#close-uptime-029) | Scheduler real de POST: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monito… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-030](../SPEC.md#close-uptime-030) | Scheduler real de TCP: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monitor… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-031](../SPEC.md#close-uptime-031) | Scheduler real de certificado SSL: caída, recuperación, umbrales, pausa/reanudación, historial y estado públic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-032](../SPEC.md#close-uptime-032) | Scheduler real de heartbeat: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-027](../SPEC.md#close-uptime-027) | Scheduler real de HEAD: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monito… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-028](../SPEC.md#close-uptime-028) | Scheduler real de GET: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monitor… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-029](../SPEC.md#close-uptime-029) | Scheduler real de POST: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monito… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-030](../SPEC.md#close-uptime-030) | Scheduler real de TCP: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monitor… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-031](../SPEC.md#close-uptime-031) | Scheduler real de certificado SSL: caída, recuperación, umbrales, pausa/reanudación, historial y estado públic… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-032](../SPEC.md#close-uptime-032) | Scheduler real de heartbeat: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de m… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-068](../SPEC.md#close-operacion-068) | Archivo de errores, backend local: consulta durante retención mediante lectores UI/API aplicables, con filtros… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-069](../SPEC.md#close-operacion-069) | Archivo de errores, backend local: persistencia y consulta tras reinicio. Comprobante propio del tipo y backen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-070](../SPEC.md#close-operacion-070) | Archivo de errores, backend local: eliminación al vencer el plazo contratado. Comprobante propio del tipo y ba… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4370,6 +4370,33 @@ aplicación siguen las tres filas y el batch canónico.
 Evidencia: `test-results/closure-20261025/logs-otlp-json-api.json`,
 `logs-otlp-json-ui/report.json`, `logs-otlp-json-ui-restart/report.json` y el
 driver `tests/compat/otlp_logs_json_exporter.py`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: scheduler real de uptime por tipo
+
+Selección registrada antes de trabajar: CLOSE-uptime-027 a -032. Candidata
+`859c71d`.
+
+Resultado observado: los owners de sonda, scheduler y HTTP pasan con `-race`
+(90 subpruebas), incluido el trabajador real con dos pools, historial, parada que
+no registra caída y SSL no confiable. La aceptación creó un monitor de cada tipo
+contra objetivos locales reales —HTTP con rutas HEAD, GET y POST, un listener
+TCP y un servidor TLS firmado por una CA local que el proceso confía— con
+intervalo de un segundo. HEAD, GET, POST, TCP y SSL alcanzaron `up`; al inducir
+fallo bajaron a `down` y volvieron a `up` al restablecerse. El monitor GET con
+umbral dos exigió dos fallos consecutivos antes de marcar caída. El heartbeat
+pasó a `down` por intervalo vencido y volvió a `up` con un POST real a su
+`heartbeatURL`. La pausa se midió sobre filas: 273 comprobaciones, sin
+crecimiento en veinte segundos deshabilitado y 292 tras reanudar. La página de
+estado pública respondió 200 con los monitores seleccionados y su estado, y tras
+reiniciar el proceso se conservaron monitor, historial, clave de heartbeat y
+página pública, y el scheduler siguió comprobando.
+
+Evidencia: `test-results/closure-20261025/uptime-027-032-go.log`,
+`uptime-acceptance.json`, `uptime-pause.json` y `uptime-ui/report.json`
+(3 comprobaciones, 18 capturas 320/768/1440, sin errores de página ni peticiones
+fallidas).
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

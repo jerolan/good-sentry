@@ -2863,6 +2863,66 @@
         "logs-otlp-json-ui/report.json",
         "logs-otlp-json-ui-restart/report.json"
       ]
+    },
+    "CLOSE-uptime-027": {
+      "evidence": "vigente",
+      "scope": "real uptime scheduler per monitor kind with thresholds, pause, history, public status and restart",
+      "evidence_files": [
+        "uptime-027-032-go.log",
+        "uptime-acceptance.json",
+        "uptime-pause.json",
+        "uptime-ui/report.json"
+      ]
+    },
+    "CLOSE-uptime-028": {
+      "evidence": "vigente",
+      "scope": "real uptime scheduler per monitor kind with thresholds, pause, history, public status and restart",
+      "evidence_files": [
+        "uptime-027-032-go.log",
+        "uptime-acceptance.json",
+        "uptime-pause.json",
+        "uptime-ui/report.json"
+      ]
+    },
+    "CLOSE-uptime-029": {
+      "evidence": "vigente",
+      "scope": "real uptime scheduler per monitor kind with thresholds, pause, history, public status and restart",
+      "evidence_files": [
+        "uptime-027-032-go.log",
+        "uptime-acceptance.json",
+        "uptime-pause.json",
+        "uptime-ui/report.json"
+      ]
+    },
+    "CLOSE-uptime-030": {
+      "evidence": "vigente",
+      "scope": "real uptime scheduler per monitor kind with thresholds, pause, history, public status and restart",
+      "evidence_files": [
+        "uptime-027-032-go.log",
+        "uptime-acceptance.json",
+        "uptime-pause.json",
+        "uptime-ui/report.json"
+      ]
+    },
+    "CLOSE-uptime-031": {
+      "evidence": "vigente",
+      "scope": "real uptime scheduler per monitor kind with thresholds, pause, history, public status and restart",
+      "evidence_files": [
+        "uptime-027-032-go.log",
+        "uptime-acceptance.json",
+        "uptime-pause.json",
+        "uptime-ui/report.json"
+      ]
+    },
+    "CLOSE-uptime-032": {
+      "evidence": "vigente",
+      "scope": "real uptime scheduler per monitor kind with thresholds, pause, history, public status and restart",
+      "evidence_files": [
+        "uptime-027-032-go.log",
+        "uptime-acceptance.json",
+        "uptime-pause.json",
+        "uptime-ui/report.json"
+      ]
     }
   },
   "commands": [
