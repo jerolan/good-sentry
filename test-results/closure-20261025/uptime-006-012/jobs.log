@@ -1,0 +1,14 @@
+=== RUN   TestRetentionWorkersDrainRetryAndStop
+=== RUN   TestRetentionWorkersDrainRetryAndStop/uptime
+2026/10/26 16:01:46 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=250
+2026/10/26 16:01:46 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=250
+2026/10/26 16:01:46 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=101
+2026/10/26 16:01:47 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=3
+2026/10/26 16:01:47 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=2
+2026/10/26 16:01:47 ERROR Uptime retention pass failed entryPoint=uptime_retention_worker operation=cleanup_monitor_checks
+2026/10/26 16:01:47 ERROR Uptime retention pass failed entryPoint=uptime_retention_worker operation=cleanup_monitor_checks
+2026/10/26 16:01:47 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=1
+--- PASS: TestRetentionWorkersDrainRetryAndStop (0.81s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/uptime (0.81s)
+PASS
+ok  	goodsentry/internal/jobs	0.816s

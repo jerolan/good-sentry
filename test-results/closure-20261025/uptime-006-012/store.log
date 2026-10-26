@@ -1,0 +1,22 @@
+=== RUN   TestUptimeRetentionOrdersWaitingHeartbeatAndLease
+--- PASS: TestUptimeRetentionOrdersWaitingHeartbeatAndLease (0.57s)
+=== RUN   TestUptimeRetentionKeepsExactFrozenCompletionCutoff
+--- PASS: TestUptimeRetentionKeepsExactFrozenCompletionCutoff (0.78s)
+=== RUN   TestUptimeRetentionUsesCompletionAndPreservesStateAndAlerts
+--- PASS: TestUptimeRetentionUsesCompletionAndPreservesStateAndAlerts (0.60s)
+=== RUN   TestUptimeRetentionPreservesActiveLeaseAndFailureThreshold
+--- PASS: TestUptimeRetentionPreservesActiveLeaseAndFailureThreshold (0.61s)
+=== RUN   TestUptimeRetentionBoundedProgress
+--- PASS: TestUptimeRetentionBoundedProgress (0.40s)
+=== RUN   TestUptimeRetentionLateDeleteFailureAndCancellation
+=== RUN   TestUptimeRetentionLateDeleteFailureAndCancellation/cancel=false
+=== RUN   TestUptimeRetentionLateDeleteFailureAndCancellation/cancel=true
+--- PASS: TestUptimeRetentionLateDeleteFailureAndCancellation (1.26s)
+    --- PASS: TestUptimeRetentionLateDeleteFailureAndCancellation/cancel=false (0.68s)
+    --- PASS: TestUptimeRetentionLateDeleteFailureAndCancellation/cancel=true (0.58s)
+=== RUN   TestUptimeRetentionSkipsLockedCheckAndBusyMaintainer
+--- PASS: TestUptimeRetentionSkipsLockedCheckAndBusyMaintainer (0.56s)
+=== RUN   TestUptimeRetentionMigration025PreservesAndReopens
+--- PASS: TestUptimeRetentionMigration025PreservesAndReopens (0.63s)
+PASS
+ok  	goodsentry/internal/store	5.407s

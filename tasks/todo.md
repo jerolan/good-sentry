@@ -1456,10 +1456,12 @@ final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -028 quedan
 vigentes. CLOSE-operacion-013 a -023 quedan vigentes; 019, 021, 022 y 023
 conservan comprobantes históricos que se revalidan en la candidata final.
+CLOSE-uptime-006 a -012 quedan vigentes; 010 y 012 conservan comprobantes
+históricos a revalidar en la candidata final.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-006. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-024. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1797,13 +1799,13 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
 | [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar navegador/imagen en candidata final |
 | [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar CI/imagen en candidata final |
-| [CLOSE-uptime-006](../SPEC.md#close-uptime-006) | Uptime check retention: The next required retention class owns monitor_checks, not monitors. Official installa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-007](../SPEC.md#close-uptime-007) | Uptime check retention: Use completed_at as the existing durable server completion clock. Both CompleteMonitor… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-008](../SPEC.md#close-uptime-008) | Uptime check retention: Store.CleanupMonitorChecks(ctx, days) returns a committed removed-check count and erro… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-009](../SPEC.md#close-uptime-009) | Uptime check retention: Preserve every monitor configuration and cached status, consecutive_failures, last_che… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-010](../SPEC.md#close-uptime-010) | Uptime check retention: Keep the current MonitorChecks authorization, completed_at/id ordering, transition-onl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-011](../SPEC.md#close-uptime-011) | Uptime check retention: StartUptimeRetention runs unconditionally inside the one application process through t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-006](../SPEC.md#close-uptime-006) | Uptime check retention: The next required retention class owns monitor_checks, not monitors. Official installa… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-007](../SPEC.md#close-uptime-007) | Uptime check retention: Use completed_at as the existing durable server completion clock. Both CompleteMonitor… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-008](../SPEC.md#close-uptime-008) | Uptime check retention: Store.CleanupMonitorChecks(ctx, days) returns a committed removed-check count and erro… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-009](../SPEC.md#close-uptime-009) | Uptime check retention: Preserve every monitor configuration and cached status, consecutive_failures, last_che… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-010](../SPEC.md#close-uptime-010) | Uptime check retention: Keep the current MonitorChecks authorization, completed_at/id ordering, transition-onl… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-uptime-011](../SPEC.md#close-uptime-011) | Uptime check retention: StartUptimeRetention runs unconditionally inside the one application process through t… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
 | [CLOSE-operacion-024](../SPEC.md#close-operacion-024) | File and release retention prerequisites: Completed-file and release retention remain required after the four… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-025](../SPEC.md#close-operacion-025) | File and release retention prerequisites: First add typed Config.FileRetentionDays and Config.ReleaseRetention… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-026](../SPEC.md#close-operacion-026) | Release metadata retention: Release age is the first server receipt of its organization/version identity, rele… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9206,6 +9208,31 @@ aceptación histórica del 2026-10-17 y deben repetir navegador, imagen y CI en 
 candidata final. No se usó ni se modificó la baseline protegida 18103. El
 producto sigue incompleto y las siguientes clases (uptime, archivos/releases,
 archivo frío y demás) permanecen abiertas.
+
+### Ejecución 2026-10-26: retención de chequeos de uptime
+
+Selección registrada antes de trabajar: CLOSE-uptime-006 a -012. Revisión de
+producto `d66c37b`; config, proveedor y lifecycle se ejecutaron de nuevo. La
+aceptación de navegador/imagen/CI de 010/012 conserva su comprobante histórico.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 006 | `UptimeRetentionDays` con herencia master, alias, vacíos, 1..3650 y sin activación de cleanup | `TestTelemetryRetentionConfiguration`; `uptime-006-012/config.log` |
+| 007 | `completed_at` como reloj durable; `started_at` solo se desplaza para envejecer fixtures | `TestUptimeRetentionUsesCompletionAndPreservesStateAndAlerts`; `TestUptimeRetentionKeepsExactFrozenCompletionCutoff` |
+| 008 | Transacción única, try-lock de esquema, cutoff congelado, 250 filas y `SKIP LOCKED`; migración 025 solo índice y rollback por fallo/cancelación | `TestUptimeRetentionBoundedProgress`; `TestUptimeRetentionLateDeleteFailureAndCancellation`; `TestUptimeRetentionMigration025PreservesAndReopens` |
+| 009 | Configuración, estado, failure count, schedule, lease, heartbeat y alertas/deliveries exactos; chequeo bloqueado espera y completion nueva conserva su vida | `TestUptimeRetentionPreservesActiveLeaseAndFailureThreshold`; `TestUptimeRetentionOrdersWaitingHeartbeatAndLease`; `TestUptimeRetentionSkipsLockedCheckAndBusyMaintainer` |
+| 010 | Historial vacío 200/[]; UI nunca-comprobado, sin resultado retenido y resultado fresco; navegador histórico | `TestUptimeRetentionUsesCompletionAndPreservesStateAndAlerts`; `uptime-006-012/browser/{final-empty,empty,recovered}.json` |
+| 011 | `StartUptimeRetention` en el lifecycle compartido con backlog, idle, retry, cancelación y parada idempotente | `TestRetentionWorkersDrainRetryAndStop/uptime`; `jobs.log` |
+| 012 | Imagen histórica 17918bfd: 13 checks expirados, 4305 filas baseline, 4331 recuperadas, probes/heartbeat frescos y cleanup con features deshabilitadas | `uptime-006-012/{final-runtime,final-expiry,actual-probes,baseline-audit,recovery}.json`; `ci-success.log` |
+
+Evidencia fresca: `test-results/closure-20261025/uptime-006-012/{config,store,jobs}.log`
+y `summary.json`. Evidencia histórica: los JSON/logs copiados de
+`uptime-retention-20261017`.
+
+Límites registrados: 006–009 y 011 tienen pruebas frescas; 010 y 012 son
+aceptación histórica y deben repetir navegador/imagen/CI en la candidata final.
+No se usó ni se modificó ninguna baseline original. El producto sigue
+incompleto.
 
 ### Comprobante de integración documental
 

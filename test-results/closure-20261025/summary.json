@@ -237,6 +237,41 @@
       "scope": "error-event acceptance closure with exact public source, matching CI and protected baseline/recovery runtimes",
       "evidence_files": ["operacion-021-022/ci-success.log", "operacion-021-022/final-runtime.json", "operacion-021-022/evidence-hashes.json"]
     },
+    "CLOSE-uptime-006": {
+      "evidence": "vigente",
+      "scope": "uptime retention lifetime precedence, aliases, empty fallthrough and 1..3650 validation without cleanup activation",
+      "evidence_files": ["uptime-006-012/config.log", "uptime-006-012/summary.json"]
+    },
+    "CLOSE-uptime-007": {
+      "evidence": "vigente",
+      "scope": "completed_at as the durable completion clock with fixture-only started_at aging",
+      "evidence_files": ["uptime-006-012/store.log", "uptime-006-012/summary.json"]
+    },
+    "CLOSE-uptime-008": {
+      "evidence": "vigente",
+      "scope": "atomic 250-row monitor-check cleanup with schema try-lock, frozen cutoff, skip-locked rows and migration 025",
+      "evidence_files": ["uptime-006-012/store.log", "uptime-006-012/summary.json"]
+    },
+    "CLOSE-uptime-009": {
+      "evidence": "vigente",
+      "scope": "monitor state, lease, schedule, heartbeat and alert/delivery snapshots preserved while history expires",
+      "evidence_files": ["uptime-006-012/store.log", "uptime-006-012/summary.json"]
+    },
+    "CLOSE-uptime-010": {
+      "evidence": "vigente (historical browser)",
+      "scope": "empty retained history API/UI states with preserved monitor controls and pagination",
+      "evidence_files": ["uptime-006-012/browser/final-empty.json", "uptime-006-012/browser/empty.json", "uptime-006-012/browser/recovered.json"]
+    },
+    "CLOSE-uptime-011": {
+      "evidence": "vigente",
+      "scope": "StartUptimeRetention in the shared lifecycle with backlog/idle/retry/cancel/idempotent stop",
+      "evidence_files": ["uptime-006-012/jobs.log", "uptime-006-012/summary.json"]
+    },
+    "CLOSE-uptime-012": {
+      "evidence": "vigente (historical 17918bfd)",
+      "scope": "historical image acceptance: 13 owned checks expired, independent probes/heartbeats recovered, 4305 baseline rows and 4331 recovery rows exact",
+      "evidence_files": ["uptime-006-012/final-runtime.json", "uptime-006-012/final-expiry.json", "uptime-006-012/recovery.json", "uptime-006-012/ci-success.log"]
+    },
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",

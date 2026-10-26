@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "image": "sha256:17918bfd6bd2f8761237b8dc48bce046e17e72d04d793bff1c9f6a648d819cda",
+  "imageBytes": 31136561,
+  "user": "65532:65532",
+  "staticELF": true,
+  "binarySHA256": "56e02a77abdea3a475dfe06139a87137d790175fc7edc4deaad8ff816cd3292f",
+  "caCertificates": 150,
+  "licenseExact": true,
+  "rows": 4342,
+  "tables": 38,
+  "migrations": 25,
+  "events": 530,
+  "canonicalBatches": 28,
+  "allRowsExactAfterRestart": true,
+  "emptyOwnMonitorsReadable": 4,
+  "lastKnownUp": 3,
+  "neverChecked": 1,
+  "sentTransitionSnapshots": 8,
+  "baselineRowsPreserved": 4305,
+  "separatePreExpiryRecoveryRows": 4331,
+  "expiredOwnChecks": 13,
+  "assets": [
+    {
+      "file": "app.js",
+      "sha256": "6f29bcb1ccb93ac1a58335ee238f25991ea369d1db4a4aa3846af1a612f90ece"
+    },
+    {
+      "file": "app.css",
+      "sha256": "6dda9f883940dbe3c8de0a9161a6e1da459be3394a5418cf6e61401060d0fb75"
+    },
+    {
+      "file": "alerts.js",
+      "sha256": "361ba7899138b2a4cc9abd3920bc7371972ef8e038f0751cb1b790748740c2a2"
+    },
+    {
+      "file": "releases.js",
+      "sha256": "2825c9737c1699948e3a7a0dfa1cb6246e9961f5169f76a4b2a18bfa7df48cb4"
+    },
+    {
+      "file": "hashes.js",
+      "sha256": "fec66875525ab46ee8cb2b8e253a28d7b44ab04de7a3ac54cbfcad7856406c86"
+    }
+  ],
+  "memoryUnmeasured": true
+}
