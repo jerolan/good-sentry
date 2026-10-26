@@ -447,6 +447,9 @@
     "CLOSE-errores-220": {"evidence": "vigente (composed)", "scope": "attachment storage/list/read/download controls plus file retention", "evidence_files": ["errores-207-208/summary.json", "operacion-035-043/summary.json", "errores-220-222/summary.json"]},
     "CLOSE-errores-221": {"evidence": "vigente (composed, historical browser)", "scope": "legacy feedback transport, association, reports and UI", "evidence_files": ["errores-164-181/summary.json", "errores-220-222/summary.json"]},
     "CLOSE-errores-222": {"evidence": "vigente (composed, historical browser)", "scope": "modern feedback category, association, retention, reads and UI", "evidence_files": ["errores-182-205/summary.json", "errores-220-222/summary.json"]},
+    "CLOSE-operacion-097": {"evidence": "vigente", "scope": "real Chromium approved flows at 320px", "evidence_files": ["operacion-097-099/report.json", "operacion-097-099/issues-320.png"]},
+    "CLOSE-operacion-098": {"evidence": "vigente", "scope": "real Chromium approved flows at 768px", "evidence_files": ["operacion-097-099/report.json", "operacion-097-099/issues-768.png"]},
+    "CLOSE-operacion-099": {"evidence": "vigente", "scope": "real Chromium approved flows at 1440px", "evidence_files": ["operacion-097-099/report.json", "operacion-097-099/issues-1440.png"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",

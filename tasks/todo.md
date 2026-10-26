@@ -1484,10 +1484,12 @@ CLOSE-errores-218 y -219 quedan vigentes con el bundle oficial Browser 11.7.0
 real bajo el mismo guion.
 CLOSE-errores-220 a -222 quedan vigentes por composición de los owners de
 adjuntos, retención de archivos y feedback legado/moderno.
+CLOSE-operacion-097 a -099 quedan vigentes con la suite real de Chromium en
+320/768/1440; la comprobación opcional de miembro queda amparada por 007.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-097. No se declara
+runtime preservado. Siguiente acción: CLOSE-lectores-001. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2200,9 +2202,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-220](../SPEC.md#close-errores-220) | Conservar y comprobar los flujos de adjuntos, incluidos almacenamiento, listados, acceso/descarga y controles… | implementada | vigente | Comprobante 2026-10-26 abajo (207-208 + 035-043) |
 | [CLOSE-errores-221](../SPEC.md#close-errores-221) | Conservar y comprobar los flujos de feedback legado, transporte, asociación, reportes y UI contratados. | implementada | vigente | Comprobante 2026-10-26 abajo (164-181) |
 | [CLOSE-errores-222](../SPEC.md#close-errores-222) | Conservar y comprobar los flujos de feedback moderno, categoría, asociación, retención, lectura e interfaz con… | implementada | vigente | Comprobante 2026-10-26 abajo (182-205) |
-| [CLOSE-operacion-097](../SPEC.md#close-operacion-097) | Navegador real a 320px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-098](../SPEC.md#close-operacion-098) | Navegador real a 768px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-099](../SPEC.md#close-operacion-099) | Navegador real a 1440px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtro… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-097](../SPEC.md#close-operacion-097) | Navegador real a 320px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
+| [CLOSE-operacion-098](../SPEC.md#close-operacion-098) | Navegador real a 768px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
+| [CLOSE-operacion-099](../SPEC.md#close-operacion-099) | Navegador real a 1440px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtro… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
 | [CLOSE-lectores-004](../SPEC.md#close-lectores-004) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: conexión por token con alcance autorizado. Recibo real del… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-lectores-005](../SPEC.md#close-lectores-005) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: consulta de issues. Recibo real del consumidor, revisión/v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-lectores-006](../SPEC.md#close-lectores-006) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: serie temporal de errores. Recibo real del consumidor, rev… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9421,7 +9423,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-operacion-097. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-lectores-001. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9441,7 +9443,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-097. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-lectores-001. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9461,7 +9463,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-097. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-lectores-001. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9492,7 +9494,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
+público siguen pendientes. Siguiente acción: CLOSE-lectores-001. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9521,7 +9523,7 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
+público siguen pendientes. Siguiente acción: CLOSE-lectores-001. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Node 11.7.0
@@ -9550,7 +9552,7 @@ Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
+público siguen pendientes. Siguiente acción: CLOSE-lectores-001. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Browser 11.7.0
@@ -9579,7 +9581,7 @@ Evidencia: `test-results/closure-20261025/errores-218-219/` con el fixture, el
 hash del bundle, las capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
+público siguen pendientes. Siguiente acción: CLOSE-lectores-001. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: filas paraguas de conservación
@@ -9596,8 +9598,34 @@ composición de owners frescos e históricos ya registrados.
 
 Límites registrados: las capturas de navegador de 179/181 y 196–198/203 son
 históricas y se repiten en la candidata final; 206, la copia de 4569 filas y el
-CI público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
+CI público siguen pendientes. Siguiente acción: CLOSE-lectores-001. El producto
 sigue incompleto.
+
+### Ejecución 2026-10-26: navegador real a 320, 768 y 1440
+
+Selección registrada antes de trabajar: CLOSE-operacion-097, -098 y -099.
+Revisión `02629be`; la suite real de Chromium se ejecutó contra el binario y
+PostgreSQL desechables, usando el origen configurado `localhost`.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 097/098/099 | Onboarding/acceso abierto, proyecto y DSN, issue con fuente/breadcrumbs/tags/event ID, telemetría como texto, búsqueda y filtros persistentes, resolve/reopen y comentarios, métricas de transacciones, traza/logs con paginación y atributos tipados, source maps con validación/reintento, foco por Tab y controles accesibles | `tests/compat/browser.mjs`; `operacion-097-099/report.json`; capturas `*-320.png`, `*-768.png`, `*-1440.png` |
+| 097/098/099 | Sin desbordes ni errores de página o peticiones en las tres anchuras | `report.json` (`ok:true`, `pageErrors:[]`, `requestFailures:[]`) |
+
+Resultado observado: la suite creó un proyecto, ingirió un error real, recorrió
+issues, detalle, transacciones, logs y source maps en 320/768/1440, conservó
+filtros tras recarga, mantuvo la telemetría como texto y verificó foco y
+controles accesibles. El error 400 de source map es el caso de validación
+controlado. La comprobación opcional de un miembro requiere credenciales
+privadas separadas; el estado de permisos sigue amparado por 007 y se revalida
+en la candidata final.
+
+Evidencia: `test-results/closure-20261025/operacion-097-099/` con
+`report.json`, 24 capturas y `summary.json`.
+
+Límites registrados: no se rerun el miembro opcional; la imagen final, la copia
+de 4569 filas y el CI público siguen pendientes. Siguiente acción:
+CLOSE-lectores-001. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 

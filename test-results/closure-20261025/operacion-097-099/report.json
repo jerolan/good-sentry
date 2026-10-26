@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "baseURL": "http://localhost:18092/",
+  "checks": [
+    "Open authentication enters the dashboard without a cookie or login",
+    "Project created with a visible DSN and working copy control",
+    "Visible interactive controls have accessible names",
+    "Real ingested error appears with source, breadcrumbs, tags and event ID; telemetry stays text",
+    "Issue search and environment filters survive a reload",
+    "Resolve/reopen and comments persist across reload",
+    "Transaction project filter, counts, errors and average/p50/p95 are visible and persistent",
+    "Trace correlation, trace copy, 25-row log pagination, typed attributes and URL filters work",
+    "Transaction and expanded-log views remain bounded at 320, 768 and 1440 pixels",
+    "Browser multipart source-map upload, retained validation inputs, metadata reload and identical retry work",
+    "Matching minified capture shows original source location/context while preserving its raw stack",
+    "No document overflow at 320, 768 or 1440 pixels"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/projects-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/projects-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/projects-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/issues-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/issues-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/issues-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/issue-detail-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/issue-detail-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/issue-detail-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/transactions-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/transactions-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/transactions-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/logs-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/logs-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/logs-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-map-form-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-map-form-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-map-form-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-map-metadata-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-map-metadata-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-map-metadata-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-mapped-issue-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-mapped-issue-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/operacion-097-099/source-mapped-issue-1440.png"
+  ],
+  "consoleProblems": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "location": "http://localhost:18092/api/v1/organizations/default-organization/projects/5/sourcemaps"
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": []
+}
