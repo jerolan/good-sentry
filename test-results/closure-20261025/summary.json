@@ -3610,6 +3610,16 @@
         "projects-109/project-keys-1440.png",
         "projects-109/project-keys-after-delete-1440.png"
       ]
+    },
+    "CLOSE-identidad-110": {
+      "evidence": "vigente",
+      "scope": "API token scopes, isolation, expiry and revocation in store, HTTP and UI",
+      "evidence_files": [
+        "identidad-110-go.log",
+        "tokens-110/report.json",
+        "tokens-110/token-list-1440.png",
+        "tokens-110/token-revoked-1440.png"
+      ]
     }
   },
   "commands": [

@@ -1447,7 +1447,7 @@ publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
 releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
-CLOSE-identidad-104 a -109 quedan vigentes. Siguiente acción: CLOSE-identidad-110
+CLOSE-identidad-104 a -110 quedan vigentes. Siguiente acción: CLOSE-identidad-111
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -2147,7 +2147,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-107](../SPEC.md#close-identidad-107) | API y navegador: comprobar OIDC y aplicaciones SSO con controles y pruebas locales, con los resultados y contr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-108](../SPEC.md#close-identidad-108) | API y navegador: comprobar organizaciones, equipos y miembros, con los resultados y controles de sus contratos… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-109](../SPEC.md#close-identidad-109) | API y navegador: comprobar proyectos y DSNs, con los resultados y controles de sus contratos actuales, sin exc… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-110](../SPEC.md#close-identidad-110) | API y navegador: comprobar tokens, permisos/aislamiento, expiración y revocación, con los resultados y control… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-110](../SPEC.md#close-identidad-110) | API y navegador: comprobar tokens, permisos/aislamiento, expiración y revocación, con los resultados y control… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-092](../SPEC.md#close-operacion-092) | Arranque de imagen documentada con PostgreSQL y volúmenes vacíos, salud/readiness, UI y captura SDK, sin reque… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-093](../SPEC.md#close-operacion-093) | Migraciones y actualización desde una versión publicada fijada al ejecutar, con revisión/digest registrados. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-094](../SPEC.md#close-operacion-094) | Persistencia de datos, artefactos y configuración tras reinicio. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5844,6 +5844,40 @@ capturas.
 Límites registrados: el CI público sigue pendiente para la auditoría final. Las
 claves y DSN se probaron en la instancia local; no se acredita un SDK externo ni
 un proveedor de red.
+
+### Ejecución 2026-10-26: tokens, permisos y revocación
+
+Selección registrada antes de trabajar: CLOSE-identidad-110. Candidata
+`85986a1`.
+
+Resultado observado: los owners cubren el contrato HTTP de tokens nativos,
+la emisión y paginación de tokens de cuenta compatibles, las lecturas Bearer,
+el aislamiento por propietario y la cascada, la invalidación por estado actual
+de la base (expirado, revocado y creador eliminado) y los límites de
+administración. En Chromium, el propietario crea un token limitado a
+`org:read`; esa credencial lee personas de la organización con 200 y recibe 403
+en las claves de proyecto, lo que demuestra el aislamiento por scope. La
+revocación desde la lista devuelve el aviso «API token revoked.» y la misma
+credencial responde 401 inmediatamente. Las capturas de 320/768/1440 muestran
+solo prefijos, nunca el secreto.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Contrato de tokens nativos | HTTP `TestAPITokenHTTPContract` |
+| Tokens de cuenta compatibles, paginación y Bearer | HTTP `TestCompatibleUserAPITokenHTTPContract`, `TestCompatibleUserAPITokenBearerReads`, `TestCompatibleUserAPITokenPaginationHTTP` |
+| Aislamiento y cascada por propietario | store `TestUserAPITokenOwnerIsolationAndCascade` |
+| Expiración, revocación y creador eliminado | store `TestAPITokenInvalidationUsesCurrentDatabaseState` |
+| Límites de administración y proyecto | store `TestAPITokenAdministrationAndAtomicProjectBoundary` |
+| Scope y denegación en navegador | `tokens-110/report.json` |
+| Revocación y corte inmediato | `tokens-110/report.json`, `token-revoked-*` |
+
+Evidencia: `test-results/closure-20261025/identidad-110-go.log` y
+`test-results/closure-20261025/tokens-110/` con `report.json` y seis capturas.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+captura evita el panel de revelación; solo se registran prefijos de token.
 
 ### Comprobante de integración documental
 
