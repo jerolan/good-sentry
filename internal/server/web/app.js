@@ -104,7 +104,7 @@
     } catch (_) {
       throw new Error('Cannot reach GoodSentry. Check your connection and try again.');
     }
-    if (response.status === 204) return null;
+    if (response.status === 204) { await response.text().catch(() => null); return null; }
     if (binary && response.ok) return response.blob();
     const endpoint = path.split('?')[0];
     const data = await response.text().then(source => endpoint.endsWith('/logs') || /\/logs\/\d+$/.test(endpoint) || /\/transactions\/(event|span)\/[^/]+$/.test(endpoint) || /\/traces\/[^/]+\/nodes\/[^/]+$/.test(endpoint) || /\/releases(?:\/|$)/.test(endpoint)
