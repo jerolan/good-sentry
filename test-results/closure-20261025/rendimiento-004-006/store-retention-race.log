@@ -1,0 +1,20 @@
+=== RUN   TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion
+=== RUN   TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion/captureFirst=true
+=== RUN   TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion/captureFirst=false
+--- PASS: TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion (1.46s)
+    --- PASS: TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion/captureFirst=true (0.59s)
+    --- PASS: TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion/captureFirst=false (0.87s)
+=== RUN   TestTransactionRetentionSkipsActiveProjectorAndRemovesItsCommittedProjection
+--- PASS: TestTransactionRetentionSkipsActiveProjectorAndRemovesItsCommittedProjection (0.49s)
+=== RUN   TestTransactionRetentionCancellationRollsBackLegacyAndChildren
+--- PASS: TestTransactionRetentionCancellationRollsBackLegacyAndChildren (0.66s)
+=== RUN   TestTransactionRetentionReceiptAgeAndIndependentData
+--- PASS: TestTransactionRetentionReceiptAgeAndIndependentData (0.66s)
+=== RUN   TestTransactionRetentionBoundsAndLateFailureRollback
+--- PASS: TestTransactionRetentionBoundsAndLateFailureRollback (1.06s)
+=== RUN   TestTransactionRetentionSkipsLockedReceiptsAndBusyMaintainer
+--- PASS: TestTransactionRetentionSkipsLockedReceiptsAndBusyMaintainer (0.50s)
+=== RUN   TestTransactionRetentionMigration023PreservesRowsAndReopens
+--- PASS: TestTransactionRetentionMigration023PreservesRowsAndReopens (0.73s)
+PASS
+ok  	goodsentry/internal/store	6.590s

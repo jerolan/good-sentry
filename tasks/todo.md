@@ -1453,8 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -003 y
--041 a -044 quedan vigentes. Siguiente acción: CLOSE-rendimiento-004. No se declara
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -006 y
+-041 a -044 quedan vigentes. Siguiente acción: CLOSE-rendimiento-007. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1773,9 +1773,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-011](../SPEC.md#close-logs-011) | Compatible retained-log API: Pages are keyset ordered by timestamp DESC,id DESC with a default limit100 and a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-002](../SPEC.md#close-rendimiento-002) | Transaction and standalone-span retention: Transaction/span retention is the next required class after accepte… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-003](../SPEC.md#close-rendimiento-003) | Transaction and standalone-span retention: The configuration prerequisite adds Config.TransactionRetentionDays… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-004](../SPEC.md#close-rendimiento-004) | Transaction and standalone-span retention: The storage contract is Store.CleanupTransactions(ctx, days), retur… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-005](../SPEC.md#close-rendimiento-005) | Transaction and standalone-span retention: Under those project gates and pinned event rows, delete envelope_it… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-006](../SPEC.md#close-rendimiento-006) | Transaction and standalone-span retention: Delete standalone spans independently, with no trace-wide cascade.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-004](../SPEC.md#close-rendimiento-004) | Transaction and standalone-span retention: The storage contract is Store.CleanupTransactions(ctx, days), retur… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-rendimiento-005](../SPEC.md#close-rendimiento-005) | Transaction and standalone-span retention: Under those project gates and pinned event rows, delete envelope_it… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-rendimiento-006](../SPEC.md#close-rendimiento-006) | Transaction and standalone-span retention: Delete standalone spans independently, with no trace-wide cascade.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-007](../SPEC.md#close-rendimiento-007) | Transaction and standalone-span retention: Migration023 adds only receipt-order indexes on events(created_at,i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-008](../SPEC.md#close-rendimiento-008) | Transaction and standalone-span retention: Acceptance requires real PostgreSQL expiry based on receipt age wit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-009](../SPEC.md#close-rendimiento-009) | Transaction and standalone-span retention: The transaction/span runtime acceptance on2026-10-17 uses new candi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7061,6 +7061,40 @@ Límites registrados: el valor efectivo no se publica por API; la precedencia se
 comprueba por pruebas y por el arranque real. La limpieza acotada, la migración
 y la aceptación con imagen/backup siguen en CLOSE-rendimiento-004 a -011. El CI
 público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: limpieza acotada y propiedad de dependientes
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-004, -005 y -006.
+Candidata `0afa286`. Procedimiento reproducible: PostgreSQL 18 desechable y
+`go test -race -tags=integration ./internal/store -run TestTransactionRetention`.
+La suite pasa sin avisos del detector de carreras.
+
+Resultados observados:
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Progreso acotado a 250 por forma | Con 601 receipts y 601 spans, cuatro pasadas devuelven 250/250, 250/250, 101/101 y 0/0 |
+| Corte por antigüedad del recibo y datos independientes | `TestTransactionRetentionReceiptAgeAndIndependentData` conserva errores, logs, lotes OTLP, releases y artefactos ajenos |
+| Rollback ante fallo tardío | Un trigger que rechaza el borrado de spans deja ambos conteos en 0 y la instantánea idéntica |
+| Filas bloqueadas y mantenedor ocupado | Las filas bloqueadas se omiten; un segundo proceso devuelve 0/0 mientras el bloqueo sigue y 1/1 al liberarlo |
+| Dependientes de la recepción seleccionada | `TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion` y `TestTransactionRetentionSkipsActiveProjectorAndRemovesItsCommittedProjection` pasan con el orden de puertas declarado |
+| Cancelación | `TestTransactionRetentionCancellationRollsBackLegacyAndChildren` revierte legacy e hijos |
+| Spans independientes sin cascada de traza | Una pasada elimina 1 span suelto y 1 recepción; el detalle retenido no cambia y el vencido devuelve no encontrado |
+| Duplicados con hijos | `TestTransactionRetentionOrdersDuplicateChildrenAroundDeletion` cubre ambos órdenes de captura sin adjuntar a una generación posterior |
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Limpieza acotada, corte, puertas y bloqueos (004) | `rendimiento-004-006/store-retention-race.log` |
+| Dependientes, duplicados y orden de puertas (005) | mismo comprobante |
+| Spans independientes, datos preservados y rollback (006) | mismo comprobante |
+
+Evidencia: `test-results/closure-20261025/rendimiento-004-006/`.
+
+Límites registrados: la migración 023, el ciclo de vida del proceso y la
+aceptación con imagen, backup y CI siguen en CLOSE-rendimiento-007 a -011. El
+CI público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

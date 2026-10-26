@@ -3867,6 +3867,27 @@
         "rendimiento-003/runtime.log"
       ]
     },
+    "CLOSE-rendimiento-004": {
+      "evidence": "vigente",
+      "scope": "bounded 250-per-form cleanup, receipt cutoff, project gates, row locks and advisory maintainer",
+      "evidence_files": [
+        "rendimiento-004-006/store-retention-race.log"
+      ]
+    },
+    "CLOSE-rendimiento-005": {
+      "evidence": "vigente",
+      "scope": "dependent envelope items, cascade ordering, duplicate children and no receipt locks after project gates",
+      "evidence_files": [
+        "rendimiento-004-006/store-retention-race.log"
+      ]
+    },
+    "CLOSE-rendimiento-006": {
+      "evidence": "vigente",
+      "scope": "standalone-span deletion without trace cascade and preservation of independent data and retained reads",
+      "evidence_files": [
+        "rendimiento-004-006/store-retention-race.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
