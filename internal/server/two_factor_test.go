@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+
 	"goodsentry/internal/config"
 )
 
@@ -229,4 +231,71 @@ func TestTwoFactorChallengeFailsAfterACredentialChange(t *testing.T) {
 	}
 	f.request(t, client, "POST", "/api/v1/login/two-factor", resolutionJSON(t, map[string]string{"challengeToken": challenge.ChallengeToken, "code": twoFactorCode(t, enrollment.Secret, 1)}), nil, 401)
 	f.request(t, client, "GET", "/api/v1/me", "", nil, 401)
+}
+
+func TestOrganizationRequire2FAGatesSessionsAndBearerTokens(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	csrf := http.Header{"X-CSRF-Token": {f.csrf}}
+	orgPath := "/api/0/organizations/" + f.org.Slug + "/"
+	f.request(t, f.client, "PUT", orgPath, `{"require2FA":true}`, csrf, 409)
+
+	var ownerEnrollment twoFactorHTTPEnrollment
+	decodeTwoFactor(t, f.request(t, f.client, "POST", "/api/v1/me/two-factor", "", csrf, 200), &ownerEnrollment)
+	decodeTwoFactor(t, f.request(t, f.client, "POST", "/api/v1/me/two-factor/confirm", resolutionJSON(t, map[string]string{"code": twoFactorCode(t, ownerEnrollment.Secret, 0)}), csrf, 200), &twoFactorHTTPConfirmation{})
+
+	var memberID string
+	if err := f.sql.QueryRow(f.ctx, `INSERT INTO users(email,password_hash,name)
+ SELECT 'required-member@resolution.test',password_hash,'Required member' FROM users WHERE id=$1::bigint RETURNING id::text`, f.owner.ID).Scan(&memberID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.sql.Exec(f.ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1::bigint,$2::bigint,'admin')`, f.org.ID, memberID); err != nil {
+		t.Fatal(err)
+	}
+	member := twoFactorFreshClient(t)
+	var memberMe struct{ CSRFToken string }
+	decodeTwoFactor(t, f.request(t, member, "POST", "/api/v1/login", `{"email":"required-member@resolution.test","password":"resolution-http-password"}`, nil, 200), &memberMe)
+	if memberMe.CSRFToken == "" {
+		t.Fatal("member login returned no CSRF token")
+	}
+	var accountToken struct{ Token string }
+	decodeTwoFactor(t, f.request(t, member, "POST", "/api/0/api-tokens/", `{"scopes":["org:read"],"label":"2FA gate"}`, http.Header{"X-CSRF-Token": {memberMe.CSRFToken}}, 201), &accountToken)
+	if len(accountToken.Token) != 64 {
+		t.Fatalf("account token=%+v", accountToken)
+	}
+	var mcpToken struct{ Token string }
+	decodeTwoFactor(t, f.request(t, member, "POST", "/api/v1/organizations/"+f.org.Slug+"/api-tokens", `{"name":"MCP 2FA gate","scopes":["org:read"],"projectIds":[]}`, http.Header{"X-CSRF-Token": {memberMe.CSRFToken}}, 201), &mcpToken)
+	if mcpToken.Token == "" {
+		t.Fatal("MCP token was not issued")
+	}
+
+	var secured struct {
+		Require2FA bool `json:"require2FA"`
+	}
+	decodeTwoFactor(t, f.request(t, f.client, "PUT", orgPath, `{"require2FA":true}`, csrf, 200), &secured)
+	if !secured.Require2FA {
+		t.Fatal("organization did not report require2FA")
+	}
+	var memberSession struct {
+		TwoFactorRequired bool `json:"twoFactorRequired"`
+	}
+	decodeTwoFactor(t, f.request(t, member, "GET", "/api/v1/me", "", nil, 200), &memberSession)
+	if !memberSession.TwoFactorRequired {
+		t.Fatalf("member /me did not require 2FA: %+v", memberSession)
+	}
+	f.request(t, member, "GET", "/api/v1/organizations/"+f.org.Slug+"/projects", "", nil, 403)
+	f.request(t, http.DefaultClient, "GET", "/api/0/organizations/"+f.org.Slug+"/projects/", "", http.Header{"Authorization": {"Bearer " + accountToken.Token}}, 403)
+	mcpServer := mcpHTTPServer(t, f, 1<<20)
+	mcpConnection := mcpClient(t, f, mcpServer, mcpToken.Token, "2026-07-28")
+	if _, err := mcpConnection.CallTool(f.ctx, &mcp.CallToolParams{Name: "list_organizations", Arguments: map[string]any{}}); err == nil || !strings.Contains(err.Error(), "two-factor") {
+		t.Fatalf("MCP accepted a 2FA-blocked credential: %v", err)
+	}
+
+	var memberEnrollment twoFactorHTTPEnrollment
+	decodeTwoFactor(t, f.request(t, member, "POST", "/api/v1/me/two-factor", "", http.Header{"X-CSRF-Token": {memberMe.CSRFToken}}, 200), &memberEnrollment)
+	decodeTwoFactor(t, f.request(t, member, "POST", "/api/v1/me/two-factor/confirm", resolutionJSON(t, map[string]string{"code": twoFactorCode(t, memberEnrollment.Secret, 0)}), http.Header{"X-CSRF-Token": {memberMe.CSRFToken}}, 200), &twoFactorHTTPConfirmation{})
+	f.request(t, member, "GET", "/api/v1/organizations/"+f.org.Slug+"/projects", "", nil, 200)
+	if _, err := mcpConnection.CallTool(f.ctx, &mcp.CallToolParams{Name: "list_organizations", Arguments: map[string]any{}}); err != nil {
+		t.Fatalf("MCP remained blocked after enrollment: %v", err)
+	}
+	f.request(t, member, "DELETE", "/api/v1/me/two-factor", resolutionJSON(t, map[string]string{"password": "resolution-http-password"}), http.Header{"X-CSRF-Token": {memberMe.CSRFToken}}, 409)
 }

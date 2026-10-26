@@ -12,6 +12,8 @@ import (
 
 var ErrInvalidOrganization = errors.New("invalid organization")
 
+var ErrTwoFactorRequired = errors.New("two-factor authentication must be enabled before requiring it")
+
 func validOrganizationName(name string) bool {
 	name = strings.TrimSpace(name)
 	return name != "" && utf8.ValidString(name) && utf8.RuneCountInString(name) <= 200 && !strings.ContainsFunc(name, unicode.IsControl)
@@ -66,9 +68,9 @@ func (s *Store) CreateCompatibleOrganization(ctx context.Context, userID, author
 	return s.CompatibleOrganizationDetail(ctx, userID, organizationID)
 }
 
-func (s *Store) UpdateCompatibleOrganization(ctx context.Context, userID, orgRef, name string) (CompatibleOrganizationDetail, error) {
+func (s *Store) UpdateCompatibleOrganization(ctx context.Context, userID, orgRef, name string, require2FA *bool) (CompatibleOrganizationDetail, error) {
 	name = strings.TrimSpace(name)
-	if !validOrganizationName(name) {
+	if (name == "" && require2FA == nil) || (name != "" && !validOrganizationName(name)) {
 		return CompatibleOrganizationDetail{}, ErrInvalidOrganization
 	}
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
@@ -80,8 +82,24 @@ func (s *Store) UpdateCompatibleOrganization(ctx context.Context, userID, orgRef
 	if err != nil {
 		return CompatibleOrganizationDetail{}, err
 	}
-	if _, err = tx.Exec(ctx, `UPDATE organizations SET name=$2 WHERE id=$1::bigint`, orgID, name); err != nil {
-		return CompatibleOrganizationDetail{}, err
+	if require2FA != nil && *require2FA {
+		var confirmed bool
+		if err = tx.QueryRow(ctx, `SELECT totp_confirmed_at IS NOT NULL FROM users WHERE id=$1::bigint FOR SHARE`, userID).Scan(&confirmed); err != nil {
+			return CompatibleOrganizationDetail{}, dbError(err)
+		}
+		if !confirmed {
+			return CompatibleOrganizationDetail{}, ErrTwoFactorRequired
+		}
+	}
+	if name != "" {
+		if _, err = tx.Exec(ctx, `UPDATE organizations SET name=$2 WHERE id=$1::bigint`, orgID, name); err != nil {
+			return CompatibleOrganizationDetail{}, err
+		}
+	}
+	if require2FA != nil {
+		if _, err = tx.Exec(ctx, `UPDATE organizations SET require_2fa=$2 WHERE id=$1::bigint`, orgID, *require2FA); err != nil {
+			return CompatibleOrganizationDetail{}, err
+		}
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return CompatibleOrganizationDetail{}, err

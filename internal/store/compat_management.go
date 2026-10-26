@@ -91,14 +91,16 @@ func (s *Store) CompatibleOrganizationDetail(ctx context.Context, userID, refere
 	var detail CompatibleOrganizationDetail
 	var id, slug, name, role string
 	var created time.Time
-	err := s.pool.QueryRow(ctx, `SELECT o.id::text,o.slug,o.name,o.created_at,m.role FROM organizations o
+	var require2FA bool
+	err := s.pool.QueryRow(ctx, `SELECT o.id::text,o.slug,o.name,o.created_at,o.require_2fa,m.role FROM organizations o
 		JOIN memberships m ON m.organization_id=o.id AND m.user_id=$1::bigint
 		WHERE o.slug=$2 OR o.id=$3 ORDER BY (o.slug=$2) DESC LIMIT 1`, userID, reference, referenceID(reference)).
-		Scan(&id, &slug, &name, &created, &role)
+		Scan(&id, &slug, &name, &created, &require2FA, &role)
 	if err != nil {
 		return detail, dbError(err)
 	}
 	detail.CompatibleOrganization = discoveryOrganization(id, slug, name, created)
+	detail.CompatibleOrganization.Require2FA = require2FA
 	detail.CompatibleOrganization.Role = role
 	detail.Access = compatibleOrganizationAccess(role)
 	detail.OpenMembership = false

@@ -129,6 +129,16 @@ never returned by the management API or rendered in the browser. Provider
 accounts that do not expose a verified email are rejected instead of linked by
 an unverified address.
 
+### Organization two-factor requirement
+
+Owners and admins can require two-factor authentication for every member from
+the Organization view. The administrator must first enable TOTP on their own
+account. A member without a confirmed second factor can only fetch their
+identity, sign out or complete enrollment; projects, issues, logs, releases and
+compatible API credentials remain blocked until the authenticator is confirmed.
+Disabling the account second factor is rejected while any joined organization
+requires it.
+
 ## Scoped API tokens
 
 Owners and admins can open **API tokens** to create a credential, select projects and set its lifetime. The secret appears once; copy it before dismissing or leaving the view. Tokens expire after 90 days by default, with a selectable lifetime of 1–366 days. Revocation takes effect on subsequent requests. An all-project credential also includes projects created later; a restricted credential keeps only its selected projects.

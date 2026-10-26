@@ -8,7 +8,7 @@ Compatibility is verified per workflow and client version. The project remains i
 
 | Capability | Verified behavior |
 | --- | --- |
-| Accounts and people | Default cookie-free open mode with an implicit owner/workspace, or `GOODSENTRY_AUTH=required` for password changes with session/token revocation, SMTP password recovery, optional TOTP two-factor sign-in with single-use recovery codes, GlitchTip-compatible account API tokens, staged recovery codes and invitation acceptance, per-organization OpenID Connect, Microsoft, GitHub, GitLab, Gitea and DigitalOcean sign-in applications with a shareable login page, current-account deletion from the API or Account page with typed confirmation and sole-owner recovery, member roles, teams, organization rename/delete and single-use SMTP invitations. Optional `ENABLE_ADMIN` adds a global user list, suspension/reactivation and instance-admin grants; organization roles do not provide global access. Real browser acceptance includes open dashboard startup, required setup/login, two-factor enrollment and challenge sign-in at 390 and 1440, no-organization account access and long invitation emails. |
+| Accounts and people | Default cookie-free open mode with an implicit owner/workspace, or `GOODSENTRY_AUTH=required` for password changes with session/token revocation, SMTP password recovery, optional TOTP two-factor sign-in with single-use recovery codes and organization-enforced two-factor access, GlitchTip-compatible account API tokens, staged recovery codes and invitation acceptance, per-organization OpenID Connect, Microsoft, GitHub, GitLab, Gitea and DigitalOcean sign-in applications with a shareable login page, current-account deletion from the API or Account page with typed confirmation and sole-owner recovery, member roles, teams, organization rename/delete and single-use SMTP invitations. Optional `ENABLE_ADMIN` adds a global user list, suspension/reactivation and instance-admin grants; organization roles do not provide global access. Real browser acceptance includes open dashboard startup, required setup/login, two-factor enrollment and challenge sign-in at 390 and 1440, no-organization account access and long invitation emails. |
 | Error tracking | Store/envelope ingestion, issue grouping, duplicate suppression, historical tag/environment/release search, sorting/pages, user/team assignment, editable comments and recorded triage activity with regressions. |
 | User feedback | Modern SDK submissions with optional error associations, per-submission attachments and paginated triage, legacy reports attached to their original error, and a public DSN-bound embed error page. |
 | JavaScript source maps | Official CLI injection/bundle uploads and native uploads, Debug ID or release/distribution selection, original source context and preserved minified stacks. |
@@ -93,7 +93,7 @@ Open work:
 
 - Automatic repository integrations and additional conditional issue policies.
 - Real alert-provider and external identity-provider receipts, and representative native crash receipts.
-- WebAuthn second factors and organization-level `require2FA` enforcement.
+- WebAuthn second factors.
 
 Available capabilities and limits:
 

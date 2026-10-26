@@ -128,6 +128,20 @@ func mcpWorkspaceSchema(projects bool) map[string]any {
 
 func (s *Server) mcpWorkspaceServer(httpContext context.Context, grant store.APITokenGrant) *mcp.Server {
 	server := mcp.NewServer(&mcp.Implementation{Name: "GoodSentry", Version: "0.0.0-dev"}, nil)
+	server.AddReceivingMiddleware(func(next mcp.MethodHandler) mcp.MethodHandler {
+		return func(ctx context.Context, method string, request mcp.Request) (mcp.Result, error) {
+			if method == "tools/call" {
+				required, err := s.requiresTwoFactorSetup(httpContext, grant.User.ID)
+				if err != nil {
+					return nil, err
+				}
+				if required {
+					return nil, errors.New("two-factor authentication setup required")
+				}
+			}
+			return next(ctx, method, request)
+		}
+	})
 	annotations := &mcp.ToolAnnotations{ReadOnlyHint: true, DestructiveHint: new(bool), OpenWorldHint: new(bool)}
 	mcp.AddTool(server, &mcp.Tool{
 		Name: "list_organizations", Description: "List organizations authorized by this credential. Supports query and pagination.", InputSchema: mcpWorkspaceSchema(false), Annotations: annotations,

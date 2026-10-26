@@ -225,6 +225,15 @@ func (s *Server) disableTwoFactor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	admitted := current(r)
+	requirement, err := s.db.TwoFactorRequirement(r.Context(), admitted.User.ID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	if requirement.Organization {
+		failure(w, 409, "An organization requires two-factor authentication; disable it there first")
+		return
+	}
 	u, err := s.db.UserByID(r.Context(), admitted.User.ID)
 	if err != nil {
 		report(w, err)

@@ -64,6 +64,9 @@ func (s *Server) auth(next http.Handler) http.Handler {
 				report(w, err)
 				return
 			}
+			if !s.allowTwoFactorGate(w, r, user.ID) {
+				return
+			}
 			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), identityKey{}, identity{User: user, CSRF: s.openCSRF})))
 			return
 		}
@@ -87,8 +90,44 @@ func (s *Server) auth(next http.Handler) http.Handler {
 				return
 			}
 		}
+		if !s.allowTwoFactorGate(w, r, u.ID) {
+			return
+		}
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), identityKey{}, identity{User: u, CSRF: csrf})))
 	})
+}
+
+func (s *Server) allowTwoFactorGate(w http.ResponseWriter, r *http.Request, userID string) bool {
+	required, err := s.requiresTwoFactorSetup(r.Context(), userID)
+	if err != nil {
+		report(w, err)
+		return false
+	}
+	if !required || twoFactorGatePath(r) {
+		return true
+	}
+	failure(w, http.StatusForbidden, "Two-factor authentication setup required")
+	return false
+}
+
+func (s *Server) requiresTwoFactorSetup(ctx context.Context, userID string) (bool, error) {
+	requirement, err := s.db.TwoFactorRequirement(ctx, userID)
+	return requirement.Organization && !requirement.Confirmed, err
+}
+
+func twoFactorGatePath(r *http.Request) bool {
+	switch {
+	case r.Method == http.MethodGet && r.URL.Path == "/api/v1/me":
+		return true
+	case r.Method == http.MethodPost && r.URL.Path == "/api/v1/logout":
+		return true
+	case (r.Method == http.MethodGet || r.Method == http.MethodPost) && r.URL.Path == "/api/v1/me/two-factor":
+		return true
+	case r.Method == http.MethodPost && r.URL.Path == "/api/v1/me/two-factor/confirm":
+		return true
+	default:
+		return false
+	}
 }
 
 func (s *Server) setupState(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +237,12 @@ func (s *Server) sendMe(w http.ResponseWriter, r *http.Request, i identity, stat
 		report(w, err)
 		return
 	}
-	writeJSON(w, status, map[string]any{"user": map[string]any{"id": i.User.ID, "email": i.User.Email, "name": i.User.Name, "isInstanceAdmin": i.User.IsInstanceAdmin}, "organizations": orgs, "csrfToken": i.CSRF, "features": map[string]bool{"logs": s.cfg.Logs, "uptime": s.cfg.Uptime, "alerts": true, "alertDelivery": s.cfg.AlertDelivery, "mcp": s.cfg.MCP, "openapi": s.cfg.OpenAPI, "admin": s.cfg.Admin, "oidc": s.oidc != nil, "passwordRecovery": s.mail != nil && s.account != nil, "authRequired": !s.cfg.AuthenticationDisabled()}})
+	requirement, err := s.db.TwoFactorRequirement(r.Context(), i.User.ID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	writeJSON(w, status, map[string]any{"user": map[string]any{"id": i.User.ID, "email": i.User.Email, "name": i.User.Name, "isInstanceAdmin": i.User.IsInstanceAdmin}, "organizations": orgs, "csrfToken": i.CSRF, "twoFactorRequired": requirement.Organization && !requirement.Confirmed, "twoFactorEnabled": requirement.Confirmed, "features": map[string]bool{"logs": s.cfg.Logs, "uptime": s.cfg.Uptime, "alerts": true, "alertDelivery": s.cfg.AlertDelivery, "mcp": s.cfg.MCP, "openapi": s.cfg.OpenAPI, "admin": s.cfg.Admin, "oidc": s.oidc != nil, "passwordRecovery": s.mail != nil && s.account != nil, "authRequired": !s.cfg.AuthenticationDisabled()}})
 }
 func (s *Server) me(w http.ResponseWriter, r *http.Request) { s.sendMe(w, r, current(r), 200) }
 func (s *Server) logout(w http.ResponseWriter, r *http.Request) {

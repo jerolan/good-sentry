@@ -102,7 +102,7 @@ func (s *Store) CompatibleOrganizations(ctx context.Context, userID, organizatio
 	default:
 		return nil, ErrNotFound
 	}
-	rows, err := s.pool.Query(ctx, `SELECT o.id::text,o.slug,o.name,o.created_at,m.role FROM organizations o
+	rows, err := s.pool.Query(ctx, `SELECT o.id::text,o.slug,o.name,o.created_at,o.require_2fa,m.role FROM organizations o
 		JOIN memberships m ON m.organization_id=o.id AND m.user_id=$1::bigint
 		WHERE ($2='' OR o.id::text=$2)
 		AND ($3='' OR strpos(lower(o.name),lower($3))>0 OR strpos(lower(o.slug),lower($3))>0)
@@ -116,11 +116,13 @@ func (s *Store) CompatibleOrganizations(ctx context.Context, userID, organizatio
 		var id, slug, name string
 		var created time.Time
 		var role string
-		if err := rows.Scan(&id, &slug, &name, &created, &role); err != nil {
+		var require2FA bool
+		if err := rows.Scan(&id, &slug, &name, &created, &require2FA, &role); err != nil {
 			return nil, err
 		}
 		organization := discoveryOrganization(id, slug, name, created)
 		organization.Role = role
+		organization.Require2FA = require2FA
 		result = append(result, organization)
 	}
 	return result, rows.Err()
@@ -128,7 +130,7 @@ func (s *Store) CompatibleOrganizations(ctx context.Context, userID, organizatio
 
 func (s *Store) CompatibleProjectsAcrossOrganizations(ctx context.Context, userID, organizationID string, allProjects bool, projectIDs []int64, offset, limit int) ([]CompatibleProject, error) {
 	rows, err := s.pool.Query(ctx, `SELECT p.id::text,p.name,p.slug,p.platform,p.created_at,p.event_throttle_rate,
-		o.id::text,o.slug,o.name,o.created_at
+		o.id::text,o.slug,o.name,o.created_at,o.require_2fa
 		FROM projects p JOIN organizations o ON o.id=p.organization_id
 		JOIN memberships m ON m.organization_id=o.id AND m.user_id=$1::bigint
 		WHERE ($2='' OR o.id::text=$2) AND ($3 OR p.id=ANY($4::bigint[]))
@@ -144,12 +146,15 @@ func (s *Store) CompatibleProjectsAcrossOrganizations(ctx context.Context, userI
 		var orgID, orgSlug, orgName string
 		var orgCreated time.Time
 		var eventThrottleRate int
-		if err := rows.Scan(&projectID, &name, &slug, &platform, &created, &eventThrottleRate, &orgID, &orgSlug, &orgName, &orgCreated); err != nil {
+		var require2FA bool
+		if err := rows.Scan(&projectID, &name, &slug, &platform, &created, &eventThrottleRate, &orgID, &orgSlug, &orgName, &orgCreated, &require2FA); err != nil {
 			return nil, err
 		}
+		organization := discoveryOrganization(orgID, orgSlug, orgName, orgCreated)
+		organization.Require2FA = require2FA
 		result = append(result, CompatibleProject{
 			ID: projectID, Name: name, Slug: slug, Platform: platform, DateCreated: created.UTC(), EventThrottleRate: eventThrottleRate,
-			Organization: discoveryOrganization(orgID, orgSlug, orgName, orgCreated),
+			Organization: organization,
 			Features:     []string{}, HasAccess: true, IsMember: true,
 		})
 	}

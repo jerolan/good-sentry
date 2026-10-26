@@ -1205,31 +1205,35 @@
     if (version !== state.requestVersion) return;
     const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
     const name = field('Organization name', 'text', { value: detail.name, required: true, maxlength: 200, autocomplete: 'organization' });
-    const save = node('button', { type: 'submit', class: 'btn button primary' }, 'Save organization name');
-    const form = node('form', { class: 'form-stack', 'aria-label': 'Rename organization' }, error, name.wrap, save);
+    const require2FA = node('input', { type: 'checkbox', checked: detail.require2FA });
+    const twoFactorField = node('label', { class: 'checkbox-field' }, require2FA, ' Require two-factor authentication for members');
+    const save = node('button', { type: 'submit', class: 'btn button primary' }, 'Save workspace settings');
+    const form = node('form', { class: 'form-stack', 'aria-label': 'Organization settings' }, error, name.wrap, twoFactorField,
+      node('p', { class: 'small muted' }, 'Enable two-factor authentication on your own account before requiring it for this workspace.'), save);
     form.addEventListener('submit', async event => {
       event.preventDefault();
       error.textContent = '';
       save.disabled = true;
       save.textContent = 'Saving…';
       try {
-        const updated = await request(`/api/0/organizations/${encodeURIComponent(org.slug)}/`, { method: 'PUT', body: { name: name.input.value } });
+        const updated = await request(`/api/0/organizations/${encodeURIComponent(org.slug)}/`, { method: 'PUT', body: { name: name.input.value, require2FA: require2FA.checked } });
         state.organization.name = updated.name;
         const selected = state.me.organizations.find(item => item.slug === org.slug);
         if (selected) selected.name = updated.name;
-        notify('Organization name updated.');
+        notify('Workspace settings updated.');
         await loadRoute(true);
       } catch (failure) {
         formError(error, failure);
       } finally {
         save.disabled = false;
-        save.textContent = 'Save organization name';
+        save.textContent = 'Save workspace settings';
       }
     });
     const details = node('dl', { class: 'org-details' },
       node('div', {}, node('dt', {}, 'Organization ID'), node('dd', { class: 'mono' }, detail.id)),
       node('div', {}, node('dt', {}, 'Slug'), node('dd', { class: 'mono' }, detail.slug)),
       node('div', {}, node('dt', {}, 'Your role'), node('dd', {}, detail.access.includes('org:write') ? org.role : 'member')),
+      node('div', {}, node('dt', {}, 'Two-factor required'), node('dd', {}, detail.require2FA ? 'Yes' : 'No')),
       node('div', {}, node('dt', {}, 'Created'), node('dd', {}, date(detail.dateCreated))));
     const renamePanel = node('section', { class: 'card panel', 'aria-label': 'Organization details' },
       node('div', { class: 'panel-title' }, node('h2', {}, 'Workspace details')),
@@ -3559,6 +3563,55 @@
     return { panel, start: () => view.commentsResult?.page === view.commentPage ? render(view.commentsResult) : load(view.commentPage) };
   }
 
+  function renderTwoFactorGate() {
+    document.title = 'Two-factor setup required · GoodSentry';
+    const error = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+    const setup = node('button', { type: 'button', class: 'btn button primary' }, 'Set up authenticator');
+    const secret = node('code', { class: 'mono wrap-anywhere' });
+    const secretPanel = node('div', { class: 'form-stack', hidden: true }, node('p', {}, 'Add this secret to your authenticator app, then enter its current six-digit code.'), secret);
+    const code = field('Authenticator code', 'text', { name: 'code', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 8, required: true });
+    const confirm = node('button', { type: 'submit', class: 'btn button primary', disabled: true }, 'Enable two-factor authentication');
+    const form = node('form', { class: 'form-stack', hidden: true }, code.wrap, confirm);
+    const recovery = node('div', { class: 'form-stack', hidden: true });
+    setup.addEventListener('click', async () => {
+      error.textContent = '';
+      setup.disabled = true;
+      try {
+        const result = await request('/api/v1/me/two-factor', { method: 'POST' });
+        secret.textContent = result.secret;
+        secretPanel.hidden = false;
+        form.hidden = false;
+        confirm.disabled = false;
+        setup.textContent = 'New setup code';
+        code.input.focus();
+      } catch (failure) { formError(error, failure); }
+      finally { setup.disabled = false; }
+    });
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      error.textContent = '';
+      confirm.disabled = true;
+      confirm.textContent = 'Enabling…';
+      try {
+        const result = await request('/api/v1/me/two-factor/confirm', { method: 'POST', body: { code: code.input.value } });
+        secretPanel.hidden = true;
+        form.hidden = true;
+        recovery.hidden = false;
+        recovery.replaceChildren(
+          node('p', { class: 'form-notice', role: 'status' }, 'Two-factor authentication is enabled. Store these single-use recovery codes securely.'),
+          node('pre', { class: 'mono wrap-anywhere' }, (result.recoveryCodes || []).join('\n')),
+          node('button', { type: 'button', class: 'btn button primary', onclick: () => location.reload() }, 'Continue to GoodSentry'));
+      } catch (failure) {
+        formError(error, failure);
+        confirm.disabled = false;
+        confirm.textContent = 'Enable two-factor authentication';
+      }
+    });
+    authFrame('Organization security requirement', 'Set up two-factor authentication',
+      'Your organization requires a second factor before it will show projects, issues or telemetry.',
+      node('div', { class: 'form-stack' }, error, setup, secretPanel, form, recovery), setup);
+  }
+
   async function initialize() {
     try {
       const setup = await request('/api/v1/setup');
@@ -3592,6 +3645,7 @@
       }
       try { state.me = await request('/api/v1/me'); }
       catch (error) { if (error.status === 401) { renderAuth(false); return; } throw error; }
+      if (state.me.twoFactorRequired) { renderTwoFactorGate(); return; }
       await loadRoute();
     } catch (error) {
       app.setAttribute('aria-busy', 'false');

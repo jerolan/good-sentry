@@ -146,15 +146,18 @@ func (s *Server) compatibleUpdateOrganization(w http.ResponseWriter, r *http.Req
 		return
 	}
 	var input struct {
-		Name string `json:"name"`
+		Name       string `json:"name"`
+		Require2FA *bool  `json:"require2FA"`
 	}
 	if !bodyJSON(w, r, &input) {
 		return
 	}
-	detail, err := s.db.UpdateCompatibleOrganization(r.Context(), current(r).User.ID, r.PathValue("org"), input.Name)
+	detail, err := s.db.UpdateCompatibleOrganization(r.Context(), current(r).User.ID, r.PathValue("org"), input.Name, input.Require2FA)
 	if err != nil {
 		if errors.Is(err, store.ErrInvalidOrganization) {
-			failure(w, 400, "Organization name must contain 1 to 200 characters without controls")
+			failure(w, 400, "Provide a valid organization name or require2FA")
+		} else if errors.Is(err, store.ErrTwoFactorRequired) {
+			failure(w, 409, "Enable two-factor authentication before requiring it for the organization")
 		} else {
 			report(w, err)
 		}

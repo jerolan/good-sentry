@@ -21,16 +21,40 @@ func TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, invalid := range []string{"", " ", "bad\x00name", strings.Repeat("界", 201)} {
-		if _, err := db.UpdateCompatibleOrganization(ctx, owner.ID, org.Slug, invalid); !errors.Is(err, ErrInvalidOrganization) {
+		if _, err := db.UpdateCompatibleOrganization(ctx, owner.ID, org.Slug, invalid, nil); !errors.Is(err, ErrInvalidOrganization) {
 			t.Fatalf("invalid organization name %q: %v", invalid, err)
 		}
 	}
-	updated, err := db.UpdateCompatibleOrganization(ctx, admin.ID, org.Slug, "  Renamed organization  ")
+	updated, err := db.UpdateCompatibleOrganization(ctx, admin.ID, org.Slug, "  Renamed organization  ", nil)
 	if err != nil || updated.Name != "Renamed organization" || updated.Slug != org.Slug || len(updated.Projects) != 1 || updated.Projects[0].ID != project.ID {
 		t.Fatalf("organization rename: %+v %v", updated, err)
 	}
-	if _, err := db.UpdateCompatibleOrganization(ctx, member.ID, org.Slug, "Member rename"); !errors.Is(err, ErrForbidden) {
+	if _, err := db.UpdateCompatibleOrganization(ctx, member.ID, org.Slug, "Member rename", nil); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("member rename error: %v", err)
+	}
+	require := true
+	if _, err := db.UpdateCompatibleOrganization(ctx, owner.ID, org.Slug, "", &require); !errors.Is(err, ErrTwoFactorRequired) {
+		t.Fatalf("require2FA without enrollment error: %v", err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE users SET totp_confirmed_at=now() WHERE id=$1::bigint`, owner.ID); err != nil {
+		t.Fatal(err)
+	}
+	secured, err := db.UpdateCompatibleOrganization(ctx, owner.ID, org.Slug, "", &require)
+	if err != nil || !secured.Require2FA {
+		t.Fatalf("require2FA update: %+v %v", secured, err)
+	}
+	requirement, err := db.TwoFactorRequirement(ctx, member.ID)
+	if err != nil || !requirement.Organization || requirement.Confirmed {
+		t.Fatalf("member two-factor requirement=%+v err=%v", requirement, err)
+	}
+	requirement, err = db.TwoFactorRequirement(ctx, owner.ID)
+	if err != nil || !requirement.Organization || !requirement.Confirmed {
+		t.Fatalf("owner two-factor requirement=%+v err=%v", requirement, err)
+	}
+	disable := false
+	cleared, err := db.UpdateCompatibleOrganization(ctx, owner.ID, org.Slug, "", &disable)
+	if err != nil || cleared.Require2FA {
+		t.Fatalf("clear require2FA: %+v %v", cleared, err)
 	}
 	if err := db.DeleteCompatibleOrganization(ctx, admin.ID, org.Slug); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("admin delete error: %v", err)

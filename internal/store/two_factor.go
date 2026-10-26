@@ -27,6 +27,22 @@ type TwoFactorState struct {
 	RecoveryCodesRemaining int
 }
 
+// TwoFactorRequirement reports whether any current organization requires a
+// second factor and whether the account has completed TOTP enrollment.
+type TwoFactorRequirement struct {
+	Organization bool
+	Confirmed    bool
+}
+
+func (s *Store) TwoFactorRequirement(ctx context.Context, userID string) (TwoFactorRequirement, error) {
+	var requirement TwoFactorRequirement
+	err := s.pool.QueryRow(ctx, `SELECT
+ EXISTS(SELECT 1 FROM memberships m JOIN organizations o ON o.id=m.organization_id WHERE m.user_id=$1::bigint AND o.require_2fa),
+ EXISTS(SELECT 1 FROM users WHERE id=$1::bigint AND totp_confirmed_at IS NOT NULL)`, userID).
+		Scan(&requirement.Organization, &requirement.Confirmed)
+	return requirement, err
+}
+
 // LoginChallenge is a pending second-factor login that must be completed or
 // invalidated exactly once.
 type LoginChallenge struct {

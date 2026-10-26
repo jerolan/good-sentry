@@ -52,6 +52,9 @@ func (s *Server) compatibleAny(scopes []string, next http.HandlerFunc) http.Hand
 			}
 			return
 		}
+		if !s.allowTwoFactorGate(w, r, grant.User.ID) {
+			return
+		}
 		if len(scopes) > 0 && !slices.ContainsFunc(scopes, func(scope string) bool { return slices.Contains(grant.Scopes, scope) }) {
 			failure(w, 403, "Credential requires one of these scopes: "+strings.Join(scopes, ", "))
 			return

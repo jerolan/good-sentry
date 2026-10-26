@@ -77,6 +77,9 @@ func (s *Server) compatibleAccountWithCSRF(w http.ResponseWriter, r *http.Reques
 			return store.User{}, false
 		}
 	}
+	if requireCSRF && !s.allowTwoFactorGate(w, r, user.ID) {
+		return store.User{}, false
+	}
 	*r = *r.WithContext(context.WithValue(r.Context(), identityKey{}, identity{User: user, CSRF: csrf}))
 	return user, true
 }

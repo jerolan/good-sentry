@@ -259,6 +259,15 @@ func (s *Server) oauthAuthorizePage(w http.ResponseWriter, r *http.Request) {
 		s.renderOAuthLogin(w, http.StatusOK, next, "")
 		return
 	}
+	required, err := s.requiresTwoFactorSetup(r.Context(), session.User.ID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	if required {
+		http.Redirect(w, r, s.cfg.Prefix+"/", http.StatusSeeOther)
+		return
+	}
 	orgs, err := s.db.Organizations(r.Context(), session.User.ID)
 	if err != nil {
 		report(w, err)
@@ -298,6 +307,15 @@ func (s *Server) oauthAuthorizeDecision(w http.ResponseWriter, r *http.Request) 
 	session, ok := s.oauthSession(r)
 	if !ok {
 		failure(w, http.StatusUnauthorized, "Authentication required")
+		return
+	}
+	required, err := s.requiresTwoFactorSetup(r.Context(), session.User.ID)
+	if err != nil {
+		report(w, err)
+		return
+	}
+	if required {
+		failure(w, http.StatusForbidden, "Two-factor authentication setup required")
 		return
 	}
 	request, _, err := s.parseOAuthAuthorize(r.Context(), r.PostForm)
