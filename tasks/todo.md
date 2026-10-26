@@ -1449,8 +1449,9 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-Siguiente acción: CLOSE-sourcemaps-001 (primer criterio pendiente en el orden
-registrado). No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 queda vigente. Siguiente acción: CLOSE-sourcemaps-002
+(primer criterio pendiente en el orden registrado). No se declara aceptación ni
+cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1695,7 +1696,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-153](../SPEC.md#close-errores-153) | Native assignment, comments and recorded triage activity: Add GET issue/assignees (optional query at most200 U… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-154](../SPEC.md#close-errores-154) | Native assignment, comments and recorded triage activity: Comment POST retains201 and trimmed1..10000 UTF-8 by… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-155](../SPEC.md#close-errores-155) | Native assignment, comments and recorded triage activity: Original responsive detail gains searchable/paginate… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-001](../SPEC.md#close-sourcemaps-001) | Release lifecycle, commit metadata and deploys: This artifacts increment provides actual release entities shar… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-001](../SPEC.md#close-sourcemaps-001) | Release lifecycle, commit metadata and deploys: This artifacts increment provides actual release entities shar… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-002](../SPEC.md#close-sourcemaps-002) | Release lifecycle, commit metadata and deploys: An exact release version is1..255 Unicode characters excluding… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-003](../SPEC.md#close-sourcemaps-003) | Release lifecycle, commit metadata and deploys: Expose compatible organization GET/POST /api/0/organizations/{… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-004](../SPEC.md#close-sourcemaps-004) | Release lifecycle, commit metadata and deploys: Release JSON returns string id, version, shortVersion (the exa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5918,6 +5919,47 @@ Evidencia: `test-results/closure-20261025/errores-006-go.log` (69 passes,
 Límites registrados: el CI público sigue pendiente para la auditoría final. Los
 criterios específicos de sourcemaps, nativo y bundles conservan sus propias
 filas; esta entrada acredita solo el texto de `CLOSE-errores-006`.
+
+### Ejecución 2026-10-26: entidades de release y scope de artefactos
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-001. Candidata
+`d38a4e5`.
+
+Resultado observado: los owners cubren las releases compartidas por versión
+dentro de la organización, sus asociaciones de proyecto, los conjuntos de
+commits suministrados y los deploys completados. Las lecturas aceptan
+`project:read` o `project:releases`; las mutaciones exigen
+`project:releases` y membresía actual de propietario o administrador; las
+sesiones de miembro pueden leer y reciben 403 al mutar, y las mutaciones por
+cookie exigen CSRF y origen. La lista de repositorios exige `org:read` y sus
+mutaciones `org:write`. La precedencia de Bearer malformado, la revocación, la
+intersección de proyectos, el aislamiento por organización y la separación de
+las claves SDK se mantienen, y las credenciales nativas siguen siendo solo de
+sesión: cualquier Bearer recibe 401 en la administración de tokens nativa. El
+formulario de credenciales muestra `project:releases` sin marcar y explica que
+lee y gestiona releases, commits y deploys, con escritura limitada al
+propietario o administrador actual.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Releases compartidas, asociaciones, commits y deploys | store `TestReleaseSharedIdentityAndCoverage`, `TestReleaseCommitRawOrderRepositoriesAndPreviousHead`, `TestReleaseDeployScopeObservationAndArtifactDeletion` |
+| Identidad concurrente, migración y tiempos UTC | store `TestReleaseConcurrentIdentityAndCommitReplacement`, `TestReleaseMigrationBackfillsPriorHistoryAndReopens`, `TestReleaseMetadataTimesAreUTC` |
+| Alcance autorizado y atomicidad de proyecto/membresía | store `TestReleaseProjectReferencesResolveWithinAuthorizedScope`, `TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent` |
+| Lecturas y mutaciones HTTP con roles, CSRF y Bearer | HTTP `TestReleaseHTTPContract` |
+| Archivos de release | HTTP `TestCompatibleReleaseFilesHTTP` |
+| Repositorios: `org:read` y `org:write` | HTTP `TestCompatibleRepositoriesHTTP` |
+| Scopes de credencial, SDK key y sesión obligatoria | HTTP `TestAPITokenHTTPContract` |
+| Checkbox `project:releases` sin marcar y su propósito | `tokens-ui/token-form-1440.png` y `tokens-ui/report.json` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-001-go.log` con catorce
+owners y la captura del formulario de credenciales de CLOSE-identidad-090, sin
+cambios en `app.js` desde entonces.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+evidencia de interfaz se reutiliza porque el formulario no cambió; el resto se
+ejecutó contra la candidata actual.
 
 ### Comprobante de integración documental
 

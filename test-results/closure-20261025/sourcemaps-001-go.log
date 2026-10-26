@@ -1,0 +1,34 @@
+=== RUN   TestReleaseSharedIdentityAndCoverage
+--- PASS: TestReleaseSharedIdentityAndCoverage (0.66s)
+=== RUN   TestReleaseCommitRawOrderRepositoriesAndPreviousHead
+--- PASS: TestReleaseCommitRawOrderRepositoriesAndPreviousHead (0.53s)
+=== RUN   TestReleaseDeployScopeObservationAndArtifactDeletion
+--- PASS: TestReleaseDeployScopeObservationAndArtifactDeletion (0.59s)
+=== RUN   TestReleaseConcurrentIdentityAndCommitReplacement
+--- PASS: TestReleaseConcurrentIdentityAndCommitReplacement (2.53s)
+=== RUN   TestReleaseStandaloneObservationFreshOnly
+--- PASS: TestReleaseStandaloneObservationFreshOnly (0.47s)
+=== RUN   TestReleaseMigrationBackfillsPriorHistoryAndReopens
+--- PASS: TestReleaseMigrationBackfillsPriorHistoryAndReopens (0.58s)
+=== RUN   TestReleaseMetadataTimesAreUTC
+--- PASS: TestReleaseMetadataTimesAreUTC (0.59s)
+=== RUN   TestReleaseProjectReferencesResolveWithinAuthorizedScope
+--- PASS: TestReleaseProjectReferencesResolveWithinAuthorizedScope (0.58s)
+=== RUN   TestReleaseSourceMapAcknowledgementAndDeleteOrdering
+--- PASS: TestReleaseSourceMapAcknowledgementAndDeleteOrdering (0.64s)
+=== RUN   TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent
+--- PASS: TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent (0.52s)
+PASS
+ok  	goodsentry/internal/store	7.686s
+=== RUN   TestAPITokenHTTPContract
+--- PASS: TestAPITokenHTTPContract (1.25s)
+=== RUN   TestCompatibleReleaseFilesHTTP
+--- PASS: TestCompatibleReleaseFilesHTTP (0.96s)
+=== RUN   TestReleaseHTTPContract
+--- PASS: TestReleaseHTTPContract (2.12s)
+PASS
+ok  	goodsentry/internal/server	4.347s
+=== RUN   TestCompatibleRepositoriesHTTP
+--- PASS: TestCompatibleRepositoriesHTTP (0.66s)
+PASS
+ok  	goodsentry/internal/server	0.662s

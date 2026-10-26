@@ -3628,6 +3628,14 @@
         "errores-006-go.log",
         "errores-006-artifact.log"
       ]
+    },
+    "CLOSE-sourcemaps-001": {
+      "evidence": "vigente",
+      "scope": "release entities, associations, commits, deployments and project:releases scope",
+      "evidence_files": [
+        "sourcemaps-001-go.log",
+        "tokens-ui/token-form-1440.png"
+      ]
     }
   },
   "commands": [
