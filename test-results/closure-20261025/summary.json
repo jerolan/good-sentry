@@ -4167,6 +4167,14 @@
         "uptime-005/endpoint-migration.log"
       ]
     },
+    "CLOSE-uptime-013": {
+      "evidence": "vigente",
+      "scope": "HEAD/GET/POST/TCP probes, redirects, timeouts, headers, scheduler recovery, claims/fencing, thresholds, transitions and history",
+      "evidence_files": [
+        "uptime-013/prober.log",
+        "uptime-013/scheduler-store.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

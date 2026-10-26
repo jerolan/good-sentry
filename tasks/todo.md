@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-013. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-014. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1869,7 +1869,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 034) |
 | [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-016](../SPEC.md#close-uptime-016) | Sentry spans and native telemetry reads: Persist monitor configuration/current state and append-only check his… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8083,6 +8083,29 @@ Evidencia: `test-results/closure-20261025/uptime-005/heartbeat-endpoint.log` y
 Límites registrados: el rechazo específico de parámetros de consulta en la ruta
 compatible no se sondea por separado; la ruta fija y el handler no leen consulta.
 El CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: monitores HEAD/GET/POST/TCP y heartbeat
+
+Selección registrada antes de trabajar: CLOSE-uptime-013. Candidata
+`f5ea277`.
+
+| Elemento | Resultado |
+|---|---|
+| HEAD/GET/POST con estado esperado y cuerpo | `TestProbeHTTPMethodsAndStatus` y `TestProbeBodyPrefixBound` pasan |
+| TCP y TLS | `TestProbeTCPAndTLS` pasa |
+| Redirecciones, timeout y cabeceras | `TestProbeRedirects`, `TestProbeCancellationAndTimeout` y `TestProbeResponseHeadersBound` pasan |
+| Scheduler real, recuperación y parada | `TestMonitorWorkersProbeRecoverAndStop` pasa |
+| Claims, fencing y leases expirados | `TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases` pasa |
+| Umbral, transición y recuperación | `TestMonitorThresholdResetRecoveryAndHistory` pasa |
+| Historial, alcance y paginación | `TestMonitorMembershipProjectScopeAndHistoryPagination` pasa |
+
+Evidencia: `test-results/closure-20261025/uptime-013/prober.log` y
+`test-results/closure-20261025/uptime-013/scheduler-store.log`.
+
+Límites registrados: las pruebas del prober necesitan red local y se ejecutaron
+fuera del sandbox; dentro del sandbox la primera pasada falló por red, no por
+producto. La UI de monitores pertenece a 020. El CI público y la imagen final
+siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
