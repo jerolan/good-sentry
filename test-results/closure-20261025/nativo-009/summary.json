@@ -1,0 +1,36 @@
+{
+  "criteria": ["CLOSE-nativo-009"],
+  "date": "2026-10-26",
+  "product_revision": "baa8cc1",
+  "note": "No production or test change was needed. The existing exception-context owners cover the contract; this receipt records their execution at the current revision.",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64"
+  },
+  "owners": [
+    "TestParseMinidumpUsesExceptionStreamThreadContext",
+    "TestParseMinidumpFallsBackWhenExceptionContextIsAbsent",
+    "TestParseMinidumpRejectsMalformedExceptionThreadContexts"
+  ],
+  "covered": [
+    "a full 168-byte-or-larger Exception stream uses its ThreadContext descriptor at offset 160 even when ThreadList has a context, including when the Exception stream precedes ThreadList",
+    "the exception-stream context works without any ThreadList context",
+    "a zero size and RVA descriptor means absent and falls back to the matching thread context, for both 32-byte and 168-byte streams",
+    "when the exception thread is absent from ThreadList, the first available thread context is used",
+    "a descriptor with only size or only RVA, a context range outside the file, an unsupported context or an architecture mismatch rejects the dump without fallback",
+    "partial Exception streams between 32 and 168 bytes fail"
+  ],
+  "observed": {
+    "native": "PASS in 0.008s",
+    "failures": 0
+  },
+  "limits": [
+    "Fixtures are synthetic Minidumps, not the final image or a real SDK crash.",
+    "No public CI or external publication was exercised in this increment.",
+    "The product is not declared an acceptance candidate or closed."
+  ],
+  "evidence": [
+    "exception-context.log",
+    "summary.json"
+  ]
+}

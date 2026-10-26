@@ -4441,6 +4441,14 @@
         "nativo-008/summary.json"
       ]
     },
+    "CLOSE-nativo-009": {
+      "evidence": "vigente",
+      "scope": "full Exception stream ThreadContext priority, absent-descriptor fallback, thread fallback and malformed/partial rejection without fallback",
+      "evidence_files": [
+        "nativo-009/exception-context.log",
+        "nativo-009/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

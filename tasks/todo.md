@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -008 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -009 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-009. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-010. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1735,7 +1735,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8800,6 +8800,26 @@ producto.
 
 Evidencia: `test-results/closure-20261025/nativo-008/memory64.log` y
 `native.log`.
+
+Límites registrados: los fixtures son sintéticos y no se usó la imagen final ni
+el CI público. La imagen y el CI siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: contexto del hilo de excepción
+
+Selección registrada antes de trabajar: CLOSE-nativo-009. Revisión de producto
+`baa8cc1`; no hizo falta cambiar producto: los tres owners existentes cubren el
+contrato. Este incremento solo añade documentación y el comprobante.
+
+| Elemento | Comprobante |
+|---|---|
+| Contexto del descriptor en el offset 160 de un stream completo tiene prioridad sobre ThreadList | `TestParseMinidumpUsesExceptionStreamThreadContext/preferred_over_matching_thread_context_even_before_ThreadList` |
+| Funciona sin contexto en ThreadList | `TestParseMinidumpUsesExceptionStreamThreadContext/usable_without_a_ThreadList_context` |
+| Descriptor ausente (tamaño y RVA cero) usa el contexto del hilo, incluido un stream de 168 bytes | `TestParseMinidumpFallsBackWhenExceptionContextIsAbsent/stream_size_32` y `/stream_size_168` |
+| Hilo de excepción ausente usa el primer contexto disponible | `TestParseMinidumpFallsBackWhenExceptionContextIsAbsent/first_thread_when_exception_thread_is_absent` |
+| Descriptor parcial, fuera del archivo o contexto no soportado rechaza sin fallback | `TestParseMinidumpRejectsMalformedExceptionThreadContexts` |
+| Streams parciales de 33 y 167 bytes fallan | `TestParseMinidumpRejectsMalformedExceptionThreadContexts/33-byte_partial_stream` y `/167-byte_partial_stream` |
+
+Evidencia: `test-results/closure-20261025/nativo-009/exception-context.log`.
 
 Límites registrados: los fixtures son sintéticos y no se usó la imagen final ni
 el CI público. La imagen y el CI siguen pendientes para la auditoría final.
