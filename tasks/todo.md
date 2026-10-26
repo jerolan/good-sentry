@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-079 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-081 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1919,8 +1919,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-076](../SPEC.md#close-identidad-076) | Compatible project update and deletion: PUT /api/0/projects/{org}/{project}/ accepts project name and platform… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-077](../SPEC.md#close-identidad-077) | Compatible project update and deletion: Additive061 stores each project's event_throttle_rate with a default o… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-078](../SPEC.md#close-identidad-078) | Compatible project update and deletion: The native project UI exposes Edit and permanent-delete confirmation t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-079](../SPEC.md#close-identidad-079) | Compatible project update and deletion: GET/POST /api/0/organizations/{org}/repos/ exposes the existing organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-080](../SPEC.md#close-identidad-080) | Compatible project update and deletion: POST /api/0/teams/{org}/{team}/projects/ accepts ProjectIn {name,slug?… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-079](../SPEC.md#close-identidad-079) | Compatible project update and deletion: GET/POST /api/0/organizations/{org}/repos/ exposes the existing organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-080](../SPEC.md#close-identidad-080) | Compatible project update and deletion: POST /api/0/teams/{org}/{team}/projects/ accepts ProjectIn {name,slug?… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-081](../SPEC.md#close-identidad-081) | Compatible project update and deletion: Additive048_project_teams.sql introduces the authoritative many-to-man… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-082](../SPEC.md#close-identidad-082) | Compatible project update and deletion: POST/DELETE /api/0/projects/{org}/{project}/teams/{team}/ add or remov… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-083](../SPEC.md#close-identidad-083) | Compatible project update and deletion: GlitchTip-specific POST /api/0/organizations/{org}/members/{member}/se… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4947,6 +4947,36 @@ de la tasa, la conservación de slug y creación, el borrado en cascada y la
 conducta estricta de cuerpos, roles y alcances.
 
 Evidencia: `test-results/closure-20261025/project-ui/report.json`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: repositorios y proyectos de equipo
+
+Selección registrada antes de trabajar: CLOSE-identidad-079 y -080. Candidata
+`1ad82c4`.
+
+Resultado observado: `GET/POST /api/0/organizations/{org}/repos/` exige
+`org:read` y `org:write`, pagina con límite/cursor estrictos y consulta
+acotada. La revisión encontró una desviación: el handler admitía consultas de 200
+caracteres donde el contrato fija 50; se corrigió el límite y el mensaje, y el
+owner ahora comprueba que 51 caracteres, `limit=0` y un cursor inválido
+devuelven 400 y que `limit=1` produce página con enlace. El owner cubre además
+el 403 de un miembro, la creación con URL y provider opacos como repositorio
+manual activo, el 409 de nombre duplicado y la denegación de un token
+`org:read` frente al permiso de `org:write`; el owner de store confirma que un
+token restringido no ve repositorios sin commits en sus proyectos, mientras una
+sesión con todos los proyectos los ve.
+
+La creación de proyecto en equipo acepta `{name,slug?,platform?,eventThrottleRate?}`:
+401 sin sesión, 403 para un miembro, 400 para nombre vacío, de 65 caracteres, con
+NUL, tasa fuera de rango, slug no canónico, campo desconocido o JSON con valores
+extra, y 404 para un equipo ajeno o inexistente. La creación con slug, plataforma
+y tasa 42 devuelve el DTO con su relación de equipo, la clave inicial disponible,
+el proyecto legible por las rutas de organización y el 409 correcto al repetir
+slug.
+
+Evidencia: `test-results/closure-20261025/identidad-079-080-go.log` y el cambio
+en `internal/server/releases.go` con su owner ampliado.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

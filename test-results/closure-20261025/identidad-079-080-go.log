@@ -1,0 +1,10 @@
+=== RUN   TestCreateCompatibleProjectHTTP
+--- PASS: TestCreateCompatibleProjectHTTP (0.69s)
+=== RUN   TestCompatibleRepositoriesHTTP
+--- PASS: TestCompatibleRepositoriesHTTP (0.62s)
+PASS
+ok  	goodsentry/internal/server	2.354s
+=== RUN   TestReleaseRepositoryCreateAndScopedList
+--- PASS: TestReleaseRepositoryCreateAndScopedList (0.69s)
+PASS
+ok  	goodsentry/internal/store	1.759s

@@ -417,8 +417,8 @@ func (s *Server) releaseRepositories(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	query := paging.query.Get("query")
-	if !credentialText(query, 200) {
-		failure(w, 400, "Query must contain at most 200 characters without controls")
+	if !credentialText(query, 50) {
+		failure(w, 400, "Query must contain at most 50 characters without controls")
 		return
 	}
 	result, err := s.db.ReleaseRepositories(r.Context(), access, query, paging.offset, paging.limit)

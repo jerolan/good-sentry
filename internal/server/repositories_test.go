@@ -5,6 +5,7 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 
 	"goodsentry/internal/store"
@@ -28,6 +29,13 @@ func TestCompatibleRepositoriesHTTP(t *testing.T) {
 	var repositories []store.ReleaseRepository
 	if err := json.Unmarshal(f.request(t, f.client, "GET", path, "", nil, 200), &repositories); err != nil || len(repositories) != 1 || repositories[0].ID != repository.ID {
 		t.Fatalf("list repositories HTTP: %+v %v", repositories, err)
+	}
+	// Repository query is bounded to 50 characters and supports strict paging.
+	f.request(t, f.client, "GET", path+"?query="+strings.Repeat("a", 51), "", nil, 400)
+	f.request(t, f.client, "GET", path+"?limit=0", "", nil, 400)
+	f.request(t, f.client, "GET", path+"?cursor=bad", "", nil, 400)
+	if page := f.request(t, f.client, "GET", path+"?limit=1", "", nil, 200); len(page) == 0 {
+		t.Fatal("repository page with limit=1 is empty")
 	}
 	readToken := issueManagementToken(t, f, f.org.Slug, "Repo read", []string{"org:read"}, []string{f.project.ID})
 	f.request(t, http.DefaultClient, "POST", path, `{"name":"read/denied"}`, http.Header{"Authorization": {"Bearer " + readToken}}, 403)

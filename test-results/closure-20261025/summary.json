@@ -3330,6 +3330,20 @@
       "evidence_files": [
         "project-ui/report.json"
       ]
+    },
+    "CLOSE-identidad-079": {
+      "evidence": "vigente",
+      "scope": "compatible organization repositories and team project creation",
+      "evidence_files": [
+        "identidad-079-080-go.log"
+      ]
+    },
+    "CLOSE-identidad-080": {
+      "evidence": "vigente",
+      "scope": "compatible organization repositories and team project creation",
+      "evidence_files": [
+        "identidad-079-080-go.log"
+      ]
     }
   },
   "commands": [
