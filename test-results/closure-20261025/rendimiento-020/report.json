@@ -1,0 +1,13 @@
+{
+  "ok": false,
+  "baseURL": "http://127.0.0.1:18170/",
+  "disabledURL": "http://127.0.0.1:18171/",
+  "checks": [],
+  "screenshots": [],
+  "dimensions": [],
+  "pageErrors": [],
+  "consoleProblems": [],
+  "requestFailures": [],
+  "badResponses": [],
+  "failure": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('status').filter({ hasText: 'Trace ID copied.' }) to be visible\u001b[22m\n"
+}

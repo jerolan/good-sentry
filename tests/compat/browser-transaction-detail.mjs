@@ -53,7 +53,9 @@ function identity(tab) {
 function spanRows(tab) { return tab.getByRole('region', { name: 'Occurrence spans', exact: true }).getByRole('row').filter({ has: tab.getByRole('cell') }); }
 async function definition(tab, value) {
   const exact = new RegExp(`^${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
-  await visible(tab.getByRole('definition').filter({ hasText: exact }));
+  const matches = tab.getByRole('definition').filter({ hasText: exact });
+  assert.ok(await matches.count() >= 1, 'Expected a visible definition for ' + String(value));
+  await visible(matches.first());
 }
 async function detailReady(tab, name) { await visible(tab.getByRole('heading', { level: 1, name, exact: true })); await visible(tab.getByRole('region', { name: 'Occurrence spans', exact: true })); }
 async function capture(tab, name, withContext = false) {

@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -019
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-020. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-020 (intento fallido registrado). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1852,7 +1852,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-017](../SPEC.md#close-rendimiento-017) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-018](../SPEC.md#close-rendimiento-018) | Sentry spans and native telemetry reads: The detail JSON has sample matching the reference above; projectName,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-019](../SPEC.md#close-rendimiento-019) | Sentry spans and native telemetry reads: For legacy transactions, read the selected event's nested spans array… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 018) |
-| [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | implementada | fallida | Reparar aceptación de navegador; ver intento 2026-10-26 |
 | [CLOSE-rendimiento-021](../SPEC.md#close-rendimiento-021) | Sentry spans and native telemetry reads: The child-operation statistics increment groups spans by exact operat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7358,6 +7358,27 @@ implementación de una sola consulta y en los conteos constantes de las 21
 páginas; no se provoca una escritura concurrente en esta prueba. La
 reconstrucción entre proyectos sigue en criterios posteriores. El CI público y
 la imagen final siguen pendientes para la auditoría final.
+
+### Intento 2026-10-26 (fallido): detalle de ocurrencia en la UI
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-020. Candidata
+`e2e83b4`. Entorno: PostgreSQL 18 desechable, dos procesos sobre la misma
+base (logs activos en 18170, logs desactivados en 18171), propietario y un
+miembro real creado por invitación.
+
+Intento 1: `browser-transaction-detail.mjs` falló al exigir una definición
+única para `2`; la página muestra legítimamente dos valores iguales
+(proyecto y ocurrencia). Se corrigió el ayudante para aceptar una o más
+definiciones visibles y esperar la primera, sin relajar los valores esperados.
+
+Intento 2: el resumen, las identidades y la tabla de spans pasaron hasta esperar
+el estado `Trace ID copied.`, que no apareció en 15 s. El intento queda
+registrado como fallido con captura y error en
+`test-results/closure-20261025/rendimiento-020/`.
+
+Siguiente paso: diagnosticar el estado de copia de la traza (permisos de
+portapapeles o carrera del aviso) sin reducir las comprobaciones del contrato, y
+repetir la aceptación completa. No se marca el criterio como vigente.
 
 ### Comprobante de integración documental
 
