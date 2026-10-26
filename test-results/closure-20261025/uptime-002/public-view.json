@@ -1,0 +1,27 @@
+{
+  "monitor": 201,
+  "heartbeat": 201,
+  "publicPage": 201,
+  "htmlStatus": 200,
+  "apiStatus": 200,
+  "privateHtml": 404,
+  "privateApi": 404,
+  "missing": 404,
+  "apiFields": [
+    "isPublic",
+    "monitors",
+    "name",
+    "slug"
+  ],
+  "monitorFields": [
+    "id",
+    "isUp",
+    "lastChange",
+    "lastCheck",
+    "monitorType",
+    "name",
+    "status"
+  ],
+  "leaks": [],
+  "ok": true
+}

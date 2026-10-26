@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-002. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-002 (UI nativa de status pages). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1754,7 +1754,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | por contrastar | pendiente | Parcial: HTML/API pública, 404 y no-fuga verificados; falta la UI nativa |
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-005](../SPEC.md#close-uptime-005) | Compatible uptime monitors: Additive057 gives every monitor a stable UUID endpoint identity and a unique index… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7990,6 +7990,24 @@ ajeno.
 Evidencia adicional: `uptime-001/status-page-roles.json`.
 
 Evidencia: `test-results/closure-20261025/uptime-001/status-pages.log`.
+
+### Avance parcial 2026-10-26: vista pública de status pages
+
+CLOSE-uptime-002 sigue pendiente. Comprobado sobre una instalación limpia:
+
+| Elemento | Resultado |
+|---|---|
+| `GET /status/{slug}` de una página pública | 200 e incluye el nombre de la página y de sus monitores |
+| `GET /api/v1/public/status-pages/{slug}` | 200 con `name`, `slug`, `isPublic` y monitores con `id`, `name`, `monitorType`, `status`, `isUp`, `lastCheck` y `lastChange` |
+| Página privada y slug inexistente | 404 en HTML y en la API pública |
+| No fuga de datos | Sin URL del monitor, host, clave de heartbeat, proyecto, entorno ni cuerpo esperado |
+
+Evidencia: `test-results/closure-20261025/uptime-002/public-view.json` y
+`test-results/closure-20261025/uptime-001/status-pages.log`.
+
+Falta: la UI nativa de Uptime que lista páginas, crea y edita nombre,
+publicación y monitores, enlaza a la página pública y exige confirmación
+explícita al borrar.
 
 ### Comprobante de integración documental
 
