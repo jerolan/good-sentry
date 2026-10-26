@@ -3994,6 +3994,14 @@
         "rendimiento-024/stats-v2.log"
       ]
     },
+    "CLOSE-rendimiento-025": {
+      "evidence": "vigente",
+      "scope": "compatible transaction-group identity, list fields and cursor, detail/trend/spans routes, project-filter rejection, migration 052 and zero-count identity after telemetry expiry",
+      "evidence_files": [
+        "rendimiento-025/routes-and-migration.log",
+        "rendimiento-025/zero-count.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

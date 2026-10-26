@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -024
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -025
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-025 (completar prueba de identidad con conteo cero). No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-026. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1857,7 +1857,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 014/016) |
 | [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | por contrastar | pendiente | Parcial: rutas y 052 pasan; falta identidad con conteo cero tras vencer la telemetría |
+| [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7520,6 +7520,25 @@ retenido sin ventana. Evidencia parcial:
 
 Siguiente paso: vencer o eliminar la telemetría de una identidad controlada y
 leer su detalle; después repetir el flujo sin ventana.
+
+### Cierre 2026-10-26: identidad con conteo cero de grupos de transacciones
+
+Se completó el resultado pendiente de CLOSE-rendimiento-025 con un caso
+controlado sobre PostgreSQL 18 desechable:
+
+| Comprobación | Resultado |
+|---|---|
+| Lista sin ventana (historial retenido por defecto) | El grupo aparece con `count` 2 antes de eliminar su telemetría |
+| Detalle por identidad tras vencer toda la telemetría | Responde 200 y devuelve `count` 0, sin 404 |
+| Rutas y migración 052 | `TestCompatibleTransactionGroupsDetailTrendAndSpansHTTP` y `TestCompatibleTransactionGroupMigration052PreservesTelemetryAndReopens` pasan |
+
+Evidencia: `test-results/closure-20261025/rendimiento-025/zero-count.json` y
+`rendimiento-025/routes-and-migration.log`.
+
+Límites registrados: el caso elimina la telemetría del proyecto mediante SQL
+controlado, no mediante el paso de retención programado; la conservación de la
+fila de identidad y del detalle con conteo cero es lo que se comprueba. El CI
+público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
