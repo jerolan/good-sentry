@@ -4072,6 +4072,13 @@
         "rendimiento-029/trace-graph.log"
       ]
     },
+    "CLOSE-rendimiento-035": {
+      "evidence": "vigente",
+      "scope": "View trace entry points and URL metadata, state-preserving navigation, ancestry waterfall, exact raw JSON, related errors/logs and loading/indexing/empty/error states at three widths",
+      "evidence_files": [
+        "rendimiento-034/report.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

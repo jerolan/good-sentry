@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -034
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -035
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-035. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-036. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1867,7 +1867,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 029) |
 | [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 034) |
 | [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7790,6 +7790,30 @@ ocurrencias, sin reducir comprobaciones. Evidencia:
 Límites registrados: la UI se ejecuta en Chromium headless; los errores de
 consola 404 y 503 del comprobante son respuestas provocadas por los escenarios.
 El CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: acciones View trace y estado de navegación
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-035. Se reutiliza la
+aceptación de navegador de 034; el árbol de producto no cambió entre ambas.
+
+| Elemento del criterio | Comprobante en `rendimiento-034/report.json` |
+|---|---|
+| View trace desde Transactions, ocurrencia, Logs y evento de issue | Los cuatro orígenes entran a la traza y vuelven con sus claves de proyecto, tiempo, filtros, ocurrencia y página |
+| `traceView`, `traceProject`, `tracePage`, `traceNode`, `traceErrorsPage` y `returnView` | La prueba conserva y restaura cada clave |
+| Refresco, paginación, salto al padre, selección de nodo y recarga | Cubiertos por la primera y segunda comprobación |
+| Navegación de barra lateral limpia el estado de traza | Tercera comprobación |
+| Cascada indentada con tiempos, etiquetas y JSON original exacto | Primera comprobación: waveform, puntos, profundidad, relaciones, previews truncadas y enteros de 64 bits |
+| Errores relacionados y logs cuando están habilitados | Segunda y tercera comprobación, incluyendo errores 25+1 y logs desactivados |
+| Alcance de todo el tiempo almacenado explícito | La entrada por Transactions abre la traza con todo el tiempo y lo indica |
+| Estados de carga, indexación, vacío y error con reintento/atrás | Cuarta comprobación (503 real con reintento) y 404 con atrás |
+| Responsive sin desbordamiento del documento | Capturas a 320/768/1440 con anchos de documento iguales al viewport |
+
+Evidencia: `test-results/closure-20261025/rendimiento-034/report.json` y sus
+capturas.
+
+Límites registrados: la ejecución es de Chromium headless; los 404/503 de consola
+son escenarios provocados. El CI público y la imagen final siguen pendientes
+para la auditoría final.
 
 ### Comprobante de integración documental
 
