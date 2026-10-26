@@ -202,6 +202,13 @@ func TestCompatibleSocialOAuth2AppsHTTP(t *testing.T) {
 	if gitea.Provider != "gitea" || gitea.Brand != "gitea" || gitea.ServerURL == nil || *gitea.ServerURL != "https://gitea.example.test" {
 		t.Fatalf("Gitea app=%+v", gitea)
 	}
+	var microsoft compatibleSocialView
+	if err := json.Unmarshal(f.request(t, f.client, "POST", base, socialAppBody("Microsoft", "ms-client", "ms-secret", "microsoft", ""), csrf, 201), &microsoft); err != nil {
+		t.Fatal(err)
+	}
+	if microsoft.Provider != "openid_connect" || microsoft.Brand != "microsoft" || microsoft.ServerURL == nil || *microsoft.ServerURL != "https://login.microsoftonline.com/common/v2.0" {
+		t.Fatalf("Microsoft app=%+v", microsoft)
+	}
 	f.request(t, f.client, "POST", base, socialAppBody("Bad", "client", "secret", "github", "ftp://github.example.test"), csrf, 400)
 	f.request(t, f.client, "POST", base, socialAppBody("Gitea", "client", "secret", "gitea", ""), csrf, 400)
 	var updated compatibleSocialView
@@ -448,6 +455,88 @@ func TestSocialOAuth2RejectsUnverifiedProfiles(t *testing.T) {
 				t.Fatalf("identities=%d err=%v", identities, err)
 			}
 		})
+	}
+}
+
+func TestMicrosoftSocialOIDCSignInUsesTenantIdentity(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	provider, idp := newOIDCTestProviderFull(t, "", "Microsoft Member")
+	provider.emailVerified = false
+	provider.preferredEmail = "microsoft-member@resolution.test"
+	provider.tenant = "tenant-123"
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := config.Config{Domain: "http://" + listener.Addr().String() + "/good", Prefix: "/good", Secret: strings.Repeat("m", 64), MaxBodyBytes: 1 << 20}
+	sealer, err := newSecretSealer(cfg.Secret, "GoodSentry social apps v1", 191)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sealed, err := sealer.seal([]byte(provider.clientSecret))
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, err := f.db.CreateSocialApp(f.ctx, f.org.ID, store.SocialAppInput{
+		ProviderID: "microsoft-social", Provider: "openid_connect", Brand: "microsoft", Name: "Microsoft",
+		ClientID: provider.clientID, ClientSecret: sealed, ServerURL: idp.URL,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	provider.callbackSuffix = "/auth/social/" + app.ProviderID + "/callback"
+	srv := httptest.NewUnstartedServer(New(cfg, f.db))
+	srv.Listener.Close()
+	srv.Listener = listener
+	srv.Start()
+	t.Cleanup(srv.Close)
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	client := &http.Client{Jar: jar}
+	response, err := client.Get(srv.URL + "/good/auth/social/" + app.ProviderID + "/start")
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != 200 || response.Request.URL.Path != "/good/" {
+		t.Fatalf("Microsoft social flow ended at %s status=%d", response.Request.URL, response.StatusCode)
+	}
+	session, err := client.Get(srv.URL + "/good/api/v1/me")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer session.Body.Close()
+	var me struct {
+		User struct {
+			Email string `json:"email"`
+		} `json:"user"`
+	}
+	if session.StatusCode != 200 || json.NewDecoder(session.Body).Decode(&me) != nil || me.User.Email != provider.preferredEmail {
+		t.Fatalf("Microsoft session status=%d %+v", session.StatusCode, me)
+	}
+	var identities int
+	if err = f.sql.QueryRow(f.ctx, "SELECT count(*) FROM user_identities WHERE provider=$1 AND subject=$2", "social:"+app.ProviderID, "subject-"+provider.preferredEmail).Scan(&identities); err != nil || identities != 1 {
+		t.Fatalf("Microsoft identities=%d err=%v", identities, err)
+	}
+
+	generic, err := f.db.CreateSocialApp(f.ctx, f.org.ID, store.SocialAppInput{
+		ProviderID: "microsoft-generic", Provider: "openid_connect", Brand: "openid_connect", Name: "Generic",
+		ClientID: provider.clientID, ClientSecret: sealed, ServerURL: idp.URL,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	provider.callbackSuffix = "/auth/social/" + generic.ProviderID + "/callback"
+	genericClient := &http.Client{Jar: mustSocialJar(t)}
+	response, err = genericClient.Get(srv.URL + "/good/auth/social/" + generic.ProviderID + "/start")
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.Request.URL.Query().Get("authError") != "failed" {
+		t.Fatalf("generic OIDC accepted Microsoft unverified claims: %s", response.Request.URL)
 	}
 }
 

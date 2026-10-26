@@ -113,11 +113,13 @@ are never sent to the browser.
 ### Organization social sign-in
 
 Owners and admins can add sign-in applications per organization from the
-Organization view. OpenID Connect uses the application's issuer and callback;
-GitHub, GitLab and Gitea use OAuth2 with PKCE. GitHub verifies the primary
-verified email from its API. GitLab requires an active, confirmed account and
-Gitea requires an active account with an email. GitHub and GitLab default to
-their hosted service; all three accept a self-hosted HTTPS server URL.
+Organization view. OpenID Connect and Microsoft use the application's issuer and
+callback; GitHub, GitLab and Gitea use OAuth2 with PKCE. Microsoft defaults to
+the common Entra ID v2.0 authority and requires its tenant claim. GitHub
+verifies the primary verified email from its API. GitLab requires an active,
+confirmed account and Gitea requires an active account with an email. GitHub
+and GitLab default to their hosted service; all three OAuth2 providers accept a
+self-hosted HTTPS server URL.
 
 Copy the callback URL shown after saving into the provider application. Share
 `<GOODSENTRY_DOMAIN>/login/<organization-slug>`; it opens the workspace sign-in

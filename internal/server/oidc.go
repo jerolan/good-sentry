@@ -126,7 +126,7 @@ func (s *Server) oidcStart(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) oidcCallback(w http.ResponseWriter, r *http.Request) {
-	s.finishOIDCFlow(w, r, s.oidc.oidcClient, "", s.oidc.issuer, s.oidc.autoCreate, "")
+	s.finishOIDCFlow(w, r, s.oidc.oidcClient, "", s.oidc.issuer, s.oidc.autoCreate, "", false)
 }
 
 func (s *Server) startOIDCFlow(w http.ResponseWriter, r *http.Request, client *oidcClient, app string) {
@@ -165,7 +165,7 @@ func (s *Server) startOIDCFlow(w http.ResponseWriter, r *http.Request, client *o
 	http.Redirect(w, r, config.AuthCodeURL(state, oidc.Nonce(nonce), oauth2.S256ChallengeOption(verifier)), http.StatusFound)
 }
 
-func (s *Server) finishOIDCFlow(w http.ResponseWriter, r *http.Request, client *oidcClient, app, provider string, autoCreate bool, organizationID string) {
+func (s *Server) finishOIDCFlow(w http.ResponseWriter, r *http.Request, client *oidcClient, app, provider string, autoCreate bool, organizationID string, microsoft bool) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Referrer-Policy", "no-referrer")
 	flow, ok := s.readOIDCFlow(r)
@@ -210,17 +210,22 @@ func (s *Server) finishOIDCFlow(w http.ResponseWriter, r *http.Request, client *
 		return
 	}
 	var claims struct {
-		Subject       string `json:"sub"`
-		Email         string `json:"email"`
-		EmailVerified bool   `json:"email_verified"`
-		Name          string `json:"name"`
+		Subject           string `json:"sub"`
+		Email             string `json:"email"`
+		EmailVerified     bool   `json:"email_verified"`
+		PreferredUsername string `json:"preferred_username"`
+		Tenant            string `json:"tid"`
+		Name              string `json:"name"`
 	}
 	if err = idToken.Claims(&claims); err != nil || claims.Subject == "" || claims.Subject != idToken.Subject ||
-		!claims.EmailVerified || len(claims.Subject) > 255 || strings.ContainsFunc(claims.Subject, unicode.IsControl) {
+		(!claims.EmailVerified && (!microsoft || claims.Tenant == "")) || len(claims.Subject) > 255 || strings.ContainsFunc(claims.Subject, unicode.IsControl) {
 		s.oidcRedirectError(w, r)
 		return
 	}
 	email := strings.ToLower(strings.TrimSpace(claims.Email))
+	if microsoft && email == "" {
+		email = strings.ToLower(strings.TrimSpace(claims.PreferredUsername))
+	}
 	address, err := mail.ParseAddress(email)
 	if err != nil || address.Address != email || len(email) > 254 {
 		s.oidcRedirectError(w, r)
@@ -305,7 +310,7 @@ func (s *Server) socialCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	client := newOIDCClient(app.ServerURL, app.ClientID, secret, s.socialCallbackURL(app.ProviderID), oidcDefaultScopes)
-	s.finishOIDCFlow(w, r, client, app.ProviderID, "social:"+app.ProviderID, true, app.OrganizationID)
+	s.finishOIDCFlow(w, r, client, app.ProviderID, "social:"+app.ProviderID, true, app.OrganizationID, app.Brand == "microsoft")
 }
 
 // socialLoginPage sends a visitor to the workspace sign-in view focused on one

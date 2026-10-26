@@ -30,6 +30,9 @@ type oidcTestProvider struct {
 	clientID       string
 	clientSecret   string
 	email          string
+	emailVerified  bool
+	preferredEmail string
+	tenant         string
 	name           string
 	issuer         string
 	callbackSuffix string
@@ -82,10 +85,20 @@ func (p *oidcTestProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "invalid PKCE verifier", http.StatusBadRequest)
 			return
 		}
+		subjectEmail := p.email
+		if subjectEmail == "" {
+			subjectEmail = p.preferredEmail
+		}
 		claims := map[string]any{
-			"iss": p.issuer, "aud": p.clientID, "sub": "subject-" + p.email, "nonce": nonce,
-			"email": p.email, "email_verified": true, "name": p.name,
+			"iss": p.issuer, "aud": p.clientID, "sub": "subject-" + subjectEmail, "nonce": nonce,
+			"email": p.email, "email_verified": p.emailVerified, "name": p.name,
 			"iat": time.Now().Unix(), "exp": time.Now().Add(time.Hour).Unix(),
+		}
+		if p.preferredEmail != "" {
+			claims["preferred_username"] = p.preferredEmail
+		}
+		if p.tenant != "" {
+			claims["tid"] = p.tenant
 		}
 		raw, _ := json.Marshal(claims)
 		writeJSON(w, http.StatusOK, map[string]any{
@@ -112,7 +125,7 @@ func newOIDCTestProviderFull(t *testing.T, email, name string) (*oidcTestProvide
 	provider := &oidcTestProvider{
 		core: &oidctest.Server{PublicKeys: []oidctest.PublicKey{{PublicKey: key.Public(), KeyID: "test-key", Algorithm: oidc.RS256}}},
 		key:  key, clientID: "goodsentry-test", clientSecret: "oidc-client-secret",
-		email: email, name: name,
+		email: email, emailVerified: true, name: name,
 	}
 	server := httptest.NewServer(provider)
 	provider.issuer = server.URL

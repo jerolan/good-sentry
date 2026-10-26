@@ -14,12 +14,13 @@ import (
 )
 
 const (
-	socialAppNameMax   = 40
-	socialAppClientMax = 191
-	socialAppIssuerMax = 500
-	socialGoogleIssuer = "https://accounts.google.com"
-	socialGitHubURL    = "https://github.com"
-	socialGitLabURL    = "https://gitlab.com"
+	socialAppNameMax      = 40
+	socialAppClientMax    = 191
+	socialAppIssuerMax    = 500
+	socialGoogleIssuer    = "https://accounts.google.com"
+	socialMicrosoftIssuer = "https://login.microsoftonline.com/common/v2.0"
+	socialGitHubURL       = "https://github.com"
+	socialGitLabURL       = "https://gitlab.com"
 )
 
 // compatibleSocialApp is the published organization application shape. The
@@ -161,6 +162,8 @@ func compatibleSocialBrand(value string) (string, bool) {
 		return "openid_connect", true
 	case "google":
 		return "google", true
+	case "microsoft":
+		return "microsoft", true
 	case "github":
 		return "github", true
 	case "gitlab":
@@ -186,7 +189,7 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 	}
 	brand, valid := compatibleSocialBrand(input.Provider)
 	if !valid {
-		failure(w, 400, "Provider must be openid_connect, google, github, gitlab or gitea")
+		failure(w, 400, "Provider must be openid_connect, google, microsoft, github, gitlab or gitea")
 		return
 	}
 	if !compatibleSocialText(input.Name, socialAppNameMax) || strings.TrimSpace(input.Name) == "" {
@@ -206,6 +209,8 @@ func (s *Server) compatibleCreateSocialApp(w http.ResponseWriter, r *http.Reques
 	switch brand {
 	case "google":
 		issuer = socialGoogleIssuer
+	case "microsoft":
+		issuer = socialMicrosoftIssuer
 	case "github":
 		issuer, provider = socialGitHubURL, "github"
 	case "gitlab":
