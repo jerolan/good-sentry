@@ -1,11 +1,11 @@
 ---
 id: WF-0007
 title: Aprobar el contrato de cierre y su Goal reanudable
-status: open
+status: closed
 labels: [wayfinder:grilling]
 parent: WF-0001
 assignee: jerolan
-claim_session: 01a1769a-99aa-7be2-a284-f49c32b0cb19
+claim_session: null
 blocked_by: [WF-0004, WF-0005, WF-0006]
 ---
 
@@ -23,12 +23,13 @@ Separar contador/presupuesto de cada Goal del progreso persistente del producto.
 Entregar contrato y prompt concretos para revisión. Resolver con la aprobación
 del usuario; integrar o ejecutar después conforme a la autorización recibida.
 
-## Proposed closure contract, awaiting approval
+## Closure contract approved for later integration
 
 2026-10-25, America/Mexico_City. Sesión
 `01a1769a-99aa-7be2-a284-f49c32b0cb19`.
-Propuesta para revisión humana. No es una resolución aprobada, integración
-canónica, aceptación ejecutada ni autorización para iniciar o cambiar un Goal.
+Contrato y prompt aprobados por el usuario según la resolución final.
+La integración canónica y la ejecución siguen pendientes. No se autoriza
+iniciar o cambiar un Goal mediante esta aprobación.
 
 ### Autoridades y límite de alcance
 
@@ -201,4 +202,27 @@ instrucción expresa del usuario. No sustituir el Goal de otra sesión.
 > Goal limita esta ejecución, no define el progreso ni el cierre del producto.
 
 No se propone aquí un presupuesto numérico ni se crea, reactiva o modifica
-ningún Goal. La aprobación humana de esta propuesta sigue pendiente.
+ningún Goal. La aprobación humana consta en la resolución final.
+
+## Resolution comments, final resolution
+
+2026-10-25, America/Mexico_City. Sesión
+`01a1769a-99aa-7be2-a284-f49c32b0cb19`.
+El usuario respondió "Si" a la propuesta concreta del contrato y prompt
+y a la publicación de este registro de planificación. Evidencia: respuesta
+directa en esta conversación, tras presentar el borrador del commit
+`8e38568f2d9060ae8c79987eec0b25449f076d65` y distinguir aprobación,
+integración posterior y ejecución.
+
+Quedan aprobados el contrato y el prompt anteriores: autoridades canónicas,
+trazabilidad por ID, estados e invalidación de evidencia, selección del
+siguiente trabajo, continuidad y condiciones de cierre o bloqueo, preservando
+los acuerdos de flujos, sacrificios y pruebas externas. Se cierra la decisión
+y se libera su claim. Se autoriza publicar únicamente la planificación
+aprobada y su resolución en main, junto con el índice del mapa.
+
+La integración en SPEC.md, tasks/plan.md y tasks/todo.md queda como paso
+posterior, con matriz completa de requisitos y criterios antes de usar el
+prompt. Esta resolución no declara producto terminado ni aceptación ejecutada.
+No inicia implementación, fija presupuesto ni crea, reactiva, sustituye o
+modifica ningún Goal. Los cambios de producto de otra sesión se conservan.

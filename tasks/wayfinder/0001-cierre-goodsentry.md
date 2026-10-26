@@ -1,7 +1,7 @@
 ---
 id: WF-0001
 title: Cerrar GoodSentry con un contrato estable
-status: open
+status: closed
 labels: [wayfinder:map]
 parent: null
 assignee: null
@@ -51,11 +51,15 @@ investigación en archivos disjuntos, sin ramas research/ ni PR.
 
 - [Acordar las pruebas externas y sus dependencias](0006-evidencia-externa.md): webhook genérico con evidencia de recepción y reintentos; Grafana conserva su criterio y se aplazan comprobantes de proveedores y GitLab.
 
+- [Aprobar el contrato de cierre y su Goal reanudable](0007-goal-reanudable.md): aprobados contrato y prompt; integración canónica y ejecución quedan para pasos posteriores.
+
 ## Not yet specified
 
-La referencia y el inventario pueden revelar ambigüedades de equivalencia
-funcional que requieran preguntas adicionales. Registrar esas preguntas
-cuando puedan formularse con precisión.
+No quedan decisiones abiertas necesarias para acordar el contrato de cierre.
+El mapa de planificación termina con la aprobación registrada. La integración
+canónica y la ejecución siguen pendientes; cualquier contradicción concreta
+que aparezca se tratará conforme al contrato aprobado, sin inferir cambios
+de alcance ni presentar el producto como terminado.
 
 ## Out of scope
 
