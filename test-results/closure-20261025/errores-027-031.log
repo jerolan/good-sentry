@@ -1,0 +1,16 @@
+=== RUN   TestDiscardCompatibleIssueTombstonesOnlyAttachedErrorFingerprints
+--- PASS: TestDiscardCompatibleIssueTombstonesOnlyAttachedErrorFingerprints (0.64s)
+=== RUN   TestDiscardCompatibleIssueCutsAfterInFlightCapture
+--- PASS: TestDiscardCompatibleIssueCutsAfterInFlightCapture (0.85s)
+=== RUN   TestDiscardedCaptureSkipsParentThrottleAndChargesAdmittedSiblings
+--- PASS: TestDiscardedCaptureSkipsParentThrottleAndChargesAdmittedSiblings (0.48s)
+PASS
+ok  	goodsentry/internal/store	2.988s
+=== RUN   TestCompatibleIssueDiscardRemovesErrorIssue
+--- PASS: TestCompatibleIssueDiscardRemovesErrorIssue (0.55s)
+=== RUN   TestCompatibleIssueDiscardKeepsEventAdminOutOfTriage
+--- PASS: TestCompatibleIssueDiscardKeepsEventAdminOutOfTriage (0.60s)
+=== RUN   TestDiscardedMixedEnvelopeRetainsProjectThrottleAndSiblingQuota
+--- PASS: TestDiscardedMixedEnvelopeRetainsProjectThrottleAndSiblingQuota (0.63s)
+PASS
+ok  	goodsentry/internal/server	2.798s

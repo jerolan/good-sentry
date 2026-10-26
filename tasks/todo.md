@@ -1443,10 +1443,10 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–026 ya están vigentes. 006 espera sus
-proveedores de releases/artefactos/nativo/CLI. Siguiente acción:
-CLOSE-errores-027 (discard permanente). No se declara aceptación ni cierre del
-producto. El avance se informa por criterios/evidencia, sin porcentaje de
+publicación/CI; errores 001–005 y 007–032 están vigentes y 033 bloqueada. 006
+espera sus proveedores de releases/artefactos/nativo/CLI. Siguiente acción:
+CLOSE-errores-034 (hashes y reset futuro). No se declara aceptación ni cierre
+del producto. El avance se informa por criterios/evidencia, sin porcentaje de
 casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
 este registro.
 
@@ -1562,13 +1562,13 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-024](../SPEC.md#close-errores-024) | Compatible issue deletion: Remove the post-commit child-storage gap. Define CaptureAttachment{Filename,Content… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de captura |
 | [CLOSE-errores-025](../SPEC.md#close-errores-025) | Compatible issue deletion: The HTTP envelope boundary collects only the normalized parent's attachment/opaque… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de envelope |
 | [CLOSE-errores-026](../SPEC.md#close-errores-026) | Compatible issue deletion: UI: provide Delete issue in detail and Delete selected in the list, using real comm… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI |
-| [CLOSE-errores-027](../SPEC.md#close-errores-027) | Permanent issue discard: Implement Sentry-compatible discard:true on the individual compatible issue PUT and a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-028](../SPEC.md#close-errores-028) | Permanent issue discard: Use a durable project-scoped discarded-signature table keyed by project and exact nor… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-029](../SPEC.md#close-errores-029) | Permanent issue discard: Every new capture checks its exact project/fingerprint marker under the same shared p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-030](../SPEC.md#close-errores-030) | Permanent issue discard: For a discarded event inside a mixed envelope, only that parent and its attached chil… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-031](../SPEC.md#close-errores-031) | Permanent issue discard: Use the public Sentry issue update API(https://docs.sentry.io/api/events/update-an-is… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-032](../SPEC.md#close-errores-032) | Permanent issue discard: Owning PostgreSQL checks cover020 checksum/reopen/all old-row preservation, actual fu… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-027](../SPEC.md#close-errores-027) | Permanent issue discard: Implement Sentry-compatible discard:true on the individual compatible issue PUT and a… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de discard |
+| [CLOSE-errores-028](../SPEC.md#close-errores-028) | Permanent issue discard: Use a durable project-scoped discarded-signature table keyed by project and exact nor… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 069 |
+| [CLOSE-errores-029](../SPEC.md#close-errores-029) | Permanent issue discard: Every new capture checks its exact project/fingerprint marker under the same shared p… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de captura |
+| [CLOSE-errores-030](../SPEC.md#close-errores-030) | Permanent issue discard: For a discarded event inside a mixed envelope, only that parent and its attached chil… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de envelope |
+| [CLOSE-errores-031](../SPEC.md#close-errores-031) | Permanent issue discard: Use the public Sentry issue update API(https://docs.sentry.io/api/events/update-an-is… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de API |
+| [CLOSE-errores-032](../SPEC.md#close-errores-032) | Permanent issue discard: Owning PostgreSQL checks cover020 checksum/reopen/all old-row preservation, actual fu… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de SQL/tests |
+| [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
 | [CLOSE-errores-034](../SPEC.md#close-errores-034) | Compatible hashes and future grouping reset: Complete compatible hash listing and future-only detachment, incl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-035](../SPEC.md#close-errores-035) | Compatible hashes and future grouping reset: The observed GlitchTip DELETE202 removes a signature's future rou… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-036](../SPEC.md#close-errores-036) | Compatible hashes and future grouping reset: Add migration019_issue_hash_routes.sql. Create issue_hash_routes… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3712,6 +3712,35 @@ Evidencia: `test-results/closure-20261025/errores-015-026.log` y
 `issue-delete/`, más `tests/compat/issue_delete_browser.mjs`.
 
 Siguiente acción: CLOSE-errores-027 (discard permanente y tabla de firmas).
+
+### Ejecución 2026-10-26: discard permanente y aceptación de borrado
+
+Selección registrada antes de trabajar: CLOSE-errores-027 a -033. Candidata
+`607bf66`; producto sin cambios desde `54db6e4`. La evidencia proviene de
+store/HTTP `-race` y del navegador de borrado/discard.
+
+Resultado observado: `PUT discard:true` y la acción nativa Delete and discard
+forever eliminan un error actual y devuelven 204; feedback/alias se rechazan
+(alias conserva 409 mergedInto), el campo debe ser exclusivo, y event:admin
+solo no autoriza triage ordinario. La tabla durable por proyecto/fingerprint se
+escribe en la misma transacción de borrado, revalida membership/gate/root y
+solo marca fingerprints aún attached; sobrevive reset/merge/restart y cascadea
+con el proyecto. Toda captura comprueba el marcador bajo el gate compartido y
+un parent marcado no crea event/issue/attachment/outbox ni consume cuota,
+mientras logs/spans independientes siguen su curso en un envelope admitido;
+un request throttleado se rechaza completo. El navegador confirma que discard
+elimina el issue y un nuevo capture con la misma firma no reaparece.
+
+032 queda vigente por los owners PostgreSQL/HTTP/CaptureItems y el navegador
+actual. 033 exige además SDK oficial real, imagen copiada/reiniciada, fuente
+exacta y CI pública; no hay publicación autorizada, así que queda bloqueada,
+no cerrada. El árbol local y la suite `-race`/vet ya pasaron en el checkpoint;
+los tests añadidos en esta unidad están incluidos en el log.
+
+Evidencia: `test-results/closure-20261025/errores-027-031.log`,
+`errores-015-026.log` e `issue-delete/`.
+
+Siguiente acción: CLOSE-errores-034 (hashes y reset futuro de grouping).
 
 ### Comprobante de integración documental
 

@@ -1021,6 +1021,78 @@
       "scope": "native Delete issue/Delete selected with confirmation",
       "covered": ["bulk exactly selected", "detail confirmation", "320/768/1440 without errors"]
       ,"evidence_files": ["issue-delete/report.json", "issue-delete/*.png", "tests/compat/issue_delete_browser.mjs"]
+    },
+    "CLOSE-errores-027": {
+      "evidence": "vigente",
+      "scope": "compatible discard:true and native permanent-discard action",
+      "covered": [
+        "only current error roots; feedback/merged aliases rejected with 409",
+        "discard is the only mutation; event:write/admin scopes and CSRF",
+        "204 after commit and native UI confirmation"
+      ],
+      "evidence_files": ["errores-027-031.log", "issue-delete/report.json"]
+    },
+    "CLOSE-errores-028": {
+      "evidence": "vigente",
+      "scope": "durable project/fingerprint discard table in the deletion transaction",
+      "covered": [
+        "membership/gate/root locks and attached-error recheck",
+        "detached hashes untouched; markers survive reset/merge/restart",
+        "project cascade only"
+      ],
+      "evidence_files": ["errores-027-031.log"]
+    },
+    "CLOSE-errores-029": {
+      "evidence": "vigente",
+      "scope": "capture-time tombstone check and suppression under the project gate",
+      "covered": [
+        "marked errors create no event/issue/attachment/outbox or count",
+        "no parent throttle/key quota; fingerprint identity only",
+        "native and SDK captures"
+      ],
+      "evidence_files": ["errores-027-031.log", "issue-delete/report.json"]
+    },
+    "CLOSE-errores-030": {
+      "evidence": "vigente",
+      "scope": "mixed-envelope discard isolation and independent sibling handling",
+      "covered": [
+        "only the marked parent and attached children are discarded",
+        "independent logs/spans keep quota in an admitted request",
+        "throttled mixed requests reject before writes"
+      ],
+      "evidence_files": ["errores-027-031.log"]
+    },
+    "CLOSE-errores-031": {
+      "evidence": "vigente",
+      "scope": "public issue-update discard semantics with local transaction/scope rules",
+      "covered": [
+        "discard field-only PUT",
+        "event:write/admin and session/CSRF boundaries",
+        "204 after commit"
+      ],
+      "evidence_files": ["errores-027-031.log"]
+    },
+    "CLOSE-errores-032": {
+      "evidence": "vigente",
+      "scope": "owning PostgreSQL/HTTP/CaptureItems acceptance for deletion and discard",
+      "covered": [
+        "migration checksum/reopen/old rows and route generations",
+        "full-group deletion, raw/attachment/opaque ownership and rollback/cancel",
+        "signed project gate ordering, ABA, selection, dedup/limits and HTTP status/admission"
+      ],
+      "evidence_files": ["errores-015-026.log", "errores-027-031.log"]
+    },
+    "CLOSE-errores-033": {
+      "evidence": "bloqueada por publicacion y aceptacion externa",
+      "scope": "pinned full commands, official SDK/CLI/browser/image/publication",
+      "covered": [
+        "local integration/race/vet, browser normal/error/alias/bulk/draft in prior receipts"
+      ],
+      "blocker": {
+        "cause": "official SDK/CLI and copied-image/public CI acceptance remain, and publication is not authorized",
+        "unlock": "run the pinned official SDK/CLI/browser/image acceptance and publish matching source/CI"
+      },
+      "evidence_files": ["errores-027-031.log", "issue-delete/report.json"]
     }
   },
   "commands": [

@@ -47,7 +47,7 @@ try {
   assert.equal(projectResponse.status(), 201);
   const project = await projectResponse.json();
   const run = randomBytes(4).toString('hex');
-  for (const label of ['Alpha', 'Beta', 'Gamma']) {
+  for (const label of ['Alpha', 'Beta', 'Gamma', 'Delta']) {
     await send(project, JSON.stringify({ event_id: randomBytes(16).toString('hex'), message: `${label} delete failure ${run}`, level: 'error', platform: 'go' }));
   }
 
@@ -78,6 +78,19 @@ try {
   await page.getByRole('heading', { level: 1, name: 'Issues', exact: true }).waitFor();
   assert.equal(await page.getByText(`Gamma delete failure ${run}`, { exact: false }).count(), 0);
   checks.push('Individual deletion from issue detail requires confirmation and returns to the list without the group');
+
+  await row('Delta').getByRole('link', { name: new RegExp(`Delta delete failure ${run}`) }).click();
+  await page.getByRole('heading', { level: 1, name: new RegExp(`Delta delete failure ${run}`) }).waitFor();
+  await page.getByRole('button', { name: 'Delete and discard forever', exact: true }).click();
+  await page.getByRole('region', { name: 'Confirm permanent issue discard' }).waitFor();
+  const discardResponse = page.waitForResponse(response => response.request().method() === 'PUT' && response.url().includes('/api/0/organizations/'));
+  await page.getByRole('button', { name: 'Confirm permanent discard', exact: true }).click();
+  assert.equal((await discardResponse).status(), 204);
+  await page.getByRole('heading', { level: 1, name: 'Issues', exact: true }).waitFor();
+  await send(project, JSON.stringify({ event_id: randomBytes(16).toString('hex'), message: `Delta delete failure ${run}`, level: 'error', platform: 'go' }));
+  await page.reload({ waitUntil: 'networkidle' });
+  assert.equal(await page.getByText(`Delta delete failure ${run}`, { exact: false }).count(), 0);
+  checks.push('Native permanent discard removes the issue and suppresses a new matching capture');
   assert.deepEqual(pageErrors, []);
   const report = { ok: true, checks, screenshots, pageErrors };
   await writeFile(resolve(output, 'report.json'), JSON.stringify(report, null, 2));
