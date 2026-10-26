@@ -1442,11 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–016 ya están vigentes.
-Siguiente acción: CLOSE-identidad-017 (reemplazo de contraseña y revocación
-global). No se declara aceptación ni cierre del producto. El avance se informa
-por criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de
-un Goal no completan el producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014–017 ya están vigentes.
+Siguiente acción: CLOSE-identidad-018 (ordenamientos, dos cambios, admisión
+obsoleta y nueva generación). No se declara aceptación ni cierre del producto.
+El avance se informa por criterios/evidencia, sin porcentaje de casillas;
+tiempo y presupuesto de un Goal no completan el producto ni borran este
+registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1480,7 +1481,7 @@ un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-014](../SPEC.md#close-identidad-014) | Account credential generations and authenticated password changes: Additive migration035 after034 adds users.a… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 035 |
 | [CLOSE-identidad-015](../SPEC.md#close-identidad-015) | Account credential generations and authenticated password changes: Both production issuers must require the ge… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de emisores |
 | [CLOSE-identidad-016](../SPEC.md#close-identidad-016) | Account credential generations and authenticated password changes: Session and API-token issuance use an expli… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de locks |
-| [CLOSE-identidad-017](../SPEC.md#close-identidad-017) | Account credential generations and authenticated password changes: Password change uses explicit pgx.ReadCommi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-017](../SPEC.md#close-identidad-017) | Account credential generations and authenticated password changes: Password change uses explicit pgx.ReadCommi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ChangePassword |
 | [CLOSE-identidad-018](../SPEC.md#close-identidad-018) | Account credential generations and authenticated password changes: When issuance acquires its user SHARE lock… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-019](../SPEC.md#close-identidad-019) | Account credential generations and authenticated password changes: The need for a fresh statement snapshot fol… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2951,6 +2952,33 @@ Evidencia: `test-results/closure-20261025/account/generations.log`;
 Siguiente acción: CLOSE-identidad-017 (cambio de contraseña: reemplazo,
 incremento único, borrado de sesiones y revocación global), con dependencias
 locales resueltas.
+
+### Ejecución 2026-10-26: reemplazo y revocación de contraseña
+
+Selección registrada antes de trabajar: CLOSE-identidad-017, siguiente en el
+plan. Candidata `dc550b7`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `generations.log` y de la inspección de `ChangePassword`.
+
+Resultado observado: el cambio abre `pgx.ReadCommitted` explícito, bloquea la
+fila del usuario `FOR UPDATE` y compara la generación observada. En la misma
+transacción reemplaza el hash, incrementa la generación una sola vez, elimina
+todas las sesiones, revoca con un único `clock_timestamp()` los tokens
+`api_tokens` no revocados del usuario en todas las organizaciones (incluidos
+los expirados no revocados) y elimina los tokens personales y resets pendientes.
+Los `revoked_at` previos y las filas históricas de `api_tokens` se conservan;
+las claves SDK/proyecto, memberships, telemetría y credenciales de otros
+usuarios no cambian. El test comprueba sesiones y tokens propios revocados,
+otra organización, tokens ya revocados intactos, miembro ajeno intacto,
+proyectos/DSN sin cambios y rechazo de una generación obsoleta. El desbordamiento
+bigint revierte todo; el commit incierto no se reintenta automáticamente.
+Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account/generations.log`;
+`internal/store/credentials.go`.
+
+Siguiente acción: CLOSE-identidad-018 (ordenamientos emisor/cambio, dos
+cambios, admisión obsoleta y nueva generación), con dependencias locales
+resueltas.
 
 ### Comprobante de integración documental
 

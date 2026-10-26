@@ -324,6 +324,18 @@
         "scope, role, expiry, secret and CSRF behavior preserved"
       ],
       "evidence_files": ["account/generations.log"]
+    },
+    "CLOSE-identidad-017": {
+      "evidence": "vigente",
+      "scope": "password replacement, single generation increment, session deletion and global token revocation",
+      "covered": [
+        "Read Committed and FOR UPDATE on the user with generation comparison",
+        "hash replacement and exactly one generation increment",
+        "all sessions deleted; all unrevoked api_tokens across organizations revoked with one timestamp",
+        "prior revoked rows, other users, project keys and telemetry preserved",
+        "bigint overflow rolls back; commit uncertainty is not retried"
+      ],
+      "evidence_files": ["account/generations.log"]
     }
   },
   "commands": [
