@@ -1443,11 +1443,11 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–003 ya están vigentes. Siguiente acción:
-CLOSE-errores-004 (persistencia de contexto y attachments). No se declara
-aceptación ni cierre del producto. El avance se informa por
-criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
-Goal no completan el producto ni borran este registro.
+publicación/CI; errores 001–004 ya están vigentes. Siguiente acción:
+CLOSE-errores-005 (agrupación y regresión). No se declara aceptación ni cierre
+del producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1538,7 +1538,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-001](../SPEC.md#close-errores-001) | Ingestion contract: Support POST /api/{project}/store/ and /api/{project}/envelope/, including deployments und… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de auth/ingest |
 | [CLOSE-errores-002](../SPEC.md#close-errores-002) | Ingestion contract: Envelope headers and item headers are one-line UTF-8 JSON. Item length counts bytes and pe… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de framing |
 | [CLOSE-errores-003](../SPEC.md#close-errores-003) | Ingestion contract: Accept identity, gzip, zlib-wrapped deflate, Brotli and Zstandard HTTP bodies. Support leg… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de compresión |
-| [CLOSE-errores-004](../SPEC.md#close-errores-004) | Ingestion contract: Persist errors/messages with timestamps, exception chains, stack frames, breadcrumbs, tags… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-004](../SPEC.md#close-errores-004) | Ingestion contract: Persist errors/messages with timestamps, exception chains, stack frames, breadcrumbs, tags… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de captura |
 | [CLOSE-errores-005](../SPEC.md#close-errores-005) | Issues and artifacts: Default grouping is an independently designed stable hash of exception type and normaliz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-006](../SPEC.md#close-errores-006) | Issues and artifacts: Merge groups without losing events or their original grouping keys; subsequent events fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-007](../SPEC.md#close-errores-007) | Issue search, historical filters and pages: Complete the existing native session-authenticated GET /api/v1/org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3598,6 +3598,28 @@ Evidencia: `test-results/closure-20261025/ingest.log`.
 
 Siguiente acción: CLOSE-errores-004 (persistencia de contexto, attachments y
 autorización de lectura).
+
+### Ejecución 2026-10-26: persistencia de eventos y attachments
+
+Selección registrada antes de trabajar: CLOSE-errores-004. Candidata
+`10d39c2`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners de captura, bytes, metadata y autorización con PostgreSQL/HTTP.
+
+Resultado observado: el evento conserva el JSON estructurado con timestamp,
+cadena de excepciones, frames, breadcrumbs, tags, usuario, request, contexts,
+SDK, entorno, release y campos extra; la captura mantiene identidad y
+children en una transacción. Los attachments se guardan como bytes PostgreSQL
+asociados al receipt/event ID, con SHA-256 generado por el servidor y filename
+solo como metadata; el scope de proyecto se revalida y la lectura/download
+compatible usa autorización actual. Los tests cubren batches binarios,
+duplicados/retry, límites de metadata, checksums legados, paginación,
+route/query estricto, prefijo y credenciales. Subresultados pendientes del
+bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/ingest-attachments.log`.
+
+Siguiente acción: CLOSE-errores-005 (agrupación estable, fingerprint, conteos
+y regresión).
 
 ### Comprobante de integración documental
 

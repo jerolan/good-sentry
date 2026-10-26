@@ -847,6 +847,16 @@
         "400/413/415/503 mapping and 429/CORS owners"
       ],
       "evidence_files": ["ingest.log"]
+    },
+    "CLOSE-errores-004": {
+      "evidence": "vigente",
+      "scope": "event context persistence and PostgreSQL attachment bytes with project authorization",
+      "covered": [
+        "timestamps, exception chains, frames, breadcrumbs, tags, user, request, contexts, SDK, environment, release and extra",
+        "attachments stored as bytes with server SHA-256 and filename as metadata",
+        "project scope revalidated; native/compatible read/download/pagination pass"
+      ],
+      "evidence_files": ["ingest-attachments.log"]
     }
   },
   "commands": [
