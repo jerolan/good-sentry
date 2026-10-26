@@ -22,7 +22,7 @@ una inferencia del agente no sustituye esa decisión.
 ## Working discussion
 
 25 de octubre de 2026, America/Mexico_City. Sesion
-01a17668-8461-7c71-bb8a-c64f02f890be. Decisión abierta, con aprobación parcial de la primera ronda.
+01a17668-8461-7c71-bb8a-c64f02f890be. Decisión abierta, con aprobación parcial de las dos primeras rondas.
 
 Se reutilizan [la referencia candidata](research/glitchtip-baseline.md) y
 [la evidencia del producto](research/goodsentry-evidence.md). Las dos
@@ -58,15 +58,15 @@ decisión expresa. Evidencia: respuesta directa del usuario en esta sesión.
 No se aprueban todavía clientes, versiones, flujos completos ni exclusiones.
 La issue permanece abierta hasta resolver el conjunto de su pregunta.
 
-## Next round
+## Coverage approved in round 2
 
-Propuesta pendiente de aprobación: usar como familias del mínimo funcional
+El usuario aprobó usar como familias del mínimo funcional
 las once áreas de la matriz investigada: errores y DSN; alertas; source maps;
 rendimiento; logs; uptime; diagnóstico nativo; MCP; integraciones de lectura;
 identidad y administración; operación y retención. Cada familia deberá tener
 criterios explícitos con resultado observable y evidencia exigible.
-La lista establece cobertura por familia; sus clientes, versiones, amplitud y
-casos límite se concretarán en rondas posteriores. No declara implementada
+Respuesta directa del usuario: "Si". La lista establece cobertura por familia;
+sus clientes, versiones, amplitud y casos límite se concretarán en rondas posteriores. No declara implementada
 ninguna capacidad ni excluye requisitos existentes.
 
 OTLP directo ya tiene contrato explícito en SPEC.md y se conserva. La
@@ -74,3 +74,33 @@ contradicción de las fuentes no elimina ese requisito. Sigue pendiente
 precisar qué puede afirmarse de la referencia, sin equiparar autenticación
 propia de GoodSentry con comportamiento verificado de GlitchTip.
 Archivo frío de logs frente a spans y contexto Java siguen sin resolución.
+
+## Resolution comments, round 2
+
+25 de octubre de 2026, America/Mexico_City. Resolución parcial.
+El usuario aprobó las once áreas propuestas como mínimo funcional de cierre,
+con los resultados observables presentados: captura y consulta de errores;
+reglas y entrega de alertas; stacks legibles mediante source maps; consulta de
+transacciones, spans y estadísticas; ingestión, búsqueda y correlación de logs;
+checks y heartbeats con fallo y recuperación; procesamiento de crashes y
+resolución de símbolos; consulta y operación mediante MCP; lectura desde
+GitLab Error Tracking y Grafana; acceso y gestión de organizaciones, equipos y
+proyectos; despliegue, persistencia, retención y archivo.
+Se conservan los requisitos existentes. Contexto Java y archivo frío de logs
+siguen pendientes, junto con los flujos, clientes y versiones concretos.
+La issue continúa abierta. No se aprueba implementación ni se crea un Goal.
+
+## Next round
+
+Propuesta pendiente de aprobación: fijar los clientes ya documentados como
+base de aceptación, evitando que versiones futuras amplíen automáticamente
+el cierre: sentry-go 0.50.0; sentry-sdk Python 2.72.0; Node y Browser 11.7.0;
+sentry-cli 3.8.0; Sentry Native 0.17.4; exportador Python OTLP protobuf/HTTP
+1.45.1 y JSON/HTTP 0.66b1; Grafana 13.0.2 con Sentry datasource 2.2.8.
+
+Fuentes: docs/compatibility.md, investigación goodsentry-evidence.md y
+proveniencia OTLP de SPEC.md. Se propone reutilizar evidencia únicamente en
+su alcance y revisión acreditados, sin declarar que toda prueba existente
+sigue vigente sobre cambios posteriores. Esta selección no aprueba todavía
+la matriz de plataformas nativas, todos los flujos ni cobertura universal.
+Versiones de cliente MCP, GitLab y cliente Java siguen por concretar.
