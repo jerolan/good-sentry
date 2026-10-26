@@ -259,6 +259,27 @@
         "three responsive widths without overflow"
       ],
       "evidence_files": ["account-owner/report.json", "account-member/report.json", "account-owner/*.png", "account-member/*.png"]
+    },
+    "CLOSE-identidad-011": {
+      "evidence": "vigente",
+      "scope": "purpose-specific account mail, MIME secrecy, SMTP delivery/retry and credential-safe errors",
+      "covered": [
+        "account mail is separate from alert mail and rejects unsafe input",
+        "consolemail and loopback SMTP delivery, retries and TLS protection pass",
+        "reset outbox migration, leases, retry and expiry pass"
+      ],
+      "evidence_files": ["account-mail/summary.json", "account-mail/tests.log"]
+    },
+    "CLOSE-identidad-012": {
+      "evidence": "vigente",
+      "scope": "single-use email recovery with enumeration resistance, request floor, delivery and generation revocation",
+      "covered": [
+        "unknown and known accounts both return 202; unknown creates no row",
+        "60-second floor keeps one delivery",
+        "token link uses 64 hex, is single-use and expiry/lease behavior is covered",
+        "old session and password fail; new password signs in; replay returns 400"
+      ],
+      "evidence_files": ["account-mail/summary.json", "account-mail/tests.log"]
     }
   },
   "commands": [

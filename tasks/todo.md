@@ -1440,13 +1440,14 @@ CLOSE-operacion-012 (arquitectura, durabilidad, UI real, Compose, configuración
 modos de autenticación, features/correo/uploads y RSS), y CLOSE-identidad-001 a
 CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
-CLOSE-identidad-008 a CLOSE-identidad-010 (generaciones de credenciales y
-cambio de contraseña); sus comprobantes están abajo y los bloques detallados
-014–026 siguen pendientes. Siguiente acción: CLOSE-identidad-011 (correo de
-cuenta y recuperación), con dependencias locales resueltas. No se declara
-aceptación ni cierre del producto. El avance se informa por
-criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
-Goal no completan el producto ni borran este registro.
+CLOSE-identidad-008 a CLOSE-identidad-012 (generaciones, cambio de contraseña,
+correo de cuenta y recuperación); sus comprobantes están abajo y los bloques
+detallados 014–033 siguen pendientes. Siguiente acción: CLOSE-identidad-013
+(invitaciones de membership, roles, último owner y aceptación), con
+dependencias locales resueltas. No se declara aceptación ni cierre del
+producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1474,8 +1475,8 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-008](../SPEC.md#close-identidad-008) | Account credential generations and authenticated password changes: This workspace increment supplies the share… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 014–026 pendientes |
 | [CLOSE-identidad-009](../SPEC.md#close-identidad-009) | Account credential generations and authenticated password changes: fila 1, / credential-generation / Login/boo… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 014–019 pendientes |
 | [CLOSE-identidad-010](../SPEC.md#close-identidad-010) | Account credential generations and authenticated password changes: fila 2, / account-password / A signed-in us… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 020–026 pendientes |
-| [CLOSE-identidad-011](../SPEC.md#close-identidad-011) | Account credential generations and authenticated password changes: fila 3, / account-mail / Purpose-specific a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-012](../SPEC.md#close-identidad-012) | Account credential generations and authenticated password changes: fila 4, / account-recovery / Email request… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-011](../SPEC.md#close-identidad-011) | Account credential generations and authenticated password changes: fila 3, / account-mail / Purpose-specific a… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 027–033 pendientes |
+| [CLOSE-identidad-012](../SPEC.md#close-identidad-012) | Account credential generations and authenticated password changes: fila 4, / account-recovery / Email request… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 027–033 pendientes |
 | [CLOSE-identidad-013](../SPEC.md#close-identidad-013) | Account credential generations and authenticated password changes: fila 5, / membership-invitations / Owner/ad… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-014](../SPEC.md#close-identidad-014) | Account credential generations and authenticated password changes: Additive migration035 after034 adds users.a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-015](../SPEC.md#close-identidad-015) | Account credential generations and authenticated password changes: Both production issuers must require the ge… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2815,6 +2816,37 @@ Evidencia: `test-results/closure-20261025/account/`
 
 Siguiente acción: CLOSE-identidad-011 (correo de cuenta purpose-specific,
 outbox y entrega SMTP real), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: correo de cuenta y recuperación
+
+Selección registrada antes de trabajar: CLOSE-identidad-011 y -012, en orden
+del plan. Candidata `34bbd91`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad ejecuta MIME, SMTP, outbox, reintentos y el
+contrato HTTP de recuperación.
+
+Procedimiento reproducible: `go test -race ./internal/notify` para MIME,
+consolemail y SMTP; `go test -race -tags=integration ./internal/store` para
+036, enqueue/consumo/revocación y retry/expiry/lease; y
+`TestPasswordRecoveryHTTPContract` con PostgreSQL desechable.
+
+Resultado observado: el correo de cuenta es independiente del de alertas,
+rechaza entradas inseguras y entrega por consolemail y SMTP real de loopback con
+resultados de reintento y protección de credenciales/TLS. 036 preserva filas y
+reabre. La solicitud devuelve 202 tanto para correo desconocido como conocido,
+sin crear fila para el desconocido; el piso de 60s conserva una sola entrega.
+El outbox pasa a `sent`, el enlace contiene un token de 64 hexadecimales y la
+redención es de un solo uso: 204, sesión anterior 401, contraseña anterior 401,
+nueva 200 y replay 400. La recuperación no revela la existencia de la cuenta.
+Los bloques detallados 027–033 siguen pendientes y se ejecutarán como criterios
+propios. La excepción de recibos reales del proveedor de correo
+(CLOSE-identidad-112) se conserva: se prueba SMTP local, no un proveedor externo.
+
+Evidencia: `test-results/closure-20261025/account-mail/`
+(`summary.json`, `tests.log`).
+
+Siguiente acción: CLOSE-identidad-013 (invitaciones de membership, roles,
+último owner y aceptación de identidades nuevas/existentes), con dependencias
+locales resueltas.
 
 ### Comprobante de integración documental
 
