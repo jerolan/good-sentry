@@ -1444,12 +1444,12 @@ sesiones, CLOSE-operacion-011 con features, correo, uploads y secretos, y
 CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
 y CLOSE-identidad-002 con memberships, equipos y alcance, y
 CLOSE-identidad-003 con credenciales de automatización, y CLOSE-identidad-004
-con grants e invalidación. Sus comprobantes vigentes están abajo. Siguiente
-acción: CLOSE-identidad-005 (rutas compatibles de proyectos, precedencia de
-bearer, cursores y Links), con dependencias locales resueltas. No se declara
-aceptación ni cierre del producto. El avance se informa por
-criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
-Goal no completan el producto ni borran este registro.
+con grants e invalidación, y CLOSE-identidad-005 con proyectos compatibles y
+paginación. Sus comprobantes vigentes están abajo. Siguiente acción:
+CLOSE-identidad-006 (vista nativa de API tokens), con dependencias locales
+resueltas. No se declara aceptación ni cierre del producto. El avance se
+informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1471,7 +1471,7 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-002](../SPEC.md#close-identidad-002) | Runtime and workspace contracts: Organizations contain memberships and teams. Projects belong to an organizati… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de workspace/authz |
 | [CLOSE-identidad-003](../SPEC.md#close-identidad-003) | Runtime and workspace contracts: The automation-credential prerequisite belongs to workspace, before compatibl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de credenciales |
 | [CLOSE-identidad-004](../SPEC.md#close-identidad-004) | Runtime and workspace contracts: An omitted or empty project list explicitly grants all current and future org… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de grants |
-| [CLOSE-identidad-005](../SPEC.md#close-identidad-005) | Runtime and workspace contracts: Consume these credentials through Sentry-compatible GET /api/0/organizations/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-005](../SPEC.md#close-identidad-005) | Runtime and workspace contracts: Consume these credentials through Sentry-compatible GET /api/0/organizations/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas compatibles |
 | [CLOSE-identidad-006](../SPEC.md#close-identidad-006) | Runtime and workspace contracts: Add an owner/admin-only API tokens view to the existing original Tailwind/dai… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-007](../SPEC.md#close-identidad-007) | Runtime and workspace contracts: Malformed percent encoding or other invalid URL query syntax returns400 rathe… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-008](../SPEC.md#close-identidad-008) | Account credential generations and authenticated password changes: This workspace increment supplies the share… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2692,6 +2692,32 @@ Evidencia: `test-results/closure-20261025/identity/grants.log`.
 
 Siguiente acción: CLOSE-identidad-005 (rutas compatibles de proyectos,
 precedencia de bearer, cursores y Links), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: proyectos compatibles y paginación
+
+Selección registrada antes de trabajar: CLOSE-identidad-005, siguiente en el
+plan. Candidata `0d8f73c`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La evidencia proviene de `TestAPITokenHTTPContract` con
+`-race` y PostgreSQL desechable, ya ejecutado en esta sesión.
+
+Resultado observado: `GET /api/0/organizations/{org}/projects/` exige
+`org:read` y `GET /api/0/projects/{org}/{project}/` exige `project:read`; las
+sesiones de navegador pueden leer las mismas rutas. Solo esas rutas
+registradas aceptan bearer, un bearer inválido no cae a la cookie y las rutas
+no registradas devuelven 404. Organización y proyecto aceptan slug exacto o ID
+numérico canónico; otro tenant o un proyecto fuera de alcance devuelve 404 y
+un scope ausente 403. La lista devuelve `id`, `name`, `slug`, `platform` y
+`dateCreated`, sin DSN ni claves. `query`, `limit`/`per_page` (1..100,
+coincidentes si ambos), cursor base64url canónico y Link
+previous/next conservan origen, prefijo, query y tamaño; los cursores
+malformados o fuera del máximo devuelven 400. Subresultados pendientes del
+bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/tests.log`, que contiene
+la corrida de `TestAPITokenHTTPContract` (1.71s) y `TestReleaseHTTPContract`.
+
+Siguiente acción: CLOSE-identidad-006 (vista nativa de API tokens, creación,
+revelado único, revocación y permisos), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

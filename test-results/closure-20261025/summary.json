@@ -189,6 +189,19 @@
         "active/expired/revoked metadata pages and duplicate names remain distinct"
       ],
       "evidence_files": ["identity/grants.log"]
+    },
+    "CLOSE-identidad-005": {
+      "evidence": "vigente",
+      "scope": "compatible organization/project reads, bearer precedence, exact route matching, cursors and Link pagination",
+      "covered": [
+        "organization projects require org:read and project detail requires project:read",
+        "sessions and bearer credentials both work; invalid bearer does not fall back to a cookie",
+        "unregistered paths return 404 and absent/foreign/out-of-scope projects return 401/403/404 as specified",
+        "exact project metadata without DSN or SDK key",
+        "canonical cursors, limit/per_page agreement, case-insensitive literal query and previous/next Links",
+        "malformed percent encoding and noncanonical cursors return 400"
+      ],
+      "evidence_files": ["identity/tests.log"]
     }
   },
   "commands": [
