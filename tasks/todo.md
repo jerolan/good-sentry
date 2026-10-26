@@ -1444,12 +1444,13 @@ sesiones, CLOSE-operacion-011 con features, correo, uploads y secretos, y
 CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
 y CLOSE-identidad-002 con memberships, equipos y alcance, y
 CLOSE-identidad-003 con credenciales de automatización, y CLOSE-identidad-004
-con grants e invalidación, y CLOSE-identidad-005 con proyectos compatibles y
-paginación. Sus comprobantes vigentes están abajo. Siguiente acción:
-CLOSE-identidad-006 (vista nativa de API tokens), con dependencias locales
-resueltas. No se declara aceptación ni cierre del producto. El avance se
-informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+con grants e invalidación, CLOSE-identidad-005 con proyectos compatibles y
+paginación, y CLOSE-identidad-007 con consultas malformadas y cursor máximo.
+Sus comprobantes vigentes están abajo. Siguiente acción: CLOSE-identidad-006
+(vista nativa de API tokens), con dependencias locales resueltas. No se
+declara aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1473,7 +1474,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-004](../SPEC.md#close-identidad-004) | Runtime and workspace contracts: An omitted or empty project list explicitly grants all current and future org… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de grants |
 | [CLOSE-identidad-005](../SPEC.md#close-identidad-005) | Runtime and workspace contracts: Consume these credentials through Sentry-compatible GET /api/0/organizations/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas compatibles |
 | [CLOSE-identidad-006](../SPEC.md#close-identidad-006) | Runtime and workspace contracts: Add an owner/admin-only API tokens view to the existing original Tailwind/dai… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-007](../SPEC.md#close-identidad-007) | Runtime and workspace contracts: Malformed percent encoding or other invalid URL query syntax returns400 rathe… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-007](../SPEC.md#close-identidad-007) | Runtime and workspace contracts: Malformed percent encoding or other invalid URL query syntax returns400 rathe… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de paginación |
 | [CLOSE-identidad-008](../SPEC.md#close-identidad-008) | Account credential generations and authenticated password changes: This workspace increment supplies the share… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-009](../SPEC.md#close-identidad-009) | Account credential generations and authenticated password changes: fila 1, / credential-generation / Login/boo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-010](../SPEC.md#close-identidad-010) | Account credential generations and authenticated password changes: fila 2, / account-password / A signed-in us… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2718,6 +2719,27 @@ la corrida de `TestAPITokenHTTPContract` (1.71s) y `TestReleaseHTTPContract`.
 
 Siguiente acción: CLOSE-identidad-006 (vista nativa de API tokens, creación,
 revelado único, revocación y permisos), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: consultas malformadas y cursor máximo
+
+Selección registrada antes de trabajar: CLOSE-identidad-007, siguiente en el
+plan. Candidata `24e73c5`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La evidencia proviene de `TestAPITokenHTTPContract` con
+`-race`, ya ejecutado en esta sesión.
+
+Resultado observado: `limit`, `per_page`, `cursor` y `query` con percent
+encoding inválido devuelven 400 en vez de caer a un valor omitido; también son
+400 los cursores base64url no canónicos, `offset` negativo/fuera de rango y
+los parámetros repetidos o contradictorios. En `offset:100000000` la página
+sigue siendo válida, el Link `next` discapacitado conserva el cursor máximo
+canónico y reporta `results=false`; seguirlo devuelve una página vacía válida
+sin desbordar el offset. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/tests.log`.
+
+Siguiente acción: CLOSE-identidad-006 (vista nativa de API tokens) continúa
+pendiente de la corrida de navegador con fixture owner/member; después,
+CLOSE-identidad-008 y la tabla de generaciones de credenciales.
 
 ### Comprobante de integración documental
 

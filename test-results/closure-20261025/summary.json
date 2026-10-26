@@ -202,6 +202,17 @@
         "malformed percent encoding and noncanonical cursors return 400"
       ],
       "evidence_files": ["identity/tests.log"]
+    },
+    "CLOSE-identidad-007": {
+      "evidence": "vigente",
+      "scope": "malformed query handling and maximum-offset pagination Links",
+      "covered": [
+        "malformed percent encoding returns 400 for limit, per_page, cursor and query",
+        "noncanonical, negative, out-of-range and repeated parameters return 400",
+        "the disabled next Link at offset 100000000 keeps a canonical cursor and reports no next page",
+        "following the maximum next Link returns a valid empty page"
+      ],
+      "evidence_files": ["identity/tests.log"]
     }
   },
   "commands": [
