@@ -838,18 +838,35 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			cursor.off += length
 		case 0x11:
 			register := cursor.register()
-			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: cursor.sleb() * cie.dataAlign}
+			value, err := readCFISignedFactoredOffset(&cursor, cie.dataAlign)
+			if err != nil {
+				return state, err
+			}
+			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: value}
 		case 0x12:
-			state.cfa = cfiCFARule{register: cursor.register(), offset: cursor.sleb()}
+			register := cursor.register()
+			offset, err := readCFISignedFactoredOffset(&cursor, cie.dataAlign)
+			if err != nil {
+				return state, err
+			}
+			state.cfa = cfiCFARule{register: register, offset: offset}
 		case 0x13:
-			state.cfa.offset = cursor.sleb()
+			offset, err := readCFISignedFactoredOffset(&cursor, cie.dataAlign)
+			if err != nil {
+				return state, err
+			}
+			state.cfa.offset = offset
 			state.cfa.useExpr = false
 		case 0x14:
 			register := cursor.register()
 			state.regs[register] = cfiRegisterRule{kind: cfiRuleValueOffset, value: int64(cursor.uleb()) * cie.dataAlign}
 		case 0x15:
 			register := cursor.register()
-			state.regs[register] = cfiRegisterRule{kind: cfiRuleValueOffset, value: cursor.sleb() * cie.dataAlign}
+			value, err := readCFISignedFactoredOffset(&cursor, cie.dataAlign)
+			if err != nil {
+				return state, err
+			}
+			state.regs[register] = cfiRegisterRule{kind: cfiRuleValueOffset, value: value}
 		case 0x16:
 			register := cursor.register()
 			length := int(cursor.uleb())
@@ -871,6 +888,40 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 		}
 	}
 	return state, nil
+}
+
+func readCFISignedFactoredOffset(cursor *cfiCursor, dataAlign int64) (int64, error) {
+	factoredOffset := cursor.sleb()
+	if cursor.err != nil {
+		return 0, cursor.err
+	}
+	offset, ok := multiplyCFISigned(factoredOffset, dataAlign)
+	if !ok {
+		return 0, errors.New("CFI signed-factored offset overflows int64")
+	}
+	return offset, nil
+}
+
+func multiplyCFISigned(left, right int64) (int64, bool) {
+	if left == 0 || right == 0 {
+		return 0, true
+	}
+	const (
+		minInt64 = -1 << 63
+		maxInt64 = 1<<63 - 1
+	)
+	if left > 0 {
+		if right > 0 && left > maxInt64/right || right < 0 && right < minInt64/left {
+			return 0, false
+		}
+	} else if right > 0 {
+		if left < minInt64/right {
+			return 0, false
+		}
+	} else if left < maxInt64/right {
+		return 0, false
+	}
+	return left * right, true
 }
 
 func (t *UnwindTable) rulesAt(address uint64) (cfiState, cfiCIE, bool) {

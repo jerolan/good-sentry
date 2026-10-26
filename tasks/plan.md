@@ -493,3 +493,13 @@ Raise bounded ZIP/TAR/gzip-TAR discovery from four to eight layers to accept mor
 3. Verify native race tests, integration-tag vet, trim-path build, full suite, diff checks and exact-source CI/image publication through `gh`.
 
 Status (2026-10-26 UTC): complete at `3d074beb43c8cf1b229e3db29c7e7a15c37d5d76`. The previous four-layer parser failed the new eight-layer case; eight-layer source-line symbolication and ninth-layer atomic rejection now pass. Native race, full `go test ./... -count=1`, integration-tag vet, trim-path build and `git diff --check` pass. [Exact-source CI 40247403639](https://github.com/jerolan/good-sentry/actions/runs/40247403639) passed formatting, vet, PostgreSQL integration/race tests and image build. [Image workflow 40247847806](https://github.com/jerolan/good-sentry/actions/runs/40247847806) published linux/amd64 and linux/arm64 at OCI index digest `sha256:649a1581dfdadbec774db59c1ccbd801680c54dd074ab4977cb2b2f89838a3a3`.
+
+## Native signed-factor CFA offsets
+
+Apply the CIE `data_alignment_factor` to the signed LEB128 operand of `DW_CFA_def_cfa_sf` and `DW_CFA_def_cfa_offset_sf`, and reject signed multiplication overflow for every signed-factored CFI offset rule. Verify through parsed CFI and observable caller recovery from captured stack memory.
+
+1. Extend the existing native CFI unwind owner with `data_alignment_factor = -8` cases for both signed CFA opcodes; show that each locates the caller at the factored CFA address.
+2. Apply checked signed multiplication to `DW_CFA_offset_extended_sf`, `DW_CFA_def_cfa_sf`, `DW_CFA_def_cfa_offset_sf` and `DW_CFA_val_offset_sf`.
+3. Verify overflow rejection and preserve existing native unwind, full Go, vet/build and exact-source CI/image gates through `gh`.
+
+Local status (2026-10-26 UTC): implementation and local verification complete. Focused CFI regressions, full native race suite, full Go suite, integration-tag vet, trim-path app build, gofmt and diff checks pass. Exact-source CI and multi-architecture image publication remain pending.

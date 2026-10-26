@@ -1605,6 +1605,92 @@ func TestCFIUnwindsWithoutFramePointer(t *testing.T) {
 	}
 }
 
+func TestCFISignedCFAOffsetsUseDataAlignment(t *testing.T) {
+	for _, test := range []struct {
+		name         string
+		instructions []byte
+	}{
+		{name: "def_cfa_sf", instructions: []byte{0x12, 7, 0x7e}},
+		{name: "def_cfa_offset_sf", instructions: []byte{0x13, 0x7e}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			table, err := parseCFISection(signedCFAOffsetCFISection(test.instructions), 0, true, 8)
+			if err != nil || table == nil || len(table.entries) != 2 {
+				t.Fatalf("parse signed CFA CFI: table=%+v err=%v", table, err)
+			}
+
+			const stackBase = uint64(0x3000)
+			stack := make([]byte, 32)
+			binary.LittleEndian.PutUint64(stack[8:], 0x2000)
+			crash := Crash{
+				RIP: 0x1001, RSP: stackBase, Arch: "amd64", PointerSize: 8,
+				Modules: []Module{{Name: "signed-cfa", Size: 0x3000}},
+				stack:   []memoryRange{{start: stackBase, data: stack}},
+			}
+			frames := UnwindCFI(&crash, UnwindSet{"signed-cfa": {table}})
+			if len(frames) != 2 || frames[1].Instruction != 0x2000 {
+				t.Fatalf("factored CFA did not recover caller from CFA-8: %+v", frames)
+			}
+		})
+	}
+}
+
+func TestCFISignedFactoredOffsetsRejectOverflow(t *testing.T) {
+	for _, test := range []struct {
+		name         string
+		instructions []byte
+	}{
+		{name: "offset_extended_sf", instructions: []byte{0x11, 16, 0x7c}},
+		{name: "def_cfa_sf", instructions: []byte{0x12, 7, 0x7c}},
+		{name: "def_cfa_offset_sf", instructions: []byte{0x13, 0x7c}},
+		{name: "val_offset_sf", instructions: []byte{0x15, 16, 0x7c}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			for _, alignment := range []struct {
+				name  string
+				value int64
+			}{
+				{name: "positive_overflow", value: -1 << 62},
+				{name: "negative_overflow", value: 1 << 62},
+			} {
+				t.Run(alignment.name, func(t *testing.T) {
+					cie := cfiCIE{dataAlign: alignment.value}
+					if _, err := applyCFIInstructions(test.instructions, newCFIState(), cie, 0, false); err == nil {
+						t.Fatal("overflowing signed-factored offset was accepted")
+					}
+				})
+			}
+		})
+	}
+}
+
+func signedCFAOffsetCFISection(fdeInstructions []byte) []byte {
+	var section bytes.Buffer
+	appendRecord := func(record []byte) int {
+		start := section.Len()
+		_ = binary.Write(&section, binary.LittleEndian, uint32(len(record)))
+		_, _ = section.Write(record)
+		return start
+	}
+	var cie bytes.Buffer
+	_ = binary.Write(&cie, binary.LittleEndian, uint32(0))
+	_, _ = cie.Write([]byte{1, 0, 1, 0x78, 16})       // version, augmentation, code/data alignment, return register
+	_, _ = cie.Write([]byte{0x0c, 7, 8, 0x11, 16, 1}) // CFA = rsp+8; return address = [CFA-8]
+	cieOffset := appendRecord(cie.Bytes())
+	appendFDE := func(start uint64, instructions []byte) {
+		var fde bytes.Buffer
+		idOffset := section.Len() + 4
+		_ = binary.Write(&fde, binary.LittleEndian, uint32(idOffset-cieOffset))
+		_ = binary.Write(&fde, binary.LittleEndian, start)
+		_ = binary.Write(&fde, binary.LittleEndian, uint64(0x100))
+		_, _ = fde.Write(instructions)
+		appendRecord(fde.Bytes())
+	}
+	appendFDE(0x1000, fdeInstructions)
+	appendFDE(0x1f00, nil)
+	return section.Bytes()
+}
+
 func TestCFISignalFrameUsesUnadjustedReturnAddress(t *testing.T) {
 	table, err := parseCFISection(signalFrameCFISection(), 0, true, 8)
 	if err != nil || table == nil || len(table.entries) != 3 {
