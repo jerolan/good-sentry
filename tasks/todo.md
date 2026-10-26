@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -098 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-099
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -099 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-100
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1993,7 +1993,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-lectores-003](../SPEC.md#close-lectores-003) | Integrations and compatibility limits: ENABLE_OPENAPI=true exposes GET /api/openapi.json as an OpenAPI 3.1 doc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-097](../SPEC.md#close-identidad-097) | Instance user administration: Extend the opt-in ENABLE_ADMIN surface with account operations inspired by Glitc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-098](../SPEC.md#close-identidad-098) | Instance user administration: Add users.is_instance_admin boolean NOT NULL DEFAULT false and users.is_active b… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-099](../SPEC.md#close-identidad-099) | Instance user administration: When ENABLE_ADMIN=true, expose GET /api/v1/admin/users and PATCH /api/v1/admin/u… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-099](../SPEC.md#close-identidad-099) | Instance user administration: When ENABLE_ADMIN=true, expose GET /api/v1/admin/users and PATCH /api/v1/admin/u… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-100](../SPEC.md#close-identidad-100) | Instance user administration: Every list and update rechecks that the current account is active and an instanc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-101](../SPEC.md#close-identidad-101) | Instance user administration: Once an instance administrator exists, serialized updates and the existing self-… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-102](../SPEC.md#close-identidad-102) | Instance user administration: The first-owner/admin bootstrap must be serialized with user creation. The first… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5483,6 +5483,44 @@ owners de store, servidor y CLI, más
 Límites registrados: el CI público sigue pendiente para la auditoría final. El
 fallo de arranque se prueba en el owner de store y en la propagación directa del
 error en `main`; no se arranca un proceso completo con la cuenta suspendida.
+
+### Ejecución 2026-10-26: API y sección de usuarios de instancia
+
+Selección registrada antes de trabajar: CLOSE-identidad-099. Candidata
+`72e56f0`.
+
+Resultado observado: con `ENABLE_ADMIN=true`, `GET /api/v1/admin/users`
+devuelve una página de 25 por defecto con `data`, `total`, `page` y
+`perPage`, y cada fila expone solo id, correo, nombre, estado activo, privilegio
+de instancia y número de organizaciones; la respuesta no contiene hashes,
+generaciones, MFA, credenciales ni estado OAuth. El filtro `query` es una
+subcadena sin distinguir mayúsculas sobre correo o nombre, con 100 caracteres
+máximo y sin controles, y la paginación acepta `perPage` hasta 100 con páginas
+positivas. `PATCH /api/v1/admin/users/{userID}` acepta únicamente booleanos
+opcionales `isActive` e `isInstanceAdmin` y rechaza parches vacíos, campos
+desconocidos, IDs malformados, usuarios inexistentes y `null` con el error
+compartido. La vista embebida añade «Account users» con filtro, paginación,
+estado de cuenta, acceso de instancia y acciones; en Chromium el propietario
+filtra por correo, concede y revoca el privilegio, suspende y reactiva sin
+desbordamiento ni errores de consola.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Lista paginada con la proyección exacta | HTTP `TestInstanceUserAdministrationHTTPAuthorizationAndUpdates` |
+| Filtro por subcadena, límite y controles | HTTP `TestInstanceUserAdministrationHTTPAuthorizationAndUpdates` |
+| Paginación estricta y páginas fuera de rango | HTTP `TestInstanceUserAdministrationHTTPAuthorizationAndUpdates` |
+| PATCH estricto y errores compartidos | HTTP `TestInstanceUserAdministrationHTTPAuthorizationAndUpdates` |
+| Sección y mutaciones en la vista | `admin-users-ui/report.json` y capturas 320/768/1440 |
+
+Evidencia: `test-results/closure-20261025/identidad-099-go.log` y
+`test-results/closure-20261025/admin-users-ui/`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+captura de 320 px muestra el encabezado y las primeras secciones; la tabla de
+cuentas se revisó en 768 y 1440 y el desbordamiento se comprobó en los tres
+anchos.
 
 ### Comprobante de integración documental
 

@@ -3504,6 +3504,14 @@
         "admin-users-ui/admin-users-768.png",
         "admin-users-ui/admin-users-1440.png"
       ]
+    },
+    "CLOSE-identidad-099": {
+      "evidence": "vigente",
+      "scope": "instance user list, filter, pagination, strict patch and administration UI",
+      "evidence_files": [
+        "identidad-099-go.log",
+        "admin-users-ui/report.json"
+      ]
     }
   },
   "commands": [

@@ -1,0 +1,16 @@
+=== RUN   TestInstanceUserAdministrationHTTPAuthorizationAndUpdates
+--- PASS: TestInstanceUserAdministrationHTTPAuthorizationAndUpdates (0.72s)
+=== RUN   TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner
+--- PASS: TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner (0.61s)
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped/disabled
+=== RUN   TestAdministrationIsOptInAndOrganizationScoped/enabled
+--- PASS: TestAdministrationIsOptInAndOrganizationScoped (0.94s)
+    --- PASS: TestAdministrationIsOptInAndOrganizationScoped/disabled (0.45s)
+    --- PASS: TestAdministrationIsOptInAndOrganizationScoped/enabled (0.49s)
+PASS
+ok  	goodsentry/internal/server	2.282s
+=== RUN   TestInstanceUserAdminSearchSuspensionAndLastAdmin
+--- PASS: TestInstanceUserAdminSearchSuspensionAndLastAdmin (0.79s)
+PASS
+ok  	goodsentry/internal/store	0.794s
