@@ -1917,6 +1917,111 @@
       "evidence_files": [
         "errores-069-083.log"
       ]
+    },
+    "CLOSE-errores-085": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-086": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-087": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-088": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-089": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-090": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-091": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-092": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-093": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-094": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-095": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-096": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-097": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-098": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
+    },
+    "CLOSE-errores-100": {
+      "evidence": "vigente",
+      "scope": "compatible issue lists, analytics, short-ID, stats, commits or owning verification",
+      "evidence_files": [
+        "errores-085-098.log"
+      ]
     }
   },
   "commands": [

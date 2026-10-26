@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068 y 069–083 están
 vigentes; 033/047/084 bloqueadas; 006 espera proveedores de releases/
-artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-085 (listas/analytics).
+artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-099 (UI Affected users).
 No se declara aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
@@ -1620,22 +1620,22 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-082](../SPEC.md#close-errores-082) | Compatible individual issue changes: Write transactions retain native ReadCommitted and fresh-after-wait behav… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-083](../SPEC.md#close-errores-083) | Compatible individual issue changes: Owning tests: PostgreSQL covers project/organization/current-member gates… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-084](../SPEC.md#close-errores-084) | Compatible individual issue changes: Acceptance requires actual official SDK errors controlled through restric… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
-| [CLOSE-errores-085](../SPEC.md#close-errores-085) | Compatible issue summaries and real analytics: Deliver organization/project issue lists, global/organization i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-086](../SPEC.md#close-errores-086) | Compatible issue summaries and real analytics: Register exact GET /api/0/organizations/{org}/issues/, /api/0/p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-087](../SPEC.md#close-errores-087) | Compatible issue summaries and real analytics: The organization short-ID lookup returns an object with organiz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-088](../SPEC.md#close-errores-088) | Compatible issue summaries and real analytics: Lists return current roots and at most the requested page size,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-089](../SPEC.md#close-errores-089) | Compatible issue summaries and real analytics: Support GlitchTip sorts last_seen/first_seen/count/priority wit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-090](../SPEC.md#close-errores-090) | Compatible issue summaries and real analytics: Occurrence filters are inclusive start/exclusive end, ISO nanos… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-091](../SPEC.md#close-errores-091) | Compatible issue summaries and real analytics: Top-level count/firstSeen/lastSeen preserve the native root's k… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-092](../SPEC.md#close-errores-092) | Compatible issue summaries and real analytics: An identified user uses the first nonblank valid id, email, use… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-093](../SPEC.md#close-errores-093) | Compatible issue summaries and real analytics: Charts contain actual zero-filled integer Unix-seconds,count pa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-094](../SPEC.md#close-errores-094) | Compatible issue summaries and real analytics: Wire issue summaries use actual string id/count/shortId, normal… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-095](../SPEC.md#close-errores-095) | Compatible issue summaries and real analytics: Use Sentry's typed statusDetails for implemented native policie… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-096](../SPEC.md#close-errores-096) | Compatible issue summaries and real analytics: Issue-stats requires repeated groups canonical positive IDs,1..… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-097](../SPEC.md#close-errores-097) | Compatible issue summaries and real analytics: Internal contracts: IssueAnalytics contains UserCount int64 and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-098](../SPEC.md#close-errores-098) | Compatible issue summaries and real analytics: Add compatible GET /api/0/issues/{issue}/commits/ and /api/0/or… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-085](../SPEC.md#close-errores-085) | Compatible issue summaries and real analytics: Deliver organization/project issue lists, global/organization i… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-086](../SPEC.md#close-errores-086) | Compatible issue summaries and real analytics: Register exact GET /api/0/organizations/{org}/issues/, /api/0/p… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-087](../SPEC.md#close-errores-087) | Compatible issue summaries and real analytics: The organization short-ID lookup returns an object with organiz… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-088](../SPEC.md#close-errores-088) | Compatible issue summaries and real analytics: Lists return current roots and at most the requested page size,… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-089](../SPEC.md#close-errores-089) | Compatible issue summaries and real analytics: Support GlitchTip sorts last_seen/first_seen/count/priority wit… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-090](../SPEC.md#close-errores-090) | Compatible issue summaries and real analytics: Occurrence filters are inclusive start/exclusive end, ISO nanos… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-091](../SPEC.md#close-errores-091) | Compatible issue summaries and real analytics: Top-level count/firstSeen/lastSeen preserve the native root's k… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-092](../SPEC.md#close-errores-092) | Compatible issue summaries and real analytics: An identified user uses the first nonblank valid id, email, use… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-093](../SPEC.md#close-errores-093) | Compatible issue summaries and real analytics: Charts contain actual zero-filled integer Unix-seconds,count pa… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-094](../SPEC.md#close-errores-094) | Compatible issue summaries and real analytics: Wire issue summaries use actual string id/count/shortId, normal… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-095](../SPEC.md#close-errores-095) | Compatible issue summaries and real analytics: Use Sentry's typed statusDetails for implemented native policie… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-096](../SPEC.md#close-errores-096) | Compatible issue summaries and real analytics: Issue-stats requires repeated groups canonical positive IDs,1..… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-097](../SPEC.md#close-errores-097) | Compatible issue summaries and real analytics: Internal contracts: IssueAnalytics contains UserCount int64 and… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-098](../SPEC.md#close-errores-098) | Compatible issue summaries and real analytics: Add compatible GET /api/0/issues/{issue}/commits/ and /api/0/or… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-099](../SPEC.md#close-errores-099) | Compatible issue summaries and real analytics: Native issue detail displays Affected users (identified retaine… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-100](../SPEC.md#close-errores-100) | Compatible issue summaries and real analytics: Owning PostgreSQL tests cover grants/current membership/alias a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-100](../SPEC.md#close-errores-100) | Compatible issue summaries and real analytics: Owning PostgreSQL tests cover grants/current membership/alias a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-101](../SPEC.md#close-errores-101) | Compatible event inspection: Implement compatible event inspection as the first vertical part of the required… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-102](../SPEC.md#close-errores-102) | Compatible event inspection: Register GET /api/0/projects/{org}/{project}/events/ and .../events/{event}/. Reg… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-103](../SPEC.md#close-errores-103) | Compatible event inspection: Migration017 extends only the current token scope constraint with event:read. Do… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3907,6 +3907,28 @@ lo que queda bloqueada.
 Evidencia: `test-results/closure-20261025/errores-069-083.log`.
 
 Siguiente acción: CLOSE-errores-085 (listas y analytics de issues).
+
+### Ejecución 2026-10-26: listas y analytics de issues
+
+Selección registrada antes de trabajar: CLOSE-errores-085 a -098 y -100.
+Candidata `483a651`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de los owners store/HTTP con `-race`.
+
+Resultado observado: las listas globales/organización/proyecto devuelven roots
+actuales con page size/lookahead, filtros de ocurrencia y orden
+last_seen/first_seen/count/priority, short-ID y Links prefijados; los grants,
+membership, aliases y límites se revalidan. Count/firstSeen/lastSeen conservan
+el root nativo, la identidad de usuario usa el primer campo válido, y las
+charts devuelven pares Unix-seconds/count con ceros reales. statusDetails,
+issue-stats y commits usan los contratos tipados y límites estrictos; la
+proyección wire es compatible sin prometer bytes idénticos. 099 (UI de
+Affected users) sigue pendiente; 100 queda cubierto por la matriz PostgreSQL
+de grants/membership/alias/capturas/merge/políticas y charts.
+
+Evidencia: `test-results/closure-20261025/errores-085-098.log`.
+
+Siguiente acción: CLOSE-errores-099 (UI Affected users); después 101 (event
+inspection).
 
 ### Comprobante de integración documental
 
