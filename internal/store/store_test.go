@@ -3,6 +3,7 @@
 package store
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -166,7 +167,7 @@ func TestEnsureDefaultOwnerIsIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 	second, sameOrg, err := db.EnsureDefaultOwner(ctx, "owner@localhost", []byte("different-hash"), "Ignored Name", "Default Organization")
-	if err != nil || second.ID != first.ID || second.Name != first.Name || sameOrg.ID != org.ID || sameOrg.Slug != "default-organization" {
+	if err != nil || second.ID != first.ID || second.Name != first.Name || !bytes.Equal(second.PasswordHash, first.PasswordHash) || sameOrg.ID != org.ID || sameOrg.Slug != "default-organization" {
 		t.Fatalf("second owner=%+v org=%+v err=%v", second, sameOrg, err)
 	}
 	var users, orgs, teams, owners int

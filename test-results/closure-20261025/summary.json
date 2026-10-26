@@ -95,6 +95,21 @@
         "GOODSENTRY_ENABLE_ORGANIZATION_CREATION defaults false, accepts the GlitchTip alias and wins over it"
       ],
       "evidence_files": ["config/loader-tests.log", "config/surfaces-tests.log"]
+    },
+    "CLOSE-operacion-010": {
+      "evidence": "vigente",
+      "scope": "open and required authentication, generated secret, implicit owner, sessions, CSRF, invitations and MCP identity",
+      "covered": [
+        "GOODSENTRY_AUTH defaults to disabled; generated hex secret persists with 0600 permissions",
+        "required mode needs an explicit SECRET_KEY of at least 32 characters",
+        "implicit owner, organization, default team and password hash are idempotent under the advisory lock",
+        "cookie-free /api/v1/me returns the owner and a stable CSRF token",
+        "open mode rejects setup/login and enforces CSRF and origin checks",
+        "open-mode invitations stay on the configured owner; other addresses are rejected",
+        "required mode does not provision an implicit owner and real setup/login/logout pass",
+        "MCP OAuth uses the implicit owner in open mode"
+      ],
+      "evidence_files": ["open-auth/tests.log", "open-auth/app.log", "open-auth/report.json", "open-auth/restart.json", "open-auth/*.png"]
     }
   },
   "commands": [

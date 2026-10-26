@@ -1,0 +1,14 @@
+{
+  "user": {
+    "email": "owner@localhost",
+    "id": "1",
+    "isInstanceAdmin": true,
+    "name": "GoodSentry Owner"
+  },
+  "organizations": [
+    {
+      "slug": "default-organization",
+      "name": "Default Organization"
+    }
+  ]
+}

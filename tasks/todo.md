@@ -1438,13 +1438,14 @@ archivo ajeno era `tests/compat/otlp_python_smoke.py`, sin seguimiento y sin
 tocar. Se eligieron, en orden del plan, CLOSE-operacion-004, CLOSE-operacion-005
 y CLOSE-operacion-006; después se completaron CLOSE-operacion-007 con Chromium
 real y un estado de permiso, CLOSE-operacion-008 con el Compose público, la
-imagen construida y PostgreSQL externo, y CLOSE-operacion-009 con el loader y
-los alias. Sus comprobantes vigentes están abajo. Siguiente acción:
-CLOSE-operacion-010 (modo abierto/autenticado, sesiones, CSRF y aislamiento),
-cuyas dependencias locales están resueltas. No se declara aceptación ni cierre
-del producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+imagen construida y PostgreSQL externo, CLOSE-operacion-009 con el loader y
+los alias, y CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
+sesiones. Sus comprobantes vigentes están abajo. Siguiente acción:
+CLOSE-operacion-011 (Valkey vacío, disponibilidad real de features, correo
+local/SMTP, uploads y secretos de ejemplo), cuyas dependencias locales están
+resueltas. No se declara aceptación ni cierre del producto. El avance se
+informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1459,7 +1460,7 @@ este registro.
 | [CLOSE-operacion-007](../SPEC.md#close-operacion-007) | Architecture: Serve an original, responsive application UI with a compact sidebar, neutral surfaces, a teal ac… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI/estilos |
 | [CLOSE-operacion-008](../SPEC.md#close-operacion-008) | Deployment and configuration: Default HTTP port is 8000. docker compose up -d pulls the verified public applic… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de imagen/Compose |
 | [CLOSE-operacion-009](../SPEC.md#close-operacion-009) | Deployment and configuration: Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del loader |
-| [CLOSE-operacion-010](../SPEC.md#close-operacion-010) | Deployment and configuration: GOODSENTRY_AUTH defaults to disabled for frictionless local startup. If SECRET_K… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-010](../SPEC.md#close-operacion-010) | Deployment and configuration: GOODSENTRY_AUTH defaults to disabled for frictionless local startup. If SECRET_K… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de auth/sesiones |
 | [CLOSE-operacion-011](../SPEC.md#close-operacion-011) | Deployment and configuration: An empty VALKEY_URL selects PostgreSQL-only operation. Optional features must re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-012](../SPEC.md#close-operacion-012) | Deployment and configuration: Memory target: measure application RSS under an explicit repeatable workload and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-001](../SPEC.md#close-identidad-001) | Runtime and workspace contracts: Provide /healthz for process health and /readyz for database readiness. Setup… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2434,6 +2435,51 @@ Evidencia: `test-results/closure-20261025/config/loader-tests.log` y
 
 Siguiente acción: CLOSE-operacion-010 (modo abierto/autenticado, sesiones,
 CSRF y aislamiento), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: modos abierto y autenticado, sesiones y CSRF
+
+Selección registrada antes de trabajar: CLOSE-operacion-010, siguiente en el
+plan. Candidata `0581dd2`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad añade una aserción de conservación del hash de
+contraseña al test de idempotencia del owner implícito.
+
+Procedimiento reproducible: los tests de configuración de
+`GOODSENTRY_AUTH`/`SECRET_KEY`; `TestEnsureDefaultOwnerIsIdempotent` con
+PostgreSQL real; los tests de autenticación abierta, invitaciones, MCP OAuth,
+tokens de cuenta y 2FA sin sesión; `open_auth_browser.mjs` contra una
+instalación vacía en modo abierto; reinicio del proceso para comparar el hash
+del secreto y el owner; y la corrida `browser.mjs` en modo `required` de
+CLOSE-operacion-007, que cubre setup, login, logout y login posterior.
+
+Resultado observado: `GOODSENTRY_AUTH` vale `disabled` por defecto. Con
+`SECRET_KEY` ausente se generó un secreto de 64 caracteres hexadecimales en
+`UPLOAD_DIR/.goodsentry-secret`, con permisos `0600`, y su SHA-256 no cambió
+tras reiniciar. El modo `required` sin secreto falla; con un secreto explícito
+de 32 o más caracteres arranca. `EnsureDefaultOwner` usa el advisory lock
+`73042190` y conserva en el segundo arranque el mismo usuario, nombre, hash de
+contraseña, organización, membership owner y equipo por defecto. En modo
+abierto, Chromium entró sin cookie de sesión, `/api/v1/setup` devolvió
+`required:false` y `/api/v1/me` el owner implícito con CSRF estable; una
+mutación sin CSRF y otra con origen ajeno devolvieron 403, y la mutación con el
+CSRF estable devolvió 201. `POST /api/v1/setup` y `POST /api/v1/login`
+devolvieron 409 en modo abierto. Tras reiniciar, el owner siguió siendo
+`owner@localhost` con `default-organization` y el mismo secreto. Una invitación
+para otro correo devolvió 409 y no creó usuario; la del correo del owner se
+aceptó y la identidad sin cookie no cambió. El cliente MCP OAuth usa el owner
+implícito. En modo `required`, `/api/v1/me` sin sesión devuelve 401, no se crea
+owner implícito y la corrida real de onboarding/login/logout/login pasó. La
+documentación de `docs/configuration.md` exige el mismo `SECRET_KEY` en todas
+las réplicas y describe ambos modos. Subresultados pendientes del bloque:
+ninguno.
+
+Evidencia: `test-results/closure-20261025/open-auth/`
+(`tests.log`, `app.log`, `report.json`, `restart.json` y capturas a 1440/390),
+más la evidencia de auth del criterio 007. Los CSRF y secretos no se
+guardaron.
+
+Siguiente acción: CLOSE-operacion-011 (Valkey vacío, disponibilidad real de
+features, correo local/SMTP, uploads y rechazo de secretos de ejemplo), con
+dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
