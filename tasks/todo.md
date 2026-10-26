@@ -1443,12 +1443,12 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032, 034–044 y 046 están vigentes y
-033/047 bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI.
-Siguiente acción: CLOSE-errores-045 (Future grouping UI). No se declara
-aceptación ni cierre del producto. El avance se informa por
-criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
-Goal no completan el producto ni borran este registro.
+publicación/CI; errores 001–005, 007–032, 034–046 están vigentes y 033/047
+bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI. Siguiente
+acción: CLOSE-errores-048 (bulk PUT de issues). No se declara aceptación ni
+cierre del producto. El avance se informa por criterios/evidencia, sin
+porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
+producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1580,7 +1580,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-042](../SPEC.md#close-errores-042) | Compatible hashes and future grouping reset: DELETE accepts only repeated id parameters,1..1000 supplied UUID… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-043](../SPEC.md#close-errores-043) | Compatible hashes and future grouping reset: A concurrent capture and reset serialize on the project gate. A c… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-044](../SPEC.md#close-errores-044) | Compatible hashes and future grouping reset: Internal contracts: CompatibleIssueHashFilter contains Offset/Lim… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-045](../SPEC.md#close-errores-045) | Compatible hashes and future grouping reset: Add a Future grouping section to native issue detail with real pa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-045](../SPEC.md#close-errores-045) | Compatible hashes and future grouping reset: Add a Future grouping section to native issue detail with real pa… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI hashes |
 | [CLOSE-errores-046](../SPEC.md#close-errores-046) | Compatible hashes and future grouping reset: Verification must apply test-audit before authorship. PostgreSQL… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-047](../SPEC.md#close-errores-047) | Compatible hashes and future grouping reset: Acceptance requires actual official SDK captures before/after res… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
 | [CLOSE-errores-048](../SPEC.md#close-errores-048) | Compatible bulk issue changes and merging: Complete PUT /api/0/projects/{org}/{project}/issues/ and PUT /api/0… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3784,6 +3784,26 @@ Evidencia: `test-results/closure-20261025/errores-034-039.log`.
 
 Siguiente acción: CLOSE-errores-045 (sección Future grouping en la UI),
 después 047 (aceptación SDK/imagen/CI, bloqueada).
+
+### Ejecución 2026-10-26: Future grouping UI
+
+Selección registrada antes de trabajar: CLOSE-errores-045. Candidata
+`9755b35`; producto sin cambios desde `54db6e4`. La evidencia proviene de un
+contrato de navegador nuevo con un proyecto sembrado.
+
+Resultado observado: el detalle muestra Future grouping con signatures activas,
+sample, estado vacío y selección; el reset envía el ID seleccionado por el
+DELETE compatible, recibe 202 sin body y confirma que los eventos existentes
+quedan en el grupo histórico y la siguiente captura crea otro issue. La
+mensaje de confirmación describe ese comportamiento. Las capturas cubren
+320/768/1440 sin desbordamiento ni errores de página. Subresultados pendientes
+del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/grouping-reset/` y
+`tests/compat/issue_grouping_reset_browser.mjs`.
+
+Siguiente acción: CLOSE-errores-048 (bulk PUT de issues), con 047 aún bloqueada
+por aceptación pública/SDK.
 
 ### Comprobante de integración documental
 

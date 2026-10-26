@@ -1160,6 +1160,17 @@
       "covered": ["scoped snapshot and limits", "ReadOnly/canonical validation", "shared route helper"]
       ,"evidence_files": ["errores-034-039.log"]
     },
+    "CLOSE-errores-045": {
+      "evidence": "vigente",
+      "scope": "Future grouping detail UI, selection, confirmation and next-capture behavior",
+      "covered": [
+        "active signatures with sample and empty states",
+        "selected DELETE returns 202 and clears selection",
+        "existing events stay historical; next matching capture creates a new issue",
+        "320/768/1440 without page errors"
+      ],
+      "evidence_files": ["grouping-reset/report.json", "grouping-reset/*.png", "tests/compat/issue_grouping_reset_browser.mjs"]
+    },
     "CLOSE-errores-046": {
       "evidence": "vigente",
       "scope": "hash verification across migration, races, auth and HTTP",
