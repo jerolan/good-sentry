@@ -295,9 +295,9 @@ interna distinta. Evidencia: respuesta directa en sesión. No se impone
 DuckDB ni se acredita aceptación ejecutada. El plazo concreto y la evidencia
 por tipo deben remitir a los contratos existentes y sus comprobantes.
 
-## Next round, performance, logs and uptime
+## Performance, logs and uptime approved in rounds 10 to 12
 
-Tres criterios independientes propuestos, pendientes de aprobación:
+Tres criterios independientes aprobados por el usuario:
 
 10. Rendimiento: usar los SDK Go/Python/Node/Browser fijados para generar
     transacciones y spans reales y comprobar en API/UI su identidad, relación
@@ -319,3 +319,43 @@ Tres criterios independientes propuestos, pendientes de aprobación:
 
 Estos criterios concretan resultados sin reducir los contratos ya aprobados.
 No afirman que las pruebas existentes sigan vigentes ni autorizan ejecución.
+
+## Resolution comments, rounds 10 to 12
+
+2026-10-25, America/Mexico_City. Resolución parcial.
+El usuario respondió "Si" a los tres criterios de rendimiento, logs y uptime.
+Quedan aprobados los flujos descritos arriba con clientes fijados, resultados
+esperados controlados, consulta real y persistencia. Se mantienen los contratos
+existentes. Los destinos y recibos externos de alertas siguen en su ticket.
+Evidencia: aprobación directa en sesión. No se ejecuta aceptación ni se da
+por vigente evidencia anterior a cambios que puedan invalidarla.
+
+## Next round, alerts, administration and operation
+
+Tres propuestas independientes, pendientes de aprobación:
+
+13. Alertas: provocar la condición de una regla por frecuencia de errores y
+    de una transición de uptime; comprobar destinatarios, entorno, umbrales,
+    cooldown, generación del trabajo, entrega a receptores HTTP/SMTP reales,
+    historial y reintentos recuperables tras fallo/reinicio. Estos receptores
+    locales prueban el flujo interno, no sustituyen los comprobantes de los
+    proveedores externos que se acordarán en su ticket dependiente.
+14. Identidad y administración: comprobar en API y navegador los modos abierto
+    y autenticado, alta/login/logout, recuperación de contraseña, TOTP y OIDC
+    ya contratados; gestión de organizaciones, equipos, miembros, proyectos,
+    DSNs y tokens. Demostrar permisos/aislamiento, expiración y revocación de
+    credenciales según sus contratos actuales. Conservar los controles y las
+    capacidades implementadas; esta lista de flujos no excluye otros contratos
+    aprobados. Proveedores sociales y recibos externos se acordarán aparte.
+15. Operación: arrancar la imagen documentada con PostgreSQL y volúmenes
+    vacíos; comprobar salud/readiness, UI y captura SDK, sin requerir Valkey.
+    Verificar migraciones y actualización desde una versión publicada fijada,
+    persistencia tras reiniciar y restauración de un backup en un entorno
+    independiente, conservando datos, artefactos y configuración necesarios.
+    Las funciones opcionales deben reflejar su disponibilidad real. Mantener
+    las verificaciones de imagen, concurrencia y recuperación ya exigidas,
+    sin introducir promesas nuevas de memoria o rendimiento no medidos.
+
+Se mantiene el alcance de planificación. Las revisiones/digests concretos y
+los comprobantes de aceptación se fijarán al ejecutar el contrato aprobado.
+No se modifica SPEC.md, el plan de implementación ni el Goal.
