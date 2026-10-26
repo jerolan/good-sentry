@@ -3039,6 +3039,14 @@
         "alerts-image-build.log",
         "alerts-image-logs.txt"
       ]
+    },
+    "CLOSE-alertas-013": {
+      "evidence": "vigente",
+      "scope": "Slack provider message, acknowledgment and retry contracts verified against a local receiver",
+      "evidence_files": [
+        "alertas-slack.json",
+        "alertas-001-003-go.log"
+      ]
     }
   },
   "commands": [

@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-013 (Slack como proveedor específico). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-014 (Discord como proveedor específico). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1881,7 +1881,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-010](../SPEC.md#close-alertas-010) | Sentry spans and native telemetry reads: Run alert workers in the same process with ALERT_WORKERS default 2, r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-011](../SPEC.md#close-alertas-011) | Sentry spans and native telemetry reads: List project delivery history at /api/v1/organizations/{org}/projects… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-012](../SPEC.md#close-alertas-012) | Sentry spans and native telemetry reads: On 2026-10-14 the user explicitly authorized automatic delivery to ru… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-013](../SPEC.md#close-alertas-013) | Slack incoming webhooks: Provider-specific alerts are independent of SSL certificate monitors and account reco… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-013](../SPEC.md#close-alertas-013) | Slack incoming webhooks: Provider-specific alerts are independent of SSL certificate monitors and account reco… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-014](../SPEC.md#close-alertas-014) | Slack incoming webhooks: Add explicit recipient type slack using the same destination admission as webhook: an… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-015](../SPEC.md#close-alertas-015) | Slack incoming webhooks: Additive034_slack_alerts.sql expands only alert_deliveries_recipient_type_check to al… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-016](../SPEC.md#close-alertas-016) | Slack incoming webhooks: Use Slack's incoming webhook JSON contract(https://docs.slack.dev/messaging/sending-m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4508,6 +4508,32 @@ Evidencia: `test-results/closure-20261025/alerts-image.json`,
 servidor que fija la capacidad en falso sin trabajadores.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: Slack como proveedor específico
+
+Selección registrada antes de trabajar: CLOSE-alertas-013. Candidata
+`51dea92`.
+
+Resultado observado: los owners locales de Slack pasan con `-race`
+—reconocimiento de la respuesta, migración034 con pista de reintento durable y
+payload del proveedor— y la aceptación contra un receptor local con forma de
+Slack confirmó el contrato. Con cuerpo `ok` la entrega queda `delivered` con
+código 200 y la carga útil usa los campos de Slack (`text`, `mrkdwn`,
+`parse`, `unfurl_links`, `unfurl_media`, `blocks`), con proyecto, issue,
+conteo, ventana, instante, identificador de entrega y URL en el texto. Un 200
+con cuerpo distinto de `ok` produce fallo permanente `slack_response` sin
+reintentos. Un 429 devuelve `retry` y la entrega se reintenta a los 15 y 30
+segundos hasta `delivered` cuando el receptor vuelve a aceptar. La documentación
+sigue presentando los formatos de proveedor como verificados solo contra
+receptores locales, sin prometer canales externos.
+
+Evidencia: `test-results/closure-20261025/alertas-slack.json` y
+`alertas-001-003-go.log` (owners de reconocimiento, transporte y migración).
+
+Límites registrados: la red real de Slack, la UI específica de proveedores y la
+imagen final siguen siendo compuertas abiertas de esta capacidad; CLOSE-alertas-013
+solo cierra lo localmente verificable. El CI público sigue pendiente para la
+auditoría final.
 
 ### Comprobante de integración documental
 
