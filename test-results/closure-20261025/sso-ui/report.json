@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "checks": [
+    "Owner adds an OIDC application and the login link exposes it",
+    "Owner renames the application and the change persists",
+    "Owner deletes the application and the list empties"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-app-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-app-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-app-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-renamed-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-renamed-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-renamed-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-empty-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-empty-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sso-ui/sso-empty-1440.png"
+  ],
+  "pageErrors": []
+}

@@ -1447,8 +1447,7 @@ publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
 releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
-CLOSE-identidad-104, -105 y -106 quedan vigentes. Siguiente acción:
-CLOSE-identidad-107
+CLOSE-identidad-104 a -107 quedan vigentes. Siguiente acción: CLOSE-identidad-108
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -2145,7 +2144,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-107](../SPEC.md#close-identidad-107) | API y navegador: comprobar OIDC y aplicaciones SSO con controles y pruebas locales, con los resultados y contr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-107](../SPEC.md#close-identidad-107) | API y navegador: comprobar OIDC y aplicaciones SSO con controles y pruebas locales, con los resultados y contr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-108](../SPEC.md#close-identidad-108) | API y navegador: comprobar organizaciones, equipos y miembros, con los resultados y controles de sus contratos… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-109](../SPEC.md#close-identidad-109) | API y navegador: comprobar proyectos y DSNs, con los resultados y controles de sus contratos actuales, sin exc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-110](../SPEC.md#close-identidad-110) | API y navegador: comprobar tokens, permisos/aislamiento, expiración y revocación, con los resultados y control… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5741,6 +5740,41 @@ Evidencia: `test-results/closure-20261025/identidad-106-go.log` y
 Límites registrados: el CI público sigue pendiente para la auditoría final. El
 desafío usa una ventana TOTP posterior al alta porque el servidor rechaza
 reutilizar el mismo paso; el guion espera esa ventana.
+
+### Ejecución 2026-10-26: OIDC y aplicaciones SSO
+
+Selección registrada antes de trabajar: CLOSE-identidad-107. Candidata
+`f4342f3`.
+
+Resultado observado: los owners locales cubren el flujo OIDC con PKCE, vínculo
+de cuenta y sesión, el alta de identidades y la creación automática, las
+aplicaciones sociales compatibles por HTTP, el acceso que crea membresía en
+GitHub, GitLab, Gitea y DigitalOcean, el rechazo de perfiles no verificados y el
+acceso que crea membresía desde una aplicación social. En Chromium, el
+propietario añade una aplicación OpenID Connect desde la vista Organization, ve
+su callback real, comprueba que el enlace de acceso compartido la ofrece con
+«Continue with Local OIDC», la renombra con persistencia y la elimina hasta
+dejar la lista vacía; las tres pantallas se capturaron a 320/768/1440 sin
+desbordamiento ni errores de consola.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| OIDC con PKCE, vínculo y sesión | HTTP `TestOIDCPKCEAccountLinkAndSession` |
+| Identidades OIDC, creación y suspensión | store `TestOIDCIdentityLinksAndCreatesAccounts` |
+| Aplicaciones sociales compatibles | HTTP `TestCompatibleSocialOAuth2AppsHTTP` |
+| Acceso social que crea membresía | HTTP `TestSocialOAuth2SignInCreatesOrganizationMember`, `TestSocialAppSignInCreatesOrganizationMember` |
+| Rechazo de perfiles no verificados | HTTP `TestSocialOAuth2RejectsUnverifiedProfiles` |
+| Alta, renombrado y borrado en la vista | `sso-ui/report.json` y capturas 320/768/1440 |
+| Enlace de acceso compartido | `sso-ui/report.json` (contexto anónimo) |
+
+Evidencia: `test-results/closure-20261025/identidad-107-go.log` y
+`test-results/closure-20261025/sso-ui/` con `report.json` y nueve capturas.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. El
+proveedor OIDC y los sociales son locales de prueba; no se acredita un proveedor
+público ni un flujo de red externo.
 
 ### Comprobante de integración documental
 

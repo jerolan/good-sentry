@@ -3577,6 +3577,17 @@
         "two-factor/session-1440.png",
         "two-factor/organization-2fa-1440.png"
       ]
+    },
+    "CLOSE-identidad-107": {
+      "evidence": "vigente",
+      "scope": "OIDC PKCE and social applications with local providers plus SSO configuration UI",
+      "evidence_files": [
+        "identidad-107-go.log",
+        "sso-ui/report.json",
+        "sso-ui/sso-app-1440.png",
+        "sso-ui/sso-renamed-1440.png",
+        "sso-ui/sso-empty-1440.png"
+      ]
     }
   },
   "commands": [
