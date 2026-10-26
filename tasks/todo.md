@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -036
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -037
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-037 (UI con transacción Go real). No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-038. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2092,7 +2092,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-211](../SPEC.md#close-errores-211) | Browser CSP reporting: Acceptance requires pure format/grouping/invalid-batch cases, real prefixed HTTP+Postgr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-212](../SPEC.md#close-errores-212) | Go 0.50.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-213](../SPEC.md#close-errores-213) | Go 0.50.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras rein… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-037](../SPEC.md#close-rendimiento-037) | Go 0.50.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación de… | por contrastar | pendiente | Parcial: API con Go real verificada; falta la UI con esos datos |
+| [CLOSE-rendimiento-037](../SPEC.md#close-rendimiento-037) | Go 0.50.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación de… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-029](../SPEC.md#close-logs-029) | Go 0.50.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-214](../SPEC.md#close-errores-214) | Python 2.72.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-215](../SPEC.md#close-errores-215) | Python 2.72.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7869,6 +7869,25 @@ desglose en pantalla.
 
 Siguiente paso: completar el owner de navegador con la transacción Go y
 registrar su comprobante.
+
+### Cierre 2026-10-26: Go 0.50.0 en API y UI
+
+Se completó el resultado pendiente de CLOSE-rendimiento-037.
+
+| Comprobación | Resultado |
+|---|---|
+| API con el SDK oficial | `go-trace-036` resuelve 3 nodos, 2 relaciones, raíz `http.server` de 8.486 ms y hijos `db.query`/`http.client` |
+| Agregado en Transactions | La fila real muestra `go-trace-036`, count 1, 8.5 ms, con enlace de ocurrencia y View trace |
+| Ocurrencia | El detalle real contiene `SELECT go trace` y `GET go trace` |
+| Navegación a traza | View trace abre `traceView=3f28addf8c3954611360808487249713` y conserva `returnView=transactions`, proyecto y sample de origen |
+| Desglose | La traza muestra raíz e hijos con sus nombres y tiempos |
+
+Evidencia: `rendimiento-037/ui.json` y `rendimiento-037/go-trace-ui.png`,
+además de `rendimiento-036/sdk-traces.json` y
+`rendimiento-028/sdk-child-metrics.json`.
+
+Límites registrados: la UI se ejecuta en Chromium headless sobre una instalación
+local; el CI público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
