@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-012 (capacidad y composición del despachador). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-013 (Slack como proveedor específico). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1880,7 +1880,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-009](../SPEC.md#close-alertas-009) | Sentry spans and native telemetry reads: Delivery states are pending, processing, sent, failed and canceled. S… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-010](../SPEC.md#close-alertas-010) | Sentry spans and native telemetry reads: Run alert workers in the same process with ALERT_WORKERS default 2, r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-011](../SPEC.md#close-alertas-011) | Sentry spans and native telemetry reads: List project delivery history at /api/v1/organizations/{org}/projects… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-012](../SPEC.md#close-alertas-012) | Sentry spans and native telemetry reads: On 2026-10-14 the user explicitly authorized automatic delivery to ru… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-012](../SPEC.md#close-alertas-012) | Sentry spans and native telemetry reads: On 2026-10-14 the user explicitly authorized automatic delivery to ru… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-013](../SPEC.md#close-alertas-013) | Slack incoming webhooks: Provider-specific alerts are independent of SSL certificate monitors and account reco… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-014](../SPEC.md#close-alertas-014) | Slack incoming webhooks: Add explicit recipient type slack using the same destination admission as webhook: an… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-015](../SPEC.md#close-alertas-015) | Slack incoming webhooks: Additive034_slack_alerts.sql expands only alert_deliveries_recipient_type_check to al… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4483,6 +4483,29 @@ intentos, cooldown concurrente y aislamiento entre organizaciones.
 Evidencia: `test-results/closure-20261025/alerts-smtp.json` junto con
 `alertas-001-003-go.log`, `alerts-stage1.json`, `alerts-stage2.json`,
 `alerts-uptime.json` y `alerts-ui/report.json`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: capacidad de entrega y composición
+
+Selección registrada antes de trabajar: CLOSE-alertas-012. Candidata
+`25da13a`.
+
+Resultado observado: `cmd/goodsentry/main.go` compone el remitente, arranca los
+trabajadores de alertas y solo después marca `cfg.AlertDelivery`, que se expone
+como `features.alertDelivery`; los `defer` paran primero los trabajadores y
+después cierran remitente y base, y la prueba HTTP sin trabajadores conserva la
+capacidad en falso. La imagen `goodsentry:alerts-20261026`
+(`1fc41eea35cd`), construida desde esta fuente, arrancó con receptores locales
+propios: `features.alertDelivery` fue verdadero, una regla de frecuencia creó
+dos entregas enviadas, el webhook contestó 204 con el payload y la URL al issue,
+y el correo salió por SMTP real con código 250 y un `Message-ID` que contiene
+el identificador de la entrega. Al detener el contenedor salió con código 0 y
+sin errores ni pánicos en el registro.
+
+Evidencia: `test-results/closure-20261025/alerts-image.json`,
+`alerts-image-build.log` y `alerts-image-logs.txt`, junto con el owner de
+servidor que fija la capacidad en falso sin trabajadores.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

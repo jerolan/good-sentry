@@ -1,0 +1,81 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.57kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/golang:1.27.2
+#2 DONE 0.1s
+
+#3 [internal] load metadata for gcr.io/distroless/static-debian12:nonroot
+#3 DONE 0.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 200B done
+#4 DONE 0.0s
+
+#5 [tailwind-amd64 1/1] ADD --checksum=sha256:dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 /tailwindcss
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 965.07kB 0.0s done
+#6 DONE 0.1s
+
+#7 [build 1/8] FROM docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8
+#7 resolve docker.io/library/golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8 0.1s done
+#7 DONE 0.2s
+
+#8 [stage-4 1/4] FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+#8 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
+#8 resolve gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab 0.1s done
+#8 DONE 0.2s
+
+#9 [build 2/8] WORKDIR /src
+#9 CACHED
+
+#10 [build 4/8] RUN go mod download
+#10 CACHED
+
+#11 [tailwind-amd64 1/1] ADD --checksum=sha256:dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 /tailwindcss
+#11 CACHED
+
+#12 [build 3/8] COPY go.mod go.sum ./
+#12 CACHED
+
+#13 [build 5/8] COPY --from=tailwind /tailwindcss /usr/local/bin/tailwindcss
+#13 CACHED
+
+#14 [build 6/8] RUN chmod 0755 /usr/local/bin/tailwindcss
+#14 CACHED
+
+#15 [build 7/8] COPY . .
+#15 DONE 0.3s
+
+#16 [build 8/8] RUN printf '%s\n'       'd69de07c7463bb1f41548e2688f88ee105cdadf9779fce5b3c47b3bfaa6be472  third_party/daisyui/daisyui.mjs'       'e48a35d8326d650181ca600560e8520cf6b44cf9242bbd9d45825607e641f251  third_party/daisyui/daisyui-theme.mjs'     | sha256sum -c -     && tailwindcss -i internal/server/web/styles.css -o internal/server/web/app.css --minify     && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /goodsentry ./cmd/goodsentry     && mkdir /data
+#16 0.171 third_party/daisyui/daisyui.mjs: OK
+#16 0.171 third_party/daisyui/daisyui-theme.mjs: OK
+#16 0.261 ≈ tailwindcss v4.3.3
+#16 0.261 
+#16 0.468 Done in 206ms
+#16 DONE 31.6s
+
+#17 [stage-4 2/4] COPY --from=build /goodsentry /goodsentry
+#17 CACHED
+
+#18 [stage-4 3/4] COPY --from=build --chown=65532:65532 /data /data
+#18 CACHED
+
+#19 [stage-4 4/4] COPY third_party/daisyui/LICENSE /licenses/daisyui-LICENSE
+#19 CACHED
+
+#20 exporting to image
+#20 exporting layers done
+#20 exporting manifest sha256:f6d6e7ab2f1a5fb81fd5fe378637d7802fcb5a11bd096593b81566ce3dc800aa 0.0s done
+#20 exporting config sha256:fdc3bc52aec476e1f23e830ef46251681e8f8332d00a5067534507b2e105429f done
+#20 exporting attestation manifest sha256:750821b06b74cbbf2adfe1bc64e36d70abd4a12acb27ee5579dab0f3ed48ddb3
+#20 exporting attestation manifest sha256:750821b06b74cbbf2adfe1bc64e36d70abd4a12acb27ee5579dab0f3ed48ddb3 0.1s done
+#20 exporting manifest list sha256:1fc41eea35cdcec7232164dfa6e85854ff8627e44524f37a3014d850569e3b44 0.1s done
+#20 naming to docker.io/library/goodsentry:alerts-20261026
+#20 naming to docker.io/library/goodsentry:alerts-20261026 0.0s done
+#20 unpacking to docker.io/library/goodsentry:alerts-20261026 0.0s done
+#20 DONE 0.3s

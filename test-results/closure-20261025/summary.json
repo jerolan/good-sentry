@@ -3030,6 +3030,15 @@
         "alerts-ui/report.json",
         "alertas-001-003-go.log"
       ]
+    },
+    "CLOSE-alertas-012": {
+      "evidence": "vigente",
+      "scope": "alert delivery capability composition, image verification and clean shutdown",
+      "evidence_files": [
+        "alerts-image.json",
+        "alerts-image-build.log",
+        "alerts-image-logs.txt"
+      ]
     }
   },
   "commands": [

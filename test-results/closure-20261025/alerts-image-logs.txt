@@ -1,0 +1,2 @@
+2026/10/26 10:02:57 INFO GoodSentry listening address=:18140 domain=http://127.0.0.1:18140
+2026/10/26 10:04:07 INFO GoodSentry listening address=:18140 domain=http://127.0.0.1:18140
