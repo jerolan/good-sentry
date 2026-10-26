@@ -3636,6 +3636,13 @@
         "sourcemaps-001-go.log",
         "tokens-ui/token-form-1440.png"
       ]
+    },
+    "CLOSE-sourcemaps-002": {
+      "evidence": "vigente",
+      "scope": "exact release version parsing, metadata bounds, null semantics and source-map identity",
+      "evidence_files": [
+        "sourcemaps-002-go.log"
+      ]
     }
   },
   "commands": [

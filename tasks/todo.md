@@ -1449,9 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 queda vigente. Siguiente acción: CLOSE-sourcemaps-002
-(primer criterio pendiente en el orden registrado). No se declara aceptación ni
-cierre del producto. El avance se
+CLOSE-sourcemaps-001 y -002 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-003. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1697,7 +1696,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-154](../SPEC.md#close-errores-154) | Native assignment, comments and recorded triage activity: Comment POST retains201 and trimmed1..10000 UTF-8 by… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-155](../SPEC.md#close-errores-155) | Native assignment, comments and recorded triage activity: Original responsive detail gains searchable/paginate… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-001](../SPEC.md#close-sourcemaps-001) | Release lifecycle, commit metadata and deploys: This artifacts increment provides actual release entities shar… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-002](../SPEC.md#close-sourcemaps-002) | Release lifecycle, commit metadata and deploys: An exact release version is1..255 Unicode characters excluding… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-002](../SPEC.md#close-sourcemaps-002) | Release lifecycle, commit metadata and deploys: An exact release version is1..255 Unicode characters excluding… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-003](../SPEC.md#close-sourcemaps-003) | Release lifecycle, commit metadata and deploys: Expose compatible organization GET/POST /api/0/organizations/{… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-004](../SPEC.md#close-sourcemaps-004) | Release lifecycle, commit metadata and deploys: Release JSON returns string id, version, shortVersion (the exa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-005](../SPEC.md#close-sourcemaps-005) | Release lifecycle, commit metadata and deploys: List releases by dateCreated descending then numeric id descen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5960,6 +5959,41 @@ cambios en `app.js` desde entonces.
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 evidencia de interfaz se reutiliza porque el formulario no cambió; el resto se
 ejecutó contra la candidata actual.
+
+### Ejecución 2026-10-26: identidad exacta y metadatos de release
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-002. Candidata
+`74b671f`.
+
+Resultado observado: el parser tipado acepta versiones de 1 a 255 caracteres
+Unicode y rechaza vacío, `.`, `..`, controles y 256 ideogramas, y la versión es
+inmutable en las actualizaciones. Las filas guardan `dateCreated`,
+`dateStarted`, `dateReleased`, `ref`, `url` y estado `open`/`archived`;
+las fechas exigen RFC3339 con offset, se normalizan a UTC microsegundos y
+rechazan año cero y desbordes de año 9999, mientras `null` limpia el valor y
+la omisión lo conserva. `ref` y `url` son metadatos opcionales acotados sin
+controles y el estado inválido devuelve 400. Una versión de SDK inválida o
+demasiado larga se conserva en la telemetría sin crear metadatos de release. La
+subida de source maps acepta la misma identidad exacta de 255 caracteres,
+incluidos espacios inicial y final, sin recortarla ni alterar nombre, dist o
+debug ID.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Versión 1..255 exacta, sin controles ni `.`/`..`, inmutable | HTTP `TestReleaseHTTPContract` |
+| Parser tipado y rechazos de entrada | HTTP `TestReleaseHTTPContract` (400 por valor) |
+| Fechas RFC3339, UTC microsegundos, null/omisión y año 9999 | HTTP `TestReleaseHTTPContract`; store `TestReleaseMetadataTimesAreUTC` |
+| `ref`/`url` acotados y estado por defecto | HTTP `TestReleaseHTTPContract`; store `TestReleaseSharedIdentityAndCoverage` |
+| Versión de SDK inválida sin metadatos | store `TestReleaseStandaloneObservationFreshOnly` |
+| Identidad exacta en source-map upload con espacios | HTTP `TestReleaseHTTPContract`; store `TestSourceMapsMatchBuildAndProjectAfterRestart` |
+| Migración y reapertura | store `TestReleaseMigrationBackfillsPriorHistoryAndReopens` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-002-go.log` con siete
+owners.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 
