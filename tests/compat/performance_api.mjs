@@ -35,7 +35,7 @@ try {
   const first = await createProject('Performance first');
   const second = await createProject('Performance second');
   const baseTime = Date.now() - 2 * 60 * 60 * 1000;
-  async function capture(project, index, children) {
+  async function capture(project, index, children, durationMs = 100, failed = false) {
     const at = baseTime + index * 60 * 1000;
     const eventID = (500 + index).toString(16).padStart(32, '0');
     const traceID = (700 + index).toString(16).padStart(32, '0');
@@ -49,8 +49,8 @@ try {
     }));
     const event = {
       type: 'transaction', event_id: eventID, transaction: 'GET /compat/performance',
-      start_timestamp: at / 1000, timestamp: at / 1000 + 0.1,
-      contexts: { trace: { trace_id: traceID, span_id: 'a'.repeat(16), op: 'http.server', status: 'ok' } },
+      start_timestamp: at / 1000, timestamp: at / 1000 + durationMs / 1000,
+      contexts: { trace: { trace_id: traceID, span_id: 'a'.repeat(16), op: 'http.server', status: failed ? 'internal_error' : 'ok' } },
       spans,
     };
     const dsn = new URL(project.dsn);
@@ -61,8 +61,9 @@ try {
     assert.equal(response.status, 200);
   }
   for (let index = 0; index < 5; index++) await capture(first, index, 6);
-  await capture(first, 5, 2);
+  await capture(first, 5, 2, 200);
   await capture(second, 6, 7);
+  await capture(second, 7, 0, 100, true);
 
   const start = new Date(baseTime - 60 * 1000).toISOString();
   const end = new Date(baseTime + 60 * 60 * 1000).toISOString();
@@ -74,6 +75,9 @@ try {
   assert.equal(spanGroups.data.length, 1);
   assert.deepEqual(Object.keys(spanGroups.data[0]).sort(), ['avgDuration', 'count', 'description', 'op', 'p95Duration', 'totalTime']);
   assert.equal(spanGroups.data[0].count, 39);
+  assert.ok(Math.abs(spanGroups.data[0].avgDuration - 10) < 0.01);
+  assert.ok(Math.abs(spanGroups.data[0].p95Duration - 10) < 0.01);
+  assert.ok(Math.abs(spanGroups.data[0].totalTime - 390) < 0.01);
   report.checks.push('Session span groups combine both selected projects and expose the public fields');
 
   const nPlusQuery = new URLSearchParams({ start, end, project: first.id, op: 'db', threshold: '5', limit: '50' });
@@ -94,7 +98,14 @@ try {
   const selectedGroup = groups.data.find(item => item.project === Number(first.id) && item.op === 'http.server');
   const hiddenGroup = groups.data.find(item => item.project === Number(second.id));
   assert.equal(selectedGroup.count, 6);
-  assert.equal(hiddenGroup.count, 1);
+  assert.equal(selectedGroup.errorCount, 0);
+  assert.equal(selectedGroup.errorRate, 0);
+  assert.ok(Math.abs(selectedGroup.avgDuration - 116.6667) < 0.01);
+  assert.ok(Math.abs(selectedGroup.p50 - 100) < 0.01);
+  assert.ok(Math.abs(selectedGroup.p95 - 175) < 0.01);
+  assert.equal(hiddenGroup.count, 2);
+  assert.equal(hiddenGroup.errorCount, 1);
+  assert.equal(hiddenGroup.errorRate, 0.5);
   assert.deepEqual(Object.keys(selectedGroup).sort(), ['avgDuration', 'count', 'errorCount', 'errorRate', 'firstSeen', 'id', 'lastSeen', 'method', 'op', 'p50', 'p95', 'project', 'throughput', 'transaction']);
   const detail = await call(`api/0/organizations/${organization}/transaction-groups/${selectedGroup.id}/`, { cookie });
   assert.equal(detail.status, 200);
@@ -103,10 +114,11 @@ try {
   const trend = await call(`api/0/organizations/${organization}/transaction-groups/${selectedGroup.id}/trend/?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { cookie });
   assert.equal(trend.status, 200);
   assert.equal(trend.data[0].count, 6);
-  assert.ok(Math.abs(trend.data[0].totalTime - 600) < 0.01);
+  assert.ok(Math.abs(trend.data[0].totalTime - 700) < 0.01);
   const groupSpans = await call(`api/0/organizations/${organization}/transaction-groups/${selectedGroup.id}/spans/?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { cookie });
   assert.equal(groupSpans.status, 200);
   assert.equal(groupSpans.data[0].count, 32);
+  report.checks.push('Transaction groups expose controlled counts, error counts/rates, average, p50 and p95');
   report.checks.push('Transaction-group list IDs are stable and drive detail, trend and per-group spans');
 
   const credential = await call(`api/v1/organizations/${organization}/api-tokens`, {

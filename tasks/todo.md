@@ -1453,10 +1453,11 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. Siguiente acción:
-CLOSE-rendimiento-041. No se declara aceptación ni cierre del producto. El avance se
-informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-041 a -044 quedan
+vigentes. Siguiente acción: CLOSE-rendimiento-001. No se declara aceptación ni
+cierre del producto. El avance se informa por criterios/evidencia, sin
+porcentaje de casillas; tiempo y presupuesto de un Goal no completan el producto
+ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -2106,10 +2107,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-032](../SPEC.md#close-logs-032) | Browser 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enla… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-026](../SPEC.md#close-sourcemaps-026) | Node 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar error r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-027](../SPEC.md#close-sourcemaps-027) | Browser 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar erro… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-041](../SPEC.md#close-rendimiento-041) | Comprobar cantidades y errores contra un conjunto controlado y resultados esperados explícitos, conservando lo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-042](../SPEC.md#close-rendimiento-042) | Comprobar latencias y percentiles contratados contra un conjunto controlado y resultados esperados explícitos,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-043](../SPEC.md#close-rendimiento-043) | Comprobar tendencias contra un conjunto controlado y resultados esperados explícitos, conservando los contrato… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-044](../SPEC.md#close-rendimiento-044) | Comprobar detección N+1 contra un conjunto controlado y resultados esperados explícitos, conservando los contr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-041](../SPEC.md#close-rendimiento-041) | Comprobar cantidades y errores contra un conjunto controlado y resultados esperados explícitos, conservando lo… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-rendimiento-042](../SPEC.md#close-rendimiento-042) | Comprobar latencias y percentiles contratados contra un conjunto controlado y resultados esperados explícitos,… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-rendimiento-043](../SPEC.md#close-rendimiento-043) | Comprobar tendencias contra un conjunto controlado y resultados esperados explícitos, conservando los contrato… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-rendimiento-044](../SPEC.md#close-rendimiento-044) | Comprobar detección N+1 contra un conjunto controlado y resultados esperados explícitos, conservando los contr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-033](../SPEC.md#close-logs-033) | Exportador Python OTLP protobuf/HTTP 1.45.1: logs reales, valores/tipos, severidad, búsqueda y filtros de tiem… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-034](../SPEC.md#close-logs-034) | Exportador Python OTLP JSON/HTTP 0.66b1: logs reales, valores/tipos, severidad, búsqueda y filtros de tiempo/s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-027](../SPEC.md#close-uptime-027) | Scheduler real de HEAD: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monito… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -6881,6 +6882,58 @@ Límites registrados: el CI público sigue pendiente para la auditoría final. L
 prueba se ejecuta sobre el binario local y la imagen final queda en el criterio
 de publicación. Las subidas usan el origen efímero del arnés local; no se
 publican URLs externas ni se conservan tokens o cookies en la evidencia.
+
+### Ejecución 2026-10-26: cantidades, errores, latencias, tendencias y N+1 controlados
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-041 a -044. Candidata
+`4323a40`, sin cambios de producto respecto de `5b987e3`. Entorno:
+PostgreSQL 18 desechable y binario local. El arnés
+`tests/compat/performance_api.mjs` envía envelopes de protocolo a los DSN
+de dos proyectos y comprueba la API compatible con resultados esperados fijos;
+se ejecuta con `GOODSENTRY_TEST_URL` y `GOODSENTRY_TEST_OUTPUT`
+contra una instalación vacía.
+
+Conjunto controlado: el proyecto A recibe seis transacciones
+`GET /compat/performance`, cinco con seis spans `db.query` de 10 ms
+y una con dos; cinco duran 100 ms y una 200 ms. El proyecto B recibe una
+transacción correcta con siete spans y otra con
+`contexts.trace.status=internal_error` y sin spans.
+
+Resultados esperados y observados:
+
+| Comprobación | Esperado | Observado |
+|---|---|---|
+| A: cantidad, errores y tasa de error | 6, 0, 0 | 6, 0, 0 |
+| A: promedio, p50 y p95 | 116.667 ms, 100 ms, 175 ms | 116.667 ms, 100 ms, 175 ms |
+| B: cantidad, errores y tasa de error | 2, 1, 0.5 | 2, 1, 0.5 |
+| Span groups: cantidad | 39 | 39 |
+| Span groups: promedio, p95 y tiempo total | 10 ms, 10 ms, 390 ms | 10 ms, 10 ms, 390 ms |
+| N+1: spans, transacciones y spans por transacción | 30, 5, 6 | 30, 5, 6 |
+| Tendencia del grupo seleccionado: cantidad y tiempo total | 6, 700 ms | 6, 700 ms |
+
+También se conservan los contratos existentes: los campos públicos de grupos de
+transacciones y spans mantienen su forma, el detalle y los spans del grupo usan
+el identificador estable del listado, un token Bearer con un solo proyecto
+devuelve 404 al filtrar el proyecto oculto y los valores fuera de rango de
+`sort` y `limit` devuelven 400.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Cantidades y errores controlados | `performance-api-041-044/report.json` (chequeos de grupos de transacciones) |
+| Latencias y percentiles | mismo comprobante (promedio, p50, p95 de transacciones y spans) |
+| Tendencias | mismo comprobante (tendencia del grupo: 6 eventos, 700 ms) |
+| Detección N+1 | mismo comprobante (30 spans, 5 transacciones, 6 por transacción) |
+
+Evidencia: `test-results/closure-20261025/performance-api-041-044/report.json` y
+`owner-run.log`.
+
+Límites registrados: el conjunto se genera con envelopes de protocolo
+controlados, no con los SDK oficiales; los flujos reales Go/Python/Node/Browser
+(CLOSE-rendimiento-037 a -040) y las vistas de traza en UI (028 a 034) siguen
+pendientes. Las cifras provienen de una instalación local desechable y el CI
+público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

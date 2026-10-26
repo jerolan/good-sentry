@@ -3834,6 +3834,34 @@
         "browser-sdk-027/issue-legacy-release-dist.png",
         "sourcemaps-027-restart.log"
       ]
+    },
+    "CLOSE-rendimiento-041": {
+      "evidence": "vigente",
+      "scope": "controlled transaction counts and error counts/rates across two projects",
+      "evidence_files": [
+        "performance-api-041-044/report.json"
+      ]
+    },
+    "CLOSE-rendimiento-042": {
+      "evidence": "vigente",
+      "scope": "controlled transaction and span average, p50 and p95 latencies",
+      "evidence_files": [
+        "performance-api-041-044/report.json"
+      ]
+    },
+    "CLOSE-rendimiento-043": {
+      "evidence": "vigente",
+      "scope": "controlled transaction-group trend count and total time",
+      "evidence_files": [
+        "performance-api-041-044/report.json"
+      ]
+    },
+    "CLOSE-rendimiento-044": {
+      "evidence": "vigente",
+      "scope": "controlled N+1 spans, transactions and spans per transaction",
+      "evidence_files": [
+        "performance-api-041-044/report.json"
+      ]
     }
   },
   "commands": [
