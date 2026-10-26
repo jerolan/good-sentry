@@ -448,6 +448,17 @@
         "retry, expiry and stale-lease behavior pass"
       ],
       "evidence_files": ["account-mail/tests.log"]
+    },
+    "CLOSE-identidad-028": {
+      "evidence": "vigente",
+      "scope": "reset request form, enumeration resistance, generation-aware enqueue and 60-second floor",
+      "covered": [
+        "login/register expose the reset request and generic message",
+        "malformed/unknown/known requests all return 202; unknown creates no row",
+        "Read Committed enqueue with observed generation; recent request keeps one delivery",
+        "no caller-supplied destination or account-existence disclosure; 503 is generic"
+      ],
+      "evidence_files": ["account-mail/tests.log"]
     }
   },
   "commands": [
