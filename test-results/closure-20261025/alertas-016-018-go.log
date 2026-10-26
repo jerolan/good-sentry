@@ -1,0 +1,78 @@
+=== RUN   TestSlackWebhookMessages
+=== RUN   TestSlackWebhookMessages/error_frequency
+=== RUN   TestSlackWebhookMessages/uptime_down
+=== RUN   TestSlackWebhookMessages/uptime_recovered
+=== RUN   TestSlackWebhookMessages/test
+=== RUN   TestSlackWebhookMessages/frequency_without_optional_issue_or_environment
+--- PASS: TestSlackWebhookMessages (0.00s)
+    --- PASS: TestSlackWebhookMessages/error_frequency (0.00s)
+    --- PASS: TestSlackWebhookMessages/uptime_down (0.00s)
+    --- PASS: TestSlackWebhookMessages/uptime_recovered (0.00s)
+    --- PASS: TestSlackWebhookMessages/test (0.00s)
+    --- PASS: TestSlackWebhookMessages/frequency_without_optional_issue_or_environment (0.00s)
+=== RUN   TestSlackWebhookEscapingAndBounds
+=== RUN   TestSlackWebhookEscapingAndBounds/telemetry_stays_plain_and_resource_URL_is_encoded
+=== RUN   TestSlackWebhookEscapingAndBounds/summary_truncates_by_Unicode_characters_and_keeps_the_resource
+=== RUN   TestSlackWebhookEscapingAndBounds/resource_text_at_the_protocol_limit
+=== RUN   TestSlackWebhookEscapingAndBounds/admitted_public_prefix_is_URL_escaped
+--- PASS: TestSlackWebhookEscapingAndBounds (0.01s)
+    --- PASS: TestSlackWebhookEscapingAndBounds/telemetry_stays_plain_and_resource_URL_is_encoded (0.00s)
+    --- PASS: TestSlackWebhookEscapingAndBounds/summary_truncates_by_Unicode_characters_and_keeps_the_resource (0.00s)
+    --- PASS: TestSlackWebhookEscapingAndBounds/resource_text_at_the_protocol_limit (0.00s)
+    --- PASS: TestSlackWebhookEscapingAndBounds/admitted_public_prefix_is_URL_escaped (0.00s)
+=== RUN   TestSlackWebhookInvalidPayload
+=== RUN   TestSlackWebhookInvalidPayload/unsupported_kind
+=== RUN   TestSlackWebhookInvalidPayload/missing_kind
+=== RUN   TestSlackWebhookInvalidPayload/missing_frequency_count
+=== RUN   TestSlackWebhookInvalidPayload/missing_frequency_window
+=== RUN   TestSlackWebhookInvalidPayload/missing_down_monitor
+=== RUN   TestSlackWebhookInvalidPayload/missing_recovery_monitor
+=== RUN   TestSlackWebhookInvalidPayload/relative_public_link
+=== RUN   TestSlackWebhookInvalidPayload/public_link_credentials
+=== RUN   TestSlackWebhookInvalidPayload/public_link_fragment
+=== RUN   TestSlackWebhookInvalidPayload/overlong_public_link
+=== RUN   TestSlackWebhookInvalidPayload/escaping_expands_public_link_beyond_bound
+--- PASS: TestSlackWebhookInvalidPayload (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/unsupported_kind (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_kind (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_frequency_count (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_frequency_window (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_down_monitor (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_recovery_monitor (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/relative_public_link (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/public_link_credentials (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/public_link_fragment (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/overlong_public_link (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/escaping_expands_public_link_beyond_bound (0.00s)
+=== RUN   TestGenericWebhookBodyPreserved
+--- PASS: TestGenericWebhookBodyPreserved (0.00s)
+=== RUN   TestSlackWebhookAcknowledgment
+=== RUN   TestSlackWebhookAcknowledgment/ok
+=== RUN   TestSlackWebhookAcknowledgment/surrounding_whitespace
+=== RUN   TestSlackWebhookAcknowledgment/exact_body_bound
+=== RUN   TestSlackWebhookAcknowledgment/created
+=== RUN   TestSlackWebhookAcknowledgment/no_content
+=== RUN   TestSlackWebhookAcknowledgment/other_success_status
+=== RUN   TestSlackWebhookAcknowledgment/unexpected_body
+=== RUN   TestSlackWebhookAcknowledgment/empty_body
+=== RUN   TestSlackWebhookAcknowledgment/oversized_body
+=== RUN   TestSlackWebhookAcknowledgment/body_read_failure
+=== RUN   TestSlackWebhookAcknowledgment/body_deadline
+=== RUN   TestSlackWebhookAcknowledgment/redirect
+=== RUN   TestSlackWebhookAcknowledgment/server_unavailable
+--- PASS: TestSlackWebhookAcknowledgment (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/ok (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/surrounding_whitespace (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/exact_body_bound (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/created (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/no_content (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/other_success_status (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/unexpected_body (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/empty_body (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/oversized_body (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/body_read_failure (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/body_deadline (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/redirect (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/server_unavailable (0.00s)
+PASS
+ok  	goodsentry/internal/notify	1.040s

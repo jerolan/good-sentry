@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-016 (Discord como proveedor específico). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-019 (formato de Microsoft Teams). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1884,9 +1884,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-013](../SPEC.md#close-alertas-013) | Slack incoming webhooks: Provider-specific alerts are independent of SSL certificate monitors and account reco… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-014](../SPEC.md#close-alertas-014) | Slack incoming webhooks: Add explicit recipient type slack using the same destination admission as webhook: an… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-015](../SPEC.md#close-alertas-015) | Slack incoming webhooks: Additive034_slack_alerts.sql expands only alert_deliveries_recipient_type_check to al… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-016](../SPEC.md#close-alertas-016) | Slack incoming webhooks: Use Slack's incoming webhook JSON contract(https://docs.slack.dev/messaging/sending-m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-017](../SPEC.md#close-alertas-017) | Slack incoming webhooks: The summary is GoodSentry: rule name, then a Project line. Frequency adds the optiona… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-018](../SPEC.md#close-alertas-018) | Slack incoming webhooks: Keep POST, JSON content type and the two existing GoodSentry identity headers for Sla… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-016](../SPEC.md#close-alertas-016) | Slack incoming webhooks: Use Slack's incoming webhook JSON contract(https://docs.slack.dev/messaging/sending-m… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-017](../SPEC.md#close-alertas-017) | Slack incoming webhooks: The summary is GoodSentry: rule name, then a Project line. Frequency adds the optiona… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-018](../SPEC.md#close-alertas-018) | Slack incoming webhooks: Keep POST, JSON content type and the two existing GoodSentry identity headers for Sla… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-019](../SPEC.md#close-alertas-019) | Slack incoming webhooks: Slack rate-limit responses(https://docs.slack.dev/apis/web-api/rate-limits/) include… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-020](../SPEC.md#close-alertas-020) | Slack incoming webhooks: Expose Slack incoming webhook as a recipient choice in the existing original Alert di… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-021](../SPEC.md#close-alertas-021) | Slack incoming webhooks: Pure owning checks cover configured Slack acceptance/deduplication/URL rejection, act… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4555,6 +4555,39 @@ preexistentes se conservan.
 Evidencia: `test-results/closure-20261025/alertas-014-015-go.log` con los
 owners de validación de destinos Slack, entrega por proveedor y migración, y
 `alertas-slack.json` para la entrega real con el tipo explícito.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: mensaje y reconocimiento de Slack
+
+Selección registrada antes de trabajar: CLOSE-alertas-016 a -018. Candidata
+`157d104`.
+
+Resultado observado: los owners del mensaje de Slack pasan con `-race` (38
+subpruebas) y describen el contrato exacto. La carga útil lleva `text`
+accesible, `mrkdwn:false`, `parse:"none"`, `unfurl_links:false` y
+`unfurl_media:false`, sin `link_names`, `channel` ni `username`, y dos
+bloques de sección: el primero con `plain_text` y `emoji:false` para el
+resumen, el segundo con `mrkdwn` y `verbatim:true` para un enlace manual
+etiquetado «View in GoodSentry». El texto de respaldo concatena el resumen y la
+URL completa con ampersands y corchetes convertidos en entidades. El nombre de
+regla, proyecto, issue, entorno y monitor permanecen en texto plano; la URL se
+canonicaliza primero (espacios y prefijos Unicode) y después se codifican
+corchetes y barras verticales. El resumen sigue el formato por tipo —frecuencia
+con issue opcional y conteo/ventana, caída y recuperación con su línea de
+estado, prueba con «Test notification»— más entorno opcional, instante UTC y
+entrega, truncado a 3000 caracteres Unicode con elipsis y ambos textos dentro
+del límite 1..3000. Un enlace relativo, con credenciales, fragmento, demasiado
+largo o que crece al escapar, y un contexto ausente o no soportado, producen
+`invalid_payload` permanente. La respuesta de Slack solo acepta HTTP 200 cuyo
+cuerpo, recortado, sea exactamente `ok`; un 2xx distinto es fallo permanente
+`slack_response`, un cuerpo mayor de 4096 bytes o inesperado también, y los
+fallos de lectura, red o plazo usan la clasificación de reintento existente, sin
+revelar el cuerpo. Los webhooks genéricos conservan su semántica por 2xx.
+
+Evidencia: `test-results/closure-20261025/alertas-016-017-go.log` y la captura
+real de `alertas-slack.json`, cuyo cuerpo incluye los controles y bloques
+descritos.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

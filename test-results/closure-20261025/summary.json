@@ -3063,6 +3063,30 @@
         "alertas-014-015-go.log",
         "alertas-slack.json"
       ]
+    },
+    "CLOSE-alertas-016": {
+      "evidence": "vigente",
+      "scope": "Slack message structure, summary formatting bounds and acknowledgment semantics",
+      "evidence_files": [
+        "alertas-016-017-go.log",
+        "alertas-slack.json"
+      ]
+    },
+    "CLOSE-alertas-017": {
+      "evidence": "vigente",
+      "scope": "Slack message structure, summary formatting bounds and acknowledgment semantics",
+      "evidence_files": [
+        "alertas-016-017-go.log",
+        "alertas-slack.json"
+      ]
+    },
+    "CLOSE-alertas-018": {
+      "evidence": "vigente",
+      "scope": "Slack message structure, summary formatting bounds and acknowledgment semantics",
+      "evidence_files": [
+        "alertas-016-017-go.log",
+        "alertas-slack.json"
+      ]
     }
   },
   "commands": [
