@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "checks": [
+    "Selected merge produces one root plus the unselected issue",
+    "Original-group separation succeeds with confirmation"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/merge-ui/merge-separation-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/merge-ui/merge-separation-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/merge-ui/merge-separation-1440.png"
+  ],
+  "pageErrors": []
+}

@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-120 (rutas/UI de merge). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-127 (release/next-release resolution). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1654,13 +1654,13 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-117](../SPEC.md#close-errores-117) | Native merge, original partitions and unmerge: Merge/unmerge locks current organization membership FOR SHARE,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-118](../SPEC.md#close-errores-118) | Native merge, original partitions and unmerge: The surviving root retains status, assignment, resolution/regre… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-119](../SPEC.md#close-errores-119) | Native merge, original partitions and unmerge: Comments and activities remain on their original issue IDs. Rea… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-120](../SPEC.md#close-errores-120) | Native merge, original partitions and unmerge: Native POST /api/v1/organizations/{org}/issues/merge accepts ex… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-121](../SPEC.md#close-errores-121) | Native merge, original partitions and unmerge: Native POST /api/v1/issues/{issue}/unmerge accepts exactly {ori… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-122](../SPEC.md#close-errores-122) | Native merge, original partitions and unmerge: All grouping mutations use the existing session/CSRF controls a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-123](../SPEC.md#close-errores-123) | Native merge, original partitions and unmerge: GET /api/v1/issues/{issue}/origins returns {data,total,page,pag… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-124](../SPEC.md#close-errores-124) | Native merge, original partitions and unmerge: The store owns MergeIssues(ctx,userID,orgSlug,ids) returning Is… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-125](../SPEC.md#close-errores-125) | Native merge, original partitions and unmerge: The original responsive issue list adds member checkboxes and m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-126](../SPEC.md#close-errores-126) | Native merge, original partitions and unmerge: Owning PostgreSQL tests prove partition/raw preservation, flatt… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-120](../SPEC.md#close-errores-120) | Native merge, original partitions and unmerge: Native POST /api/v1/organizations/{org}/issues/merge accepts ex… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-121](../SPEC.md#close-errores-121) | Native merge, original partitions and unmerge: Native POST /api/v1/issues/{issue}/unmerge accepts exactly {ori… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-122](../SPEC.md#close-errores-122) | Native merge, original partitions and unmerge: All grouping mutations use the existing session/CSRF controls a… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-123](../SPEC.md#close-errores-123) | Native merge, original partitions and unmerge: GET /api/v1/issues/{issue}/origins returns {data,total,page,pag… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-124](../SPEC.md#close-errores-124) | Native merge, original partitions and unmerge: The store owns MergeIssues(ctx,userID,orgSlug,ids) returning Is… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-125](../SPEC.md#close-errores-125) | Native merge, original partitions and unmerge: The original responsive issue list adds member checkboxes and m… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-126](../SPEC.md#close-errores-126) | Native merge, original partitions and unmerge: Owning PostgreSQL tests prove partition/raw preservation, flatt… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-127](../SPEC.md#close-errores-127) | Native release-anchored and next-release resolution: Complete both native release-resolution modes with the ex… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-128](../SPEC.md#close-errores-128) | Native release-anchored and next-release resolution: Native session/CSRF PATCH issue adds resolution, requirin… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-129](../SPEC.md#close-errores-129) | Native release-anchored and next-release resolution: Omitted resolution preserves an already resolved policy;… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3988,6 +3988,27 @@ Evidencia: `test-results/closure-20261025/errores-113-119.log`.
 
 Siguiente acción: CLOSE-errores-120 (rutas nativas merge/unmerge y UI de
 selección).
+
+### Ejecución 2026-10-26: rutas y UI de merge/unmerge
+
+Selección registrada antes de trabajar: CLOSE-errores-120 a -126. Candidata
+`0072d90`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners HTTP/store y un contrato de navegador.
+
+Resultado observado: POST merge acepta exactamente `issueIds` y devuelve el
+root/isChanged; POST unmerge acepta exactamente `originIds` y devuelve las
+particiones separadas; ambas usan sesión/CSRF/membership y rechazan IDs
+duplicados/no canónicos/ajenos. GET origins devuelve data/total/page/páginas y
+búsqueda; el store expone `MergeIssues`/`UnmergeIssues` con particiones e
+historial. La lista nativa ofrece checkboxes y Merge selected; el detalle
+ofrece Separate selected y confirmación. Chromium fusiona dos issues, deja el
+tercero, separa un grupo original y muestra el outcome, a 320/768/1440 sin
+errores. Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-113-119.log` y
+`merge-ui/`; contrato `tests/compat/issue_merge_browser.mjs`.
+
+Siguiente acción: CLOSE-errores-127 (resolución release-anchored/next-release).
 
 ### Comprobante de integración documental
 

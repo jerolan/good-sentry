@@ -2176,6 +2176,76 @@
       "evidence_files": [
         "errores-113-119.log"
       ]
+    },
+    "CLOSE-errores-120": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge routes, origins API, browser selection and owning tests",
+      "evidence_files": [
+        "errores-113-119.log",
+        "merge-ui/report.json",
+        "merge-ui/*.png",
+        "tests/compat/issue_merge_browser.mjs"
+      ]
+    },
+    "CLOSE-errores-121": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge routes, origins API, browser selection and owning tests",
+      "evidence_files": [
+        "errores-113-119.log",
+        "merge-ui/report.json",
+        "merge-ui/*.png",
+        "tests/compat/issue_merge_browser.mjs"
+      ]
+    },
+    "CLOSE-errores-122": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge routes, origins API, browser selection and owning tests",
+      "evidence_files": [
+        "errores-113-119.log",
+        "merge-ui/report.json",
+        "merge-ui/*.png",
+        "tests/compat/issue_merge_browser.mjs"
+      ]
+    },
+    "CLOSE-errores-123": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge routes, origins API, browser selection and owning tests",
+      "evidence_files": [
+        "errores-113-119.log",
+        "merge-ui/report.json",
+        "merge-ui/*.png",
+        "tests/compat/issue_merge_browser.mjs"
+      ]
+    },
+    "CLOSE-errores-124": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge routes, origins API, browser selection and owning tests",
+      "evidence_files": [
+        "errores-113-119.log",
+        "merge-ui/report.json",
+        "merge-ui/*.png",
+        "tests/compat/issue_merge_browser.mjs"
+      ]
+    },
+    "CLOSE-errores-125": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge routes, origins API, browser selection and owning tests",
+      "evidence_files": [
+        "errores-113-119.log",
+        "merge-ui/report.json",
+        "merge-ui/*.png",
+        "tests/compat/issue_merge_browser.mjs"
+      ]
+    },
+    "CLOSE-errores-126": {
+      "evidence": "vigente",
+      "scope": "native merge/unmerge routes, origins API, browser selection and owning tests",
+      "evidence_files": [
+        "errores-113-119.log",
+        "merge-ui/report.json",
+        "merge-ui/*.png",
+        "tests/compat/issue_merge_browser.mjs"
+      ]
     }
   },
   "commands": [
