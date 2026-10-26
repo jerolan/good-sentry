@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"goodsentry/internal/native"
 	"goodsentry/internal/store"
 )
 
@@ -36,6 +37,10 @@ func TestNativeSDKDemoCrashSymbolicates(t *testing.T) {
 	executable, err := os.ReadFile(binaryPath)
 	if err != nil {
 		t.Fatal(err)
+	}
+	debugObjects := native.ParseDebugObjects(filepath.Base(binaryPath), executable)
+	if len(debugObjects) != 1 || debugObjects[0].DebugID == "" {
+		t.Fatalf("demo ELF must contain one parseable Debug ID, got %+v", debugObjects)
 	}
 
 	var upload bytes.Buffer
@@ -137,7 +142,7 @@ func TestNativeSDKDemoCrashSymbolicates(t *testing.T) {
 				if frame.Function == "goodsentry_demo_crash" && filepath.Base(frame.Filename) == "main.c" && frame.Line > 0 {
 					imageMatched := false
 					for _, image := range payload.DebugMeta.Images {
-						if filepath.Base(image.CodeFile) == filepath.Base(binaryPath) && image.DebugID != "" {
+						if filepath.Base(image.CodeFile) == filepath.Base(binaryPath) && native.DebugKey(image.DebugID) == native.DebugKey(debugObjects[0].DebugID) {
 							imageMatched = true
 							break
 						}
