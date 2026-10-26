@@ -1,11 +1,11 @@
 ---
 id: WF-0002
 title: Fijar la referencia pública de GlitchTip
-status: open
+status: closed
 labels: [wayfinder:research]
 parent: WF-0001
 assignee: jerolan
-claim_session: 01a175c3/research-baseline
+claim_session: null
 blocked_by: []
 ---
 
@@ -22,3 +22,11 @@ sin consultar implementación del servidor Sentry/GlitchTip.
 
 La investigación informa; la referencia y el alcance final quedan pendientes
 de aceptación del usuario. Evidencia en research/glitchtip-baseline.md.
+
+## Resolution comments
+
+25 de octubre de 2026, America/Mexico_City. Investigación factual revisada por el primario.
+
+La investigación identifica v6.2.6 como candidata congelable y una matriz inicial de capacidades. Registra contradicciones oficiales, en particular OTLP, y límites de documentación rolling. El primario contrastó los tags y las dos fuentes OTLP. La selección de referencia y alcance sigue abierta en Acordar los flujos que prueban equivalencia con GlitchTip.
+
+[Evidencia de investigación](research/glitchtip-baseline.md).

@@ -38,7 +38,8 @@ investigación en archivos disjuntos, sin ramas research/ ni PR.
 
 ## Decisions so far
 
-Todavía no se han resuelto tickets de este mapa.
+- [Fijar la referencia pública de GlitchTip](0002-referencia-glitchtip.md): hay una candidata y fuentes delimitadas; su aceptación y discrepancias permanecen como decisiones.
+- [Identificar la evidencia reutilizable de GoodSentry](0003-evidencia-goodsentry.md): existe una fotografía por commit y evidencia reutilizable para continuar sin reconstruir el historial completo.
 
 ## Not yet specified
 
