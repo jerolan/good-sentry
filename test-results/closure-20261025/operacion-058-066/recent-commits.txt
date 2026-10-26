@@ -1,0 +1,12 @@
+d5a8b5b Verify the MCP tool and OAuth family
+63468b6 Record OIDC and admin status boundaries
+1b5efb6 Verify cold span archive owners
+22c8d4d Verify opt-in OpenAPI and administration
+9906f33 Verify the supported management API matrix
+d7288d1 Verify the official sentry-wizard handoff
+00de7c3 Verify approved browser flows at three widths
+02629be Close feedback and attachment umbrella rows
+73f5e0d Verify browser SDK error flows
+4a3336d Verify Node SDK error flows
+0b11476 Verify Go and Python SDK error flows
+36978f7 Verify browser CSP reporting

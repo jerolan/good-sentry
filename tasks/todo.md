@@ -1499,10 +1499,12 @@ CLOSE-operacion-057 queda vigente por composición de OIDC y administración
 global, conservando abiertos los recibos de proveedores externos.
 CLOSE-mcp-001 a -077 quedan vigentes con la suite MCP fresca, el cliente oficial
 go-sdk 1.8.0 y la aceptación pública histórica como apoyo.
+CLOSE-operacion-058 a -066 quedan vigentes con harnesses, layout, estilo, fuzz,
+SDKs y verificación; 067 espera publicación/registro autorizados.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-058. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-067. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2122,15 +2124,15 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-057](../SPEC.md#close-mcp-057) | MCP OAuth authorization: MCP Bearer denial changes from bare WWW-Authenticate: Bearer to include canonical res… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-059](../SPEC.md#close-mcp-059) | MCP OAuth authorization: Acceptance runs real HTTP/PostgreSQL and the official Go MCP client/OAuth handler. It… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-058](../SPEC.md#close-operacion-058) | Commands and source layout: The external JavaScript artifact acceptance uses official sentry-cli3.8.0 and Node… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-059](../SPEC.md#close-operacion-059) | Commands and source layout: The issue-query SDK acceptance consumes a separate mode0600 fixture with the same… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-060](../SPEC.md#close-operacion-060) | Commands and source layout: The browser fixture additionally supplies disposable owner login credentials, the… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-061](../SPEC.md#close-operacion-061) | Commands and source layout: cmd/goodsentry owns composition and lifecycle. internal/config owns environment pa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-062](../SPEC.md#close-operacion-062) | Commands and source layout: Use gofmt, ordinary Go errors with context, parameterized SQL and explicit context… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-063](../SPEC.md#close-operacion-063) | Verification and delivery: Protect protocol parsing with table cases and fuzzing for binary framing, decompres… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-064](../SPEC.md#close-operacion-064) | Verification and delivery: Exercise pinned official Go, Python, Node and browser Sentry SDKs against the runni… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-065](../SPEC.md#close-operacion-065) | Verification and delivery: Each new test must identify the consumer contract, a credible regression, the gap i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-066](../SPEC.md#close-operacion-066) | Verification and delivery: Always preserve clean-room provenance, user scope, existing controls and data. Ask… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-058](../SPEC.md#close-operacion-058) | Commands and source layout: The external JavaScript artifact acceptance uses official sentry-cli3.8.0 and Node… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-059](../SPEC.md#close-operacion-059) | Commands and source layout: The issue-query SDK acceptance consumes a separate mode0600 fixture with the same… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-060](../SPEC.md#close-operacion-060) | Commands and source layout: The browser fixture additionally supplies disposable owner login credentials, the… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-061](../SPEC.md#close-operacion-061) | Commands and source layout: cmd/goodsentry owns composition and lifecycle. internal/config owns environment pa… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-062](../SPEC.md#close-operacion-062) | Commands and source layout: Use gofmt, ordinary Go errors with context, parameterized SQL and explicit context… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-063](../SPEC.md#close-operacion-063) | Verification and delivery: Protect protocol parsing with table cases and fuzzing for binary framing, decompres… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-064](../SPEC.md#close-operacion-064) | Verification and delivery: Exercise pinned official Go, Python, Node and browser Sentry SDKs against the runni… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-065](../SPEC.md#close-operacion-065) | Verification and delivery: Each new test must identify the consumer contract, a credible regression, the gap i… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-066](../SPEC.md#close-operacion-066) | Verification and delivery: Always preserve clean-room provenance, user scope, existing controls and data. Ask… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-207](../SPEC.md#close-errores-207) | Current authorized delivery and compatible attachments (2026-10-18): Implement public Sentry attachment list/r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-208](../SPEC.md#close-errores-208) | Current authorized delivery and compatible attachments (2026-10-18): Lists cap projected filename to 2048 Unic… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-067](../SPEC.md#close-operacion-067) | Current authorized delivery and compatible attachments (2026-10-18): Simplify the README and move all detailed… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9436,7 +9438,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-operacion-058. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-operacion-067. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9456,7 +9458,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-058. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-067. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9476,7 +9478,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-058. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-067. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9507,7 +9509,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-067. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9536,7 +9538,7 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-067. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Node 11.7.0
@@ -9565,7 +9567,7 @@ Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-067. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Browser 11.7.0
@@ -9594,7 +9596,7 @@ Evidencia: `test-results/closure-20261025/errores-218-219/` con el fixture, el
 hash del bundle, las capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-067. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: filas paraguas de conservación
@@ -9611,7 +9613,7 @@ composición de owners frescos e históricos ya registrados.
 
 Límites registrados: las capturas de navegador de 179/181 y 196–198/203 son
 históricas y se repiten en la candidata final; 206, la copia de 4569 filas y el
-CI público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
+CI público siguen pendientes. Siguiente acción: CLOSE-operacion-067. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: navegador real a 320, 768 y 1440
@@ -9664,7 +9666,7 @@ resultado del CLI, el informe de navegador, capturas, CI/imagen históricos y
 `summary.json`.
 
 Límites registrados: las aceptaciones de CLI/navegador/CI son históricas y se
-repiten en la candidata final. Siguiente acción: CLOSE-operacion-058. El producto
+repiten en la candidata final. Siguiente acción: CLOSE-operacion-067. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: matriz de API de gestión y SDKs
@@ -9740,7 +9742,7 @@ Evidencia: `test-results/closure-20261025/operacion-049-055/` con logs,
 Límites registrados: CLOSE-operacion-056 sigue abierto porque exige la imagen
 con volumen limpio a través de archivo/consulta/reinicio/expiración, S3 real o
 compatible, suite completa con race/vet/build, CI público e imágenes
-publicadas. Siguiente acción: CLOSE-operacion-058. El producto sigue incompleto.
+publicadas. Siguiente acción: CLOSE-operacion-067. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: estado de OIDC y administración global
 
@@ -9787,7 +9789,37 @@ configuración y recibos públicos históricos.
 
 Límites registrados: MCP sigue apagado por defecto; la imagen final y el CI
 coincidente se repiten en la candidata final. Siguiente acción:
-CLOSE-operacion-058. El producto sigue incompleto.
+CLOSE-operacion-067. El producto sigue incompleto.
+
+### Ejecución 2026-10-26: layout, estilo, fuzz y verificación
+
+Selección registrada antes de trabajar: CLOSE-operacion-058 a -066. Revisión
+`d5a8b5b`; se compusieron los harnesses ya aceptados y se repitieron las
+comprobaciones de código y fuzz.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 058 | CLI 3.8.0 + Node 11.7.0 con dos proyectos y fixture privado | `artifact-cli-sdk-report.json`; `tests/compat/artifact_cli_sdk.mjs` |
+| 059 | 33 eventos SDK Node, seed/orden y handoff de navegador | `issues-sdk-report.json`; `tests/compat/issues_sdk.mjs` |
+| 060 | Fixture de navegador con credenciales desechables y flujos Chromium | `tests/compat/browser.mjs`; `operacion-097-099/report.json` |
+| 061 | `cmd/goodsentry` y ownership por `config/protocol/event/store/server/jobs`; clientes en `tests/compat` | `layout.txt` |
+| 062 | gofmt, errores con contexto, SQL parametrizado y `context` | `gofmt.txt` vacío; `vet.log`; `build.log` |
+| 063 | Tablas y fuzz de framing/descompresión; PostgreSQL real para persistencia y concurrencia | `fuzz-envelope.log` (38,667 ejecuciones); `fuzz-sourcemap.log` (242,474) |
+| 064 | SDKs oficiales, transacciones/logs/adjuntos, source maps, alertas, uptime, retención, navegador y contenedor/reinicio | Familias `errores-212-219`, `operacion-097-099` y evidencias ya registradas |
+| 065 | Contratos de test, fronteras observables, fallos visibles y commits atómicos | `test-audit-owners.txt`; `recent-commits.txt`; `failure.png` conservado |
+| 066 | Clean-room, datos/controles existentes, sin secretos ni publicación externa | `git status` solo con el smoke ajeno; credenciales en `/tmp` desechable; sin push |
+
+Resultado observado: gofmt, vet y build pasan; los fuzzers de envelope y source
+map pasan en 6.065 s y 5.132 s. Los harnesses de artefactos e issues conservan
+sus informes `ok:true`; la suite de navegador 320/768/1440 sigue vigente.
+
+Evidencia: `test-results/closure-20261025/operacion-058-066/` con logs, layout,
+informes y `summary.json`.
+
+Límites registrados: CLOSE-operacion-067 sigue abierto porque la publicación
+actual del registro y la verificación remota multiarquitectura requieren
+autorización externa. Siguiente acción: CLOSE-operacion-067. El producto sigue
+incompleto.
 
 ### Comprobante de integración documental
 
