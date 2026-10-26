@@ -1,0 +1,571 @@
+{
+  "ok": true,
+  "run": "mvpel1k0-a1dacc0603",
+  "cliCommands": [
+    {
+      "name": "cli-version",
+      "args": [
+        "--version"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "sentry-cli 3.8.0\n",
+      "stderr": ""
+    },
+    {
+      "name": "inject",
+      "args": [
+        "sourcemaps",
+        "inject",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Searching /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist\n> Found 2 files\n> Analyzing 2 sources\n> Injecting debug ids\n\nSource Map Debug ID Injection Report\n  Modified: The following source files have been modified to have debug ids\n    69af118d-6def-5b6e-a766-0fffd783cf12 - /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js\n  Modified: The following sourcemap files have been modified to have debug ids\n    69af118d-6def-5b6e-a766-0fffd783cf12 - /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js.map\n\n",
+      "stderr": "  INFO    2026-10-26 09:20:13.546658724 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"inject\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist\"\n  INFO    2026-10-26 09:20:13.547735837 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js.map (446 bytes)\n  INFO    2026-10-26 09:20:13.547807837 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js (139 bytes)\n  INFO    2026-10-26 09:20:13.547968206 -06:00 Analyzing completed in 0s\n"
+    },
+    {
+      "name": "upload-debug-only",
+      "args": [
+        "sourcemaps",
+        "upload",
+        "--wait",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Found 2 files\n> Analyzing 2 sources\n> Rewriting sources\n> Adding source map references\n> Bundled 2 files for upload\n> Bundle ID: c28f3194-71d2-5814-8c4e-1b190bba2e9c\n> Uploaded files to Sentry\n> File processing complete\n> Organization: sdk-026\n> Projects: sdk-app\n> Release: None\n> Dist: None\n> Upload type: artifact bundle\n\nSource Map Upload Report\n  Scripts\n    ~/app.js (sourcemap at app.js.map, debug id 69af118d-6def-5b6e-a766-0fffd783cf12)\n  Source Maps\n    ~/app.js.map (debug id 69af118d-6def-5b6e-a766-0fffd783cf12)\n",
+      "stderr": "  INFO    2026-10-26 09:20:13.556905580 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"upload\" \"--wait\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist\"\n  INFO    2026-10-26 09:20:13.564691203 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js.map (497 bytes)\n  INFO    2026-10-26 09:20:13.564776323 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js (497 bytes)\n  INFO    2026-10-26 09:20:13.564891052 -06:00 Analyzing completed in 0s\n  INFO    2026-10-26 09:20:13.564954041 -06:00 Rewriting completed in 0s\n  INFO    2026-10-26 09:20:13.565835587 -06:00 Bundling completed in 0s\n  INFO    2026-10-26 09:20:13.565895267 -06:00 Optimizing completed in 0s\n  INFO    2026-10-26 09:20:13.572868841 -06:00 using 'gzip' compression for chunk upload\n  INFO    2026-10-26 09:20:13.586784627 -06:00 Uploading completed in 0.013s\n  INFO    2026-10-26 09:20:13.603415357 -06:00 Processing completed in 0.016s\n",
+      "bundleId": "c28f3194-71d2-5814-8c4e-1b190bba2e9c"
+    },
+    {
+      "name": "upload-duplicate",
+      "args": [
+        "sourcemaps",
+        "upload",
+        "--wait",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Found 2 files\n> Analyzing 2 sources\n> Rewriting sources\n> Adding source map references\n> Bundled 2 files for upload\n> Bundle ID: c28f3194-71d2-5814-8c4e-1b190bba2e9c\n> Nothing to upload, all files are on the server\n> File processing complete\n> Organization: sdk-026\n> Projects: sdk-app\n> Release: None\n> Dist: None\n> Upload type: artifact bundle\n\nSource Map Upload Report\n  Scripts\n    ~/app.js (sourcemap at app.js.map, debug id 69af118d-6def-5b6e-a766-0fffd783cf12)\n  Source Maps\n    ~/app.js.map (debug id 69af118d-6def-5b6e-a766-0fffd783cf12)\n",
+      "stderr": "  INFO    2026-10-26 09:20:13.642100477 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"upload\" \"--wait\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist\"\n  INFO    2026-10-26 09:20:13.647116634 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js.map (497 bytes)\n  INFO    2026-10-26 09:20:13.647191603 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js (497 bytes)\n  INFO    2026-10-26 09:20:13.647304852 -06:00 Analyzing completed in 0s\n  INFO    2026-10-26 09:20:13.647368472 -06:00 Rewriting completed in 0s\n  INFO    2026-10-26 09:20:13.648458185 -06:00 Bundling completed in 0.001s\n  INFO    2026-10-26 09:20:13.648520214 -06:00 Optimizing completed in 0s\n  INFO    2026-10-26 09:20:13.670821434 -06:00 Processing completed in 0.011s\n",
+      "bundleId": "c28f3194-71d2-5814-8c4e-1b190bba2e9c"
+    },
+    {
+      "name": "upload-release-dist",
+      "args": [
+        "sourcemaps",
+        "upload",
+        "--wait",
+        "--release",
+        "goodsentry-artifact-cli-mvpel1k0-a1dacc0603",
+        "--dist",
+        "web",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Found 2 files\n> Analyzing 2 sources\n> Rewriting sources\n> Adding source map references\n> Bundled 2 files for upload\n> Bundle ID: c28f3194-71d2-5814-8c4e-1b190bba2e9c\n> Uploaded files to Sentry\n> File processing complete\n> Organization: sdk-026\n> Projects: sdk-app\n> Release: goodsentry-artifact-cli-mvpel1k0-a1dacc0603\n> Dist: web\n> Upload type: artifact bundle\n\nSource Map Upload Report\n  Scripts\n    ~/app.js (sourcemap at app.js.map, debug id 69af118d-6def-5b6e-a766-0fffd783cf12)\n  Source Maps\n    ~/app.js.map (debug id 69af118d-6def-5b6e-a766-0fffd783cf12)\n",
+      "stderr": "  INFO    2026-10-26 09:20:13.781953654 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"upload\" \"--wait\" \"--release\" \"goodsentry-artifact-cli-mvpel1k0-a1dacc0603\" \"--dist\" \"web\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist\"\n  INFO    2026-10-26 09:20:13.786657282 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js.map (497 bytes)\n  INFO    2026-10-26 09:20:13.786743552 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js (497 bytes)\n  INFO    2026-10-26 09:20:13.786872381 -06:00 Analyzing completed in 0s\n  INFO    2026-10-26 09:20:13.786936400 -06:00 Rewriting completed in 0s\n  INFO    2026-10-26 09:20:13.787792145 -06:00 Bundling completed in 0s\n  INFO    2026-10-26 09:20:13.787852014 -06:00 Optimizing completed in 0s\n  INFO    2026-10-26 09:20:13.792650633 -06:00 using 'gzip' compression for chunk upload\n  INFO    2026-10-26 09:20:13.807153906 -06:00 Uploading completed in 0.014s\n  INFO    2026-10-26 09:20:13.831730853 -06:00 Processing completed in 0.024s\n",
+      "bundleId": "c28f3194-71d2-5814-8c4e-1b190bba2e9c"
+    },
+    {
+      "name": "upload-legacy",
+      "args": [
+        "sourcemaps",
+        "upload",
+        "--wait",
+        "--release",
+        "goodsentry-artifact-legacy-mvpel1k0-a1dacc0603",
+        "--dist",
+        "legacy-web",
+        "--url-prefix",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy",
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "> Found 2 files\n> Analyzing 2 sources\n> Rewriting sources\n> Adding source map references\n> Bundled 2 files for upload\n> Bundle ID: 170bfedd-5ecb-5753-932f-da56246ee41b\n> Uploaded files to Sentry\n> File processing complete\n> Organization: sdk-026\n> Projects: sdk-app\n> Release: goodsentry-artifact-legacy-mvpel1k0-a1dacc0603\n> Dist: legacy-web\n> Upload type: artifact bundle\n\nSource Map Upload Report\n  Scripts\n    /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js (sourcemap at app-legacy.js.map)\n  Source Maps\n    /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js.map\n",
+      "stderr": "  INFO    2026-10-26 09:20:13.953020017 -06:00 sentry-cli was invoked with the following command line: \"/tmp/sentry-cli-3.8.0\" \"sourcemaps\" \"upload\" \"--wait\" \"--release\" \"goodsentry-artifact-legacy-mvpel1k0-a1dacc0603\" \"--dist\" \"legacy-web\" \"--url-prefix\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy\" \"/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy\"\n  INFO    2026-10-26 09:20:13.957650768 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js.map (467 bytes)\n  INFO    2026-10-26 09:20:13.957740708 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js (153 bytes)\n  INFO    2026-10-26 09:20:13.957866277 -06:00 Analyzing completed in 0s\n  INFO    2026-10-26 09:20:13.957931636 -06:00 Rewriting completed in 0s\n  INFO    2026-10-26 09:20:13.958798340 -06:00 Bundling completed in 0s\n  INFO    2026-10-26 09:20:13.958859300 -06:00 Optimizing completed in 0s\n  INFO    2026-10-26 09:20:13.963685498 -06:00 using 'gzip' compression for chunk upload\n  INFO    2026-10-26 09:20:13.977866163 -06:00 Uploading completed in 0.014s\n  INFO    2026-10-26 09:20:13.992369048 -06:00 Processing completed in 0.014s\n"
+    }
+  ],
+  "captures": [
+    {
+      "stage": "debug-only",
+      "eventID": "dd691e8686b843f6928a269496846452",
+      "issueId": "1",
+      "projectId": "1",
+      "expectMapped": true,
+      "sdkDebugImage": {
+        "type": "sourcemap",
+        "debug_id": "69af118d-6def-5b6e-a766-0fffd783cf12",
+        "code_file": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js"
+      },
+      "expected": {
+        "sourceName": "original-mvpel1k0-a1dacc0603.js",
+        "lineno": 7,
+        "colno": 1,
+        "message": "GoodSentry artifact SDK mvpel1k0-a1dacc0603",
+        "contextLine": "  throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\");",
+        "preContext": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "postContext": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "expectedRaw": {
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js",
+        "lineno": 3,
+        "colno": 49
+      },
+      "mapped": {
+        "colno": 1,
+        "in_app": true,
+        "lineno": 7,
+        "module": "app",
+        "filename": "original-mvpel1k0-a1dacc0603.js",
+        "function": "artifactFailure",
+        "pre_context": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "context_line": "  throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\");",
+        "post_context": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "raw": {
+        "colno": 49,
+        "in_app": true,
+        "lineno": 3,
+        "module": "app",
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js",
+        "function": "artifactFailure",
+        "pre_context": [
+          "",
+          "!function(){try{var e=\"undefined\"!=typeof window?window:\"undefined\"!=typeof global?global:\"undefined\"!=typeof globalThis?globalThis:\"undefin {snip}"
+        ],
+        "context_line": "module.exports=function artifactFailure(){throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\")};",
+        "post_context": [
+          "//# sourceMappingURL=app.js.map",
+          "",
+          "//# debugId=69af118d-6def-5b6e-a766-0fffd783cf12"
+        ]
+      },
+      "unchanged": null,
+      "release": null,
+      "dist": null
+    },
+    {
+      "stage": "release-dist",
+      "eventID": "6eca69d0e66e4105b3156fd64dc4433f",
+      "issueId": "1",
+      "projectId": "1",
+      "expectMapped": true,
+      "sdkDebugImage": {
+        "type": "sourcemap",
+        "debug_id": "69af118d-6def-5b6e-a766-0fffd783cf12",
+        "code_file": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js"
+      },
+      "expected": {
+        "sourceName": "original-mvpel1k0-a1dacc0603.js",
+        "lineno": 7,
+        "colno": 1,
+        "message": "GoodSentry artifact SDK mvpel1k0-a1dacc0603",
+        "contextLine": "  throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\");",
+        "preContext": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "postContext": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "expectedRaw": {
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js",
+        "lineno": 3,
+        "colno": 49
+      },
+      "mapped": {
+        "colno": 1,
+        "in_app": true,
+        "lineno": 7,
+        "module": "app",
+        "filename": "original-mvpel1k0-a1dacc0603.js",
+        "function": "artifactFailure",
+        "pre_context": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "context_line": "  throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\");",
+        "post_context": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "raw": {
+        "colno": 49,
+        "in_app": true,
+        "lineno": 3,
+        "module": "app",
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js",
+        "function": "artifactFailure",
+        "pre_context": [
+          "",
+          "!function(){try{var e=\"undefined\"!=typeof window?window:\"undefined\"!=typeof global?global:\"undefined\"!=typeof globalThis?globalThis:\"undefin {snip}"
+        ],
+        "context_line": "module.exports=function artifactFailure(){throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\")};",
+        "post_context": [
+          "//# sourceMappingURL=app.js.map",
+          "",
+          "//# debugId=69af118d-6def-5b6e-a766-0fffd783cf12"
+        ]
+      },
+      "unchanged": null,
+      "release": "goodsentry-artifact-cli-mvpel1k0-a1dacc0603",
+      "dist": "web"
+    },
+    {
+      "stage": "wrong-project",
+      "eventID": "b73dc4e5beac4024b54de62d6eb4d21c",
+      "issueId": "2",
+      "projectId": "2",
+      "expectMapped": false,
+      "sdkDebugImage": {
+        "type": "sourcemap",
+        "debug_id": "69af118d-6def-5b6e-a766-0fffd783cf12",
+        "code_file": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js"
+      },
+      "expected": {
+        "sourceName": "original-mvpel1k0-a1dacc0603.js",
+        "lineno": 7,
+        "colno": 1,
+        "message": "GoodSentry artifact SDK mvpel1k0-a1dacc0603",
+        "contextLine": "  throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\");",
+        "preContext": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "postContext": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "expectedRaw": {
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js",
+        "lineno": 3,
+        "colno": 49
+      },
+      "mapped": null,
+      "raw": null,
+      "unchanged": {
+        "colno": 49,
+        "in_app": true,
+        "lineno": 3,
+        "module": "app",
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/dist/app.js",
+        "function": "artifactFailure",
+        "pre_context": [
+          "",
+          "!function(){try{var e=\"undefined\"!=typeof window?window:\"undefined\"!=typeof global?global:\"undefined\"!=typeof globalThis?globalThis:\"undefin {snip}"
+        ],
+        "context_line": "module.exports=function artifactFailure(){throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\")};",
+        "post_context": [
+          "//# sourceMappingURL=app.js.map",
+          "",
+          "//# debugId=69af118d-6def-5b6e-a766-0fffd783cf12"
+        ]
+      },
+      "release": "goodsentry-artifact-cli-mvpel1k0-a1dacc0603",
+      "dist": "web"
+    },
+    {
+      "stage": "legacy-release-dist",
+      "eventID": "7d9c1eb63d254e1ca69e86601682fece",
+      "issueId": "3",
+      "projectId": "1",
+      "expectMapped": true,
+      "sdkDebugImage": null,
+      "expected": {
+        "sourceName": "original-legacy-mvpel1k0-a1dacc0603.js",
+        "lineno": 7,
+        "colno": 1,
+        "message": "GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603",
+        "contextLine": "  throw new Error(\"GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603\");",
+        "preContext": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "postContext": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "expectedRaw": {
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js",
+        "lineno": 1,
+        "colno": 49
+      },
+      "mapped": {
+        "colno": 1,
+        "in_app": true,
+        "lineno": 7,
+        "module": "app-legacy",
+        "filename": "original-legacy-mvpel1k0-a1dacc0603.js",
+        "function": "artifactFailure",
+        "pre_context": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "context_line": "  throw new Error(\"GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603\");",
+        "post_context": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "raw": {
+        "colno": 49,
+        "in_app": true,
+        "lineno": 1,
+        "module": "app-legacy",
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js",
+        "function": "artifactFailure",
+        "pre_context": [],
+        "context_line": "module.exports=function artifactFailure(){throw new Error(\"GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603\")};",
+        "post_context": [
+          "//# sourceMappingURL=app-legacy.js.map"
+        ]
+      },
+      "unchanged": null,
+      "release": "goodsentry-artifact-legacy-mvpel1k0-a1dacc0603",
+      "dist": "legacy-web"
+    },
+    {
+      "stage": "legacy-wrong-version",
+      "eventID": "efac6a9454de4f968e42637c88c59ea6",
+      "issueId": "4",
+      "projectId": "1",
+      "expectMapped": false,
+      "sdkDebugImage": null,
+      "expected": {
+        "sourceName": "original-legacy-mvpel1k0-a1dacc0603.js",
+        "lineno": 7,
+        "colno": 1,
+        "message": "GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603",
+        "contextLine": "  throw new Error(\"GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603\");",
+        "preContext": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "postContext": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "expectedRaw": {
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js",
+        "lineno": 1,
+        "colno": 49
+      },
+      "mapped": null,
+      "raw": null,
+      "unchanged": {
+        "colno": 49,
+        "in_app": true,
+        "lineno": 1,
+        "module": "app-legacy",
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js",
+        "function": "artifactFailure",
+        "pre_context": [],
+        "context_line": "module.exports=function artifactFailure(){throw new Error(\"GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603\")};",
+        "post_context": [
+          "//# sourceMappingURL=app-legacy.js.map"
+        ]
+      },
+      "release": "goodsentry-artifact-legacy-mvpel1k0-a1dacc0603-wrong",
+      "dist": "legacy-web"
+    },
+    {
+      "stage": "legacy-wrong-dist",
+      "eventID": "3deb88246c914fbe9295aefbb1197e87",
+      "issueId": "4",
+      "projectId": "1",
+      "expectMapped": false,
+      "sdkDebugImage": null,
+      "expected": {
+        "sourceName": "original-legacy-mvpel1k0-a1dacc0603.js",
+        "lineno": 7,
+        "colno": 1,
+        "message": "GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603",
+        "contextLine": "  throw new Error(\"GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603\");",
+        "preContext": [
+          "const component = 'artifact-proof';",
+          "function originalFailure() {",
+          "  const precedingValue = 'independent source context';",
+          "  const order = 42;",
+          "  // Known line immediately before the real exception."
+        ],
+        "postContext": [
+          "}",
+          "module.exports = originalFailure;"
+        ]
+      },
+      "expectedRaw": {
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js",
+        "lineno": 1,
+        "colno": 49
+      },
+      "mapped": null,
+      "raw": null,
+      "unchanged": {
+        "colno": 49,
+        "in_app": true,
+        "lineno": 1,
+        "module": "app-legacy",
+        "filename": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js",
+        "function": "artifactFailure",
+        "pre_context": [],
+        "context_line": "module.exports=function artifactFailure(){throw new Error(\"GoodSentry legacy artifact SDK mvpel1k0-a1dacc0603\")};",
+        "post_context": [
+          "//# sourceMappingURL=app-legacy.js.map"
+        ]
+      },
+      "release": "goodsentry-artifact-legacy-mvpel1k0-a1dacc0603",
+      "dist": "legacy-web-wrong"
+    }
+  ],
+  "sdkVersion": "11.7.0",
+  "cliVersion": "3.8.0",
+  "project": {
+    "id": "1",
+    "slug": "sdk-app"
+  },
+  "fileDebugId": "69af118d-6def-5b6e-a766-0fffd783cf12",
+  "expected": {
+    "sourceName": "original-mvpel1k0-a1dacc0603.js",
+    "lineno": 7,
+    "colno": 1,
+    "message": "GoodSentry artifact SDK mvpel1k0-a1dacc0603",
+    "contextLine": "  throw new Error(\"GoodSentry artifact SDK mvpel1k0-a1dacc0603\");",
+    "preContext": [
+      "const component = 'artifact-proof';",
+      "function originalFailure() {",
+      "  const precedingValue = 'independent source context';",
+      "  const order = 42;",
+      "  // Known line immediately before the real exception."
+    ],
+    "postContext": [
+      "}",
+      "module.exports = originalFailure;"
+    ]
+  },
+  "releaseVariant": {
+    "version": "goodsentry-artifact-cli-mvpel1k0-a1dacc0603",
+    "dist": "web"
+  },
+  "mapMetadata": {
+    "first": [
+      {
+        "id": "1",
+        "name": "~/app.js.map",
+        "release": "",
+        "dist": "",
+        "debugId": "69af118d6def5b6ea7660fffd783cf12",
+        "checksum": "2bafcd83c83c9a2c06d26539914616e9d627d6f0cc58710c3aab48cac6dc5a91",
+        "size": 497,
+        "dateCreated": "2026-10-26T09:20:13.596203-06:00",
+        "codeFiles": [
+          "~/app.js"
+        ]
+      }
+    ],
+    "duplicate": [
+      {
+        "id": "1",
+        "name": "~/app.js.map",
+        "release": "",
+        "dist": "",
+        "debugId": "69af118d6def5b6ea7660fffd783cf12",
+        "checksum": "2bafcd83c83c9a2c06d26539914616e9d627d6f0cc58710c3aab48cac6dc5a91",
+        "size": 497,
+        "dateCreated": "2026-10-26T09:20:13.596203-06:00",
+        "codeFiles": [
+          "~/app.js"
+        ]
+      }
+    ],
+    "releaseDist": [
+      {
+        "id": "1",
+        "name": "~/app.js.map",
+        "release": "",
+        "dist": "",
+        "debugId": "69af118d6def5b6ea7660fffd783cf12",
+        "checksum": "2bafcd83c83c9a2c06d26539914616e9d627d6f0cc58710c3aab48cac6dc5a91",
+        "size": 497,
+        "dateCreated": "2026-10-26T09:20:13.596203-06:00",
+        "codeFiles": [
+          "~/app.js"
+        ]
+      },
+      {
+        "id": "4",
+        "name": "~/app.js.map",
+        "release": "goodsentry-artifact-cli-mvpel1k0-a1dacc0603",
+        "dist": "web",
+        "debugId": "69af118d6def5b6ea7660fffd783cf12",
+        "checksum": "2bafcd83c83c9a2c06d26539914616e9d627d6f0cc58710c3aab48cac6dc5a91",
+        "size": 497,
+        "dateCreated": "2026-10-26T09:20:13.815971-06:00",
+        "codeFiles": [
+          "~/app.js"
+        ]
+      }
+    ]
+  },
+  "legacyMetadata": [
+    {
+      "id": "5",
+      "name": "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js.map",
+      "release": "goodsentry-artifact-legacy-mvpel1k0-a1dacc0603",
+      "dist": "legacy-web",
+      "debugId": "",
+      "checksum": "8385a4b2ae6172376630d2b650d5c93880cb649094cd7338662ec9b4b146f212",
+      "size": 467,
+      "dateCreated": "2026-10-26T09:20:13.985521-06:00",
+      "codeFiles": [
+        "/home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js"
+      ]
+    }
+  ]
+}

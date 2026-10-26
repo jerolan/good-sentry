@@ -1,0 +1,19 @@
+> Found 2 files
+> Analyzing 2 sources
+> Rewriting sources
+> Adding source map references
+> Bundled 2 files for upload
+> Bundle ID: 170bfedd-5ecb-5753-932f-da56246ee41b
+> Uploaded files to Sentry
+> File processing complete
+> Organization: sdk-026
+> Projects: sdk-app
+> Release: goodsentry-artifact-legacy-mvpel1k0-a1dacc0603
+> Dist: legacy-web
+> Upload type: artifact bundle
+
+Source Map Upload Report
+  Scripts
+    /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js (sourcemap at app-legacy.js.map)
+  Source Maps
+    /home/dev/projects/SentryGo/test-results/closure-20261025/artifact-cli-sdk-026/build-mvpel1k0-a1dacc0603/legacy/app-legacy.js.map

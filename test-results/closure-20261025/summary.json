@@ -3816,6 +3816,14 @@
       "evidence_files": [
         "sourcemaps-025-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-026": {
+      "evidence": "vigente",
+      "scope": "Node 11.7.0 and sentry-cli 3.8.0 injection, upload, mapped capture and restart persistence",
+      "evidence_files": [
+        "artifact-cli-sdk-026/report.json",
+        "sourcemaps-026-restart.log"
+      ]
     }
   },
   "commands": [

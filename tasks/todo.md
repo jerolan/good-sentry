@@ -1453,8 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -025 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-026. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-023 a -026 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-027. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -2104,7 +2104,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-219](../SPEC.md#close-errores-219) | Browser 11.7.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-040](../SPEC.md#close-rendimiento-040) | Browser 11.7.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegaci… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-logs-032](../SPEC.md#close-logs-032) | Browser 11.7.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enla… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-026](../SPEC.md#close-sourcemaps-026) | Node 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar error r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-026](../SPEC.md#close-sourcemaps-026) | Node 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar error r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-027](../SPEC.md#close-sourcemaps-027) | Browser 11.7.0 y sentry-cli 3.8.0: preparar/subir los artefactos del código minificado probado y capturar erro… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-041](../SPEC.md#close-rendimiento-041) | Comprobar cantidades y errores contra un conjunto controlado y resultados esperados explícitos, conservando lo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-042](../SPEC.md#close-rendimiento-042) | Comprobar latencias y percentiles contratados contra un conjunto controlado y resultados esperados explícitos,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6791,6 +6791,38 @@ Evidencia: `test-results/closure-20261025/sourcemaps-025-go.log` con 27 passes
 del paquete de artefactos.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: SDK oficial y CLI sobre código minificado
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-026. Candidata
+`b44fc18`.
+
+Resultado observado: el owner externo pasó con Node 11.7.0 y
+`sentry-cli 3.8.0` fijados: inyectó DebugIDs en el build, subió el bundle y una
+variante legacy, repitió la subida y capturó seis excepciones reales con el SDK
+oficial. Las variantes release/dist y debug-ID resuelven la función, archivo,
+línea 7 y contexto originales; las variantes de proyecto, versión y dist
+incorrectos conservan el stack minificado sin mapear. Tras reiniciar el proceso,
+el metadata de mapas sigue visible y el issue mapeado conserva el archivo y
+contexto originales junto con la trama cruda minificada en
+`app-legacy.js`.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| CLI inyecta y sube los artefactos del build | `artifact-cli-sdk-026/report.json` |
+| SDK oficial captura error real con función/archivo/línea/contexto | `artifact-cli-sdk-026/report.json` (`release-dist` y legacy) |
+| Selección por Debug ID o release/dist correcta | `report.json` (`debug-only`, `release-dist`, variantes incorrectas) |
+| Artefacto correcto y aislamiento | `report.json` (`wrong-project`, `legacy-wrong-version`, `legacy-wrong-dist`) |
+| Persistencia tras reinicio | `sourcemaps-026-restart.log` |
+
+Evidencia: `test-results/closure-20261025/artifact-cli-sdk-026/` y
+`sourcemaps-026-restart.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+prueba se ejecuta sobre el binario local; la imagen final queda en el criterio
+de publicación.
 
 ### Comprobante de integración documental
 
