@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-alertas-010. No se declara
+runtime preservado. Siguiente acción: CLOSE-alertas-011. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -8567,6 +8567,26 @@ Evidencia: `test-results/closure-20261025/alertas-009/queue-states.log` y
 Límites registrados: las pruebas de transporte usan receptores locales; la
 entrega externa real pertenece a 010. El CI público y la imagen final siguen
 pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: workers y transporte de alertas
+
+Selección registrada antes de trabajar: CLOSE-alertas-010. Candidata
+`02db1c3`.
+
+| Elemento | Comprobante |
+|---|---|
+| `ALERT_WORKERS` 1..16, timeout 1..60, intentos 1..20 | `internal/config` rechaza fuera de rango y acepta 16/60/20 (`alertas-010/config.log`) |
+| Guarda de red, destinos internos y redirects | `TestWebhookNetworkPolicy` y `TestWebhookResponseBoundsAndCancellation` |
+| SMTP con TLS, STARTTLS, credenciales y cancelación | `TestSMTPDeliveryAndResponses`, `TestSMTPRequiredTLSAndCredentialProtection` y `TestSMTPCancellationAndTimeout` |
+| Consolemail MIME y escritura concurrente | `TestConsoleMailMIMEAndConcurrentWrites` |
+| Cabeceras seguras y límites de nombre | `TestSMTPNamesCannotInjectHeaders` |
+
+Evidencia: `test-results/closure-20261025/alertas-010/config.log` y
+`test-results/closure-20261025/alertas-008/payload-transport.log`.
+
+Límites registrados: el orden de parada de workers antes de cerrar PostgreSQL
+se apoya en el ciclo de vida de `main`; no hay una prueba dedicada de ese
+orden en esta ejecución. El CI público y la imagen final siguen pendientes.
 
 ### Comprobante de integración documental
 

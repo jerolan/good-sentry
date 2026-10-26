@@ -4347,6 +4347,14 @@
         "alertas-008/payload-transport.log"
       ]
     },
+    "CLOSE-alertas-010": {
+      "evidence": "vigente",
+      "scope": "alert worker limits, webhook network guard, SMTP TLS/credential protection, consolemail MIME and bounded transports",
+      "evidence_files": [
+        "alertas-010/config.log",
+        "alertas-008/payload-transport.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
