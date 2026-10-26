@@ -4198,6 +4198,14 @@
         "uptime-015/heartbeat-timing.log"
       ]
     },
+    "CLOSE-uptime-017": {
+      "evidence": "vigente",
+      "scope": "claim leases with fencing, invalidation on pause/update/delete, expired-lease recovery, worker limits and clean shutdown without outage",
+      "evidence_files": [
+        "uptime-013/scheduler-store.log",
+        "uptime-017/config-workers.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

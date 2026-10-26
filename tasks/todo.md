@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-017. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-018. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1873,7 +1873,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-016](../SPEC.md#close-uptime-016) | Sentry spans and native telemetry reads: Persist monitor configuration/current state and append-only check his… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013/015) |
-| [CLOSE-uptime-017](../SPEC.md#close-uptime-017) | Sentry spans and native telemetry reads: Claim one due enabled monitor with FOR UPDATE SKIP LOCKED, assign a r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-017](../SPEC.md#close-uptime-017) | Sentry spans and native telemetry reads: Claim one due enabled monitor with FOR UPDATE SKIP LOCKED, assign a r… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013) |
 | [CLOSE-uptime-018](../SPEC.md#close-uptime-018) | Sentry spans and native telemetry reads: An opaque random 128-bit heartbeat capability is exposed as heartbeat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-019](../SPEC.md#close-uptime-019) | Sentry spans and native telemetry reads: Block private, loopback, link-local, unspecified and multicast destin… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-020](../SPEC.md#close-uptime-020) | Sentry spans and native telemetry reads: The Tailwind UI lists monitor status, target, interval and last check… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8171,6 +8171,27 @@ Evidencia: `test-results/closure-20261025/uptime-013/scheduler-store.log` y
 Límites registrados: no se repite la ejecución por no haber cambios en el
 backend; la UI de monitores pertenece a 020. El CI público y la imagen final
 siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: claims, fencing y workers de monitores
+
+Selección registrada antes de trabajar: CLOSE-uptime-017. Se reutilizan las
+pruebas de 013 y se añade la de configuración de workers.
+
+| Elemento | Comprobante |
+|---|---|
+| Claim con lease y token de fencing; pausa/actualización/borrado invalidan | `TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases` |
+| Leases expirados recuperables y completación solo con token vigente | La misma prueba |
+| Workers reales: comprobar, recuperar y detenerse sin registrar cancelación | `TestMonitorWorkersProbeRecoverAndStop` |
+| `MONITOR_WORKERS` 1..16 | `internal/config` rechaza 0 y 17 y acepta 16 (`uptime-017/config-workers.log`) |
+| Logs sin URL, tokens ni credenciales | El scheduler registra identificadores estables; verificado en el código y en la prueba de workers |
+
+Evidencia: `test-results/closure-20261025/uptime-013/scheduler-store.log` y
+`test-results/closure-20261025/uptime-017/config-workers.log`.
+
+Límites registrados: la coordinación se prueba con conexiones competidoras y
+workers en un proceso; no se levantan dos réplicas de aplicación completas en
+esta ejecución. El CI público y la imagen final siguen pendientes para la
+auditoría final.
 
 ### Comprobante de integración documental
 
