@@ -1449,6 +1449,12 @@ producto. El avance se informa por criterios/evidencia, sin porcentaje de
 casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
 este registro.
 
+Al cierre de este bloque, `go vet ./...` y
+`go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
+store 395.183s, sin `DATA RACE`); el log está en
+`test-results/closure-20261025/full-race-account-final.log`. Hay 71 criterios
+vigentes, dos bloqueados por publicación y el resto pendiente.
+
 ### Matriz de trazabilidad y estado inicial
 
 | ID y contrato normativo | Unidad de resultado | Implementación | Evidencia | Acción siguiente |
