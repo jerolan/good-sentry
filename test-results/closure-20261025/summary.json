@@ -3692,6 +3692,16 @@
       "evidence_files": [
         "sourcemaps-009-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-010": {
+      "evidence": "vigente",
+      "scope": "responsive Releases view with lazy module, filters, mutations and URL state",
+      "evidence_files": [
+        "releases-010/report.json",
+        "releases-010/release-list-1440.png",
+        "releases-010/release-detail-1440.png",
+        "releases-010/release-create-1440.png"
+      ]
     }
   },
   "commands": [

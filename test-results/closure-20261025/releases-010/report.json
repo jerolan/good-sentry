@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "checks": [
+    "List shows the seeded releases",
+    "Version filter narrows the list",
+    "Detail keeps UTC context, commits, deployments and survives reload",
+    "Owner edits ref, URL and status",
+    "Owner finalizes with the current UTC instant",
+    "Owner records a completed deployment",
+    "Owner replaces the commit set without a prefilled raw payload",
+    "Owner creates an unreleased version from the UI",
+    "Owner deletes the release with its artifact effect stated",
+    "An open release form closes when the route changes",
+    "Token form offers release writes unchecked"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-list-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-list-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-list-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-detail-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-detail-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-detail-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-create-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-create-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/releases-010/release-create-1440.png"
+  ],
+  "pageErrors": []
+}

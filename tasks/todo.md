@@ -1449,8 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 a -009 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-010. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -010 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-011. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1704,7 +1704,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-007](../SPEC.md#close-sourcemaps-007) | Release lifecycle, commit metadata and deploys: Persist an organization/name repository identity whenever expl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-013](../SPEC.md#close-sourcemaps-013) | Compatible release files: The view is backed by the existing release-scoped source_maps rows, not a duplicate… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6223,6 +6223,42 @@ Evidencia: `test-results/closure-20261025/sourcemaps-009-go.log` y el cambio en
 `internal/store/releases_test.go`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: vista Releases responsive
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-010. Candidata
+`e205b8f`.
+
+Resultado observado: la vista se carga desde el módulo local embebido
+`releases.js`, permitido explícitamente en la lista estática. El propietario ve
+la lista con filtro de versión que la reduce correctamente, abre una release y
+conserva el contexto UTC, proyectos, commits y despliegues tras recargar con la
+versión en la URL. Desde los diálogos edita ref, URL y estado, finaliza con el
+instante UTC actual, registra un despliegue completado eligiendo proyecto,
+sustituye el conjunto de commits sin precargar el JSON crudo, crea una versión
+sin publicar y la borra tras confirmar el efecto declarado sobre los source maps
+de la release. El formulario abierto se cierra al cambiar de ruta mediante el
+historial. El formulario de tokens ofrece `project:releases` sin marcar. Las
+capturas de 320/768/1440 no desbordan la página y no hubo errores de consola.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Módulo local y lista con filtro | `releases-010/report.json`, `release-list-*` |
+| Detalle UTC, proyectos, commits y deploys tras recarga | `release-detail-*` |
+| Edición, finalización, deploy, commits y creación | `report.json` (checks) |
+| Borrado con efecto de artefactos declarado | `report.json` |
+| Cierre de formularios al cambiar de ruta | `report.json` (check añadido) |
+| JSON crudo no precargado | `report.json` |
+| Scope de release sin marcar por defecto | `report.json` |
+
+Evidencia: `test-results/closure-20261025/releases-010/` con `report.json` y
+nueve capturas.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+paginación independiente de commits y deploys con más de una página no se
+ejercitó; la estructura usa parámetros separados y conserva la versión en la URL.
 
 ### Comprobante de integración documental
 
