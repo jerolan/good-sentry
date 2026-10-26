@@ -4190,6 +4190,14 @@
         "uptime-013/scheduler-store.log"
       ]
     },
+    "CLOSE-uptime-016": {
+      "evidence": "vigente",
+      "scope": "append-only check history with raw/confirmed status, transitions, 25-row pages, pause preservation, threshold recovery and deletion of checks",
+      "evidence_files": [
+        "uptime-013/scheduler-store.log",
+        "uptime-015/heartbeat-timing.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

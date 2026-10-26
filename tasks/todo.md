@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-016. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-017. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1872,7 +1872,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-016](../SPEC.md#close-uptime-016) | Sentry spans and native telemetry reads: Persist monitor configuration/current state and append-only check his… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-016](../SPEC.md#close-uptime-016) | Sentry spans and native telemetry reads: Persist monitor configuration/current state and append-only check his… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013/015) |
 | [CLOSE-uptime-017](../SPEC.md#close-uptime-017) | Sentry spans and native telemetry reads: Claim one due enabled monitor with FOR UPDATE SKIP LOCKED, assign a r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-018](../SPEC.md#close-uptime-018) | Sentry spans and native telemetry reads: An opaque random 128-bit heartbeat capability is exposed as heartbeat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-019](../SPEC.md#close-uptime-019) | Sentry spans and native telemetry reads: Block private, loopback, link-local, unspecified and multicast destin… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8148,6 +8148,29 @@ Límites registrados: el borde exacto de igualdad y la ausencia de gracia se
 apoyan en la implementación y en las pruebas de lease/rearme; no se añade un
 cronómetro civil. El CI público y la imagen final siguen pendientes para la
 auditoría final.
+
+### Ejecución 2026-10-26: estado e historial de checks
+
+Selección registrada antes de trabajar: CLOSE-uptime-016. Se reutilizan las
+pruebas de 013 y 015: `git diff f5ea277..10dd171 -- internal cmd static third_party go.mod go.sum Dockerfile`
+no cambia el backend de uptime (el único cambio de producto fue la UI de status
+pages).
+
+| Elemento | Comprobante |
+|---|---|
+| Check con estado, anterior, cambio, inicio/fin, código, tiempo y razón | `TestMonitorThresholdResetRecoveryAndHistory` valida `Up`, `Status`, `PreviousStatus`, `IsChange`, `ResponseTimeMS` 12, `StatusCode`, `Reason` y `StartedAt` ≤ `CompletedAt` |
+| Historial por transiciones y página de 25 | `TestMonitorMembershipProjectScopeAndHistoryPagination` valida 25 filas y `more` |
+| Borrado elimina sus checks | La misma prueba confirma que no queda historial tras borrar |
+| Pausa conserva estado e invalida leases | `TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases` |
+| Umbral y recuperación | `TestMonitorThresholdResetRecoveryAndHistory` |
+| Rearme tras heartbeat | `TestHeartbeatReceiptFencesMissedCheckAndRearms` |
+
+Evidencia: `test-results/closure-20261025/uptime-013/scheduler-store.log` y
+`test-results/closure-20261025/uptime-015/heartbeat-timing.log`.
+
+Límites registrados: no se repite la ejecución por no haber cambios en el
+backend; la UI de monitores pertenece a 020. El CI público y la imagen final
+siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
