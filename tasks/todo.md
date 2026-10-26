@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -095 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-096
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -096 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-097
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1938,7 +1938,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-093](../SPEC.md#close-identidad-093) | Compatible project update and deletion: Real PostgreSQL covers040 token preservation/reopen, org:write issuanc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-094](../SPEC.md#close-identidad-094) | Compatible project update and deletion: PUT /api/0/organizations/{org}/ accepts only OrganizationInSchema {nam… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-095](../SPEC.md#close-identidad-095) | Compatible project update and deletion: POST /api/0/organizations/ is available only when GOODSENTRY_ENABLE_OR… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-096](../SPEC.md#close-identidad-096) | Compatible project update and deletion: Real PostgreSQL covers rename preservation, invalid names and owner/ma… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-096](../SPEC.md#close-identidad-096) | Compatible project update and deletion: Real PostgreSQL covers rename preservation, invalid names and owner/ma… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-044](../SPEC.md#close-operacion-044) | Public repository and product site: The user also explicitly requests Tailwind CSS plus daisyUI for the applic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-045](../SPEC.md#close-operacion-045) | Public repository and product site: Use official daisyUI v5.7.50 standalone daisyui.mjs and daisyui-theme.mjs,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-046](../SPEC.md#close-operacion-046) | Public repository and product site: The user requests publication of the code to https://github.com/jerolan/go… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5399,6 +5399,32 @@ owners de store y HTTP más las pruebas de configuración, y los cambios en
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 prueba atómica de la transacción se apoya en los recuentos y en el esquema de la
 migración; no inyecta un fallo intermedio.
+
+### Ejecución 2026-10-26: aceptación de la vista de organización
+
+Selección registrada antes de trabajar: CLOSE-identidad-096. Candidata
+`4f680b6`.
+
+Resultado observado: la corrida de PostgreSQL y HTTP reúne los owners de
+renombrado con identificador, slug, creación, equipos y proyectos intactos,
+nombres inválidos, límites de propietario, manager, administrador y miembro,
+borrado con cascadas y 404 posterior, además de los límites de creación. En
+Chromium, con sesión de propietario, la vista nativa «Organization» carga el
+nombre real, lo renombra a «Renamed Workspace», el nombre persiste tras recargar
+y aparece en la cabecera y el selector; un miembro ve el aviso de que solo el
+propietario puede borrar y no tiene el botón; el propietario abre el diálogo de
+confirmación y, tras borrar la única organización, la aplicación muestra «No
+organization access». Las cuatro capturas de 320/768/1440 no desbordan la página
+y no hay errores de consola.
+
+Evidencia: `test-results/closure-20261025/identidad-096-go.log` con cuatro
+owners y `test-results/closure-20261025/organization-ui/` con `report.json` y
+doce capturas del renombrado, la vista de miembro, la confirmación y el estado
+sin organización.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. El
+estado posterior al borrado se capturó con una única organización en una base
+desechable.
 
 ### Comprobante de integración documental
 

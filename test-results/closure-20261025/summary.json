@@ -3466,6 +3466,26 @@
       "evidence_files": [
         "identidad-095-go.log"
       ]
+    },
+    "CLOSE-identidad-096": {
+      "evidence": "vigente",
+      "scope": "organization rename persistence, owner-only deletion and no-organization state",
+      "evidence_files": [
+        "identidad-096-go.log",
+        "organization-ui/report.json",
+        "organization-ui/organization-renamed-320.png",
+        "organization-ui/organization-renamed-768.png",
+        "organization-ui/organization-renamed-1440.png",
+        "organization-ui/organization-member-320.png",
+        "organization-ui/organization-member-768.png",
+        "organization-ui/organization-member-1440.png",
+        "organization-ui/delete-confirmation-320.png",
+        "organization-ui/delete-confirmation-768.png",
+        "organization-ui/delete-confirmation-1440.png",
+        "organization-ui/after-delete-320.png",
+        "organization-ui/after-delete-768.png",
+        "organization-ui/after-delete-1440.png"
+      ]
     }
   },
   "commands": [

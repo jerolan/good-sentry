@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "checks": [
+    "Owner renames the workspace and the name persists after reload",
+    "Member sees the owner-only notice without a delete control",
+    "Owner opens the delete confirmation",
+    "Deleting the last workspace leaves the no-organization state"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/organization-renamed-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/organization-renamed-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/organization-renamed-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/organization-member-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/organization-member-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/organization-member-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/delete-confirmation-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/delete-confirmation-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/delete-confirmation-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/after-delete-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/after-delete-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/organization-ui/after-delete-1440.png"
+  ],
+  "pageErrors": []
+}
