@@ -3733,6 +3733,20 @@
       "evidence_files": [
         "sourcemaps-014-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-015": {
+      "evidence": "vigente",
+      "scope": "modern upload routes with owner/admin authority and scoped project resolution",
+      "evidence_files": [
+        "sourcemaps-015-go.log"
+      ]
+    },
+    "CLOSE-sourcemaps-016": {
+      "evidence": "vigente",
+      "scope": "chunk negotiation formulas, multipart validation, chunk ordering and atomic staging",
+      "evidence_files": [
+        "sourcemaps-015-go.log"
+      ]
     }
   },
   "commands": [

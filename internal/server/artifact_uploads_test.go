@@ -132,7 +132,7 @@ func TestArtifactUploadsHTTPContract(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, role := range []string{"admin", "member"} {
+	for _, role := range []string{"admin", "member", "manager"} {
 		var id string
 		if err := fixture.QueryRow(ctx, "INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3) RETURNING id::text", role+"@artifacts.test", hash, role).Scan(&id); err != nil {
 			t.Fatal(err)
@@ -178,6 +178,7 @@ func TestArtifactUploadsHTTPContract(t *testing.T) {
 		return actor{client, result.CSRFToken}
 	}
 	ownerActor, adminActor, memberActor := login(owner.Email), login("admin@artifacts.test"), login("member@artifacts.test")
+	managerActor := login("manager@artifacts.test")
 	bearer := func(secret string) http.Header { return http.Header{"Authorization": {"Bearer " + secret}} }
 	csrf := func(who actor) http.Header { return http.Header{"X-CSRF-Token": {who.csrf}} }
 	issue := func(scopes, selected []string) string {
@@ -216,6 +217,11 @@ func TestArtifactUploadsHTTPContract(t *testing.T) {
 		}
 		want(t, "owner session negotiation", request(ownerActor.client, "GET", chunksPath, nil, nil), 200)
 		want(t, "admin session negotiation", request(adminActor.client, "GET", chunksPath, nil, nil), 200)
+		want(t, "manager session negotiation", request(managerActor.client, "GET", chunksPath, nil, nil), 403)
+		want(t, "read credential negotiation", call("GET", chunksPath, nil, reader), 403)
+		if projects[0].PublicKey != "" {
+			want(t, "SDK key negotiation", request(http.DefaultClient, "GET", chunksPath, nil, bearer(projects[0].PublicKey)), 401)
+		}
 		want(t, "member negotiation", request(memberActor.client, "GET", chunksPath, nil, nil), 403)
 		want(t, "read credential negotiation", call("GET", chunksPath, nil, reader), 403)
 		want(t, "DSN credential negotiation", call("GET", chunksPath, nil, projects[0].PublicKey), 401)
@@ -304,7 +310,9 @@ func TestArtifactUploadsHTTPContract(t *testing.T) {
 		crossSite.Set("Origin", "https://untrusted.example")
 		want(t, "session chunk cross-origin", uploadAt(srv.URL, ownerActor.client, []part{valid}, crossSite), 403)
 		want(t, "member chunk upload", uploadAt(srv.URL, memberActor.client, []part{valid}, csrf(memberActor)), 403)
+		want(t, "manager chunk upload", uploadAt(srv.URL, managerActor.client, []part{valid}, csrf(managerActor)), 403)
 		want(t, "reader chunk upload", uploadAt(srv.URL, http.DefaultClient, []part{valid}, bearer(reader)), 403)
+		want(t, "manager assembly", request(managerActor.client, "POST", assemblyPath, assembly(digest(data), []string{digest(data)}, projectRefs, nil), csrf(managerActor)), 403)
 		var compressed bytes.Buffer
 		gz := gzip.NewWriter(&compressed)
 		if _, err := gz.Write([]byte("gzip HTTP artifact chunk")); err != nil {

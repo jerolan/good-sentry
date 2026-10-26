@@ -1451,8 +1451,8 @@ CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
 CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
-CLOSE-sourcemaps-013 y -014 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-015. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-013 a -016 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-017. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1711,8 +1711,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-013](../SPEC.md#close-sourcemaps-013) | Compatible release files: The view is backed by the existing release-scoped source_maps rows, not a duplicate… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-014](../SPEC.md#close-sourcemaps-014) | JavaScript artifacts: The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at /api/0/organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-015](../SPEC.md#close-sourcemaps-015) | JavaScript artifacts: The modern JavaScript upload increment connects exact GET/POST /api/0/organizations/{org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-sourcemaps-016](../SPEC.md#close-sourcemaps-016) | JavaScript artifacts: Negotiate an absolute upload URL derived from the configured public domain/prefix, hashA… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-015](../SPEC.md#close-sourcemaps-015) | JavaScript artifacts: The modern JavaScript upload increment connects exact GET/POST /api/0/organizations/{org… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-sourcemaps-016](../SPEC.md#close-sourcemaps-016) | JavaScript artifacts: Negotiate an absolute upload URL derived from the configured public domain/prefix, hashA… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-017](../SPEC.md#close-sourcemaps-017) | JavaScript artifacts: Persist chunks in PostgreSQL with organization, checksum, bytes, size and expiry; migrat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-018](../SPEC.md#close-sourcemaps-018) | JavaScript artifacts: Assembly accepts one bounded JSON object with required checksum, nonempty ordered chunks… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-019](../SPEC.md#close-sourcemaps-019) | JavaScript artifacts: Use source_map file URLs as map names/source-resolution bases, never ZIP member paths or… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6417,6 +6417,73 @@ en `internal/artifact/bundle_maps.go` y su test.
 Límites registrados: el CI público sigue pendiente para la auditoría final. Este
 decodificador no acredita por sí solo la simbolización completa ni la API de
 subida como aceptación global; esas condiciones viven en sus propios criterios.
+
+### Ejecución 2026-10-26: rutas de subida moderna
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-015. Candidata
+`1a460dd`.
+
+Resultado observado: las rutas exactas de negociación, subida de chunks y
+ensamblado reutilizan la precedencia de Bearer y los grants actuales de
+organización y proyecto. El acceso exige el scope `project:releases` en Bearer
+y rol actual de propietario o administrador en sesiones, también para negociar:
+manager, miembro y credenciales de solo lectura reciben 403, y una clave SDK no
+se acepta como credencial de gestión. Las mutaciones de sesión conservan CSRF y
+origen. El staging es por organización, compartido entre cargadores autorizados,
+sin endpoint de descarga de chunks, y un cargador necesita al menos un proyecto
+autorizado. El ensamblado resuelve cada proyecto dentro de la organización y la
+selección de la credencial, filtrando el acceso antes de la precedencia slug/ID;
+proyectos ausentes u ocultos fallan sin escrituras. La escritura final revalida
+membresía y acceso en su propia transacción.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Rutas exactas y negociación | HTTP `TestArtifactUploadsHTTPContract` |
+| Manager, miembro y lectura sin acceso | HTTP `TestArtifactUploadsHTTPContract` (manager añadido) |
+| Precedencia de Bearer y clave SDK | HTTP `TestArtifactUploadsHTTPContract` |
+| CSRF y origen en sesión | HTTP `TestArtifactUploadsHTTPContract` |
+| Resolución y filtrado de proyectos | HTTP `TestArtifactUploadsHTTPContract`; store `TestArtifactUploadCurrentRoleOrganizationAndProjectScope` |
+| Revalidación de membresía en la escritura | store `TestArtifactUploadCurrentRoleOrganizationAndProjectScope` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-015-go.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: negociación y validación de chunks
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-016. Candidata
+`1a460dd`.
+
+Resultado observado: la negociación devuelve una URL absoluta construida con el
+dominio y prefijo públicos, `hashAlgorithm: sha1`, `chunkSize` de 512 KiB
+(min(1 MiB, cuerpo/2)), un chunk por petición con el presupuesto de prueba,
+`maxRequestSize`, concurrencia 2, compresión gzip y aceptación de
+`artifact_bundles`. El multipart admite solo `file`/`file_gzip`, exige un
+nombre de archivo de exactamente 40 dígitos hexadecimales y lo normaliza a
+minúsculas, valida el digest del contenido descomprimido, el tamaño por parte y
+el agregado inflado, y rechaza gzip malformado, campos desconocidos, partes
+vacías o ausentes, digests erróneos y excesos con 400/413. El ensamblado
+conserva el orden de chunks y acepta digests repetidos. La subida responde
+200 `{}` solo tras confirmar el lote completo; bytes idénticos refrescan la
+expiración sin duplicar almacenamiento y bytes distintos para un digest fallan de
+forma atómica sin dejar escrituras parciales.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Fórmulas de negociación y URL absoluta | HTTP `TestArtifactUploadsHTTPContract` |
+| Multipart estricto, digest y tamaños | HTTP `TestArtifactUploadsHTTPContract` |
+| Orden y digests repetidos | store `TestArtifactChunkStagingQuotaAndExpiry`; HTTP `TestArtifactUploadsHTTPContract` |
+| 200 `{}` tras commit | HTTP `TestArtifactUploadsHTTPContract` |
+| Expiración refrescada sin duplicado y conflicto atómico | store `TestArtifactChunkStagingQuotaAndExpiry`, `TestArtifactChunkConcurrentQuotaAndCleanup` |
+| Lectura coherente durante reemplazo | store `TestArtifactChunkReadSnapshotDuringConcurrentReplacement` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-015-go.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 
