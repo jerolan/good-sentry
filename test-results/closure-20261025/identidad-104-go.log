@@ -1,0 +1,12 @@
+=== RUN   TestOpenModeAccountTokens
+--- PASS: TestOpenModeAccountTokens (0.77s)
+=== RUN   TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF
+--- PASS: TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF (0.49s)
+=== RUN   TestOpenAuthenticationInvitationsStayOnImplicitOwner
+--- PASS: TestOpenAuthenticationInvitationsStayOnImplicitOwner (0.58s)
+PASS
+ok  	goodsentry/internal/server	1.848s
+=== RUN   TestEnsureDefaultOwnerIsIdempotent
+--- PASS: TestEnsureDefaultOwnerIsIdempotent (0.42s)
+PASS
+ok  	goodsentry/internal/store	0.425s

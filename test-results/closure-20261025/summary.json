@@ -3545,6 +3545,15 @@
         "admin-users-pagination/admin-users-page-1-1440.png",
         "admin-users-pagination/admin-users-page-2-1440.png"
       ]
+    },
+    "CLOSE-identidad-104": {
+      "evidence": "vigente",
+      "scope": "open and authenticated modes, setup, login and logout in API and browser",
+      "evidence_files": [
+        "identidad-104-go.log",
+        "auth-modes/report.json",
+        "auth-modes/open-report.json"
+      ]
     }
   },
   "commands": [

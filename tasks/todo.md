@@ -1447,7 +1447,7 @@ publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
 releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
-Siguiente acción: CLOSE-identidad-104
+CLOSE-identidad-104 queda vigente. Siguiente acción: CLOSE-identidad-105
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -2141,7 +2141,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-039](../SPEC.md#close-alertas-039) | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payloa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-107](../SPEC.md#close-identidad-107) | API y navegador: comprobar OIDC y aplicaciones SSO con controles y pruebas locales, con los resultados y contr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5649,6 +5649,40 @@ publicación (o aportar una imagen previa a 064) y repetir la actualización con
 las imágenes en Compose. Responsable: instrucción del usuario. Intentos: uno
 local con binarios; sin intentos de publicación. Siguiente acción tras
 desbloquear: ejecutar CI exacto, publicar y repetir el flujo Compose.
+
+### Ejecución 2026-10-26: modos abierto y autenticado
+
+Selección registrada antes de trabajar: CLOSE-identidad-104. Candidata
+`2810041`.
+
+Resultado observado: en modo requerido con base vacía, la página muestra el
+formulario de primera configuración, crea el workspace y entra al panel, el
+cierre de sesión vuelve al formulario de acceso y el inicio de sesión recupera
+el panel; las cuatro pantallas se capturaron a 320/768/1440 sin desbordamiento.
+En modo abierto, la aplicación entra directamente al panel con el propietario
+implícito, no ofrece control de acceso, expone su token CSRF y acepta una
+mutación autenticada con ese token. Los owners HTTP cubren el propietario
+implícito y su CSRF, las invitaciones que permanecen en él y los tokens de
+cuenta en modo abierto; el owner de store confirma que el propietario por
+defecto es idempotente. La guía de configuración mantiene que
+`GOODSENTRY_AUTH=required` es necesario antes de exponer el servicio fuera de
+una red local de confianza.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Alta de primera cuenta y workspace en modo requerido | `auth-modes/setup-*` |
+| Login y logout con sesión recuperada | `auth-modes/{login,dashboard,session}-*` |
+| Modo abierto con propietario implícito y sin acceso | `auth-modes/open-dashboard-*`, `open-report.json` |
+| CSRF y mutaciones en modo abierto | HTTP `TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF`, `TestOpenModeAccountTokens`; navegador `open-report.json` |
+| Invitaciones sobre el propietario implícito | HTTP `TestOpenAuthenticationInvitationsStayOnImplicitOwner` |
+| Propietario por defecto idempotente | store `TestEnsureDefaultOwnerIsIdempotent` |
+
+Evidencia: `test-results/closure-20261025/identidad-104-go.log` y
+`test-results/closure-20261025/auth-modes/` con dos informes y quince capturas.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 
