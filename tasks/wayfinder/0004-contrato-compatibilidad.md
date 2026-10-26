@@ -1,11 +1,11 @@
 ---
 id: WF-0004
 title: Acordar los flujos que prueban equivalencia con GlitchTip
-status: open
+status: closed
 labels: [wayfinder:grilling]
 parent: WF-0001
 assignee: jerolan
-claim_session: 01a17668-8461-7c71-bb8a-c64f02f890be
+claim_session: null
 blocked_by: [WF-0002, WF-0003, WF-0008, WF-0009]
 ---
 
@@ -370,9 +370,9 @@ en un entorno independiente. Los recibos de proveedores externos conservan
 su decisión propia. Evidencia: aprobación directa en esta sesión.
 No se ejecuta aceptación, se publica ni se modifica el Goal.
 
-## Next round, releases, read integrations and browser
+## Releases, read integrations and browser approved in rounds 16 to 18
 
-Propuestas pendientes de aprobación:
+Tres criterios aprobados por el usuario:
 
 16. Releases y artefactos: con sentry-cli 3.8.0, crear y finalizar una release,
     asociar metadatos locales de commits y registrar un deploy. Consultar desde
@@ -397,5 +397,41 @@ Propuestas pendientes de aprobación:
     reproducir la apariencia de GlitchTip ni añadir un framework nuevo.
 
 Estos criterios no declaran paridad universal de API/SDK ni reducen contratos
-existentes. La compatibilidad global sigue abierta hasta resolver esta ronda.
+existentes. Esta ronda completa la decisión de flujos; el contrato final sigue pendiente.
 Las selecciones externas y el contrato final siguen siendo decisiones futuras.
+
+## Resolution comments, rounds 16 to 18 and final resolution
+
+2026-10-25, America/Mexico_City. El usuario respondió "Si" a la pregunta
+explícita de aprobar los criterios 16-18, tras aclarar GitLab Error Tracking.
+Quedan aprobados releases/artefactos, integraciones de lectura y aceptación
+responsive con el alcance descrito arriba. GitLab es consumidor de la API,
+como Grafana; no se incorpora a la aplicación ni exige alojar el código allí.
+
+Se cierra esta decisión con las aprobaciones registradas en sus rondas:
+referencia v6.2.6 e identidad fijada; once familias funcionales; versiones de
+clientes; prueba nativa representativa Linux/amd64; cliente MCP y 17 herramientas;
+errores/triage; source maps JavaScript; archivo y retención; rendimiento;
+logs; uptime; alertas; identidad/administración; operación; releases/artefactos;
+lectores externos e interfaz. La excepción aprobada es aplazar el enriquecimiento
+automático con fuentes Java. La limitación aprobada de comprobantes nativos
+no exige un crash real por cada combinación y conserva las regresiones.
+
+Se conservan los contratos existentes salvo las excepciones expresas de esta
+issue. Los comentarios históricos pendientes son estados de rondas previas;
+las aprobaciones posteriores y esta resolución fijan su estado actual.
+No se afirma que toda la funcionalidad esté implementada o verificada. La
+evidencia previa solo se reutiliza dentro de su alcance y revisión acreditados.
+
+Las decisiones pendientes tienen dueño y no se dan por resueltas aquí:
+
+- [Sacrificios](0005-sacrificios.md): capacidades adicionales y reconciliación de
+  brechas históricas, sin reabrir las excepciones aprobadas por inferencia.
+- [Pruebas externas](0006-evidencia-externa.md): proveedores/destinos, versión y
+  edición exactas de GitLab, instancia y accesos, recibos y dependencias antes
+  de aprobar el contrato final. El flujo GitLab de consulta ya está acordado.
+- [Contrato final y continuidad](0007-goal-reanudable.md): integración canónica,
+  evidencia e invalidación, protocolo de continuación y aprobación del contrato.
+
+Se conserva la planificación. No se modifica SPEC.md, tasks/plan.md,
+tasks/todo.md ni ningún Goal. No se ejecuta aceptación ni implementación.

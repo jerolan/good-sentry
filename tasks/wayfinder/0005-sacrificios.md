@@ -19,3 +19,12 @@ Para cada propuesta, mostrar utilidad, complejidad o bloqueo demostrado,
 consecuencia observable y alternativa. Conservar lo ya implementado.
 El usuario aprueba exclusiones individualmente; complejidad por sí sola
 no autoriza sacrificar el mínimo de GlitchTip.
+
+## Inputs from the compatibility decision
+
+Consultar [los flujos aprobados](0004-contrato-compatibilidad.md) antes de
+proponer sacrificios. Esa issue es dueña del aplazamiento Java y del alcance
+de la prueba nativa real. No duplicar ni revertir esos acuerdos por inferencia.
+Reconciliar las brechas históricas contra el alcance y la evidencia vigentes;
+una casilla abierta no demuestra por sí sola funcionalidad ausente. Conservar
+las capacidades ya implementadas y los controles existentes.

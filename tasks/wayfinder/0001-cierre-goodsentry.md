@@ -24,7 +24,7 @@ Acuerdos del usuario del 25 de octubre de 2026, America/Mexico_City:
 - Equivalencia funcional, sin reproducir cada API o detalle interno de GlitchTip.
 - Las integraciones anunciadas como verificadas necesitan comprobantes externos.
 - Capacidades adicionales de Sentry pueden aplazarse por complejidad; cada
-  sacrificio se decidirá expresamente. No se ha aprobado una lista de exclusiones.
+  sacrificio se decidirá expresamente. La lista general de exclusiones se decide por separado; conservar las excepciones expresas registradas.
 - El cierre debe persistir entre sesiones y proveedores.
 
 El estado actual sirve para identificar distancia y evidencia reutilizable;
@@ -38,12 +38,14 @@ investigación en archivos disjuntos, sin ramas research/ ni PR.
 
 ## Decisions so far
 
-- [Fijar la referencia pública de GlitchTip](0002-referencia-glitchtip.md): hay una candidata y fuentes delimitadas; su aceptación y discrepancias permanecen como decisiones.
+- [Fijar la referencia pública de GlitchTip](0002-referencia-glitchtip.md): investigación de la referencia candidata y sus fuentes; su adopción se resolvió en la decisión de flujos.
 - [Identificar la evidencia reutilizable de GoodSentry](0003-evidencia-goodsentry.md): existe una fotografía por commit y evidencia reutilizable para continuar sin reconstruir el historial completo.
 
-- [Precisar contexto Java y archivo frío de la referencia](0008-contexto-java-archivo-frio.md): hay documentación de archivo de logs y errores; el flujo reproducible de contexto Java sigue sin precisar.
+- [Precisar contexto Java y archivo frío de la referencia](0008-contexto-java-archivo-frio.md): hay documentación de archivo de logs y errores, distinta de la evidencia limitada a spans/transacciones.
 
-- [Evaluar utilidad y esfuerzo del contexto Java](0009-viabilidad-contexto-java.md): es un enriquecimiento conocido, pero no se demostró trivial ni fundamental; su inclusión o aplazamiento sigue pendiente.
+- [Evaluar utilidad y esfuerzo del contexto Java](0009-viabilidad-contexto-java.md): el enriquecimiento es conocido, pero no se demostró trivial ni fundamental; la decisión de flujos registra su aplazamiento aprobado.
+
+- [Acordar los flujos que prueban equivalencia con GlitchTip](0004-contrato-compatibilidad.md): aprobados referencia, cobertura, clientes y criterios observables, con aplazamiento de fuentes Java y prueba nativa representativa.
 
 ## Not yet specified
 
