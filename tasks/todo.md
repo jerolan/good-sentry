@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -022 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -023 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-023. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-024. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1749,7 +1749,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9041,6 +9041,29 @@ Evidencia: `test-results/closure-20261025/nativo-022/inline.log` y `native.log`.
 
 Límites registrados: no se usó la imagen final ni el CI público; la imagen y el
 CI siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: límite de alcance nativo
+
+Selección registrada antes de trabajar: CLOSE-nativo-023. Revisión de producto
+`e63e89c`; no hay implementación pendiente en esta cláusula: fija límites y
+prohíbe anunciar cobertura general de Crashpad/Breakpad.
+
+| Límite declarado | Comprobante |
+|---|---|
+| Solo contextos AMD64, x86, ARM32, ARM64 y RISC-V64 | `TestParseMinidumpRejectsArchitectureContextMismatches`; `TestParseLegacyBreakpadARM64MinidumpRejectsInvalidShapes`; `TestParseRISCV64RejectsInvalidContexts` |
+| Expresiones CFI poco comunes y recuperación de señal por plataforma no soportadas | `TestCFIIndirectFDEPointerEncodingRemainsUnsupported`; `TestARM32EHABIFailsClosed` |
+| Descubrimiento de archivos anidados solo hasta ocho capas | `TestParseNestedDebugArchivesAndSymbolicate` (ocho capas aceptadas; la novena se rechaza dentro del test) |
+| Sin resolución por servidor de símbolos | `test-results/closure-20261025/nativo-023/symbol-server-absent.txt` (sin implementación) |
+| ZIP/TAR/gzip-TAR, Mach-O con `__TEXT` de tamaño cero y DWARF se consumen directamente | CLOSE-nativo-004 (`native.log`, `cli-upload.log`) y `TestParseMachODSYMObjectSymbols` |
+| Sin afirmación de cobertura general Crashpad/Breakpad; tarea padre abierta | Este registro y el puntero de continuación conservan el producto incompleto |
+
+Evidencia: `test-results/closure-20261025/nativo-023/limitations.log` y
+`symbol-server-absent.txt`.
+
+Límites registrados: esta entrada acredita que los límites siguen vigentes y no
+autoriza anunciar soporte de los formatos ausentes. La aceptación real
+multi-arquitectura y la imagen final siguen abiertas; el producto no se declara
+completo.
 
 ### Comprobante de integración documental
 

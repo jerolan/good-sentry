@@ -4524,6 +4524,11 @@
       "scope": "PDB inline site scopes, IPI/C13 records, annotations, file/line switches, virtual frame ordering, budgets and fail-closed malformed input",
       "evidence_files": ["nativo-022/inline.log", "nativo-022/native.log", "nativo-022/summary.json"]
     },
+    "CLOSE-nativo-023": {
+      "evidence": "vigente",
+      "scope": "scope limitation: unsupported CPU contexts/CFI/signal recovery/nested depth beyond eight and symbol server, with supported archive/Mach-O/DWARF paths retained",
+      "evidence_files": ["nativo-023/limitations.log", "nativo-023/symbol-server-absent.txt", "nativo-023/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
