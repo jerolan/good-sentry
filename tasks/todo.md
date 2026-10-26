@@ -1443,10 +1443,10 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032, 034–046 y 048–064 están vigentes y
+publicación/CI; errores 001–005, 007–032, 034–046 y 048–068 están vigentes y
 033/047 bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI.
-Siguiente acción: CLOSE-errores-065 (preferencias/emails secundarios). No se
-declara aceptación ni cierre del producto. El avance se informa por
+Siguiente acción: CLOSE-errores-069 (cambios individuales). No se declara
+aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
 
@@ -1600,10 +1600,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-062](../SPEC.md#close-errores-062) | Compatible issue comments: POST and PUT accept only {"data":{"text":"..."}} and return CommentSchema with nume… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener body estricto |
 | [CLOSE-errores-063](../SPEC.md#close-errores-063) | Compatible issue tags: GET /api/0/issues/{issue}/tags/ and the organization-prefixed route require event:read… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios |
 | [CLOSE-errores-064](../SPEC.md#close-errores-064) | Compatible issue tags: Each IssueTagSchema includes the exact key, a title-cased display name, distinct-value… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener schema |
-| [CLOSE-errores-065](../SPEC.md#close-errores-065) | Compatible user preferences: Additive047 stores a JSONB user-options object and subscribeByDefault preference… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-066](../SPEC.md#close-errores-066) | Compatible user preferences: Additive050_user_emails.sql adds globally unique secondary addresses without rewr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-067](../SPEC.md#close-errores-067) | Compatible user preferences: The emailed link is GET /account/emails/confirm?token=... on the configured domai… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-068](../SPEC.md#close-errores-068) | Compatible user preferences: GET/PUT /users/{id}/notifications/ and /notifications/alerts/ expose and update s… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-065](../SPEC.md#close-errores-065) | Compatible user preferences: Additive047 stores a JSONB user-options object and subscribeByDefault preference… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 047 |
+| [CLOSE-errores-066](../SPEC.md#close-errores-066) | Compatible user preferences: Additive050_user_emails.sql adds globally unique secondary addresses without rewr… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 050 |
+| [CLOSE-errores-067](../SPEC.md#close-errores-067) | Compatible user preferences: The emailed link is GET /account/emails/confirm?token=... on the configured domai… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de email |
+| [CLOSE-errores-068](../SPEC.md#close-errores-068) | Compatible user preferences: GET/PUT /users/{id}/notifications/ and /notifications/alerts/ expose and update s… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener notificaciones |
 | [CLOSE-errores-069](../SPEC.md#close-errores-069) | Compatible individual issue changes: Implement the complete individual state/assignment/native-policy write sl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-070](../SPEC.md#close-errores-070) | Compatible individual issue changes: Add only event:write with additive018 scope-constraint migration. Preserv… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-071](../SPEC.md#close-errores-071) | Compatible individual issue changes: PUT paths require canonical positive int64 issue IDs, exact trailing slas… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3866,6 +3866,26 @@ Evidencia: `test-results/closure-20261025/errores-061-064.log`.
 
 Siguiente acción: CLOSE-errores-065 (preferencias de usuario y emails
 secundarios), con sus migraciones.
+
+### Ejecución 2026-10-26: preferencias y emails secundarios
+
+Selección registrada antes de trabajar: CLOSE-errores-065 a -068. Candidata
+`7438588`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners store/HTTP con `-race`.
+
+Resultado observado: PUT de user persiste `options` JSONB con timezone/clock24h
+y `subscribeByDefault`; GET/PUT de notifications y notifications/alerts
+devuelven y actualizan el valor persistido. 050 añade direcciones secundarias
+globalmente únicas preservando usuarios y reabre. POST/GET/DELETE de emails
+exigen sesión/CSRF, validan email estricto, generan un enlace
+`/account/emails/confirm?token=...` de 64 hex que verifica y redirige 303,
+permiten login con el secundario verificado y protegen el primario. Un usuario
+ajeno devuelve 404. Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-065-068.log`.
+
+Siguiente acción: CLOSE-errores-069 (cambios individuales de issue), con su
+matriz de status/assignment/políticas.
 
 ### Comprobante de integración documental
 

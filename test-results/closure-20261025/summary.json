@@ -1752,6 +1752,52 @@
       "evidence_files": [
         "errores-061-064.log"
       ]
+    },
+    "CLOSE-errores-065": {
+      "evidence": "vigente",
+      "scope": "047 user options JSONB and subscribeByDefault",
+      "covered": [
+        "timezone/clock24h persistence",
+        "GET/PUT notifications and alerts preference"
+      ],
+      "evidence_files": [
+        "errores-065-068.log"
+      ]
+    },
+    "CLOSE-errores-066": {
+      "evidence": "vigente",
+      "scope": "050 secondary-email migration and uniqueness",
+      "covered": [
+        "global uniqueness and prior-user preservation",
+        "reopen checksum"
+      ],
+      "evidence_files": [
+        "errores-065-068.log"
+      ]
+    },
+    "CLOSE-errores-067": {
+      "evidence": "vigente",
+      "scope": "emailed secondary-email confirmation link",
+      "covered": [
+        "configured-domain GET /account/emails/confirm?token=64hex",
+        "303 after verification; login with verified address",
+        "primary/foreign protections"
+      ],
+      "evidence_files": [
+        "errores-065-068.log"
+      ]
+    },
+    "CLOSE-errores-068": {
+      "evidence": "vigente",
+      "scope": "compatible notifications and alerts preferences",
+      "covered": [
+        "GET/PUT /users/{id}/notifications/",
+        "GET/PUT /notifications/alerts/",
+        "persisted value and foreign-user 404"
+      ],
+      "evidence_files": [
+        "errores-065-068.log"
+      ]
     }
   },
   "commands": [
