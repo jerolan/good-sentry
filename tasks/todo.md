@@ -1453,8 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001, -002 y
--041 a -044 quedan vigentes. Siguiente acción: CLOSE-rendimiento-003. No se declara
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -003 y
+-041 a -044 quedan vigentes. Siguiente acción: CLOSE-rendimiento-004. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1772,7 +1772,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-010](../SPEC.md#close-logs-010) | Compatible retained-log API: Admission is session or Bearer event:read/event:write. Repeated project filters m… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-011](../SPEC.md#close-logs-011) | Compatible retained-log API: Pages are keyset ordered by timestamp DESC,id DESC with a default limit100 and a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-002](../SPEC.md#close-rendimiento-002) | Transaction and standalone-span retention: Transaction/span retention is the next required class after accepte… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-003](../SPEC.md#close-rendimiento-003) | Transaction and standalone-span retention: The configuration prerequisite adds Config.TransactionRetentionDays… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-003](../SPEC.md#close-rendimiento-003) | Transaction and standalone-span retention: The configuration prerequisite adds Config.TransactionRetentionDays… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-004](../SPEC.md#close-rendimiento-004) | Transaction and standalone-span retention: The storage contract is Store.CleanupTransactions(ctx, days), retur… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-005](../SPEC.md#close-rendimiento-005) | Transaction and standalone-span retention: Under those project gates and pinned event rows, delete envelope_it… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-006](../SPEC.md#close-rendimiento-006) | Transaction and standalone-span retention: Delete standalone spans independently, with no trace-wide cascade.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7024,6 +7024,43 @@ aceptación con imagen/backup siguen en CLOSE-rendimiento-003 a -011. La
 retención de errores, uptime, archivos, releases y el archivado frío permanecen
 clases independientes. El CI público y la imagen final siguen pendientes para
 la auditoría final.
+
+### Ejecución 2026-10-26: configuración de la retención de transacciones
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-003. Candidata
+`3d5e344`. Esta entrada comprueba solo el prerrequisito de configuración;
+no activa ni anuncia la limpieza de transacciones o spans.
+
+Procedimiento reproducible: `go test ./internal/config -run TestTelemetryRetentionConfiguration`
+y ejecuciones reales de `/tmp/gs-goodsentry-orgui` con PostgreSQL
+desechable y sin él:
+
+| Caso | Resultado observado |
+|---|---|
+| Valor ganador `GOODSENTRY_TRANSACTION_RETENTION_DAYS=0` con URL de base rota | Sale con código 1 y el error de rango, antes de cualquier conexión |
+| Valor ganador `GOODSENTRY_TRANSACTION_RETENTION_DAYS=1.5` con URL rota | Sale con código 1 y el mismo error de rango |
+| `GOODSENTRY_TRANSACTION_RETENTION_DAYS=7` con `GLITCHTIP_TRANSACTION_RETENTION_DAYS=0` | El alias en la sombra no bloquea: `/readyz` responde 200 |
+| Solo el maestro `GOODSENTRY_RETENTION_DAYS=30` | Arranca y `/readyz` responde 200 |
+
+La prueba de configuración cubre además la precedencia
+`GOODSENTRY_TRANSACTION_RETENTION_DAYS` >
+`GLITCHTIP_TRANSACTION_RETENTION_DAYS` > maestro, los valores vacíos que
+caen a la siguiente fuente, los límites 1..3650 y la independencia entre las
+clases maestra, logs y transacciones.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Precedencia, herencia, vacíos y límites | `rendimiento-003/config-tests.log` |
+| Rechazo antes de abrir puerto y alias en la sombra | `rendimiento-003/runtime.log` |
+
+Evidencia: `test-results/closure-20261025/rendimiento-003/`.
+
+Límites registrados: el valor efectivo no se publica por API; la precedencia se
+comprueba por pruebas y por el arranque real. La limpieza acotada, la migración
+y la aceptación con imagen/backup siguen en CLOSE-rendimiento-004 a -011. El CI
+público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

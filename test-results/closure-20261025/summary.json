@@ -3859,6 +3859,14 @@
         "rendimiento-002/config-tests.log"
       ]
     },
+    "CLOSE-rendimiento-003": {
+      "evidence": "vigente",
+      "scope": "transaction retention configuration precedence, empty fallback, bounds, shadowed aliases and startup rejection",
+      "evidence_files": [
+        "rendimiento-003/config-tests.log",
+        "rendimiento-003/runtime.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
