@@ -5,6 +5,7 @@ package native
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -288,11 +289,9 @@ func ParseMinidump(data []byte) (Crash, error) {
 			name = "unknown"
 		}
 		debugID := ""
-		if entry.cvSize >= 24 && entry.cvRVA+entry.cvSize <= uint64(len(data)) {
+		if entry.cvSize >= 4 && entry.cvRVA+entry.cvSize <= uint64(len(data)) {
 			cv := data[entry.cvRVA : entry.cvRVA+entry.cvSize]
-			if len(cv) >= 24 && string(cv[:4]) == "RSDS" {
-				debugID = codeViewID(cv)
-			}
+			debugID = codeViewDebugID(cv)
 		}
 		crash.Modules = append(crash.Modules, Module{Name: name, Base: entry.base, Size: uint32(entry.size), Timestamp: uint32(entry.stamp), DebugID: debugID})
 	}
@@ -395,6 +394,23 @@ func codeViewID(cv []byte) string {
 		return ""
 	}
 	return fmt.Sprintf("%08X%04X%04X%016X%X", binary.LittleEndian.Uint32(cv[4:]), binary.LittleEndian.Uint16(cv[8:]), binary.LittleEndian.Uint16(cv[10:]), binary.LittleEndian.Uint64(cv[12:]), binary.LittleEndian.Uint32(cv[20:]))
+}
+
+func codeViewDebugID(cv []byte) string {
+	if len(cv) < 4 {
+		return ""
+	}
+	switch binary.LittleEndian.Uint32(cv[:4]) {
+	case 0x53445352: // RSDS: PDB GUID, age and path.
+		return codeViewID(cv)
+	case 0x4270454c: // BpEL: GNU ELF build ID from Crashpad/Breakpad.
+		if len(cv) == 4 || len(cv) > 4+64 {
+			return ""
+		}
+		return hex.EncodeToString(cv[4:])
+	default:
+		return ""
+	}
 }
 
 func readQword(ranges []memoryRange, addr uint64) (uint64, bool) {

@@ -6,14 +6,18 @@ import (
 	"debug/elf"
 	"debug/macho"
 	"encoding/binary"
+	"encoding/hex"
 	"io"
 	"sort"
 	"strings"
 )
 
 const (
-	maxDWARFLineRows  = 1 << 18
-	maxDWARFLineSpans = 1 << 18
+	maxDWARFLineRows     = 1 << 18
+	maxDWARFLineSpans    = 1 << 18
+	maxObjectNoteBytes   = 1 << 20
+	elfNoteGNU           = 3
+	machoLoadCommandUUID = 0x1b
 )
 
 type dwarfLineSpan struct {
@@ -92,6 +96,84 @@ func ParseObjectSymbols(name string, data []byte) (string, []SymbolFunction) {
 		return functions[i].End > functions[j].End
 	})
 	return key, functions
+}
+
+// ObjectDebugID returns the identity embedded in an ELF build-id note or a
+// Mach-O LC_UUID command. Other formats carry identity in their own parser.
+func ObjectDebugID(data []byte) string {
+	if len(data) >= 4 && bytes.Equal(data[:4], []byte{0x7f, 'E', 'L', 'F'}) {
+		file, err := elf.NewFile(bytes.NewReader(data))
+		if err != nil {
+			return ""
+		}
+		return elfBuildID(file)
+	}
+	if len(data) >= 4 && isMachOMagic(data[:4]) {
+		file, err := macho.NewFile(bytes.NewReader(data))
+		if err != nil {
+			return ""
+		}
+		return machoUUID(file)
+	}
+	return ""
+}
+
+func elfBuildID(file *elf.File) string {
+	named := file.Section(".note.gnu.build-id")
+	if named != nil {
+		if id := elfSectionBuildID(named, file.ByteOrder); id != "" {
+			return id
+		}
+	}
+	for _, section := range file.Sections {
+		if section == named || section.Type != elf.SHT_NOTE {
+			continue
+		}
+		if id := elfSectionBuildID(section, file.ByteOrder); id != "" {
+			return id
+		}
+	}
+	return ""
+}
+
+func elfSectionBuildID(section *elf.Section, order binary.ByteOrder) string {
+	data, err := section.Data()
+	if err != nil || len(data) == 0 || len(data) > maxObjectNoteBytes {
+		return ""
+	}
+	return parseELFBuildIDNote(data, order)
+}
+
+func parseELFBuildIDNote(data []byte, order binary.ByteOrder) string {
+	for len(data) >= 12 {
+		namesz := uint64(order.Uint32(data[:4]))
+		descsz := uint64(order.Uint32(data[4:8]))
+		kind := order.Uint32(data[8:12])
+		nameEnd := 12 + namesz
+		descStart := (nameEnd + 3) &^ 3
+		descEnd := descStart + descsz
+		recordEnd := (descEnd + 3) &^ 3
+		if recordEnd > uint64(len(data)) {
+			return ""
+		}
+		name := bytes.TrimRight(data[12:nameEnd], "\x00")
+		desc := data[descStart:descEnd]
+		if kind == elfNoteGNU && bytes.Equal(name, []byte("GNU")) && len(desc) != 0 {
+			return hex.EncodeToString(desc)
+		}
+		data = data[recordEnd:]
+	}
+	return ""
+}
+
+func machoUUID(file *macho.File) string {
+	for _, load := range file.Loads {
+		raw := load.Raw()
+		if len(raw) >= 24 && file.ByteOrder.Uint32(raw[:4]) == machoLoadCommandUUID {
+			return hex.EncodeToString(raw[8:24])
+		}
+	}
+	return ""
 }
 
 func elfImageBase(file *elf.File) uint64 {

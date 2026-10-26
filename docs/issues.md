@@ -67,7 +67,7 @@ Issue detail shows identified users from retained events and a real 24-hour even
 
 An explicit `event:read` or `event:write` token can read organization/project issue lists, organization/global issue detail and organization `issues-stats` under `/api/0/`. Reads honor its project grants. Omitted `query` selects unresolved issues; `query=` includes every status. Environment and occurrence filters return matching metrics alongside historical totals. Organization `statsPeriod` selects a relative time window; on the deprecated project list it selects the chart (`24h`, `14d` or empty to disable). `groupStatsPeriod` controls list charts separately.
 
-Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Compatible `ignoreWindow` measures occurrence counts and `ignoreUserWindow` measures distinct additional identities over rolling intervals of up to seven days. Commit conditions remain pending. Unsupported query options return 400. Issue category filters distinguish errors from modern feedback, including retained issues with no remaining events.
+Affected-user counts use the first nonblank valid ID, email, username or IP in each retained event. Numeric IDs share an identity with their equivalent decimal string; attributes stay separate and case-sensitive. This is GoodSentry's explicit counting rule. Compatible `ignoreWindow` measures occurrence counts and `ignoreUserWindow` measures distinct additional identities over rolling intervals of up to seven days. Commit conditions are available through `statusDetails.inCommit` as described below. Unsupported query options return 400. Issue category filters distinguish errors from modern feedback, including retained issues with no remaining events.
 
 ## Compatible individual issue changes
 
@@ -86,7 +86,7 @@ The response contains the saved compatible issue detail and real analytics. `lat
 
 An explicit `statusDetails:null` or `{}` clears the current condition while keeping the effective status. An empty `inRelease` or `inNextRelease:false` clears only a resolved condition and is rejected for other statuses. Invalid targets or incompatible policies roll back the whole request. A merged alias returns 409 with `mergedInto`; open the current group before retrying. An empty request object reads the authorized issue without expiring or changing its policies.
 
-Writer tokens inherit issue and issue-event reads and can reset future grouping. Project event routes still need `project:read`, release routes need `project:releases`, and native mutation routes require a session. Compatible issue deletion is described under [Delete issues](#delete-issues). Username handles and commit conditions remain pending; unsupported fields return 400.
+Writer tokens inherit issue and issue-event reads and can reset future grouping. Project event routes still need `project:read`, release routes need `project:releases`, and native mutation routes require a session. Compatible issue deletion is described under [Delete issues](#delete-issues). Username handles remain pending; unsupported fields return 400.
 
 ## Compatible bulk changes
 

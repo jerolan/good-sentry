@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"goodsentry/internal/jobs"
+	"goodsentry/internal/native"
 	"goodsentry/internal/store"
 	"goodsentry/internal/testfixture/nativepdb"
 	"goodsentry/internal/testfixture/nativesymcache"
@@ -1026,12 +1027,23 @@ func setCodeViewDebugID(codeView []byte, debugID string) error {
 
 func ingestNativeObjectFrames(t *testing.T, f *resolutionHTTPFixture, object []byte, objectName, symbolType string, functionOffset uint64, expectedFunction string, stackData ...[]byte) []nativeFrame {
 	t.Helper()
+	debugID := native.ObjectDebugID(object)
+	if debugID == "" {
+		debugID = nativeTestDebugID
+	} else if len(debugID) == 32 {
+		debugID += "0"
+	}
+	return ingestNativeObjectFramesWithDebugID(t, f, object, objectName, symbolType, debugID, functionOffset, expectedFunction, stackData...)
+}
+
+func ingestNativeObjectFramesWithDebugID(t *testing.T, f *resolutionHTTPFixture, object []byte, objectName, symbolType, debugID string, functionOffset uint64, expectedFunction string, stackData ...[]byte) []nativeFrame {
+	t.Helper()
 	digest := sha1.Sum(object)
 	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
-	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, objectName, symbolType, nativeTestDebugID, "x86_64", objectName, hex.EncodeToString(digest[:]), nil, nil, object); err != nil {
+	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, objectName, symbolType, debugID, "x86_64", objectName, hex.EncodeToString(digest[:]), nil, nil, object); err != nil {
 		t.Fatal(err)
 	}
-	buf := buildNativeModuleMinidump(t, "C:\\test\\different.module", nativeTestDebugID, functionOffset, stackData...)
+	buf := buildNativeModuleMinidump(t, "C:\\test\\different.module", debugID, functionOffset, stackData...)
 	body, contentType := minidumpForm(t, buf, nil)
 	req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
 	if err != nil {
@@ -1078,7 +1090,8 @@ func ingestNativeObjectFrames(t *testing.T, f *resolutionHTTPFixture, object []b
 	if !found {
 		t.Fatalf("native object exception projection: %+v events=%d", payload.Exception, len(events))
 	}
-	if len(payload.DebugMeta.Images) != 1 || payload.DebugMeta.Images[0].DebugID != "1122334455667788AABBCCDDEEFF00111" {
+	wantID := strings.ToUpper(native.DebugKey(debugID))
+	if len(payload.DebugMeta.Images) != 1 || payload.DebugMeta.Images[0].DebugID != wantID {
 		t.Fatalf("native object debug metadata: %+v", payload.DebugMeta)
 	}
 	return payload.Exception.Values[0].Stacktrace.Frames
@@ -1283,6 +1296,7 @@ func TestNativeArchiveObjectSymbolicationByDebugID(t *testing.T) {
 		"Example.dSYM/Contents/Resources/DWARF/Example": machoObject,
 		"linux/libexample.so":                           elfObject,
 	}
+	machoDebugID := native.ObjectDebugID(machoObject) + "0"
 	formats := []struct {
 		name  string
 		build func(*testing.T, map[string][]byte) []byte
@@ -1297,7 +1311,7 @@ func TestNativeArchiveObjectSymbolicationByDebugID(t *testing.T) {
 		t.Run(format.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			archive := format.build(t, entries)
-			frame := ingestNativeObject(t, f, archive, "bundle."+format.name, "dsym", 0xf6a, "main")
+			frame := ingestNativeObjectFramesWithDebugID(t, f, archive, "bundle."+format.name, "dsym", machoDebugID, 0xf6a, "main")[0]
 			if !strings.HasSuffix(frame.Filename, "hello.c") || frame.Line < 1 {
 				t.Fatalf("archive dSYM frame: %+v", frame)
 			}

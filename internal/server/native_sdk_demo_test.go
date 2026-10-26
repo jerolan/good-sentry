@@ -106,6 +106,10 @@ func TestNativeSDKDemoCrashSymbolicates(t *testing.T) {
 		Filename string `json:"filename"`
 		Line     int    `json:"lineno"`
 	}
+	type nativeImage struct {
+		CodeFile string `json:"code_file"`
+		DebugID  string `json:"debug_id"`
+	}
 	type nativePayload struct {
 		Platform  string `json:"platform"`
 		Exception struct {
@@ -116,16 +120,14 @@ func TestNativeSDKDemoCrashSymbolicates(t *testing.T) {
 			} `json:"values"`
 		} `json:"exception"`
 		DebugMeta struct {
-			Images []struct {
-				CodeFile string `json:"code_file"`
-				DebugID  string `json:"debug_id"`
-			} `json:"images"`
+			Images []nativeImage `json:"images"`
 		} `json:"debug_meta"`
 	}
 	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
 	deadline := time.Now().Add(15 * time.Second)
 	var eventID string
 	var lastFrames []nativeFrame
+	var lastImages []nativeImage
 	for time.Now().Before(deadline) {
 		events, queryErr := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 100})
 		if queryErr != nil {
@@ -138,6 +140,7 @@ func TestNativeSDKDemoCrashSymbolicates(t *testing.T) {
 			}
 			frames := payload.Exception.Values[0].Stacktrace.Frames
 			lastFrames = frames
+			lastImages = payload.DebugMeta.Images
 			for _, frame := range frames {
 				if frame.Function == "goodsentry_demo_crash" && filepath.Base(frame.Filename) == "main.c" && frame.Line > 0 {
 					imageMatched := false
@@ -164,7 +167,7 @@ func TestNativeSDKDemoCrashSymbolicates(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	if eventID == "" {
-		t.Fatalf("Crashpad event did not resolve goodsentry_demo_crash to main.c with a positive line; last frames=%+v", lastFrames)
+		t.Fatalf("Crashpad event did not resolve goodsentry_demo_crash to main.c with a positive line; last frames=%+v images=%+v", lastFrames, lastImages)
 	}
 
 	var attachmentCount, envelopeItemCount int

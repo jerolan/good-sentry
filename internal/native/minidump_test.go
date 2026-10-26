@@ -219,6 +219,19 @@ func TestParseMinidumpAndBreakpadSymbols(t *testing.T) {
 	}
 }
 
+func TestCodeViewDebugIDRecognizesELFBuildID(t *testing.T) {
+	elfRecord := append([]byte{0x4c, 0x45, 0x70, 0x42}, []byte{0x66, 0xca, 0xc6, 0x78, 0xcd}...)
+	if got := codeViewDebugID(elfRecord); got != "66cac678cd" {
+		t.Fatalf("ELF CodeView debug ID=%q", got)
+	}
+	if got := codeViewDebugID([]byte{0x4c, 0x45, 0x70, 0x42}); got != "" {
+		t.Fatalf("empty ELF build ID=%q", got)
+	}
+	if got := codeViewDebugID(append([]byte{0x4c, 0x45, 0x70, 0x42}, make([]byte, 65)...)); got != "" {
+		t.Fatalf("oversized ELF build ID=%q", got)
+	}
+}
+
 func TestParseMinidumpValidatesMemory64FileRanges(t *testing.T) {
 	const fileSize = uint64(44 + 32 + 1)
 	for _, test := range []struct {

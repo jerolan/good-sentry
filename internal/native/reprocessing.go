@@ -22,28 +22,43 @@ func BuildSymbolTables(files []DebugSymbolFile) (SymbolSet, UnwindSet) {
 	for _, file := range files {
 		debugKey := DebugKey(file.DebugID)
 		for _, object := range ParseDebugObjects(file.Name, file.Content) {
-			if object.DebugID != "" && debugKey != "" && object.DebugID != debugKey {
+			if object.DebugID != "" && debugKey != "" && !debugIDCompatible(object.DebugID, debugKey) {
 				continue
 			}
 			if object.DebugID == "" {
 				symbols[object.Name] = append(symbols[object.Name], object.Functions...)
 			}
-			objectDebugKey := object.DebugID
+			objectDebugKey := DebugKey(object.DebugID)
 			if objectDebugKey == "" {
 				objectDebugKey = debugKey
 			}
 			if objectDebugKey != "" {
 				symbols[objectDebugKey] = append(symbols[objectDebugKey], object.Functions...)
 			}
+			if debugKey != "" && debugKey != objectDebugKey {
+				symbols[debugKey] = append(symbols[debugKey], object.Functions...)
+			}
 			if object.Unwind != nil {
 				unwindTables[object.Name] = append(unwindTables[object.Name], object.Unwind)
 				if objectDebugKey != "" {
 					unwindTables[objectDebugKey] = append(unwindTables[objectDebugKey], object.Unwind)
 				}
+				if debugKey != "" && debugKey != objectDebugKey {
+					unwindTables[debugKey] = append(unwindTables[debugKey], object.Unwind)
+				}
 			}
 		}
 	}
 	return symbols, unwindTables
+}
+
+func debugIDCompatible(objectID, declared string) bool {
+	if objectID == declared {
+		return true
+	}
+	// Mach-O UUIDs carry 32 hexadecimal characters and some Minidump writers
+	// append a zero PDB age, producing the compatible 33-character form.
+	return len(objectID) == 32 && len(declared) == 33 && strings.HasPrefix(declared, objectID)
 }
 
 // ResymbolicateEvent fills missing symbols on frames already stored in one

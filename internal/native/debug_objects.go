@@ -255,7 +255,7 @@ func parseDebugObject(name string, data []byte) (DebugObject, bool) {
 	key, functions := ParseObjectSymbols(name, data)
 	_, unwind := ParseObjectUnwind(name, data)
 	if len(functions) != 0 || unwind != nil {
-		return DebugObject{Name: key, Functions: functions, Unwind: unwind}, true
+		return DebugObject{Name: key, DebugID: ObjectDebugID(data), Functions: functions, Unwind: unwind}, true
 	}
 	key, functions = ParseBreakpad(name, data)
 	if len(functions) == 0 {
