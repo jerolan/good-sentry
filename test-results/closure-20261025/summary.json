@@ -3316,6 +3316,13 @@
       "evidence_files": [
         "identidad-076-go.log"
       ]
+    },
+    "CLOSE-identidad-077": {
+      "evidence": "vigente",
+      "scope": "project event throttle sampling across intake families with migration061",
+      "evidence_files": [
+        "identidad-077-go.log"
+      ]
     }
   },
   "commands": [

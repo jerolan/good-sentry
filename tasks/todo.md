@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-077 (siguiente criterio de gestión compatible). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-078 (edición y borrado de proyecto en la UI nativa). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1917,7 +1917,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-074](../SPEC.md#close-identidad-074) | Compatible organization detail and project keys: The native Projects view offers a project-scoped SDK-key mana… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-075](../SPEC.md#close-identidad-075) | Compatible organization detail and project keys: Real PostgreSQL owns039/041 preservation/reopen, UUID/team-cl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-076](../SPEC.md#close-identidad-076) | Compatible project update and deletion: PUT /api/0/projects/{org}/{project}/ accepts project name and platform… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-077](../SPEC.md#close-identidad-077) | Compatible project update and deletion: Additive061 stores each project's event_throttle_rate with a default o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-077](../SPEC.md#close-identidad-077) | Compatible project update and deletion: Additive061 stores each project's event_throttle_rate with a default o… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-078](../SPEC.md#close-identidad-078) | Compatible project update and deletion: The native project UI exposes Edit and permanent-delete confirmation t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-079](../SPEC.md#close-identidad-079) | Compatible project update and deletion: GET/POST /api/0/organizations/{org}/repos/ exposes the existing organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-080](../SPEC.md#close-identidad-080) | Compatible project update and deletion: POST /api/0/teams/{org}/{team}/projects/ accepts ProjectIn {name,slug?… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4902,6 +4902,30 @@ de un miembro y la denegación de un token de solo lectura.
 Evidencia: `test-results/closure-20261025/identidad-076-go.log` con el owner
 ampliado de actualización y borrado junto a los de creación y relación de
 equipo.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: muestreo de tráfico por proyecto
+
+Selección registrada antes de trabajar: CLOSE-identidad-077. Candidata
+`9227c7e`.
+
+Resultado observado: la migración `061_project_event_throttle.sql` añade
+`projects.event_throttle_rate` como entero no nulo con valor por defecto 0 y
+restricción 0..100; la creación acepta el porcentaje opcional y las respuestas de
+lista, detalle y actualización lo exponen. La decisión pura se prueba con
+percentiles fijos: 0 nunca rechaza, 1 rechaza con percentil 0 y no con 1, 37
+rechaza por debajo de 37, 99 por debajo de 99 y 100 rechaza siempre. En HTTP, el
+muestreo se aplica una vez por petición tras resolver clave y proyecto: el sobre
+de Sentry, un evento malformado, el minidump y el informe de seguridad/CSP
+reciben 429 con `Retry-After: 600` y
+`X-Sentry-Rate-Limits: 600:event:project:project_throttled`, y la entrada OTLP
+responde lo mismo con `google.rpc.Status` código 8. Las peticiones rechazadas no
+escriben eventos ni consumen la cuota por clave independiente, y un proyecto con
+tasa 0 nunca rechaza.
+
+Evidencia: `test-results/closure-20261025/identidad-077-go.log` con los owners
+de decisión, HTTP y admisión, más el contenido de la migración.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

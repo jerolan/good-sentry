@@ -1,0 +1,25 @@
+=== RUN   TestProjectThrottleRejectsSentryAndOTLPRequests
+--- PASS: TestProjectThrottleRejectsSentryAndOTLPRequests (0.57s)
+=== RUN   TestProjectEventThrottleDecision
+=== RUN   TestProjectEventThrottleDecision/disabled
+=== RUN   TestProjectEventThrottleDecision/one_percent_selected
+=== RUN   TestProjectEventThrottleDecision/one_percent_retained
+=== RUN   TestProjectEventThrottleDecision/middle_selected
+=== RUN   TestProjectEventThrottleDecision/middle_retained
+=== RUN   TestProjectEventThrottleDecision/ninety-nine_selected
+=== RUN   TestProjectEventThrottleDecision/ninety-nine_retained
+=== RUN   TestProjectEventThrottleDecision/one_hundred_always_rejected
+--- PASS: TestProjectEventThrottleDecision (0.00s)
+    --- PASS: TestProjectEventThrottleDecision/disabled (0.00s)
+    --- PASS: TestProjectEventThrottleDecision/one_percent_selected (0.00s)
+    --- PASS: TestProjectEventThrottleDecision/one_percent_retained (0.00s)
+    --- PASS: TestProjectEventThrottleDecision/middle_selected (0.00s)
+    --- PASS: TestProjectEventThrottleDecision/middle_retained (0.00s)
+    --- PASS: TestProjectEventThrottleDecision/ninety-nine_selected (0.00s)
+    --- PASS: TestProjectEventThrottleDecision/ninety-nine_retained (0.00s)
+    --- PASS: TestProjectEventThrottleDecision/one_hundred_always_rejected (0.00s)
+PASS
+ok  	goodsentry/internal/server	1.616s
+testing: warning: no tests to run
+PASS
+ok  	goodsentry/internal/store	1.066s [no tests to run]
