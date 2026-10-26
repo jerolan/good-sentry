@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-operacion-068 (archivo de errores y backend local). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-004 (alertas nativas y su UI). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1747,9 +1747,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-005](../SPEC.md#close-uptime-005) | Compatible uptime monitors: Additive057 gives every monitor a stable UUID endpoint identity and a unique index… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-001](../SPEC.md#close-alertas-001) | Compatible project alerts: GET/POST /api/0/projects/{org}/{project}/alerts/ and PUT/DELETE .../alerts/{id}/ ex… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-002](../SPEC.md#close-alertas-002) | Compatible project alerts: MonitorIn-style fields map as follows: timespanMinutes to the rolling window, quant… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-003](../SPEC.md#close-alertas-003) | Compatible project alerts: POST .../alerts/{id}/test/ queues the same native test delivery and returns one rec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-001](../SPEC.md#close-alertas-001) | Compatible project alerts: GET/POST /api/0/projects/{org}/{project}/alerts/ and PUT/DELETE .../alerts/{id}/ ex… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-002](../SPEC.md#close-alertas-002) | Compatible project alerts: MonitorIn-style fields map as follows: timespanMinutes to the rolling window, quant… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-003](../SPEC.md#close-alertas-003) | Compatible project alerts: POST .../alerts/{id}/test/ queues the same native test delivery and returns one rec… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-001](../SPEC.md#close-logs-001) | Native log retention: This is the first retention increment, covering Sentry and OTLP logs. Error events, tran… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-002](../SPEC.md#close-logs-002) | Native log retention: Resolve the master lifetime from GOODSENTRY_RETENTION_DAYS, then GLITCHTIP_RETENTION_DAY… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-003](../SPEC.md#close-logs-003) | Native log retention: Measure log age from the existing logs.created_at receipt timestamp, not the application… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -4397,6 +4397,31 @@ Evidencia: `test-results/closure-20261025/uptime-027-032-go.log`,
 `uptime-acceptance.json`, `uptime-pause.json` y `uptime-ui/report.json`
 (3 comprobaciones, 18 capturas 320/768/1440, sin errores de página ni peticiones
 fallidas).
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: alertas compatibles por proyecto
+
+Selección registrada antes de trabajar: CLOSE-alertas-001 a -003. Candidata
+`200ac1f`.
+
+Resultado observado: los owners de store, entrega y proveedores pasan con
+`-race` (103 subpruebas) y el contrato HTTP se amplió con dos owners nuevos.
+Las rutas compatibles listan, crean, actualizan, prueban y eliminan reglas del
+proyecto resuelto por slug dentro del grant: la lectura exige `project:read` y
+la escritura `project:write` sobre la autoridad nativa del creador; un token de
+`event:read` recibe 403 en lectura y un token de `project:write` no puede leer.
+La paginación usa cursor estricto con enlace `rel="next"` absoluto, segunda
+página sin siguiente y 400 para cursor malformado o clave desconocida. El mapeo
+convierte `timespanMinutes`, `quantity`, `environments`, `uptime` y
+`alertRecipients` (correo del equipo y proveedores por URL) y rechaza con 400
+`tagsToAdd`, URL de correo, proveedor sin URL y tipo desconocido; un PUT que
+omite campos conserva ventana, cantidad, entornos y uptime, y cambiar el tipo
+devuelve 409. El endpoint de prueba responde una entrada `queued` con
+`message:null` por destinatario, sin afirmar entrega externa.
+
+Evidencia: `test-results/closure-20261025/alertas-001-003-go.log` con los tres
+owners HTTP y la matriz de store/entrega/proveedores.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

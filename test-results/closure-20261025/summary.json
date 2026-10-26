@@ -2923,6 +2923,27 @@
         "uptime-pause.json",
         "uptime-ui/report.json"
       ]
+    },
+    "CLOSE-alertas-001": {
+      "evidence": "vigente",
+      "scope": "compatible project alert rules: mapping, pagination, validation, scopes and test queue",
+      "evidence_files": [
+        "alertas-001-003-go.log"
+      ]
+    },
+    "CLOSE-alertas-002": {
+      "evidence": "vigente",
+      "scope": "compatible project alert rules: mapping, pagination, validation, scopes and test queue",
+      "evidence_files": [
+        "alertas-001-003-go.log"
+      ]
+    },
+    "CLOSE-alertas-003": {
+      "evidence": "vigente",
+      "scope": "compatible project alert rules: mapping, pagination, validation, scopes and test queue",
+      "evidence_files": [
+        "alertas-001-003-go.log"
+      ]
     }
   },
   "commands": [
