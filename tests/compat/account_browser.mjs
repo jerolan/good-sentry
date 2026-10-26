@@ -36,7 +36,7 @@ try {
     await page.getByRole('alert').filter({ hasText: 'The new passwords do not match.' }).waitFor();
     report.checks.push('Confirmation mismatch keeps the account form available');
     await page.getByLabel('Confirm new password', { exact: true }).fill(replacement);
-    for (const width of [320, 768, 1440]) {
+    for (const width of [320, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       const size = await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth }));
       assert.ok(size.document <= size.viewport, `Account form overflows at ${width}px`);

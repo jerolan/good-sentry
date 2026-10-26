@@ -38,7 +38,7 @@ async function resetTokenFromMail() {
   throw new Error('password reset email did not arrive');
 }
 async function capture(name) {
-  for (const width of [320, 768, 1440]) {
+  for (const width of [320, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.locator('h1').focus();
     await page.evaluate(() => new Promise(done => { scrollTo(0, 0); requestAnimationFrame(done); }));

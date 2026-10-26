@@ -1442,9 +1442,9 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024 y 026–031 ya están
-vigentes y 025 está bloqueada por publicación/CI de la misma fuente. Siguiente
-acción: CLOSE-identidad-032 (formulario de reset y 1024). No se declara
+bloques detallados 014–049 siguen pendientes; 014–024 y 026–032 ya están
+vigentes y 025/033 están bloqueadas por publicación/CI de la misma fuente.
+Siguiente acción: CLOSE-identidad-034 (migración TOTP y RFC6238). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
@@ -1496,8 +1496,8 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-029](../SPEC.md#close-identidad-029) | Account email and single-use password recovery: A reset token is 32 random bytes as64 lowercase hex digits. St… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de criptografía |
 | [CLOSE-identidad-030](../SPEC.md#close-identidad-030) | Account email and single-use password recovery: The one application worker sends a plain-text MIME message thr… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del worker |
 | [CLOSE-identidad-031](../SPEC.md#close-identidad-031) | Account email and single-use password recovery: POST /api/v1/account/password/reset/request is public but requ… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de reset |
-| [CLOSE-identidad-032](../SPEC.md#close-identidad-032) | Account email and single-use password recovery: The reset form consumes a resetToken query parameter without p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-032](../SPEC.md#close-identidad-032) | Account email and single-use password recovery: The reset form consumes a resetToken query parameter without p… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del formulario |
+| [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | implementada (local) | bloqueada | Publicar y repetir copia/reinicio/CI sobre la fuente; luego cerrar |
 | [CLOSE-identidad-034](../SPEC.md#close-identidad-034) | Two-factor authentication: Additive migration 053_user_totp.sql adds nullable users.totp_secret (AES-256-GCM c… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-035](../SPEC.md#close-identidad-035) | Two-factor authentication: POST /api/v1/login keeps its strict body and identical Invalid email or password re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-036](../SPEC.md#close-identidad-036) | Two-factor authentication: GET /api/v1/me/two-factor reports enabled, pending and recoveryCodesRemaining for t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3114,11 +3114,11 @@ y se restaura si el formulario sigue montado. La confirmación distinta y el
 400 conservan el formulario; el 503/fallo de red muestra que el resultado no se
 pudo confirmar y ofrece ir a sign in sin reintentar; el éxito limpia el estado
 y muestra el mensaje de login. No se guardan contraseñas en history, storage ni
-estado compartido; las capturas cubren 320/768/1440 y no hay errores de página.
+estado compartido; las capturas cubren 320/768/1024/1440 y no hay errores de página.
 Subresultados pendientes del bloque: ninguno.
 
 Evidencia: `test-results/closure-20261025/account-owner/`,
-`account-member/` y `account-noorg/`.
+`account-owner-1024/`, `account-member/` y `account-noorg/`.
 
 Siguiente acción: CLOSE-identidad-024 (PostgreSQL real de 035, aislamiento,
 bloqueos, dos cambios, rollback y commit diferido), con dependencias locales
@@ -3314,6 +3314,36 @@ Evidencia: `test-results/closure-20261025/account-mail/tests.log`.
 
 Siguiente acción: CLOSE-identidad-032 (formulario de reset, token en URL,
 estados y 1024), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: formulario de reset y aceptación agregada
+
+Selección registrada antes de trabajar: CLOSE-identidad-032 y -033. Candidata
+`98f762c`; producto sin cambios desde `54db6e4`. La unidad usa SMTP real de
+loopback y Chromium; 033 queda bloqueada por la publicación/CI exigida.
+
+Resultado 032: `account_recovery_smtp_browser.mjs` pasó con un sink SMTP local
+real: el enlace `resetToken` se consume sin persistirse en estado/historial,
+el formulario pide new/confirm, evita doble envío, limpia el token de la URL
+al éxito y muestra el login genérico. El replay del token consumido y el piso
+de 60s suprimen un segundo correo. Capturas `recovery-reset-form-*` y
+`recovery-success-*` a 320/768/1024/1440 sin errores de página. La variante
+1024 de Account también se regeneró con un flujo completo
+(`account-owner-1024`).
+
+Resultado 033: pure/MIME/AES-GCM, PostgreSQL (036, floor, generación,
+due/expiry/lease, consumo único, revocación y rollback), HTTP (mismo origen,
+cuerpos estrictos, enumeración, bearer, reset y cookie) y SMTP/browser locales
+están cubiertos por `account-mail/tests.log` y `recovery-ui/`. Falta la
+condición expresa de imagen copiada/reinicio, fuente exacta, publicación y CI
+de la misma fuente. Como en 025, los commits son locales y no hay autorización
+de publicación: 033 queda bloqueada, no cerrada. Desbloqueo: publicar/CI y
+repetir copia+reinicio+aceptación sobre el artefacto público.
+
+Evidencia: `test-results/closure-20261025/recovery-ui/`,
+`account-owner-1024/` y `account-mail/tests.log`.
+
+Siguiente acción: CLOSE-identidad-034 (migración TOTP 053 y reglas RFC6238),
+que es independiente de la publicación.
 
 ### Comprobante de integración documental
 

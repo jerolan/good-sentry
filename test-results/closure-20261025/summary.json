@@ -398,9 +398,9 @@
         "owner, member and no-organization accounts can open the form",
         "autocomplete, mismatch/no-persist, duplicate-submit disable, safe errors and success-to-sign-in",
         "503/network copy offers verification by new sign-in without auto retry",
-        "320/768/1440 without overflow or page errors"
+        "320/768/1024/1440 without overflow or page errors"
       ],
-      "evidence_files": ["account-owner/report.json", "account-member/report.json", "account-noorg/report.json", "account-owner/*.png", "account-member/*.png", "account-noorg/*.png"]
+      "evidence_files": ["account-owner/report.json", "account-owner-1024/report.json", "account-member/report.json", "account-noorg/report.json", "account-owner/*.png", "account-owner-1024/*.png", "account-member/*.png", "account-noorg/*.png"]
     },
     "CLOSE-identidad-024": {
       "evidence": "vigente",
@@ -492,6 +492,31 @@
         "invalid tokens 400 without writes; success 204; password change invalidates pending resets"
       ],
       "evidence_files": ["account-mail/tests.log"]
+    },
+    "CLOSE-identidad-032": {
+      "evidence": "vigente",
+      "scope": "reset link form, token URL handling, generic results, replay/floor and responsive layout",
+      "covered": [
+        "real SMTP email link resets the password through the browser",
+        "token is consumed without persisting in application state/history; success clears the URL and shows sign-in",
+        "consumed replay 400 and 60-second floor suppresses a second email",
+        "320/768/1024/1440 without page errors"
+      ],
+      "evidence_files": ["recovery-ui/report.json", "recovery-ui/*.png"]
+    },
+    "CLOSE-identidad-033": {
+      "evidence": "bloqueada por publicacion",
+      "scope": "aggregate pure/PostgreSQL/HTTP/SMTP/browser acceptance",
+      "covered": [
+        "pure token/AES-GCM/MIME; PostgreSQL 036/floor/generation/lease/revocation/rollback",
+        "HTTP strict bodies, enumeration, bearer rejection and cookie behavior",
+        "real local SMTP sink plus Chromium delivery/redemption/replay/floor"
+      ],
+      "blocker": {
+        "cause": "copied-image/restart, exact source/publication and CI remain required and publication is not authorized",
+        "unlock": "publish/CI the candidate and repeat the copied-image/restart acceptance"
+      },
+      "evidence_files": ["account-mail/tests.log", "recovery-ui/report.json", "recovery-ui/*.png"]
     }
   },
   "commands": [
