@@ -379,6 +379,16 @@
         "storage 503 is generic; login/token stale generation is 401, not conflict"
       ],
       "evidence_files": ["account/route.log", "account/generations.log"]
+    },
+    "CLOSE-identidad-022": {
+      "evidence": "vigente",
+      "scope": "204 after commit, cookie expiry and no secret disclosure",
+      "covered": [
+        "204 only after the password transaction commits",
+        "prefix/HttpOnly/SameSite/Secure cookie expiry and no replacement credential",
+        "old session 401; new password login 200; no password/hash/generation in output"
+      ],
+      "evidence_files": ["account/route.log", "account-owner/report.json", "account-member/report.json"]
     }
   },
   "commands": [

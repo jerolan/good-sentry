@@ -1442,12 +1442,11 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–021 ya están vigentes.
-Siguiente acción: CLOSE-identidad-022 (204 tras commit, cookie expirada y
-secretos fuera de respuestas). No se declara aceptación ni cierre del producto.
-El avance se informa por criterios/evidencia, sin porcentaje de casillas;
-tiempo y presupuesto de un Goal no completan el producto ni borran este
-registro.
+bloques detallados 014–049 siguen pendientes; 014–022 ya están vigentes.
+Siguiente acción: CLOSE-identidad-023 (Account UI, roles sin organización y
+estados de error). No se declara aceptación ni cierre del producto. El avance
+se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1486,7 +1485,7 @@ registro.
 | [CLOSE-identidad-019](../SPEC.md#close-identidad-019) | Account credential generations and authenticated password changes: The need for a fresh statement snapshot fol… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de aislamiento |
 | [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
-| [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de cookie |
 | [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3073,6 +3072,29 @@ Evidencia: `test-results/closure-20261025/account/route.log` y
 Siguiente acción: CLOSE-identidad-022 (204 solo tras commit, expiración de
 cookie y ausencia de secretos en respuestas), con dependencias locales
 resueltas.
+
+### Ejecución 2026-10-26: respuesta y cookie de contraseña
+
+Selección registrada antes de trabajar: CLOSE-identidad-022, siguiente en el
+plan. Candidata `00ad525`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `route.log`, el flujo de navegador owner/member y la inspección de
+`clearSessionCookie`.
+
+Resultado observado: `ChangePassword` solo retorna 204 después de que el store
+confirma el commit; después expira la cookie con el prefijo configurado,
+`HttpOnly`, `SameSite=Lax` y `Secure` bajo HTTPS, y el navegador vuelve al
+formulario de login sin emitir una credencial de reemplazo. Los campos y el
+estado autenticado se limpian; la otra sesión devuelve 401 y la contraseña
+nueva permite iniciar sesión. Las respuestas y logs no contienen contraseñas,
+hashes ni generaciones; el test HTTP comprueba que la sesión previa ya no
+accede y que el login anterior falla. Subresultados pendientes del bloque:
+ninguno.
+
+Evidencia: `test-results/closure-20261025/account/route.log` y los reportes
+`account-owner/`/`account-member/`.
+
+Siguiente acción: CLOSE-identidad-023 (Account UI, roles sin organización,
+estados pending/400/503 y foco), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
