@@ -1,0 +1,98 @@
+{
+  "ok": true,
+  "checks": [
+    "Custom half-open interval includes the start, excludes the end, combines legacy/segment aggregates without child counts and preserves trace-to-log bounds",
+    "Combined exact service/environment/level/text/trace filters, typed int64 and start-boundary log survive pagination/reload",
+    "All four presets store absolute UTC ranges, reuse bounds across filter/reload and reset pages; endpoint default removes bounds",
+    "Custom URL ranges retain precise UTC display, reject mismatched preset labels and clear with sidebar navigation",
+    "Malformed URL interval reaches real HTTP validation and displays the retryable error state"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/transactions-custom-window-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/transactions-custom-window-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/transactions-custom-window-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-combined-window-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-combined-window-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-combined-window-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-preset-window-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-preset-window-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-preset-window-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-offset-window-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-offset-window-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/rendimiento-013/logs-offset-window-1440.png"
+  ],
+  "dimensions": [
+    {
+      "name": "transactions-custom-window",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "transactions-custom-window",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "transactions-custom-window",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-combined-window",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-combined-window",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-combined-window",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-preset-window",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-preset-window",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-preset-window",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-offset-window",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-offset-window",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-offset-window",
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "location": "http://127.0.0.1:18168/api/v1/me"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "location": "http://127.0.0.1:18168/api/v1/organizations/telemetry-013/logs?project=1&start=2026-10-23T16%3A33%3A33.000Z"
+    }
+  ]
+}

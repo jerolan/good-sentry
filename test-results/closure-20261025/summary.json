@@ -3903,6 +3903,14 @@
         "rendimiento-012/report.json"
       ]
     },
+    "CLOSE-rendimiento-013": {
+      "evidence": "vigente",
+      "scope": "telemetry UI windows, paginated filters, trace bounds, safe typed attributes and exact int64 display; native API keeps exact integer digits",
+      "evidence_files": [
+        "rendimiento-013/report.json",
+        "rendimiento-013/api-integer.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
