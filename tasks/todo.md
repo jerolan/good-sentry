@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -094 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-095
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -095 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-096
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1937,7 +1937,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-092](../SPEC.md#close-identidad-092) | Compatible project update and deletion: Compatible team mutations are POST /api/0/organizations/{org}/teams/ w… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-093](../SPEC.md#close-identidad-093) | Compatible project update and deletion: Real PostgreSQL covers040 token preservation/reopen, org:write issuanc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-094](../SPEC.md#close-identidad-094) | Compatible project update and deletion: PUT /api/0/organizations/{org}/ accepts only OrganizationInSchema {nam… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-095](../SPEC.md#close-identidad-095) | Compatible project update and deletion: POST /api/0/organizations/ is available only when GOODSENTRY_ENABLE_OR… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-095](../SPEC.md#close-identidad-095) | Compatible project update and deletion: POST /api/0/organizations/ is available only when GOODSENTRY_ENABLE_OR… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-096](../SPEC.md#close-identidad-096) | Compatible project update and deletion: Real PostgreSQL covers rename preservation, invalid names and owner/ma… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-044](../SPEC.md#close-operacion-044) | Public repository and product site: The user also explicitly requests Tailwind CSS plus daisyUI for the applic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-045](../SPEC.md#close-operacion-045) | Public repository and product site: Use official daisyUI v5.7.50 standalone daisyui.mjs and daisyui-theme.mjs,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5360,6 +5360,45 @@ owners y los cambios en `internal/store/compat_organization_write_test.go` y
 `internal/server/compat_management_mutations_test.go`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: creación compatible de organización
+
+Selección registrada antes de trabajar: CLOSE-identidad-095. Candidata
+`2733df5`.
+
+Resultado observado: `POST /api/0/organizations/` responde 403 con el flag
+desactivado antes de leer el cuerpo, también con JSON truncado, y el flag
+responde a `GOODSENTRY_ENABLE_ORGANIZATION_CREATION` y a su alias
+`ENABLE_ORGANIZATION_CREATION` con la precedencia explícita ya probada en
+configuración. Con el flag activo, la creación devuelve 201 con
+`OrganizationDetailSchema`, slug canónico, rol de propietario, un solo equipo
+por defecto con su membresía y ningún proyecto, y deja intactas las demás
+organizaciones, proyectos y equipos. Un propietario o administrador de una
+organización existente puede crear; manager y miembro reciben 403; sin sesión,
+401; un token `org:read`, 403. El token `org:write` de un administrador crea,
+y tras degradar a ese usuario a miembro la misma credencial recibe 403, lo que
+demuestra que la membresía de origen se revalida en storage.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Flag y alias con precedencia explícita | config `TestFeatureAliasesAndRuntimeOptions`, `TestExplicitGoodSentryFlagOverridesAlias` |
+| 403 antes de leer el cuerpo con el flag apagado | HTTP `TestCreateCompatibleOrganizationHTTP` (cuerpo válido y truncado) |
+| 201 con propietario, equipo por defecto y sin proyectos | store `TestCreateCompatibleOrganizationOwnershipTeamAndAuthority`; HTTP `TestCreateCompatibleOrganizationHTTP` |
+| Datos existentes intactos | store `TestCreateCompatibleOrganizationOwnershipTeamAndAuthority` (recuentos antes y después) |
+| Límites de sesión: propietario y administrador sí; manager y miembro no | store `TestCreateCompatibleOrganizationOwnershipTeamAndAuthority`; HTTP `TestCreateCompatibleOrganizationHTTP` |
+| Bearer con `org:write` y membresía de origen revalidada | HTTP `TestCreateCompatibleOrganizationHTTP` |
+| Duplicado 409, nombre inválido y cuerpos malformados 400 | store `TestCreateCompatibleOrganizationOwnershipTeamAndAuthority`; HTTP `TestCreateCompatibleOrganizationHTTP` |
+
+Evidencia: `test-results/closure-20261025/identidad-095-go.log` con los
+owners de store y HTTP más las pruebas de configuración, y los cambios en
+`internal/store/compat_organizations_test.go` y
+`internal/server/compat_organizations_test.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+prueba atómica de la transacción se apoya en los recuentos y en el esquema de la
+migración; no inyecta un fallo intermedio.
 
 ### Comprobante de integración documental
 

@@ -14,6 +14,7 @@ import (
 func TestCreateCompatibleOrganizationHTTP(t *testing.T) {
 	disabled := newResolutionHTTPFixture(t)
 	disabled.request(t, disabled.client, "POST", "/api/0/organizations/", `{"name":"Disabled"}`, http.Header{"X-CSRF-Token": {disabled.csrf}}, 403)
+	disabled.request(t, disabled.client, "POST", "/api/0/organizations/", `{"name":`, http.Header{"X-CSRF-Token": {disabled.csrf}}, 403)
 
 	f := newResolutionHTTPFixtureWithConfig(t, func(cfg *config.Config) { cfg.OrganizationCreation = true })
 	endpoint := "/api/0/organizations/"
@@ -31,6 +32,23 @@ func TestCreateCompatibleOrganizationHTTP(t *testing.T) {
 	insertDiscoveryMember(t, f, "organization-creator-member@test", "Organization member", "member")
 	memberClient, memberCSRF := loginManagementMember(t, f, "organization-creator-member@test")
 	f.request(t, memberClient, "POST", endpoint, `{"name":"Member org"}`, http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
+	insertDiscoveryMember(t, f, "organization-creator-manager@test", "Organization manager", "manager")
+	managerClient, managerCSRF := loginManagementMember(t, f, "organization-creator-manager@test")
+	f.request(t, managerClient, "POST", endpoint, `{"name":"Manager org"}`, http.Header{"X-CSRF-Token": {managerCSRF}}, 403)
+	adminID := insertDiscoveryMember(t, f, "organization-creator-admin@test", "Organization admin", "admin")
+	adminClient, adminCSRF := loginManagementMember(t, f, "organization-creator-admin@test")
+	f.request(t, adminClient, "POST", endpoint, `{"name":"Admin session org"}`, http.Header{"X-CSRF-Token": {adminCSRF}}, 201)
+	var adminToken struct{ Token string }
+	adminBody := resolutionJSON(t, map[string]any{"name": "Creator admin writer", "scopes": []string{"org:write"}, "projectIds": []string{f.project.ID}, "expiresInDays": 1})
+	if err := json.Unmarshal(f.request(t, adminClient, "POST", "/api/v1/organizations/"+f.org.Slug+"/api-tokens", string(adminBody), http.Header{"X-CSRF-Token": {adminCSRF}}, 201), &adminToken); err != nil || adminToken.Token == "" {
+		t.Fatalf("creator admin token: %+v %v", adminToken, err)
+	}
+	adminBearer := http.Header{"Authorization": {"Bearer " + adminToken.Token}}
+	f.request(t, http.DefaultClient, "POST", endpoint, `{"name":"Admin bearer org"}`, adminBearer, 201)
+	if _, err := f.sql.Exec(f.ctx, `UPDATE memberships SET role='member' WHERE organization_id=$1::bigint AND user_id=$2::bigint`, f.org.ID, adminID); err != nil {
+		t.Fatal(err)
+	}
+	f.request(t, http.DefaultClient, "POST", endpoint, `{"name":"Demoted admin org"}`, adminBearer, 403)
 
 	readToken := issueManagementToken(t, f, f.org.Slug, "Organization read", []string{"org:read"}, []string{f.project.ID})
 	f.request(t, http.DefaultClient, "POST", endpoint, `{"name":"Read org"}`, http.Header{"Authorization": {"Bearer " + readToken}}, 403)

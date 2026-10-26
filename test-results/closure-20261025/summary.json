@@ -3459,6 +3459,13 @@
       "evidence_files": [
         "identidad-094-go.log"
       ]
+    },
+    "CLOSE-identidad-095": {
+      "evidence": "vigente",
+      "scope": "organization creation flag, ownership bootstrap, session and Bearer authority",
+      "evidence_files": [
+        "identidad-095-go.log"
+      ]
     }
   },
   "commands": [
