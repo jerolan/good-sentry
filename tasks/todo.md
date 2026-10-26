@@ -1443,9 +1443,9 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005 y 007–012 ya están vigentes. 006 espera sus
+publicación/CI; errores 001–005 y 007–014 ya están vigentes. 006 espera sus
 proveedores de releases/artefactos/nativo/CLI. Siguiente acción:
-CLOSE-errores-013/014 (UI y Chromium de filtros combinados). No se declara
+CLOSE-errores-015 (borrado individual/bulk compatible). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
@@ -1548,8 +1548,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-010](../SPEC.md#close-errores-010) | Issue search, historical filters and pages: Keep domain values explicit with IssueSearch{Text string; Terms Is… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener dominio tipado |
 | [CLOSE-errores-011](../SPEC.md#close-errores-011) | Issue search, historical filters and pages: Evaluate explicit environment/release, event-level structured term… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de selección |
 | [CLOSE-errores-012](../SPEC.md#close-errores-012) | Issue search, historical filters and pages: Organization membership/selected-project authorization, count and… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de authz |
-| [CLOSE-errores-013](../SPEC.md#close-errores-013) | Issue search, historical filters and pages: Extend the existing responsive Issues form with release, All statu… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-014](../SPEC.md#close-errores-014) | Issue search, historical filters and pages: Real Chromium at320/768/1440 must verify combined historical/tag/r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-013](../SPEC.md#close-errores-013) | Issue search, historical filters and pages: Extend the existing responsive Issues form with release, All statu… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de filtros UI |
+| [CLOSE-errores-014](../SPEC.md#close-errores-014) | Issue search, historical filters and pages: Real Chromium at320/768/1440 must verify combined historical/tag/r… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del formulario |
 | [CLOSE-errores-015](../SPEC.md#close-errores-015) | Compatible issue deletion: Implement complete individual and bounded bulk error-issue deletion, usable through… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-016](../SPEC.md#close-errores-016) | Compatible issue deletion: GlitchTip declares individual global/organization204 and organization bulk200; Sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-017](../SPEC.md#close-errores-017) | Compatible issue deletion: Add exact DELETE /api/0/issues/{issue}/, /api/0/organizations/{org}/issues/{issue}/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3667,6 +3667,26 @@ Evidencia: `test-results/closure-20261025/issue-search.log`.
 
 Siguiente acción: CLOSE-errores-013/014 (formulario y Chromium de filtros
 combinados), que requieren una corrida de navegador específica.
+
+### Ejecución 2026-10-26: filtros combinados en Chromium
+
+Selección registrada antes de trabajar: CLOSE-errores-013 y -014. Candidata
+`b818e54`; producto sin cambios desde `54db6e4`. La unidad usa un proyecto
+sembrado por envelopes reales y Chromium.
+
+Resultado observado: el formulario Issues expone búsqueda, proyecto, estado
+(incluido All), entorno, release y orden; aplicar texto+entorno+release+estado
+devuelve solo el issue cuya misma ocurrencia coincide y escribe los parámetros
+en la URL. Tras recargar, los campos y el resultado se mantienen. Una búsqueda
+estructurada `region:eu` intersectada con entorno/release devuelve solo el
+evento correspondiente. Las capturas cubren 320/768/1440 sin desbordamiento ni
+errores de página. Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/issue-filters/`,
+`tests/compat/issue_filters_browser.mjs` y `issue-search.log`.
+
+Siguiente acción: CLOSE-errores-015 (borrado individual/bulk compatible) y las
+reglas de discard/hash que siguen.
 
 ### Comprobante de integración documental
 

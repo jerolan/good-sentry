@@ -925,6 +925,26 @@
         "count/pages over authorized snapshot"
       ],
       "evidence_files": ["issue-search.log"]
+    },
+    "CLOSE-errores-013": {
+      "evidence": "vigente",
+      "scope": "responsive Issues filter form with release/status/environment/sort and URL state",
+      "covered": [
+        "text/project/status/environment/release/sort controls",
+        "combined filters write URL and preserve values"
+      ],
+      "evidence_files": ["issue-filters/report.json", "issue-filters/*.png"]
+    },
+    "CLOSE-errores-014": {
+      "evidence": "vigente",
+      "scope": "real Chromium combined historical/tag/release/environment filters at 320/768/1440",
+      "covered": [
+        "combined filters return only same-occurrence issues",
+        "URL/filter state survives reload",
+        "structured tag+environment+release intersection",
+        "no overflow or page errors"
+      ],
+      "evidence_files": ["issue-filters/report.json", "issue-filters/*.png", "tests/compat/issue_filters_browser.mjs"]
     }
   },
   "commands": [
