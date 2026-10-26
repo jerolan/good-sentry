@@ -1444,8 +1444,8 @@ CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
-y 101–111, 139–162 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-001 (retención nativa de logs). No se declara aceptación ni cierre del producto. El avance se
+y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-029 (logs con el SDK Go 0.50.0). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1750,17 +1750,17 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-001](../SPEC.md#close-alertas-001) | Compatible project alerts: GET/POST /api/0/projects/{org}/{project}/alerts/ and PUT/DELETE .../alerts/{id}/ ex… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-002](../SPEC.md#close-alertas-002) | Compatible project alerts: MonitorIn-style fields map as follows: timespanMinutes to the rolling window, quant… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-003](../SPEC.md#close-alertas-003) | Compatible project alerts: POST .../alerts/{id}/test/ queues the same native test delivery and returns one rec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-001](../SPEC.md#close-logs-001) | Native log retention: This is the first retention increment, covering Sentry and OTLP logs. Error events, tran… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-002](../SPEC.md#close-logs-002) | Native log retention: Resolve the master lifetime from GOODSENTRY_RETENTION_DAYS, then GLITCHTIP_RETENTION_DAY… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-003](../SPEC.md#close-logs-003) | Native log retention: Measure log age from the existing logs.created_at receipt timestamp, not the application… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-004](../SPEC.md#close-logs-004) | Native log retention: Add forward-only migration022 with an index on logs(created_at,id) and a partial index o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-005](../SPEC.md#close-logs-005) | Native log retention: OTLP canonical batches are authoritative shared bytes. Delete a batch only when no log r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-006](../SPEC.md#close-logs-006) | Native log retention: Run the log-retention loop inside the one application process, on startup and after each… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-007](../SPEC.md#close-logs-007) | Native log retention: Acceptance owners: configuration tests protect master/log precedence, inheritance, exact… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-008](../SPEC.md#close-logs-008) | Compatible retained-log API: Additive migration 054_log_host.sql adds logs.host and a (project_id,timestamp DE… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-009](../SPEC.md#close-logs-009) | Compatible retained-log API: GET /api/0/organizations/{org}/logs/ serves the published GlitchTip log shape fro… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-010](../SPEC.md#close-logs-010) | Compatible retained-log API: Admission is session or Bearer event:read/event:write. Repeated project filters m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-logs-011](../SPEC.md#close-logs-011) | Compatible retained-log API: Pages are keyset ordered by timestamp DESC,id DESC with a default limit100 and a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-logs-001](../SPEC.md#close-logs-001) | Native log retention: This is the first retention increment, covering Sentry and OTLP logs. Error events, tran… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-002](../SPEC.md#close-logs-002) | Native log retention: Resolve the master lifetime from GOODSENTRY_RETENTION_DAYS, then GLITCHTIP_RETENTION_DAY… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-003](../SPEC.md#close-logs-003) | Native log retention: Measure log age from the existing logs.created_at receipt timestamp, not the application… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-004](../SPEC.md#close-logs-004) | Native log retention: Add forward-only migration022 with an index on logs(created_at,id) and a partial index o… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-005](../SPEC.md#close-logs-005) | Native log retention: OTLP canonical batches are authoritative shared bytes. Delete a batch only when no log r… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-006](../SPEC.md#close-logs-006) | Native log retention: Run the log-retention loop inside the one application process, on startup and after each… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-007](../SPEC.md#close-logs-007) | Native log retention: Acceptance owners: configuration tests protect master/log precedence, inheritance, exact… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-008](../SPEC.md#close-logs-008) | Compatible retained-log API: Additive migration 054_log_host.sql adds logs.host and a (project_id,timestamp DE… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-009](../SPEC.md#close-logs-009) | Compatible retained-log API: GET /api/0/organizations/{org}/logs/ serves the published GlitchTip log shape fro… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-010](../SPEC.md#close-logs-010) | Compatible retained-log API: Admission is session or Bearer event:read/event:write. Repeated project filters m… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-logs-011](../SPEC.md#close-logs-011) | Compatible retained-log API: Pages are keyset ordered by timestamp DESC,id DESC with a default limit100 and a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-002](../SPEC.md#close-rendimiento-002) | Transaction and standalone-span retention: Transaction/span retention is the next required class after accepte… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-003](../SPEC.md#close-rendimiento-003) | Transaction and standalone-span retention: The configuration prerequisite adds Config.TransactionRetentionDays… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-004](../SPEC.md#close-rendimiento-004) | Transaction and standalone-span retention: The storage contract is Store.CleanupTransactions(ctx, days), retur… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4196,6 +4196,41 @@ eventos, y esa instancia (`goodsentry-deletion-grouping-regression-check`)
 ya no existe en el host ni se conserva un volcado equivalente; tampoco hay
 autorización de publicación para el CI remoto. Desbloqueo: restaurar ese volcado
 exacto o aprobar una línea base nueva, y ejecutar CI público.
+
+### Ejecución 2026-10-26: retención de logs y lectura compatible
+
+Selección registrada antes de trabajar: CLOSE-logs-001 a -011. Candidata
+`281444f`.
+
+Resultado observado: la configuración resuelve el maestro por
+`GOODSENTRY_RETENTION_DAYS`, `GLITCHTIP_RETENTION_DAYS` y
+`RETENTION_DAYS`, y los logs por `GOODSENTRY_LOG_RETENTION_DAYS` y
+`GLITCHTIP_LOG_RETENTION_DAYS`, con enteros 1..3650 e intervalo 1..3600; los
+owners de configuración cubren herencia, límites y valores inválidos. La edad se
+mide por `logs.created_at` con `created_at < cutoff` en una transacción, la
+cohorte se limita a 250 filas con bloqueo de fila y `SKIP LOCKED`, el lock de
+asesoría es por esquema y la cancelación o el fallo revierten la remoción; la
+migración 022 conserva y reabre los recibos previos. Un batch OTLP solo se borra
+cuando ninguna fila lo referencia y el hermano superviviente conserva sus bytes.
+El loop corre en el proceso único con drenaje al arranque, reintento tras fallo y
+parada limpia. La lectura compatible sirve la forma publicada con niveles
+`warning`, cursor keyset, recursos y estadísticas por hora, y devuelve 404 con
+la ingesta deshabilitada.
+
+Aceptación sobre una copia aislada con la imagen `goodsentry:logs-20261026`
+(`9d48873696fc`): 6 logs y 2 batches reales (OTLP y SDK), 4 recibos propios
+envejecidos a dos días con retención de un día; tras el drenaje quedan 2 logs y
+1 batch, el batch totalmente vencido desaparece, el hermano conserva el registro
+fresco, el hash del SDK superviviente no cambia, el detalle nativo del id vencido
+devuelve 404 y el vigente 200, la lectura compatible devuelve solo los ids 4 y 5,
+y el respaldo previo restaurado en otra base conserva las cuatro filas vencidas.
+
+Evidencia: `test-results/closure-20261025/logs-001-011-go.log`,
+`log-retention-acceptance.json`, `log-retention-acceptance.mjs` y
+`logs-image-build.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final; no se
+afirma recuperación automática ni archivado en frío.
 
 ### Comprobante de integración documental
 

@@ -2721,6 +2721,94 @@
         "errores-logs-012-027-go.log"
       ],
       "blocked": "La instancia/base aceptada de 4010 filas ya no existe y no hay volcado equivalente; falta CI público."
+    },
+    "CLOSE-logs-001": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-002": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-003": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-004": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-005": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-006": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-007": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-008": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-009": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-010": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
+    },
+    "CLOSE-logs-011": {
+      "evidence": "vigente",
+      "scope": "native log retention lifecycle and compatible retained-log reads",
+      "evidence_files": [
+        "logs-001-011-go.log",
+        "log-retention-acceptance.json"
+      ]
     }
   },
   "commands": [
