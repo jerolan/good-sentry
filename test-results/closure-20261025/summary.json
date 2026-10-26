@@ -4514,6 +4514,11 @@
       "scope": "private-stripped PDB GSS S_PUB32 scan, Section Map mapping, public ranges, GSI/PSI independence, descriptor and record bounds and fail-closed framing",
       "evidence_files": ["nativo-020/public.log", "nativo-020/native.log", "nativo-020/summary.json"]
     },
+    "CLOSE-nativo-021": {
+      "evidence": "vigente",
+      "scope": "SymCache v7/v8/v9 records, DebugId resolution, string encodings, v9 variable extents, record/file bounds, innermost ranges and fail-closed malformed input",
+      "evidence_files": ["nativo-021/symcache.log", "nativo-021/native.log", "nativo-021/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
