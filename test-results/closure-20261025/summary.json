@@ -4238,6 +4238,13 @@
         "../goal-ssl-contract/monitor-contract-extract.json"
       ]
     },
+    "CLOSE-uptime-022": {
+      "evidence": "vigente",
+      "scope": "SSL origin grammar: accepted hosts and ports, preserved spelling, rejected credentials/paths/query/fragment and no expected body",
+      "evidence_files": [
+        "uptime-022/ssl-grammar.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
