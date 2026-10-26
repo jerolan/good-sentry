@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -032
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -033
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-033. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-034. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1865,7 +1865,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 026/029) |
 | [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 029) |
 | [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7724,6 +7724,26 @@ Límites registrados: la construcción desde un índice estrecho sin cargar JSON
 apoya en la implementación y no se mide por columnas en esta prueba; la
 indentación visual y el recorte de sangría pertenecen a la UI posterior. El CI
 público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: forma pública del JSON de traza
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-033. Se reutiliza la
+ejecución de 029; el contrato HTTP y la prueba de previews recorren la misma
+revisión de producto.
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Campos principales de la traza | `TestTraceHTTPContract` valida `traceId`, `nodeCount`, `projectCount`, `errorCount`, `logCount`, `logsEnabled`, tiempos, `relationships` con sus seis claves, `invalidSpanIdCount`, `untimedCount`, `data`, `page`, `pageSize` 50 y `hasMore` |
+| Campos de cada nodo | La misma prueba cubre identidad, fuente, `recordId`, ordinal, `kind`, proyecto, nombre, op, estado, entorno, release, `spanId`/`parentSpanId`, estados, `parentId`/`parentPage`, profundidad, hijos, tiempos y `summaryTruncated` |
+| Previews de 2000 caracteres Unicode y bandera | `TestTracePreviewsRawScopeRelatedPagesAndLogFlags` verifica el recorte y su divulgación |
+| Nodo crudo con JSON original completo | La misma prueba lee `{id,source,recordId,ordinal,projectId,data}` y conserva el payload íntegro |
+| Errores con `data`, `total` y paginación | `TestTraceHTTPContract` valida la forma y las páginas |
+
+Evidencia: `test-results/closure-20261025/rendimiento-029/trace-graph.log`.
+
+Límites registrados: no se repite la ejecución al no haber cambios de producto;
+el comprobante es de API. El CI público y la imagen final siguen pendientes para
+la auditoría final.
 
 ### Comprobante de integración documental
 

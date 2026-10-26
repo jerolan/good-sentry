@@ -4057,6 +4057,13 @@
         "rendimiento-031/graph-identity.log"
       ]
     },
+    "CLOSE-rendimiento-033": {
+      "evidence": "vigente",
+      "scope": "public trace JSON and node fields, 2000-character previews with truncation flag, full raw node payload and paginated error shape",
+      "evidence_files": [
+        "rendimiento-029/trace-graph.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
