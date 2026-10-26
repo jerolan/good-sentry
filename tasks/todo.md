@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 y -002 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -003 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-003. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-004. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1729,7 +1729,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8652,6 +8652,35 @@ Límites registrados: la carga durable no demuestra simbolización nativa; el
 emparejamiento de objetos, la reprocesión y el ensamblado por chunks pertenecen
 a CLOSE-nativo-003 y CLOSE-nativo-004. La imagen final y el CI público siguen
 pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: reprocesión nativa durable
+
+Selección registrada antes de trabajar: CLOSE-nativo-003. Revisión de producto
+`3cfc664`; este incremento solo añade pruebas y documentación, sin cambios de
+producto, esquema ni imagen.
+
+| Elemento | Comprobante |
+|---|---|
+| POST compatible responde 200 vacío después de confirmar la fila durable | `TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols` (assert inmediato de cola) |
+| Una fila por proyecto, snapshot del mayor ID, cursor a cero y coalescencia | `TestNativeReprocessingQueueCoalescesAndCascades`; `TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols` |
+| Lote máximo de 10 eventos nativos dentro del snapshot | `TestNativeReprocessingWorkerResumesAfterDatabaseReopen`; `TestNativeReprocessingBatchScopeLockAndAtomicity` |
+| Exclusión por plataforma y de eventos posteriores al snapshot | `TestNativeReprocessingBatchScopeLockAndAtomicity` |
+| Bloqueo `SKIP LOCKED` entre réplicas | `TestNativeReprocessingBatchScopeLockAndAtomicity` |
+| Símbolos solo del proyecto y presupuesto 25 archivos/64MiB | `TestNativeReprocessingBatchScopeLockAndAtomicity`; `TestNativeReprocessingFileByteBudget`; server test |
+| Relleno solo de función/línea ausentes, sin añadir frames | `TestResymbolicateEventFillsOnlyMissingNativeFrames`; server test |
+| Evento no nativo intacto | `TestResymbolicateEventLeavesNonNativePayloadUntouched`; store scope test |
+| Identidad, timestamp, issue, conteo y notificaciones preservados | `TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols` |
+| Commit conjunto de JSON y cursor; fallo sin cambios parciales | `TestNativeReprocessingBatchScopeLockAndAtomicity`; `TestNativeReprocessingWorkerResumesAfterDatabaseReopen` |
+| Borrado al completar y cascada al borrar el proyecto | `TestNativeReprocessingQueueCoalescesAndCascades`; jobs test |
+| Migración 068, checksums y datos previos sobreviven reapertura | `TestNativeReprocessingMigrationReopens` |
+
+Evidencia: `test-results/closure-20261025/nativo-003/native.log`, `store.log`,
+`jobs.log` y `server.log`.
+
+Límites registrados: la prueba usa PostgreSQL desechable y un worker local; no
+ejercita varias réplicas reales ni la imagen final. La aceptación de SDK/CLI y
+de dSYM/PDB completos pertenece a criterios posteriores. El CI público sigue
+pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

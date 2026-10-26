@@ -1,0 +1,62 @@
+{
+  "criteria": ["CLOSE-nativo-003"],
+  "date": "2026-10-26",
+  "product_revision": "3cfc664",
+  "note": "This receipt adds only tests and documentation. The reprocessing handler, migration 068, worker and symbol matching are unchanged from the product revision.",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64",
+    "postgres": "18, disposable container gs-nativo003-pg on 127.0.0.1:18343",
+    "database": "disposable local PostgreSQL; no shared or production database used"
+  },
+  "owners": {
+    "store": [
+      "TestNativeReprocessingQueueCoalescesAndCascades",
+      "TestNativeReprocessingMigrationReopens",
+      "TestNativeReprocessingBatchScopeLockAndAtomicity",
+      "TestNativeReprocessingFileByteBudget"
+    ],
+    "jobs": [
+      "TestNativeReprocessingWorkerResumesAfterDatabaseReopen"
+    ],
+    "symbols": [
+      "TestResymbolicateEventFillsOnlyMissingNativeFrames",
+      "TestResymbolicateEventLeavesNonNativePayloadUntouched"
+    ],
+    "http": [
+      "TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols"
+    ]
+  },
+  "covered": [
+    "the compatible reprocessing POST returns an empty 200 only after a durable one-row queue entry with cursor 0 and the current native event snapshot is visible",
+    "repeated requests coalesce into one project row, reset the cursor and adopt the newest snapshot generation",
+    "the worker processes at most 10 native error events inside the snapshot; non-native and later events are excluded",
+    "a locked queue row is skipped rather than double processed; releasing the lock allows the batch",
+    "only the project's debug files are loaded, bounded to 25 files and 64MiB of recorded bytes",
+    "only missing frame function and source filename/line are filled from matching debug objects; existing values, unmatched frames and frame count are preserved",
+    "event identity, timestamp, issue row (ownership, grouping, count) and alert delivery/attempt state are unchanged",
+    "event JSON updates and cursor progress commit together; an invalid update leaves event data and cursor untouched for retry",
+    "completed rows are deleted and project deletion cascades pending work",
+    "migration 068 reopens with its checksum, table, sequence and index while prior rows and receipts survive"
+  ],
+  "observed": {
+    "native": "PASS in 0.004s",
+    "store": "PASS in 2.911s",
+    "jobs": "PASS in 0.822s",
+    "server": "PASS in 0.554s",
+    "vet": "PASS for ./internal/store ./internal/server with -tags=integration"
+  },
+  "limits": [
+    "The worker runs in one process against disposable PostgreSQL; multi-replica scheduling over a real network was not exercised.",
+    "Full SDK/CLI native acceptance and complete dSYM/PDB coverage belong to later criteria.",
+    "No final image, public CI or external publication was exercised in this increment.",
+    "The product is not declared an acceptance candidate or closed."
+  ],
+  "evidence": [
+    "native.log",
+    "store.log",
+    "jobs.log",
+    "server.log",
+    "summary.json"
+  ]
+}

@@ -252,6 +252,14 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 		return data, eventID, timestamp, issueID.String, release, environment
 	}
 	before, beforeID, beforeTimestamp, beforeIssue, beforeRelease, beforeEnvironment := readReceipt()
+	var beforeIssueRow string
+	if err := f.sql.QueryRow(f.ctx, `SELECT to_jsonb(i)::text FROM issues i WHERE id=$1::bigint`, beforeIssue).Scan(&beforeIssueRow); err != nil {
+		t.Fatal(err)
+	}
+	var beforeDeliveries, beforeAttempts int
+	if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM alert_deliveries),(SELECT count(*) FROM alert_attempts)`).Scan(&beforeDeliveries, &beforeAttempts); err != nil {
+		t.Fatal(err)
+	}
 	var unrelatedBefore []byte
 	if err := f.sql.QueryRow(f.ctx, `SELECT data FROM events WHERE project_id=$1::bigint AND event_id='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'`, f.project.ID).Scan(&unrelatedBefore); err != nil {
 		t.Fatal(err)
@@ -286,6 +294,11 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 	reprocessPath := base + f.project.Slug + "/reprocessing/"
 	if response := f.request(t, f.client, http.MethodPost, reprocessPath, "", http.Header{"X-CSRF-Token": {f.csrf}}, http.StatusOK); len(response) != 0 {
 		t.Fatalf("reprocessing response must be empty, got %q", response)
+	}
+	var queuedNow int
+	var queueCursor, queueThrough int64
+	if err := f.sql.QueryRow(f.ctx, `SELECT count(*),min(cursor_event_id),max(through_event_id) FROM project_native_reprocessing WHERE project_id=$1::bigint`, f.project.ID).Scan(&queuedNow, &queueCursor, &queueThrough); err != nil || queuedNow != 1 || queueCursor != 0 || queueThrough <= 0 {
+		t.Fatalf("reprocessing did not commit a queue row before responding: rows=%d cursor=%d through=%d err=%v", queuedNow, queueCursor, queueThrough, err)
 	}
 	stop := jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour)
 	deadline := time.Now().Add(5 * time.Second)
@@ -387,6 +400,14 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 	}
 	if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM project_native_reprocessing WHERE project_id=$1::bigint`, f.project.ID).Scan(&queued); err != nil || queued != 0 {
 		t.Fatalf("completed job remains queued: %d %v", queued, err)
+	}
+	var afterIssueRow string
+	if err := f.sql.QueryRow(f.ctx, `SELECT to_jsonb(i)::text FROM issues i WHERE id=$1::bigint`, beforeIssue).Scan(&afterIssueRow); err != nil || afterIssueRow != beforeIssueRow {
+		t.Fatalf("reprocessing changed issue ownership or grouping: %v", err)
+	}
+	var afterDeliveries, afterAttempts int
+	if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM alert_deliveries),(SELECT count(*) FROM alert_attempts)`).Scan(&afterDeliveries, &afterAttempts); err != nil || afterDeliveries != beforeDeliveries || afterAttempts != beforeAttempts {
+		t.Fatalf("reprocessing changed notification state: deliveries=%d/%d attempts=%d/%d err=%v", beforeDeliveries, afterDeliveries, beforeAttempts, afterAttempts, err)
 	}
 }
 

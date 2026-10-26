@@ -4379,6 +4379,17 @@
         "nativo-002/summary.json"
       ]
     },
+    "CLOSE-nativo-003": {
+      "evidence": "vigente",
+      "scope": "durable project-scoped reprocessing queue with coalesced snapshots, SKIP LOCKED batches of 10 native events, 25-file/64MiB symbol budget, symbol-only frame repair and atomic cursor progress",
+      "evidence_files": [
+        "nativo-003/native.log",
+        "nativo-003/store.log",
+        "nativo-003/jobs.log",
+        "nativo-003/server.log",
+        "nativo-003/summary.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

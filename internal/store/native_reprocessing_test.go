@@ -3,10 +3,15 @@
 package store
 
 import (
+	"bytes"
+	"context"
+	"crypto/sha1"
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestNativeReprocessingQueueCoalescesAndCascades(t *testing.T) {
@@ -108,5 +113,164 @@ func TestNativeReprocessingMigrationReopens(t *testing.T) {
 	}
 	if err := reopened.pool.QueryRow(ctx, `SELECT to_regclass('project_native_reprocessing_generation')::text,to_regclass('events_native_reprocessing')::text`).Scan(&sequence, &index); err != nil || sequence == "" || index == "" {
 		t.Fatalf("068 sequence/index missing: %q %q %v", sequence, index, err)
+	}
+}
+
+func TestNativeReprocessingBatchScopeLockAndAtomicity(t *testing.T) {
+	ctx, db, user, org, project := telemetryStore(t)
+	access := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, Role: "owner", AllProjects: true}
+	foreign, err := db.CreateProject(ctx, user.ID, org.Slug, "Foreign native", "native")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for index := 1; index <= 26; index++ {
+		content := []byte(fmt.Sprintf("MODULE Linux x86_64 %040d native-%02d.sym\n", index, index))
+		hash := sha1.Sum(content)
+		name := fmt.Sprintf("native-%02d.sym", index)
+		if _, err := db.SaveDebugFile(ctx, access, project.ID, name, "sym", "", "x86_64", name, hex.EncodeToString(hash[:]), nil, nil, content); err != nil {
+			t.Fatal(err)
+		}
+	}
+	foreignContent := []byte("MODULE Linux x86_64 foreign foreign.sym\n")
+	foreignHash := sha1.Sum(foreignContent)
+	if _, err := db.SaveDebugFile(ctx, access, foreign.ID, "foreign.sym", "sym", "", "x86_64", "foreign.sym", hex.EncodeToString(foreignHash[:]), nil, nil, foreignContent); err != nil {
+		t.Fatal(err)
+	}
+	insertEvent := func(eventID, platform string) int64 {
+		t.Helper()
+		var id int64
+		if err := db.pool.QueryRow(ctx, `INSERT INTO events(project_id,event_id,kind,title,level,timestamp,data)
+			VALUES($1,$2::text,'error','native reprocessing','error',now(),jsonb_build_object('event_id',$2::text,'platform',$3::text)) RETURNING id`,
+			project.ID, eventID, platform).Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		return id
+	}
+	nativeIDs := []int64{insertEvent("scope-native-1", "native"), insertEvent("scope-native-2", "native"), insertEvent("scope-native-3", "native")}
+	insertEvent("scope-javascript", "javascript")
+	if err := db.EnqueueNativeReprocessing(ctx, access, project.ID); err != nil {
+		t.Fatal(err)
+	}
+	insertEvent("scope-native-late", "native")
+
+	hold, err := db.pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var locked int
+	if err := hold.QueryRow(ctx, `SELECT 1 FROM project_native_reprocessing WHERE project_id=$1::bigint FOR UPDATE`, project.ID).Scan(&locked); err != nil {
+		hold.Rollback(ctx)
+		t.Fatal(err)
+	}
+	lockedCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	processed, err := db.ProcessNextNativeReprocessingBatch(lockedCtx, "", 0, func(string, int64, bool, []DebugSymbolFile, []NativeReprocessingEvent) (map[int64][]byte, error) {
+		t.Fatal("transform ran while the queue row was locked")
+		return nil, nil
+	})
+	if err != nil || processed {
+		hold.Rollback(ctx)
+		t.Fatalf("locked queue processed=%v err=%v", processed, err)
+	}
+	if err := hold.Rollback(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	var seenFiles []string
+	var seenEvents []int64
+	processed, err = db.ProcessNextNativeReprocessingBatch(ctx, "", 0, func(_ string, _ int64, _ bool, files []DebugSymbolFile, events []NativeReprocessingEvent) (map[int64][]byte, error) {
+		for _, file := range files {
+			seenFiles = append(seenFiles, file.Name)
+		}
+		for _, event := range events {
+			seenEvents = append(seenEvents, event.ID)
+		}
+		return nil, nil
+	})
+	if err != nil || !processed {
+		t.Fatalf("scope batch processed=%v err=%v", processed, err)
+	}
+	if len(seenFiles) != 25 {
+		t.Fatalf("symbol files=%d want=25", len(seenFiles))
+	}
+	for _, name := range seenFiles {
+		if name == "foreign.sym" {
+			t.Fatal("reprocessing loaded another project's symbols")
+		}
+	}
+	if len(seenEvents) != len(nativeIDs) {
+		t.Fatalf("batch events=%v want=%v", seenEvents, nativeIDs)
+	}
+	for index, id := range nativeIDs {
+		if seenEvents[index] != id {
+			t.Fatalf("batch events=%v want=%v", seenEvents, nativeIDs)
+		}
+	}
+	var count int
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM project_native_reprocessing WHERE project_id=$1::bigint`, project.ID).Scan(&count); err != nil || count != 0 {
+		t.Fatalf("completed batch remains queued: %d %v", count, err)
+	}
+
+	if err := db.EnqueueNativeReprocessing(ctx, access, project.ID); err != nil {
+		t.Fatal(err)
+	}
+	var before []byte
+	if err := db.pool.QueryRow(ctx, `SELECT data FROM events WHERE id=$1`, nativeIDs[0]).Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	processed, err = db.ProcessNextNativeReprocessingBatch(ctx, "", 0, func(_ string, _ int64, _ bool, _ []DebugSymbolFile, events []NativeReprocessingEvent) (map[int64][]byte, error) {
+		if len(events) != 4 {
+			t.Fatalf("atomicity batch events=%d want=4", len(events))
+		}
+		return map[int64][]byte{events[0].ID: []byte(`{"event_id":"changed"}`), -1: []byte(`{}`)}, nil
+	})
+	if err == nil || processed {
+		t.Fatalf("invalid update processed=%v err=%v", processed, err)
+	}
+	var after []byte
+	var cursor int64
+	if err := db.pool.QueryRow(ctx, `SELECT data FROM events WHERE id=$1`, nativeIDs[0]).Scan(&after); err != nil || !bytes.Equal(before, after) {
+		t.Fatalf("partial event update was committed: %v", err)
+	}
+	if err := db.pool.QueryRow(ctx, `SELECT cursor_event_id FROM project_native_reprocessing WHERE project_id=$1::bigint`, project.ID).Scan(&cursor); err != nil || cursor != 0 {
+		t.Fatalf("failed transaction advanced cursor=%d err=%v", cursor, err)
+	}
+	processed, err = db.ProcessNextNativeReprocessingBatch(ctx, "", 0, func(string, int64, bool, []DebugSymbolFile, []NativeReprocessingEvent) (map[int64][]byte, error) {
+		return nil, nil
+	})
+	if err != nil || !processed {
+		t.Fatalf("retry processed=%v err=%v", processed, err)
+	}
+}
+
+func TestNativeReprocessingFileByteBudget(t *testing.T) {
+	ctx, db, user, org, project := telemetryStore(t)
+	access := ManagementAccess{UserID: user.ID, OrganizationID: org.ID, Role: "owner", AllProjects: true}
+	older := []byte("MODULE Linux x86_64 older older.sym\n")
+	olderHash := sha1.Sum(older)
+	if _, err := db.SaveDebugFile(ctx, access, project.ID, "older.sym", "sym", "", "x86_64", "older.sym", hex.EncodeToString(olderHash[:]), nil, nil, older); err != nil {
+		t.Fatal(err)
+	}
+	large := bytes.Repeat([]byte("s"), 64<<20)
+	largeHash := sha1.Sum(large)
+	if _, err := db.SaveDebugFile(ctx, access, project.ID, "large.sym", "sym", "", "x86_64", "large.sym", hex.EncodeToString(largeHash[:]), nil, nil, large); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `INSERT INTO events(project_id,event_id,kind,title,level,timestamp,data)
+		VALUES($1,'budget-native','error','native reprocessing','error',now(),'{"platform":"native"}')`, project.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.EnqueueNativeReprocessing(ctx, access, project.ID); err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	processed, err := db.ProcessNextNativeReprocessingBatch(ctx, "", 0, func(_ string, _ int64, _ bool, files []DebugSymbolFile, _ []NativeReprocessingEvent) (map[int64][]byte, error) {
+		for _, file := range files {
+			names = append(names, file.Name)
+		}
+		return nil, nil
+	})
+	if err != nil || !processed || len(names) != 1 || names[0] != "large.sym" {
+		t.Fatalf("64MiB budget files=%v processed=%v err=%v", names, processed, err)
 	}
 }
