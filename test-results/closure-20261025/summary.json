@@ -2501,6 +2501,90 @@
         "errores-150-155-browser.log",
         "triage-ui/report.json"
       ]
+    },
+    "CLOSE-errores-156": {
+      "evidence": "vigente",
+      "scope": "native event attachment metadata and download reader with UI",
+      "evidence_files": [
+        "errores-156-162-go.log",
+        "errores-156-162-browser.log",
+        "attachments-ui/report.json",
+        "full-race-final-2.log",
+        "vet.log",
+        "image-build.log"
+      ]
+    },
+    "CLOSE-errores-157": {
+      "evidence": "vigente",
+      "scope": "native event attachment metadata and download reader with UI",
+      "evidence_files": [
+        "errores-156-162-go.log",
+        "errores-156-162-browser.log",
+        "attachments-ui/report.json",
+        "full-race-final-2.log",
+        "vet.log",
+        "image-build.log"
+      ]
+    },
+    "CLOSE-errores-158": {
+      "evidence": "vigente",
+      "scope": "native event attachment metadata and download reader with UI",
+      "evidence_files": [
+        "errores-156-162-go.log",
+        "errores-156-162-browser.log",
+        "attachments-ui/report.json",
+        "full-race-final-2.log",
+        "vet.log",
+        "image-build.log"
+      ]
+    },
+    "CLOSE-errores-159": {
+      "evidence": "vigente",
+      "scope": "native event attachment metadata and download reader with UI",
+      "evidence_files": [
+        "errores-156-162-go.log",
+        "errores-156-162-browser.log",
+        "attachments-ui/report.json",
+        "full-race-final-2.log",
+        "vet.log",
+        "image-build.log"
+      ]
+    },
+    "CLOSE-errores-160": {
+      "evidence": "vigente",
+      "scope": "native event attachment metadata and download reader with UI",
+      "evidence_files": [
+        "errores-156-162-go.log",
+        "errores-156-162-browser.log",
+        "attachments-ui/report.json",
+        "full-race-final-2.log",
+        "vet.log",
+        "image-build.log"
+      ]
+    },
+    "CLOSE-errores-161": {
+      "evidence": "vigente",
+      "scope": "native event attachment metadata and download reader with UI",
+      "evidence_files": [
+        "errores-156-162-go.log",
+        "errores-156-162-browser.log",
+        "attachments-ui/report.json",
+        "full-race-final-2.log",
+        "vet.log",
+        "image-build.log"
+      ]
+    },
+    "CLOSE-errores-162": {
+      "evidence": "vigente",
+      "scope": "native event attachment metadata and download reader with UI",
+      "evidence_files": [
+        "errores-156-162-go.log",
+        "errores-156-162-browser.log",
+        "attachments-ui/report.json",
+        "full-race-final-2.log",
+        "vet.log",
+        "image-build.log"
+      ]
     }
   },
   "commands": [

@@ -1444,8 +1444,8 @@ CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
-y 101–111, y 139–155 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-156 (adjuntos de evento nativo). No se declara aceptación ni cierre del producto. El avance se
+y 101–111, y 139–162 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-012 (recepción OTLP de logs). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1809,13 +1809,13 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-041](../SPEC.md#close-operacion-041) | Completed-file retention: Run StartFileRetention unconditionally through the existing in-process retention lif… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-042](../SPEC.md#close-operacion-042) | Completed-file retention: The real PostgreSQL owning tests must cover independent file/event clocks and curren… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-043](../SPEC.md#close-operacion-043) | Completed-file retention: Acceptance requires full native integration/vet and Linux race, a fresh actual appli… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-156](../SPEC.md#close-errores-156) | Native event attachment access: Attachments are already admitted atomically with their parent SDK receipt, but… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-157](../SPEC.md#close-errores-157) | Native event attachment access: Add session-authenticated GET /api/v1/issues/{issue}/events/{event}/attachment… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-158](../SPEC.md#close-errores-158) | Native event attachment access: Expose Store.IssueEventAttachments(ctx,userID,issueID,eventID,page) and Store.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-159](../SPEC.md#close-errores-159) | Native event attachment access: Metadata includes id, filename, contentType, size and dateCreated, never bytea… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-160](../SPEC.md#close-errores-160) | Native event attachment access: The HTTP boundary adds downloadName to metadata, using the same policy as Cont… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-161](../SPEC.md#close-errores-161) | Native event attachment access: On a retained issue event, add an Event attachments region with loading/retry,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-162](../SPEC.md#close-errores-162) | Native event attachment access: Test-audit precedes authoring. Real PostgreSQL owns exact binary/empty data, b… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-156](../SPEC.md#close-errores-156) | Native event attachment access: Attachments are already admitted atomically with their parent SDK receipt, but… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-157](../SPEC.md#close-errores-157) | Native event attachment access: Add session-authenticated GET /api/v1/issues/{issue}/events/{event}/attachment… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-158](../SPEC.md#close-errores-158) | Native event attachment access: Expose Store.IssueEventAttachments(ctx,userID,issueID,eventID,page) and Store.… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-159](../SPEC.md#close-errores-159) | Native event attachment access: Metadata includes id, filename, contentType, size and dateCreated, never bytea… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-160](../SPEC.md#close-errores-160) | Native event attachment access: The HTTP boundary adds downloadName to metadata, using the same policy as Cont… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-161](../SPEC.md#close-errores-161) | Native event attachment access: On a retained issue event, add an Event attachments region with loading/retry,… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-162](../SPEC.md#close-errores-162) | Native event attachment access: Test-audit precedes authoring. Real PostgreSQL owns exact binary/empty data, b… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-012](../SPEC.md#close-logs-012) | Native OTLP log reception: This telemetry increment receives logs from standard OpenTelemetry HTTP exporters w… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-logs-013](../SPEC.md#close-logs-013) | Native OTLP log reception: GlitchTip6.2 release notes confirm this endpoint, but the public installation/log g… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-logs-014](../SPEC.md#close-logs-014) | Native OTLP log reception: Authenticate using exactly one nonempty X-GoodSentry-Key header, with the existing… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4121,6 +4121,49 @@ Límites registrados: el fixture se sembró en una organización aislada con 26
 invitaciones aceptadas por correo local y un equipo; la imagen final con
 upgrade/reinicio, el CI remoto y la suite completa sobre la revisión aceptada
 siguen en la auditoría final de CLOSE-errores-155.
+
+### Ejecución 2026-10-26: lectura nativa de adjuntos
+
+Selección registrada antes de trabajar: CLOSE-errores-156 a -162. Candidata
+`3b2567d`, sin cambios de producto en este bloque; el único archivo nuevo es
+el owner de navegador `tests/compat/attachments_browser.mjs`.
+
+Resultado observado: el consumidor nativo de adjuntos expone metadatos y
+descarga sobre los recibos ya admitidos, sin cambiar ingesta, identidad de blob
+ni permisos. Las rutas con sesión resuelven membresía vigente, issue canónico y
+evento exacto en una instantánea repetible, y la descarga devuelve
+`application/octet-stream` con `Content-Disposition: attachment`, `nosniff`,
+`Cache-Control: private, no-store` y longitud exacta; HEAD no carga ni escribe
+bytes. El store pagina 25+1 con consultas estrictas, acota la proyección a 2048
+caracteres de nombre y 256 de tipo con `metadataTruncated`, conserva el valor
+completo y el hash, y la migración 027 preserva y reabre los recibos previos.
+El panel «Event attachments» cubre carga, reintento real tras un 500, 25 filas
+por página con etiqueta y controles, descarga con los bytes exactos, error
+accionable ante 404, divulgación por teclado del nombre de 158 caracteres con
+resumen de 100, aviso de truncación, página posterior vacía y página uno vacía
+tras el borrado físico, evento sin adjuntos, issue sin evento retenido (sin
+petición) y una carga retrasada que no reescribe la ruta nueva.
+
+La suite completa con `-race` e `integration` pasa en verde en un entorno
+quieto (server 195.897s, store 359.066s, sin `DATA RACE`) y `go vet` pasa. Una
+corrida previa bajo contención falló en
+`TestCompatibleIssueUpdateResponseDuringNativeCaptureAndGrouping` (3.09s,
+«native and compatible callers diverged after overlap»); el mismo test pasa
+aislado en 2.30s y en la repetición quieta, y el fallo se conserva como
+evidencia histórica. La imagen `goodsentry:closure-20261026`
+(`34406cb60d22`) se construyó desde esta fuente y arrancó sobre la copia
+lógica aceptada restaurada: 27→73 migraciones y todas las tablas existentes
+idénticas salvo el chunk de staging vencido por su TTL de 168 h; un reinicio del
+contenedor no cambió ninguna fila.
+
+Evidencia: `test-results/closure-20261025/errores-156-162-go.log`,
+`errores-156-162-browser.log`, `attachments-ui/report.json`,
+`errors-156-162-full-race-contended.log`, `full-race-final-2.log`,
+`vet.log`, `image-build.log` y `image-upgrade.txt`.
+
+Límites registrados: no se ejecutó CI público ni se publicó la imagen porque no
+hay autorización de publicación; esa comprobación queda para la auditoría
+final junto con la landing desplegada.
 
 ### Comprobante de integración documental
 

@@ -1,0 +1,14 @@
+=== RUN   TestIssueAttachmentMetadataBytesAndCurrentScope
+--- PASS: TestIssueAttachmentMetadataBytesAndCurrentScope (0.69s)
+=== RUN   TestIssueAttachmentPagesExpiryAndFreshReceipt
+--- PASS: TestIssueAttachmentPagesExpiryAndFreshReceipt (0.50s)
+PASS
+ok  	goodsentry/internal/store	2.232s
+=== RUN   TestNativeIssueAttachmentsHTTP
+--- PASS: TestNativeIssueAttachmentsHTTP (0.79s)
+PASS
+ok  	goodsentry/internal/server	1.826s
+=== RUN   TestAttachmentReadMigration027PreservesAndReopens
+--- PASS: TestAttachmentReadMigration027PreservesAndReopens (0.76s)
+PASS
+ok  	goodsentry/internal/store	1.785s
