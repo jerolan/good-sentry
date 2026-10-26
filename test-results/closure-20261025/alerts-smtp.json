@@ -1,0 +1,40 @@
+{
+  "run": "2b1d83",
+  "org": "alerts-2b1d83",
+  "project": "9",
+  "rule": "16",
+  "delivery": {
+    "id": "32cbe20bce233fa776ccd387fc074d2d",
+    "status": "sent",
+    "attempts": [
+      {
+        "number": 1,
+        "startedAt": "2026-10-26T03:59:45.787198-06:00",
+        "completedAt": "2026-10-26T03:59:45.799558-06:00",
+        "status": "delivered",
+        "reason": "accepted",
+        "statusCode": 250,
+        "elapsedMs": 1
+      }
+    ]
+  },
+  "nativeTest": {
+    "status": 202,
+    "body": {
+      "queued": 1
+    }
+  },
+  "testDelivery": {
+    "id": "6b6a6130186ce57dd40aa752f876ce39",
+    "status": "sent"
+  },
+  "smtp": {
+    "files": 2,
+    "matchingRecipient": 2,
+    "messageIds": [
+      "32cbe20bce233fa776ccd387fc074d2d@127.0.0.1",
+      "6b6a6130186ce57dd40aa752f876ce39@127.0.0.1"
+    ],
+    "containsDeliveryId": true
+  }
+}

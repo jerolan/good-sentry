@@ -3021,6 +3021,15 @@
         "alerts-uptime.json",
         "alerts-ui/report.json"
       ]
+    },
+    "CLOSE-alertas-011": {
+      "evidence": "vigente",
+      "scope": "delivery history, native test queue, SMTP delivery and browser UI",
+      "evidence_files": [
+        "alerts-smtp.json",
+        "alerts-ui/report.json",
+        "alertas-001-003-go.log"
+      ]
     }
   },
   "commands": [

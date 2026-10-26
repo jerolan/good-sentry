@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-011 (historial de entregas, UI y SMTP local). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-012 (capacidad y composición del despachador). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1879,7 +1879,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-008](../SPEC.md#close-alertas-008) | Sentry spans and native telemetry reads: Replacing configuration or deleting a rule cancels its pending/in-fli… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-009](../SPEC.md#close-alertas-009) | Sentry spans and native telemetry reads: Delivery states are pending, processing, sent, failed and canceled. S… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-010](../SPEC.md#close-alertas-010) | Sentry spans and native telemetry reads: Run alert workers in the same process with ALERT_WORKERS default 2, r… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-011](../SPEC.md#close-alertas-011) | Sentry spans and native telemetry reads: List project delivery history at /api/v1/organizations/{org}/projects… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-011](../SPEC.md#close-alertas-011) | Sentry spans and native telemetry reads: List project delivery history at /api/v1/organizations/{org}/projects… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-012](../SPEC.md#close-alertas-012) | Sentry spans and native telemetry reads: On 2026-10-14 the user explicitly authorized automatic delivery to ru… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-013](../SPEC.md#close-alertas-013) | Slack incoming webhooks: Provider-specific alerts are independent of SSL certificate monitors and account reco… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-014](../SPEC.md#close-alertas-014) | Slack incoming webhooks: Add explicit recipient type slack using the same destination admission as webhook: an… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4462,6 +4462,29 @@ contrato admite; la prueba con receptor SMTP local corresponde a
 CLOSE-alertas-011. El driver de navegador ahora tolera únicamente cancelaciones
 por navegación completa que él mismo provoca. El CI público sigue pendiente para
 la auditoría final.
+
+### Ejecución 2026-10-26: historial de entregas, prueba y SMTP local
+
+Selección registrada antes de trabajar: CLOSE-alertas-011. Candidata
+`1881180`.
+
+Resultado observado: el endpoint nativo de prueba responde 202 con
+`{"queued":1}` y crea una entrega durable que el trabajador envía; el historial
+por proyecto pagina 25 filas y el detalle devuelve la entrega con sus intentos.
+Con `EMAIL_URL=smtp://127.0.0.1:18026` el correo sale por SMTP real a un
+receptor local: el intento queda `delivered` con código 250 y el mensaje lleva
+`To: alerts-smtp@example.test` y un `Message-ID` que contiene el identificador
+estable de la entrega. El navegador ya había cubierto el módulo separado, los
+estados de carga/error/vacío, la configuración retenida, los filtros por URL, la
+paginación de entregas y la restricción de miembro; los owners de store cubren
+reclamación con token de arriendo, recuperación tras caída, presupuesto de
+intentos, cooldown concurrente y aislamiento entre organizaciones.
+
+Evidencia: `test-results/closure-20261025/alerts-smtp.json` junto con
+`alertas-001-003-go.log`, `alerts-stage1.json`, `alerts-stage2.json`,
+`alerts-uptime.json` y `alerts-ui/report.json`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 
