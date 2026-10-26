@@ -1453,11 +1453,11 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-041 a -044 quedan
-vigentes. Siguiente acción: CLOSE-rendimiento-001. No se declara aceptación ni
-cierre del producto. El avance se informa por criterios/evidencia, sin
-porcentaje de casillas; tiempo y presupuesto de un Goal no completan el producto
-ni borran este registro.
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 y -041 a -044
+quedan vigentes. Siguiente acción: CLOSE-rendimiento-002. No se declara
+aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
+no completan el producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1751,7 +1751,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6934,6 +6934,58 @@ controlados, no con los SDK oficiales; los flujos reales Go/Python/Node/Browser
 (CLOSE-rendimiento-037 a -040) y las vistas de traza en UI (028 a 034) siguen
 pendientes. Las cifras provienen de una instalación local desechable y el CI
 público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: persistencia de transacciones, traza y agregados
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-001. Candidata
+`e3da23e`, sin cambios de producto respecto de `5b987e3`. Entorno:
+PostgreSQL 18 desechable y binario local.
+
+Procedimiento reproducible: `tests/compat/performance_api.mjs` sobre una
+instalación vacía captura envelopes de protocolo con release, entorno, endpoint,
+estado y spans hijos, y después consulta la traza y los agregados por ventana.
+`go test ./internal/config` cubre la precedencia y los límites de las
+retenciones por clase. El proceso se reinicia y se repiten ambas lecturas.
+
+Resultados observados:
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Relaciones de traza y spans | 7 nodos y 6 relaciones resueltas en la traza seleccionada |
+| Operación, endpoint, duración y estado | Raíz `GET /compat/performance`, op `http.server`, estado `ok`, 100 ms, 6 hijos `db.query` de 10 ms con padre resuelto |
+| Release y entorno | `performance-api@1` y `performance` en la raíz y en el nodo crudo |
+| Datos crudos del nodo | `request.method=GET` y `request.url=http://example.test/compat/performance` |
+| Cantidades, errores, promedio, p50 y p95 por ventana | 6 y 2 transacciones; 0 y 1 errores; 116.667 ms, 100 ms y 175 ms |
+| Detalle y desglose de spans | Identificador estable del grupo y 32 spans en los seis grupos |
+| Persistencia tras reinicio | Traza y grupo conservan nodos, relaciones, release, entorno, duración y percentiles |
+
+Los resultados de logs se reutilizan de los comprobantes vigentes
+CLOSE-logs-001 a -027 y -029 a -032: envelopes Sentry y OTLP `/v1/logs` con
+atributos tipados, severidad, vínculos de traza y filtros de tiempo, nivel,
+servicio, entorno, texto y traza. CLOSE-logs-028 sigue pendiente por el SDK OTLP
+de Python y no se presenta como cubierto.
+
+La retención configurable por clase queda comprobada por la precedencia
+maestra/log/transacción/evento/uptime/archivo/release y sus límites en
+`internal/config`; la aceptación detallada de la clase de transacciones y
+spans sigue en CLOSE-rendimiento-002 a -011.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Traza, relaciones, operación, endpoint, duración, estado, release y entorno | `rendimiento-001/report.json` (chequeo del bosque de traza) |
+| Agregados por ventana, detalle y spans | mismo comprobante |
+| Configuración de retención por clase | `rendimiento-001/config-tests.log` |
+| Persistencia tras reinicio | `rendimiento-001/restart.log` |
+
+Evidencia: `test-results/closure-20261025/rendimiento-001/`.
+
+Límites registrados: los datos se generan con envelopes de protocolo
+controlados, no con los SDK oficiales; los flujos reales Go/Python/Node/Browser
+(CLOSE-rendimiento-037 a -040), las lecturas de traza 012 a 036 y la aceptación
+de retención de transacciones 002 a 011 siguen pendientes. El CI público y la
+imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

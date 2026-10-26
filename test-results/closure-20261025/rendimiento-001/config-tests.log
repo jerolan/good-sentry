@@ -1,0 +1,240 @@
+=== RUN   TestDeploymentConfiguration
+=== RUN   TestDeploymentConfiguration/valid
+=== RUN   TestDeploymentConfiguration/short_secret
+=== RUN   TestDeploymentConfiguration/long_placeholder_secret
+=== RUN   TestDeploymentConfiguration/invalid_boolean
+=== RUN   TestDeploymentConfiguration/invalid_port
+=== RUN   TestDeploymentConfiguration/bad_domain
+=== RUN   TestDeploymentConfiguration/bad_database
+=== RUN   TestDeploymentConfiguration/no_monitor_workers
+=== RUN   TestDeploymentConfiguration/too_many_monitor_workers
+=== RUN   TestDeploymentConfiguration/invalid_private_network_policy
+=== RUN   TestDeploymentConfiguration/too_many_alert_workers
+=== RUN   TestDeploymentConfiguration/no_alert_attempts
+=== RUN   TestDeploymentConfiguration/unbounded_delivery_timeout
+=== RUN   TestDeploymentConfiguration/bad_webhook_policy
+=== RUN   TestDeploymentConfiguration/unsupported_mail
+=== RUN   TestDeploymentConfiguration/mail_header_injection
+=== RUN   TestDeploymentConfiguration/expired_upload_lifetime
+=== RUN   TestDeploymentConfiguration/unbounded_upload_lifetime
+=== RUN   TestDeploymentConfiguration/invalid_staging_bytes
+=== RUN   TestDeploymentConfiguration/staging_smaller_than_a_bundle
+=== RUN   TestDeploymentConfiguration/no_materialized_records
+=== RUN   TestDeploymentConfiguration/unbounded_materialized_records
+=== RUN   TestDeploymentConfiguration/no_issue_maintenance
+=== RUN   TestDeploymentConfiguration/unbounded_issue_maintenance_delay
+=== RUN   TestDeploymentConfiguration/fractional_issue_maintenance_delay
+=== RUN   TestDeploymentConfiguration/otlp_no_records
+=== RUN   TestDeploymentConfiguration/otlp_unbounded_records
+=== RUN   TestDeploymentConfiguration/otlp_fractional_records
+=== RUN   TestDeploymentConfiguration/otlp_too_few_nodes
+=== RUN   TestDeploymentConfiguration/otlp_unbounded_nodes
+=== RUN   TestDeploymentConfiguration/otlp_malformed_nodes
+=== RUN   TestDeploymentConfiguration/invalid_retention_master
+=== RUN   TestDeploymentConfiguration/invalid_legacy_retention_master
+=== RUN   TestDeploymentConfiguration/invalid_log_retention
+=== RUN   TestDeploymentConfiguration/invalid_legacy_log_retention
+=== RUN   TestDeploymentConfiguration/fractional_log_retention
+=== RUN   TestDeploymentConfiguration/invalid_retention_interval
+=== RUN   TestDeploymentConfiguration/unbounded_retention_interval
+=== RUN   TestDeploymentConfiguration/no_transaction_retention
+=== RUN   TestDeploymentConfiguration/unbounded_legacy_transaction_retention
+=== RUN   TestDeploymentConfiguration/fractional_transaction_retention
+=== RUN   TestDeploymentConfiguration/no_event_retention
+=== RUN   TestDeploymentConfiguration/excessive_legacy_event_retention
+=== RUN   TestDeploymentConfiguration/fractional_event_retention
+=== RUN   TestDeploymentConfiguration/no_uptime_retention
+=== RUN   TestDeploymentConfiguration/excessive_legacy_uptime_retention
+=== RUN   TestDeploymentConfiguration/fractional_uptime_retention
+=== RUN   TestDeploymentConfiguration/no_file_retention
+=== RUN   TestDeploymentConfiguration/excessive_legacy_file_retention
+=== RUN   TestDeploymentConfiguration/fractional_file_retention
+=== RUN   TestDeploymentConfiguration/no_release_retention
+=== RUN   TestDeploymentConfiguration/excessive_legacy_release_retention
+=== RUN   TestDeploymentConfiguration/fractional_release_retention
+=== RUN   TestDeploymentConfiguration/invalid_archive_flag
+=== RUN   TestDeploymentConfiguration/invalid_archive_backend
+=== RUN   TestDeploymentConfiguration/archive_threshold_is_positive
+=== RUN   TestDeploymentConfiguration/archive_threshold_cannot_outlive_spans
+=== RUN   TestDeploymentConfiguration/s3_requires_bucket_and_region
+=== RUN   TestDeploymentConfiguration/archive_endpoint_must_be_absolute_http
+--- PASS: TestDeploymentConfiguration (0.01s)
+    --- PASS: TestDeploymentConfiguration/valid (0.00s)
+    --- PASS: TestDeploymentConfiguration/short_secret (0.00s)
+    --- PASS: TestDeploymentConfiguration/long_placeholder_secret (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_boolean (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_port (0.00s)
+    --- PASS: TestDeploymentConfiguration/bad_domain (0.00s)
+    --- PASS: TestDeploymentConfiguration/bad_database (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_monitor_workers (0.00s)
+    --- PASS: TestDeploymentConfiguration/too_many_monitor_workers (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_private_network_policy (0.00s)
+    --- PASS: TestDeploymentConfiguration/too_many_alert_workers (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_alert_attempts (0.00s)
+    --- PASS: TestDeploymentConfiguration/unbounded_delivery_timeout (0.00s)
+    --- PASS: TestDeploymentConfiguration/bad_webhook_policy (0.00s)
+    --- PASS: TestDeploymentConfiguration/unsupported_mail (0.00s)
+    --- PASS: TestDeploymentConfiguration/mail_header_injection (0.00s)
+    --- PASS: TestDeploymentConfiguration/expired_upload_lifetime (0.00s)
+    --- PASS: TestDeploymentConfiguration/unbounded_upload_lifetime (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_staging_bytes (0.00s)
+    --- PASS: TestDeploymentConfiguration/staging_smaller_than_a_bundle (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_materialized_records (0.00s)
+    --- PASS: TestDeploymentConfiguration/unbounded_materialized_records (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_issue_maintenance (0.00s)
+    --- PASS: TestDeploymentConfiguration/unbounded_issue_maintenance_delay (0.00s)
+    --- PASS: TestDeploymentConfiguration/fractional_issue_maintenance_delay (0.00s)
+    --- PASS: TestDeploymentConfiguration/otlp_no_records (0.00s)
+    --- PASS: TestDeploymentConfiguration/otlp_unbounded_records (0.00s)
+    --- PASS: TestDeploymentConfiguration/otlp_fractional_records (0.00s)
+    --- PASS: TestDeploymentConfiguration/otlp_too_few_nodes (0.00s)
+    --- PASS: TestDeploymentConfiguration/otlp_unbounded_nodes (0.00s)
+    --- PASS: TestDeploymentConfiguration/otlp_malformed_nodes (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_retention_master (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_legacy_retention_master (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_log_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_legacy_log_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/fractional_log_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_retention_interval (0.00s)
+    --- PASS: TestDeploymentConfiguration/unbounded_retention_interval (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_transaction_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/unbounded_legacy_transaction_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/fractional_transaction_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_event_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/excessive_legacy_event_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/fractional_event_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_uptime_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/excessive_legacy_uptime_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/fractional_uptime_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_file_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/excessive_legacy_file_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/fractional_file_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/no_release_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/excessive_legacy_release_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/fractional_release_retention (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_archive_flag (0.00s)
+    --- PASS: TestDeploymentConfiguration/invalid_archive_backend (0.00s)
+    --- PASS: TestDeploymentConfiguration/archive_threshold_is_positive (0.00s)
+    --- PASS: TestDeploymentConfiguration/archive_threshold_cannot_outlive_spans (0.00s)
+    --- PASS: TestDeploymentConfiguration/s3_requires_bucket_and_region (0.00s)
+    --- PASS: TestDeploymentConfiguration/archive_endpoint_must_be_absolute_http (0.00s)
+=== RUN   TestOpenModeGeneratesAndReusesPersistentSecret
+--- PASS: TestOpenModeGeneratesAndReusesPersistentSecret (0.04s)
+=== RUN   TestRequiredAuthNeedsExplicitSecret
+--- PASS: TestRequiredAuthNeedsExplicitSecret (0.00s)
+=== RUN   TestArchiveConfigurationAliasesDefaultsAndRuntimeSupport
+--- PASS: TestArchiveConfigurationAliasesDefaultsAndRuntimeSupport (0.00s)
+=== RUN   TestExplicitGoodSentryFlagOverridesAlias
+--- PASS: TestExplicitGoodSentryFlagOverridesAlias (0.00s)
+=== RUN   TestAuthenticationModeDefaultsAndAdmission
+=== RUN   TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_AUTH=optional
+=== RUN   TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_DEFAULT_EMAIL=not-an-email
+=== RUN   TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_DEFAULT_NAME=_
+=== RUN   TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_DEFAULT_ORGANIZATION=_
+=== RUN   TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_DEFAULT_PASSWORD=short
+--- PASS: TestAuthenticationModeDefaultsAndAdmission (0.00s)
+    --- PASS: TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_AUTH=optional (0.00s)
+    --- PASS: TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_DEFAULT_EMAIL=not-an-email (0.00s)
+    --- PASS: TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_DEFAULT_NAME=_ (0.00s)
+    --- PASS: TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_DEFAULT_ORGANIZATION=_ (0.00s)
+    --- PASS: TestAuthenticationModeDefaultsAndAdmission/GOODSENTRY_DEFAULT_PASSWORD=short (0.00s)
+=== RUN   TestFeatureAliasesAndRuntimeOptions
+=== RUN   TestFeatureAliasesAndRuntimeOptions/ENABLE_ADMIN
+=== RUN   TestFeatureAliasesAndRuntimeOptions/ENABLE_OPENAPI
+--- PASS: TestFeatureAliasesAndRuntimeOptions (0.00s)
+    --- PASS: TestFeatureAliasesAndRuntimeOptions/ENABLE_ADMIN (0.00s)
+    --- PASS: TestFeatureAliasesAndRuntimeOptions/ENABLE_OPENAPI (0.00s)
+=== RUN   TestDomainAliasPrecedence
+--- PASS: TestDomainAliasPrecedence (0.00s)
+=== RUN   TestTelemetryRetentionConfiguration
+=== RUN   TestTelemetryRetentionConfiguration/defaults
+=== RUN   TestTelemetryRetentionConfiguration/existing_master_inherits
+=== RUN   TestTelemetryRetentionConfiguration/legacy_master_inherits
+=== RUN   TestTelemetryRetentionConfiguration/explicit_master_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_log_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_log_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_transaction_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_transaction_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_event_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_event_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_uptime_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_uptime_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_file_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_file_wins
+=== RUN   TestTelemetryRetentionConfiguration/legacy_release_override
+=== RUN   TestTelemetryRetentionConfiguration/explicit_release_wins
+=== RUN   TestTelemetryRetentionConfiguration/empty_explicit_values_fall_through
+=== RUN   TestTelemetryRetentionConfiguration/independent_classes
+=== RUN   TestTelemetryRetentionConfiguration/minimum
+=== RUN   TestTelemetryRetentionConfiguration/maximum
+--- PASS: TestTelemetryRetentionConfiguration (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/defaults (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/existing_master_inherits (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_master_inherits (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_master_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_log_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_log_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_transaction_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_transaction_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_event_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_event_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_uptime_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_uptime_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_file_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_file_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/legacy_release_override (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/explicit_release_wins (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/empty_explicit_values_fall_through (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/independent_classes (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/minimum (0.00s)
+    --- PASS: TestTelemetryRetentionConfiguration/maximum (0.00s)
+=== RUN   TestUptimeDeploymentOptions
+--- PASS: TestUptimeDeploymentOptions (0.00s)
+=== RUN   TestAlertDeploymentOptions
+--- PASS: TestAlertDeploymentOptions (0.00s)
+=== RUN   TestIssueMaintenanceDeploymentOptions
+=== RUN   TestIssueMaintenanceDeploymentOptions/#00
+=== RUN   TestIssueMaintenanceDeploymentOptions/1
+=== RUN   TestIssueMaintenanceDeploymentOptions/30
+=== RUN   TestIssueMaintenanceDeploymentOptions/3600
+--- PASS: TestIssueMaintenanceDeploymentOptions (0.00s)
+    --- PASS: TestIssueMaintenanceDeploymentOptions/#00 (0.00s)
+    --- PASS: TestIssueMaintenanceDeploymentOptions/1 (0.00s)
+    --- PASS: TestIssueMaintenanceDeploymentOptions/30 (0.00s)
+    --- PASS: TestIssueMaintenanceDeploymentOptions/3600 (0.00s)
+=== RUN   TestOTLPDeploymentOptions
+=== RUN   TestOTLPDeploymentOptions/defaults
+=== RUN   TestOTLPDeploymentOptions/minimum
+=== RUN   TestOTLPDeploymentOptions/maximum
+--- PASS: TestOTLPDeploymentOptions (0.00s)
+    --- PASS: TestOTLPDeploymentOptions/defaults (0.00s)
+    --- PASS: TestOTLPDeploymentOptions/minimum (0.00s)
+    --- PASS: TestOTLPDeploymentOptions/maximum (0.00s)
+=== RUN   TestArtifactDeploymentOptions
+=== RUN   TestArtifactDeploymentOptions/defaults
+=== RUN   TestArtifactDeploymentOptions/minimum_policy
+=== RUN   TestArtifactDeploymentOptions/large_deployment
+--- PASS: TestArtifactDeploymentOptions (0.00s)
+    --- PASS: TestArtifactDeploymentOptions/defaults (0.00s)
+    --- PASS: TestArtifactDeploymentOptions/minimum_policy (0.00s)
+    --- PASS: TestArtifactDeploymentOptions/large_deployment (0.00s)
+=== RUN   TestOIDCConfiguration
+=== RUN   TestOIDCConfiguration/disabled
+=== RUN   TestOIDCConfiguration/valid
+=== RUN   TestOIDCConfiguration/loopback_HTTP
+=== RUN   TestOIDCConfiguration/remote_HTTP
+=== RUN   TestOIDCConfiguration/missing_secret
+=== RUN   TestOIDCConfiguration/missing_openid
+=== RUN   TestOIDCConfiguration/bad_scope
+=== RUN   TestOIDCConfiguration/bad_auto_create
+--- PASS: TestOIDCConfiguration (0.00s)
+    --- PASS: TestOIDCConfiguration/disabled (0.00s)
+    --- PASS: TestOIDCConfiguration/valid (0.00s)
+    --- PASS: TestOIDCConfiguration/loopback_HTTP (0.00s)
+    --- PASS: TestOIDCConfiguration/remote_HTTP (0.00s)
+    --- PASS: TestOIDCConfiguration/missing_secret (0.00s)
+    --- PASS: TestOIDCConfiguration/missing_openid (0.00s)
+    --- PASS: TestOIDCConfiguration/bad_scope (0.00s)
+    --- PASS: TestOIDCConfiguration/bad_auto_create (0.00s)
+PASS
+ok  	goodsentry/internal/config	0.062s

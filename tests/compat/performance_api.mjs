@@ -50,6 +50,8 @@ try {
     const event = {
       type: 'transaction', event_id: eventID, transaction: 'GET /compat/performance',
       start_timestamp: at / 1000, timestamp: at / 1000 + durationMs / 1000,
+      release: 'performance-api@1', environment: 'performance',
+      request: { method: 'GET', url: 'http://example.test/compat/performance' },
       contexts: { trace: { trace_id: traceID, span_id: 'a'.repeat(16), op: 'http.server', status: failed ? 'internal_error' : 'ok' } },
       spans,
     };
@@ -120,6 +122,37 @@ try {
   assert.equal(groupSpans.data[0].count, 32);
   report.checks.push('Transaction groups expose controlled counts, error counts/rates, average, p50 and p95');
   report.checks.push('Transaction-group list IDs are stable and drive detail, trend and per-group spans');
+  const traceID = (700).toString(16).padStart(32, '0');
+  const tracePath = 'api/v1/organizations/' + organization + '/traces/' + traceID + '?project=' + first.id;
+  const trace = await call(tracePath, { cookie });
+  assert.equal(trace.status, 200);
+  assert.equal(trace.data.nodeCount, 7);
+  assert.equal(trace.data.relationships.resolved, 6);
+  const root = trace.data.data.find(node => node.kind === 'transaction');
+  assert.ok(root);
+  assert.equal(root.name, 'GET /compat/performance');
+  assert.equal(root.op, 'http.server');
+  assert.equal(root.status, 'ok');
+  assert.equal(root.environment, 'performance');
+  assert.equal(root.release, 'performance-api@1');
+  assert.equal(root.childCount, 6);
+  assert.ok(Math.abs(root.duration - 100) < 0.01);
+  const children = trace.data.data.filter(node => node.parentId === root.id);
+  assert.equal(children.length, 6);
+  for (const child of children) {
+    assert.equal(child.op, 'db.query');
+    assert.equal(child.parentStatus, 'resolved');
+    assert.ok(Math.abs(child.duration - 10) < 0.01);
+  }
+  const nodePath = 'api/v1/organizations/' + organization + '/traces/' + traceID + '/nodes/' + encodeURIComponent(root.id) + '?project=' + first.id;
+  const node = await call(nodePath, { cookie });
+  assert.equal(node.status, 200);
+  const payload = typeof node.data.data === 'string' ? JSON.parse(node.data.data) : node.data.data;
+  assert.equal(payload.release, 'performance-api@1');
+  assert.equal(payload.environment, 'performance');
+  assert.equal(payload.request.method, 'GET');
+  assert.equal(payload.request.url, 'http://example.test/compat/performance');
+  report.checks.push('Trace forest preserves identity, parent/child, operation, endpoint, duration, status, release and environment');
 
   const credential = await call(`api/v1/organizations/${organization}/api-tokens`, {
     method: 'POST', cookie, csrf, body: { name: 'Performance API', scopes: ['event:read'], projectIds: [first.id], expiresInDays: 1 },

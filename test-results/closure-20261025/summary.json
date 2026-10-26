@@ -3842,6 +3842,15 @@
         "performance-api-041-044/report.json"
       ]
     },
+    "CLOSE-rendimiento-001": {
+      "evidence": "vigente",
+      "scope": "transaction persistence of trace/span relationships, endpoint, release, environment, window aggregates, detail, span breakdown and restart",
+      "evidence_files": [
+        "rendimiento-001/report.json",
+        "rendimiento-001/config-tests.log",
+        "rendimiento-001/restart.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
