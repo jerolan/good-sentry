@@ -6304,8 +6304,7 @@ upgrade/reinicio, y ejecutar CI exacto.
 ### Ejecución 2026-10-26: archivos compatibles de release
 
 Selección registrada antes de trabajar: CLOSE-sourcemaps-012. Candidata
-`9dcb02b` (comprobante previo `dc3d4bf`; sin cambios de producto desde
-entonces salvo esta corrección).
+`dc3d4bf`.
 
 Resultado observado: las rutas de organización y proyecto exponen listado,
 detalle y borrado de archivos de release respaldados por las filas
