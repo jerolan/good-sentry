@@ -372,6 +372,21 @@
       "scope": "historical image acceptance: 2 maps/3 attachments/7 items expired, 4374 rows/533 events/28 batches/27 migrations, 4406 recovery rows, browser and matching CI",
       "evidence_files": ["operacion-035-043/final-runtime.json", "operacion-035-043/final-file-expiry.json", "operacion-035-043/ci-runs.json", "operacion-035-043/functional-ci-success.log", "operacion-035-043/browser/empty.json"]
     },
+    "CLOSE-operacion-044": {
+      "evidence": "vigente",
+      "scope": "daisyUI 5.7.50 and Tailwind 4.3.3 build-time integration, compiled committed CSS, light emerald dashboard theme and historical browser workflows",
+      "evidence_files": ["operacion-044-047/browser-workflows.json", "operacion-044-047/container-dashboard.json"]
+    },
+    "CLOSE-operacion-045": {
+      "evidence": "vigente",
+      "scope": "official daisyUI v5.7.50 checksums match vendored files, MIT license is included and Docker verifies hashes before compiling CSS",
+      "evidence_files": ["operacion-044-047/verified-hashes.txt"]
+    },
+    "CLOSE-operacion-047": {
+      "evidence": "vigente (local)",
+      "scope": "original buildless site with relative assets, quickstart/status/links, labeled fictional demo screenshots and current 1440/768/320 browser checks; memory claim aligned with verified RSS",
+      "evidence_files": ["operacion-044-047/site-browser.log", "operacion-044-047/browser/gs-site-1440.png", "operacion-044-047/browser/gs-site-768.png", "operacion-044-047/browser/gs-site-320.png"]
+    },
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",

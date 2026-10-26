@@ -1464,10 +1464,12 @@ CLOSE-operacion-026 a -034 quedan vigentes; 032 es histórico y 034 mantiene
 abierto el proveedor de archivos.
 CLOSE-operacion-035 a -043 quedan vigentes; 043 es histórico y se revalida en
 la candidata final.
+CLOSE-operacion-044, -045 y -047 quedan vigentes localmente; 046 y 048 esperan
+autorización explícita de publicación y Pages.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-044. No se declara
+runtime preservado. Siguiente acción: CLOSE-errores-163. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1960,11 +1962,11 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-094](../SPEC.md#close-identidad-094) | Compatible project update and deletion: PUT /api/0/organizations/{org}/ accepts only OrganizationInSchema {nam… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-095](../SPEC.md#close-identidad-095) | Compatible project update and deletion: POST /api/0/organizations/ is available only when GOODSENTRY_ENABLE_OR… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-096](../SPEC.md#close-identidad-096) | Compatible project update and deletion: Real PostgreSQL covers rename preservation, invalid names and owner/ma… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-044](../SPEC.md#close-operacion-044) | Public repository and product site: The user also explicitly requests Tailwind CSS plus daisyUI for the applic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-045](../SPEC.md#close-operacion-045) | Public repository and product site: Use official daisyUI v5.7.50 standalone daisyui.mjs and daisyui-theme.mjs,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-046](../SPEC.md#close-operacion-046) | Public repository and product site: The user requests publication of the code to https://github.com/jerolan/go… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-047](../SPEC.md#close-operacion-047) | Public repository and product site: Use an original GoodSentry design informed by the public Sentry welcome pa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-048](../SPEC.md#close-operacion-048) | Public repository and product site: Publish only site/ through the official Pages artifact/deploy workflow on… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-044](../SPEC.md#close-operacion-044) | Public repository and product site: The user also explicitly requests Tailwind CSS plus daisyUI for the applic… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-045](../SPEC.md#close-operacion-045) | Public repository and product site: Use official daisyUI v5.7.50 standalone daisyui.mjs and daisyui-theme.mjs,… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-046](../SPEC.md#close-operacion-046) | Public repository and product site: The user requests publication of the code to https://github.com/jerolan/go… | por contrastar | pendiente | Requiere autorización explícita de publicación; no se hizo push |
+| [CLOSE-operacion-047](../SPEC.md#close-operacion-047) | Public repository and product site: Use an original GoodSentry design informed by the public Sentry welcome pa… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-048](../SPEC.md#close-operacion-048) | Public repository and product site: Publish only site/ through the official Pages artifact/deploy workflow on… | por contrastar | pendiente | Depende de 046 y de autorización de publicación/Pages |
 | [CLOSE-errores-163](../SPEC.md#close-errores-163) | SDK feedback: Feedback parity requires both legacy user reports and modern captureFeedback events. Implement a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-164](../SPEC.md#close-errores-164) | Legacy report identity and storage: Receive SDK envelope items of type user_report and POST /api/0/projects/{o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-165](../SPEC.md#close-errores-165) | Legacy report identity and storage: Migration029 adds only user_reports: numeric ID, project FK with cascade,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9313,6 +9315,27 @@ Límites registrados: 035–042 tienen pruebas frescas; 043 es aceptación hist�
 y debe repetir imagen/CI en la candidata final. El almacenamiento nativo de
 debug files/minidumps y los tipos futuros siguen separados. No se modificó
 ninguna baseline original.
+
+### Ejecución 2026-10-26: tema daisyUI y sitio local
+
+Selección registrada antes de trabajar: CLOSE-operacion-044, -045 y -047.
+Revisión de producto `c9b0f96`; 046/048 dependen de autorización de publicación
+y no se ejecutaron.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 044 | daisyUI 5.7.50 + Tailwind 4.3.3 como insumos de build; app.css compilado con componentes reales y tema GoodSentry; sin Node en runtime | `Dockerfile`; `internal/server/web/styles.css`; `internal/server/web/app.css`; `browser-workflows.json` |
+| 045 | SHA-256 oficiales de daisyUI v5.7.50 coinciden con los vendorizados; licencia MIT incluida en la imagen | `verified-hashes.txt`; `third_party/daisyui/LICENSE`; `Dockerfile` |
+| 047 | `site/` buildless con assets relativos, quickstart, estado, enlaces y capturas ficticias etiquetadas; Chromium 1440/768/320 sin overflow, errores ni assets faltantes | `site-browser.log`; `browser/gs-site-*.png` |
+| Corrección | Se sustituyó la cifra obsoleta 24.4 MiB por 34.47 MiB de pico verificados en el workload RSS actual | `site/index.html`; `rss/summary.json` |
+| 046/048 | Push, README público y Pages quedan pendientes de autorización explícita | Filas de matriz actualizadas; no se hizo push |
+
+Evidencia: `test-results/closure-20261025/operacion-044-047/verified-hashes.txt`,
+`site-browser.log`, `browser-workflows.json`, `container-dashboard.json` y las
+capturas `browser/gs-site-*.png`.
+
+Límites registrados: el tema y el sitio local están verificados; la publicación
+del repositorio y de Pages no se ejecutó. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 

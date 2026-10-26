@@ -1,0 +1,3 @@
+d69de07c7463bb1f41548e2688f88ee105cdadf9779fce5b3c47b3bfaa6be472  third_party/daisyui/daisyui.mjs
+e48a35d8326d650181ca600560e8520cf6b44cf9242bbd9d45825607e641f251  third_party/daisyui/daisyui-theme.mjs
+8709e3ac65c84637c422dc8082b893d9997fce093751c77b2f1983bf29dbf9ea  third_party/daisyui/LICENSE

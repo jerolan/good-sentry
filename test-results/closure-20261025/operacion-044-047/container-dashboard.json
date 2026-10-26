@@ -1,0 +1,175 @@
+{
+  "startedAt": "2026-10-15T00:24:50.306365+00:00",
+  "target": "http://localhost:18080",
+  "status": "passed",
+  "steps": [
+    {
+      "name": "own canceled history before app replacement",
+      "evidence": {
+        "projectId": "15",
+        "deliveries": {
+          "cf044d8970e3acf23292cee661d8e344": {
+            "status": "canceled",
+            "attempts": 0,
+            "attemptHistoryCount": 0,
+            "payloadSHA256": "e47e61967216b7836ae1d4447a238f05ce7008a01cb2c093da9f89be8b43d771",
+            "createdAt": "2026-10-14T23:22:22.757854Z",
+            "updatedAt": "2026-10-14T23:22:24.984279Z"
+          },
+          "bb3404adea5aae6f51a4357a40210dee": {
+            "status": "canceled",
+            "attempts": 0,
+            "attemptHistoryCount": 0,
+            "payloadSHA256": "0b1f160a182a6082ee4f27d6d95ae589973873272e9a1a88c070841bf3093bb3",
+            "createdAt": "2026-10-14T23:22:21.692593Z",
+            "updatedAt": "2026-10-14T23:22:24.984279Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "image-build",
+      "evidence": {
+        "exitCode": 0,
+        "elapsedSeconds": 22.764,
+        "stdout": "image-build.stdout.txt"
+      }
+    },
+    {
+      "name": "builder verified both vendored plugin checksums",
+      "evidence": {
+        "daisyui.mjs": {
+          "sha256": "d69de07c7463bb1f41548e2688f88ee105cdadf9779fce5b3c47b3bfaa6be472",
+          "dockerBuildVerified": true
+        },
+        "daisyui-theme.mjs": {
+          "sha256": "e48a35d8326d650181ca600560e8520cf6b44cf9242bbd9d45825607e641f251",
+          "dockerBuildVerified": true
+        }
+      }
+    },
+    {
+      "name": "application image",
+      "evidence": {
+        "id": "sha256:c86e3ab4c93ee1bc7438ac81c2f7e8ab9c6329095088c4f56d2b9c3efc20812d",
+        "digest": "sha256:c86e3ab4c93ee1bc7438ac81c2f7e8ab9c6329095088c4f56d2b9c3efc20812d",
+        "user": "65532:65532",
+        "sizeBytes": 24454389,
+        "entrypoint": [
+          "/goodsentry"
+        ]
+      }
+    },
+    {
+      "name": "compose-recreate",
+      "evidence": {
+        "exitCode": 0,
+        "elapsedSeconds": 2.446,
+        "stdout": "compose-recreate.stdout.txt"
+      }
+    },
+    {
+      "name": "ready authenticated runtime",
+      "evidence": {
+        "ready": {
+          "status": "ready"
+        },
+        "sessionSurvived": true,
+        "features": {
+          "alertDelivery": true,
+          "alerts": true,
+          "logs": true,
+          "uptime": true
+        },
+        "containerImage": "sha256:c86e3ab4c93ee1bc7438ac81c2f7e8ab9c6329095088c4f56d2b9c3efc20812d",
+        "policy": {
+          "EMAIL_URL": "consolemail://",
+          "GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS": "false",
+          "GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS": "false"
+        }
+      }
+    },
+    {
+      "name": "served assets equal frozen worktree bytes",
+      "evidence": {
+        "app.js": {
+          "bytes": 70121,
+          "sha256": "896391d1354f74b8ed7ab9e10e67c0d54bf51050f0c2a2dcf4fe1284e1463139",
+          "worktreeMatches": true,
+          "contentType": "text/javascript; charset=utf-8"
+        },
+        "app.css": {
+          "bytes": 109639,
+          "sha256": "aecce572389dd301f9f15430272761f86985fca55382d1353286991e6afba0fd",
+          "worktreeMatches": true,
+          "contentType": "text/css; charset=utf-8"
+        },
+        "alerts.js": {
+          "bytes": 20094,
+          "sha256": "361ba7899138b2a4cc9abd3920bc7371972ef8e038f0751cb1b790748740c2a2",
+          "worktreeMatches": true,
+          "contentType": "text/javascript; charset=utf-8"
+        }
+      }
+    },
+    {
+      "name": "actual compiled daisyUI components and GoodSentry theme",
+      "evidence": {
+        "@layer daisyui": true,
+        ".btn{": true,
+        ".card{": true,
+        ".badge{": true,
+        "[data-theme=goodsentry]": true,
+        "--color-primary:#087c6b": true
+      }
+    },
+    {
+      "name": "runtime vendored MIT license bytes match",
+      "evidence": {
+        "path": "/licenses/daisyui-LICENSE",
+        "bytes": 1071,
+        "sha256": "8709e3ac65c84637c422dc8082b893d9997fce093751c77b2f1983bf29dbf9ea",
+        "vendoredMatches": true
+      }
+    },
+    {
+      "name": "exported runtime filesystem excludes JS build tooling and plugin assets",
+      "evidence": {
+        "inspectedFileEntries": 1342,
+        "goBinaryPresent": true,
+        "licensePresent": true,
+        "standaloneJSOrCSSModules": [],
+        "entrypoint": [
+          "/goodsentry"
+        ],
+        "shellInImageUsed": false
+      }
+    },
+    {
+      "name": "own canceled delivery history unchanged",
+      "evidence": {
+        "projectId": "15",
+        "deliveries": {
+          "cf044d8970e3acf23292cee661d8e344": {
+            "status": "canceled",
+            "attempts": 0,
+            "attemptHistoryCount": 0,
+            "payloadSHA256": "e47e61967216b7836ae1d4447a238f05ce7008a01cb2c093da9f89be8b43d771",
+            "createdAt": "2026-10-14T23:22:22.757854Z",
+            "updatedAt": "2026-10-14T23:22:24.984279Z"
+          },
+          "bb3404adea5aae6f51a4357a40210dee": {
+            "status": "canceled",
+            "attempts": 0,
+            "attemptHistoryCount": 0,
+            "payloadSHA256": "0b1f160a182a6082ee4f27d6d95ae589973873272e9a1a88c070841bf3093bb3",
+            "createdAt": "2026-10-14T23:22:21.692593Z",
+            "updatedAt": "2026-10-14T23:22:24.984279Z"
+          }
+        },
+        "unchanged": true
+      }
+    }
+  ],
+  "finishedAt": "2026-10-15T00:25:16.668265+00:00"
+}
