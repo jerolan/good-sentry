@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "url": "http://127.0.0.1:18092/?view=issues&issue=12&org=default-organization",
+  "issueID": "12",
+  "expected": [
+    "Browser SDK grouped error run219",
+    "errors-browser-acceptance",
+    "errors-browser@1.0.0",
+    "errors-browser-run219group",
+    "GoodSentry Owner",
+    "resolved",
+    "Reopen"
+  ],
+  "widths": [
+    {
+      "width": 320,
+      "documentWidth": 320,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-218-219/ui-restart/issue-320.png"
+    },
+    {
+      "width": 768,
+      "documentWidth": 768,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-218-219/ui-restart/issue-768.png"
+    },
+    {
+      "width": 1440,
+      "documentWidth": 1440,
+      "screenshot": "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-218-219/ui-restart/issue-1440.png"
+    }
+  ],
+  "errors": [],
+  "failedRequests": []
+}

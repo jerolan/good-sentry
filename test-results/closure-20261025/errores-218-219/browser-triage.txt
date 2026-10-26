@@ -1,0 +1,33 @@
+=== {"status":"resolved"}
+{
+  "id": "12",
+  "status": "resolved",
+  "assignedTo": null,
+  "resolvedAt": "2026-10-26T23:10:37.887289Z"
+}
+=== {"status":"unresolved"}
+{
+  "id": "12",
+  "status": "unresolved",
+  "assignedTo": null,
+  "resolvedAt": null
+}
+=== {"status":"ignored"}
+{
+  "id": "12",
+  "status": "ignored",
+  "assignedTo": null,
+  "resolvedAt": null
+}
+=== {"status":"resolved","assignedTo":{"type":"user","id":"1"}}
+{
+  "id": "12",
+  "status": "resolved",
+  "assignedTo": {
+    "type": "user",
+    "id": "1",
+    "name": "GoodSentry Owner",
+    "email": "owner@localhost"
+  },
+  "resolvedAt": "2026-10-26T23:10:37.989724Z"
+}

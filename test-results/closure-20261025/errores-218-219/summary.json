@@ -1,0 +1,43 @@
+{
+  "criteria": ["CLOSE-errores-218", "CLOSE-errores-219"],
+  "date": "2026-10-26",
+  "product_revision": "4a3336d",
+  "environment": {
+    "server": "local binary on 127.0.0.1:18092",
+    "database": "disposable PostgreSQL 18 on 127.0.0.1:18358",
+    "sdk": "official @sentry/browser 11.7.0 bundle served from the isolated fixture; SHA-256 in browser-bundle.sha256",
+    "browser": "Chromium through the test-only Playwright runtime",
+    "auth": "disabled/open mode"
+  },
+  "covered": {
+    "218": "a real browser exception delivered by DSN with SDK 11.7.0, environment errors-browser-acceptance, release errors-browser@1.0.0, component/run tags, acceptance context, user, Error value and browser stack; native API and Chromium show the same issue at 320/768/1440",
+    "219": "three fingerprinted browser events form one issue with count 3; two acknowledgements of one event ID leave count 1; a later retry after resolve preserves count, status and resolvedAt; message/environment/tag/project/release filters work; resolve/reopen/ignore/resolve+assign transitions work; restart preserves status, count, assignment, tags, environment and release in API and UI"
+  },
+  "observed": {
+    "event_id_218": "11fb1aa0beb54a10b2489d4199c564b9",
+    "group_event_ids": ["af0cbf38a7914e13b21cd2b17c232769", "a3b3fc62fee84184b196442a1f23158d", "72e1e632394f4e8084b7a733e9d3ecb4"],
+    "group_count": 3,
+    "retry_event_id": "44444444444444444444444444444444",
+    "retry_count": 1,
+    "restart_status": "resolved",
+    "restart_count": 3
+  },
+  "commands": [
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run218 GOODSENTRY_ERRORS_MODE=single node tests/compat/errorsbrowser/run.mjs",
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run219group GOODSENTRY_ERRORS_MODE=group GOODSENTRY_ERRORS_COUNT=3 node tests/compat/errorsbrowser/run.mjs",
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run219retry GOODSENTRY_ERRORS_MODE=retry GOODSENTRY_ERRORS_EVENT_ID=44444444444444444444444444444444 node tests/compat/errorsbrowser/run.mjs",
+    "node tests/compat/errorsgo/ui.mjs with GOODSENTRY_ISSUE_ID and GOODSENTRY_UI_EXPECT"
+  ],
+  "evidence": [
+    "browser-sdk-218.json", "browser-api.json", "browser-issues.json", "browser-bundle.sha256", "ui-218/report.json", "ui-218/issue-320.png", "ui-218/issue-768.png", "ui-218/issue-1440.png",
+    "browser-group.json", "browser-group-retry-issues.json", "browser-retry.json", "browser-search.json", "browser-triage.txt",
+    "browser-retry-triage-before.json", "browser-retry-after-triage.json", "browser-retry-triage-after.json",
+    "browser-restart-issue12.json", "browser-restart-issue13.json", "ui-restart/report.json", "ui-restart/issue-320.png", "ui-restart/issue-768.png", "ui-restart/issue-1440.png",
+    "app.log", "summary.json"
+  ],
+  "limits": [
+    "The cached official bundle is the pinned 11.7.0 asset; its hash is recorded with the evidence.",
+    "The final copied image, 4569-row audit and matching public CI remain pending.",
+    "The product is not declared complete."
+  ]
+}

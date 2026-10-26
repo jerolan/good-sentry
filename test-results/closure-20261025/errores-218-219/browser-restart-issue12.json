@@ -1,0 +1,22 @@
+{
+  "id": "12",
+  "status": "resolved",
+  "count": 3,
+  "assignedTo": {
+    "type": "user",
+    "id": "1",
+    "name": "GoodSentry Owner",
+    "email": "owner@localhost"
+  },
+  "eventIDs": [
+    "72e1e632394f4e8084b7a733e9d3ecb4",
+    "a3b3fc62fee84184b196442a1f23158d",
+    "af0cbf38a7914e13b21cd2b17c232769"
+  ],
+  "tags": {
+    "component": "errors-browser",
+    "acceptance.run": "errors-browser-run219group"
+  },
+  "environment": "errors-browser-acceptance",
+  "release": "errors-browser@1.0.0"
+}
