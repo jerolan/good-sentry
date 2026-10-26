@@ -1442,11 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–022 ya están vigentes.
-Siguiente acción: CLOSE-identidad-023 (Account UI, roles sin organización y
-estados de error). No se declara aceptación ni cierre del producto. El avance
-se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014–023 ya están vigentes.
+Siguiente acción: CLOSE-identidad-024 (PostgreSQL real: aislamiento, bloqueos,
+dos cambios, rollback y commit diferido). No se declara aceptación ni cierre
+del producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1486,7 +1487,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de cookie |
-| [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de la vista Account |
 | [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3095,6 +3096,33 @@ Evidencia: `test-results/closure-20261025/account/route.log` y los reportes
 
 Siguiente acción: CLOSE-identidad-023 (Account UI, roles sin organización,
 estados pending/400/503 y foco), con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: Account UI y acceso sin organización
+
+Selección registrada antes de trabajar: CLOSE-identidad-023, siguiente en el
+plan. Candidata `4306be5`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de los flujos reales owner/member y del fixture sin organización.
+
+Resultado observado: el enlace Account aparece junto a la identidad y el
+logout, usa `view=account` y se renderiza antes de cargar organización o
+proyecto; owner, member y una cuenta sin membership acceden al formulario. La
+vista muestra nombre/email como texto y campos current/new/confirm con
+`autocomplete=current-password`/`new-password`; explica antes de enviar que se
+cierran todas las sesiones y se revocan los tokens personales, mientras las
+claves SDK siguen funcionando. El submit se deshabilita mientras está pendiente
+y se restaura si el formulario sigue montado. La confirmación distinta y el
+400 conservan el formulario; el 503/fallo de red muestra que el resultado no se
+pudo confirmar y ofrece ir a sign in sin reintentar; el éxito limpia el estado
+y muestra el mensaje de login. No se guardan contraseñas en history, storage ni
+estado compartido; las capturas cubren 320/768/1440 y no hay errores de página.
+Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account-owner/`,
+`account-member/` y `account-noorg/`.
+
+Siguiente acción: CLOSE-identidad-024 (PostgreSQL real de 035, aislamiento,
+bloqueos, dos cambios, rollback y commit diferido), con dependencias locales
+resueltas.
 
 ### Comprobante de integración documental
 

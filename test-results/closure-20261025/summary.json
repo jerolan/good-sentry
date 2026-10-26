@@ -389,6 +389,18 @@
         "old session 401; new password login 200; no password/hash/generation in output"
       ],
       "evidence_files": ["account/route.log", "account-owner/report.json", "account-member/report.json"]
+    },
+    "CLOSE-identidad-023": {
+      "evidence": "vigente",
+      "scope": "Account navigation, form, revocation explanation, pending/error/success states and no-organization access",
+      "covered": [
+        "Account link beside identity/logout and view=account before org loading",
+        "owner, member and no-organization accounts can open the form",
+        "autocomplete, mismatch/no-persist, duplicate-submit disable, safe errors and success-to-sign-in",
+        "503/network copy offers verification by new sign-in without auto retry",
+        "320/768/1440 without overflow or page errors"
+      ],
+      "evidence_files": ["account-owner/report.json", "account-member/report.json", "account-noorg/report.json", "account-owner/*.png", "account-member/*.png", "account-noorg/*.png"]
     }
   },
   "commands": [
