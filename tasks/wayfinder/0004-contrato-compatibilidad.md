@@ -90,9 +90,9 @@ Se conservan los requisitos existentes. Contexto Java y archivo frío de logs
 siguen pendientes, junto con los flujos, clientes y versiones concretos.
 La issue continúa abierta. No se aprueba implementación ni se crea un Goal.
 
-## Next round
+## Client versions approved in round 3
 
-Propuesta pendiente de aprobación: fijar los clientes ya documentados como
+El usuario aprobó fijar los clientes ya documentados como
 base de aceptación, evitando que versiones futuras amplíen automáticamente
 el cierre: sentry-go 0.50.0; sentry-sdk Python 2.72.0; Node y Browser 11.7.0;
 sentry-cli 3.8.0; Sentry Native 0.17.4; exportador Python OTLP protobuf/HTTP
@@ -104,3 +104,26 @@ su alcance y revisión acreditados, sin declarar que toda prueba existente
 sigue vigente sobre cambios posteriores. Esta selección no aprueba todavía
 la matriz de plataformas nativas, todos los flujos ni cobertura universal.
 Versiones de cliente MCP, GitLab y cliente Java siguen por concretar.
+
+## Resolution comments, round 3
+
+25 de octubre de 2026, America/Mexico_City. Resolución parcial.
+El usuario respondió "Si, por que hay grafana?" a las versiones propuestas.
+Se aprueban las versiones enumeradas arriba. Su pregunta pide explicar el
+papel de Grafana y no expresa una exclusión ni retira la cobertura aprobada.
+
+Grafana es un consumidor externo de la API compatible, mediante el plugin
+Sentry datasource. La documentación pública de integraciones de GlitchTip
+lo incluye junto con GitLab Error Tracking. Se volvió a consultar
+https://glitchtip.com/documentation/integrations/ para confirmar el motivo;
+esta consulta no modifica la referencia congelada ni amplía su alcance.
+Grafana no pasa a ser una dependencia de ejecución de GoodSentry. El producto
+conserva su UI propia y PostgreSQL como único servicio externo requerido.
+
+Evidencia registrada en docs/compatibility.md: Grafana 13.0.2 y plugin 2.2.8
+se ejercitaron para conexión a organización/proyecto, consulta de issues y
+panel de conteos horarios sobre /stats_v2/. Esta lectura confirma el registro,
+no reproduce esa prueba ni certifica su vigencia en revisiones posteriores.
+
+Siguen pendientes clientes de MCP, GitLab y Java, plataformas nativas y
+resultados completos por familia. La decisión permanece abierta.
