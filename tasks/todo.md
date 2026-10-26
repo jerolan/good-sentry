@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -027
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-028 (imagen reiniciada). No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-029. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1860,7 +1860,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | por contrastar | pendiente | Parcial: UI, 503 y métricas Go/Node verificadas; falta imagen reiniciada |
+| [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7614,6 +7614,26 @@ Evidencia adicional: `rendimiento-028/sdk-child-metrics.json`, además de
 Falta para cerrar: la verificación sobre la imagen reiniciada. Siguiente paso:
 construir y arrancar la imagen de esta revisión y repetir las métricas y la UI
 contra ella.
+
+### Cierre 2026-10-26: imagen reiniciada para Operations
+
+Se construyó la imagen de esta revisión y se repitieron las comprobaciones
+contra el contenedor, no solo contra el binario local.
+
+| Comprobación | Resultado |
+|---|---|
+| Imagen | `goodsentry:028-local`, digest `6062bcaeb163` |
+| Métricas oficiales Go/Node en la imagen | `go-child-028` (`event`/1) y `node-child-028` (`span`/1) con `db.query` y `http.client`, count 1, timed 1 y duraciones positivas |
+| UI Operations en la imagen | Owner completo: métricas reales, nulo frente a cero, nombres largos, 51 grupos 50+1, recarga/refresco/ocurrencia/atrás, estados vacíos, 503 con reintento y trabajador tras liberar el bloqueo |
+| Responsive | Capturas a 320, 768 y 1440 px sin errores de página, consola ni peticiones |
+
+Evidencia: `test-results/closure-20261025/rendimiento-028-image/report.json` y
+capturas, más `rendimiento-028-image/image-sdk-metrics.json`;
+`rendimiento-028/sdk-child-metrics.json` conserva la ejecución previa sobre el
+binario.
+
+Límite registrado: la imagen se construyó y ejecutó localmente; no se publicó ni
+se compara con CI público, que sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

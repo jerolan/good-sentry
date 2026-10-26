@@ -4017,6 +4017,16 @@
         "rendimiento-027/segment-attribution.log"
       ]
     },
+    "CLOSE-rendimiento-028": {
+      "evidence": "vigente",
+      "scope": "Operations breakdown UI and 503 indexing state, official Go/Node child metrics and the same checks on the built restarted image",
+      "evidence_files": [
+        "rendimiento-028/report.json",
+        "rendimiento-028/sdk-child-metrics.json",
+        "rendimiento-028-image/report.json",
+        "rendimiento-028-image/image-sdk-metrics.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
