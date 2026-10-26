@@ -190,9 +190,9 @@ permanece abierta y se mantienen los requisitos existentes.
 La precisión factual de contexto Java y archivo frío se sigue en
 [Precisar contexto Java y archivo frío de la referencia](0008-contexto-java-archivo-frio.md).
 
-## Next round, errors and JavaScript source maps
+## Errors and JavaScript source maps approved in rounds 6 and 7
 
-Dos propuestas independientes, pendientes de aprobación:
+Dos criterios independientes aprobados por el usuario:
 
 - Errores y triage: para cada SDK Go/Python/Node/Browser fijado, capturar
   un error real por DSN y recuperarlo mediante API y UI con su contexto,
@@ -211,3 +211,34 @@ Dos propuestas independientes, pendientes de aprobación:
 Estos criterios concretan evidencia de cierre sin sustituir ni reducir los
 contratos existentes de SPEC.md. Destinos externos de alertas e identidad
 siguen en su ticket de decisión propio.
+
+## Resolution comments, rounds 6 and 7
+
+2026-10-25, America/Mexico_City. Resolución parcial.
+El usuario respondió "Si" a ambos criterios de errores/triage y source maps
+JavaScript propuestos. Se aprueban los resultados y clientes descritos arriba,
+incluida persistencia tras reinicio. Evidencia: respuesta directa en sesión.
+No se declara ejecutada ni vigente una prueba por registrar su criterio.
+
+## Next round, cold archive and Java source context
+
+Propuestas pendientes de aprobación:
+
+- Archivo y retención: distinguir errores, logs, transacciones y spans.
+  Durante la retención acordada, los datos archivados deben poder consultarse
+  por los lectores aplicables de UI/API, con filtros y permisos coherentes
+  entre datos recientes y archivados, y sobrevivir a reinicios. Verificar
+  eliminación al vencer el plazo. Exigir backend local y otro compatible S3,
+  sin imponer DuckDB como tecnología interna de GoodSentry. Los tipos pueden
+  tener estrategias diferentes; no se exige mover spans desde PostgreSQL
+  si ya se almacenan directamente en el archivo. Pendiente de aprobación.
+- Contexto Java: exigir un error real de un cliente Java que muestre función,
+  archivo, línea y el fragmento de código fuente correspondiente en el issue.
+  El crash nativo y los source maps JavaScript no demuestran este resultado.
+  Es un criterio propuesto de GoodSentry, no un detalle comprobado de GlitchTip.
+  SDK/JDK, artefacto y mecanismo de asociación siguen pendientes de investigación
+  y fijación antes de aprobar el contrato final. Pendiente de aprobación.
+
+La investigación factual distingue errores/logs archivados y spans en Parquet.
+No hay aún comprobante de equivalencia de GoodSentry para cada tipo. No se
+infiere implementación, ausencia de soporte ni una exclusión aprobada.

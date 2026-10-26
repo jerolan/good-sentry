@@ -41,6 +41,8 @@ investigación en archivos disjuntos, sin ramas research/ ni PR.
 - [Fijar la referencia pública de GlitchTip](0002-referencia-glitchtip.md): hay una candidata y fuentes delimitadas; su aceptación y discrepancias permanecen como decisiones.
 - [Identificar la evidencia reutilizable de GoodSentry](0003-evidencia-goodsentry.md): existe una fotografía por commit y evidencia reutilizable para continuar sin reconstruir el historial completo.
 
+- [Precisar contexto Java y archivo frío de la referencia](0008-contexto-java-archivo-frio.md): hay documentación de archivo de logs y errores; el flujo reproducible de contexto Java sigue sin precisar.
+
 ## Not yet specified
 
 La referencia y el inventario pueden revelar ambigüedades de equivalencia
