@@ -1,0 +1,57 @@
+{
+  "run": "081587",
+  "org": "providers-081587",
+  "sent": {
+    "project": "1",
+    "delivery": "ce384b5b93d0c606b0408ddf2789f43e",
+    "attempts": [
+      {
+        "number": 1,
+        "startedAt": "2026-10-26T04:27:12.05364-06:00",
+        "completedAt": "2026-10-26T04:27:12.072441-06:00",
+        "status": "delivered",
+        "reason": "accepted",
+        "statusCode": 204,
+        "elapsedMs": 2
+      }
+    ]
+  },
+  "retried": {
+    "project": "2",
+    "delivery": "9266e3a99ec649b227ec88241d42dc9a",
+    "attempts": [
+      {
+        "number": 1,
+        "startedAt": "2026-10-26T04:27:42.109431-06:00",
+        "completedAt": "2026-10-26T04:27:42.116241-06:00",
+        "status": "retry",
+        "reason": "http_status",
+        "statusCode": 500,
+        "elapsedMs": 1
+      },
+      {
+        "number": 2,
+        "startedAt": "2026-10-26T04:27:57.144696-06:00",
+        "completedAt": "2026-10-26T04:27:57.150593-06:00",
+        "status": "retry",
+        "reason": "http_status",
+        "statusCode": 500,
+        "elapsedMs": 1
+      }
+    ]
+  },
+  "payload": {
+    "contentType": "application/json",
+    "hasContent": true,
+    "contentIncludesUrl": true,
+    "flags": 4,
+    "allowedMentions": {
+      "parse": [],
+      "users": [],
+      "roles": [],
+      "replied_user": false
+    },
+    "forbidden": []
+  },
+  "receipts": 3
+}

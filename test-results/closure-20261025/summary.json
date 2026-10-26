@@ -3111,6 +3111,38 @@
         "alertas-slack.json"
       ],
       "blocked": "Falta un canal de Slack autorizado y autorización de publicación/CI."
+    },
+    "CLOSE-alertas-022": {
+      "evidence": "vigente",
+      "scope": "shared URL-based provider set, migration038, common summary and Discord payload",
+      "evidence_files": [
+        "alertas-022-025-go.log",
+        "alertas-discord.json"
+      ]
+    },
+    "CLOSE-alertas-023": {
+      "evidence": "vigente",
+      "scope": "shared URL-based provider set, migration038, common summary and Discord payload",
+      "evidence_files": [
+        "alertas-022-025-go.log",
+        "alertas-discord.json"
+      ]
+    },
+    "CLOSE-alertas-024": {
+      "evidence": "vigente",
+      "scope": "shared URL-based provider set, migration038, common summary and Discord payload",
+      "evidence_files": [
+        "alertas-022-025-go.log",
+        "alertas-discord.json"
+      ]
+    },
+    "CLOSE-alertas-025": {
+      "evidence": "vigente",
+      "scope": "shared URL-based provider set, migration038, common summary and Discord payload",
+      "evidence_files": [
+        "alertas-022-025-go.log",
+        "alertas-discord.json"
+      ]
     }
   },
   "commands": [

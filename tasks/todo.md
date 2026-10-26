@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-022 (Discord como proveedor adicional). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-026 (formato de Microsoft Teams). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1890,10 +1890,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-019](../SPEC.md#close-alertas-019) | Slack incoming webhooks: Slack rate-limit responses(https://docs.slack.dev/apis/web-api/rate-limits/) include… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-020](../SPEC.md#close-alertas-020) | Slack incoming webhooks: Expose Slack incoming webhook as a recipient choice in the existing original Alert di… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-021](../SPEC.md#close-alertas-021) | Slack incoming webhooks: Pure owning checks cover configured Slack acceptance/deduplication/URL rejection, act… | implementada (local) | bloqueada | Recibir en un canal de Slack autorizado y publicar imagen/CI |
-| [CLOSE-alertas-022](../SPEC.md#close-alertas-022) | Additional provider webhooks: The remaining incoming-webhook providers are explicit recipient types discord, t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-023](../SPEC.md#close-alertas-023) | Additional provider webhooks: Additive038_provider_alerts.sql expands only alert_deliveries_recipient_type_che… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-024](../SPEC.md#close-alertas-024) | Additional provider webhooks: All six providers receive the same human-readable summary as Slack: GoodSentry:… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-025](../SPEC.md#close-alertas-025) | Additional provider webhooks: Discord receives JSON with a top-level content of the summary, one newline and t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-022](../SPEC.md#close-alertas-022) | Additional provider webhooks: The remaining incoming-webhook providers are explicit recipient types discord, t… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-023](../SPEC.md#close-alertas-023) | Additional provider webhooks: Additive038_provider_alerts.sql expands only alert_deliveries_recipient_type_che… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-024](../SPEC.md#close-alertas-024) | Additional provider webhooks: All six providers receive the same human-readable summary as Slack: GoodSentry:… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-025](../SPEC.md#close-alertas-025) | Additional provider webhooks: Discord receives JSON with a top-level content of the summary, one newline and t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-026](../SPEC.md#close-alertas-026) | Additional provider webhooks: Microsoft Teams receives a MessageCard with @type:MessageCard, @context:https://… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-027](../SPEC.md#close-alertas-027) | Additional provider webhooks: Google Chat receives {"text": summary + newline + canonical URL} with HTML-signi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-028](../SPEC.md#close-alertas-028) | Additional provider webhooks: Feishu receives {"msg_type":"text","content":{"text": summary + newline + canoni… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4663,6 +4663,37 @@ publicación de la fuente y el CI público, ninguna de las cuales está disponib
 ni autorizada en este entorno. Condición de desbloqueo: un canal de Slack
 autorizado y la autorización de publicación/CI; mientras tanto los demás
 proveedores pueden avanzar por unidad independiente.
+
+### Ejecución 2026-10-26: proveedores adicionales y Discord
+
+Selección registrada antes de trabajar: CLOSE-alertas-022 a -025. Candidata
+`5b7e3bb`.
+
+Resultado observado: los seis tipos URL-based (`discord`, `teams`,
+`googlechat`, `feishu`, `ntfy`, `zulip`) comparten la admisión de destino,
+el recorte, la selección explícita de tipo, la identidad durable, el secreto de
+propietario/administrador, el trabajador y la política de red existentes, sin
+inferir proveedor por host; Slack y la webhook genérica conservan su formato y
+semántica. La migración `038_provider_alerts.sql` solo amplía la restricción al
+conjunto completo y su owner conserva reglas, entregas, intentos, relojes y
+estados previos. El resumen común —regla, proyecto, issue opcional, conteo y
+ventana, transición de monitor, prueba, entorno opcional, instante UTC y
+entrega— se serializa por proveedor y rechaza contexto ausente, UTF-8 o NUL
+inválidos, URL inválida o demasiado larga y mensajes que no caben, sin persistir
+el texto renderizado.
+
+La aceptación con un receptor local confirmó Discord: `content` incluye el
+resumen y la URL canonicalizada, `flags:4`, `allowed_mentions` con
+`parse`/`users`/`roles` vacíos y `replied_user:false`, sin `channel`,
+`username` ni `avatar_url`; un 204 se considera entregado y un 500 reintenta a
+los 15 y 30 segundos hasta agotar el presupuesto. Los owners cubren además
+mensajes de los otros cinco proveedores, escapado de menciones y HTML, límites
+Unicode y JSON genérico intacto.
+
+Evidencia: `test-results/closure-20261025/alertas-022-025-go.log` y
+`alertas-discord.json`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 
