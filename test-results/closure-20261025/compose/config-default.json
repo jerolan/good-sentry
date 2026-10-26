@@ -1,0 +1,131 @@
+{
+  "name": "sentrygo",
+  "networks": {
+    "default": {
+      "ipam": {},
+      "name": "sentrygo_default"
+    }
+  },
+  "services": {
+    "goodsentry": {
+      "build": {
+        "context": "/home/dev/projects/SentryGo",
+        "dockerfile": "Dockerfile"
+      },
+      "command": null,
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "ALERT_DELIVERY_TIMEOUT_SECONDS": "10",
+        "ALERT_MAX_ATTEMPTS": "5",
+        "ALERT_WORKERS": "2",
+        "AWS_ACCESS_KEY_ID": "",
+        "AWS_REGION": "",
+        "AWS_SECRET_ACCESS_KEY": "",
+        "AWS_SESSION_TOKEN": "",
+        "DATABASE_URL": "postgres://goodsentry:<redacted>@postgres:5432/goodsentry",
+        "DEFAULT_FROM_EMAIL": "goodsentry@localhost",
+        "EMAIL_URL": "consolemail://",
+        "ENABLE_ADMIN": "false",
+        "ENABLE_OPENAPI": "false",
+        "GOODSENTRY_ARCHIVE_AFTER_DAYS": "",
+        "GOODSENTRY_ARCHIVE_BACKEND": "local",
+        "GOODSENTRY_ARCHIVE_DIR": "/data/archive",
+        "GOODSENTRY_ARCHIVE_S3_BUCKET": "",
+        "GOODSENTRY_ARCHIVE_S3_ENDPOINT": "",
+        "GOODSENTRY_ARCHIVE_S3_PREFIX": "",
+        "GOODSENTRY_ARCHIVE_S3_REGION": "",
+        "GOODSENTRY_AUTH": "disabled",
+        "GOODSENTRY_DEFAULT_EMAIL": "owner@localhost",
+        "GOODSENTRY_DEFAULT_NAME": "GoodSentry Owner",
+        "GOODSENTRY_DEFAULT_ORGANIZATION": "Default Organization",
+        "GOODSENTRY_DEFAULT_PASSWORD": "",
+        "GOODSENTRY_DOMAIN": "http://172.31.36.218:8000",
+        "GOODSENTRY_ENABLE_ARCHIVE": "false",
+        "GOODSENTRY_ENABLE_LOGS": "true",
+        "GOODSENTRY_ENABLE_MCP": "false",
+        "GOODSENTRY_ENABLE_ORGANIZATION_CREATION": "false",
+        "GOODSENTRY_ENABLE_UPTIME": "true",
+        "GOODSENTRY_OIDC_AUTO_CREATE": "false",
+        "GOODSENTRY_OIDC_CLIENT_ID": "",
+        "GOODSENTRY_OIDC_CLIENT_SECRET": "",
+        "GOODSENTRY_OIDC_ISSUER": "",
+        "GOODSENTRY_OIDC_NAME": "Single sign-on",
+        "GOODSENTRY_OIDC_SCOPES": "openid profile email",
+        "GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS": "false",
+        "GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS": "false",
+        "ISSUE_MAINTENANCE_INTERVAL_SECONDS": "1",
+        "MONITOR_WORKERS": "2",
+        "PORT": "8000",
+        "SECRET_KEY": "<redacted>",
+        "SERVER_ROLE": "all_in_one",
+        "VALKEY_URL": ""
+      },
+      "image": "ghcr.io/jerolan/good-sentry:main",
+      "networks": {
+        "default": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "protocol": "tcp",
+          "published": "8000",
+          "target": 8000
+        }
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "uploads",
+          "target": "/data",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    },
+    "postgres": {
+      "command": null,
+      "entrypoint": null,
+      "environment": {
+        "POSTGRES_DB": "goodsentry",
+        "POSTGRES_PASSWORD": "<redacted>",
+        "POSTGRES_USER": "goodsentry"
+      },
+      "healthcheck": {
+        "interval": "5s",
+        "retries": 20,
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U goodsentry -d goodsentry"
+        ],
+        "timeout": "3s"
+      },
+      "image": "postgres:18",
+      "networks": {
+        "default": null
+      },
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "source": "pg-data",
+          "target": "/var/lib/postgresql",
+          "type": "volume",
+          "volume": {}
+        }
+      ]
+    }
+  },
+  "volumes": {
+    "pg-data": {
+      "name": "sentrygo_pg-data"
+    },
+    "uploads": {
+      "name": "sentrygo_uploads"
+    }
+  }
+}

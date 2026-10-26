@@ -1,0 +1,31 @@
+{
+  "csrfToken": "<redacted>",
+  "features": {
+    "admin": false,
+    "alertDelivery": true,
+    "alerts": true,
+    "authRequired": false,
+    "logs": true,
+    "mcp": false,
+    "oidc": false,
+    "openapi": false,
+    "passwordRecovery": true,
+    "uptime": true
+  },
+  "organizations": [
+    {
+      "id": "1",
+      "name": "Default Organization",
+      "role": "owner",
+      "slug": "default-organization"
+    }
+  ],
+  "twoFactorEnabled": false,
+  "twoFactorRequired": false,
+  "user": {
+    "email": "owner@localhost",
+    "id": "1",
+    "isInstanceAdmin": true,
+    "name": "GoodSentry Owner"
+  }
+}

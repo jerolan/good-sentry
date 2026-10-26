@@ -1436,15 +1436,15 @@ Git, índice y reclamaciones antes de editar: no había criterio reclamado, la
 candidata probada fue `54db6e48bf2e52e9a84efe397e3e5b44c27e4d91` y el único
 archivo ajeno era `tests/compat/otlp_python_smoke.py`, sin seguimiento y sin
 tocar. Se eligieron, en orden del plan, CLOSE-operacion-004, CLOSE-operacion-005
-y CLOSE-operacion-006; después se completó CLOSE-operacion-007 con Chromium
-real y un estado de permiso. Sus comprobantes vigentes están abajo. Siguiente
-acción: CLOSE-operacion-008 (Compose, imagen y arranque limpio), comprobando la
-vinculación del digest público con la candidata; si la publicación no está
-disponible, registrar el bloqueo y avanzar en CLOSE-operacion-009 (configuración
-canónica y alias), cuyas dependencias locales están resueltas. No se declara
-aceptación ni cierre del producto. El avance se informa por criterios/evidencia,
-sin porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
-producto ni borran este registro.
+y CLOSE-operacion-006; después se completaron CLOSE-operacion-007 con Chromium
+real y un estado de permiso, y CLOSE-operacion-008 con el Compose público, la
+imagen construida y PostgreSQL externo. Sus comprobantes vigentes están abajo.
+Siguiente acción: CLOSE-operacion-009 (configuración canónica, alias y
+precedencia), con dependencias locales resueltas; después CLOSE-operacion-010
+(modo abierto/autenticado, sesiones y CSRF). No se declara aceptación ni cierre
+del producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1457,7 +1457,7 @@ producto ni borran este registro.
 | [CLOSE-operacion-005](../SPEC.md#close-operacion-005) | Architecture: Ingest events durably before returning success. A request may normalize synchronously and commit… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de captura o colas |
 | [CLOSE-operacion-006](../SPEC.md#close-operacion-006) | Architecture: HTTP, workers and scheduler stop on termination signals and close database connections. Startup… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de arranque o migraciones |
 | [CLOSE-operacion-007](../SPEC.md#close-operacion-007) | Architecture: Serve an original, responsive application UI with a compact sidebar, neutral surfaces, a teal ac… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI/estilos |
-| [CLOSE-operacion-008](../SPEC.md#close-operacion-008) | Deployment and configuration: Default HTTP port is 8000. docker compose up -d pulls the verified public applic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-008](../SPEC.md#close-operacion-008) | Deployment and configuration: Default HTTP port is 8000. docker compose up -d pulls the verified public applic… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de imagen/Compose |
 | [CLOSE-operacion-009](../SPEC.md#close-operacion-009) | Deployment and configuration: Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-010](../SPEC.md#close-operacion-010) | Deployment and configuration: GOODSENTRY_AUTH defaults to disabled for frictionless local startup. If SECRET_K… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-011](../SPEC.md#close-operacion-011) | Deployment and configuration: An empty VALKEY_URL selects PostgreSQL-only operation. Optional features must re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2344,6 +2344,61 @@ registrar la dependencia de publicación como bloqueo del bloque. Después,
 CLOSE-operacion-009 (configuración canónica y alias) tiene dependencias locales
 resueltas y puede ejecutarse de forma independiente si la publicación de imagen
 no está disponible.
+
+### Ejecución 2026-10-26: despliegue, imagen vinculada y Compose
+
+Selección registrada antes de trabajar: CLOSE-operacion-008, siguiente en el
+plan. Candidata `145503d`; producto `54db6e4`. No había criterio reclamado. La
+imagen pública desplegada es
+`ghcr.io/jerolan/good-sentry@sha256:2fabe51e980380f588a041cf47548977f7b8c1051272a1b7d36ee8de3cae64fa`,
+etiquetada con `org.opencontainers.image.revision=c5964e5`. La comparación
+`git diff --name-only c5964e5 54db6e4` contiene solo `SPEC.md`,
+`tasks/plan.md` y `tasks/todo.md`; los commits posteriores solo añaden un plazo
+de test, evidencia y `tests/compat/member_permission_browser.mjs`. Ningún
+código de runtime, esquema, configuración, UI embebida o cliente cambió. Por la
+regla de reutilización con comparación documentada, la imagen es equivalente al
+producto de la candidata. Si la auditoría final exige una etiqueta de revisión
+exacta, la imagen debe republicarse desde la candidata o esa comparación debe
+aceptarse expresamente.
+
+Procedimiento reproducible: `docker compose config` por defecto y con
+`GOODSENTRY_IMAGE`; `docker compose pull goodsentry`; tres proyectos Compose
+aislados sin `.env` (imagen pública, build local e imagen construida por
+Compose) en puertos 18091-18093; `/healthz`, `/api/v1/setup`, `/api/v1/me`,
+reinicio de la aplicación, conteos en PostgreSQL, inspección de imagen y
+volúmenes. Un cuarto contenedor de la imagen pública usó un `DATABASE_URL`
+externo en una red Docker aislada.
+
+Resultado observado: el Compose por defecto publica el puerto 8000, contiene
+solo `goodsentry` y `postgres`, monta `pg-data` y `uploads`, espera el
+healthcheck de PostgreSQL y no crea web/worker/cron separados. El `pull`
+descargó el digest anterior. Un proyecto limpio sin `.env` con la imagen
+pública arrancó en el puerto 18092: `/healthz` 200, `/api/v1/setup`
+`{"required":false}`, un owner implícito `owner@localhost`, una organización
+`default-organization`, conteos 1/1/1, usuario `65532:65532`, y el reinicio
+conservó el mismo usuario y CSRF. La ruta documentada
+`GOODSENTRY_IMAGE=goodsentry:closure-compose-build PORT=18093 docker compose up --build -d`
+compiló y arrancó correctamente: `/healthz` 200, setup `required:false`,
+usuario `65532:65532`, dos servicios. La imagen local
+`goodsentry:closure-20261026` mide 56,682,768 bytes, usa entrypoint
+`/goodsentry`, no contiene shell, incluye 150 certificados en
+`/etc/ssl/certs/ca-certificates.crt`, el aviso de daisyUI y `/data`. El
+contenedor público con `DATABASE_URL` externo arrancó con `/healthz` 200 y
+setup `required:true`. La aplicación no necesita contenedores separados.
+
+Evidencia: `test-results/closure-20261025/compose/`
+(`config-default.json`, `config-local.json`, `pull-public.log`,
+`up-public.log`, `up-source-build.log`, `image-build.log`, `setup.json`,
+`me.json`, `me-after-restart.json`, `summary.json`). Los secretos CSRF y de
+base se eliminaron del JSON; los logs no contienen credenciales. Los proyectos
+y las imágenes locales desechables se eliminaron después de la prueba.
+Subresultados pendientes del bloque: ninguno, con la salvedad documentada de la
+etiqueta de revisión de la imagen.
+
+Siguiente acción: CLOSE-operacion-009, comprobar la configuración canónica,
+alias y precedencia contra el loader y sus tests; después CLOSE-operacion-010
+(modos abierto/autenticado, sesiones y CSRF), cuyas dependencias de PostgreSQL
+están disponibles.
 
 ### Comprobante de integración documental
 

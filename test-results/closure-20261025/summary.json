@@ -68,6 +68,21 @@
         "Tailwind CSS 4.3.3 is compiled and embedded; runtime image is distroless non-root without Node"
       ],
       "evidence_files": ["browser/report.json", "browser/*.png", "member-permission/report.json", "member-permission/*.png", "browser.log", "member-permission.log"]
+    },
+    "CLOSE-operacion-008": {
+      "evidence": "vigente",
+      "scope": "Compose configuration, pulled public image, source build, restart persistence, non-root image, CA roots and external PostgreSQL",
+      "covered": [
+        "default host port 8000 and one application plus PostgreSQL",
+        "public image pulled at digest sha256:2fabe51e980380f588a041cf47548977f7b8c1051272a1b7d36ee8de3cae64fa",
+        "clean Compose project without .env starts in open mode with one owner and one organization",
+        "PostgreSQL healthcheck, pg-data and uploads volumes, application restart persistence",
+        "documented source-build command with GOODSENTRY_IMAGE and --build succeeds",
+        "runtime image runs as 65532:65532, has no shell, 150 CA certificates and no Node",
+        "no separate web, worker or cron containers",
+        "public image starts against an externally managed PostgreSQL URL"
+      ],
+      "evidence_files": ["compose/summary.json", "compose/config-default.json", "compose/config-local.json", "compose/pull-public.log", "compose/up-public.log", "compose/up-source-build.log", "compose/image-build.log", "compose/setup.json", "compose/me.json", "compose/me-after-restart.json"]
     }
   },
   "commands": [
