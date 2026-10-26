@@ -1,0 +1,4 @@
+=== RUN   TestCompatibleDiscoveryHTTPContract
+--- PASS: TestCompatibleDiscoveryHTTPContract (0.66s)
+PASS
+ok  	goodsentry/internal/server	1.685s

@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-065 (descubrimiento compatible). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-068 (siguiente criterio de descubrimiento). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1905,9 +1905,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-034](../SPEC.md#close-alertas-034) | Mattermost incoming webhooks: POST Content-Type: application/json with {"text": summary plus resource link}. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-035](../SPEC.md#close-alertas-035) | Mattermost incoming webhooks: Mattermost succeeds only for HTTP 200 with a complete response body that trims t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-036](../SPEC.md#close-alertas-036) | Mattermost incoming webhooks: Expose Mattermost in the existing Alert dialog with its own label/help and a rem… | implementada (local) | bloqueada | Recibo real de Mattermost autorizado |
-| [CLOSE-identidad-065](../SPEC.md#close-identidad-065) | Compatible discovery surface: Organization JSON uses the public case-sensitive require2FA boolean from the per… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-066](../SPEC.md#close-identidad-066) | Compatible discovery surface: Expose the read-only discovery routes used by Sentry-compatible clients: authent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-067](../SPEC.md#close-identidad-067) | Compatible discovery surface: Organization responses use the public OpenAPI OrganizationSchema fields with rea… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-065](../SPEC.md#close-identidad-065) | Compatible discovery surface: Organization JSON uses the public case-sensitive require2FA boolean from the per… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-066](../SPEC.md#close-identidad-066) | Compatible discovery surface: Expose the read-only discovery routes used by Sentry-compatible clients: authent… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-067](../SPEC.md#close-identidad-067) | Compatible discovery surface: Organization responses use the public OpenAPI OrganizationSchema fields with rea… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-068](../SPEC.md#close-identidad-068) | Compatible discovery surface: List routes accept strict limit or per_page from1..100 (not both with different… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-069](../SPEC.md#close-identidad-069) | Compatible discovery surface: These routes are read-only and add no schema, feature worker or external integra… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-070](../SPEC.md#close-identidad-070) | Compatible organization detail and project keys: Additive039_compat_management.sql supplies the remaining read… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4752,6 +4752,32 @@ roundtrip en navegador están implementados, pero el criterio exige además un
 recibo real de Mattermost, que no está disponible ni autorizado. Desbloqueo: un
 destino Mattermost autorizado; la aceptación local de imagen y la publicación
 exacta ya figuran en el propio criterio.
+
+### Ejecución 2026-10-26: descubrimiento compatible
+
+Selección registrada antes de trabajar: CLOSE-identidad-065 a -067. Candidata
+`22c66bd`.
+
+Resultado observado: el JSON de organización expone la clave exacta
+`require2FA` como booleano. La CLI oficial `sentry-cli 3.8.0` ejecutó
+`organizations list` contra la instancia con un token real y describió la tabla
+—ID, nombre, slug, fecha y «Requires 2FA: false»— con salida 0, lo que demuestra
+que el parser del cliente lee esa clave y el esquema. El owner HTTP cubre las
+rutas `/api/0/`, `/api/0/users/`, `/api/0/users/{id}/`,
+`/api/0/organizations/`, `/api/0/projects/`, `/api/0/instance-license/` y
+su enlace de soporte, además de `/api/settings/` y
+`/api/settings/{org}/` públicos; aplica `org:read` para organizaciones,
+admite `org:read` o `project:read` para proyectos, acepta cualquier alcance
+de lectura para raíz, usuarios y licencia, limita resultados a membresías y
+grants del token, devuelve 404 para usuarios ajenos y no amplía el conjunto con
+parámetros de consulta. Los esquemas usan datos reales —organización, proyecto
+con su organización autorizada, usuario con correo como usuario, creación y
+`hasPasswordAuth`, raíz con versión 0 y sin metadatos inventados de token—.
+
+Evidencia: `test-results/closure-20261025/identidad-065-067-go.log`,
+`identidad-065-cli.txt` y `identidad-065-organizations.json`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

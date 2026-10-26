@@ -3222,6 +3222,33 @@
         "alertas-032-036-go.log"
       ],
       "blocked": "Falta un recibo real de Mattermost autorizado."
+    },
+    "CLOSE-identidad-065": {
+      "evidence": "vigente",
+      "scope": "compatible discovery routes, schemas and require2FA wire key with official CLI parsing",
+      "evidence_files": [
+        "identidad-065-067-go.log",
+        "identidad-065-cli.txt",
+        "identidad-065-organizations.json"
+      ]
+    },
+    "CLOSE-identidad-066": {
+      "evidence": "vigente",
+      "scope": "compatible discovery routes, schemas and require2FA wire key with official CLI parsing",
+      "evidence_files": [
+        "identidad-065-067-go.log",
+        "identidad-065-cli.txt",
+        "identidad-065-organizations.json"
+      ]
+    },
+    "CLOSE-identidad-067": {
+      "evidence": "vigente",
+      "scope": "compatible discovery routes, schemas and require2FA wire key with official CLI parsing",
+      "evidence_files": [
+        "identidad-065-067-go.log",
+        "identidad-065-cli.txt",
+        "identidad-065-organizations.json"
+      ]
     }
   },
   "commands": [
