@@ -4332,6 +4332,13 @@
         "uptime-014/native-monitors.log"
       ]
     },
+    "CLOSE-alertas-008": {
+      "evidence": "vigente",
+      "scope": "replacement/delete cancellation, retained history and last trigger, versioned generic payload, stable delivery-ID headers and Message-ID, domain resolution",
+      "evidence_files": [
+        "alertas-008/payload-transport.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

@@ -1,0 +1,619 @@
+=== RUN   TestAccountMailMIMEAndConsoleDelivery
+--- PASS: TestAccountMailMIMEAndConsoleDelivery (0.00s)
+=== RUN   TestAccountMailRejectsUnsafeInput
+--- PASS: TestAccountMailRejectsUnsafeInput (0.00s)
+=== RUN   TestConfigValidate
+=== RUN   TestConfigValidate/name_empty
+=== RUN   TestConfigValidate/name_long_unicode
+=== RUN   TestConfigValidate/kind
+=== RUN   TestConfigValidate/quantity_zero
+=== RUN   TestConfigValidate/quantity_large
+=== RUN   TestConfigValidate/window_zero
+=== RUN   TestConfigValidate/window_large
+=== RUN   TestConfigValidate/cooldown_negative
+=== RUN   TestConfigValidate/cooldown_large
+=== RUN   TestConfigValidate/environment_empty
+=== RUN   TestConfigValidate/environment_long
+=== RUN   TestConfigValidate/environment_count
+=== RUN   TestConfigValidate/environment_nul
+=== RUN   TestConfigValidate/invalid_utf8
+=== RUN   TestConfigValidate/name_nul
+=== RUN   TestConfigValidate/recipient_empty
+=== RUN   TestConfigValidate/recipient_count
+=== RUN   TestConfigValidate/recipient_type
+=== RUN   TestConfigValidate/team_destination
+=== RUN   TestConfigValidate/email_display_name
+=== RUN   TestConfigValidate/email_header_injection
+=== RUN   TestConfigValidate/email_invalid
+=== RUN   TestConfigValidate/webhook_credentials
+=== RUN   TestConfigValidate/webhook_relative
+=== RUN   TestConfigValidate/webhook_scheme
+=== RUN   TestConfigValidate/webhook_fragment
+=== RUN   TestConfigValidate/webhook_length
+--- PASS: TestConfigValidate (0.00s)
+    --- PASS: TestConfigValidate/name_empty (0.00s)
+    --- PASS: TestConfigValidate/name_long_unicode (0.00s)
+    --- PASS: TestConfigValidate/kind (0.00s)
+    --- PASS: TestConfigValidate/quantity_zero (0.00s)
+    --- PASS: TestConfigValidate/quantity_large (0.00s)
+    --- PASS: TestConfigValidate/window_zero (0.00s)
+    --- PASS: TestConfigValidate/window_large (0.00s)
+    --- PASS: TestConfigValidate/cooldown_negative (0.00s)
+    --- PASS: TestConfigValidate/cooldown_large (0.00s)
+    --- PASS: TestConfigValidate/environment_empty (0.00s)
+    --- PASS: TestConfigValidate/environment_long (0.00s)
+    --- PASS: TestConfigValidate/environment_count (0.00s)
+    --- PASS: TestConfigValidate/environment_nul (0.00s)
+    --- PASS: TestConfigValidate/invalid_utf8 (0.00s)
+    --- PASS: TestConfigValidate/name_nul (0.00s)
+    --- PASS: TestConfigValidate/recipient_empty (0.00s)
+    --- PASS: TestConfigValidate/recipient_count (0.00s)
+    --- PASS: TestConfigValidate/recipient_type (0.00s)
+    --- PASS: TestConfigValidate/team_destination (0.00s)
+    --- PASS: TestConfigValidate/email_display_name (0.00s)
+    --- PASS: TestConfigValidate/email_header_injection (0.00s)
+    --- PASS: TestConfigValidate/email_invalid (0.00s)
+    --- PASS: TestConfigValidate/webhook_credentials (0.00s)
+    --- PASS: TestConfigValidate/webhook_relative (0.00s)
+    --- PASS: TestConfigValidate/webhook_scheme (0.00s)
+    --- PASS: TestConfigValidate/webhook_fragment (0.00s)
+    --- PASS: TestConfigValidate/webhook_length (0.00s)
+=== RUN   TestConfigSlackValidate
+=== RUN   TestConfigSlackValidate/relative
+=== RUN   TestConfigSlackValidate/scheme
+=== RUN   TestConfigSlackValidate/credentials
+=== RUN   TestConfigSlackValidate/fragment
+=== RUN   TestConfigSlackValidate/empty_fragment
+=== RUN   TestConfigSlackValidate/missing_host
+=== RUN   TestConfigSlackValidate/invalid_port
+=== RUN   TestConfigSlackValidate/invalid_escape
+=== RUN   TestConfigSlackValidate/NUL
+=== RUN   TestConfigSlackValidate/invalid_Unicode
+=== RUN   TestConfigSlackValidate/overlong_Unicode
+--- PASS: TestConfigSlackValidate (0.00s)
+    --- PASS: TestConfigSlackValidate/relative (0.00s)
+    --- PASS: TestConfigSlackValidate/scheme (0.00s)
+    --- PASS: TestConfigSlackValidate/credentials (0.00s)
+    --- PASS: TestConfigSlackValidate/fragment (0.00s)
+    --- PASS: TestConfigSlackValidate/empty_fragment (0.00s)
+    --- PASS: TestConfigSlackValidate/missing_host (0.00s)
+    --- PASS: TestConfigSlackValidate/invalid_port (0.00s)
+    --- PASS: TestConfigSlackValidate/invalid_escape (0.00s)
+    --- PASS: TestConfigSlackValidate/NUL (0.00s)
+    --- PASS: TestConfigSlackValidate/invalid_Unicode (0.00s)
+    --- PASS: TestConfigSlackValidate/overlong_Unicode (0.00s)
+=== RUN   TestConfigProviderWebhooksValidate
+=== RUN   TestConfigProviderWebhooksValidate/discord/relative
+=== RUN   TestConfigProviderWebhooksValidate/discord/scheme
+=== RUN   TestConfigProviderWebhooksValidate/discord/credentials
+=== RUN   TestConfigProviderWebhooksValidate/discord/fragment
+=== RUN   TestConfigProviderWebhooksValidate/discord/missing_host
+=== RUN   TestConfigProviderWebhooksValidate/discord/invalid_port
+=== RUN   TestConfigProviderWebhooksValidate/discord/NUL
+=== RUN   TestConfigProviderWebhooksValidate/discord/invalid_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/discord/overlong_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/teams/relative
+=== RUN   TestConfigProviderWebhooksValidate/teams/scheme
+=== RUN   TestConfigProviderWebhooksValidate/teams/credentials
+=== RUN   TestConfigProviderWebhooksValidate/teams/fragment
+=== RUN   TestConfigProviderWebhooksValidate/teams/missing_host
+=== RUN   TestConfigProviderWebhooksValidate/teams/invalid_port
+=== RUN   TestConfigProviderWebhooksValidate/teams/NUL
+=== RUN   TestConfigProviderWebhooksValidate/teams/invalid_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/teams/overlong_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/relative
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/scheme
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/credentials
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/fragment
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/missing_host
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/invalid_port
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/NUL
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/invalid_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/googlechat/overlong_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/feishu/relative
+=== RUN   TestConfigProviderWebhooksValidate/feishu/scheme
+=== RUN   TestConfigProviderWebhooksValidate/feishu/credentials
+=== RUN   TestConfigProviderWebhooksValidate/feishu/fragment
+=== RUN   TestConfigProviderWebhooksValidate/feishu/missing_host
+=== RUN   TestConfigProviderWebhooksValidate/feishu/invalid_port
+=== RUN   TestConfigProviderWebhooksValidate/feishu/NUL
+=== RUN   TestConfigProviderWebhooksValidate/feishu/invalid_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/feishu/overlong_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/relative
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/scheme
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/credentials
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/fragment
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/missing_host
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/invalid_port
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/NUL
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/invalid_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/ntfy/overlong_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/zulip/relative
+=== RUN   TestConfigProviderWebhooksValidate/zulip/scheme
+=== RUN   TestConfigProviderWebhooksValidate/zulip/credentials
+=== RUN   TestConfigProviderWebhooksValidate/zulip/fragment
+=== RUN   TestConfigProviderWebhooksValidate/zulip/missing_host
+=== RUN   TestConfigProviderWebhooksValidate/zulip/invalid_port
+=== RUN   TestConfigProviderWebhooksValidate/zulip/NUL
+=== RUN   TestConfigProviderWebhooksValidate/zulip/invalid_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/zulip/overlong_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/relative
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/scheme
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/credentials
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/fragment
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/missing_host
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/invalid_port
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/NUL
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/invalid_Unicode
+=== RUN   TestConfigProviderWebhooksValidate/mattermost/overlong_Unicode
+--- PASS: TestConfigProviderWebhooksValidate (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/relative (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/scheme (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/credentials (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/fragment (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/missing_host (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/invalid_port (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/NUL (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/invalid_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/discord/overlong_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/relative (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/scheme (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/credentials (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/fragment (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/missing_host (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/invalid_port (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/NUL (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/invalid_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/teams/overlong_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/relative (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/scheme (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/credentials (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/fragment (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/missing_host (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/invalid_port (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/NUL (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/invalid_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/googlechat/overlong_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/relative (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/scheme (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/credentials (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/fragment (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/missing_host (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/invalid_port (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/NUL (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/invalid_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/feishu/overlong_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/relative (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/scheme (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/credentials (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/fragment (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/missing_host (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/invalid_port (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/NUL (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/invalid_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/ntfy/overlong_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/relative (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/scheme (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/credentials (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/fragment (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/missing_host (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/invalid_port (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/NUL (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/invalid_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/zulip/overlong_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/relative (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/scheme (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/credentials (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/fragment (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/missing_host (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/invalid_port (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/NUL (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/invalid_Unicode (0.00s)
+    --- PASS: TestConfigProviderWebhooksValidate/mattermost/overlong_Unicode (0.00s)
+=== RUN   TestValidateMail
+--- PASS: TestValidateMail (0.00s)
+=== RUN   TestInvitationMailMIMEAndConsoleDelivery
+--- PASS: TestInvitationMailMIMEAndConsoleDelivery (0.00s)
+=== RUN   TestInvitationMailRejectsUnsafeInput
+--- PASS: TestInvitationMailRejectsUnsafeInput (0.00s)
+=== RUN   TestProviderMessages
+=== RUN   TestProviderMessages/discord
+=== RUN   TestProviderMessages/teams
+=== RUN   TestProviderMessages/googlechat
+=== RUN   TestProviderMessages/feishu
+=== RUN   TestProviderMessages/ntfy
+=== RUN   TestProviderMessages/zulip
+--- PASS: TestProviderMessages (0.00s)
+    --- PASS: TestProviderMessages/discord (0.00s)
+    --- PASS: TestProviderMessages/teams (0.00s)
+    --- PASS: TestProviderMessages/googlechat (0.00s)
+    --- PASS: TestProviderMessages/feishu (0.00s)
+    --- PASS: TestProviderMessages/ntfy (0.00s)
+    --- PASS: TestProviderMessages/zulip (0.00s)
+=== RUN   TestMattermostWebhookMessageEscapesTelemetryAndKeepsResource
+--- PASS: TestMattermostWebhookMessageEscapesTelemetryAndKeepsResource (0.00s)
+=== RUN   TestMattermostWebhookMessageContextsAndBounds
+=== RUN   TestMattermostWebhookMessageContextsAndBounds/error_frequency
+=== RUN   TestMattermostWebhookMessageContextsAndBounds/uptime_down
+=== RUN   TestMattermostWebhookMessageContextsAndBounds/uptime_recovered
+=== RUN   TestMattermostWebhookMessageContextsAndBounds/test
+=== RUN   TestMattermostWebhookMessageContextsAndBounds/truncates_summary_and_preserves_generated_link
+=== RUN   TestMattermostWebhookMessageContextsAndBounds/rejects_a_resource_link_that_cannot_fit
+--- PASS: TestMattermostWebhookMessageContextsAndBounds (0.00s)
+    --- PASS: TestMattermostWebhookMessageContextsAndBounds/error_frequency (0.00s)
+    --- PASS: TestMattermostWebhookMessageContextsAndBounds/uptime_down (0.00s)
+    --- PASS: TestMattermostWebhookMessageContextsAndBounds/uptime_recovered (0.00s)
+    --- PASS: TestMattermostWebhookMessageContextsAndBounds/test (0.00s)
+    --- PASS: TestMattermostWebhookMessageContextsAndBounds/truncates_summary_and_preserves_generated_link (0.00s)
+    --- PASS: TestMattermostWebhookMessageContextsAndBounds/rejects_a_resource_link_that_cannot_fit (0.00s)
+=== RUN   TestProviderMessageContexts
+=== RUN   TestProviderMessageContexts/error_frequency
+=== RUN   TestProviderMessageContexts/uptime_down
+=== RUN   TestProviderMessageContexts/uptime_recovered
+=== RUN   TestProviderMessageContexts/test
+--- PASS: TestProviderMessageContexts (0.00s)
+    --- PASS: TestProviderMessageContexts/error_frequency (0.00s)
+    --- PASS: TestProviderMessageContexts/uptime_down (0.00s)
+    --- PASS: TestProviderMessageContexts/uptime_recovered (0.00s)
+    --- PASS: TestProviderMessageContexts/test (0.00s)
+=== RUN   TestProviderEscapingAndBounds
+=== RUN   TestProviderEscapingAndBounds/discord_suppresses_mention-like_telemetry
+=== RUN   TestProviderEscapingAndBounds/google_chat_escapes_HTML-significant_telemetry
+=== RUN   TestProviderEscapingAndBounds/feishu_defangs_mention_directives
+=== RUN   TestProviderEscapingAndBounds/zulip_defangs_mentions
+=== RUN   TestProviderEscapingAndBounds/unicode_truncation_preserves_resource
+--- PASS: TestProviderEscapingAndBounds (0.00s)
+    --- PASS: TestProviderEscapingAndBounds/discord_suppresses_mention-like_telemetry (0.00s)
+    --- PASS: TestProviderEscapingAndBounds/google_chat_escapes_HTML-significant_telemetry (0.00s)
+    --- PASS: TestProviderEscapingAndBounds/feishu_defangs_mention_directives (0.00s)
+    --- PASS: TestProviderEscapingAndBounds/zulip_defangs_mentions (0.00s)
+    --- PASS: TestProviderEscapingAndBounds/unicode_truncation_preserves_resource (0.00s)
+=== RUN   TestProviderInvalidPayload
+=== RUN   TestProviderInvalidPayload/discord/unsupported_kind
+=== RUN   TestProviderInvalidPayload/discord/relative_resource
+=== RUN   TestProviderInvalidPayload/discord/resource_fragment
+=== RUN   TestProviderInvalidPayload/discord/resource_credentials
+=== RUN   TestProviderInvalidPayload/discord/frequency_count
+=== RUN   TestProviderInvalidPayload/discord/frequency_window
+=== RUN   TestProviderInvalidPayload/discord/missing_monitor
+=== RUN   TestProviderInvalidPayload/discord/overlong_resource
+=== RUN   TestProviderInvalidPayload/teams/unsupported_kind
+=== RUN   TestProviderInvalidPayload/teams/relative_resource
+=== RUN   TestProviderInvalidPayload/teams/resource_fragment
+=== RUN   TestProviderInvalidPayload/teams/resource_credentials
+=== RUN   TestProviderInvalidPayload/teams/frequency_count
+=== RUN   TestProviderInvalidPayload/teams/frequency_window
+=== RUN   TestProviderInvalidPayload/teams/missing_monitor
+=== RUN   TestProviderInvalidPayload/teams/overlong_resource
+=== RUN   TestProviderInvalidPayload/googlechat/unsupported_kind
+=== RUN   TestProviderInvalidPayload/googlechat/relative_resource
+=== RUN   TestProviderInvalidPayload/googlechat/resource_fragment
+=== RUN   TestProviderInvalidPayload/googlechat/resource_credentials
+=== RUN   TestProviderInvalidPayload/googlechat/frequency_count
+=== RUN   TestProviderInvalidPayload/googlechat/frequency_window
+=== RUN   TestProviderInvalidPayload/googlechat/missing_monitor
+=== RUN   TestProviderInvalidPayload/googlechat/overlong_resource
+=== RUN   TestProviderInvalidPayload/feishu/unsupported_kind
+=== RUN   TestProviderInvalidPayload/feishu/relative_resource
+=== RUN   TestProviderInvalidPayload/feishu/resource_fragment
+=== RUN   TestProviderInvalidPayload/feishu/resource_credentials
+=== RUN   TestProviderInvalidPayload/feishu/frequency_count
+=== RUN   TestProviderInvalidPayload/feishu/frequency_window
+=== RUN   TestProviderInvalidPayload/feishu/missing_monitor
+=== RUN   TestProviderInvalidPayload/feishu/overlong_resource
+=== RUN   TestProviderInvalidPayload/ntfy/unsupported_kind
+=== RUN   TestProviderInvalidPayload/ntfy/relative_resource
+=== RUN   TestProviderInvalidPayload/ntfy/resource_fragment
+=== RUN   TestProviderInvalidPayload/ntfy/resource_credentials
+=== RUN   TestProviderInvalidPayload/ntfy/frequency_count
+=== RUN   TestProviderInvalidPayload/ntfy/frequency_window
+=== RUN   TestProviderInvalidPayload/ntfy/missing_monitor
+=== RUN   TestProviderInvalidPayload/ntfy/overlong_resource
+=== RUN   TestProviderInvalidPayload/zulip/unsupported_kind
+=== RUN   TestProviderInvalidPayload/zulip/relative_resource
+=== RUN   TestProviderInvalidPayload/zulip/resource_fragment
+=== RUN   TestProviderInvalidPayload/zulip/resource_credentials
+=== RUN   TestProviderInvalidPayload/zulip/frequency_count
+=== RUN   TestProviderInvalidPayload/zulip/frequency_window
+=== RUN   TestProviderInvalidPayload/zulip/missing_monitor
+=== RUN   TestProviderInvalidPayload/zulip/overlong_resource
+--- PASS: TestProviderInvalidPayload (0.00s)
+    --- PASS: TestProviderInvalidPayload/discord/unsupported_kind (0.00s)
+    --- PASS: TestProviderInvalidPayload/discord/relative_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/discord/resource_fragment (0.00s)
+    --- PASS: TestProviderInvalidPayload/discord/resource_credentials (0.00s)
+    --- PASS: TestProviderInvalidPayload/discord/frequency_count (0.00s)
+    --- PASS: TestProviderInvalidPayload/discord/frequency_window (0.00s)
+    --- PASS: TestProviderInvalidPayload/discord/missing_monitor (0.00s)
+    --- PASS: TestProviderInvalidPayload/discord/overlong_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/teams/unsupported_kind (0.00s)
+    --- PASS: TestProviderInvalidPayload/teams/relative_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/teams/resource_fragment (0.00s)
+    --- PASS: TestProviderInvalidPayload/teams/resource_credentials (0.00s)
+    --- PASS: TestProviderInvalidPayload/teams/frequency_count (0.00s)
+    --- PASS: TestProviderInvalidPayload/teams/frequency_window (0.00s)
+    --- PASS: TestProviderInvalidPayload/teams/missing_monitor (0.00s)
+    --- PASS: TestProviderInvalidPayload/teams/overlong_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/googlechat/unsupported_kind (0.00s)
+    --- PASS: TestProviderInvalidPayload/googlechat/relative_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/googlechat/resource_fragment (0.00s)
+    --- PASS: TestProviderInvalidPayload/googlechat/resource_credentials (0.00s)
+    --- PASS: TestProviderInvalidPayload/googlechat/frequency_count (0.00s)
+    --- PASS: TestProviderInvalidPayload/googlechat/frequency_window (0.00s)
+    --- PASS: TestProviderInvalidPayload/googlechat/missing_monitor (0.00s)
+    --- PASS: TestProviderInvalidPayload/googlechat/overlong_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/feishu/unsupported_kind (0.00s)
+    --- PASS: TestProviderInvalidPayload/feishu/relative_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/feishu/resource_fragment (0.00s)
+    --- PASS: TestProviderInvalidPayload/feishu/resource_credentials (0.00s)
+    --- PASS: TestProviderInvalidPayload/feishu/frequency_count (0.00s)
+    --- PASS: TestProviderInvalidPayload/feishu/frequency_window (0.00s)
+    --- PASS: TestProviderInvalidPayload/feishu/missing_monitor (0.00s)
+    --- PASS: TestProviderInvalidPayload/feishu/overlong_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/ntfy/unsupported_kind (0.00s)
+    --- PASS: TestProviderInvalidPayload/ntfy/relative_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/ntfy/resource_fragment (0.00s)
+    --- PASS: TestProviderInvalidPayload/ntfy/resource_credentials (0.00s)
+    --- PASS: TestProviderInvalidPayload/ntfy/frequency_count (0.00s)
+    --- PASS: TestProviderInvalidPayload/ntfy/frequency_window (0.00s)
+    --- PASS: TestProviderInvalidPayload/ntfy/missing_monitor (0.00s)
+    --- PASS: TestProviderInvalidPayload/ntfy/overlong_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/zulip/unsupported_kind (0.00s)
+    --- PASS: TestProviderInvalidPayload/zulip/relative_resource (0.00s)
+    --- PASS: TestProviderInvalidPayload/zulip/resource_fragment (0.00s)
+    --- PASS: TestProviderInvalidPayload/zulip/resource_credentials (0.00s)
+    --- PASS: TestProviderInvalidPayload/zulip/frequency_count (0.00s)
+    --- PASS: TestProviderInvalidPayload/zulip/frequency_window (0.00s)
+    --- PASS: TestProviderInvalidPayload/zulip/missing_monitor (0.00s)
+    --- PASS: TestProviderInvalidPayload/zulip/overlong_resource (0.00s)
+=== RUN   TestFeishuAcknowledgment
+=== RUN   TestFeishuAcknowledgment/current_success
+=== RUN   TestFeishuAcknowledgment/legacy_success
+=== RUN   TestFeishuAcknowledgment/nonzero_code
+=== RUN   TestFeishuAcknowledgment/conflicting_codes
+=== RUN   TestFeishuAcknowledgment/missing_code
+=== RUN   TestFeishuAcknowledgment/malformed
+=== RUN   TestFeishuAcknowledgment/created
+=== RUN   TestFeishuAcknowledgment/throttled
+=== RUN   TestFeishuAcknowledgment/unavailable
+--- PASS: TestFeishuAcknowledgment (0.00s)
+    --- PASS: TestFeishuAcknowledgment/current_success (0.00s)
+    --- PASS: TestFeishuAcknowledgment/legacy_success (0.00s)
+    --- PASS: TestFeishuAcknowledgment/nonzero_code (0.00s)
+    --- PASS: TestFeishuAcknowledgment/conflicting_codes (0.00s)
+    --- PASS: TestFeishuAcknowledgment/missing_code (0.00s)
+    --- PASS: TestFeishuAcknowledgment/malformed (0.00s)
+    --- PASS: TestFeishuAcknowledgment/created (0.00s)
+    --- PASS: TestFeishuAcknowledgment/throttled (0.00s)
+    --- PASS: TestFeishuAcknowledgment/unavailable (0.00s)
+=== RUN   TestZulipAcknowledgment
+=== RUN   TestZulipAcknowledgment/success
+=== RUN   TestZulipAcknowledgment/error_result
+=== RUN   TestZulipAcknowledgment/missing_result
+=== RUN   TestZulipAcknowledgment/malformed
+=== RUN   TestZulipAcknowledgment/created
+=== RUN   TestZulipAcknowledgment/throttled
+--- PASS: TestZulipAcknowledgment (0.00s)
+    --- PASS: TestZulipAcknowledgment/success (0.00s)
+    --- PASS: TestZulipAcknowledgment/error_result (0.00s)
+    --- PASS: TestZulipAcknowledgment/missing_result (0.00s)
+    --- PASS: TestZulipAcknowledgment/malformed (0.00s)
+    --- PASS: TestZulipAcknowledgment/created (0.00s)
+    --- PASS: TestZulipAcknowledgment/throttled (0.00s)
+=== RUN   TestMattermostAcknowledgment
+=== RUN   TestMattermostAcknowledgment/success
+=== RUN   TestMattermostAcknowledgment/surrounding_whitespace
+=== RUN   TestMattermostAcknowledgment/wrong_acknowledgment
+=== RUN   TestMattermostAcknowledgment/created
+=== RUN   TestMattermostAcknowledgment/no_content
+=== RUN   TestMattermostAcknowledgment/throttled
+=== RUN   TestMattermostAcknowledgment/unavailable
+--- PASS: TestMattermostAcknowledgment (0.00s)
+    --- PASS: TestMattermostAcknowledgment/success (0.00s)
+    --- PASS: TestMattermostAcknowledgment/surrounding_whitespace (0.00s)
+    --- PASS: TestMattermostAcknowledgment/wrong_acknowledgment (0.00s)
+    --- PASS: TestMattermostAcknowledgment/created (0.00s)
+    --- PASS: TestMattermostAcknowledgment/no_content (0.00s)
+    --- PASS: TestMattermostAcknowledgment/throttled (0.00s)
+    --- PASS: TestMattermostAcknowledgment/unavailable (0.00s)
+=== RUN   TestBodyIndependentProviderAcknowledgments
+--- PASS: TestBodyIndependentProviderAcknowledgments (0.00s)
+=== RUN   TestProviderAcknowledgmentDeadline
+--- PASS: TestProviderAcknowledgmentDeadline (0.00s)
+=== RUN   TestRetryDelayPreservesProviderMinimum
+=== RUN   TestRetryDelayPreservesProviderMinimum/minimum_after_first_attempt
+=== RUN   TestRetryDelayPreservesProviderMinimum/minimum_exceeds_backoff_ceiling
+=== RUN   TestRetryDelayPreservesProviderMinimum/short_hint_preserves_backoff
+=== RUN   TestRetryDelayPreservesProviderMinimum/representable_duration_stays_intact
+--- PASS: TestRetryDelayPreservesProviderMinimum (0.00s)
+    --- PASS: TestRetryDelayPreservesProviderMinimum/minimum_after_first_attempt (0.00s)
+    --- PASS: TestRetryDelayPreservesProviderMinimum/minimum_exceeds_backoff_ceiling (0.00s)
+    --- PASS: TestRetryDelayPreservesProviderMinimum/short_hint_preserves_backoff (0.00s)
+    --- PASS: TestRetryDelayPreservesProviderMinimum/representable_duration_stays_intact (0.00s)
+=== RUN   TestSMTPAuthenticatedTLS
+=== RUN   TestSMTPAuthenticatedTLS/smtps
+=== RUN   TestSMTPAuthenticatedTLS/smtp+starttls
+--- PASS: TestSMTPAuthenticatedTLS (0.02s)
+    --- PASS: TestSMTPAuthenticatedTLS/smtps (0.01s)
+    --- PASS: TestSMTPAuthenticatedTLS/smtp+starttls (0.01s)
+=== RUN   TestSenderOptions
+--- PASS: TestSenderOptions (0.00s)
+=== RUN   TestWebhookDelivery
+--- PASS: TestWebhookDelivery (0.00s)
+=== RUN   TestSlackWebhookDelivery
+=== RUN   TestSlackWebhookDelivery//accepted
+=== RUN   TestSlackWebhookDelivery//rate-limit
+=== RUN   TestSlackWebhookDelivery//oversized
+=== RUN   TestSlackWebhookDelivery//incomplete
+--- PASS: TestSlackWebhookDelivery (1.00s)
+    --- PASS: TestSlackWebhookDelivery//accepted (0.00s)
+    --- PASS: TestSlackWebhookDelivery//rate-limit (0.00s)
+    --- PASS: TestSlackWebhookDelivery//oversized (0.00s)
+    --- PASS: TestSlackWebhookDelivery//incomplete (1.00s)
+=== RUN   TestProviderWebhookDelivery
+=== RUN   TestProviderWebhookDelivery/slack
+=== RUN   TestProviderWebhookDelivery/discord
+=== RUN   TestProviderWebhookDelivery/teams
+=== RUN   TestProviderWebhookDelivery/googlechat
+=== RUN   TestProviderWebhookDelivery/feishu
+=== RUN   TestProviderWebhookDelivery/ntfy
+=== RUN   TestProviderWebhookDelivery/zulip
+=== RUN   TestProviderWebhookDelivery/mattermost
+--- PASS: TestProviderWebhookDelivery (0.00s)
+    --- PASS: TestProviderWebhookDelivery/slack (0.00s)
+    --- PASS: TestProviderWebhookDelivery/discord (0.00s)
+    --- PASS: TestProviderWebhookDelivery/teams (0.00s)
+    --- PASS: TestProviderWebhookDelivery/googlechat (0.00s)
+    --- PASS: TestProviderWebhookDelivery/feishu (0.00s)
+    --- PASS: TestProviderWebhookDelivery/ntfy (0.00s)
+    --- PASS: TestProviderWebhookDelivery/zulip (0.00s)
+    --- PASS: TestProviderWebhookDelivery/mattermost (0.00s)
+=== RUN   TestWebhookNetworkPolicy
+2026/10/26 13:32:53 http: TLS handshake error from 127.0.0.1:41490: remote error: tls: bad certificate
+--- PASS: TestWebhookNetworkPolicy (0.01s)
+=== RUN   TestWebhookResponseBoundsAndCancellation
+--- PASS: TestWebhookResponseBoundsAndCancellation (1.00s)
+=== RUN   TestConsoleMailMIMEAndConcurrentWrites
+--- PASS: TestConsoleMailMIMEAndConcurrentWrites (0.00s)
+=== RUN   TestSMTPDeliveryAndResponses
+=== RUN   TestSMTPDeliveryAndResponses/accepted
+=== RUN   TestSMTPDeliveryAndResponses/accepted_quit_failure
+=== RUN   TestSMTPDeliveryAndResponses/temporary
+=== RUN   TestSMTPDeliveryAndResponses/permanent
+--- PASS: TestSMTPDeliveryAndResponses (0.00s)
+    --- PASS: TestSMTPDeliveryAndResponses/accepted (0.00s)
+    --- PASS: TestSMTPDeliveryAndResponses/accepted_quit_failure (0.00s)
+    --- PASS: TestSMTPDeliveryAndResponses/temporary (0.00s)
+    --- PASS: TestSMTPDeliveryAndResponses/permanent (0.00s)
+=== RUN   TestSMTPRequiredTLSAndCredentialProtection
+--- PASS: TestSMTPRequiredTLSAndCredentialProtection (0.00s)
+=== RUN   TestSMTPNamesCannotInjectHeaders
+--- PASS: TestSMTPNamesCannotInjectHeaders (0.00s)
+=== RUN   TestSMTPCancellationAndTimeout
+--- PASS: TestSMTPCancellationAndTimeout (1.00s)
+=== RUN   TestSlackWebhookMessages
+=== RUN   TestSlackWebhookMessages/error_frequency
+=== RUN   TestSlackWebhookMessages/uptime_down
+=== RUN   TestSlackWebhookMessages/uptime_recovered
+=== RUN   TestSlackWebhookMessages/test
+=== RUN   TestSlackWebhookMessages/frequency_without_optional_issue_or_environment
+--- PASS: TestSlackWebhookMessages (0.00s)
+    --- PASS: TestSlackWebhookMessages/error_frequency (0.00s)
+    --- PASS: TestSlackWebhookMessages/uptime_down (0.00s)
+    --- PASS: TestSlackWebhookMessages/uptime_recovered (0.00s)
+    --- PASS: TestSlackWebhookMessages/test (0.00s)
+    --- PASS: TestSlackWebhookMessages/frequency_without_optional_issue_or_environment (0.00s)
+=== RUN   TestSlackWebhookEscapingAndBounds
+=== RUN   TestSlackWebhookEscapingAndBounds/telemetry_stays_plain_and_resource_URL_is_encoded
+=== RUN   TestSlackWebhookEscapingAndBounds/summary_truncates_by_Unicode_characters_and_keeps_the_resource
+=== RUN   TestSlackWebhookEscapingAndBounds/resource_text_at_the_protocol_limit
+=== RUN   TestSlackWebhookEscapingAndBounds/admitted_public_prefix_is_URL_escaped
+--- PASS: TestSlackWebhookEscapingAndBounds (0.00s)
+    --- PASS: TestSlackWebhookEscapingAndBounds/telemetry_stays_plain_and_resource_URL_is_encoded (0.00s)
+    --- PASS: TestSlackWebhookEscapingAndBounds/summary_truncates_by_Unicode_characters_and_keeps_the_resource (0.00s)
+    --- PASS: TestSlackWebhookEscapingAndBounds/resource_text_at_the_protocol_limit (0.00s)
+    --- PASS: TestSlackWebhookEscapingAndBounds/admitted_public_prefix_is_URL_escaped (0.00s)
+=== RUN   TestSlackWebhookInvalidPayload
+=== RUN   TestSlackWebhookInvalidPayload/unsupported_kind
+=== RUN   TestSlackWebhookInvalidPayload/missing_kind
+=== RUN   TestSlackWebhookInvalidPayload/missing_frequency_count
+=== RUN   TestSlackWebhookInvalidPayload/missing_frequency_window
+=== RUN   TestSlackWebhookInvalidPayload/missing_down_monitor
+=== RUN   TestSlackWebhookInvalidPayload/missing_recovery_monitor
+=== RUN   TestSlackWebhookInvalidPayload/relative_public_link
+=== RUN   TestSlackWebhookInvalidPayload/public_link_credentials
+=== RUN   TestSlackWebhookInvalidPayload/public_link_fragment
+=== RUN   TestSlackWebhookInvalidPayload/overlong_public_link
+=== RUN   TestSlackWebhookInvalidPayload/escaping_expands_public_link_beyond_bound
+--- PASS: TestSlackWebhookInvalidPayload (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/unsupported_kind (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_kind (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_frequency_count (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_frequency_window (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_down_monitor (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/missing_recovery_monitor (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/relative_public_link (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/public_link_credentials (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/public_link_fragment (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/overlong_public_link (0.00s)
+    --- PASS: TestSlackWebhookInvalidPayload/escaping_expands_public_link_beyond_bound (0.00s)
+=== RUN   TestGenericWebhookBodyPreserved
+--- PASS: TestGenericWebhookBodyPreserved (0.00s)
+=== RUN   TestSlackWebhookAcknowledgment
+=== RUN   TestSlackWebhookAcknowledgment/ok
+=== RUN   TestSlackWebhookAcknowledgment/surrounding_whitespace
+=== RUN   TestSlackWebhookAcknowledgment/exact_body_bound
+=== RUN   TestSlackWebhookAcknowledgment/created
+=== RUN   TestSlackWebhookAcknowledgment/no_content
+=== RUN   TestSlackWebhookAcknowledgment/other_success_status
+=== RUN   TestSlackWebhookAcknowledgment/unexpected_body
+=== RUN   TestSlackWebhookAcknowledgment/empty_body
+=== RUN   TestSlackWebhookAcknowledgment/oversized_body
+=== RUN   TestSlackWebhookAcknowledgment/body_read_failure
+=== RUN   TestSlackWebhookAcknowledgment/body_deadline
+=== RUN   TestSlackWebhookAcknowledgment/redirect
+=== RUN   TestSlackWebhookAcknowledgment/server_unavailable
+--- PASS: TestSlackWebhookAcknowledgment (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/ok (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/surrounding_whitespace (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/exact_body_bound (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/created (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/no_content (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/other_success_status (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/unexpected_body (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/empty_body (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/oversized_body (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/body_read_failure (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/body_deadline (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/redirect (0.00s)
+    --- PASS: TestSlackWebhookAcknowledgment/server_unavailable (0.00s)
+=== RUN   TestSlackWebhookRetryAfter
+=== RUN   TestSlackWebhookRetryAfter/absent
+=== RUN   TestSlackWebhookRetryAfter/zero
+=== RUN   TestSlackWebhookRetryAfter/seconds
+=== RUN   TestSlackWebhookRetryAfter/long_provider_floor
+=== RUN   TestSlackWebhookRetryAfter/whitespace
+=== RUN   TestSlackWebhookRetryAfter/leading_zeroes
+=== RUN   TestSlackWebhookRetryAfter/duration_maximum_seconds
+=== RUN   TestSlackWebhookRetryAfter/empty
+=== RUN   TestSlackWebhookRetryAfter/negative
+=== RUN   TestSlackWebhookRetryAfter/signed_zero
+=== RUN   TestSlackWebhookRetryAfter/positive_sign
+=== RUN   TestSlackWebhookRetryAfter/fraction
+=== RUN   TestSlackWebhookRetryAfter/inner_whitespace
+=== RUN   TestSlackWebhookRetryAfter/non-ASCII_digits
+=== RUN   TestSlackWebhookRetryAfter/HTTP_date
+=== RUN   TestSlackWebhookRetryAfter/comma_combined
+=== RUN   TestSlackWebhookRetryAfter/repeated
+=== RUN   TestSlackWebhookRetryAfter/repeated_equal
+=== RUN   TestSlackWebhookRetryAfter/duration_overflow
+=== RUN   TestSlackWebhookRetryAfter/integer_overflow
+--- PASS: TestSlackWebhookRetryAfter (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/absent (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/zero (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/seconds (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/long_provider_floor (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/whitespace (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/leading_zeroes (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/duration_maximum_seconds (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/empty (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/negative (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/signed_zero (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/positive_sign (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/fraction (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/inner_whitespace (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/non-ASCII_digits (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/HTTP_date (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/comma_combined (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/repeated (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/repeated_equal (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/duration_overflow (0.00s)
+    --- PASS: TestSlackWebhookRetryAfter/integer_overflow (0.00s)
+=== RUN   TestGenericWebhookAcknowledgmentIgnoresBody
+--- PASS: TestGenericWebhookAcknowledgmentIgnoresBody (0.00s)
+PASS
+ok  	goodsentry/internal/notify	3.068s
+=== RUN   TestAlertReplacementCancelsWorkAndRetainsSnapshots
+--- PASS: TestAlertReplacementCancelsWorkAndRetainsSnapshots (0.47s)
+PASS
+ok  	goodsentry/internal/store	0.482s
