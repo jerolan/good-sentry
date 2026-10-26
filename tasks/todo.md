@@ -1447,7 +1447,7 @@ publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
 releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
-CLOSE-identidad-104 a -108 quedan vigentes. Siguiente acción: CLOSE-identidad-109
+CLOSE-identidad-104 a -109 quedan vigentes. Siguiente acción: CLOSE-identidad-110
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -2146,7 +2146,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-107](../SPEC.md#close-identidad-107) | API y navegador: comprobar OIDC y aplicaciones SSO con controles y pruebas locales, con los resultados y contr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-108](../SPEC.md#close-identidad-108) | API y navegador: comprobar organizaciones, equipos y miembros, con los resultados y controles de sus contratos… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-109](../SPEC.md#close-identidad-109) | API y navegador: comprobar proyectos y DSNs, con los resultados y controles de sus contratos actuales, sin exc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-109](../SPEC.md#close-identidad-109) | API y navegador: comprobar proyectos y DSNs, con los resultados y controles de sus contratos actuales, sin exc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-110](../SPEC.md#close-identidad-110) | API y navegador: comprobar tokens, permisos/aislamiento, expiración y revocación, con los resultados y control… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-092](../SPEC.md#close-operacion-092) | Arranque de imagen documentada con PostgreSQL y volúmenes vacíos, salud/readiness, UI y captura SDK, sin reque… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-093](../SPEC.md#close-operacion-093) | Migraciones y actualización desde una versión publicada fijada al ejecutar, con revisión/digest registrados. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5809,6 +5809,41 @@ Evidencia: `test-results/closure-20261025/identidad-108-go.log` y
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 tabla de miembros exige desplazamiento horizontal en 320 px, sin desbordar la
 página.
+
+### Ejecución 2026-10-26: proyectos, DSNs y claves SDK
+
+Selección registrada antes de trabajar: CLOSE-identidad-109. Candidata
+`a04e19a`.
+
+Resultado observado: siete owners cubren el detalle de organización con
+esquemas de proyecto y claves, la creación de proyecto dentro de un equipo, la
+asignación de un proyecto a varios equipos con sus recuentos, las claves SDK por
+HTTP con DSN público y secreto ausente, la activación/desactivación que corta y
+restaura la ingesta, la paginación y el enlace prefijado, la actualización y
+borrado de proyecto y la relación proyecto-equipo. En Chromium, el propietario
+crea «Browser Project», ve su DSN en la lista, abre las claves SDK, crea
+«Browser key» con su nuevo DSN y la borra con confirmación; las nueve capturas a
+320/768/1440 no desbordan ni registran errores.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Esquemas de proyecto y claves en la organización | store `TestCompatibleManagementOrganizationAndProjectKeys`; HTTP `TestCompatibleManagementOrganizationAndProjectKeysHTTP` |
+| Creación de proyecto en un equipo | store `TestCreateCompatibleProjectInTeam`; HTTP `TestCreateCompatibleProjectHTTP` |
+| Proyecto en varios equipos y recuentos | store `TestCompatibleProjectTeamAssignmentMultipleRelations` |
+| Relación proyecto-equipo | HTTP `TestCompatibleProjectTeamRelationshipHTTP` |
+| Actualización y borrado de proyecto | HTTP `TestProjectUpdateAndDeleteHTTP` |
+| Creación de proyecto y DSN en la vista | `projects-109/report.json` |
+| Alta y borrado de clave SDK con DSN | `projects-109/report.json` y capturas de claves |
+
+Evidencia: `test-results/closure-20261025/identidad-109-go.log` y
+`test-results/closure-20261025/projects-109/` con `report.json` y nueve
+capturas.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. Las
+claves y DSN se probaron en la instancia local; no se acredita un SDK externo ni
+un proveedor de red.
 
 ### Comprobante de integración documental
 

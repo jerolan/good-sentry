@@ -3599,6 +3599,17 @@
         "people108/team-detail-1440.png",
         "people108/people-after-delete-1440.png"
       ]
+    },
+    "CLOSE-identidad-109": {
+      "evidence": "vigente",
+      "scope": "projects, DSNs and SDK keys across store, HTTP and the Projects view",
+      "evidence_files": [
+        "identidad-109-go.log",
+        "projects-109/report.json",
+        "projects-109/projects-1440.png",
+        "projects-109/project-keys-1440.png",
+        "projects-109/project-keys-after-delete-1440.png"
+      ]
     }
   },
   "commands": [

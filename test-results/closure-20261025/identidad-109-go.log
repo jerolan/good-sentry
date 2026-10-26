@@ -1,0 +1,18 @@
+=== RUN   TestCompatibleManagementOrganizationAndProjectKeys
+--- PASS: TestCompatibleManagementOrganizationAndProjectKeys (0.46s)
+=== RUN   TestCreateCompatibleProjectInTeam
+--- PASS: TestCreateCompatibleProjectInTeam (0.51s)
+=== RUN   TestCompatibleProjectTeamAssignmentMultipleRelations
+--- PASS: TestCompatibleProjectTeamAssignmentMultipleRelations (0.50s)
+PASS
+ok  	goodsentry/internal/store	1.486s
+=== RUN   TestCompatibleManagementOrganizationAndProjectKeysHTTP
+--- PASS: TestCompatibleManagementOrganizationAndProjectKeysHTTP (0.88s)
+=== RUN   TestProjectUpdateAndDeleteHTTP
+--- PASS: TestProjectUpdateAndDeleteHTTP (0.76s)
+=== RUN   TestCreateCompatibleProjectHTTP
+--- PASS: TestCreateCompatibleProjectHTTP (0.58s)
+=== RUN   TestCompatibleProjectTeamRelationshipHTTP
+--- PASS: TestCompatibleProjectTeamRelationshipHTTP (0.62s)
+PASS
+ok  	goodsentry/internal/server	2.851s
