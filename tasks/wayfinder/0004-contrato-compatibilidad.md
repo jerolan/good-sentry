@@ -254,3 +254,14 @@ antes de recomendar una decisión. La presencia en el anuncio de GlitchTip
 no prueba por sí sola necesidad, demanda o bajo esfuerzo en GoodSentry.
 La propuesta de archivo y retención queda pendiente de respuesta inequívoca;
 no se atribuye aprobación al "Ok" que precede a la objeción sobre Java.
+
+## Recommendation pending, Java source-context exception
+
+La investigación revisada no satisface la condición de bajo esfuerzo o
+fundamentalidad expresada por el usuario. Recomendación pendiente de su
+aprobación: aplazar el enriquecimiento automático con fuentes Java como
+excepción explícita al mínimo documentado de GlitchTip, manteniendo los
+requisitos de errores ya aprobados y sin declarar probado un SDK Java.
+No se presenta como ausencia de una capacidad en GlitchTip ni se elimina
+código existente. No es una exclusión aprobada hasta respuesta expresa.
+El criterio de archivo frío de la ronda 8 continúa pendiente.

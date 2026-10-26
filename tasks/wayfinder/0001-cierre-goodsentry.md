@@ -43,6 +43,8 @@ investigación en archivos disjuntos, sin ramas research/ ni PR.
 
 - [Precisar contexto Java y archivo frío de la referencia](0008-contexto-java-archivo-frio.md): hay documentación de archivo de logs y errores; el flujo reproducible de contexto Java sigue sin precisar.
 
+- [Evaluar utilidad y esfuerzo del contexto Java](0009-viabilidad-contexto-java.md): es un enriquecimiento conocido, pero no se demostró trivial ni fundamental; su inclusión o aplazamiento sigue pendiente.
+
 ## Not yet specified
 
 La referencia y el inventario pueden revelar ambigüedades de equivalencia
