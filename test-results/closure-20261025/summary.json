@@ -3934,6 +3934,14 @@
         "rendimiento-016/aggregate-sample-tests.log"
       ]
     },
+    "CLOSE-rendimiento-017": {
+      "evidence": "vigente",
+      "scope": "native immutable-identity occurrence endpoint with strict source/id/page admission, 404 isolation, member reads and window-independent detail",
+      "evidence_files": [
+        "rendimiento-016/aggregate-sample-tests.log",
+        "rendimiento-013/report.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

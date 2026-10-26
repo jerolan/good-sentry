@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -016
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -017
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-017. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-018. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1849,7 +1849,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-014](../SPEC.md#close-rendimiento-014) | Sentry spans and native telemetry reads: The next telemetry slice adds native start and end query parameters t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-015](../SPEC.md#close-rendimiento-015) | Sentry spans and native telemetry reads: Add UI presets for last hour, 24 hours, seven days and 30 days, with… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013) |
 | [CLOSE-rendimiento-016](../SPEC.md#close-rendimiento-016) | Sentry spans and native telemetry reads: The next detail increment opens a concrete stored transaction occurre… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-017](../SPEC.md#close-rendimiento-017) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-017](../SPEC.md#close-rendimiento-017) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-018](../SPEC.md#close-rendimiento-018) | Sentry spans and native telemetry reads: The detail JSON has sample matching the reference above; projectName,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-019](../SPEC.md#close-rendimiento-019) | Sentry spans and native telemetry reads: For legacy transactions, read the selected event's nested spans array… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-020](../SPEC.md#close-rendimiento-020) | Sentry spans and native telemetry reads: In the existing Transactions view, make the transaction name open its… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7286,6 +7286,30 @@ Límites registrados: el comprobante es de API/HTTP y no repite la navegación d
 UI; el control existente de última traza→logs se verificó en 013 y la
 navegación de ocurrencia en UI sigue en criterios posteriores. El CI público y
 la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: ocurrencia de transacción por identidad inmutable
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-017. Se combinan el
+comprobante de API de la misma ejecución que 016 y el de UI de 013; la
+comparación `git diff 18a3851..7ad5551 -- internal cmd static third_party go.mod go.sum Dockerfile`
+no muestra cambios de producto.
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Ruta `/api/v1/organizations/{org}/transactions/{source}/{id}?page=1` | `TestTransactionOccurrenceHTTPContract` |
+| Fuente, id int64 positivo canónico y página explícita 1..1000000 | La misma prueba rechaza `Event`, `SPAN`, `0`, `-1`, `+1`, `01`, desbordamiento, decimales, página vacía, `0`, `1000001` y `%2B1` con 400 |
+| 404 para ausente, no transacción, no segmento o ajena | La prueba cubre evento y span ausentes, error existente, hijo no segmento y organización ajena |
+| Miembros reales pueden leer | El cliente miembro obtiene 200 con página por defecto 1 |
+| Detalle por identidad independiente de la ventana | La consulta con una ventana de 2010 devuelve la ocurrencia de 2020, sus hijos y el entero original |
+| Ventana conservada en navegación y enlaces a logs | Comprobante de 013: rangos absolutos en URL, recarga y salto traza→logs conservan los límites |
+
+Evidencia: `test-results/closure-20261025/rendimiento-016/aggregate-sample-tests.log` y
+`test-results/closure-20261025/rendimiento-013/report.json`.
+
+Límites registrados: el flujo completo de navegación de ocurrencia en la UI se
+ejecuta en los criterios 018 a 020; aquí se acredita la independencia de ventana
+en la API y la conservación de la ventana en la navegación ya probada. El CI
+público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
