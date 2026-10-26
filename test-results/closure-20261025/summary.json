@@ -550,6 +550,17 @@
         "mutations use session/same-origin/CSRF and no-store JSON"
       ],
       "evidence_files": ["identity/totp-state.log", "identity/totp.log"]
+    },
+    "CLOSE-identidad-037": {
+      "evidence": "vigente",
+      "scope": "Account 2FA UI, challenge login, recovery code and password-confirmed disable",
+      "covered": [
+        "enrollment shows secret/otpauth and confirms a real TOTP code",
+        "recovery codes are displayed once and one completes a later challenge",
+        "password-only login requires the TOTP step; disable requires password",
+        "320/768/1440 without page errors"
+      ],
+      "evidence_files": ["two-factor-ui/report.json", "two-factor-ui/*.png", "tests/compat/two_factor_browser.mjs"]
     }
   },
   "commands": [

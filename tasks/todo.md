@@ -1442,12 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024, 026–032 y 034–036 ya
+bloques detallados 014–049 siguen pendientes; 014–024 y 026–032 y 034–037 ya
 están vigentes y 025/033 están bloqueadas por publicación/CI. Siguiente acción:
-CLOSE-identidad-037 (UI de 2FA y challenge). No se declara aceptación ni cierre
-del producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+CLOSE-identidad-038 (require2FA de organización). No se declara aceptación ni
+cierre del producto. El avance se informa por criterios/evidencia, sin
+porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
+producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1501,7 +1501,7 @@ este registro.
 | [CLOSE-identidad-034](../SPEC.md#close-identidad-034) | Two-factor authentication: Additive migration 053_user_totp.sql adds nullable users.totp_secret (AES-256-GCM c… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios TOTP |
 | [CLOSE-identidad-035](../SPEC.md#close-identidad-035) | Two-factor authentication: POST /api/v1/login keeps its strict body and identical Invalid email or password re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de challenge |
 | [CLOSE-identidad-036](../SPEC.md#close-identidad-036) | Two-factor authentication: GET /api/v1/me/two-factor reports enabled, pending and recoveryCodesRemaining for t… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de endpoints |
-| [CLOSE-identidad-037](../SPEC.md#close-identidad-037) | Two-factor authentication: The Account view exposes the two-factor state, the manual-entry secret and otpauth… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-037](../SPEC.md#close-identidad-037) | Two-factor authentication: The Account view exposes the two-factor state, the manual-entry secret and otpauth… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI 2FA |
 | [CLOSE-identidad-038](../SPEC.md#close-identidad-038) | Two-factor authentication: Additive migration 073_organization_require_2fa.sql adds organizations.require_2fa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-039](../SPEC.md#close-identidad-039) | Two-factor authentication: When any current organization requires two-factor authentication and the account ha… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-040](../SPEC.md#close-identidad-040) | Organization people and teams: Organization members and project teams are managed through the native authentic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3409,6 +3409,30 @@ Evidencia: `test-results/closure-20261025/identity/{totp-state.log,totp.log}`.
 
 Siguiente acción: CLOSE-identidad-037 (UI de 2FA y challenge de login), con
 dependencias locales resueltas.
+
+### Ejecución 2026-10-26: UI de segundo factor
+
+Selección registrada antes de trabajar: CLOSE-identidad-037, siguiente en el
+plan. Candidata `6ec0873`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de un nuevo contrato de navegador con TOTP real.
+
+Resultado observado: `two_factor_browser.mjs` enrola desde Account, muestra el
+secreto/otpauth y confirma un código TOTP real; entrega los recovery codes una
+sola vez. Tras cerrar sesión, el login solo con contraseña exige el challenge y
+un código del siguiente paso abre el dashboard; un recovery code también
+completa el challenge. Desactivar desde Account exige la contraseña y vuelve a
+password-only. Las capturas de Account (enrollment/on) y del challenge cubren
+320/768/1440 sin desbordamiento ni errores de página. Los flujos de password,
+recuperación, invitación, OIDC y open mode ya están cubiertos por sus propios
+comprobantes. Subresultados pendientes del bloque: ninguno. Los
+`requestFailures` del reporte son abortos de navegación esperados al cerrar
+sesión; no hay page errors.
+
+Evidencia: `test-results/closure-20261025/two-factor-ui/` y
+`tests/compat/two_factor_browser.mjs`.
+
+Siguiente acción: CLOSE-identidad-038 (require2FA de organización y gate de
+owner/admin), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
