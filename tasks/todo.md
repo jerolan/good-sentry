@@ -1453,7 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-Siguiente acción: CLOSE-sourcemaps-023. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-023 queda vigente. Siguiente acción: CLOSE-sourcemaps-024.
+No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1720,7 +1721,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-020](../SPEC.md#close-sourcemaps-020) | JavaScript artifacts: Materialize maps for all deduplicated authorized projects in one transaction. Enforce AR… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir CLI/SDK contra la imagen y comprobar licencia/assets |
 | [CLOSE-sourcemaps-022](../SPEC.md#close-sourcemaps-022) | JavaScript artifacts: The first artifact integration stores validated JavaScript source maps by project, artif… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6697,6 +6698,40 @@ Evidencia: `test-results/closure-20261025/sourcemaps-022-go.log` y
 
 Límites registrados: el CI público sigue pendiente para la auditoría final. Las
 APIs compatibles de release/CLI y su interfaz permanecen como criterios propios.
+
+### Ejecución 2026-10-26: divulgación de source maps en proyectos
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-023. Candidata
+`1638ef5`.
+
+Resultado observado: la vista de proyectos muestra la divulgación «Source maps»
+con la lista de metadatos y un formulario multipart para propietario o
+administrador con nombre de artefacto o URL, release, distribución opcional,
+debug ID opcional y archivo. El texto explica que hace falta release o debug ID
+para emparejar la compilación correcta; un envío sin ninguno de los dos muestra
+el error y conserva el nombre introducido. La subida nueva indica «Source map
+uploaded.» y la repetición idéntica distingue el duplicado sin crear otra fila.
+Tras capturar un error minificado real, el detalle del issue muestra el archivo
+original, su línea y la línea de contexto. Un miembro abre la divulgación, lee
+los metadatos y no recibe controles de escritura. Las capturas cubren 320 y 1440
+sin desbordamiento ni errores de consola.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Divulgación y lista de metadatos | `source-maps-ui/report.json`, `source-map-uploaded-*` |
+| Formulario multipart y requisito release/debug | `source-map-form-*`, `report.json` |
+| Retención de entrada en error | `report.json` (check añadido) |
+| Subida nueva frente a reintento idéntico | `report.json` |
+| Stack mapeado en el detalle del issue | `mapped-issue-*` |
+| Miembro sin controles de escritura | `member-source-maps-*` |
+
+Evidencia: `test-results/closure-20261025/source-maps-ui/` con `report.json` y
+ocho capturas a 320 y 1440.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+prueba cubre dos anchos (móvil y escritorio) según el criterio.
 
 ### Comprobante de integración documental
 

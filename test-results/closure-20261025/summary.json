@@ -3792,6 +3792,16 @@
         "sourcemaps-022-go.log",
         "artifact-cli-sdk/report.json"
       ]
+    },
+    "CLOSE-sourcemaps-023": {
+      "evidence": "vigente",
+      "scope": "project source-map disclosure, owner upload form, duplicate state and mapped issue at two widths",
+      "evidence_files": [
+        "source-maps-ui/report.json",
+        "source-maps-ui/source-map-form-1440.png",
+        "source-maps-ui/mapped-issue-1440.png",
+        "source-maps-ui/member-source-maps-1440.png"
+      ]
     }
   },
   "commands": [

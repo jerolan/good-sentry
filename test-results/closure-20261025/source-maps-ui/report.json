@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "checks": [
+    "Upload error keeps the entered artifact name",
+    "Owner uploads a map and an identical retry is reported as a duplicate",
+    "Captured minified error shows the mapped file, line and source context",
+    "Member reads source-map metadata without write controls"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/source-maps-ui/source-map-form-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/source-maps-ui/source-map-form-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/source-maps-ui/source-map-uploaded-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/source-maps-ui/source-map-uploaded-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/source-maps-ui/mapped-issue-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/source-maps-ui/mapped-issue-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/source-maps-ui/member-source-maps-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/source-maps-ui/member-source-maps-1440.png"
+  ],
+  "pageErrors": []
+}
