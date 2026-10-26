@@ -1,0 +1,18 @@
+{
+  "criteria": ["CLOSE-errores-207", "CLOSE-errores-208"],
+  "date": "2026-10-26",
+  "product_revision": "da5d18c",
+  "fresh_tests": {
+    "store": "PASS in 4.072s on disposable PostgreSQL 18 (six owners)",
+    "server": "PASS in 1.516s (native and compatible attachment HTTP)"
+  },
+  "covered": {
+    "207": "session and scoped project:read/project:write admission, current membership/grants, retained-parent selection in one snapshot, DSN exclusion, stable generated decimal IDs, native 64-character identities, SHA-1/type persistence and duplicate-capture preservation",
+    "208": "2048/256/128 Unicode caps with metadataTruncated, unchanged stored originals, bounded pages and opaque offset cursors with prefix-aware Link headers, case-insensitive filename query, is:screenshot, download presence, HEAD headers, safe basename MIME parameters, 400 admission and 404 isolation"
+  },
+  "evidence": ["store.log", "server.log", "summary.json"],
+  "limits": [
+    "The public CI and final-image audit remain pending for the final candidate.",
+    "The product is not declared complete."
+  ]
+}

@@ -1470,10 +1470,12 @@ CLOSE-errores-164 a -181 quedan vigentes; 179/181 conservan evidencia histórica
 CLOSE-errores-182 a -205 quedan vigentes; 196–198 y 203 conservan evidencia
 histórica de navegador/imagen. CLOSE-errores-163 queda vigente por la paridad
 conjunta de ambos incrementos.
+CLOSE-errores-207 y -208 quedan vigentes con sus owners frescos de almacén y
+HTTP.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-errores-206. No se declara
+runtime preservado. Siguiente acción: CLOSE-errores-209. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2102,8 +2104,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-064](../SPEC.md#close-operacion-064) | Verification and delivery: Exercise pinned official Go, Python, Node and browser Sentry SDKs against the runni… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-065](../SPEC.md#close-operacion-065) | Verification and delivery: Each new test must identify the consumer contract, a credible regression, the gap i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-066](../SPEC.md#close-operacion-066) | Verification and delivery: Always preserve clean-room provenance, user scope, existing controls and data. Ask… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-207](../SPEC.md#close-errores-207) | Current authorized delivery and compatible attachments (2026-10-18): Implement public Sentry attachment list/r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-208](../SPEC.md#close-errores-208) | Current authorized delivery and compatible attachments (2026-10-18): Lists cap projected filename to 2048 Unic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-207](../SPEC.md#close-errores-207) | Current authorized delivery and compatible attachments (2026-10-18): Implement public Sentry attachment list/r… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-208](../SPEC.md#close-errores-208) | Current authorized delivery and compatible attachments (2026-10-18): Lists cap projected filename to 2048 Unic… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-067](../SPEC.md#close-operacion-067) | Current authorized delivery and compatible attachments (2026-10-18): Simplify the README and move all detailed… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-209](../SPEC.md#close-errores-209) | Browser CSP reporting: Public browser security reports are part of error tracking. Implement both exact /api/{… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-210](../SPEC.md#close-errores-210) | Browser CSP reporting: Validate every report before starting writes. Support csp-violation only; reject unsupp… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9407,7 +9409,27 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-errores-206. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-errores-209. El producto sigue
+incompleto.
+
+### Ejecución 2026-10-26: adjuntos compatibles
+
+Selección registrada antes de trabajar: CLOSE-errores-207 y -208. Revisión de
+producto `da5d18c`; los owners de almacén y HTTP se ejecutaron de nuevo sobre
+PostgreSQL 18 desechable.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 207 | Rutas de proyecto, sesión/scopes, membresía y grants actuales, snapshot de padre, exclusión DSN, IDs decimales estables, identidad nativa, SHA-1/tipo y retry sin reemplazo | `TestCompatibleAttachmentsIdentityMetadataFiltersAndRetries`; `TestCompatibleAttachmentsSelectedParentAndCurrentScope`; `TestCompatibleAttachmentMigration032PreservesNativeReceiptsAndReopens`; `TestCompatibleAttachmentsHTTPContract` |
+| 208 | Límites 2048/256/128 con `metadataTruncated`, originales intactos, páginas/cursors/Link, filtros de nombre y screenshot, descarga/HEAD, MIME basename seguro, 400/404 | `TestCompatibleAttachmentsBoundPublicMetadataAndPreserveOriginals`; `TestCompatibleAttachmentsLegacyChecksumsAndInvalidBoundaries`; `TestCompatibleAttachmentsHTTPContract`; `TestNativeIssueAttachmentsHTTP` |
+
+Evidencia fresca: `test-results/closure-20261025/errores-207-208/{store,server}.log`
+y `summary.json`. El almacén pasó seis owners en 4.072 s y HTTP pasó los
+contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
+prefijo de despliegue, admisión estricta y credenciales actuales.
+
+Límites registrados: el CI público y la imagen final siguen pendientes para la
+auditoría de cierre. Siguiente acción: CLOSE-errores-209. El producto sigue
 incompleto.
 
 ### Comprobante de integración documental

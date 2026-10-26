@@ -431,6 +431,8 @@
     "CLOSE-errores-204": {"evidence": "vigente", "scope": "official Node 11.7.0 SDK owner with fixed IDs, flush, retry phases and no custom transport", "evidence_files": ["errores-182-205/fixed-id-client-wire.json"]},
     "CLOSE-errores-205": {"evidence": "vigente (historical browser)", "scope": "modern browser owner with 61 actual IDs, request gates and separate evidence phases", "evidence_files": ["errores-182-205/browser/modern-owner-final.json", "errores-182-205/image/browser-cohort-ready.json"]},
     "CLOSE-errores-206": {"evidence": "pendiente (final image/CI)", "scope": "aggregate modern-feedback acceptance on the final copied image; only historical receipts exist", "evidence_files": ["errores-182-205/image/functional-acceptance.json"]},
+    "CLOSE-errores-207": {"evidence": "vigente", "scope": "compatible attachment routes, scoped credentials, snapshot selection, stable decimal/native identities and preserved retries", "evidence_files": ["errores-207-208/store.log", "errores-207-208/server.log"]},
+    "CLOSE-errores-208": {"evidence": "vigente", "scope": "bounded public metadata/truncation, cursors/Link pagination, filters, download/HEAD, safe MIME and strict admission", "evidence_files": ["errores-207-208/store.log", "errores-207-208/server.log"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
