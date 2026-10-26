@@ -133,7 +133,7 @@ func TestCompatibleOrganizationUpdateDeleteHTTP(t *testing.T) {
 	orgPath := "/api/0/organizations/" + f.org.Slug + "/"
 	updated := f.request(t, f.client, "PUT", orgPath, `{"name":"  Renamed HTTP organization  "}`, http.Header{"X-CSRF-Token": {f.csrf}}, 200)
 	var detail store.CompatibleOrganizationDetail
-	if err := json.Unmarshal(updated, &detail); err != nil || detail.Name != "Renamed HTTP organization" || detail.Slug != f.org.Slug || len(detail.Projects) != 1 {
+	if err := json.Unmarshal(updated, &detail); err != nil || detail.ID == "" || detail.Name != "Renamed HTTP organization" || detail.Slug != f.org.Slug || detail.DateCreated.IsZero() || len(detail.Teams) != 1 || len(detail.Projects) != 1 {
 		t.Fatalf("organization update response: %+v %v", detail, err)
 	}
 	for _, body := range []string{`{"name":""}`, `{"name":"` + strings.Repeat("界", 201) + `"}`, `{"name":"x","unknown":true}`} {
@@ -155,6 +155,14 @@ func TestCompatibleOrganizationUpdateDeleteHTTP(t *testing.T) {
 	f.request(t, adminClient, "DELETE", orgPath, "", http.Header{"X-CSRF-Token": {adminCSRF}}, 403)
 	f.request(t, managerClient, "DELETE", orgPath, "", http.Header{"X-CSRF-Token": {managerCSRF}}, 403)
 	f.request(t, memberClient, "DELETE", orgPath, "", http.Header{"X-CSRF-Token": {memberCSRF}}, 403)
+	var adminToken struct{ Token string }
+	adminBody := resolutionJSON(t, map[string]any{"name": "Admin org writer", "scopes": []string{"org:write"}, "projectIds": []string{f.project.ID}, "expiresInDays": 1})
+	if err := json.Unmarshal(f.request(t, adminClient, "POST", "/api/v1/organizations/"+f.org.Slug+"/api-tokens", string(adminBody), http.Header{"X-CSRF-Token": {adminCSRF}}, 201), &adminToken); err != nil || adminToken.Token == "" {
+		t.Fatalf("admin token: %+v %v", adminToken, err)
+	}
+	adminBearer := http.Header{"Authorization": {"Bearer " + adminToken.Token}}
+	f.request(t, http.DefaultClient, "DELETE", orgPath, "", adminBearer, 403)
+	f.request(t, http.DefaultClient, "PUT", orgPath, `{"name":"Admin bearer rename"}`, adminBearer, 200)
 	f.request(t, f.client, "DELETE", orgPath, "", http.Header{"X-CSRF-Token": {f.csrf}}, 204)
 	f.request(t, f.client, "GET", orgPath, "", nil, 404)
 }

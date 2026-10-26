@@ -1,0 +1,12 @@
+=== RUN   TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries
+--- PASS: TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries (0.49s)
+=== RUN   TestCreateCompatibleOrganizationOwnershipTeamAndAuthority
+--- PASS: TestCreateCompatibleOrganizationOwnershipTeamAndAuthority (0.45s)
+PASS
+ok  	goodsentry/internal/store	0.948s
+=== RUN   TestCompatibleOrganizationUpdateDeleteHTTP
+--- PASS: TestCompatibleOrganizationUpdateDeleteHTTP (0.65s)
+=== RUN   TestCreateCompatibleOrganizationHTTP
+--- PASS: TestCreateCompatibleOrganizationHTTP (1.34s)
+PASS
+ok  	goodsentry/internal/server	1.995s

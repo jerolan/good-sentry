@@ -3452,6 +3452,13 @@
       "evidence_files": [
         "identidad-093-go.log"
       ]
+    },
+    "CLOSE-identidad-094": {
+      "evidence": "vigente",
+      "scope": "compatible organization rename, owner-only deletion and cascades",
+      "evidence_files": [
+        "identidad-094-go.log"
+      ]
     }
   },
   "commands": [

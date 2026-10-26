@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -093 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-094
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -094 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-095
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1936,7 +1936,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-091](../SPEC.md#close-identidad-091) | Compatible project update and deletion: Additive migration062 extends membership and invitation role constrain… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-092](../SPEC.md#close-identidad-092) | Compatible project update and deletion: Compatible team mutations are POST /api/0/organizations/{org}/teams/ w… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-093](../SPEC.md#close-identidad-093) | Compatible project update and deletion: Real PostgreSQL covers040 token preservation/reopen, org:write issuanc… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-094](../SPEC.md#close-identidad-094) | Compatible project update and deletion: PUT /api/0/organizations/{org}/ accepts only OrganizationInSchema {nam… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-094](../SPEC.md#close-identidad-094) | Compatible project update and deletion: PUT /api/0/organizations/{org}/ accepts only OrganizationInSchema {nam… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-095](../SPEC.md#close-identidad-095) | Compatible project update and deletion: POST /api/0/organizations/ is available only when GOODSENTRY_ENABLE_OR… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-096](../SPEC.md#close-identidad-096) | Compatible project update and deletion: Real PostgreSQL covers rename preservation, invalid names and owner/ma… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-044](../SPEC.md#close-operacion-044) | Public repository and product site: The user also explicitly requests Tailwind CSS plus daisyUI for the applic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5326,6 +5326,38 @@ de eventos.
 
 Evidencia: `test-results/closure-20261025/identidad-093-go.log` con nueve
 owners y los comprobantes individuales de -089 a -092.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: actualización y borrado de organización
+
+Selección registrada antes de trabajar: CLOSE-identidad-094. Candidata
+`33d80b1`.
+
+Resultado observado: `PUT /api/0/organizations/{org}/` acepta solo `{name}`,
+lo recorta y exige 1..200 caracteres Unicode sin controles: nombre vacío, solo
+espacios, controles o 201 ideogramas devuelven 400 igual que un campo
+desconocido. El renombrado por administrador, manager o token Bearer con
+`org:write` conserva identificador, slug, instante de creación, equipos y
+proyectos, mientras un miembro recibe 403 y un token `org:read` también. El
+borrado exige el rol de propietario actual: administrador, manager, miembro y un
+token `org:write` propiedad de un administrador reciben 403, y el propietario
+recibe 204 seguido de 404 al leer la organización. Las cascadas dejan sin filas
+los proyectos, equipos y credenciales de la organización.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Solo `{name}`, recorte y 1..200 caracteres sin controles | store `TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries`; HTTP `TestCompatibleOrganizationUpdateDeleteHTTP` |
+| Renombrado por propietario, manager, administrador y Bearer | HTTP `TestCompatibleOrganizationUpdateDeleteHTTP` |
+| Slug, creación, proyectos y equipos intactos | store `TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries`; HTTP `TestCompatibleOrganizationUpdateDeleteHTTP` |
+| Borrado solo para el propietario actual | store `TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries`; HTTP `TestCompatibleOrganizationUpdateDeleteHTTP` |
+| 204 y cascadas de proyectos, equipos y credenciales | store `TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries`; HTTP `TestCompatibleOrganizationUpdateDeleteHTTP` |
+
+Evidencia: `test-results/closure-20261025/identidad-094-go.log` con cuatro
+owners y los cambios en `internal/store/compat_organization_write_test.go` y
+`internal/server/compat_management_mutations_test.go`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

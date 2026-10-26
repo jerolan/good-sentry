@@ -25,8 +25,12 @@ func TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries(t *testing.T) {
 			t.Fatalf("invalid organization name %q: %v", invalid, err)
 		}
 	}
+	before, err := db.CompatibleOrganizationDetail(ctx, owner.ID, org.Slug)
+	if err != nil || before.ID == "" || before.Slug != org.Slug || before.DateCreated.IsZero() || len(before.Teams) != 1 {
+		t.Fatalf("organization before rename: %+v %v", before, err)
+	}
 	updated, err := db.UpdateCompatibleOrganization(ctx, admin.ID, org.Slug, "  Renamed organization  ", nil)
-	if err != nil || updated.Name != "Renamed organization" || updated.Slug != org.Slug || len(updated.Projects) != 1 || updated.Projects[0].ID != project.ID {
+	if err != nil || updated.Name != "Renamed organization" || updated.ID != before.ID || updated.Slug != before.Slug || !updated.DateCreated.Equal(before.DateCreated) || len(updated.Teams) != len(before.Teams) || updated.Teams[0].ID != before.Teams[0].ID || len(updated.Projects) != 1 || updated.Projects[0].ID != project.ID {
 		t.Fatalf("organization rename: %+v %v", updated, err)
 	}
 	if _, err := db.UpdateCompatibleOrganization(ctx, member.ID, org.Slug, "Member rename", nil); !errors.Is(err, ErrForbidden) {
@@ -59,6 +63,10 @@ func TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries(t *testing.T) {
 	if err := db.DeleteCompatibleOrganization(ctx, admin.ID, org.Slug); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("admin delete error: %v", err)
 	}
+	_, deleteHash, deletePrefix := apiTokenCredentials("org-delete-token")
+	if _, err := db.CreateAPIToken(ctx, owner.ID, owner.AuthGeneration, org.Slug, APITokenInput{Name: "Delete cascade", Scopes: []string{"org:read"}, ProjectIDs: []int64{apiTokenProjectID(t, project.ID)}, ExpiresInDays: 1}, deleteHash, deletePrefix); err != nil {
+		t.Fatal(err)
+	}
 	if err := db.DeleteCompatibleOrganization(ctx, member.ID, org.Slug); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("member delete error: %v", err)
 	}
@@ -71,5 +79,12 @@ func TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries(t *testing.T) {
 	var projects int
 	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM projects WHERE id=$1::bigint`, project.ID).Scan(&projects); err != nil || projects != 0 {
 		t.Fatalf("organization cascade left projects: %d %v", projects, err)
+	}
+	var teams, tokens int
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM teams WHERE organization_id=$1::bigint`, org.ID).Scan(&teams); err != nil || teams != 0 {
+		t.Fatalf("organization cascade left teams: %d %v", teams, err)
+	}
+	if err := db.pool.QueryRow(ctx, `SELECT count(*) FROM api_tokens WHERE organization_id=$1::bigint`, org.ID).Scan(&tokens); err != nil || tokens != 0 {
+		t.Fatalf("organization cascade left credentials: %d %v", tokens, err)
 	}
 }
