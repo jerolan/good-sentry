@@ -4519,6 +4519,11 @@
       "scope": "SymCache v7/v8/v9 records, DebugId resolution, string encodings, v9 variable extents, record/file bounds, innermost ranges and fail-closed malformed input",
       "evidence_files": ["nativo-021/symcache.log", "nativo-021/native.log", "nativo-021/summary.json"]
     },
+    "CLOSE-nativo-022": {
+      "evidence": "vigente",
+      "scope": "PDB inline site scopes, IPI/C13 records, annotations, file/line switches, virtual frame ordering, budgets and fail-closed malformed input",
+      "evidence_files": ["nativo-022/inline.log", "nativo-022/native.log", "nativo-022/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

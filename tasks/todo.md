@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -021 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -022 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-022. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-023. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1748,7 +1748,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9015,6 +9015,29 @@ cambiar el parser.
 | Path y línea positiva expuestos; sin frames inline adicionales | `TestSymCacheVersionsSymbolicateByEmbeddedDebugID` |
 
 Evidencia: `test-results/closure-20261025/nativo-021/symcache.log` y `native.log`.
+
+Límites registrados: no se usó la imagen final ni el CI público; la imagen y el
+CI siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: call sites inline de PDB
+
+Selección registrada antes de trabajar: CLOSE-nativo-022. Revisión de producto
+`ed3ecd5`; no hizo falta cambiar producto: los owners inline existentes cubren
+el contrato. Este incremento solo añade documentación y comprobantes.
+
+| Elemento | Comprobante |
+|---|---|---|
+| `S_INLINESITE`/`S_INLINESITE_END`, C13 `DEBUG_S_INLINEELINES` e IPI `LF_FUNC_ID`/`LF_MFUNC_ID` | `TestParseNativePDBExpandsNestedInlineFrames`; `TestPDBC13InlineeLinesParsesExtraFilesAndRecordBudgets` |
+| Anotaciones de offset/longitud, delta de línea y cambio de archivo | `TestPDBInlineAnnotationsResolveLineAndFileChanges` |
+| File IDs resueltos por checksums C13 y path preservado | `TestPDBInlineAnnotationsResolveLineAndFileChanges`; `TestParseNativePDBExpandsNestedInlineFrames` |
+| Cada scope activo se emite como frame virtual con la misma instrucción, innermost primero y antes del físico | `TestParseNativePDBExpandsNestedInlineFrames` |
+| Orden de frames Minidump y fuente física preservados | `TestParseNativePDBExpandsNestedInlineFrames` |
+| Sin demangling ni inferencia si falta IPI/C13 | `TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols` |
+| Límites 100 000 sitios, 128 de anidamiento, 1 000 000 IPI/anotaciones y 128 inline por frame físico | `TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets`; `TestPDBC13InlineeLinesParsesExtraFilesAndRecordBudgets` |
+| Anidamiento, anotación, IDs, archivos, rangos o presupuesto inválidos invalidan el PDB | `TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols`; `TestPDBInlineRangesCoverUsesAdjacentRangesAndRejectsGaps` |
+| SymCache sigue emitiendo el símbolo innermost sin expandir inline parents | `TestSymCacheVersionsSymbolicateByEmbeddedDebugID` (CLOSE-nativo-021) |
+
+Evidencia: `test-results/closure-20261025/nativo-022/inline.log` y `native.log`.
 
 Límites registrados: no se usó la imagen final ni el CI público; la imagen y el
 CI siguen pendientes para la auditoría final.
