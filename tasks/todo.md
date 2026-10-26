@@ -1482,10 +1482,12 @@ CLOSE-errores-216 y -217 quedan vigentes con el SDK Node 11.7.0 real bajo el
 mismo guion.
 CLOSE-errores-218 y -219 quedan vigentes con el bundle oficial Browser 11.7.0
 real bajo el mismo guion.
+CLOSE-errores-220 a -222 quedan vigentes por composición de los owners de
+adjuntos, retención de archivos y feedback legado/moderno.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-errores-220. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-097. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2195,9 +2197,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-029](../SPEC.md#close-sourcemaps-029) | Asociar metadatos locales de commits y registrar un deploy con sentry-cli 3.8.0. No requiere conexión automáti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-030](../SPEC.md#close-sourcemaps-030) | Consultar en API/UI la misma versión, proyectos, archivos y eventos asociados. No requiere conexión automática… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-031](../SPEC.md#close-sourcemaps-031) | Subida, listado, acceso y eliminación de artefactos sin borrar datos ajenos, con permisos, reintentos y persis… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-220](../SPEC.md#close-errores-220) | Conservar y comprobar los flujos de adjuntos, incluidos almacenamiento, listados, acceso/descarga y controles… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-221](../SPEC.md#close-errores-221) | Conservar y comprobar los flujos de feedback legado, transporte, asociación, reportes y UI contratados. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-222](../SPEC.md#close-errores-222) | Conservar y comprobar los flujos de feedback moderno, categoría, asociación, retención, lectura e interfaz con… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-220](../SPEC.md#close-errores-220) | Conservar y comprobar los flujos de adjuntos, incluidos almacenamiento, listados, acceso/descarga y controles… | implementada | vigente | Comprobante 2026-10-26 abajo (207-208 + 035-043) |
+| [CLOSE-errores-221](../SPEC.md#close-errores-221) | Conservar y comprobar los flujos de feedback legado, transporte, asociación, reportes y UI contratados. | implementada | vigente | Comprobante 2026-10-26 abajo (164-181) |
+| [CLOSE-errores-222](../SPEC.md#close-errores-222) | Conservar y comprobar los flujos de feedback moderno, categoría, asociación, retención, lectura e interfaz con… | implementada | vigente | Comprobante 2026-10-26 abajo (182-205) |
 | [CLOSE-operacion-097](../SPEC.md#close-operacion-097) | Navegador real a 320px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-098](../SPEC.md#close-operacion-098) | Navegador real a 768px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-099](../SPEC.md#close-operacion-099) | Navegador real a 1440px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtro… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9419,7 +9421,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-errores-220. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-operacion-097. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9439,7 +9441,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-errores-220. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-097. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9459,7 +9461,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-errores-220. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-097. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9490,7 +9492,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-errores-220. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9519,7 +9521,7 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-errores-220. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Node 11.7.0
@@ -9548,7 +9550,7 @@ Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-errores-220. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Browser 11.7.0
@@ -9577,7 +9579,24 @@ Evidencia: `test-results/closure-20261025/errores-218-219/` con el fixture, el
 hash del bundle, las capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-errores-220. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
+sigue incompleto.
+
+### Ejecución 2026-10-26: filas paraguas de conservación
+
+Selección registrada antes de trabajar: CLOSE-errores-220, -221 y -222. Son
+filas de conservación; no introducen comportamiento nuevo. Se cerraron por
+composición de owners frescos e históricos ya registrados.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 220 | Almacenamiento, listado, acceso/descarga y controles de adjuntos | `errores-207-208/summary.json`; `operacion-035-043/summary.json`; `operacion-035-043/attachment-api-*.json` |
+| 221 | Feedback legado: transporte, asociación, reportes y UI | `errores-164-181/summary.json`; `errores-164-181/{store,server,embed}.log`; navegador histórico de 179/181 |
+| 222 | Feedback moderno: categoría, asociación, retención, lectura e interfaz | `errores-182-205/summary.json`; `errores-182-205/{store,server,event,eventview,jobs}.log`; navegador histórico de 196–198/203 |
+
+Límites registrados: las capturas de navegador de 179/181 y 196–198/203 son
+históricas y se repiten en la candidata final; 206, la copia de 4569 filas y el
+CI público siguen pendientes. Siguiente acción: CLOSE-operacion-097. El producto
 sigue incompleto.
 
 ### Comprobante de integración documental
