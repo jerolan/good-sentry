@@ -817,6 +817,36 @@
         "single-use consumption, replay and regeneration"
       ],
       "evidence_files": ["identity/account-tokens.log"]
+    },
+    "CLOSE-errores-001": {
+      "evidence": "vigente",
+      "scope": "store/envelope routes, prefixed deployment and multi-source SDK authentication",
+      "covered": [
+        "X-Sentry-Auth, query and dsn identities must agree with the route project",
+        "403 absent/invalid key; management tokens are not SDK keys",
+        "store and envelope work under a URL prefix"
+      ],
+      "evidence_files": ["ingest.log"]
+    },
+    "CLOSE-errores-002": {
+      "evidence": "vigente",
+      "scope": "one-line UTF-8 headers, byte lengths, binary/newline items, unknown/zero-length items and malformed framing",
+      "covered": [
+        "length counts bytes; missing length consumes one line; terminal LF optional",
+        "binary/newline/zero-length/unknown items preserve framing",
+        "truncated, negative/overflow, multiline/padded and trailing bytes rejected"
+      ],
+      "evidence_files": ["ingest.log"]
+    },
+    "CLOSE-errores-003": {
+      "evidence": "vigente",
+      "scope": "identity/gzip/deflate/br/zstd, legacy zlib+base64, limits and status mapping",
+      "covered": [
+        "all compression encodings and legacy store decode",
+        "compressed/decompressed limits and item bounds",
+        "400/413/415/503 mapping and 429/CORS owners"
+      ],
+      "evidence_files": ["ingest.log"]
     }
   },
   "commands": [

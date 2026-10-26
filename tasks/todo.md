@@ -1443,11 +1443,11 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI. Siguiente acción: CLOSE-errores-001 (ingesta store/envelope),
-inicio de la familia de errores. No se declara aceptación ni cierre del
-producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+publicación/CI; errores 001–003 ya están vigentes. Siguiente acción:
+CLOSE-errores-004 (persistencia de contexto y attachments). No se declara
+aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1535,9 +1535,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-062](../SPEC.md#close-identidad-062) | Compatible user API tokens and recovery codes: GET, POST /api/0/api-tokens/ and DELETE /api/0/api-tokens/{id}/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
 | [CLOSE-identidad-063](../SPEC.md#close-identidad-063) | Compatible user API tokens and recovery codes: A user token also authenticates other compatible reads and writ… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de bearer |
 | [CLOSE-identidad-064](../SPEC.md#close-identidad-064) | Compatible user API tokens and recovery codes: GET, POST /api/0/generate-recovery-codes/ stage single-use acco… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de códigos |
-| [CLOSE-errores-001](../SPEC.md#close-errores-001) | Ingestion contract: Support POST /api/{project}/store/ and /api/{project}/envelope/, including deployments und… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-002](../SPEC.md#close-errores-002) | Ingestion contract: Envelope headers and item headers are one-line UTF-8 JSON. Item length counts bytes and pe… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-003](../SPEC.md#close-errores-003) | Ingestion contract: Accept identity, gzip, zlib-wrapped deflate, Brotli and Zstandard HTTP bodies. Support leg… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-001](../SPEC.md#close-errores-001) | Ingestion contract: Support POST /api/{project}/store/ and /api/{project}/envelope/, including deployments und… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de auth/ingest |
+| [CLOSE-errores-002](../SPEC.md#close-errores-002) | Ingestion contract: Envelope headers and item headers are one-line UTF-8 JSON. Item length counts bytes and pe… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de framing |
+| [CLOSE-errores-003](../SPEC.md#close-errores-003) | Ingestion contract: Accept identity, gzip, zlib-wrapped deflate, Brotli and Zstandard HTTP bodies. Support leg… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de compresión |
 | [CLOSE-errores-004](../SPEC.md#close-errores-004) | Ingestion contract: Persist errors/messages with timestamps, exception chains, stack frames, breadcrumbs, tags… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-005](../SPEC.md#close-errores-005) | Issues and artifacts: Default grouping is an independently designed stable hash of exception type and normaliz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-006](../SPEC.md#close-errores-006) | Issues and artifacts: Merge groups without losing events or their original grouping keys; subsequent events fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3573,6 +3573,31 @@ Evidencia: `test-results/closure-20261025/identity/account-tokens.log`.
 
 Siguiente acción: CLOSE-errores-001 (ingesta store/envelope) al cerrar la
 familia de identidad salvo los bloqueos de publicación 025/033.
+
+### Ejecución 2026-10-26: autenticación, framing y compresión de ingesta
+
+Selección registrada antes de trabajar: CLOSE-errores-001 a -003. Candidata
+`9df7f08`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+tests de protocolo y del capture HTTP con PostgreSQL.
+
+Resultado observado: store y envelope se registran bajo el prefijo; la
+autenticación v7 acepta header, query y `dsn`, exige coincidencia entre todas
+las identidades y el proyecto de la ruta, devuelve 403 sin clave y no acepta un
+token de gestión como clave SDK. El framing exige cabeceras de una línea UTF-8,
+cuenta bytes, permite binarios/newlines internos, longitud ausente como una
+línea, LF final opcional, attachments de longitud cero y tipos desconocidos;
+rechaza truncado, longitudes negativas/overflow, cabeceras multilínea/padding,
+duplicados y bytes extra. La compresión acepta identity, gzip, deflate
+zlib-wrapped, Brotli y Zstandard, más el store legado zlib+base64; aplica
+límites comprimidos/descomprimidos y cuenta de items, con 400/413/415/503 en
+el handler. Los tests cubren los vectores anteriores y el capture mantiene
+items dependientes/independientes; Rate-Limit 429 y CORS/OPTIONS tienen sus
+owners propios. Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/ingest.log`.
+
+Siguiente acción: CLOSE-errores-004 (persistencia de contexto, attachments y
+autorización de lectura).
 
 ### Comprobante de integración documental
 
