@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-081 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-083 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1921,8 +1921,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-078](../SPEC.md#close-identidad-078) | Compatible project update and deletion: The native project UI exposes Edit and permanent-delete confirmation t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-079](../SPEC.md#close-identidad-079) | Compatible project update and deletion: GET/POST /api/0/organizations/{org}/repos/ exposes the existing organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-080](../SPEC.md#close-identidad-080) | Compatible project update and deletion: POST /api/0/teams/{org}/{team}/projects/ accepts ProjectIn {name,slug?… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-081](../SPEC.md#close-identidad-081) | Compatible project update and deletion: Additive048_project_teams.sql introduces the authoritative many-to-man… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-082](../SPEC.md#close-identidad-082) | Compatible project update and deletion: POST/DELETE /api/0/projects/{org}/{project}/teams/{team}/ add or remov… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-081](../SPEC.md#close-identidad-081) | Compatible project update and deletion: Additive048_project_teams.sql introduces the authoritative many-to-man… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-identidad-082](../SPEC.md#close-identidad-082) | Compatible project update and deletion: POST/DELETE /api/0/projects/{org}/{project}/teams/{team}/ add or remov… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-083](../SPEC.md#close-identidad-083) | Compatible project update and deletion: GlitchTip-specific POST /api/0/organizations/{org}/members/{member}/se… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-084](../SPEC.md#close-identidad-084) | Compatible project update and deletion: Additive049_project_environments.sql creates project-scoped environmen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-085](../SPEC.md#close-identidad-085) | Compatible project update and deletion: GET /api/0/projects/{org}/{project}/environments/ and its /{name}/ det… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4977,6 +4977,34 @@ slug.
 
 Evidencia: `test-results/closure-20261025/identidad-079-080-go.log` y el cambio
 en `internal/server/releases.go` con su owner ampliado.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: asociación proyecto-equipo
+
+Selección registrada antes de trabajar: CLOSE-identidad-081 y -082. Candidata
+`b854954`.
+
+Resultado observado: la migración `048_project_teams.sql` introduce la
+asociación muchos-a-muchos autoritativa, rellena las relaciones heredadas con el
+instante de creación del proyecto y conserva filas y recibos previos; los owners
+comprueban además que borrar un equipo repara el espejo `projects.team_id` desde
+las asociaciones retenidas y que las lecturas y el recuento de proyectos de
+equipo usan `project_teams`. La expansión de destinatarios de correo de equipo
+recorre todos los equipos asociados: con dos equipos produce dos destinos
+distintos y no filtra miembros ajenos.
+
+Las rutas `POST/DELETE /api/0/projects/{org}/{project}/teams/{team}/` exigen
+`project:write` o sesión de propietario/manager/administrador: 401 sin sesión,
+403 para un miembro, 404 para equipo inexistente y 201 al asociar con la lista
+completa de equipos; repetir la asociación es idempotente, una segunda asociación
+respeta el orden por slug e id, y el borrado devuelve 200 con las asociaciones
+restantes, también idempotente cuando ya no existe. Las listas de proyecto y de
+equipo reflejan ambas relaciones y un token de solo lectura no puede mutar.
+
+Evidencia: `test-results/closure-20261025/identidad-081-082-go.log` con los
+cinco owners de asociación, migración, reparación del espejo y destinatarios
+multi-equipo.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

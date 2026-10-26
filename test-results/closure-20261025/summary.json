@@ -3344,6 +3344,20 @@
       "evidence_files": [
         "identidad-079-080-go.log"
       ]
+    },
+    "CLOSE-identidad-081": {
+      "evidence": "vigente",
+      "scope": "authoritative project-team association, mirror repair and multi-team recipients",
+      "evidence_files": [
+        "identidad-081-082-go.log"
+      ]
+    },
+    "CLOSE-identidad-082": {
+      "evidence": "vigente",
+      "scope": "authoritative project-team association, mirror repair and multi-team recipients",
+      "evidence_files": [
+        "identidad-081-082-go.log"
+      ]
     }
   },
   "commands": [

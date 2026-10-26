@@ -1,0 +1,14 @@
+=== RUN   TestCompatibleProjectTeamRelationshipHTTP
+--- PASS: TestCompatibleProjectTeamRelationshipHTTP (1.06s)
+PASS
+ok  	goodsentry/internal/server	2.121s
+=== RUN   TestAlertPermissionsAssignedTeamAndDestinationSnapshots
+--- PASS: TestAlertPermissionsAssignedTeamAndDestinationSnapshots (0.70s)
+=== RUN   TestProjectTeamsMigration048PreservesLegacyRelations
+--- PASS: TestProjectTeamsMigration048PreservesLegacyRelations (0.52s)
+=== RUN   TestCompatibleProjectTeamAssignmentMultipleRelations
+--- PASS: TestCompatibleProjectTeamAssignmentMultipleRelations (0.52s)
+=== RUN   TestCompatibleTeamMutationsPreserveProjectRelations
+--- PASS: TestCompatibleTeamMutationsPreserveProjectRelations (0.59s)
+PASS
+ok  	goodsentry/internal/store	3.431s
