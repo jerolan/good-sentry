@@ -1467,12 +1467,13 @@ la candidata final.
 CLOSE-operacion-044, -045 y -047 quedan vigentes localmente; 046 y 048 esperan
 autorización explícita de publicación y Pages.
 CLOSE-errores-164 a -181 quedan vigentes; 179/181 conservan evidencia histórica.
-CLOSE-errores-163 sigue abierto hasta completar también el feedback moderno
-182–205.
+CLOSE-errores-182 a -205 quedan vigentes; 196–198 y 203 conservan evidencia
+histórica de navegador/imagen. CLOSE-errores-163 queda vigente por la paridad
+conjunta de ambos incrementos.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-errores-182. No se declara
+runtime preservado. Siguiente acción: CLOSE-errores-206. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1970,7 +1971,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-046](../SPEC.md#close-operacion-046) | Public repository and product site: The user requests publication of the code to https://github.com/jerolan/go… | por contrastar | pendiente | Requiere autorización explícita de publicación; no se hizo push |
 | [CLOSE-operacion-047](../SPEC.md#close-operacion-047) | Public repository and product site: Use an original GoodSentry design informed by the public Sentry welcome pa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-048](../SPEC.md#close-operacion-048) | Public repository and product site: Publish only site/ through the official Pages artifact/deploy workflow on… | por contrastar | pendiente | Depende de 046 y de autorización de publicación/Pages |
-| [CLOSE-errores-163](../SPEC.md#close-errores-163) | SDK feedback: Feedback parity requires both legacy user reports and modern captureFeedback events. Implement a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-163](../SPEC.md#close-errores-163) | SDK feedback: Feedback parity requires both legacy user reports and modern captureFeedback events. Implement a… | implementada | vigente | Comprobante 2026-10-26 abajo (paridad legacy 164-181 + moderno 182-205) |
 | [CLOSE-errores-164](../SPEC.md#close-errores-164) | Legacy report identity and storage: Receive SDK envelope items of type user_report and POST /api/0/projects/{o… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-165](../SPEC.md#close-errores-165) | Legacy report identity and storage: Migration029 adds only user_reports: numeric ID, project FK with cascade,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-166](../SPEC.md#close-errores-166) | Legacy report identity and storage: Store.SubmitUserReport(ctx,projectID,input) writes under the existing proj… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1989,31 +1990,31 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-179](../SPEC.md#close-errores-179) | Native legacy report UI elaboration: Browser acceptance must show more than25 actual SDK reports, a reported e… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
 | [CLOSE-errores-180](../SPEC.md#close-errores-180) | Native legacy report UI elaboration: Explicit report refresh/retry moves focus to the report heading before re… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-181](../SPEC.md#close-errores-181) | Native legacy report UI elaboration: The reusable browser owner is tests/compat/user_reports_browser.mjs. GOOD… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-182](../SPEC.md#close-errores-182) | Modern feedback contract: Deliver the distinct modern captureFeedback consumer after the accepted legacy incre… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-183](../SPEC.md#close-errores-183) | Modern feedback contract: Receive feedback as a first-class retained event and issue category, not an opaque i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-184](../SPEC.md#close-errores-184) | Modern feedback contract: Normalization accepts type feedback and requires an object contexts.feedback with a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-185](../SPEC.md#close-errores-185) | Modern feedback contract: Migration031 adds issues.category text NOT NULL DEFAULT error with CHECK error/feedb… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-186](../SPEC.md#close-errores-186) | Modern feedback contract: The same migration adds feedback_events with event_receipt_id as its primary key, pr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-187](../SPEC.md#close-errores-187) | Modern feedback contract: Associate only to an error/message receipt inside the same project. An existing vali… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-188](../SPEC.md#close-errores-188) | Modern feedback contract: Feedback capture acquires the actual signed receipt advisory keys for its own and an… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-189](../SPEC.md#close-errores-189) | Modern feedback contract: Add Store.BindPendingFeedbackAssociations(ctx)(int64,error) for bounded catch-up. It… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-190](../SPEC.md#close-errores-190) | Modern feedback contract: Ingest creates and counts feedback only in its own category, with first-seen activit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-191](../SPEC.md#close-errores-191) | Modern feedback contract: Issue.Category is durable and appears as category in native DTOs and issueCategory i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-192](../SPEC.md#close-errores-192) | Modern feedback contract: Add issue.category as a reserved issue-state search term in both native and compatib… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-193](../SPEC.md#close-errores-193) | Modern feedback contract: Native IssueDetail adds first25 FeedbackItems and FeedbackCount in its authorization… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-194](../SPEC.md#close-errores-194) | Modern feedback contract: The reader API is Store.IssueFeedback(ctx,userID,issueID,page)(FeedbackItem,int64,bo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-195](../SPEC.md#close-errores-195) | Modern feedback contract: Pure eventview projection recognizes retained Kind feedback before exception/CSP fie… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-196](../SPEC.md#close-errores-196) | Modern feedback contract: The Feedback UI shows the actual message, supplied contact/source text, receipt time… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-197](../SPEC.md#close-errores-197) | Native Feedback component: Add view=feedback beside Issues in the existing navigation/admission/title map. Bot… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-198](../SPEC.md#close-errores-198) | Native Feedback component: In a feedback detail, show the same simple Resolve/Reopen and Ignore indefinitely a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-199](../SPEC.md#close-errores-199) | Native Feedback component: The new lazy module web/feedback.js exports createFeedbackUI({node,request,button,d… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-200](../SPEC.md#close-errores-200) | Native Feedback component: The module's state key is organization,issue.id, stored in view.feedback, with page… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-201](../SPEC.md#close-errores-201) | Native Feedback component: Use one inspection area, scoped by selected feedback eventID plus mode submission/a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-202](../SPEC.md#close-errores-202) | Native Feedback component: Every page/inspection/attachment callback checks the live issue, connected panel an… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-203](../SPEC.md#close-errores-203) | Native Feedback component: Actual browser acceptance on the new copied image must cover navigation/filter/cate… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-204](../SPEC.md#close-errores-204) | Native Feedback component: The reusable SDK owner is tests/compat/modern_feedback_sdk.mjs. GOODSENTRY_MODERN_F… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-205](../SPEC.md#close-errores-205) | Native Feedback component: The reusable modern browser owner is tests/compat/modern_feedback_browser.mjs. Its… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-206](../SPEC.md#close-errores-206) | Native Feedback component: Acceptance owners are pure normalization for the public field/default/identity cont… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-182](../SPEC.md#close-errores-182) | Modern feedback contract: Deliver the distinct modern captureFeedback consumer after the accepted legacy incre… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-183](../SPEC.md#close-errores-183) | Modern feedback contract: Receive feedback as a first-class retained event and issue category, not an opaque i… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-184](../SPEC.md#close-errores-184) | Modern feedback contract: Normalization accepts type feedback and requires an object contexts.feedback with a… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-185](../SPEC.md#close-errores-185) | Modern feedback contract: Migration031 adds issues.category text NOT NULL DEFAULT error with CHECK error/feedb… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-186](../SPEC.md#close-errores-186) | Modern feedback contract: The same migration adds feedback_events with event_receipt_id as its primary key, pr… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-187](../SPEC.md#close-errores-187) | Modern feedback contract: Associate only to an error/message receipt inside the same project. An existing vali… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-188](../SPEC.md#close-errores-188) | Modern feedback contract: Feedback capture acquires the actual signed receipt advisory keys for its own and an… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-189](../SPEC.md#close-errores-189) | Modern feedback contract: Add Store.BindPendingFeedbackAssociations(ctx)(int64,error) for bounded catch-up. It… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-190](../SPEC.md#close-errores-190) | Modern feedback contract: Ingest creates and counts feedback only in its own category, with first-seen activit… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-191](../SPEC.md#close-errores-191) | Modern feedback contract: Issue.Category is durable and appears as category in native DTOs and issueCategory i… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-192](../SPEC.md#close-errores-192) | Modern feedback contract: Add issue.category as a reserved issue-state search term in both native and compatib… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-193](../SPEC.md#close-errores-193) | Modern feedback contract: Native IssueDetail adds first25 FeedbackItems and FeedbackCount in its authorization… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-194](../SPEC.md#close-errores-194) | Modern feedback contract: The reader API is Store.IssueFeedback(ctx,userID,issueID,page)(FeedbackItem,int64,bo… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-195](../SPEC.md#close-errores-195) | Modern feedback contract: Pure eventview projection recognizes retained Kind feedback before exception/CSP fie… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-196](../SPEC.md#close-errores-196) | Modern feedback contract: The Feedback UI shows the actual message, supplied contact/source text, receipt time… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-197](../SPEC.md#close-errores-197) | Native Feedback component: Add view=feedback beside Issues in the existing navigation/admission/title map. Bot… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-198](../SPEC.md#close-errores-198) | Native Feedback component: In a feedback detail, show the same simple Resolve/Reopen and Ignore indefinitely a… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-199](../SPEC.md#close-errores-199) | Native Feedback component: The new lazy module web/feedback.js exports createFeedbackUI({node,request,button,d… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-200](../SPEC.md#close-errores-200) | Native Feedback component: The module's state key is organization,issue.id, stored in view.feedback, with page… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-201](../SPEC.md#close-errores-201) | Native Feedback component: Use one inspection area, scoped by selected feedback eventID plus mode submission/a… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-202](../SPEC.md#close-errores-202) | Native Feedback component: Every page/inspection/attachment callback checks the live issue, connected panel an… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-203](../SPEC.md#close-errores-203) | Native Feedback component: Actual browser acceptance on the new copied image must cover navigation/filter/cate… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-204](../SPEC.md#close-errores-204) | Native Feedback component: The reusable SDK owner is tests/compat/modern_feedback_sdk.mjs. GOODSENTRY_MODERN_F… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir ejecución SDK en candidata final |
+| [CLOSE-errores-205](../SPEC.md#close-errores-205) | Native Feedback component: The reusable modern browser owner is tests/compat/modern_feedback_browser.mjs. Its… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-206](../SPEC.md#close-errores-206) | Native Feedback component: Acceptance owners are pure normalization for the public field/default/identity cont… | por contrastar | pendiente | Requiere imagen final, copia de 4569 filas y CI; comprobantes históricos 182-205 abajo |
 | [CLOSE-lectores-001](../SPEC.md#close-lectores-001) | Integrations and compatibility limits: The official sentry-wizard flow is supported through GET /api/0/wizard/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-lectores-002](../SPEC.md#close-lectores-002) | Integrations and compatibility limits: Management API routes use /api/0 where compatible with published Sentry… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-lectores-003](../SPEC.md#close-lectores-003) | Integrations and compatibility limits: ENABLE_OPENAPI=true exposes GET /api/openapi.json as an OpenAPI 3.1 doc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9360,9 +9361,54 @@ y `summary.json`. Evidencia histórica: `functional-acceptance.json` (imagen
 f574f59e, CI 39147978078, 4569 filas/601 eventos/27 reportes/30 migraciones) y
 los reportes de navegador copiados.
 
-Límites registrados: 163 sigue abierto hasta completar el feedback moderno
+Límites registrados: 163 queda cerrado por la aceptación conjunta de 164–181 y
 182–205. 179/181 son aceptación histórica y deben repetir navegador en la
 candidata final. El producto sigue incompleto.
+
+### Ejecución 2026-10-26: feedback moderno SDK
+
+Selección registrada antes de trabajar: CLOSE-errores-182 a -205. Revisión de
+producto `1504d08`; almacén, HTTP, normalización, proyección pura y trabajador
+de asociaciones se ejecutaron de nuevo sobre PostgreSQL 18 desechable. Las
+filas 196–198 y 203 usan el comprobante histórico de navegador/imagen; 204–205
+verificaron sus owners actuales y su ejecución se repite en la candidata final.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 182 | Autoridades públicas, probe de IDs fijos y owner SDK oficial | `sources.json`; `fixed-id-client-wire.json`; `tests/compat/modern_feedback_sdk.mjs` |
+| 183 | Kind/categoría propia, retry con primer recibo y colisión feedback/error/transacción 409 | `TestModernFeedbackOwnsReceiptAndRetry`; `TestModernFeedbackEnvelopeHTTP` |
+| 184 | Normalización de `contexts.feedback`, límites, asociación canónica y JSON crudo | `TestFeedbackNormalize*`; `TestModernFeedbackEnvelopeHTTP` |
+| 185–186 | Categoría y tupla FK en 031, `feedback_events`, checks e índice pending | `TestFeedbackMigration031PreservesOldFieldsAndReopens`; `store.log` |
+| 187–189 | Pin same-project, pending first-observed, gates ordenados, 250 SKIP LOCKED, rollback y worker acotado | `TestModernFeedbackAssociationPinsFirstCompatibleReceipt`; `TestFeedbackPinsTargetBeforeOwnRouteWait`; `TestFeedbackBinding*`; `TestBindPendingFeedbackAssociationsDrainsBoundedBatches`; `jobs.log` |
+| 190–192 | Aislamiento de consumidores de error, categoría en DTOs y búsqueda nativa/compatible | `TestModernFeedbackDoesNotCountAsAnError`; `TestFeedbackCategorySearchAndCompatibleDeletion`; `TestCompatibleFeedbackIssueCategoryWithEmptyHistory` |
+| 193–195 | Lectores nativos paginados/asociados y proyección pura de eventview | `TestFeedbackReadersScopePagingAndAssociatedGeneration`; `TestFeedbackDetailAndAssociationUseAuthorizedSnapshot`; `TestModernFeedbackReadHTTPContract`; `TestProjectFeedbackUsesStoredContextMessage` |
+| 196–203 | Vista/módulo Feedback, triaje, drafts, foco, fallos y navegador 320/768/1024/1440 | Histórico `errores-182-205/browser/*.json`; `image/functional-acceptance.json` |
+| 204–205 | Owners SDK y navegador modernos con 61 IDs reales y fases separadas | `tests/compat/modern_feedback_{sdk,browser}.mjs`; `node --check`; histórico `image/browser-cohort-ready.json` |
+
+Evidencia fresca: `test-results/closure-20261025/errores-182-205/{store,server,event,eventview,jobs,build,vet}.log`
+y `summary.json`. La corrida de almacén ejerció 13 owners en 16.747 s; HTTP
+admitió envelopes, rechazó colisiones y sirvió lecturas nativas/compatibles en
+1.973 s; el trabajador drenó 250/250/101/3/2 asociaciones, reintentó un fallo y
+se detuvo en 7.472 s. `go build ./...`, `go vet ./...` y la sintaxis de ambos
+owners Node pasan. La comparación de revisiones
+(`revision-comparison.txt`) muestra cero cambios en los seis archivos propios
+del feedback desde la imagen aceptada; `ingest.go` y `app.js` sí cambiaron por
+otras familias, de ahí la repetición obligatoria de navegador/imagen.
+
+Evidencia histórica: `functional-acceptance.json` sobre `097997b` e imagen
+`sha256:797d4dd…` construida desde `9bb0614`, con CI `39159883824/job117770761169`,
+4980 filas, 665 eventos, 61 feedback modernos, 27 reportes legados, 31
+migraciones y 40 tablas; reinicio y recuperación exactos, 4447 filas y 18
+runtimes originales protegidos. El owner legado se repitió sobre la misma copia
+y solo cambió la raíz copiada y su actividad de triaje autorizada. Las
+autoridades públicas quedaron registradas con estado 200 y hash en
+`sources.json`.
+
+Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
+repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
+histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
+CI coincidente. Siguiente acción: CLOSE-errores-206. El producto sigue
+incompleto.
 
 ### Comprobante de integración documental
 

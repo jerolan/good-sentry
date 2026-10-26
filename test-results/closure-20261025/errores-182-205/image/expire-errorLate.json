@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "actualApplicationRetentionWorker": true,
+  "expiredNumericReceipt": 1715,
+  "onlyOwnedReceiptChildrenAndCountChanged": true,
+  "allOtherRowsExact": true,
+  "protectedOriginalRows": 4447,
+  "protectedRuntimes": 18,
+  "copyBaselineUnchanged": true
+}

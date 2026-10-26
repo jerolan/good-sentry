@@ -1,0 +1,13 @@
+=== RUN   TestRetentionWorkersDrainRetryAndStop
+=== RUN   TestRetentionWorkersDrainRetryAndStop/feedback_associations
+2026/10/26 16:38:01 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=250
+2026/10/26 16:38:01 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=250
+2026/10/26 16:38:01 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=101
+2026/10/26 16:38:01 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=3
+2026/10/26 16:38:02 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=2
+2026/10/26 16:38:02 ERROR Feedback association pass failed entryPoint=feedback_associations_worker operation=bind_pending_feedback_associations
+2026/10/26 16:38:02 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=1
+--- PASS: TestRetentionWorkersDrainRetryAndStop (7.47s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/feedback_associations (7.47s)
+PASS
+ok  	goodsentry/internal/jobs	7.472s

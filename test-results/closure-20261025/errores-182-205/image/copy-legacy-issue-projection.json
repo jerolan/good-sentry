@@ -1,0 +1,10 @@
+{
+  "database": "goodsentry_feedback_modern_20261018",
+  "issueID": "1548",
+  "oldDigest": "08edc0fb58cdb498925bed659f74e501a41d0e1b489895e22f0ad1f535d53921",
+  "newDigest": "08edc0fb58cdb498925bed659f74e501a41d0e1b489895e22f0ad1f535d53921",
+  "allowedFields": [
+    "resolved_at"
+  ],
+  "scopeProof": "legacy-browser-delta.json"
+}

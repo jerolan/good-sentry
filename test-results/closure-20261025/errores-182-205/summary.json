@@ -1,0 +1,92 @@
+{
+  "criteria": [
+    "CLOSE-errores-182", "CLOSE-errores-183", "CLOSE-errores-184", "CLOSE-errores-185",
+    "CLOSE-errores-186", "CLOSE-errores-187", "CLOSE-errores-188", "CLOSE-errores-189",
+    "CLOSE-errores-190", "CLOSE-errores-191", "CLOSE-errores-192", "CLOSE-errores-193",
+    "CLOSE-errores-194", "CLOSE-errores-195", "CLOSE-errores-196", "CLOSE-errores-197",
+    "CLOSE-errores-198", "CLOSE-errores-199", "CLOSE-errores-200", "CLOSE-errores-201",
+    "CLOSE-errores-202", "CLOSE-errores-203", "CLOSE-errores-204", "CLOSE-errores-205"
+  ],
+  "date": "2026-10-26",
+  "product_revision": "1504d086d7063078858f5fd9e45c60e2f37d4e5d",
+  "fresh_tests": {
+    "store": "PASS in 16.747s (13 top-level owners, real PostgreSQL 18 on disposable port 18356)",
+    "server": "PASS in 1.973s (envelope admission, atomic collision handling, native/compatible reads and empty-history category)",
+    "event": "PASS in 0.011s (field/identity normalization and legacy behavior)",
+    "eventview": "PASS in 0.007s (retained feedback projection)",
+    "jobs": "PASS in 7.472s (drains 250/250/101/3/2, retries and stops)",
+    "build": "PASS",
+    "vet": "PASS"
+  },
+  "covered": {
+    "182": "public authorities recorded from official documentation with hashes; fixed-ID serializer probe; official Node SDK owner, no custom transport",
+    "183": "feedback is its own retained kind and issue category; retries keep the first receipt, metadata, clock and association; feedback/error/transaction collision returns 409 without misattached bytes",
+    "184": "type feedback plus contexts.feedback object, exact text preservation, optional-field validation, 32-hex/UUID canonical association, limits and raw JSON extensions",
+    "185": "migration 031 category check/default, category-aware unique/FK tuple and same-category merge writers with old error grouping unchanged",
+    "186": "feedback_events primary/composite FKs, self-association and pending checks, partial pending index and preserved 001-030 rows",
+    "187": "same-project error/message target pin, pending first-observed binding, unavailable known non-error target and no numeric-receipt inheritance after reuse",
+    "188": "sorted deduplicated receipt advisory keys before the shared project gate, target pinned after the gate, at most 250 SKIP LOCKED pending rows in the parent transaction and full rollback",
+    "189": "bounded frozen-pair maintainer catch-up with shared gates, no fresh same-ID substitution and the unconditional jobs worker with drain/retry/stop",
+    "190": "feedback excluded from error mute, receipt counters, frequency/alerts/release/dashboard/trace consumers while retention, issue counts and ordinary triage still work",
+    "191": "durable category in native and compatible DTOs, compatible type feedback/userReport null, empty histories and unchanged membership/pagination",
+    "192": "reserved issue.category search in native and compatible listing/metrics/bulk/deletion, literal tags preserved and UI category derived from the view",
+    "193": "IssueDetail first 25 FeedbackItems/FeedbackCount, paginated native feedback reads, associated-event reader and private no-store session responses",
+    "194": "Store.IssueFeedback and FeedbackAssociatedEvent with one repeatable-read snapshot, 26-row query and 25-row public page, explicit empty arrays and canonical/UUID admission",
+    "195": "pure eventview feedback branch before exception/CSP fields, contexts message/title, userReport null and no input mutation",
+    "196-198": "Feedback view and detail triage reuse native scoped controls, show hostile text safely, preserve drafts and invalidate category/route changes",
+    "199-202": "web/feedback.js exports createFeedbackUI with the approved issue callback surface, page/selection state, single inspection area, sequenced stale-response guards, focus restoration and responsive tracks",
+    "203": "historical copied-image browser acceptance covers 61 submissions in 25/25/11 pages, oldest selection and binary, pending/unavailable/recreated states, stale responses, module/page failures and 320/768/1024/1440",
+    "204": "tests/compat/modern_feedback_sdk.mjs asserts the official 11.7.0 client, fixed IDs, flush and retry phases; current syntax checked",
+    "205": "tests/compat/modern_feedback_browser.mjs requires 61 actual IDs, safe request gates and separate evidence phases; current syntax checked"
+  },
+  "historical_acceptance": {
+    "functional_revision": "097997b6d928cbc3769a9aa89d095d86e8b1373a",
+    "image_revision": "9bb0614c7c1596e43681c2439f250d299ceed209",
+    "image": "sha256:797d4dd106ff6407fdc5ca326e43644fd52976f0fafe8cc8d2d1ba639d718643",
+    "image_bytes": 31409176,
+    "binary_sha256": "9a83ec0918457a17e00d2ee837937f6a7070524e24867f5338fa7ff108f7ee07",
+    "ci": "39159883824/job117770761169",
+    "rows": 4980,
+    "events": 665,
+    "modern_feedback": 61,
+    "legacy_reports": 27,
+    "migrations": 31,
+    "tables": 40,
+    "protected_rows": 4447,
+    "protected_runtimes": 18,
+    "restart_and_recovery_exact": true,
+    "legacy_browser_delta": "only the copied legacy root and its authorized status activity changed"
+  },
+  "revision_reuse": {
+    "current_contains_functional_and_image_revisions": true,
+    "feedback_owned_paths_changed_since_image": 0,
+    "paths": [
+      "internal/store/feedback.go",
+      "internal/store/feedback_reads.go",
+      "internal/server/web/feedback.js",
+      "internal/event/feedback.go",
+      "internal/eventview/events.go",
+      "internal/store/migrations/031_modern_feedback.sql"
+    ],
+    "changed_surrounding_paths": [
+      "internal/server/ingest.go (throttling, native and discard work)",
+      "internal/server/web/app.js (other views and UI work)",
+      "internal/server/feedback_reads.go (route registration type only)"
+    ]
+  },
+  "limits": [
+    "The copied-image browser and public-CI acceptance is historical and must be repeated on the final candidate before product closure.",
+    "CLOSE-errores-206 remains the aggregate final-image acceptance criterion and is not marked current here.",
+    "The product is not declared complete."
+  ],
+  "evidence": [
+    "store.log", "server.log", "event.log", "eventview.log", "jobs.log", "build.log", "vet.log",
+    "revision-comparison.txt", "sources.json", "fixed-id-client-wire.json",
+    "browser/modern-final.json", "browser/modern-owner-final.json", "browser/legacy-modern-candidate.json",
+    "image/functional-acceptance.json", "image/image-proof.json", "image/all-prior-rows-audit.json",
+    "image/browser-cohort-ready.json", "image/copy-legacy-issue-projection.json", "image/legacy-browser-delta.json",
+    "functional-public.json", "canonical-public.json", "reproducible-final-source.json",
+    "functional-acceptance.log", "functional-ci-success.log", "canonical-ci-success.log", "image-proof.log",
+    "browser-final.log", "browser-owner-final.log", "legacy-browser.log", "summary.json"
+  ]
+}

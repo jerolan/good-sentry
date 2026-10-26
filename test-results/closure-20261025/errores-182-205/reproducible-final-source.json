@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "commit": "097997b6d928cbc3769a9aa89d095d86e8b1373a",
+  "sourceGitBlobsExact": 375,
+  "sourceArchiveSHA256": "fd5438c528f78024bc6731186b15f9b20a977170ed8653eb173cc9827159e06d",
+  "rebuildNetwork": "none",
+  "compiler": "Go1.27.2 Linux amd64 CGO_ENABLED=0",
+  "flags": "-trimpath -ldflags=-s -w",
+  "rebuiltBinarySHA256": "9a83ec0918457a17e00d2ee837937f6a7070524e24867f5338fa7ff108f7ee07",
+  "actualImageBinarySHA256": "9a83ec0918457a17e00d2ee837937f6a7070524e24867f5338fa7ff108f7ee07",
+  "actualImage": "sha256:797d4dd106ff6407fdc5ca326e43644fd52976f0fafe8cc8d2d1ba639d718643",
+  "productDiffFromImageSource": "empty for internal/,cmd/,Dockerfile,go.mod,go.sum"
+}

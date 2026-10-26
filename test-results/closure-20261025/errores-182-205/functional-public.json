@@ -1,0 +1,10 @@
+{
+  "commit": "097997b6d928cbc3769a9aa89d095d86e8b1373a",
+  "publicGitBlobsExact": 375,
+  "pagesFilesExact": 6,
+  "ci": 39159883824,
+  "ciJob": 117770761169,
+  "actualLogSHA256": "cc6dabcdd8e36747f6a7af39c101761a31bd932f8c21500fc959b9672cba2683",
+  "draftPR": "https://github.com/jerolan/good-sentry/pull/2",
+  "branch": "codex/modern-sdk-feedback"
+}

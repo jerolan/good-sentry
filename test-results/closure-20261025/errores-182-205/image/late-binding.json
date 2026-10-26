@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "actualOfficialLateError": true,
+  "fastPathSkippedLockedFeedback": true,
+  "actualEighthWorkerBound": true,
+  "firstOwnReceiptAndMetadataPreserved": true,
+  "protectedOriginalRows": 4447,
+  "protectedRuntimes": 18,
+  "copyBaselineUnchanged": true
+}

@@ -1,0 +1,40 @@
+=== RUN   TestModernFeedbackDoesNotCountAsAnError
+--- PASS: TestModernFeedbackDoesNotCountAsAnError (0.50s)
+=== RUN   TestFeedbackMigration031PreservesOldFieldsAndReopens
+--- PASS: TestFeedbackMigration031PreservesOldFieldsAndReopens (0.89s)
+=== RUN   TestFeedbackCategorySearchAndCompatibleDeletion
+--- PASS: TestFeedbackCategorySearchAndCompatibleDeletion (0.56s)
+=== RUN   TestFeedbackReadersScopePagingAndAssociatedGeneration
+--- PASS: TestFeedbackReadersScopePagingAndAssociatedGeneration (0.91s)
+=== RUN   TestFeedbackDetailAndAssociationUseAuthorizedSnapshot
+=== RUN   TestFeedbackDetailAndAssociationUseAuthorizedSnapshot/false
+=== RUN   TestFeedbackDetailAndAssociationUseAuthorizedSnapshot/true
+--- PASS: TestFeedbackDetailAndAssociationUseAuthorizedSnapshot (1.08s)
+    --- PASS: TestFeedbackDetailAndAssociationUseAuthorizedSnapshot/false (0.43s)
+    --- PASS: TestFeedbackDetailAndAssociationUseAuthorizedSnapshot/true (0.65s)
+=== RUN   TestModernFeedbackOwnsReceiptAndRetry
+--- PASS: TestModernFeedbackOwnsReceiptAndRetry (0.44s)
+=== RUN   TestModernFeedbackAssociationPinsFirstCompatibleReceipt
+--- PASS: TestModernFeedbackAssociationPinsFirstCompatibleReceipt (0.48s)
+=== RUN   TestBindPendingFeedbackAssociationsDrainsBoundedBatches
+--- PASS: TestBindPendingFeedbackAssociationsDrainsBoundedBatches (7.45s)
+=== RUN   TestFeedbackCategoryMergeAndMixedBulkRollback
+--- PASS: TestFeedbackCategoryMergeAndMixedBulkRollback (0.57s)
+=== RUN   TestFeedbackPinsTargetBeforeOwnRouteWait
+--- PASS: TestFeedbackPinsTargetBeforeOwnRouteWait (0.49s)
+=== RUN   TestFeedbackBindingFreezesTargetAcrossProjectWait
+--- PASS: TestFeedbackBindingFreezesTargetAcrossProjectWait (0.47s)
+=== RUN   TestFeedbackBindingFailureAndCancellationAreAtomic
+=== RUN   TestFeedbackBindingFailureAndCancellationAreAtomic/statement
+=== RUN   TestFeedbackBindingFailureAndCancellationAreAtomic/commit
+=== RUN   TestFeedbackBindingFailureAndCancellationAreAtomic/cancel
+=== RUN   TestFeedbackBindingFailureAndCancellationAreAtomic/maintainer
+--- PASS: TestFeedbackBindingFailureAndCancellationAreAtomic (2.21s)
+    --- PASS: TestFeedbackBindingFailureAndCancellationAreAtomic/statement (0.52s)
+    --- PASS: TestFeedbackBindingFailureAndCancellationAreAtomic/commit (0.59s)
+    --- PASS: TestFeedbackBindingFailureAndCancellationAreAtomic/cancel (0.55s)
+    --- PASS: TestFeedbackBindingFailureAndCancellationAreAtomic/maintainer (0.56s)
+=== RUN   TestFeedbackCaptureUsesBothReceiptGatesAndRollsBackChildren
+--- PASS: TestFeedbackCaptureUsesBothReceiptGatesAndRollsBackChildren (0.69s)
+PASS
+ok  	goodsentry/internal/store	16.747s

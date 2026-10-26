@@ -1,0 +1,34 @@
+[
+  {
+    "name": "node-user-feedback",
+    "url": "https://docs.sentry.io/platforms/javascript/guides/node/user-feedback/",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "bytes": 231231,
+    "sha256": "60ed77efe78f99a12f2ca52a5096f0e093a133171cdbf5b61a8d5b8189535198"
+  },
+  {
+    "name": "javascript-feedback-config",
+    "url": "https://docs.sentry.io/platforms/javascript/user-feedback/configuration/",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "bytes": 685434,
+    "sha256": "545ea042403f3d1f6ee4602a551c72e507489ec4f52524a10f13bd104f2105cd"
+  },
+  {
+    "name": "sdk-envelopes",
+    "url": "https://develop.sentry.dev/sdk/foundations/envelopes/",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "bytes": 334010,
+    "sha256": "b48469446fecee19593de9adf03cec9e0acf2e3cc4863b168aa526c801b73316"
+  },
+  {
+    "name": "project-feedback-api",
+    "url": "https://docs.sentry.io/api/projects/list-a-projects-user-feedback/",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "bytes": 229253,
+    "sha256": "0849e14034501000d640aa6c07e309c08869b55a71ec4c9e366f8721a9bbce74"
+  }
+]

@@ -1,0 +1,37 @@
+=== RUN   TestCompatibleIssueWireProjection
+--- PASS: TestCompatibleIssueWireProjection (0.00s)
+=== RUN   TestCompatibleFeedbackIssueCategoryWithEmptyHistory
+--- PASS: TestCompatibleFeedbackIssueCategoryWithEmptyHistory (0.00s)
+=== RUN   TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory
+=== RUN   TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/indefinite
+=== RUN   TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/configured_count_and_until
+=== RUN   TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/configured_additional_users
+=== RUN   TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/pending_next
+=== RUN   TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/selected_boundary
+--- PASS: TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory (0.00s)
+    --- PASS: TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/indefinite (0.00s)
+    --- PASS: TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/configured_count_and_until (0.00s)
+    --- PASS: TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/configured_additional_users (0.00s)
+    --- PASS: TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/pending_next (0.00s)
+    --- PASS: TestCompatibleIssueWireImplementedPoliciesAndEmptyHistory/selected_boundary (0.00s)
+=== RUN   TestModernFeedbackEnvelopeHTTP
+=== RUN   TestModernFeedbackEnvelopeHTTP/parent-limit/feedback
+=== RUN   TestModernFeedbackEnvelopeHTTP/parent-limit/event
+=== RUN   TestModernFeedbackEnvelopeHTTP/parent-limit/transaction
+=== RUN   TestModernFeedbackEnvelopeHTTP/item_payload_contradiction
+=== RUN   TestModernFeedbackEnvelopeHTTP/null_payload_type
+=== RUN   TestModernFeedbackEnvelopeHTTP/envelope_payload_identity_mismatch
+=== RUN   TestModernFeedbackEnvelopeHTTP/legacy_report_on_feedback
+2026/10/26 16:35:27 ERROR Database operation failed error="ERROR: new row for relation \"attachments\" violates check constraint \"reject_feedback_late\" (SQLSTATE 23514)"
+--- PASS: TestModernFeedbackEnvelopeHTTP (0.79s)
+    --- PASS: TestModernFeedbackEnvelopeHTTP/parent-limit/feedback (0.00s)
+    --- PASS: TestModernFeedbackEnvelopeHTTP/parent-limit/event (0.00s)
+    --- PASS: TestModernFeedbackEnvelopeHTTP/parent-limit/transaction (0.00s)
+    --- PASS: TestModernFeedbackEnvelopeHTTP/item_payload_contradiction (0.00s)
+    --- PASS: TestModernFeedbackEnvelopeHTTP/null_payload_type (0.00s)
+    --- PASS: TestModernFeedbackEnvelopeHTTP/envelope_payload_identity_mismatch (0.00s)
+    --- PASS: TestModernFeedbackEnvelopeHTTP/legacy_report_on_feedback (0.00s)
+=== RUN   TestModernFeedbackReadHTTPContract
+--- PASS: TestModernFeedbackReadHTTPContract (1.17s)
+PASS
+ok  	goodsentry/internal/server	1.973s
