@@ -1443,10 +1443,10 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032, 034–046 y 048–068 están vigentes y
-033/047 bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI.
-Siguiente acción: CLOSE-errores-069 (cambios individuales). No se declara
-aceptación ni cierre del producto. El avance se informa por
+publicación/CI; errores 001–005, 007–032, 034–046, 048–068 y 069–083 están
+vigentes; 033/047/084 bloqueadas; 006 espera proveedores de releases/
+artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-085 (listas/analytics).
+No se declara aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
 Goal no completan el producto ni borran este registro.
 
@@ -1604,22 +1604,22 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-066](../SPEC.md#close-errores-066) | Compatible user preferences: Additive050_user_emails.sql adds globally unique secondary addresses without rewr… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 050 |
 | [CLOSE-errores-067](../SPEC.md#close-errores-067) | Compatible user preferences: The emailed link is GET /account/emails/confirm?token=... on the configured domai… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de email |
 | [CLOSE-errores-068](../SPEC.md#close-errores-068) | Compatible user preferences: GET/PUT /users/{id}/notifications/ and /notifications/alerts/ expose and update s… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener notificaciones |
-| [CLOSE-errores-069](../SPEC.md#close-errores-069) | Compatible individual issue changes: Implement the complete individual state/assignment/native-policy write sl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-070](../SPEC.md#close-errores-070) | Compatible individual issue changes: Add only event:write with additive018 scope-constraint migration. Preserv… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-071](../SPEC.md#close-errores-071) | Compatible individual issue changes: PUT paths require canonical positive int64 issue IDs, exact trailing slas… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-072](../SPEC.md#close-errores-072) | Compatible individual issue changes: Status accepts unresolved/resolved/ignored plus muted (explicit alias of… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-073](../SPEC.md#close-errores-073) | Compatible individual issue changes: assignedTo omitted means no assignment update; null or empty string expli… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-074](../SPEC.md#close-errores-074) | Compatible individual issue changes: statusDetails accepts only inRelease, inNextRelease, inCommit, ignoreDura… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-075](../SPEC.md#close-errores-075) | Compatible individual issue changes: A nonnull inCommit is accepted only inside statusDetails as an object wit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-076](../SPEC.md#close-errores-076) | Compatible individual issue changes: The shared resolution input adds mode commit with the exact Commit and Re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-077](../SPEC.md#close-errores-077) | Compatible individual issue changes: ignoreDuration/ignoreCount/ignoreUserCount/ignoreWindow/ignoreUserWindow… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-078](../SPEC.md#close-errores-078) | Compatible individual issue changes: Store only an organization-scoped HMAC digest for each identity observed… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-079](../SPEC.md#close-errores-079) | Compatible individual issue changes: Compatible individual/bulk updates support ignoreWindow, ignoreUserWindow… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-080](../SPEC.md#close-errores-080) | Compatible individual issue changes: Internal types: CompatibleIssueChange has Status string, Assignment Compa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-081](../SPEC.md#close-errores-081) | Compatible individual issue changes: Extract the existing native validation and mutation body into validateIss… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-082](../SPEC.md#close-errores-082) | Compatible individual issue changes: Write transactions retain native ReadCommitted and fresh-after-wait behav… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-083](../SPEC.md#close-errores-083) | Compatible individual issue changes: Owning tests: PostgreSQL covers project/organization/current-member gates… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-084](../SPEC.md#close-errores-084) | Compatible individual issue changes: Acceptance requires actual official SDK errors controlled through restric… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-069](../SPEC.md#close-errores-069) | Compatible individual issue changes: Implement the complete individual state/assignment/native-policy write sl… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-070](../SPEC.md#close-errores-070) | Compatible individual issue changes: Add only event:write with additive018 scope-constraint migration. Preserv… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-071](../SPEC.md#close-errores-071) | Compatible individual issue changes: PUT paths require canonical positive int64 issue IDs, exact trailing slas… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-072](../SPEC.md#close-errores-072) | Compatible individual issue changes: Status accepts unresolved/resolved/ignored plus muted (explicit alias of… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-073](../SPEC.md#close-errores-073) | Compatible individual issue changes: assignedTo omitted means no assignment update; null or empty string expli… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-074](../SPEC.md#close-errores-074) | Compatible individual issue changes: statusDetails accepts only inRelease, inNextRelease, inCommit, ignoreDura… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-075](../SPEC.md#close-errores-075) | Compatible individual issue changes: A nonnull inCommit is accepted only inside statusDetails as an object wit… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-076](../SPEC.md#close-errores-076) | Compatible individual issue changes: The shared resolution input adds mode commit with the exact Commit and Re… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-077](../SPEC.md#close-errores-077) | Compatible individual issue changes: ignoreDuration/ignoreCount/ignoreUserCount/ignoreWindow/ignoreUserWindow… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-078](../SPEC.md#close-errores-078) | Compatible individual issue changes: Store only an organization-scoped HMAC digest for each identity observed… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-079](../SPEC.md#close-errores-079) | Compatible individual issue changes: Compatible individual/bulk updates support ignoreWindow, ignoreUserWindow… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-080](../SPEC.md#close-errores-080) | Compatible individual issue changes: Internal types: CompatibleIssueChange has Status string, Assignment Compa… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-081](../SPEC.md#close-errores-081) | Compatible individual issue changes: Extract the existing native validation and mutation body into validateIss… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-082](../SPEC.md#close-errores-082) | Compatible individual issue changes: Write transactions retain native ReadCommitted and fresh-after-wait behav… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-083](../SPEC.md#close-errores-083) | Compatible individual issue changes: Owning tests: PostgreSQL covers project/organization/current-member gates… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-084](../SPEC.md#close-errores-084) | Compatible individual issue changes: Acceptance requires actual official SDK errors controlled through restric… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
 | [CLOSE-errores-085](../SPEC.md#close-errores-085) | Compatible issue summaries and real analytics: Deliver organization/project issue lists, global/organization i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-086](../SPEC.md#close-errores-086) | Compatible issue summaries and real analytics: Register exact GET /api/0/organizations/{org}/issues/, /api/0/p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-087](../SPEC.md#close-errores-087) | Compatible issue summaries and real analytics: The organization short-ID lookup returns an object with organiz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3886,6 +3886,27 @@ Evidencia: `test-results/closure-20261025/errores-065-068.log`.
 
 Siguiente acción: CLOSE-errores-069 (cambios individuales de issue), con su
 matriz de status/assignment/políticas.
+
+### Ejecución 2026-10-26: cambios individuales de issue
+
+Selección registrada antes de trabajar: CLOSE-errores-069 a -084. Candidata
+`122145d`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners de migración, mutación, parseo y HTTP con `-race`.
+
+Resultado observado: 018 añade solo `event:write` preservando scopes; las rutas
+PUT canónicas aceptan status unresolved/resolved/ignored/muted, assignment por
+actor nativo o null/empty, policies y `inCommit` únicamente dentro de
+statusDetails, con cuerpos/tipos/duplicados estrictos. La mutación usa
+ReadCommitted, revalida membership/alias/generación y conserva historial,
+outbox y colas; un cambio parcial devuelve el detalle compatible real. Los
+tests cubren policy intent, assignment, cancelación, carrera con captura y
+reopen. 069–083 quedan vigentes; 084 exige errores de SDK oficial, imagen
+copiada/reiniciada, fuente exacta y CI pública, que no están autorizados, por
+lo que queda bloqueada.
+
+Evidencia: `test-results/closure-20261025/errores-069-083.log`.
+
+Siguiente acción: CLOSE-errores-085 (listas y analytics de issues).
 
 ### Comprobante de integración documental
 

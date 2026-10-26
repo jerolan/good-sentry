@@ -1798,6 +1798,125 @@
       "evidence_files": [
         "errores-065-068.log"
       ]
+    },
+    "CLOSE-errores-069": {
+      "evidence": "vigente",
+      "scope": "complete individual status/assignment/policy write slice",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-070": {
+      "evidence": "vigente",
+      "scope": "additive 018 event:write scope and preservation",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-071": {
+      "evidence": "vigente",
+      "scope": "canonical PUT paths, trailing slash and strict query/body",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-072": {
+      "evidence": "vigente",
+      "scope": "status alias matrix including muted",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-073": {
+      "evidence": "vigente",
+      "scope": "assignment omitted/null/empty and actor references",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-074": {
+      "evidence": "vigente",
+      "scope": "statusDetails fields and type admission",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-075": {
+      "evidence": "vigente",
+      "scope": "inCommit object inside statusDetails",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-076": {
+      "evidence": "vigente",
+      "scope": "commit resolution mode and stored release",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-077": {
+      "evidence": "vigente",
+      "scope": "ignore duration/count/window/user-window policy intent",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-078": {
+      "evidence": "vigente",
+      "scope": "organization-scoped HMAC identity digest",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-079": {
+      "evidence": "vigente",
+      "scope": "ignoreWindow/ignoreUserWindow individual/bulk support",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-080": {
+      "evidence": "vigente",
+      "scope": "typed CompatibleIssueChange contracts",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-081": {
+      "evidence": "vigente",
+      "scope": "shared native validation/mutation body",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-082": {
+      "evidence": "vigente",
+      "scope": "ReadCommitted and fresh-after-wait write behavior",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-083": {
+      "evidence": "vigente",
+      "scope": "PostgreSQL/HTTP owning verification matrix",
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
+    },
+    "CLOSE-errores-084": {
+      "evidence": "bloqueada por publicacion y aceptacion externa",
+      "scope": "official SDK errors, copied image/restart and public CI",
+      "covered": [
+        "local issue-update store/HTTP/browser contracts"
+      ],
+      "blocker": {
+        "cause": "official SDK/image/public-source acceptance and publication are not authorized",
+        "unlock": "run official SDK/image acceptance and publish matching source/CI"
+      },
+      "evidence_files": [
+        "errores-069-083.log"
+      ]
     }
   },
   "commands": [
