@@ -1443,13 +1443,13 @@ los alias, CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
 sesiones, CLOSE-operacion-011 con features, correo, uploads y secretos, y
 CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
 y CLOSE-identidad-002 con memberships, equipos y alcance, y
-CLOSE-identidad-003 con credenciales de automatización. Sus comprobantes
-vigentes están abajo. Siguiente acción: CLOSE-identidad-004 (all-projects
-versus lista, pérdida de membership, revalidación y no filtración), con
-dependencias locales resueltas. No se declara aceptación ni cierre del
-producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+CLOSE-identidad-003 con credenciales de automatización, y CLOSE-identidad-004
+con grants e invalidación. Sus comprobantes vigentes están abajo. Siguiente
+acción: CLOSE-identidad-005 (rutas compatibles de proyectos, precedencia de
+bearer, cursores y Links), con dependencias locales resueltas. No se declara
+aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1470,7 +1470,7 @@ este registro.
 | [CLOSE-identidad-001](../SPEC.md#close-identidad-001) | Runtime and workspace contracts: Provide /healthz for process health and /readyz for database readiness. Setup… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de sesiones/tokens |
 | [CLOSE-identidad-002](../SPEC.md#close-identidad-002) | Runtime and workspace contracts: Organizations contain memberships and teams. Projects belong to an organizati… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de workspace/authz |
 | [CLOSE-identidad-003](../SPEC.md#close-identidad-003) | Runtime and workspace contracts: The automation-credential prerequisite belongs to workspace, before compatibl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de credenciales |
-| [CLOSE-identidad-004](../SPEC.md#close-identidad-004) | Runtime and workspace contracts: An omitted or empty project list explicitly grants all current and future org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-004](../SPEC.md#close-identidad-004) | Runtime and workspace contracts: An omitted or empty project list explicitly grants all current and future org… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de grants |
 | [CLOSE-identidad-005](../SPEC.md#close-identidad-005) | Runtime and workspace contracts: Consume these credentials through Sentry-compatible GET /api/0/organizations/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-006](../SPEC.md#close-identidad-006) | Runtime and workspace contracts: Add an owner/admin-only API tokens view to the existing original Tailwind/dai… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-007](../SPEC.md#close-identidad-007) | Runtime and workspace contracts: Malformed percent encoding or other invalid URL query syntax returns400 rathe… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2662,6 +2662,36 @@ Evidencia: `test-results/closure-20261025/identity/{tests.log,tokens.log}`.
 Siguiente acción: CLOSE-identidad-004 (semántica all-projects versus lista,
 revocación por pérdida de membership, revalidación y no filtración), con
 dependencias locales resueltas.
+
+### Ejecución 2026-10-26: grants, invalidación y revalidación
+
+Selección registrada antes de trabajar: CLOSE-identidad-004, siguiente en el
+plan. Candidata `c8781f2`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad ejecuta los owners de invalidez y grants.
+
+Procedimiento reproducible con PostgreSQL desechable y `-race`:
+`TestAPITokenInvalidationUsesCurrentDatabaseState` (expirado, revocado y
+creador eliminado), `TestAPITokenAllAndRestrictedProjectGrants` y
+`TestAPITokenMetadataHistoryPaging`; revisión de `AuthenticateAPIToken` y
+`APITokens` para la revalidación de membership y proyectos.
+
+Resultado observado: una lista vacía/omitida concede todos los proyectos
+actuales y futuros y se persiste como `allProjects`; una lista no vacía solo
+concede los proyectos existentes seleccionados, rechaza ausentes/ajenos de
+forma atómica y no se convierte en all-projects al desaparecer el último
+proyecto. La eliminación del membership del creador elimina el credential y
+una reincorporación no lo revive; reducir el rol conserva el grant de lectura
+ordinario pero bloquea la gestión. El proveedor vuelve a comprobar membership
+y alcance de proyecto en cada autenticación. Expiración y revocación impiden
+las peticiones posteriores; no abortan una ya autorizada. La historia conserva
+activos, expirados y revocados en páginas de 25, los nombres duplicados se
+distinguen por ID y las respuestas/logs no exponen hash ni token original.
+Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/grants.log`.
+
+Siguiente acción: CLOSE-identidad-005 (rutas compatibles de proyectos,
+precedencia de bearer, cursores y Links), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

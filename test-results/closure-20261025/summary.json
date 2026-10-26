@@ -176,6 +176,19 @@
         "compatible project reads return authorized projects without DSN or SDK key"
       ],
       "evidence_files": ["identity/tests.log", "identity/tokens.log"]
+    },
+    "CLOSE-identidad-004": {
+      "evidence": "vigente",
+      "scope": "all versus restricted project grants, membership removal, role downgrade, revalidation, expiry/revocation and paging",
+      "covered": [
+        "empty/omitted project list means all current and future projects; selected lists remain restricted",
+        "creator membership removal permanently removes credentials and re-enrollment does not revive them",
+        "role downgrade retains ordinary reads but blocks management",
+        "provider rechecks membership and project scope on lookup",
+        "expiry and revocation stop later requests without aborting an authorized one",
+        "active/expired/revoked metadata pages and duplicate names remain distinct"
+      ],
+      "evidence_files": ["identity/grants.log"]
     }
   },
   "commands": [
