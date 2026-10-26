@@ -1453,8 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 y -024 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-025. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-023 a -025 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-026. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1723,7 +1723,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-022](../SPEC.md#close-sourcemaps-022) | JavaScript artifacts: The first artifact integration stores validated JavaScript source maps by project, artif… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6762,6 +6762,33 @@ Mapa de comprobantes:
 | URL y contexto original preservados | HTTP `TestAccountDSNCaptureAndTriage`; store `TestSourceMapsMatchBuildAndProjectAfterRestart` |
 
 Evidencia: `test-results/closure-20261025/sourcemaps-024-go.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: contenido de fuentes y sourceRoot vacío
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-025. Candidata
+`34a0a4d`.
+
+Resultado observado: el contenido mostrado sigue el registro de fuente del
+mapeo seleccionado. En un mapa con secciones indexadas cuyos `sources` usan la
+misma URL pero distinto `sourcesContent`, la trama resuelta toma la función y el
+contexto de la sección que la contiene, no de la primera. Un `sourceRoot`
+vacío se trata como ausente para la compatibilidad v3 existente, y un
+`sourceRoot` relativo no altera la base ya verificada. Ambas son decisiones
+explícitas del consumidor propio; la entrada y el contenido siguen siendo
+independientes del estándar público.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Contexto por registro de la sección, URLs idénticas | artefacto `TestIndexedSourceMapContextFollowsSelectedSourceRecord` |
+| `sourceRoot` vacío como ausente | artefacto `TestSourceMapNullSourceAndSourceRootContext` |
+| Base de URL existente preservada | `TestSymbolicateCodeFileAliasesKeepMapSourceBase`, `TestSourceMapNullSourceAndSourceRootContext` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-025-go.log` con 27 passes
+del paquete de artefactos.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

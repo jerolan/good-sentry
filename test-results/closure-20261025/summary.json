@@ -3809,6 +3809,13 @@
       "evidence_files": [
         "sourcemaps-024-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-025": {
+      "evidence": "vigente",
+      "scope": "source content selection per indexed section and empty sourceRoot compatibility",
+      "evidence_files": [
+        "sourcemaps-025-go.log"
+      ]
     }
   },
   "commands": [
