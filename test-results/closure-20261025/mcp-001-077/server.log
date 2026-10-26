@@ -1,0 +1,72 @@
+=== RUN   TestMCPAdmission
+=== RUN   TestMCPAdmission/legacy_stateless
+=== RUN   TestMCPAdmission/no_bearer_with_valid_cookie
+=== RUN   TestMCPAdmission/SDK_key
+=== RUN   TestMCPAdmission/wrong_bearer_despite_cookie
+=== RUN   TestMCPAdmission/duplicate_bearer
+=== RUN   TestMCPAdmission/foreign_origin
+=== RUN   TestMCPAdmission/duplicate_origin
+=== RUN   TestMCPAdmission/empty_origin
+=== RUN   TestMCPAdmission/null_origin
+=== RUN   TestMCPAdmission/cross_site
+=== RUN   TestMCPAdmission/accepted_public_origin
+=== RUN   TestMCPAdmission/localhost_DNS_rebinding
+=== RUN   TestMCPAdmission/query_credential
+=== RUN   TestMCPAdmission/empty_query_marker
+=== RUN   TestMCPAdmission/no_subscription_stream
+=== RUN   TestMCPAdmission/no_persisted_session
+=== RUN   TestMCPAdmission/no_CORS_preflight
+=== RUN   TestMCPAdmission/wrong_method
+=== RUN   TestMCPAdmission/wrong_media
+=== RUN   TestMCPAdmission/missing_accept
+=== RUN   TestMCPAdmission/malformed_body
+=== RUN   TestMCPAdmission/configured_body_limit
+=== RUN   TestMCPAdmission/chunked_body_limit
+--- PASS: TestMCPAdmission (0.69s)
+    --- PASS: TestMCPAdmission/legacy_stateless (0.03s)
+    --- PASS: TestMCPAdmission/no_bearer_with_valid_cookie (0.00s)
+    --- PASS: TestMCPAdmission/SDK_key (0.00s)
+    --- PASS: TestMCPAdmission/wrong_bearer_despite_cookie (0.00s)
+    --- PASS: TestMCPAdmission/duplicate_bearer (0.00s)
+    --- PASS: TestMCPAdmission/foreign_origin (0.00s)
+    --- PASS: TestMCPAdmission/duplicate_origin (0.00s)
+    --- PASS: TestMCPAdmission/empty_origin (0.00s)
+    --- PASS: TestMCPAdmission/null_origin (0.00s)
+    --- PASS: TestMCPAdmission/cross_site (0.00s)
+    --- PASS: TestMCPAdmission/accepted_public_origin (0.02s)
+    --- PASS: TestMCPAdmission/localhost_DNS_rebinding (0.00s)
+    --- PASS: TestMCPAdmission/query_credential (0.00s)
+    --- PASS: TestMCPAdmission/empty_query_marker (0.00s)
+    --- PASS: TestMCPAdmission/no_subscription_stream (0.00s)
+    --- PASS: TestMCPAdmission/no_persisted_session (0.00s)
+    --- PASS: TestMCPAdmission/no_CORS_preflight (0.00s)
+    --- PASS: TestMCPAdmission/wrong_method (0.00s)
+    --- PASS: TestMCPAdmission/wrong_media (0.01s)
+    --- PASS: TestMCPAdmission/missing_accept (0.01s)
+    --- PASS: TestMCPAdmission/malformed_body (0.02s)
+    --- PASS: TestMCPAdmission/configured_body_limit (0.02s)
+    --- PASS: TestMCPAdmission/chunked_body_limit (0.02s)
+=== RUN   TestMCPToolDisconnectCancelsDatabase
+=== RUN   TestMCPToolDisconnectCancelsDatabase/2026-07-28
+=== RUN   TestMCPToolDisconnectCancelsDatabase/2025-11-25
+--- PASS: TestMCPToolDisconnectCancelsDatabase (0.87s)
+    --- PASS: TestMCPToolDisconnectCancelsDatabase/2026-07-28 (0.08s)
+    --- PASS: TestMCPToolDisconnectCancelsDatabase/2025-11-25 (0.10s)
+=== RUN   TestMCPAlertAndMonitorInspection
+--- PASS: TestMCPAlertAndMonitorInspection (1.36s)
+=== RUN   TestMCPIssueInvestigation
+--- PASS: TestMCPIssueInvestigation (1.84s)
+=== RUN   TestMCPLogInvestigation
+--- PASS: TestMCPLogInvestigation (1.27s)
+=== RUN   TestMCPOAuthAuthorizationCodeAndRefresh
+--- PASS: TestMCPOAuthAuthorizationCodeAndRefresh (1.01s)
+=== RUN   TestMCPPerformanceInvestigation
+--- PASS: TestMCPPerformanceInvestigation (1.33s)
+=== RUN   TestMCPWorkspaceClient
+=== RUN   TestMCPWorkspaceClient/2026-07-28
+=== RUN   TestMCPWorkspaceClient/2025-11-25
+--- PASS: TestMCPWorkspaceClient (1.27s)
+    --- PASS: TestMCPWorkspaceClient/2026-07-28 (0.21s)
+    --- PASS: TestMCPWorkspaceClient/2025-11-25 (0.23s)
+PASS
+ok  	goodsentry/internal/server	9.651s

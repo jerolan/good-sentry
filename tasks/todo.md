@@ -1497,10 +1497,12 @@ lector híbrido, retención, Parquet/S3 y configuración; 056 espera la aceptaci
 completa de imagen/almacenamiento/CI.
 CLOSE-operacion-057 queda vigente por composición de OIDC y administración
 global, conservando abiertos los recibos de proveedores externos.
+CLOSE-mcp-001 a -077 quedan vigentes con la suite MCP fresca, el cliente oficial
+go-sdk 1.8.0 y la aceptación pública histórica como apoyo.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-mcp-001. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-058. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2061,65 +2063,65 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-055](../SPEC.md#close-operacion-055) | Instance user administration: GOODSENTRY_ARCHIVE_BACKEND is local by default and may be s3. GOODSENTRY_ARCHIVE… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-056](../SPEC.md#close-operacion-056) | Instance user administration: GOODSENTRY_ENABLE_DUCKDB remains off by default in Compose and retains its docum… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-057](../SPEC.md#close-operacion-057) | Instance user administration: Generic OpenID Connect sign-in and organization-managed OIDC applications are im… | implementada | vigente | Comprobante 2026-10-26 abajo; límites externos conservados |
-| [CLOSE-mcp-001](../SPEC.md#close-mcp-001) | Instance user administration: GlitchTip's public MCP guide at https://glitchtip.com/documentation/mcp/ defines… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-002](../SPEC.md#close-mcp-002) | MCP transport and workspace discovery: Use the official github.com/modelcontextprotocol/go-sdk v1.8.0, whose p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-003](../SPEC.md#close-mcp-003) | MCP transport and workspace discovery: MCP is optional and disabled by default. Disabled configurations return… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-004](../SPEC.md#close-mcp-004) | MCP transport and workspace discovery: Register the exact prefix-aware /mcp endpoint when constructing an MCP-… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-005](../SPEC.md#close-mcp-005) | MCP transport and workspace discovery: Validate Origin on every request before reading its body. Absence suppo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-006](../SPEC.md#close-mcp-006) | MCP transport and workspace discovery: Only one syntactically valid native Bearer credential authorizes an MCP… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-007](../SPEC.md#close-mcp-007) | MCP transport and workspace discovery: fila 1, / list_organizations / Optional query, page and limit / data of… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-008](../SPEC.md#close-mcp-008) | MCP transport and workspace discovery: fila 2, / list_projects / Required organization ID or slug; optional qu… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-009](../SPEC.md#close-mcp-009) | MCP transport and workspace discovery: Schemas reject unknown fields, null/wrong types and noninteger paginati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-010](../SPEC.md#close-mcp-010) | MCP transport and workspace discovery: Reuse existing compatible organization and management-project providers… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-011](../SPEC.md#close-mcp-011) | MCP transport and workspace discovery: Acceptance owns observable protocol behavior through a real HTTP listen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-012](../SPEC.md#close-mcp-012) | MCP issue investigation: Expose the five issue tools listed in the public GlitchTip MCP guide through the same… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-013](../SPEC.md#close-mcp-013) | MCP issue investigation: Read tools accept either event:read or event:write, matching the existing issue API.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-014](../SPEC.md#close-mcp-014) | MCP issue investigation: fila 1, / list_issues / Required organization ID/slug; optional project ID/slug, quer… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-015](../SPEC.md#close-mcp-015) | MCP issue investigation: fila 2, / get_issue / Required issue_id / Existing compatible issue detail / | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-016](../SPEC.md#close-mcp-016) | MCP issue investigation: fila 3, / get_latest_event / Required issue_id / Existing full compatible event proje… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-017](../SPEC.md#close-mcp-017) | MCP issue investigation: fila 4, / get_event / Required event_id; optional project ID/slug / Full compatible e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-018](../SPEC.md#close-mcp-018) | MCP issue investigation: fila 5, / update_issue / Required issue_id and status (resolved, unresolved, ignored)… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-019](../SPEC.md#close-mcp-019) | MCP issue investigation: Schemas reject unknown fields, null and wrong types. Pagination retains workspace def… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-020](../SPEC.md#close-mcp-020) | MCP issue investigation: Issue IDs use canonical positive decimal int64 strings. Event IDs accept the existing… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-021](../SPEC.md#close-mcp-021) | MCP issue investigation: Event ID is unique per project, not per organization. Add one Store operation, Compat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-022](../SPEC.md#close-mcp-022) | MCP issue investigation: update_issue applies the native individual update with its scoped access and audit/ac… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-023](../SPEC.md#close-mcp-023) | MCP issue investigation: Acceptance uses the official MCP client against HTTP and disposable PostgreSQL. Disco… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-024](../SPEC.md#close-mcp-024) | MCP log investigation: Expose list_logs and get_log from the public GlitchTip MCP guide on the internal transp… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-025](../SPEC.md#close-mcp-025) | MCP log investigation: Both tools require a new, explicit log:read scope. Existing org/project/event scopes mu… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-026](../SPEC.md#close-mcp-026) | MCP log investigation: fila 1, / list_logs / Required organization ID/slug; optional project ID/slug, query, l… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-027](../SPEC.md#close-mcp-027) | MCP log investigation: fila 2, / get_log / Required canonical positive int64 log_id / Existing Store LogDetail… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-028](../SPEC.md#close-mcp-028) | MCP log investigation: Reject unknown properties, null and wrong types. Retain workspace pagination defaults/b… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-029](../SPEC.md#close-mcp-029) | MCP log investigation: Add ScopedLogs and ScopedLog using the existing ManagementAccess shape with a required… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-030](../SPEC.md#close-mcp-030) | MCP log investigation: Share the existing native list/detail query and projection kernels. Preserve the native… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-031](../SPEC.md#close-mcp-031) | MCP log investigation: Acceptance uses real HTTP/PostgreSQL and the official MCP client. Create the opt-in sco… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-032](../SPEC.md#close-mcp-032) | MCP alert and monitor inspection: Expose the public GlitchTip tools list_alerts and list_monitors through the… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-033](../SPEC.md#close-mcp-033) | MCP alert and monitor inspection: fila 1, / list_alerts / Required organization ID/slug; optional project ID/s… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-034](../SPEC.md#close-mcp-034) | MCP alert and monitor inspection: fila 2, / list_monitors / Required organization ID/slug; optional page and l… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-035](../SPEC.md#close-mcp-035) | MCP alert and monitor inspection: Reject unknown fields, null/wrong types, invalid page/limit and invalid Unic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-036](../SPEC.md#close-mcp-036) | MCP alert and monitor inspection: Add ScopedAlerts and ScopedMonitors using ManagementAccess. Both providers r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-037](../SPEC.md#close-mcp-037) | MCP alert and monitor inspection: list_alerts returns a purpose-built summary: id, projectId, name, kind, enab… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-038](../SPEC.md#close-mcp-038) | MCP alert and monitor inspection: Acceptance uses real HTTP/PostgreSQL and the official MCP client. Discover s… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-039](../SPEC.md#close-mcp-039) | MCP performance investigation: Expose the six public GlitchTip performance tools through the selected MCP hand… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-040](../SPEC.md#close-mcp-040) | MCP performance investigation: fila 1, / list_transaction_groups / Required organization; optional project, st… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-041](../SPEC.md#close-mcp-041) | MCP performance investigation: fila 2, / get_transaction_group / Required organization and transaction; option… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-042](../SPEC.md#close-mcp-042) | MCP performance investigation: fila 3, / list_transaction_spans / Same group inputs plus page / Native grouped… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-043](../SPEC.md#close-mcp-043) | MCP performance investigation: fila 4, / list_span_groups / Required organization; optional project, operation… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-044](../SPEC.md#close-mcp-044) | MCP performance investigation: fila 5, / detect_n_plus_one / Required organization; optional project, start/en… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-045](../SPEC.md#close-mcp-045) | MCP performance investigation: fila 6, / get_transaction_trend / Required organization and transaction; option… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-046](../SPEC.md#close-mcp-046) | MCP performance investigation: Reject unknown/null/wrong inputs. Text references are1..200 valid Unicode chara… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-047](../SPEC.md#close-mcp-047) | MCP performance investigation: Add grant-contained Store providers over the existing event and span projection… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-048](../SPEC.md#close-mcp-048) | MCP performance investigation: Reuse native event/segment span unions, group sorting and latency definitions.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-049](../SPEC.md#close-mcp-049) | MCP performance investigation: Acceptance creates real transaction events with indexed child spans across sele… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-050](../SPEC.md#close-mcp-050) | MCP OAuth authorization: When MCP is selected, provide a same-origin OAuth2 authorization server for MCP clien… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-056](../SPEC.md#close-mcp-056) | MCP OAuth authorization: Add additive044 storage for OAuth clients, hashed authorization codes and hashed refr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-057](../SPEC.md#close-mcp-057) | MCP OAuth authorization: MCP Bearer denial changes from bare WWW-Authenticate: Bearer to include canonical res… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-059](../SPEC.md#close-mcp-059) | MCP OAuth authorization: Acceptance runs real HTTP/PostgreSQL and the official Go MCP client/OAuth handler. It… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-mcp-001](../SPEC.md#close-mcp-001) | Instance user administration: GlitchTip's public MCP guide at https://glitchtip.com/documentation/mcp/ defines… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-002](../SPEC.md#close-mcp-002) | MCP transport and workspace discovery: Use the official github.com/modelcontextprotocol/go-sdk v1.8.0, whose p… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-003](../SPEC.md#close-mcp-003) | MCP transport and workspace discovery: MCP is optional and disabled by default. Disabled configurations return… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-004](../SPEC.md#close-mcp-004) | MCP transport and workspace discovery: Register the exact prefix-aware /mcp endpoint when constructing an MCP-… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-005](../SPEC.md#close-mcp-005) | MCP transport and workspace discovery: Validate Origin on every request before reading its body. Absence suppo… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-006](../SPEC.md#close-mcp-006) | MCP transport and workspace discovery: Only one syntactically valid native Bearer credential authorizes an MCP… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-007](../SPEC.md#close-mcp-007) | MCP transport and workspace discovery: fila 1, / list_organizations / Optional query, page and limit / data of… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-008](../SPEC.md#close-mcp-008) | MCP transport and workspace discovery: fila 2, / list_projects / Required organization ID or slug; optional qu… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-009](../SPEC.md#close-mcp-009) | MCP transport and workspace discovery: Schemas reject unknown fields, null/wrong types and noninteger paginati… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-010](../SPEC.md#close-mcp-010) | MCP transport and workspace discovery: Reuse existing compatible organization and management-project providers… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-011](../SPEC.md#close-mcp-011) | MCP transport and workspace discovery: Acceptance owns observable protocol behavior through a real HTTP listen… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-012](../SPEC.md#close-mcp-012) | MCP issue investigation: Expose the five issue tools listed in the public GlitchTip MCP guide through the same… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-013](../SPEC.md#close-mcp-013) | MCP issue investigation: Read tools accept either event:read or event:write, matching the existing issue API.… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-014](../SPEC.md#close-mcp-014) | MCP issue investigation: fila 1, / list_issues / Required organization ID/slug; optional project ID/slug, quer… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-015](../SPEC.md#close-mcp-015) | MCP issue investigation: fila 2, / get_issue / Required issue_id / Existing compatible issue detail / | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-016](../SPEC.md#close-mcp-016) | MCP issue investigation: fila 3, / get_latest_event / Required issue_id / Existing full compatible event proje… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-017](../SPEC.md#close-mcp-017) | MCP issue investigation: fila 4, / get_event / Required event_id; optional project ID/slug / Full compatible e… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-018](../SPEC.md#close-mcp-018) | MCP issue investigation: fila 5, / update_issue / Required issue_id and status (resolved, unresolved, ignored)… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-019](../SPEC.md#close-mcp-019) | MCP issue investigation: Schemas reject unknown fields, null and wrong types. Pagination retains workspace def… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-020](../SPEC.md#close-mcp-020) | MCP issue investigation: Issue IDs use canonical positive decimal int64 strings. Event IDs accept the existing… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-021](../SPEC.md#close-mcp-021) | MCP issue investigation: Event ID is unique per project, not per organization. Add one Store operation, Compat… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-022](../SPEC.md#close-mcp-022) | MCP issue investigation: update_issue applies the native individual update with its scoped access and audit/ac… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-023](../SPEC.md#close-mcp-023) | MCP issue investigation: Acceptance uses the official MCP client against HTTP and disposable PostgreSQL. Disco… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-024](../SPEC.md#close-mcp-024) | MCP log investigation: Expose list_logs and get_log from the public GlitchTip MCP guide on the internal transp… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-025](../SPEC.md#close-mcp-025) | MCP log investigation: Both tools require a new, explicit log:read scope. Existing org/project/event scopes mu… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-026](../SPEC.md#close-mcp-026) | MCP log investigation: fila 1, / list_logs / Required organization ID/slug; optional project ID/slug, query, l… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-027](../SPEC.md#close-mcp-027) | MCP log investigation: fila 2, / get_log / Required canonical positive int64 log_id / Existing Store LogDetail… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-028](../SPEC.md#close-mcp-028) | MCP log investigation: Reject unknown properties, null and wrong types. Retain workspace pagination defaults/b… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-029](../SPEC.md#close-mcp-029) | MCP log investigation: Add ScopedLogs and ScopedLog using the existing ManagementAccess shape with a required… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-030](../SPEC.md#close-mcp-030) | MCP log investigation: Share the existing native list/detail query and projection kernels. Preserve the native… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-031](../SPEC.md#close-mcp-031) | MCP log investigation: Acceptance uses real HTTP/PostgreSQL and the official MCP client. Create the opt-in sco… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-032](../SPEC.md#close-mcp-032) | MCP alert and monitor inspection: Expose the public GlitchTip tools list_alerts and list_monitors through the… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-033](../SPEC.md#close-mcp-033) | MCP alert and monitor inspection: fila 1, / list_alerts / Required organization ID/slug; optional project ID/s… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-034](../SPEC.md#close-mcp-034) | MCP alert and monitor inspection: fila 2, / list_monitors / Required organization ID/slug; optional page and l… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-035](../SPEC.md#close-mcp-035) | MCP alert and monitor inspection: Reject unknown fields, null/wrong types, invalid page/limit and invalid Unic… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-036](../SPEC.md#close-mcp-036) | MCP alert and monitor inspection: Add ScopedAlerts and ScopedMonitors using ManagementAccess. Both providers r… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-037](../SPEC.md#close-mcp-037) | MCP alert and monitor inspection: list_alerts returns a purpose-built summary: id, projectId, name, kind, enab… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-038](../SPEC.md#close-mcp-038) | MCP alert and monitor inspection: Acceptance uses real HTTP/PostgreSQL and the official MCP client. Discover s… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-039](../SPEC.md#close-mcp-039) | MCP performance investigation: Expose the six public GlitchTip performance tools through the selected MCP hand… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-040](../SPEC.md#close-mcp-040) | MCP performance investigation: fila 1, / list_transaction_groups / Required organization; optional project, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-041](../SPEC.md#close-mcp-041) | MCP performance investigation: fila 2, / get_transaction_group / Required organization and transaction; option… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-042](../SPEC.md#close-mcp-042) | MCP performance investigation: fila 3, / list_transaction_spans / Same group inputs plus page / Native grouped… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-043](../SPEC.md#close-mcp-043) | MCP performance investigation: fila 4, / list_span_groups / Required organization; optional project, operation… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-044](../SPEC.md#close-mcp-044) | MCP performance investigation: fila 5, / detect_n_plus_one / Required organization; optional project, start/en… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-045](../SPEC.md#close-mcp-045) | MCP performance investigation: fila 6, / get_transaction_trend / Required organization and transaction; option… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-046](../SPEC.md#close-mcp-046) | MCP performance investigation: Reject unknown/null/wrong inputs. Text references are1..200 valid Unicode chara… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-047](../SPEC.md#close-mcp-047) | MCP performance investigation: Add grant-contained Store providers over the existing event and span projection… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-048](../SPEC.md#close-mcp-048) | MCP performance investigation: Reuse native event/segment span unions, group sorting and latency definitions.… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-049](../SPEC.md#close-mcp-049) | MCP performance investigation: Acceptance creates real transaction events with indexed child spans across sele… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-050](../SPEC.md#close-mcp-050) | MCP OAuth authorization: When MCP is selected, provide a same-origin OAuth2 authorization server for MCP clien… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-056](../SPEC.md#close-mcp-056) | MCP OAuth authorization: Add additive044 storage for OAuth clients, hashed authorization codes and hashed refr… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-057](../SPEC.md#close-mcp-057) | MCP OAuth authorization: MCP Bearer denial changes from bare WWW-Authenticate: Bearer to include canonical res… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-059](../SPEC.md#close-mcp-059) | MCP OAuth authorization: Acceptance runs real HTTP/PostgreSQL and the official Go MCP client/OAuth handler. It… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-058](../SPEC.md#close-operacion-058) | Commands and source layout: The external JavaScript artifact acceptance uses official sentry-cli3.8.0 and Node… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-059](../SPEC.md#close-operacion-059) | Commands and source layout: The issue-query SDK acceptance consumes a separate mode0600 fixture with the same… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-060](../SPEC.md#close-operacion-060) | Commands and source layout: The browser fixture additionally supplies disposable owner login credentials, the… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2220,24 +2222,24 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-lectores-005](../SPEC.md#close-lectores-005) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: consulta de issues. Recibo real del consumidor, revisión/v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-lectores-006](../SPEC.md#close-lectores-006) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: serie temporal de errores. Recibo real del consumidor, rev… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-lectores-007](../SPEC.md#close-lectores-007) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: revocación del token impide acceso posterior. Recibo real… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-060](../SPEC.md#close-mcp-060) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-061](../SPEC.md#close-mcp-061) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-062](../SPEC.md#close-mcp-062) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-063](../SPEC.md#close-mcp-063) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-064](../SPEC.md#close-mcp-064) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-065](../SPEC.md#close-mcp-065) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-066](../SPEC.md#close-mcp-066) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-067](../SPEC.md#close-mcp-067) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-068](../SPEC.md#close-mcp-068) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-069](../SPEC.md#close-mcp-069) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-070](../SPEC.md#close-mcp-070) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-071](../SPEC.md#close-mcp-071) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-072](../SPEC.md#close-mcp-072) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-073](../SPEC.md#close-mcp-073) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-074](../SPEC.md#close-mcp-074) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-075](../SPEC.md#close-mcp-075) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-076](../SPEC.md#close-mcp-076) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-mcp-077](../SPEC.md#close-mcp-077) | Cliente oficial Go v1.8.0: autorización y ciclo OAuth/token completos del contrato vigente, incluyendo scopes,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-mcp-060](../SPEC.md#close-mcp-060) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-061](../SPEC.md#close-mcp-061) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-062](../SPEC.md#close-mcp-062) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-063](../SPEC.md#close-mcp-063) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-064](../SPEC.md#close-mcp-064) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-065](../SPEC.md#close-mcp-065) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-066](../SPEC.md#close-mcp-066) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-067](../SPEC.md#close-mcp-067) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-068](../SPEC.md#close-mcp-068) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-069](../SPEC.md#close-mcp-069) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-070](../SPEC.md#close-mcp-070) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-071](../SPEC.md#close-mcp-071) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-072](../SPEC.md#close-mcp-072) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-073](../SPEC.md#close-mcp-073) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-074](../SPEC.md#close-mcp-074) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-075](../SPEC.md#close-mcp-075) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-076](../SPEC.md#close-mcp-076) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-077](../SPEC.md#close-mcp-077) | Cliente oficial Go v1.8.0: autorización y ciclo OAuth/token completos del contrato vigente, incluyendo scopes,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-100](../SPEC.md#close-operacion-100) | Auditoría por requisito sobre revisión candidata identificada e imagen vinculada, con todos los checks, invali… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-032](../SPEC.md#close-sourcemaps-032) | Enriquecimiento automático con fuentes Java; no exige SDK/JDK, bundles ni aceptación Java básica por inferenci… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
 | [CLOSE-sourcemaps-033](../SPEC.md#close-sourcemaps-033) | Conexión automática con repositorios y descubrimiento remoto de commits. Conservar releases, commits locales y… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
@@ -9434,7 +9436,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-mcp-001. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-operacion-058. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9454,7 +9456,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-mcp-001. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-058. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9474,7 +9476,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-mcp-001. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-058. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9505,7 +9507,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-mcp-001. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9534,7 +9536,7 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-mcp-001. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Node 11.7.0
@@ -9563,7 +9565,7 @@ Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-mcp-001. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Browser 11.7.0
@@ -9592,7 +9594,7 @@ Evidencia: `test-results/closure-20261025/errores-218-219/` con el fixture, el
 hash del bundle, las capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-mcp-001. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: filas paraguas de conservación
@@ -9609,7 +9611,7 @@ composición de owners frescos e históricos ya registrados.
 
 Límites registrados: las capturas de navegador de 179/181 y 196–198/203 son
 históricas y se repiten en la candidata final; 206, la copia de 4569 filas y el
-CI público siguen pendientes. Siguiente acción: CLOSE-mcp-001. El producto
+CI público siguen pendientes. Siguiente acción: CLOSE-operacion-058. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: navegador real a 320, 768 y 1440
@@ -9662,7 +9664,7 @@ resultado del CLI, el informe de navegador, capturas, CI/imagen históricos y
 `summary.json`.
 
 Límites registrados: las aceptaciones de CLI/navegador/CI son históricas y se
-repiten en la candidata final. Siguiente acción: CLOSE-mcp-001. El producto
+repiten en la candidata final. Siguiente acción: CLOSE-operacion-058. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: matriz de API de gestión y SDKs
@@ -9738,7 +9740,7 @@ Evidencia: `test-results/closure-20261025/operacion-049-055/` con logs,
 Límites registrados: CLOSE-operacion-056 sigue abierto porque exige la imagen
 con volumen limpio a través de archivo/consulta/reinicio/expiración, S3 real o
 compatible, suite completa con race/vet/build, CI público e imágenes
-publicadas. Siguiente acción: CLOSE-mcp-001. El producto sigue incompleto.
+publicadas. Siguiente acción: CLOSE-operacion-058. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: estado de OIDC y administración global
 
@@ -9753,7 +9755,39 @@ estado y límites; se cerró por composición sin añadir promesas nuevas.
 
 Límites registrados: los recibos de proveedores de identidad externos siguen
 abiertos y no se exigen para esta fila de estado. Siguiente acción:
-CLOSE-mcp-001. El producto sigue incompleto.
+CLOSE-operacion-058. El producto sigue incompleto.
+
+### Ejecución 2026-10-26: familia MCP 001–077
+
+Selección registrada antes de trabajar: CLOSE-mcp-001 a -077. Revisión
+`63468b6`; toda la suite MCP se ejecutó de nuevo con PostgreSQL desechable y se
+repitió con detector de carreras. Los 17 tools usan el cliente oficial
+`modelcontextprotocol/go-sdk v1.8.0`.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 001–006 | Transporte opcional `/mcp`, prefijo, protocolos stateless, Origin/cuerpo/método/media, Bearer nativo y apagado por defecto | `TestMCPAdmission`; `config.log` |
+| 007–011 | `list_organizations`, `list_projects`, grants, defaults, paginación, esquemas y shadowing de organización | `TestMCPWorkspaceClient` |
+| 012–023 | Cinco tools de issues, scopes, IDs canónicos, evento único por proyecto, update y desconexión | `TestMCPIssueInvestigation`; `TestMCPToolDisconnectCancelsDatabase` |
+| 024–031 | `list_logs`/`get_log`, `log:read`, providers y rechazo de esquemas | `TestMCPLogInvestigation` |
+| 032–038 | `list_alerts`/`list_monitors`, resúmenes y validación | `TestMCPAlertAndMonitorInspection` |
+| 039–049 | Seis tools de rendimiento sobre eventos/segmentos nativos | `TestMCPPerformanceInvestigation` |
+| 050–059 | Metadata RFC9728/8414, registro dinámico, PKCE, consentimiento, refresh, 044 y `WWW-Authenticate` | `TestMCPOAuthAuthorizationCodeAndRefresh` |
+| 060–076 | Cliente oficial descubre e invoca cada uno de los 17 tools contra HTTP/PostgreSQL real | `TestMCPWorkspaceClient`; `TestMCPIssueInvestigation`; `TestMCPLogInvestigation`; `TestMCPAlertAndMonitorInspection`; `TestMCPPerformanceInvestigation` |
+| 077 | Ciclo OAuth/token completo con scopes y refresh | `TestMCPOAuthAuthorizationCodeAndRefresh`; `server-race.log` |
+
+Resultado observado: la suite MCP pasa en 9.651 s y con race en 45.480 s;
+configuración en 0.004 s. Los dos protocolos (`2026-07-28` y `2025-11-25`)
+descubren esquemas read-only y devuelven datos reales. Las aceptaciones
+históricas de CI/imagen/registro se conservan como apoyo, con la repetición
+final pendiente.
+
+Evidencia: `test-results/closure-20261025/mcp-001-077/` con logs frescos, race,
+configuración y recibos públicos históricos.
+
+Límites registrados: MCP sigue apagado por defecto; la imagen final y el CI
+coincidente se repiten en la candidata final. Siguiente acción:
+CLOSE-operacion-058. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 
