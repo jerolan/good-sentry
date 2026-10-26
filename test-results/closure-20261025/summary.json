@@ -3927,6 +3927,13 @@
         "rendimiento-013/api-integer.json"
       ]
     },
+    "CLOSE-rendimiento-016": {
+      "evidence": "vigente",
+      "scope": "latestSample reference on transaction aggregates, concrete occurrence opening, strict source/id admission and project isolation",
+      "evidence_files": [
+        "rendimiento-016/aggregate-sample-tests.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
