@@ -1,0 +1,24 @@
+{
+  "criteria": ["CLOSE-operacion-021", "CLOSE-operacion-022"],
+  "date": "2026-10-26",
+  "acceptance_date": "2026-10-17",
+  "image": "sha256:3802aaa459a9a93225b9b4a3078493e16bad61bda3f052093963742a1901734c",
+  "ci": "39087725482/job117557705536",
+  "functional_revision": "8884b9d883946a9007767bf07a35e9807e1da182",
+  "covered": [
+    "real Node 11.7.0 envelopes expired four owned receipts over two stages while preserving independent trace/log data, routes, comments, assignment, resolution and mute progress",
+    "empty native issue detail remained readable with selected removed event/raw reads returning 404; same-ID recapture created a fresh receipt and retained duplicates changed no count",
+    "a separate 4290-row pre-expiry backup restored exactly; restart preserved 4305 rows, 530 events, 28 canonical batches, 24 migrations and 38 tables",
+    "real browser checks retained, empty and recovered views at 320/768/1440 with comments/triage, hostile text safety and no overflow",
+    "the deletion confirmation hidden/open/cancel contract passed after the scoped CSS repair",
+    "the static non-root image is 31,131,334 bytes, UID 65532:65532, with 150 CA certificates and the exact daisyUI license",
+    "public source and matching CI completed successfully at the accepted revision"
+  ],
+  "evidence_files_note": "The copied files are the historical 2026-10-17 acceptance receipts from test-results/error-retention-20261017. Screenshots remain in that ignored directory.",
+  "limits": [
+    "This is historical acceptance evidence at 3802aaa4/8884b9d, not a current-candidate image or CI run.",
+    "The final audit must rebuild and reaccept the image and matching CI on the final candidate.",
+    "The product is not declared complete."
+  ],
+  "evidence": ["final-runtime.json", "recovery.json", "final-expiry.json", "first-expiry.json", "sdk-recovery.json", "ci-success.log", "final-image-build.log", "browser/empty-final.json", "browser/visibility-green.json", "browser/empty.json", "browser/recovered.json", "summary.json"]
+}

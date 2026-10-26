@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "disabledLogsAndUptimeCleanup": true,
+  "expiredReceiptsTotal": 4,
+  "removedAttachmentsTotal": 4,
+  "onlyExpectedReceiptsBytesAndCountChanged": true,
+  "allOtherRowsExact": true,
+  "baselinePreserved": 4258,
+  "emptyIssuesReadable": 2,
+  "selectedEvents404": true,
+  "independentTraceNodes": 2,
+  "independentLogStored": true,
+  "recoveryStillExact": true
+}

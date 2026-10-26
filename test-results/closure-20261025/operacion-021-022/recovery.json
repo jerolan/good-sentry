@@ -1,0 +1,5 @@
+{
+  "passed": true,
+  "database": "goodsentry_event_retention_recovery_20261017",
+  "allBackupRowsExact": true
+}

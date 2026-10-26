@@ -1,0 +1,34 @@
+=== RUN   TestEventRetentionOrdersFreshAndDuplicateCapture
+=== RUN   TestEventRetentionOrdersFreshAndDuplicateCapture/capture-first
+=== RUN   TestEventRetentionOrdersFreshAndDuplicateCapture/cleanup-first
+=== RUN   TestEventRetentionOrdersFreshAndDuplicateCapture/duplicate-after-cleanup
+--- PASS: TestEventRetentionOrdersFreshAndDuplicateCapture (1.86s)
+    --- PASS: TestEventRetentionOrdersFreshAndDuplicateCapture/capture-first (0.83s)
+    --- PASS: TestEventRetentionOrdersFreshAndDuplicateCapture/cleanup-first (0.52s)
+    --- PASS: TestEventRetentionOrdersFreshAndDuplicateCapture/duplicate-after-cleanup (0.51s)
+=== RUN   TestEventRetentionRereadsCurrentOwnerAfterInFlightMerge
+--- PASS: TestEventRetentionRereadsCurrentOwnerAfterInFlightMerge (0.55s)
+=== RUN   TestEventRetentionPreservesTriageAfterLastPayloadExpires
+--- PASS: TestEventRetentionPreservesTriageAfterLastPayloadExpires (0.56s)
+=== RUN   TestEventRetentionKeepsExactFrozenCutoffWhileWaiting
+--- PASS: TestEventRetentionKeepsExactFrozenCutoffWhileWaiting (0.67s)
+=== RUN   TestEventRetentionRecountsPartitionsAndPreservesEmptyIssueHistory
+--- PASS: TestEventRetentionRecountsPartitionsAndPreservesEmptyIssueHistory (0.66s)
+=== RUN   TestEventRetentionBoundsAndRecountsEachOwnerOnce
+--- PASS: TestEventRetentionBoundsAndRecountsEachOwnerOnce (0.51s)
+=== RUN   TestEventRetentionPreservesMergedOriginsAndEmptyOriginReuse
+--- PASS: TestEventRetentionPreservesMergedOriginsAndEmptyOriginReuse (0.77s)
+=== RUN   TestEventRetentionRemovesUnownedNontransactionReceipt
+--- PASS: TestEventRetentionRemovesUnownedNontransactionReceipt (0.62s)
+=== RUN   TestEventRetentionLateRecountFailureAndCancellationRollBack
+=== RUN   TestEventRetentionLateRecountFailureAndCancellationRollBack/cancel=false
+=== RUN   TestEventRetentionLateRecountFailureAndCancellationRollBack/cancel=true
+--- PASS: TestEventRetentionLateRecountFailureAndCancellationRollBack (1.04s)
+    --- PASS: TestEventRetentionLateRecountFailureAndCancellationRollBack/cancel=false (0.50s)
+    --- PASS: TestEventRetentionLateRecountFailureAndCancellationRollBack/cancel=true (0.54s)
+=== RUN   TestEventRetentionSkipsLockedReceiptAndBusyMaintainer
+--- PASS: TestEventRetentionSkipsLockedReceiptAndBusyMaintainer (0.60s)
+=== RUN   TestEventRetentionMigration024PreservesRowsAndReopens
+--- PASS: TestEventRetentionMigration024PreservesRowsAndReopens (0.89s)
+PASS
+ok  	goodsentry/internal/store	8.747s

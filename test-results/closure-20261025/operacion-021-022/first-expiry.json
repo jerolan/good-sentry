@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "expiredEvents": 2,
+  "removedOwnedAttachments": 2,
+  "mixedCount": 1,
+  "emptyCount": 0,
+  "historyPoliciesRoutesExact": true,
+  "independentSpansLogReleaseExact": true,
+  "baselinePreserved": 4258
+}

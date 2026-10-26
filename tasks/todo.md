@@ -1454,11 +1454,12 @@ final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -028 quedan
-vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
+vigentes. CLOSE-operacion-013 a -023 quedan vigentes; 019, 021, 022 y 023
+conservan comprobantes históricos que se revalidan en la candidata final.
+CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
+cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-013. CLOSE-operacion-001
-a -003 son marcos de objetivo y método que se auditan en el cierre final y no
-bloquean el trabajo independiente. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-006. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1785,17 +1786,17 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-009](../SPEC.md#close-rendimiento-009) | Transaction and standalone-span retention: The transaction/span runtime acceptance on2026-10-17 uses new candi… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
 | [CLOSE-rendimiento-010](../SPEC.md#close-rendimiento-010) | Transaction and standalone-span retention: The same candidate cleans the remaining fixtures with logs and upti… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
 | [CLOSE-rendimiento-011](../SPEC.md#close-rendimiento-011) | Transaction and standalone-span retention: Transaction/span acceptance closes at functional eea9788c236fe8a738… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
-| [CLOSE-operacion-013](../SPEC.md#close-operacion-013) | Error-event retention: After accepted logs and transaction/spans, error-event retention remains required. The… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-014](../SPEC.md#close-operacion-014) | Error-event retention: The accepted configuration prerequisite activates no deletion and adds no worker. Its e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-015](../SPEC.md#close-operacion-015) | Error-event retention: Store.CleanupEvents(ctx, days) returns a committed removal count and error. In one Post… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-016](../SPEC.md#close-operacion-016) | Error-event retention: Delete envelope_items matching each pinned receipt's exact project_id,event_id, then it… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-017](../SPEC.md#close-operacion-017) | Error-event retention: Issue count and its first/last/title/environment/release reflect the surviving stored p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-018](../SPEC.md#close-operacion-018) | Error-event retention: Preserve existing authorization and snapshot semantics. Native IssueDetail already retu… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-013](../SPEC.md#close-operacion-013) | Error-event retention: After accepted logs and transaction/spans, error-event retention remains required. The… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-014](../SPEC.md#close-operacion-014) | Error-event retention: The accepted configuration prerequisite activates no deletion and adds no worker. Its e… | implementada (config-only) | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-015](../SPEC.md#close-operacion-015) | Error-event retention: Store.CleanupEvents(ctx, days) returns a committed removal count and error. In one Post… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-016](../SPEC.md#close-operacion-016) | Error-event retention: Delete envelope_items matching each pinned receipt's exact project_id,event_id, then it… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-017](../SPEC.md#close-operacion-017) | Error-event retention: Issue count and its first/last/title/environment/release reflect the surviving stored p… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-018](../SPEC.md#close-operacion-018) | Error-event retention: Preserve existing authorization and snapshot semantics. Native IssueDetail already retu… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | vigente | Comprobante 2026-10-26 abajo; imagen/CI final pendientes |
+| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
+| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar navegador/imagen en candidata final |
+| [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar CI/imagen en candidata final |
 | [CLOSE-uptime-006](../SPEC.md#close-uptime-006) | Uptime check retention: The next required retention class owns monitor_checks, not monitors. Official installa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-007](../SPEC.md#close-uptime-007) | Uptime check retention: Use completed_at as the existing durable server completion clock. Both CompleteMonitor… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-008](../SPEC.md#close-uptime-008) | Uptime check retention: Store.CleanupMonitorChecks(ctx, days) returns a committed removed-check count and erro… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9173,6 +9174,38 @@ Límites registrados: la suite global se ejecutó con PostgreSQL no requerido pa
 los paquetes unitarios y con loopback local; no incluye imagen final ni CI
 público. La matriz nativa queda cerrada, pero el producto completo sigue
 abierto en las demás familias.
+
+### Ejecución 2026-10-26: retención de eventos de error
+
+Selección registrada antes de trabajar: CLOSE-operacion-013 a -023. Revisión de
+producto `67332a2`; config, proveedor y lifecycle se ejecutaron de nuevo. La
+aceptación de imagen/navegador/CI de 021–023 conserva su comprobante histórico
+del 2026-10-17 y queda marcada para revalidación en la candidata final.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 013 | `EventRetentionDays` con herencia master, alias GoodSentry/GlitchTip, vacíos, 1..3650 e independencia de clases | `TestTelemetryRetentionConfiguration`; `operacion-013-020/config.log` |
+| 014 | La configuración no activa borrado ni workers; la activación es el owner separado de 020 | `TestTelemetryRetentionConfiguration`; auditoría de `config.Load`/`StartEventRetention` |
+| 015 | Try-lock por esquema, cohorte congelada de 250, orden de gates/owners, `SKIP LOCKED` y cutoff exacto | `TestEventRetentionKeepsExactFrozenCutoffWhileWaiting`; `TestEventRetentionBoundsAndRecountsEachOwnerOnce`; `TestEventRetentionSkipsLockedReceiptAndBusyMaintainer` |
+| 016 | Borrado atómico de hijos/eventos, recuento solo de owners fijados, migración 024 y rollback por cancelación/fallo | `TestEventRetentionLateRecountFailureAndCancellationRollBack`; `TestEventRetentionMigration024PreservesRowsAndReopens`; `store.log` |
+| 017 | Conteos y resumen derivados de la partición superviviente; historial, topología, triaje y progreso de mute conservados | `TestEventRetentionRecountsPartitionsAndPreservesEmptyIssueHistory`; `TestEventRetentionPreservesMergedOriginsAndEmptyOriginReuse`; `TestEventRetentionPreservesTriageAfterLastPayloadExpires` |
+| 018 | `IssueDetail` vacío legible, lecturas seleccionadas 404 y sin datos inventados | `TestEventRetentionRecountsPartitionsAndPreservesEmptyIssueHistory`; histórico `operacion-021-022/browser/*` |
+| 019 | UI sin payload retenido, metadatos last-known, paneles event-only ocultos y confirmación oculta/abrir/cancelar | Histórico `operacion-021-022/browser/empty-final.json` y `visibility-green.json`; bloque y CSS actuales sin cambios |
+| 020 | `StartEventRetention` en el lifecycle compartido: backlog, idle, retry, cancelación y parada idempotente | `TestRetentionWorkersDrainRetryAndStop` (subtest events); `jobs.log` |
+| 021 | Expiración real de cuatro receipts con Node 11.7.0, recuperación exacta, 4305 filas/530 eventos/24 migraciones | Histórico `operacion-021-022/{final-runtime,recovery,final-expiry,sdk-recovery}.json` |
+| 022 | Edge real 320/768/1440, UI empty/recovered, 4290 filas restauradas, imagen 31 131 334 bytes y CI 39087725482 | Histórico `operacion-021-022/{browser/*,ci-success.log,final-image-build.log}` |
+| 023 | Cierre funcional 8884b9d con 316 blobs y seis Pages exactos; baseline 18103 protegida | Histórico `operacion-021-022/ci-success.log`, `final-runtime.json` y `evidence-hashes.json` |
+
+Evidencia fresca: `test-results/closure-20261025/operacion-013-020/{config,store,jobs}.log`
+y `summary.json`. Evidencia histórica de aceptación:
+`test-results/closure-20261025/operacion-021-022/summary.json` con los archivos
+copiados de `error-retention-20261017`.
+
+Límites registrados: 013–018 y 020 tienen pruebas frescas; 019 y 021–023 son
+aceptación histórica del 2026-10-17 y deben repetir navegador, imagen y CI en la
+candidata final. No se usó ni se modificó la baseline protegida 18103. El
+producto sigue incompleto y las siguientes clases (uptime, archivos/releases,
+archivo frío y demás) permanecen abiertas.
 
 ### Comprobante de integración documental
 

@@ -1,0 +1,26 @@
+{
+  "phase": "visibility-green",
+  "passed": true,
+  "dimensions": [
+    {
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\jerom\\iCloudDrive\\Documents\\Workspace\\SentryGo\\test-results\\error-retention-20261017\\browser\\visibility-green-320.png",
+    "C:\\Users\\jerom\\iCloudDrive\\Documents\\Workspace\\SentryGo\\test-results\\error-retention-20261017\\browser\\visibility-green-768.png",
+    "C:\\Users\\jerom\\iCloudDrive\\Documents\\Workspace\\SentryGo\\test-results\\error-retention-20261017\\browser\\visibility-green-1440.png"
+  ],
+  "pageErrors": [],
+  "badResponses": [],
+  "failedRequests": []
+}

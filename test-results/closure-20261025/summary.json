@@ -182,6 +182,61 @@
         "rss/workload-sha256.txt"
       ]
     },
+    "CLOSE-operacion-013": {
+      "evidence": "vigente",
+      "scope": "event retention lifetime precedence, aliases, empty fallthrough, 1..3650 validation and sibling-class independence",
+      "evidence_files": ["operacion-013-020/config.log", "operacion-013-020/summary.json"]
+    },
+    "CLOSE-operacion-014": {
+      "evidence": "vigente",
+      "scope": "configuration-only prerequisite performs no deletion and creates no worker; activation is the separate 020 owner",
+      "evidence_files": ["operacion-013-020/config.log", "operacion-013-020/summary.json"]
+    },
+    "CLOSE-operacion-015": {
+      "evidence": "vigente",
+      "scope": "single-transaction bounded receipt cohort, schema try-lock, frozen cutoff, project gates, descending owner locks and SKIP LOCKED pins",
+      "evidence_files": ["operacion-013-020/store.log", "operacion-013-020/summary.json"]
+    },
+    "CLOSE-operacion-016": {
+      "evidence": "vigente",
+      "scope": "atomic envelope-item/event deletion, pinned-owner recount, migration 024 and cancellation/failure rollback",
+      "evidence_files": ["operacion-013-020/store.log", "operacion-013-020/summary.json"]
+    },
+    "CLOSE-operacion-017": {
+      "evidence": "vigente",
+      "scope": "surviving-partition count/summary recount with historical issue metadata, topology, triage, comments and mute progress preserved",
+      "evidence_files": ["operacion-013-020/store.log", "operacion-013-020/summary.json"]
+    },
+    "CLOSE-operacion-018": {
+      "evidence": "vigente",
+      "scope": "empty IssueDetail remains readable, selected removed reads keep not-found semantics and no event is fabricated",
+      "evidence_files": ["operacion-013-020/store.log", "operacion-021-022/browser/empty-final.json"]
+    },
+    "CLOSE-operacion-019": {
+      "evidence": "vigente (historical browser, current source block unchanged)",
+      "scope": "empty-issue UI, last-known metadata, hidden event panels, comments/triage and scoped deletion confirmation",
+      "evidence_files": ["operacion-021-022/browser/empty-final.json", "operacion-021-022/browser/visibility-green.json"]
+    },
+    "CLOSE-operacion-020": {
+      "evidence": "vigente",
+      "scope": "StartEventRetention in the shared lifecycle with backlog/idle/retry/cancel/idempotent stop; historical image/CI revalidation pending",
+      "evidence_files": ["operacion-013-020/jobs.log", "operacion-021-022/final-runtime.json"]
+    },
+    "CLOSE-operacion-021": {
+      "evidence": "vigente (historical 3802aaa4)",
+      "scope": "real Node SDK expiry, 4305 rows/530 events/24 migrations, exact 4290-row recovery and independent trace/log preservation",
+      "evidence_files": ["operacion-021-022/final-runtime.json", "operacion-021-022/recovery.json", "operacion-021-022/final-expiry.json", "operacion-021-022/sdk-recovery.json"]
+    },
+    "CLOSE-operacion-022": {
+      "evidence": "vigente (historical 3802aaa4)",
+      "scope": "Edge 320/768/1440 retained/empty/recovered views, confirmation visibility, static nonroot image and matching CI",
+      "evidence_files": ["operacion-021-022/browser/empty-final.json", "operacion-021-022/browser/visibility-green.json", "operacion-021-022/final-image-build.log", "operacion-021-022/ci-success.log"]
+    },
+    "CLOSE-operacion-023": {
+      "evidence": "vigente (historical 8884b9d)",
+      "scope": "error-event acceptance closure with exact public source, matching CI and protected baseline/recovery runtimes",
+      "evidence_files": ["operacion-021-022/ci-success.log", "operacion-021-022/final-runtime.json", "operacion-021-022/evidence-hashes.json"]
+    },
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
