@@ -1452,8 +1452,8 @@ decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
 CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
-final/CI con su comprobante local abajo. Siguiente acción: CLOSE-sourcemaps-022.
-No se declara aceptación ni cierre del producto. El avance se
+final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
+Siguiente acción: CLOSE-sourcemaps-023. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1719,7 +1719,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-019](../SPEC.md#close-sourcemaps-019) | JavaScript artifacts: Use source_map file URLs as map names/source-resolution bases, never ZIP member paths or… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-020](../SPEC.md#close-sourcemaps-020) | JavaScript artifacts: Materialize maps for all deduplicated authorized projects in one transaction. Enforce AR… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir CLI/SDK contra la imagen y comprobar licencia/assets |
-| [CLOSE-sourcemaps-022](../SPEC.md#close-sourcemaps-022) | JavaScript artifacts: The first artifact integration stores validated JavaScript source maps by project, artif… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-022](../SPEC.md#close-sourcemaps-022) | JavaScript artifacts: The first artifact integration stores validated JavaScript source maps by project, artif… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6658,6 +6658,45 @@ desbloqueo: autorizar construcción/publicación y CI. Responsable: instrucción
 usuario. Intentos: uno local con binario, CLI y SDK reales; ninguno de imagen o
 publicación. Siguiente acción tras desbloquear: construir la imagen, repetir
 CLI/SDK y reanudación, revisar licencia/assets y ejecutar CI exacto.
+
+### Ejecución 2026-10-26: subida nativa y simbolización de source maps
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-022. Candidata
+`2425d13`.
+
+Resultado observado: los mapas se almacenan por proyecto, URL de artefacto,
+release, distribución y debug ID opcional normalizado; la URL es metadato y no
+una ruta ni un objetivo de descarga. Propietarios y administradores suben por
+multipart `file`/`name`/`release`/`dist`/`debugId`; un miembro lista
+metadatos y no puede subir, y una identidad de otra organización o un proyecto
+fuera de la organización reciben 404. Release o debug ID es obligatorio, las
+repeticiones idénticas devuelven 200 con `created:false`, el contenido distinto
+para la misma identidad devuelve 409 y no hay reemplazo implícito. La ingesta
+carga mapas del proyecto por debug ID exacto o release/dist exactos, aplica la
+presupuestación de mapas y cuerpo con 413, simboliza antes de la agrupación
+durable, conserva el `raw_stacktrace` minificado, usa solo fuentes subidas y
+deja intactos los eventos legacy sin identidad. La prueba HTTP sube un mapa real,
+captura un evento con forma de SDK y recupera el archivo, línea 3, columna 5,
+función y contexto originales; el owner externo de 021 añade el SDK oficial real
+con la misma recuperación.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Almacenamiento por identidad y URL como metadato | store `TestSourceMapsMatchBuildAndProjectAfterRestart`, `TestSourceMapRetriesConflictAndLoadBudget` |
+| Roles, aislamiento y listado de metadatos | store `TestSourceMapPermissionsUseActualMembershipAndProjectScope` |
+| Multipart, release/debug requerido, idempotencia y conflicto | HTTP `TestAccountDSNCaptureAndTriage` (`verifySourceMapWorkflow`) |
+| Presupuesto y 413 | HTTP `TestAccountDSNCaptureAndTriage`; store `TestSourceMapRetriesConflictAndLoadBudget` |
+| Simbolización antes de agrupar y stack crudo | HTTP `TestAccountDSNCaptureAndTriage` |
+| Captura real del SDK y recuperación autenticada | `artifact-cli-sdk/report.json` (SDK 11.7.0) |
+| Persistencia tras reinicio | store `TestSourceMapsMatchBuildAndProjectAfterRestart` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-022-go.log` y
+`artifact-cli-sdk/report.json`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. Las
+APIs compatibles de release/CLI y su interfaz permanecen como criterios propios.
 
 ### Comprobante de integración documental
 

@@ -3784,6 +3784,14 @@
         "artifact-cli-sdk/report.json",
         "sourcemaps-021-restart.log"
       ]
+    },
+    "CLOSE-sourcemaps-022": {
+      "evidence": "vigente",
+      "scope": "native source-map upload, identity, permissions, budgets and symbolication before grouping",
+      "evidence_files": [
+        "sourcemaps-022-go.log",
+        "artifact-cli-sdk/report.json"
+      ]
     }
   },
   "commands": [
