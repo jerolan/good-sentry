@@ -4302,6 +4302,13 @@
         "alertas-001/compat-alerts.log"
       ]
     },
+    "CLOSE-alertas-004": {
+      "evidence": "vigente",
+      "scope": "rolling frequency crossing with cooldown, uptime transitions, persisted deliveries, retry backoff, terminal outcomes and payload links",
+      "evidence_files": [
+        "alertas-004/alerts-core.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

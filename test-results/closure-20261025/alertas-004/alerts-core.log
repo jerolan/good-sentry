@@ -1,0 +1,18 @@
+=== RUN   TestAlertClaimsRetryBackoffAndTokenFencing
+--- PASS: TestAlertClaimsRetryBackoffAndTokenFencing (0.63s)
+=== RUN   TestAlertOutcomesPersistSuccessPermanentAndAttemptExhaustion
+--- PASS: TestAlertOutcomesPersistSuccessPermanentAndAttemptExhaustion (0.76s)
+=== RUN   TestErrorAlertsUseReceiptCrossingCooldownAndEnvironment
+--- PASS: TestErrorAlertsUseReceiptCrossingCooldownAndEnvironment (0.63s)
+=== RUN   TestUptimeAlertsOnlyQueueConfirmedProjectTransitions
+--- PASS: TestUptimeAlertsOnlyQueueConfirmedProjectTransitions (0.45s)
+=== RUN   TestAlertPermissionsAssignedTeamAndDestinationSnapshots
+--- PASS: TestAlertPermissionsAssignedTeamAndDestinationSnapshots (0.53s)
+=== RUN   TestAlertDeliveryHistoryPagesAreComplete
+--- PASS: TestAlertDeliveryHistoryPagesAreComplete (0.78s)
+PASS
+ok  	goodsentry/internal/store	3.798s
+=== RUN   TestErrorAlertsBoundPayloadEnvironmentWithoutChangingStoredEvent
+--- PASS: TestErrorAlertsBoundPayloadEnvironmentWithoutChangingStoredEvent (0.44s)
+PASS
+ok  	goodsentry/internal/store	0.448s
