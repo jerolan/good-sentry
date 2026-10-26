@@ -510,6 +510,8 @@ Add `examples/sentry-native`, a runnable Linux/amd64 C application that fetches 
 
 Verify the example builds against the pinned SDK and produces a real Crashpad event in a disposable GoodSentry/PostgreSQL environment. Upload the executable through the authenticated debug-file HTTP route before crashing; require exact function, source path and positive line resolution by the same ELF Debug ID, and verify no dump is retained. A dedicated path-triggered Actions workflow owns this cross-language receipt. Keep the parent native task open after this Linux/amd64 receipt.
 
+Status (2026-10-26 UTC): complete at `a0cd17eda03e7e6cb9a8db8d2a679cb8a689bdb3`. The pinned SDK build and real Crashpad symbolication workflow [40256935091](https://github.com/jerolan/good-sentry/actions/runs/40256935091) pass. Exact-source CI [40256935013](https://github.com/jerolan/good-sentry/actions/runs/40256935013) and multi-architecture [image publication 40257491291](https://github.com/jerolan/good-sentry/actions/runs/40257491291) pass at OCI index `sha256:2d35a8afd9b0aded16d11506c049076bdc4331bb2f8d3cdc7b1369ea6cb208c9`. This closes the Linux/amd64 demo only; the parent native format, architecture and provider-receipt work remains open.
+
 ## Minidump Memory64 range bounds
 
 Reject Memory64 file ranges whose offsets or sizes exceed the dump, using subtraction-based checks before slicing so 64-bit addition cannot wrap into a panic.
