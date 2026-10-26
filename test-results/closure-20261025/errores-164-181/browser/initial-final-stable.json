@@ -1,0 +1,56 @@
+{
+  "phase": "initial-final-stable",
+  "passed": true,
+  "widths": [
+    {
+      "page": 1,
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "page": 1,
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "page": 1,
+      "viewport": 1024,
+      "document": 1024
+    },
+    {
+      "page": 1,
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "page": 2,
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "page": 2,
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "page": 2,
+      "viewport": 1024,
+      "document": 1024
+    },
+    {
+      "page": 2,
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "checks": [
+    "refresh keyboard focus RED then GREEN",
+    "27 reports paged; maximum hostile text exact; actual older-than50 event and binary download; drafts and triage preserved at four widths",
+    "page and missing-event failure/retry preserve context",
+    "stale event selection, page changes and route responses ignored; actual empty issue",
+    "actual module outage and retry preserve issue and draft"
+  ],
+  "errors": [],
+  "unexpected": [],
+  "outside": []
+}

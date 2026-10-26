@@ -1,0 +1,37 @@
+{
+  "criteria": ["CLOSE-errores-164", "CLOSE-errores-165", "CLOSE-errores-166", "CLOSE-errores-167", "CLOSE-errores-168", "CLOSE-errores-169", "CLOSE-errores-170", "CLOSE-errores-171", "CLOSE-errores-172", "CLOSE-errores-173", "CLOSE-errores-174", "CLOSE-errores-175", "CLOSE-errores-176", "CLOSE-errores-177", "CLOSE-errores-178", "CLOSE-errores-179", "CLOSE-errores-180", "CLOSE-errores-181"],
+  "date": "2026-10-26",
+  "product_revision": "c52827d",
+  "fresh_tests": {"store": "PASS in 11.603s", "server": "PASS in 2.400s", "embed": "PASS in 0.473s"},
+  "covered": {
+    "164": "user_report envelope and POST identity/validation boundaries, one item per envelope and no error/issue side effects",
+    "165": "migration 029 user_reports columns/FKs/uniqueness and preserved prior receipts",
+    "166": "receipt-lock then project-gate then event KEY SHARE writer, 30-minute parent age and 5-minute report mutability",
+    "167": "durable pending reports bind only to a matching error within 30 minutes and never mutate issue ownership",
+    "168": "bounded pending cleanup with try-lock, strict server cutoff, SKIP LOCKED and rollback",
+    "169": "project/issue/org report readers with paging, root aliases, project:read/event scopes and stable DTOs",
+    "170": "session/CSRF, Bearer project:write and DSN submission paths with atomic envelope/report behavior",
+    "171": "migration 030 project:write scope, managed and DSN path writers and unchanged prior grants",
+    "172": "credential precedence, strict media/encoding/body/query admission, DTO/status dispatch and SDK CORS",
+    "173": "compatible event/issue detail and native IssueDetail report counts, first page and session pagination",
+    "174": "real PostgreSQL/HTTP owners for clocks, concurrency, aliases, migration/reopen and rollback",
+    "175": "embed error page DSN-only GET/POST widget, validation, no-store/nosniff and no account/session",
+    "176-181": "native User reports panel/module, >25-report paging, refresh/retry/focus, hostile text and 320/768/1024/1440 browser acceptance"
+  },
+  "historical_image_ci": {
+    "image": "sha256:f574f59e4a22a1e2e5ca5e84e07389369f14f2b518ded42c530dc9f52b0a1fcb",
+    "ci": "39147978078/job117735612268",
+    "rows": 4569,
+    "events": 601,
+    "reports": 27,
+    "migrations": 30,
+    "tables": 39,
+    "protected_rows": 4447
+  },
+  "limits": [
+    "This closes legacy user reports only; CLOSE-errores-163 and modern feedback 182-205 remain open.",
+    "The image/browser/CI acceptance is historical and must be repeated on the final candidate.",
+    "The product is not declared complete."
+  ],
+  "evidence": ["store.log", "server.log", "embed.log", "functional-acceptance.json", "closure-public.json", "public-functional.json", "browser/initial-final-stable.json", "browser/initial-source-css.json", "browser/parent-expired.json", "browser/pending-bound.json", "browser/versioned-owner-verified.json", "summary.json"]
+}

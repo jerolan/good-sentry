@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "functionalCommit": "cfa766f6dc30029dd8fbb98e246e5f889db9e9fd",
+  "publicGitBlobs": 357,
+  "pagesFiles": 6,
+  "ciRun": 39147978078,
+  "ciJob": 117735612268,
+  "ciActualLogCharacters": 108025,
+  "ciLogSHA256": "cf26656f4a42631f7f4611760d9db7edbf6eee55bc048c4efd3db3c0314d6f9d",
+  "ciGoRaceSeconds": {
+    "jobs": 9.54,
+    "server": 42.24,
+    "store": 84.56
+  },
+  "image": "sha256:f574f59e4a22a1e2e5ca5e84e07389369f14f2b518ded42c530dc9f52b0a1fcb",
+  "reproducibleCommittedBinarySHA256": "c4b0cbc6b3179e01a822d1425c588d3e22d927fc65b5d0e96d32ca48abc99978",
+  "rows": 4569,
+  "events": 601,
+  "reports": 27,
+  "migrations": 30,
+  "tables": 39,
+  "separateRecoveryAndCurrentAppRestartExact": true,
+  "backupSHA256": "f764754f080f1a497fc834ca020654545e914c3595952f6bcbf827b4791e87b7",
+  "legacyFeedbackAccepted": true,
+  "modernFeedbackStillRequired": true,
+  "fullGoalStillActive": true,
+  "protectedOriginalRows": 4447,
+  "protectedRuntimes": 18,
+  "copyBaselineUnchanged": true
+}

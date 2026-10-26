@@ -1,0 +1,46 @@
+=== RUN   TestEmbeddedUserReportKeyBinding
+--- PASS: TestEmbeddedUserReportKeyBinding (0.42s)
+=== RUN   TestUserReportReadersScopePagingAndCurrentOwnership
+--- PASS: TestUserReportReadersScopePagingAndCurrentOwnership (0.85s)
+=== RUN   TestUserReportNativeDetailUsesOneSnapshot
+--- PASS: TestUserReportNativeDetailUsesOneSnapshot (0.45s)
+=== RUN   TestUserReportsBindReceiptWithoutMutatingError
+--- PASS: TestUserReportsBindReceiptWithoutMutatingError (0.56s)
+=== RUN   TestUserReportsReversedArrivalAndAtomicCapture
+--- PASS: TestUserReportsReversedArrivalAndAtomicCapture (0.61s)
+=== RUN   TestUserReportsMutabilityUsesServerReceipts
+--- PASS: TestUserReportsMutabilityUsesServerReceipts (0.74s)
+=== RUN   TestUserReportReceiptClockAndCanceledWriter
+--- PASS: TestUserReportReceiptClockAndCanceledWriter (0.41s)
+=== RUN   TestPendingUserReportCleanupStrictServerCutoff
+--- PASS: TestPendingUserReportCleanupStrictServerCutoff (0.44s)
+=== RUN   TestPendingUserReportCleanupBoundedSkipsLockedAndBound
+--- PASS: TestPendingUserReportCleanupBoundedSkipsLockedAndBound (0.48s)
+=== RUN   TestPendingUserReportCleanupFailureRollsBack
+=== RUN   TestPendingUserReportCleanupFailureRollsBack/statement
+=== RUN   TestPendingUserReportCleanupFailureRollsBack/commit
+=== RUN   TestPendingUserReportCleanupFailureRollsBack/cancel
+=== RUN   TestPendingUserReportCleanupFailureRollsBack/maintainer
+--- PASS: TestPendingUserReportCleanupFailureRollsBack (2.45s)
+    --- PASS: TestPendingUserReportCleanupFailureRollsBack/statement (0.88s)
+    --- PASS: TestPendingUserReportCleanupFailureRollsBack/commit (0.53s)
+    --- PASS: TestPendingUserReportCleanupFailureRollsBack/cancel (0.52s)
+    --- PASS: TestPendingUserReportCleanupFailureRollsBack/maintainer (0.53s)
+=== RUN   TestUserReportsMigration029PreservesAndReopens
+--- PASS: TestUserReportsMigration029PreservesAndReopens (0.66s)
+=== RUN   TestUserReportPathWritersRequireCurrentAuthority
+--- PASS: TestUserReportPathWritersRequireCurrentAuthority (0.88s)
+=== RUN   TestUserReportPathAuthorityLocksAndCancellation
+=== RUN   TestUserReportPathAuthorityLocksAndCancellation/member/cancel=false
+=== RUN   TestUserReportPathAuthorityLocksAndCancellation/member/cancel=true
+=== RUN   TestUserReportPathAuthorityLocksAndCancellation/key/cancel=false
+=== RUN   TestUserReportPathAuthorityLocksAndCancellation/key/cancel=true
+--- PASS: TestUserReportPathAuthorityLocksAndCancellation (1.99s)
+    --- PASS: TestUserReportPathAuthorityLocksAndCancellation/member/cancel=false (0.44s)
+    --- PASS: TestUserReportPathAuthorityLocksAndCancellation/member/cancel=true (0.41s)
+    --- PASS: TestUserReportPathAuthorityLocksAndCancellation/key/cancel=false (0.42s)
+    --- PASS: TestUserReportPathAuthorityLocksAndCancellation/key/cancel=true (0.72s)
+=== RUN   TestUserReportScopeMigration030PreservesOldGrants
+--- PASS: TestUserReportScopeMigration030PreservesOldGrants (0.66s)
+PASS
+ok  	goodsentry/internal/store	11.603s

@@ -1,0 +1,35 @@
+=== RUN   TestUserReportSDKEnvelopeHTTP
+=== RUN   TestUserReportSDKEnvelopeHTTP/standalone_attachment
+=== RUN   TestUserReportSDKEnvelopeHTTP/two_reports
+=== RUN   TestUserReportSDKEnvelopeHTTP/empty_comments
+=== RUN   TestUserReportSDKEnvelopeHTTP/null_name
+=== RUN   TestUserReportSDKEnvelopeHTTP/wrong_field_type
+=== RUN   TestUserReportSDKEnvelopeHTTP/name_limit
+=== RUN   TestUserReportSDKEnvelopeHTTP/email_limit
+=== RUN   TestUserReportSDKEnvelopeHTTP/invalid_UTF8
+=== RUN   TestUserReportSDKEnvelopeHTTP/wrong_parent
+=== RUN   TestUserReportSDKEnvelopeHTTP/missing_email
+=== RUN   TestUserReportSDKEnvelopeHTTP/comments_limit
+=== RUN   TestUserReportSDKEnvelopeHTTP/header_mismatch
+=== RUN   TestUserReportSDKEnvelopeHTTP/transaction_parent
+2026/10/26 16:25:06 ERROR Database operation failed error="ERROR: new row for relation \"user_reports\" violates check constraint \"reject_report_http\" (SQLSTATE 23514)"
+--- PASS: TestUserReportSDKEnvelopeHTTP (0.54s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/standalone_attachment (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/two_reports (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/empty_comments (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/null_name (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/wrong_field_type (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/name_limit (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/email_limit (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/invalid_UTF8 (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/wrong_parent (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/missing_email (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/comments_limit (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/header_mismatch (0.00s)
+    --- PASS: TestUserReportSDKEnvelopeHTTP/transaction_parent (0.00s)
+=== RUN   TestUserReportSubmitHTTPContract
+--- PASS: TestUserReportSubmitHTTPContract (1.05s)
+=== RUN   TestUserReportReadHTTPContract
+--- PASS: TestUserReportReadHTTPContract (0.80s)
+PASS
+ok  	goodsentry/internal/server	2.400s

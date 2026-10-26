@@ -1466,10 +1466,13 @@ CLOSE-operacion-035 a -043 quedan vigentes; 043 es histórico y se revalida en
 la candidata final.
 CLOSE-operacion-044, -045 y -047 quedan vigentes localmente; 046 y 048 esperan
 autorización explícita de publicación y Pages.
+CLOSE-errores-164 a -181 quedan vigentes; 179/181 conservan evidencia histórica.
+CLOSE-errores-163 sigue abierto hasta completar también el feedback moderno
+182–205.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-errores-163. No se declara
+runtime preservado. Siguiente acción: CLOSE-errores-182. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1968,24 +1971,24 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-047](../SPEC.md#close-operacion-047) | Public repository and product site: Use an original GoodSentry design informed by the public Sentry welcome pa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-048](../SPEC.md#close-operacion-048) | Public repository and product site: Publish only site/ through the official Pages artifact/deploy workflow on… | por contrastar | pendiente | Depende de 046 y de autorización de publicación/Pages |
 | [CLOSE-errores-163](../SPEC.md#close-errores-163) | SDK feedback: Feedback parity requires both legacy user reports and modern captureFeedback events. Implement a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-164](../SPEC.md#close-errores-164) | Legacy report identity and storage: Receive SDK envelope items of type user_report and POST /api/0/projects/{o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-165](../SPEC.md#close-errores-165) | Legacy report identity and storage: Migration029 adds only user_reports: numeric ID, project FK with cascade,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-166](../SPEC.md#close-errores-166) | Legacy report identity and storage: Store.SubmitUserReport(ctx,projectID,input) writes under the existing proj… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-167](../SPEC.md#close-errores-167) | Legacy report identity and storage: An absent error yields a durable pending report, visible only to an author… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-168](../SPEC.md#close-errores-168) | Legacy report identity and storage: Store.CleanupPendingUserReports(ctx) removes at most250 unbound reports wi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-169](../SPEC.md#close-errores-169) | Legacy report consumers and transport: Read reports through project GET /api/0/projects/{org}/{project}/user-f… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-170](../SPEC.md#close-errores-170) | Legacy report consumers and transport: POST supports a current session with existing CSRF, or an authoritative… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-171](../SPEC.md#close-errores-171) | Legacy report consumers and transport: REST submission elaboration:030 only extends the API-token scope constr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-172](../SPEC.md#close-errores-172) | Legacy report consumers and transport: POST authentication chooses a supplied Authorization header authoritati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-173](../SPEC.md#close-errores-173) | Legacy report consumers and transport: Replace actual null/zero placeholders: authorized compatible full event… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-174](../SPEC.md#close-errores-174) | Legacy report consumers and transport: Acceptance owners use real PostgreSQL for receipt/update clocks, revers… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-175](../SPEC.md#close-errores-175) | Embed error page: GET/POST /api/embed/error-page/ is a public capability route authenticated only by a project… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-176](../SPEC.md#close-errores-176) | Native legacy report UI elaboration: Use an original User reports panel in the issue's left column between eve… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-177](../SPEC.md#close-errores-177) | Native legacy report UI elaboration: Add reports.js as a dynamically imported module through the existing fact… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-178](../SPEC.md#close-errores-178) | Native legacy report UI elaboration: Native issue inspection currently shows its latest payload only. A report… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-179](../SPEC.md#close-errores-179) | Native legacy report UI elaboration: Browser acceptance must show more than25 actual SDK reports, a reported e… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-180](../SPEC.md#close-errores-180) | Native legacy report UI elaboration: Explicit report refresh/retry moves focus to the report heading before re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-181](../SPEC.md#close-errores-181) | Native legacy report UI elaboration: The reusable browser owner is tests/compat/user_reports_browser.mjs. GOOD… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-164](../SPEC.md#close-errores-164) | Legacy report identity and storage: Receive SDK envelope items of type user_report and POST /api/0/projects/{o… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-165](../SPEC.md#close-errores-165) | Legacy report identity and storage: Migration029 adds only user_reports: numeric ID, project FK with cascade,… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-166](../SPEC.md#close-errores-166) | Legacy report identity and storage: Store.SubmitUserReport(ctx,projectID,input) writes under the existing proj… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-167](../SPEC.md#close-errores-167) | Legacy report identity and storage: An absent error yields a durable pending report, visible only to an author… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-168](../SPEC.md#close-errores-168) | Legacy report identity and storage: Store.CleanupPendingUserReports(ctx) removes at most250 unbound reports wi… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-169](../SPEC.md#close-errores-169) | Legacy report consumers and transport: Read reports through project GET /api/0/projects/{org}/{project}/user-f… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-170](../SPEC.md#close-errores-170) | Legacy report consumers and transport: POST supports a current session with existing CSRF, or an authoritative… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-171](../SPEC.md#close-errores-171) | Legacy report consumers and transport: REST submission elaboration:030 only extends the API-token scope constr… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-172](../SPEC.md#close-errores-172) | Legacy report consumers and transport: POST authentication chooses a supplied Authorization header authoritati… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-173](../SPEC.md#close-errores-173) | Legacy report consumers and transport: Replace actual null/zero placeholders: authorized compatible full event… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-174](../SPEC.md#close-errores-174) | Legacy report consumers and transport: Acceptance owners use real PostgreSQL for receipt/update clocks, revers… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-175](../SPEC.md#close-errores-175) | Embed error page: GET/POST /api/embed/error-page/ is a public capability route authenticated only by a project… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-176](../SPEC.md#close-errores-176) | Native legacy report UI elaboration: Use an original User reports panel in the issue's left column between eve… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-177](../SPEC.md#close-errores-177) | Native legacy report UI elaboration: Add reports.js as a dynamically imported module through the existing fact… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-178](../SPEC.md#close-errores-178) | Native legacy report UI elaboration: Native issue inspection currently shows its latest payload only. A report… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-179](../SPEC.md#close-errores-179) | Native legacy report UI elaboration: Browser acceptance must show more than25 actual SDK reports, a reported e… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-180](../SPEC.md#close-errores-180) | Native legacy report UI elaboration: Explicit report refresh/retry moves focus to the report heading before re… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-181](../SPEC.md#close-errores-181) | Native legacy report UI elaboration: The reusable browser owner is tests/compat/user_reports_browser.mjs. GOOD… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
 | [CLOSE-errores-182](../SPEC.md#close-errores-182) | Modern feedback contract: Deliver the distinct modern captureFeedback consumer after the accepted legacy incre… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-183](../SPEC.md#close-errores-183) | Modern feedback contract: Receive feedback as a first-class retained event and issue category, not an opaque i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-184](../SPEC.md#close-errores-184) | Modern feedback contract: Normalization accepts type feedback and requires an object contexts.feedback with a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9336,6 +9339,30 @@ capturas `browser/gs-site-*.png`.
 
 Límites registrados: el tema y el sitio local están verificados; la publicación
 del repositorio y de Pages no se ejecutó. El producto sigue incompleto.
+
+### Ejecución 2026-10-26: feedback legado SDK
+
+Selección registrada antes de trabajar: CLOSE-errores-164 a -181. Revisión de
+producto `c52827d`; almacenamiento, lectores, transporte, embed y UI se
+ejecutaron de nuevo. 179/181 usan el comprobante histórico de navegador/imagen.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 164–165 | Identidad/validación de `user_report`, migración 029 y FKs/unicidad | `TestUserReportSDKEnvelopeHTTP`; `TestUserReportsMigration029PreservesAndReopens` |
+| 166–168 | Writer con gates/edad/mutabilidad, pending binding y cleanup acotado | `TestUserReportsBindReceiptWithoutMutatingError`; `TestUserReportsReversedArrivalAndAtomicCapture`; `TestPendingUserReportCleanup*` |
+| 169–173 | Lectores de proyecto/issue/org, scopes, transporte session/Bearer/DSN y placeholders | `TestUserReportReadHTTPContract`; `TestUserReportSubmitHTTPContract`; `TestUserReportPathWritersRequireCurrentAuthority`; `TestUserReportScopeMigration030PreservesOldGrants` |
+| 174 | Owners reales PostgreSQL/HTTP para clocks, concurrencia, alias, migración/reopen y rollback | `store.log`; `server.log` |
+| 175 | Embed error page DSN-only, widget y POST de reporte | `TestEmbedErrorPageHTTP`; `embed.log` |
+| 176–181 | Panel User reports, módulo reports.js, >25 filas, refresh/retry/focus y navegador 320/768/1024/1440 | Histórico `errores-164-181/browser/*.json`; `functional-acceptance.json` |
+
+Evidencia fresca: `test-results/closure-20261025/errores-164-181/{store,server,embed}.log`
+y `summary.json`. Evidencia histórica: `functional-acceptance.json` (imagen
+f574f59e, CI 39147978078, 4569 filas/601 eventos/27 reportes/30 migraciones) y
+los reportes de navegador copiados.
+
+Límites registrados: 163 sigue abierto hasta completar el feedback moderno
+182–205. 179/181 son aceptación histórica y deben repetir navegador en la
+candidata final. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 
