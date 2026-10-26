@@ -460,6 +460,7 @@
     "CLOSE-operacion-053": {"evidence": "vigente", "scope": "catalog backfill and ingest/archive identity serialization", "evidence_files": ["operacion-049-055/store.log"]},
     "CLOSE-operacion-054": {"evidence": "vigente", "scope": "manifest locking, deleting state, read retry, project detach and cleanup recovery", "evidence_files": ["operacion-049-055/store.log", "operacion-049-055/store-race.log"]},
     "CLOSE-operacion-055": {"evidence": "vigente", "scope": "local/S3 backends, bounds, deterministic keys and upload-first retention", "evidence_files": ["operacion-049-055/spanarchive.log", "operacion-049-055/spanarchive-race.log", "operacion-049-055/store.log"]},
+    "CLOSE-operacion-057": {"evidence": "vigente (composed)", "scope": "OIDC and global administration status with external-provider limits preserved", "evidence_files": ["identity/oidc.log", "operacion-057/summary.json"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
