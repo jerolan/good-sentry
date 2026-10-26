@@ -55,6 +55,19 @@
         "no automatic destructive rollback migrations"
       ],
       "evidence_files": ["lifecycle.log", "readiness-negative.log", "migration-lock-18087.log", "migration-lock-18088.log", "full-race-final.log"]
+    },
+    "CLOSE-operacion-007": {
+      "evidence": "vigente",
+      "scope": "real Chromium UI, permission state, URL filters, telemetry escaping and source audit",
+      "covered": [
+        "onboarding, project, issue, trace, log and source-map workflows at 320/768/1440 with no document overflow",
+        "compact sidebar, teal accent, readable tables and accessible control names",
+        "loading, empty, error and permission states implemented; empty/error observed and member permission observed",
+        "search, environment, trace and log filters preserved in URLs across reloads",
+        "telemetry including a malicious title remains text; no innerHTML or equivalent sink exists",
+        "Tailwind CSS 4.3.3 is compiled and embedded; runtime image is distroless non-root without Node"
+      ],
+      "evidence_files": ["browser/report.json", "browser/*.png", "member-permission/report.json", "member-permission/*.png", "browser.log", "member-permission.log"]
     }
   },
   "commands": [

@@ -1436,12 +1436,15 @@ Git, índice y reclamaciones antes de editar: no había criterio reclamado, la
 candidata probada fue `54db6e48bf2e52e9a84efe397e3e5b44c27e4d91` y el único
 archivo ajeno era `tests/compat/otlp_python_smoke.py`, sin seguimiento y sin
 tocar. Se eligieron, en orden del plan, CLOSE-operacion-004, CLOSE-operacion-005
-y CLOSE-operacion-006; sus comprobantes vigentes están abajo. Siguiente acción:
-CLOSE-operacion-007, verificar la interfaz real en Chromium a 320/768/1440 con
-sus estados, controles y permisos; después CLOSE-operacion-008 (Compose,
-imagen y arranque limpio). No se declara aceptación ni cierre del producto. El
-avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+y CLOSE-operacion-006; después se completó CLOSE-operacion-007 con Chromium
+real y un estado de permiso. Sus comprobantes vigentes están abajo. Siguiente
+acción: CLOSE-operacion-008 (Compose, imagen y arranque limpio), comprobando la
+vinculación del digest público con la candidata; si la publicación no está
+disponible, registrar el bloqueo y avanzar en CLOSE-operacion-009 (configuración
+canónica y alias), cuyas dependencias locales están resueltas. No se declara
+aceptación ni cierre del producto. El avance se informa por criterios/evidencia,
+sin porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
+producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1453,7 +1456,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-operacion-004](../SPEC.md#close-operacion-004) | Architecture: Use one Go module, a small executable in cmd/goodsentry, net/http routing and explicit dependenc… | implementada | vigente | Comprobante 2026-10-25 abajo; mantener ante cambios de arquitectura |
 | [CLOSE-operacion-005](../SPEC.md#close-operacion-005) | Architecture: Ingest events durably before returning success. A request may normalize synchronously and commit… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de captura o colas |
 | [CLOSE-operacion-006](../SPEC.md#close-operacion-006) | Architecture: HTTP, workers and scheduler stop on termination signals and close database connections. Startup… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de arranque o migraciones |
-| [CLOSE-operacion-007](../SPEC.md#close-operacion-007) | Architecture: Serve an original, responsive application UI with a compact sidebar, neutral surfaces, a teal ac… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-007](../SPEC.md#close-operacion-007) | Architecture: Serve an original, responsive application UI with a compact sidebar, neutral surfaces, a teal ac… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI/estilos |
 | [CLOSE-operacion-008](../SPEC.md#close-operacion-008) | Deployment and configuration: Default HTTP port is 8000. docker compose up -d pulls the verified public applic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-009](../SPEC.md#close-operacion-009) | Deployment and configuration: Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-010](../SPEC.md#close-operacion-010) | Deployment and configuration: GOODSENTRY_AUTH defaults to disabled for frictionless local startup. If SECRET_K… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2286,6 +2289,61 @@ imagen, Compose, S3 ni proveedores externos; esas pruebas siguen pendientes y
 no se infieren de esta unidad. Siguiente acción concreta: CLOSE-operacion-007,
 verificar la interfaz real en Chromium a 320, 768 y 1440 con sus estados,
 controles y permisos, y continuar después con CLOSE-operacion-008.
+
+### Ejecución 2026-10-26: interfaz real y estados de permiso
+
+Selección registrada antes de trabajar: CLOSE-operacion-007, siguiente en el
+orden del plan después de 004-006. Candidata `e6ba2de` (el producto es idéntico
+a `54db6e4`; el commit anterior solo añadió test y documentación). No había
+criterio reclamado por otro agente. La dependencia de navegador se resolvió con
+Playwright 1.55.0 instalado en `/tmp` y el Chromium 1187 ya presente en la caché;
+ninguno forma parte del repositorio, de la imagen ni del runtime.
+
+Procedimiento reproducible: compilar `cmd/goodsentry`; arrancar con PostgreSQL
+18 desechable en modo `required`; ejecutar
+`node tests/compat/browser.mjs` con `GOODSENTRY_TEST_URL` y
+`GOODSENTRY_TEST_OUTPUT`; después ejecutar
+`node tests/compat/member_permission_browser.mjs` con una cuenta miembro real y
+la organización del fixture. Revisar además `internal/server/web/styles.css`,
+`app.css`, `Dockerfile`, los estados de carga/vacío/error/permiso en `web/*.js`
+y la ausencia de sumideros HTML.
+
+Resultado observado: `browser.mjs` pasó sus 13 comprobaciones en una corrida
+real, incluyendo onboarding, proyecto/DSN, error ingerido con stack,
+breadcrumbs/tags, filtros de búsqueda y entorno tras recarga, triage y
+comentarios persistentes, transacciones, traza, logs tipados, paginación,
+source maps, captura minificada y login posterior al cierre de sesión. Las 27
+capturas cubren 320, 768 y 1440 sin desbordamiento del documento; no hubo
+errores de página. El 400 de un mapa inválido y el `ERR_ABORTED` del logout son
+las respuestas esperadas por el propio contrato del script. La inspección
+visual de `issues-1440.png`, `onboarding-320.png` y
+`member-permission-768.png` confirma sidebar compacto, superficies neutras,
+acento teal, tablas legibles y formularios accesibles. La cuenta miembro
+autenticada no recibió el enlace de API tokens; la navegación directa mostró
+«Permission required», sin formulario ni metadatos, a 320/768/1440 y sin
+errores de página. `app.css` declara Tailwind 4.3.3 y está embebido; el
+`Dockerfile` compila en una etapa de build y copia solo el binario a
+`distroless/static-debian12:nonroot`. Los estados de carga, vacío, error y
+permiso existen en las vistas; `rg` no encontró `innerHTML`,
+`insertAdjacentHTML`, `outerHTML`, `document.write` ni equivalentes, y los
+nodos usan `textContent`/`createTextNode`, incluido el título malicioso
+`<img src=x onerror=...>` renderizado como texto en la lista de issues.
+
+Evidencia: `test-results/closure-20261025/browser/{report.json,*.png}`,
+`member-permission/{report.json,member-permission-*.png}`,
+`browser.log` y `member-permission.log`. Subresultados pendientes del bloque:
+ninguno. La comprobación de accesibilidad es automatizada por nombres
+accesibles y foco, no una auditoría con lector de pantalla; esa profundidad no
+la exige el contrato. No se ejecutaron SDKs, imagen, Compose, S3 ni proveedores
+externos; pertenecen a otros criterios.
+
+Siguiente acción: CLOSE-operacion-008. Verificar `docker compose config` y el
+arranque limpio local; antes de aceptar la imagen pública, comprobar que el
+digest publicado está vinculado a una revisión que contenga esta candidata o
+registrar la dependencia de publicación como bloqueo del bloque. Después,
+CLOSE-operacion-009 (configuración canónica y alias) tiene dependencias locales
+resueltas y puede ejecutarse de forma independiente si la publicación de imagen
+no está disponible.
 
 ### Comprobante de integración documental
 
