@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: auditoría final de rendimiento y cierre del contrato. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-001 (paso 5 del plan). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
