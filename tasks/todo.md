@@ -1449,8 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 a -008 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-009. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -009 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-010. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1703,7 +1703,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-006](../SPEC.md#close-sourcemaps-006) | Release lifecycle, commit metadata and deploys: Support organization GET/POST .../releases/{version}/commits/,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-007](../SPEC.md#close-sourcemaps-007) | Release lifecycle, commit metadata and deploys: Persist an organization/name repository identity whenever expl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6190,6 +6190,39 @@ owners.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final. El
 fin concreto se comprueba contra el reloj de PostgreSQL, sin costura de reloj.
+
+### Ejecución 2026-10-26: observación automática de releases
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-009. Candidata
+`888c657`.
+
+Resultado observado: una captura fresca de error o span con release válido
+observa la release y su proyecto en la misma transacción de durabilidad sin
+alterar metadatos existentes; los reintentos duplicados no recrean releases ni
+asociaciones borradas, y una captura fresca posterior sí las recrea. Un lote de
+spans con varias versiones distintas las observa todas en orden estable; la
+prueba añadida confirma dos versiones en un mismo lote. Las subidas de source
+maps cualificadas por release observan la release de forma transaccional,
+mientras las de solo debug ID siguen independientes, y una versión de SDK
+inválida se conserva en la telemetría sin crear metadatos. La migración
+retroactiva reconstruye identidades y asociaciones desde eventos, spans y mapas
+usando la recepción más temprana por organización/versión y conserva todos los
+registros originales.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Captura fresca que observa release y proyecto | store `TestReleaseDeployScopeObservationAndArtifactDeletion`, `TestReleaseStandaloneObservationFreshOnly` |
+| Reintentos duplicados que no recrean; captura nueva que recrea | store `TestReleaseStandaloneObservationFreshOnly`, `TestReleaseSourceMapAcknowledgementAndDeleteOrdering` |
+| Lote de spans con versiones distintas en orden estable | store `TestReleaseStandaloneObservationFreshOnly` (aserción añadida) |
+| Upload por release observado y debug ID independiente | store `TestReleaseSourceMapAcknowledgementAndDeleteOrdering`, `TestArtifactBundleAtomicMapsAliasesAndReleaseIndependence` |
+| Backfill histórico y conservación de originales | store `TestReleaseMigrationBackfillsPriorHistoryAndReopens` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-009-go.log` y el cambio en
+`internal/store/releases_test.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

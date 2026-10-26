@@ -3685,6 +3685,13 @@
       "evidence_files": [
         "sourcemaps-008-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-009": {
+      "evidence": "vigente",
+      "scope": "fresh capture observation, span batches, source-map observation and backfill",
+      "evidence_files": [
+        "sourcemaps-009-go.log"
+      ]
     }
   },
   "commands": [

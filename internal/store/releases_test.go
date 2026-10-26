@@ -451,6 +451,15 @@ func TestReleaseStandaloneObservationFreshOnly(t *testing.T) {
 	if err != nil || len(spans) != 4 || spans[3].Release != invalid {
 		t.Fatalf("invalid SDK version was not preserved: spans=%+v error=%v", spans, err)
 	}
+	multi := json.RawMessage(`{"items":[{"trace_id":"dddddddddddddddddddddddddddddddd","span_id":"0000000000000005","name":"Batch A","status":"ok","is_segment":true,"start_timestamp":1,"end_timestamp":2,"attributes":{"sentry.release":{"type":"string","value":"batch/a"}}},{"trace_id":"dddddddddddddddddddddddddddddddd","span_id":"0000000000000006","name":"Batch B","status":"ok","is_segment":true,"start_timestamp":3,"end_timestamp":4,"attributes":{"sentry.release":{"type":"string","value":"batch/b"}}}]}`)
+	if count, err := db.IngestSpans(ctx, project.ID, multi, 2); err != nil || count != 2 {
+		t.Fatalf("mixed batch span count=%d error=%v", count, err)
+	}
+	for _, want := range []ReleaseVersion{"batch/a", "batch/b"} {
+		if _, err := db.Release(ctx, access, want, ""); err != nil {
+			t.Fatalf("fresh span batch did not observe %q: %v", want, err)
+		}
+	}
 }
 
 func TestReleaseMigrationBackfillsPriorHistoryAndReopens(t *testing.T) {
