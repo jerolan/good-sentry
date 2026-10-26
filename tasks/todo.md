@@ -1442,11 +1442,11 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–018 ya están vigentes.
-Siguiente acción: CLOSE-identidad-019 (justificación Read Committed y prueba
-real de interleaving). No se declara aceptación ni cierre del producto. El
-avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo
-y presupuesto de un Goal no completan el producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014–019 ya están vigentes.
+Siguiente acción: CLOSE-identidad-020 (ruta nativa, cuerpo estricto y límites
+en bytes). No se declara aceptación ni cierre del producto. El avance se
+informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1482,7 +1482,7 @@ y presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-016](../SPEC.md#close-identidad-016) | Account credential generations and authenticated password changes: Session and API-token issuance use an expli… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de locks |
 | [CLOSE-identidad-017](../SPEC.md#close-identidad-017) | Account credential generations and authenticated password changes: Password change uses explicit pgx.ReadCommi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ChangePassword |
 | [CLOSE-identidad-018](../SPEC.md#close-identidad-018) | Account credential generations and authenticated password changes: When issuance acquires its user SHARE lock… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de interleaving |
-| [CLOSE-identidad-019](../SPEC.md#close-identidad-019) | Account credential generations and authenticated password changes: The need for a fresh statement snapshot fol… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-019](../SPEC.md#close-identidad-019) | Account credential generations and authenticated password changes: The need for a fresh statement snapshot fol… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de aislamiento |
 | [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3002,6 +3002,26 @@ Evidencia: `test-results/closure-20261025/account/generations.log` y
 Siguiente acción: CLOSE-identidad-019 (justificación de Read Committed frente
 a Repeatable Read y prueba de interleaving real), con dependencias locales
 resueltas.
+
+### Ejecución 2026-10-26: aislamiento y snapshot fresco
+
+Selección registrada antes de trabajar: CLOSE-identidad-019, siguiente en el
+plan. Candidata `79d96a2`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `generations.log` y del código de los emisores.
+
+Resultado observado: el test crea un pool cuyo default es Repeatable Read y
+demuestra que los emisores lo anulan con `pgx.ReadCommitted`; tras la espera
+del lock SHARE, la sentencia siguiente ve la generación confirmada por el
+cambio y falla, en vez de conservar un snapshot anterior. El caso cubre sesión
+y token. La justificación se apoya en el contrato público de PostgreSQL 18
+para Read Committed/Repeatable Read y en los modos de lock de fila; no se usa
+un sleep como sincronización ni un hook de producción. Subresultados
+pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account/generations.log`.
+
+Siguiente acción: CLOSE-identidad-020 (ruta nativa de contraseña, cuerpo
+estricto y límites en bytes), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

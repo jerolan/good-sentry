@@ -347,6 +347,16 @@
         "pre-revocation admission cannot issue a fresh credential; later login succeeds with the new password"
       ],
       "evidence_files": ["account/generations.log", "account-owner/report.json", "account-member/report.json"]
+    },
+    "CLOSE-identidad-019": {
+      "evidence": "vigente",
+      "scope": "Read Committed override and fresh snapshot after lock wait",
+      "covered": [
+        "Repeatable Read default pool is overridden by the issuers",
+        "real interleaving observes the committed generation after the wait",
+        "session and token issuers both recheck; no sleeps or production hooks"
+      ],
+      "evidence_files": ["account/generations.log"]
     }
   },
   "commands": [
