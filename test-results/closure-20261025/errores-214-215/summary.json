@@ -1,0 +1,42 @@
+{
+  "criteria": ["CLOSE-errores-214", "CLOSE-errores-215"],
+  "date": "2026-10-26",
+  "product_revision": "36978f7",
+  "environment": {
+    "server": "local binary on 127.0.0.1:18092",
+    "database": "disposable PostgreSQL 18 on 127.0.0.1:18358",
+    "sdk": "official sentry-sdk 2.72.0 in an isolated Python 3.12 virtual environment",
+    "browser": "Chromium through the test-only Playwright runtime",
+    "auth": "disabled/open mode"
+  },
+  "covered": {
+    "214": "real Python exception delivered by DSN with SDK 2.72.0, environment errors-python-acceptance, release errors-python@1.0.0, component/run tags, acceptance context, user and RuntimeError value; native API and Chromium show the same issue at 320/768/1440",
+    "215": "three fingerprinted Python events form one issue with count 3; two acknowledgements of one event ID leave count 1; a later retry after resolve preserves count 1, resolved status and original resolvedAt; message/environment/tag/project/release filters work; resolve/reopen/ignore/resolve+assign transitions work; the same database survives restart with status, count, assignment, tags, environment and release intact in API and UI"
+  },
+  "observed": {
+    "event_id_214": "8fa96df723d14a11911b496f1db83acf",
+    "group_event_ids": ["b48069f0f76a4210b69d531436452af1", "62a1f0f818b24cf68ca4e51896485499", "05d2b8f4f08f44439022e8d0b84a3103"],
+    "group_count": 3,
+    "retry_event_id": "22222222222222222222222222222222",
+    "retry_count": 1,
+    "restart_status": "resolved",
+    "restart_count": 3
+  },
+  "commands": [
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run214b GOODSENTRY_ERRORS_MODE=single python tests/compat/errorspython/main.py",
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run215group GOODSENTRY_ERRORS_MODE=group GOODSENTRY_ERRORS_COUNT=3 python tests/compat/errorspython/main.py",
+    "GOODSENTRY_DSN=<dsn> GOODSENTRY_RUN=run215retry GOODSENTRY_ERRORS_MODE=retry GOODSENTRY_ERRORS_EVENT_ID=22222222222222222222222222222222 python tests/compat/errorspython/main.py",
+    "node tests/compat/errorsgo/ui.mjs with GOODSENTRY_ISSUE_ID and GOODSENTRY_UI_EXPECT"
+  ],
+  "evidence": [
+    "python-sdk-214.json", "python-api.json", "python-issues.json", "ui-214/report.json", "ui-214/issue-320.png", "ui-214/issue-768.png", "ui-214/issue-1440.png",
+    "python-group.json", "python-group-retry-issues.json", "python-retry.json", "python-search.json", "python-triage.txt",
+    "python-retry-triage-before.json", "python-retry-after-triage.json", "python-retry-triage-after.json",
+    "python-restart-issue6.json", "python-restart-issue7.json", "ui-restart/report.json", "ui-restart/issue-320.png", "ui-restart/issue-768.png", "ui-restart/issue-1440.png",
+    "app.log", "summary.json"
+  ],
+  "limits": [
+    "The final copied image, 4569-row audit and matching public CI remain pending.",
+    "The product is not declared complete."
+  ]
+}

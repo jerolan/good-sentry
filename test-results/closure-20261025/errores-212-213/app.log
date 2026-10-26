@@ -1,0 +1,4 @@
+2026/10/26 16:50:35 INFO Authentication disabled; using implicit owner email=owner@localhost organization="Default Organization"
+2026/10/26 16:50:35 INFO GoodSentry listening address=:18092 domain=http://localhost:18092
+2026/10/26 16:55:11 INFO Authentication disabled; using implicit owner email=owner@localhost organization="Default Organization"
+2026/10/26 16:55:11 INFO GoodSentry listening address=:18092 domain=http://localhost:18092

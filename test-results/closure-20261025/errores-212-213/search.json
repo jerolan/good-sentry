@@ -1,0 +1,38 @@
+{
+  "message": {
+    "status": 200,
+    "ids": [
+      "2"
+    ]
+  },
+  "environment": {
+    "status": 200,
+    "ids": [
+      "3",
+      "2",
+      "1"
+    ]
+  },
+  "tag": {
+    "status": 200,
+    "ids": [
+      "2"
+    ]
+  },
+  "project": {
+    "status": 200,
+    "ids": [
+      "3",
+      "2",
+      "1"
+    ]
+  },
+  "release": {
+    "status": 200,
+    "ids": [
+      "3",
+      "2",
+      "1"
+    ]
+  }
+}

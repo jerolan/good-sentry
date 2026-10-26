@@ -1,0 +1,22 @@
+{
+  "id": "6",
+  "status": "resolved",
+  "count": 3,
+  "assignedTo": {
+    "type": "user",
+    "id": "1",
+    "name": "GoodSentry Owner",
+    "email": "owner@localhost"
+  },
+  "eventIDs": [
+    "05d2b8f4f08f44439022e8d0b84a3103",
+    "62a1f0f818b24cf68ca4e51896485499",
+    "b48069f0f76a4210b69d531436452af1"
+  ],
+  "tags": {
+    "component": "errors-python",
+    "acceptance.run": "errors-python-run215group"
+  },
+  "environment": "errors-python-acceptance",
+  "release": "errors-python@1.0.0"
+}

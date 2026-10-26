@@ -1,0 +1,47 @@
+{
+  "id": "2",
+  "status": "resolved",
+  "count": 3,
+  "assignedTo": {
+    "type": "user",
+    "id": "1",
+    "name": "GoodSentry Owner",
+    "email": "owner@localhost"
+  },
+  "eventIDs": [
+    "cdc17ca10228447d9030f0d7df990e71",
+    "a7f1c7ad4b884763a70ca7598ce7db72",
+    "de110ccae1ed46f29d320d1b87f133f6"
+  ],
+  "tags": {
+    "component": "errors-go",
+    "acceptance.run": "errors-go-run213group"
+  },
+  "environment": "errors-go-acceptance",
+  "release": "errors-go@1.0.0",
+  "contexts": {
+    "os": {
+      "name": "linux"
+    },
+    "trace": {
+      "span_id": "e8e49f22403cf4b1",
+      "trace_id": "3226c2c05fda6620cf59860fdc0ebd0e"
+    },
+    "device": {
+      "arch": "amd64",
+      "num_cpu": 4
+    },
+    "runtime": {
+      "name": "go",
+      "version": "go1.27.2",
+      "go_maxprocs": 4,
+      "go_numcgocalls": 1,
+      "go_numroutines": 6
+    },
+    "acceptance": {
+      "run": "run213group",
+      "kind": "error",
+      "occurrence": 2
+    }
+  }
+}
