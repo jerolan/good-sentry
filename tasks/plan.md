@@ -504,6 +504,12 @@ Apply the CIE `data_alignment_factor` to the signed LEB128 operand of `DW_CFA_de
 
 Status (2026-10-26 UTC): complete at `5b8ad1915557fc748dc4efbee06cc72191cc961c`. Focused signed-CFA regressions, full native race suite, full Go suite, integration-tag vet, trim-path app build, gofmt and diff checks pass. Exact-source [CI 40249096930](https://github.com/jerolan/good-sentry/actions/runs/40249096930) passed formatting, vet, PostgreSQL integration/race tests and app image build. [Image workflow 40249517100](https://github.com/jerolan/good-sentry/actions/runs/40249517100) published linux/amd64 and linux/arm64 at OCI index digest `sha256:34a6507b2ee05c07714547139a089270797faf9d74caad53b00dfbf8feb0a441`.
 
+## Native SDK symbolication demo
+
+Add `examples/sentry-native`, a runnable Linux/amd64 C application that fetches official `sentry-native` 0.17.4 with Crashpad, compiles a stable named crash function with DWARF, and ships the matching `crashpad_handler` beside the app. Document project creation, `project:releases` symbol upload of the exact executable, the intentional SDK crash, and checking its symbolicated function/source line in GoodSentry. Keep all traffic local to GoodSentry and do not retain the native dump.
+
+Verify the example builds against the pinned SDK and produces a real Crashpad event in a disposable GoodSentry/PostgreSQL environment. Upload the executable through the authenticated debug-file HTTP route before crashing; require exact function, source path and positive line resolution by the same ELF Debug ID, and verify no dump is retained. Keep the parent native task open after this Linux/amd64 receipt.
+
 ## Minidump Memory64 range bounds
 
 Reject Memory64 file ranges whose offsets or sizes exceed the dump, using subtraction-based checks before slicing so 64-bit addition cannot wrap into a panic.

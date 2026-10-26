@@ -37,6 +37,8 @@ The following pinned official clients have passed error, transaction and typed-l
 
 For a runnable example, see the [Sentry Go demo app](../examples/sentry-go/README.md). It uses the official Go SDK and sends an exception through a project DSN.
 
+The [Sentry Native demo](../examples/sentry-native/README.md) builds the official C SDK with Crashpad, uploads the same binary's ELF/DWARF symbols, and triggers an intentional native crash against a GoodSentry project.
+
 The Go and Node checks also verify occurrence context, child-operation metrics and trace parent relationships, depth, timing and selected raw records against data emitted by each SDK.
 
 For an existing integration, start by changing its DSN. Keep the SDK's usual sampling and log settings. For example, with the verified Node SDK:
