@@ -1442,12 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024 y 026 ya están vigentes y
-025 está bloqueada por publicación/CI de la misma fuente. Siguiente acción:
-CLOSE-identidad-027 (migración 036 y outbox de reset). No se declara aceptación
-ni cierre del producto. El avance se informa por criterios/evidencia, sin
-porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
-producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014–024, 026 y 027 ya están
+vigentes y 025 está bloqueada por publicación/CI de la misma fuente. Siguiente
+acción: CLOSE-identidad-028 (solicitud de reset y enumeración). No se declara
+aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1491,7 +1491,7 @@ producto ni borran este registro.
 | [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de transacciones |
 | [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | implementada (local) | bloqueada | Publicar imagen/CI de la misma fuente y repetir aceptación pública |
 | [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener la guía de no-rolling-upgrade |
-| [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 036 |
 | [CLOSE-identidad-028](../SPEC.md#close-identidad-028) | Account email and single-use password recovery: register and login screens expose a password-reset request for… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-029](../SPEC.md#close-identidad-029) | Account email and single-use password recovery: A reset token is 32 random bytes as64 lowercase hex digits. St… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-030](../SPEC.md#close-identidad-030) | Account email and single-use password recovery: The one application worker sends a plain-text MIME message thr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3206,6 +3206,27 @@ Evidencia: diff de `docs/configuration.md`, `identity-025/` y
 
 Siguiente acción: CLOSE-identidad-027 (migración 036, outbox de reset y
 contratos de token), primer bloque detallado de recuperación.
+
+### Ejecución 2026-10-26: outbox de recuperación 036
+
+Selección registrada antes de trabajar: CLOSE-identidad-027, siguiente en el
+plan. Candidata `1f8fdf2`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `account-mail/tests.log` y del esquema 036.
+
+Resultado observado: `account_password_resets` contiene delivery ID, usuario,
+destinatario, hash único de 64 hex, ciphertext AES-GCM de 92 bytes, generación
+emisora, expiración, consumo, estado (`pending`, `processing`, `sent`, `failed`,
+`consumed`, `canceled`), intentos 0..20, próximo intento, timestamps de
+creación/actualización/envío, razón acotada y lease token/expiry con check de
+estado `processing`. Los índices cubren usuario, pendientes y leases vencidos;
+036 preserva filas previas y reabre. El test de retry/expiry/lease prueba el
+fencing y el agotamiento. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account-mail/tests.log` y
+`internal/store/migrations/036_account_password_resets.sql`.
+
+Siguiente acción: CLOSE-identidad-028 (solicitud de reset, enumeración, piso
+de 60s y reemplazo de resets), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

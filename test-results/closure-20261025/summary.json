@@ -437,6 +437,17 @@
         "Compose has only goodsentry and postgres; app-only restart verified"
       ],
       "evidence_files": ["docs/configuration.md diff", "identity-025/restart.txt", "compose/config-default.json"]
+    },
+    "CLOSE-identidad-027": {
+      "evidence": "vigente",
+      "scope": "036 encrypted reset outbox, states, indexes and fenced leases",
+      "covered": [
+        "all required reset fields and state constraints",
+        "unique 64-hex hash and 92-byte AES-GCM ciphertext",
+        "due/lease/user indexes without rewriting prior rows",
+        "retry, expiry and stale-lease behavior pass"
+      ],
+      "evidence_files": ["account-mail/tests.log"]
     }
   },
   "commands": [
