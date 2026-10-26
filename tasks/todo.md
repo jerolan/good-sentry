@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -033
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -034
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-034 (UI de traceMatch). No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-035. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1866,7 +1866,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 029) |
-| [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | por contrastar | pendiente | Parcial: API canonical/exact verificada; falta la UI de Logs |
+| [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7767,6 +7767,29 @@ Evidencia parcial: `test-results/closure-20261025/rendimiento-029/trace-graph.lo
 
 Siguiente paso: ejecutar el owner de traza en navegador que cubre estos estados
 y registrar su comprobante.
+
+### Cierre 2026-10-26: coincidencia canónica en la UI de Logs
+
+Se completó CLOSE-rendimiento-034 con la API ya verificada y la aceptación real
+de navegador.
+
+| Comprobación | Resultado |
+|---|---|
+| Log almacenado en mayúsculas visible con `traceMatch=canonical` | El enlace traza→logs selecciona el modo, lo muestra y conserva todo el tiempo |
+| Persistencia del modo | Recarga y aplicación de filtros mantienen `traceMatch=canonical` y la fila |
+| Restauración de coincidencia exacta | Limpiar filtros, escribir una traza no hexadecimal o usar la navegación ordinaria elimina el modo |
+| Enlaces ordinarios sin modo | `traceMatch` no aparece en el enlace traza→logs normal |
+| API | `TestTraceHTTPContract` cubre exacto/canónico y los 400 de modo o traza inválidos |
+| Resto del flujo | Navegación entre páginas, errores 25+1, trazas solo-error, logs desactivados, 404 y 503 histórico pasan |
+
+El arnés recibió el mismo ajuste de reinicio de scroll que el owner de
+ocurrencias, sin reducir comprobaciones. Evidencia:
+`test-results/closure-20261025/rendimiento-034/report.json` y
+`test-results/closure-20261025/rendimiento-029/trace-graph.log`.
+
+Límites registrados: la UI se ejecuta en Chromium headless; los errores de
+consola 404 y 503 del comprobante son respuestas provocadas por los escenarios.
+El CI público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

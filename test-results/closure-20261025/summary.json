@@ -4064,6 +4064,14 @@
         "rendimiento-029/trace-graph.log"
       ]
     },
+    "CLOSE-rendimiento-034": {
+      "evidence": "vigente",
+      "scope": "canonical trace matching for related logs through API modes and the Logs UI, including persistence through reload/filters and restoration of exact mode",
+      "evidence_files": [
+        "rendimiento-034/report.json",
+        "rendimiento-029/trace-graph.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

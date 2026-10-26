@@ -67,7 +67,7 @@ async function send(project, type, value, extra = {}) {
 }
 async function capture(name, tab = page, section = 'Waterfall') {
   for (const width of [320, 768, 1440]) {
-    await tab.setViewportSize({ width, height: 1000 }); await tab.getByRole('heading', { level: 1 }).focus(); await tab.keyboard.press('Control+Home'); await tab.mouse.click(5, 5);
+    await tab.setViewportSize({ width, height: 1000 }); await tab.getByRole('heading', { level: 1 }).focus(); await tab.evaluate(() => window.scrollTo(0, 0)); await tab.mouse.click(5, 5);
     assert.equal(await tab.evaluate(() => scrollY), 0);
     const size = await tab.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth }));
     dimensions.push({ name, ...size }); assert.equal(size.document, size.viewport, `${name} fits ${width}px`);

@@ -1,0 +1,11 @@
+{
+  "organization": "trace-034",
+  "projectId": "3",
+  "eventId": "13abde62926af67e2a31a9a911f99633",
+  "traceId": "bd1c1a16924b8888f52d7162b97b961f",
+  "sample": {
+    "source": "event",
+    "id": "56",
+    "projectId": "3"
+  }
+}
