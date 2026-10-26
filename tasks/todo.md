@@ -1492,10 +1492,13 @@ CLOSE-lectores-002 queda vigente por la suite `/api/0`, las matrices
 documentales y los cuatro SDKs oficiales frescos.
 CLOSE-lectores-003 queda vigente con OpenAPI 3.1 y Administración probados en
 instancias con flags apagados y encendidos, incluida la UI a 320/1440.
+CLOSE-operacion-049 a -055 quedan vigentes con los owners de archivo, catálogo,
+lector híbrido, retención, Parquet/S3 y configuración; 056 espera la aceptación
+completa de imagen/almacenamiento/CI.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-049. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-056. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2047,13 +2050,13 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-101](../SPEC.md#close-identidad-101) | Instance user administration: Once an instance administrator exists, serialized updates and the existing self-… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-102](../SPEC.md#close-identidad-102) | Instance user administration: The first-owner/admin bootstrap must be serialized with user creation. The first… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-103](../SPEC.md#close-identidad-103) | Instance user administration: Acceptance uses real PostgreSQL migration from063 and reopen, store concurrency… | implementada (local) | bloqueada | Autorizar CI público y publicación; luego repetir la actualización con imágenes en Compose |
-| [CLOSE-operacion-049](../SPEC.md#close-operacion-049) | Instance user administration: Optional MCP uses Streamable HTTP with authenticated scoped access to issues, lo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-050](../SPEC.md#close-operacion-050) | Instance user administration: GOODSENTRY_ENABLE_ARCHIVE is the canonical switch. Preserve GOODSENTRY_ENABLE_DU… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-051](../SPEC.md#close-operacion-051) | Instance user administration: Every span read that can include cold data runs on one Repeatable Read, Read Wri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-052](../SPEC.md#close-operacion-052) | Instance user administration: Route all current span readers through this transaction-owned relation: direct p… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-053](../SPEC.md#close-operacion-053) | Instance user administration: The additive catalog migration marks pre-index manifests incomplete. When archiv… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-054](../SPEC.md#close-operacion-054) | Instance user administration: Readers lock selected ready manifests FOR SHARE before downloading their objects… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-055](../SPEC.md#close-operacion-055) | Instance user administration: GOODSENTRY_ARCHIVE_BACKEND is local by default and may be s3. GOODSENTRY_ARCHIVE… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-049](../SPEC.md#close-operacion-049) | Instance user administration: Optional MCP uses Streamable HTTP with authenticated scoped access to issues, lo… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-050](../SPEC.md#close-operacion-050) | Instance user administration: GOODSENTRY_ENABLE_ARCHIVE is the canonical switch. Preserve GOODSENTRY_ENABLE_DU… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-051](../SPEC.md#close-operacion-051) | Instance user administration: Every span read that can include cold data runs on one Repeatable Read, Read Wri… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-052](../SPEC.md#close-operacion-052) | Instance user administration: Route all current span readers through this transaction-owned relation: direct p… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-053](../SPEC.md#close-operacion-053) | Instance user administration: The additive catalog migration marks pre-index manifests incomplete. When archiv… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-054](../SPEC.md#close-operacion-054) | Instance user administration: Readers lock selected ready manifests FOR SHARE before downloading their objects… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-055](../SPEC.md#close-operacion-055) | Instance user administration: GOODSENTRY_ARCHIVE_BACKEND is local by default and may be s3. GOODSENTRY_ARCHIVE… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-056](../SPEC.md#close-operacion-056) | Instance user administration: GOODSENTRY_ENABLE_DUCKDB remains off by default in Compose and retains its docum… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-057](../SPEC.md#close-operacion-057) | Instance user administration: Generic OpenID Connect sign-in and organization-managed OIDC applications are im… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-mcp-001](../SPEC.md#close-mcp-001) | Instance user administration: GlitchTip's public MCP guide at https://glitchtip.com/documentation/mcp/ defines… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9429,7 +9432,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-operacion-049. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-operacion-056. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9449,7 +9452,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-049. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-056. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9469,7 +9472,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-049. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-056. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9500,7 +9503,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-049. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-056. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9529,7 +9532,7 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-049. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-056. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Node 11.7.0
@@ -9558,7 +9561,7 @@ Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-049. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-056. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Browser 11.7.0
@@ -9587,7 +9590,7 @@ Evidencia: `test-results/closure-20261025/errores-218-219/` con el fixture, el
 hash del bundle, las capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-049. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-056. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: filas paraguas de conservación
@@ -9604,7 +9607,7 @@ composición de owners frescos e históricos ya registrados.
 
 Límites registrados: las capturas de navegador de 179/181 y 196–198/203 son
 históricas y se repiten en la candidata final; 206, la copia de 4569 filas y el
-CI público siguen pendientes. Siguiente acción: CLOSE-operacion-049. El producto
+CI público siguen pendientes. Siguiente acción: CLOSE-operacion-056. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: navegador real a 320, 768 y 1440
@@ -9657,7 +9660,7 @@ resultado del CLI, el informe de navegador, capturas, CI/imagen históricos y
 `summary.json`.
 
 Límites registrados: las aceptaciones de CLI/navegador/CI son históricas y se
-repiten en la candidata final. Siguiente acción: CLOSE-operacion-049. El producto
+repiten en la candidata final. Siguiente acción: CLOSE-operacion-056. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: matriz de API de gestión y SDKs
@@ -9702,7 +9705,38 @@ docs, overview, capturas y `summary.json`.
 
 Límites registrados: solo aparecen las rutas registradas por este build; la
 imagen final y el CI público siguen pendientes. Siguiente acción:
-CLOSE-operacion-049. El producto sigue incompleto.
+CLOSE-operacion-056. El producto sigue incompleto.
+
+### Ejecución 2026-10-26: archivo en frío de spans
+
+Selección registrada antes de trabajar: CLOSE-operacion-049 a -055. Revisión
+`22c8d4d`; owners de Parquet/S3, configuración y almacenamiento se ejecutaron
+sobre PostgreSQL 18 desechable, incluida una pasada con detector de carreras.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 049 | Archivado solo de spans, apagado por defecto, umbral derivado y sin extender retención | `TestArchiveConfigurationAliasesDefaultsAndRuntimeSupport`; `config.log` |
+| 050 | Switch canónico/alias, `parquet-go v0.32.0`, AWS SDK v2 y catálogo 059/060 | `dependencies.txt`; migraciones 059/060; `store.log` |
+| 051 | Repeatable Read, `search_path`, tabla/vista temporal, seeds de traza y fail-closed | `TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces`; `reader-routing.txt` |
+| 052 | Todos los lectores de spans enumerados usan `withSpanArchiveRead` | `reader-routing.txt` (22 rutas, 15 owners de lectura); `store.log` |
+| 053 | Backfill de manifiestos incompletos y bloqueo de identidad ingest/archivo | `TestBackfillSpanArchiveIndexesExistingObjectsBeforeCompletion`; `TestSpanArchiveSerializesConcurrentIngestOfTheSameIdentity`; `TestSpanArchiveManifestMigrationPreservesRowsAndReopens` |
+| 054 | `FOR SHARE`, estado `deleting`, reintento 40001, detach de proyecto y recuperación de borrados | `TestSpanArchiveReadRetriesWhenExpiryMarksASelectedManifest`; `TestSpanArchiveCleanupRecoversAfterObjectOrManifestDeleteFailure`; `TestSpanArchivePreservesReceiptLifetimeAndDeletedProjectCleanup` |
+| 055 | Backend local/S3, límites 64 MiB/250 filas, claves deterministas, upload-first y objeto mixto | `TestLocalObjects*`; `TestS3Objects*`; `TestParquet*`; `TestSpanArchiveFailuresRollbackAndRetryTheSameObject`; `TestSpanArchiveSkipsLockedRowsCancelsAndSerializesMaintainers` |
+
+Resultado observado: Parquet/S3 pasan en 0.105 s (1.164 s con race), configuración
+en 0.003 s, almacenamiento en 6.812 s (10.893 s con race). El catálogo conserva
+identidad, tiempo, proyecto, entorno y release; los lectores híbridos combinan
+filas calientes y frías, expanden trazas y reintentan la transacción completa.
+La retención respeta el recibo original, conserva objetos mixtos y no toca
+errores, logs ni otros datos.
+
+Evidencia: `test-results/closure-20261025/operacion-049-055/` con logs,
+`reader-routing.txt`, `dependencies.txt` y `summary.json`.
+
+Límites registrados: CLOSE-operacion-056 sigue abierto porque exige la imagen
+con volumen limpio a través de archivo/consulta/reinicio/expiración, S3 real o
+compatible, suite completa con race/vet/build, CI público e imágenes
+publicadas. Siguiente acción: CLOSE-operacion-056. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 

@@ -1,0 +1,22 @@
+internal/store/compat_performance.go:135:	items, err := withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]CompatibleTransactionGroup, error) {
+internal/store/stats_v2.go:107:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (StatsV2Response, error) {
+internal/store/trace_raw.go:27:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (TraceNodeData, error) {
+internal/store/releases.go:421:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (ReleasePage, error) {
+internal/store/transaction_detail.go:18:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (TransactionDetail, error) {
+internal/store/trace.go:34:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (TraceDetail, error) {
+internal/store/span_archive_read.go:111:func withSpanArchiveRead[T any](ctx context.Context, s *Store, read func(*spanArchiveRead) (T, error)) (T, error) {
+internal/store/compat_environments.go:47:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]CompatibleEnvironmentProject, error) {
+internal/store/compat_environments.go:80:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (CompatibleEnvironmentProject, error) {
+internal/store/compat_environments.go:105:	target, err := withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (environmentMutationTarget, error) {
+internal/store/compat_environments.go:137:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]CompatibleEnvironment, error) {
+internal/store/spans.go:109:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]Span, error) {
+internal/store/transaction_span_groups.go:74:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) (TransactionSpanGroups, error) {
+internal/store/scoped_performance.go:181:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]TransactionGroup, error) {
+internal/store/scoped_performance.go:293:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]SpanGroup, error) {
+internal/store/scoped_performance.go:356:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]NPlusOneFinding, error) {
+internal/store/scoped_performance.go:454:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]NPlusOnePattern, error) {
+internal/store/scoped_performance.go:544:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]TransactionTrendPoint, error) {
+internal/store/telemetry.go:60:	return withSpanArchiveRead(ctx, s, func(read *spanArchiveRead) ([]TransactionGroup, error) {
+internal/store/span_archive_read_test.go:54:	count, err := withSpanArchiveRead(ctx, db, func(read *spanArchiveRead) (int, error) {
+internal/store/span_archive_read_test.go:140:	count, err = withSpanArchiveRead(ctx, db, func(read *spanArchiveRead) (int, error) {
+internal/store/span_archive_read_test.go:251:		rows, err := withSpanArchiveRead(ctx, db, func(read *spanArchiveRead) (int, error) {

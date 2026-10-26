@@ -1,0 +1,24 @@
+=== RUN   TestBackfillSpanArchiveIndexesExistingObjectsBeforeCompletion
+--- PASS: TestBackfillSpanArchiveIndexesExistingObjectsBeforeCompletion (0.49s)
+=== RUN   TestSpanArchiveManifestMigrationPreservesRowsAndReopens
+--- PASS: TestSpanArchiveManifestMigrationPreservesRowsAndReopens (0.98s)
+=== RUN   TestSpanArchiveCatalogMigrationKeepsOldObjectsIncomplete
+--- PASS: TestSpanArchiveCatalogMigrationKeepsOldObjectsIncomplete (0.57s)
+=== RUN   TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces
+--- PASS: TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces (1.06s)
+=== RUN   TestSpanArchiveReadRetriesWhenExpiryMarksASelectedManifest
+--- PASS: TestSpanArchiveReadRetriesWhenExpiryMarksASelectedManifest (0.60s)
+=== RUN   TestSpanArchivePreservesReceiptLifetimeAndDeletedProjectCleanup
+--- PASS: TestSpanArchivePreservesReceiptLifetimeAndDeletedProjectCleanup (0.56s)
+=== RUN   TestSpanArchiveFailuresRollbackAndRetryTheSameObject
+--- PASS: TestSpanArchiveFailuresRollbackAndRetryTheSameObject (0.45s)
+=== RUN   TestIngestSpansPreservesAStillRetainedArchivedIdentity
+--- PASS: TestIngestSpansPreservesAStillRetainedArchivedIdentity (0.42s)
+=== RUN   TestSpanArchiveSerializesConcurrentIngestOfTheSameIdentity
+--- PASS: TestSpanArchiveSerializesConcurrentIngestOfTheSameIdentity (0.48s)
+=== RUN   TestSpanArchiveCleanupRecoversAfterObjectOrManifestDeleteFailure
+--- PASS: TestSpanArchiveCleanupRecoversAfterObjectOrManifestDeleteFailure (0.67s)
+=== RUN   TestSpanArchiveSkipsLockedRowsCancelsAndSerializesMaintainers
+--- PASS: TestSpanArchiveSkipsLockedRowsCancelsAndSerializesMaintainers (0.52s)
+PASS
+ok  	goodsentry/internal/store	6.812s
