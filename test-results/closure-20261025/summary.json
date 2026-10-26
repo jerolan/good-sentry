@@ -4252,6 +4252,14 @@
         "uptime-023/ssl-trust.log"
       ]
     },
+    "CLOSE-uptime-024": {
+      "evidence": "vigente",
+      "scope": "shared SSL deadline with cancellation, tls_error reasons, null status code, monotonic response time and no certificate payload",
+      "evidence_files": [
+        "uptime-023/ssl-trust.log",
+        "uptime-013/scheduler-store.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
