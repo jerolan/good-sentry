@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-logs-034 (exportador Python OTLP JSON/HTTP 0.66b1). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-uptime-027 (scheduler real de HEAD). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -2102,7 +2102,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-043](../SPEC.md#close-rendimiento-043) | Comprobar tendencias contra un conjunto controlado y resultados esperados explícitos, conservando los contrato… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-044](../SPEC.md#close-rendimiento-044) | Comprobar detección N+1 contra un conjunto controlado y resultados esperados explícitos, conservando los contr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-logs-033](../SPEC.md#close-logs-033) | Exportador Python OTLP protobuf/HTTP 1.45.1: logs reales, valores/tipos, severidad, búsqueda y filtros de tiem… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-logs-034](../SPEC.md#close-logs-034) | Exportador Python OTLP JSON/HTTP 0.66b1: logs reales, valores/tipos, severidad, búsqueda y filtros de tiempo/s… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-logs-034](../SPEC.md#close-logs-034) | Exportador Python OTLP JSON/HTTP 0.66b1: logs reales, valores/tipos, severidad, búsqueda y filtros de tiempo/s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-027](../SPEC.md#close-uptime-027) | Scheduler real de HEAD: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monito… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-028](../SPEC.md#close-uptime-028) | Scheduler real de GET: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monitor… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-029](../SPEC.md#close-uptime-029) | Scheduler real de POST: caída, recuperación, umbrales, pausa/reanudación, historial y estado público de monito… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4348,6 +4348,28 @@ Evidencia: `test-results/closure-20261025/logs-otlp-exporter-api.json`,
 `logs-otlp-exporter-ui/report.json`,
 `logs-otlp-exporter-ui-restart/report.json` y el driver
 `tests/compat/otlp_logs_exporter.py`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: exportador OTLP JSON/HTTP 0.66b1
+
+Selección registrada antes de trabajar: CLOSE-logs-034. Candidata `eb35648`.
+
+Resultado observado: el exportador oficial
+`opentelemetry-exporter-otlp-json-http` 0.66b1 (`OTLPLogExporter`) envió tres
+registros JSON por `POST /v1/logs` (INFO, WARN y ERROR) con
+`service.name`, `deployment.environment.name`, traza y span, y atributos
+tipados (cadena, entero, booleano y doble). La API nativa filtra por texto (tres
+filas, `warn` una), servicio, entorno y traza; el detalle responde
+`source:"otlp"` con los tipos conservados. En Chromium la lista muestra la
+insignia OTLP, el detalle perezoso conserva cuerpo, severidad, servicio,
+entorno, traza, span y atributos tipados, el enlace abre la traza y el filtro
+por servicio selecciona los registros a 320/768/1440. Tras reiniciar la
+aplicación siguen las tres filas y el batch canónico.
+
+Evidencia: `test-results/closure-20261025/logs-otlp-json-api.json`,
+`logs-otlp-json-ui/report.json`, `logs-otlp-json-ui-restart/report.json` y el
+driver `tests/compat/otlp_logs_json_exporter.py`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

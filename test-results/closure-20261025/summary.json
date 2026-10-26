@@ -2854,6 +2854,15 @@
         "logs-otlp-exporter-ui/report.json",
         "logs-otlp-exporter-ui-restart/report.json"
       ]
+    },
+    "CLOSE-logs-034": {
+      "evidence": "vigente",
+      "scope": "official OTLP JSON/HTTP Python exporter 0.66b1 logs, filters, detail, UI and restart persistence",
+      "evidence_files": [
+        "logs-otlp-json-api.json",
+        "logs-otlp-json-ui/report.json",
+        "logs-otlp-json-ui-restart/report.json"
+      ]
     }
   },
   "commands": [

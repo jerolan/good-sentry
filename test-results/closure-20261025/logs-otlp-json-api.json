@@ -1,0 +1,51 @@
+{
+  "sdk": "otlp-http-json 0.66b1",
+  "all": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "33",
+      "32",
+      "31"
+    ]
+  },
+  "service": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "33",
+      "32",
+      "31"
+    ]
+  },
+  "environment": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "33",
+      "32",
+      "31"
+    ]
+  },
+  "textWarn": {
+    "status": 200,
+    "total": 1,
+    "ids": [
+      "32"
+    ]
+  },
+  "trace": {
+    "status": 200,
+    "total": 3,
+    "ids": [
+      "33",
+      "32",
+      "31"
+    ]
+  },
+  "detailStatus": 200,
+  "typedIntegerInDetail": true,
+  "detailSource": "otlp",
+  "detailTrace": "86e9bf568f1795a9e4f3135f88b4f739",
+  "detailService": "otlp-json-exporter-service"
+}
