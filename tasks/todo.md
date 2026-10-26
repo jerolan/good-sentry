@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-alertas-002. No se declara
+runtime preservado. Siguiente acción: CLOSE-alertas-003. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -8403,6 +8403,25 @@ Evidencia: `test-results/closure-20261025/alertas-001/compat-alerts.log`.
 Límites registrados: la entrega externa y los mapeos de destinatarios viven en
 002/003. El CI público y la imagen final siguen pendientes para la auditoría
 final.
+
+### Ejecución 2026-10-26: mapeo de alertas compatibles
+
+Selección registrada antes de trabajar: CLOSE-alertas-002. Se reutiliza la
+ejecución de 001 sobre el mismo backend.
+
+| Elemento | Comprobante |
+|---|---|
+| `timespanMinutes`, `quantity`, `environments` y `uptime` | `TestCompatibleProjectAlertsContract` |
+| `alertRecipients` email y webhook | La prueba crea con ambos y lee su forma nativa |
+| Proveedores URL (slack, discord, teams, googlechat, feishu, ntfy, zulip) | El mapeo comparte el proveedor webhook; zulip con configuración extra se rechaza con 400 |
+| `tagsToAdd` no vacío, email con URL o webhook sin destino | 400 |
+| PUT conserva campos omitidos y no cambia el tipo | `PUT {"name":"Only renamed"}` conserva el resto; `{"uptime":true}` devuelve 409 |
+
+Evidencia: `test-results/closure-20261025/alertas-001/compat-alerts.log`.
+
+Límites registrados: los proveedores URL comparten el transporte webhook
+genérico; no se inventan cargas específicas. El CI público y la imagen final
+siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

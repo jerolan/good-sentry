@@ -4287,6 +4287,13 @@
         "alertas-001/compat-alerts.log"
       ]
     },
+    "CLOSE-alertas-002": {
+      "evidence": "vigente",
+      "scope": "compatible alert field mapping, recipient types, unsupported-configuration rejection and PUT preservation with immutable kind",
+      "evidence_files": [
+        "alertas-001/compat-alerts.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
