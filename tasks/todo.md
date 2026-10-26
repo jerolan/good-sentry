@@ -1453,8 +1453,8 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -006 y
--041 a -044 quedan vigentes. Siguiente acción: CLOSE-rendimiento-007. No se declara
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007 y
+-041 a -044 quedan vigentes. Siguiente acción: CLOSE-rendimiento-008. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1776,7 +1776,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-004](../SPEC.md#close-rendimiento-004) | Transaction and standalone-span retention: The storage contract is Store.CleanupTransactions(ctx, days), retur… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-005](../SPEC.md#close-rendimiento-005) | Transaction and standalone-span retention: Under those project gates and pinned event rows, delete envelope_it… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-006](../SPEC.md#close-rendimiento-006) | Transaction and standalone-span retention: Delete standalone spans independently, with no trace-wide cascade.… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-007](../SPEC.md#close-rendimiento-007) | Transaction and standalone-span retention: Migration023 adds only receipt-order indexes on events(created_at,i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-007](../SPEC.md#close-rendimiento-007) | Transaction and standalone-span retention: Migration023 adds only receipt-order indexes on events(created_at,i… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-008](../SPEC.md#close-rendimiento-008) | Transaction and standalone-span retention: Acceptance requires real PostgreSQL expiry based on receipt age wit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-009](../SPEC.md#close-rendimiento-009) | Transaction and standalone-span retention: The transaction/span runtime acceptance on2026-10-17 uses new candi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-010](../SPEC.md#close-rendimiento-010) | Transaction and standalone-span retention: The same candidate cleans the remaining fixtures with logs and upti… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7095,6 +7095,35 @@ Evidencia: `test-results/closure-20261025/rendimiento-004-006/`.
 Límites registrados: la migración 023, el ciclo de vida del proceso y la
 aceptación con imagen, backup y CI siguen en CLOSE-rendimiento-007 a -011. El
 CI público y la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: índices de retención y ciclo de vida del mantenedor
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-007. Candidata
+`1fa0699`. Procedimiento reproducible sobre PostgreSQL 18 desechable:
+
+| Elemento del criterio | Resultado observado |
+|---|---|
+| Migración 023 solo añade índices de orden de recibo | `023_transaction_retention.sql` crea `events_transaction_receipt_retention` y `spans_receipt_retention` |
+| Filas e historial preservados y reapertura | `TestTransactionRetentionMigration023PreservesRowsAndReopens` pasa: sin cambios en la instantánea previa y tras dos reaperturas |
+| Drenaje del backlog al arrancar | El trabajador real limpia 3/3 y después 2/2 al iniciar |
+| Fallo y reintento | Un error de limpieza se registra como `ERROR` y una pasada posterior confirma 1/1 |
+| Detención | La prueba para el trabajador y cierra el almacén sin bloqueos pendientes |
+| Diagnóstico sin SQL ni credenciales | Los mensajes solo exponen `entryPoint`, conteos y `archiveObjects` |
+| Arranque no condicionado a logs o uptime | `cmd/goodsentry/main.go` inicia `jobs.StartTransactionRetention` en la ruta normal y lo detiene con `defer` |
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Índices 023 y preservación al reabrir | `rendimiento-007/migration-023.log` |
+| Drenaje, reintento y detención del ciclo | `rendimiento-007/lifecycle.log` |
+
+Evidencia: `test-results/closure-20261025/rendimiento-007/`.
+
+Límites registrados: la aceptación con imagen nueva, restauración de backup,
+runtime preservado y CI público sigue en CLOSE-rendimiento-008 a -011 y no se
+adelanta aquí. El CI público y la imagen final siguen pendientes para la
+auditoría final.
 
 ### Comprobante de integración documental
 

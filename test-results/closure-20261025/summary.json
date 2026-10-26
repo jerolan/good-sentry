@@ -3888,6 +3888,14 @@
         "rendimiento-004-006/store-retention-race.log"
       ]
     },
+    "CLOSE-rendimiento-007": {
+      "evidence": "vigente",
+      "scope": "migration 023 receipt-order indexes with reopen preservation and the in-process retention lifecycle",
+      "evidence_files": [
+        "rendimiento-007/migration-023.log",
+        "rendimiento-007/lifecycle.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

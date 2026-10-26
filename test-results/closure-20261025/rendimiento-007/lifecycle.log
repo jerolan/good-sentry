@@ -1,0 +1,13 @@
+=== RUN   TestRetentionWorkersDrainRetryAndStop
+=== RUN   TestRetentionWorkersDrainRetryAndStop/transactions
+2026/10/26 10:16:38 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=250 spans=250 archiveObjects=0
+2026/10/26 10:16:38 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=250 spans=250 archiveObjects=0
+2026/10/26 10:16:38 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=101 spans=101 archiveObjects=0
+2026/10/26 10:16:38 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=3 spans=3 archiveObjects=0
+2026/10/26 10:16:38 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=2 spans=2 archiveObjects=0
+2026/10/26 10:16:38 ERROR Transaction retention pass failed entryPoint=transaction_retention_worker operation=cleanup_transactions
+2026/10/26 10:16:38 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=1 spans=1 archiveObjects=0
+--- PASS: TestRetentionWorkersDrainRetryAndStop (0.91s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/transactions (0.91s)
+PASS
+ok  	goodsentry/internal/jobs	0.918s

@@ -1,0 +1,4 @@
+=== RUN   TestTransactionRetentionMigration023PreservesRowsAndReopens
+--- PASS: TestTransactionRetentionMigration023PreservesRowsAndReopens (0.78s)
+PASS
+ok  	goodsentry/internal/store	0.782s
