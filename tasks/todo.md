@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -101 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-102
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-103
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1996,7 +1996,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-099](../SPEC.md#close-identidad-099) | Instance user administration: When ENABLE_ADMIN=true, expose GET /api/v1/admin/users and PATCH /api/v1/admin/u… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-100](../SPEC.md#close-identidad-100) | Instance user administration: Every list and update rechecks that the current account is active and an instanc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-101](../SPEC.md#close-identidad-101) | Instance user administration: Once an instance administrator exists, serialized updates and the existing self-… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-102](../SPEC.md#close-identidad-102) | Instance user administration: The first-owner/admin bootstrap must be serialized with user creation. The first… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-102](../SPEC.md#close-identidad-102) | Instance user administration: The first-owner/admin bootstrap must be serialized with user creation. The first… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-103](../SPEC.md#close-identidad-103) | Instance user administration: Acceptance uses real PostgreSQL migration from063 and reopen, store concurrency… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-049](../SPEC.md#close-operacion-049) | Instance user administration: Optional MCP uses Streamable HTTP with authenticated scoped access to issues, lo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-050](../SPEC.md#close-operacion-050) | Instance user administration: GOODSENTRY_ENABLE_ARCHIVE is the canonical switch. Preserve GOODSENTRY_ENABLE_DU… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5580,6 +5580,41 @@ owners.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 carrera se prueba con bloqueos reales en PostgreSQL, no con un reloj simulado.
+
+### Ejecución 2026-10-26: serialización del bootstrap y límites de reversión
+
+Selección registrada antes de trabajar: CLOSE-identidad-102. Candidata
+`5cacbf9`.
+
+Resultado observado: el bootstrap de primera cuenta y la creación de usuarios
+por OIDC o invitación comparten el bloqueo de creación, y los owners comprueban
+que la cuenta creada por OIDC espera al bootstrap sin obtener el privilegio, que
+la invitación espera al bloqueo de creación antes del de organización y que el
+chequeo de duplicados no espera a una cuenta bloqueada. `EnsureDefaultOwner`
+es idempotente, repara owner, organización y equipo sin duplicar ni reemplazar
+la contraseña, y devuelve error si la cuenta configurada existe inactiva. La
+migración 064 no cambia activación ni privilegio: conserva las cuentas, deja al
+owner heredado activo y sin administración de instancia, y mantiene su checksum.
+La guía de configuración registra la parada de procesos previos a 064, la
+reversión no soportada tras suspender una cuenta y la recuperación mediante otro
+administrador activo en modo requerido.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Bootstrap serializado con creación de usuario | store `TestOIDCAutoCreateSerializesWithFirstOwnerBootstrap`, `TestInvitationSignupWaitsForCreationLockBeforeOrganizationLock`, `TestExistingUserInvitationLocksAccountBeforeOrganization`, `TestNewSignupInvitationDuplicateCheckDoesNotWaitOnLockedAccount` |
+| Solo el primer owner en tabla vacía recibe administración | store `TestInstanceUserAdminBootstrapAndGrant`, `TestOIDCAutoCreateSerializesWithFirstOwnerBootstrap` |
+| `EnsureDefaultOwner` idempotente y fallo con cuenta inactiva | store `TestEnsureDefaultOwnerIsIdempotent`, `TestInstanceUserAdminBootstrapAndGrant`; HTTP `TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner` |
+| Migración sin cambios de activación ni privilegio | store `TestInstanceUserAdminMigration064PreservesExistingAccountsAndCredentials` |
+| Límites operativos de parada y reversión documentados | `docs/configuration.md` (después de 064 y en modo de autenticación) |
+
+Evidencia: `test-results/closure-20261025/identidad-102-go.log` con ocho
+owners y las secciones de configuración citadas.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+parada de procesos previos y la reversión no soportada son restricciones
+operativas documentadas; no se simula un binario pre-064.
 
 ### Comprobante de integración documental
 

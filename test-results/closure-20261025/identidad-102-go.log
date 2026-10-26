@@ -1,0 +1,20 @@
+=== RUN   TestInstanceUserAdminMigration064PreservesExistingAccountsAndCredentials
+--- PASS: TestInstanceUserAdminMigration064PreservesExistingAccountsAndCredentials (0.67s)
+=== RUN   TestInstanceUserAdminBootstrapAndGrant
+--- PASS: TestInstanceUserAdminBootstrapAndGrant (0.45s)
+=== RUN   TestOIDCAutoCreateSerializesWithFirstOwnerBootstrap
+--- PASS: TestOIDCAutoCreateSerializesWithFirstOwnerBootstrap (0.41s)
+=== RUN   TestInvitationSignupWaitsForCreationLockBeforeOrganizationLock
+--- PASS: TestInvitationSignupWaitsForCreationLockBeforeOrganizationLock (0.43s)
+=== RUN   TestExistingUserInvitationLocksAccountBeforeOrganization
+--- PASS: TestExistingUserInvitationLocksAccountBeforeOrganization (0.43s)
+=== RUN   TestNewSignupInvitationDuplicateCheckDoesNotWaitOnLockedAccount
+--- PASS: TestNewSignupInvitationDuplicateCheckDoesNotWaitOnLockedAccount (0.42s)
+=== RUN   TestEnsureDefaultOwnerIsIdempotent
+--- PASS: TestEnsureDefaultOwnerIsIdempotent (0.39s)
+PASS
+ok  	goodsentry/internal/store	3.203s
+=== RUN   TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner
+--- PASS: TestInstanceAdministrationRequiresFeatureAndProtectsOpenOwner (0.64s)
+PASS
+ok  	goodsentry/internal/server	0.644s

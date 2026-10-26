@@ -3526,6 +3526,13 @@
       "evidence_files": [
         "identidad-101-go.log"
       ]
+    },
+    "CLOSE-identidad-102": {
+      "evidence": "vigente",
+      "scope": "serialized first-owner bootstrap, migration preservation and rollback limits",
+      "evidence_files": [
+        "identidad-102-go.log"
+      ]
     }
   },
   "commands": [
