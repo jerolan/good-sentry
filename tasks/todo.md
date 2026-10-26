@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-018. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-019. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1874,7 +1874,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-016](../SPEC.md#close-uptime-016) | Sentry spans and native telemetry reads: Persist monitor configuration/current state and append-only check his… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013/015) |
 | [CLOSE-uptime-017](../SPEC.md#close-uptime-017) | Sentry spans and native telemetry reads: Claim one due enabled monitor with FOR UPDATE SKIP LOCKED, assign a r… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013) |
-| [CLOSE-uptime-018](../SPEC.md#close-uptime-018) | Sentry spans and native telemetry reads: An opaque random 128-bit heartbeat capability is exposed as heartbeat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-018](../SPEC.md#close-uptime-018) | Sentry spans and native telemetry reads: An opaque random 128-bit heartbeat capability is exposed as heartbeat… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-019](../SPEC.md#close-uptime-019) | Sentry spans and native telemetry reads: Block private, loopback, link-local, unspecified and multicast destin… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-020](../SPEC.md#close-uptime-020) | Sentry spans and native telemetry reads: The Tailwind UI lists monitor status, target, interval and last check… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-021](../SPEC.md#close-uptime-021) | Sentry spans and native telemetry reads: The SSL monitor increment uses the public SSL enum, independently def… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8192,6 +8192,27 @@ Límites registrados: la coordinación se prueba con conexiones competidoras y
 workers en un proceso; no se levantan dos réplicas de aplicación completas en
 esta ejecución. El CI público y la imagen final siguen pendientes para la
 auditoría final.
+
+### Ejecución 2026-10-26: capacidad de heartbeat de 128 bits
+
+Selección registrada antes de trabajar: CLOSE-uptime-018. Candidata
+`18fe571`.
+
+| Elemento | Resultado |
+|---|---|
+| URL de capacidad solo en lecturas autenticadas | `heartbeatURL` aparece en la creación autenticada; lectura anónima del monitor 401 |
+| Clave opaca de 128 bits | Ruta con 32 hexadecimales |
+| Cuerpo hasta 1024 bytes | 200 y check registrado con `startedAt`/`completedAt` |
+| Cuerpo mayor de 1024 bytes | 413 antes de escribir |
+| GET no soportado | 405 |
+| Sin acceso de gestión | La ruta de heartbeat no devuelve sesión; la API de gestión sin sesión sigue 401 |
+| Serialización de recibo y completación | `TestHeartbeatReceiptFencesMissedCheckAndRearms` |
+
+Evidencia: `test-results/closure-20261025/uptime-018/heartbeat-capability.json`
+y `test-results/closure-20261025/uptime-015/heartbeat-timing.log`.
+
+Límites registrados: la sonda se ejecutó en una instalación local; el CI público
+y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

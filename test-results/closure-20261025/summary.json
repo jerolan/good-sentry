@@ -4206,6 +4206,14 @@
         "uptime-017/config-workers.log"
       ]
     },
+    "CLOSE-uptime-018": {
+      "evidence": "vigente",
+      "scope": "128-bit opaque heartbeat capability with authenticated-only exposure, 1024-byte bound, no GET and no management access",
+      "evidence_files": [
+        "uptime-018/heartbeat-capability.json",
+        "uptime-015/heartbeat-timing.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
