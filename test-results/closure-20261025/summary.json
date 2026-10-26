@@ -3087,6 +3087,13 @@
         "alertas-016-017-go.log",
         "alertas-slack.json"
       ]
+    },
+    "CLOSE-alertas-019": {
+      "evidence": "vigente",
+      "scope": "Slack Retry-After parsing and durable provider-floor retry scheduling",
+      "evidence_files": [
+        "alertas-019-go.log"
+      ]
     }
   },
   "commands": [

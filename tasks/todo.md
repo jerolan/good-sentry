@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-019 (formato de Microsoft Teams). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-020 (Slack en el diálogo de alertas). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1887,7 +1887,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-016](../SPEC.md#close-alertas-016) | Slack incoming webhooks: Use Slack's incoming webhook JSON contract(https://docs.slack.dev/messaging/sending-m… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-017](../SPEC.md#close-alertas-017) | Slack incoming webhooks: The summary is GoodSentry: rule name, then a Project line. Frequency adds the optiona… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-018](../SPEC.md#close-alertas-018) | Slack incoming webhooks: Keep POST, JSON content type and the two existing GoodSentry identity headers for Sla… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-019](../SPEC.md#close-alertas-019) | Slack incoming webhooks: Slack rate-limit responses(https://docs.slack.dev/apis/web-api/rate-limits/) include… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-019](../SPEC.md#close-alertas-019) | Slack incoming webhooks: Slack rate-limit responses(https://docs.slack.dev/apis/web-api/rate-limits/) include… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-020](../SPEC.md#close-alertas-020) | Slack incoming webhooks: Expose Slack incoming webhook as a recipient choice in the existing original Alert di… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-021](../SPEC.md#close-alertas-021) | Slack incoming webhooks: Pure owning checks cover configured Slack acceptance/deduplication/URL rejection, act… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-022](../SPEC.md#close-alertas-022) | Additional provider webhooks: The remaining incoming-webhook providers are explicit recipient types discord, t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4588,6 +4588,31 @@ revelar el cuerpo. Los webhooks genéricos conservan su semántica por 2xx.
 Evidencia: `test-results/closure-20261025/alertas-016-017-go.log` y la captura
 real de `alertas-slack.json`, cuyo cuerpo incluye los controles y bloques
 descritos.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: límite de tasa de Slack y reintento durable
+
+Selección registrada antes de trabajar: CLOSE-alertas-019. Candidata
+`cdfb23d`.
+
+Resultado observado: el owner de reconocimiento parsea `Retry-After` con
+espacios exteriores, ceros a la izquierda y segundos hasta el máximo de una
+duración de Go, y descarta vacío, negativo, cero con signo, signo positivo,
+fracciones, espacios interiores, dígitos no ASCII, fecha HTTP, valores
+combinados por coma, repetidos y desbordamientos de entero o duración, sin
+producir pista. El owner de store rechaza una pista negativa y una positiva
+sobre un resultado que no es de reintento, y programa un 429 con pista de dos
+horas como `next_attempt` igual a la finalización más esa pista —sin recortarla
+al techo de 900 segundos del backoff por defecto—, la persiste en la misma
+transacción con arriendo, y tras reabrir la base el historial es idéntico y un
+nuevo claim no puede enviar antes del plazo del proveedor. La primera ejecución
+de estos owners falló porque el contenedor desechable ya se había eliminado; se
+conserva ese fallo y la repetición sobre una base nueva pasa.
+
+Evidencia: `test-results/closure-20261025/alertas-019-go.log` con los casos de
+parseo, el propietario de migración034 con pista durable y el de reclamación con
+token y backoff.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 
