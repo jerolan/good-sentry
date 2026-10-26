@@ -1449,8 +1449,9 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 a -010 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-011. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
+final/CI con su comprobante local abajo. Siguiente acción: CLOSE-sourcemaps-012.
+No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1705,7 +1706,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir el CLI contra la imagen y verificar upgrade/reinicio |
 | [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-013](../SPEC.md#close-sourcemaps-013) | Compatible release files: The view is backed by the existing release-scoped source_maps rows, not a duplicate… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-014](../SPEC.md#close-sourcemaps-014) | JavaScript artifacts: The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at /api/0/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6259,6 +6260,46 @@ nueve capturas.
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 paginación independiente de commits y deploys con más de una página no se
 ejercitó; la estructura usa parámetros separados y conserva la versión en la URL.
+
+### Ejecución 2026-10-26: aceptación de releases con sentry-cli real
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-011. Candidata
+`dc3d4bf`.
+
+Resultado observado: las evidencias de -001 a -010 cubren la propiedad en
+PostgreSQL (creación/fusión atómica, lecturas con alcance, cobertura completa,
+borrado de proyecto frente a organización, commits/deploys/repositorios
+aislados, sustitución concurrente, orden de bloqueos, fidelidad cruda y
+persistencia tras reapertura), la observación y migración histórica, el orden
+subida/borrado de source maps con identidad exacta de 255 caracteres, y las dos
+familias de rutas HTTP con tokens reales, roles, CSRF, precedencia, validación,
+instantáneas, recuentos y paginación prefijada. La vista cubre el flujo completo
+del propietario.
+
+El binario fijado `sentry-cli 3.8.0` (SHA-256
+`13f8cb34ae01a6a272d7d7c22e277a105286615b4020de900ea95a8de47cdbb6`) ejecutó
+contra la candidata, con un token real limitado a `project:releases` y
+`org:read`: `releases new`, `set-commits --local` (20 commits locales y la
+cabeza anterior), `finalize`, `info`, `list`, `deploys new` y `deploys list`,
+`archive`, `restore` y `delete`; tras el borrado la API responde 404. En
+Chromium, un miembro lista y abre releases e inspecciona metadatos crudos sin
+controles de mutación y conserva el estado de permiso del formulario de
+credenciales; el propietario pagina commits y deploys de forma independiente
+(`commitPage=2` y `deployPage=2`) manteniendo la versión y el origen tras
+recargar.
+
+Evidencia: `test-results/closure-20261025/releases-cli.log` y
+`test-results/closure-20261025/releases-011/` con `report.json` y seis
+capturas.
+
+Bloqueo registrado: el texto exige además ejecutar el CLI contra la imagen final,
+verificar telemetría/historial/sesión a través de actualización y reinicio de esa
+imagen, y CI remoto final. No hay autorización de publicación ni imagen final
+construida para esta candidata. Condición de desbloqueo: autorizar la
+construcción/publicación y CI. Responsable: instrucción del usuario. Intentos:
+uno local con binario y PostgreSQL real; ninguno de publicación. Siguiente
+acción tras desbloquear: construir la imagen, repetir el CLI y el
+upgrade/reinicio, y ejecutar CI exacto.
 
 ### Comprobante de integración documental
 

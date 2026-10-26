@@ -1,0 +1,46 @@
+== releases new
+Created release cli-1
+exit=0
+== releases set-commits --local
+Could not find the previous commit. Creating a release with 20 commits.
+Success! Set commits for release cli-1
+exit=0
+== releases finalize
+Finalized release cli-1
+exit=0
+== releases info
++---------+--------------------------------+
+| Version | Date created                   |
++---------+--------------------------------+
+| cli-1   | 2026-10-26 13:32:00.545805 UTC |
++---------+--------------------------------+
+exit=0
+== releases list
++---------------+---------+------------+------------+
+| Released      | Version | New Events | Last Event |
++---------------+---------+------------+------------+
+| 0 seconds ago | cli-1   | 0          | -          |
++---------------+---------+------------+------------+
+exit=0
+== deploys new
+Created new deploy CLI deploy for 'production'
+exit=0
+== deploys list
++-------------+------------+-----------+
+| Environment | Name       | Finished  |
++-------------+------------+-----------+
+| production  | CLI deploy | 0 seconds |
++-------------+------------+-----------+
+exit=0
+== releases archive
+Archived release cli-1
+exit=0
+== releases restore
+Restored release cli-1
+exit=0
+== releases delete
+Deleted release cli-1!
+exit=0
+== release absent after delete
+compatible=404
+done

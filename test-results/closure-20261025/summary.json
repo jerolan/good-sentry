@@ -3702,6 +3702,16 @@
         "releases-010/release-detail-1440.png",
         "releases-010/release-create-1440.png"
       ]
+    },
+    "CLOSE-sourcemaps-011": {
+      "evidence": "bloqueada",
+      "scope": "local release acceptance with pinned sentry-cli 3.8.0, member workflow and independent paging; final image and CI remain",
+      "evidence_files": [
+        "releases-cli.log",
+        "releases-011/report.json",
+        "releases-011/release-independent-pages-1440.png",
+        "releases-011/release-member-1440.png"
+      ]
     }
   },
   "commands": [
