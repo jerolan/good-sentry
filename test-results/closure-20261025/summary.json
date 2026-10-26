@@ -292,6 +292,17 @@
         "compatible acceptance and mutation HTTP contracts"
       ],
       "evidence_files": ["invitations/summary.json", "invitations/tests.log"]
+    },
+    "CLOSE-identidad-014": {
+      "evidence": "vigente",
+      "scope": "additive 035 migration, preserved credentials and internal-only auth generation",
+      "covered": [
+        "035 adds auth_generation with default 1 and check > 0",
+        "hashes, IDs, sessions, tokens, grants, memberships and receipts survive reopen",
+        "bootstrap, email lookup, ID lookup and session admission carry the generation",
+        "AuthGeneration is excluded from JSON; zero/missing never authorizes issuance"
+      ],
+      "evidence_files": ["account/generations.log"]
     }
   },
   "commands": [

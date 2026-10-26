@@ -1442,12 +1442,11 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes. Siguiente acción:
-CLOSE-identidad-014 (migración 035, campo de generación, preservación y
-exclusión de JSON), iniciando los bloques detallados. No se declara aceptación
-ni cierre del producto. El avance se informa por criterios/evidencia, sin
-porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
-producto ni borran este registro.
+bloques detallados 014–049 siguen pendientes; 014 ya está vigente. Siguiente
+acción: CLOSE-identidad-015 (emisores con generación observada y sin overload
+por user ID). No se declara aceptación ni cierre del producto. El avance se
+informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1478,7 +1477,7 @@ producto ni borran este registro.
 | [CLOSE-identidad-011](../SPEC.md#close-identidad-011) | Account credential generations and authenticated password changes: fila 3, / account-mail / Purpose-specific a… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 027–033 pendientes |
 | [CLOSE-identidad-012](../SPEC.md#close-identidad-012) | Account credential generations and authenticated password changes: fila 4, / account-recovery / Email request… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 027–033 pendientes |
 | [CLOSE-identidad-013](../SPEC.md#close-identidad-013) | Account credential generations and authenticated password changes: fila 5, / membership-invitations / Owner/ad… | implementada | vigente | Comprobante 2026-10-26 abajo; detallados 045–049 pendientes |
-| [CLOSE-identidad-014](../SPEC.md#close-identidad-014) | Account credential generations and authenticated password changes: Additive migration035 after034 adds users.a… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-014](../SPEC.md#close-identidad-014) | Account credential generations and authenticated password changes: Additive migration035 after034 adds users.a… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 035 |
 | [CLOSE-identidad-015](../SPEC.md#close-identidad-015) | Account credential generations and authenticated password changes: Both production issuers must require the ge… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-016](../SPEC.md#close-identidad-016) | Account credential generations and authenticated password changes: Session and API-token issuance use an expli… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-017](../SPEC.md#close-identidad-017) | Account credential generations and authenticated password changes: Password change uses explicit pgx.ReadCommi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2880,6 +2879,29 @@ Evidencia: `test-results/closure-20261025/invitations/`
 Siguiente acción: CLOSE-identidad-014 (migración 035, campo de generación,
 preservación y exclusión de JSON), iniciando los bloques detallados de
 credenciales.
+
+### Ejecución 2026-10-26: migración 035 y generación interna
+
+Selección registrada antes de trabajar: CLOSE-identidad-014, siguiente en el
+plan. Candidata `c2bea15`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de la corrida `generations.log` ya registrada.
+
+Resultado observado: `035_auth_generation.sql` añade
+`users.auth_generation bigint NOT NULL DEFAULT 1 CHECK (auth_generation > 0)`
+sin reescribir credenciales. `TestAuthGenerationMigration035PreservesCredentialsAndReopens`
+comprueba la preservación de hashes, IDs, sesiones, tokens, grants,
+memberships y recibos, y la reapertura. Bootstrap, `UserByEmail`, `UserByID` y
+la admisión de sesión leen `auth_generation`; `User.AuthGeneration` lleva
+`json:"-"` junto a `PasswordHash`, de modo que no aparece en JSON. Una
+generación cero o ausente no autoriza emisión; los tests de emisión obsoleta
+lo demuestran y las tablas de sesión/token no añaden una columna de generación.
+Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/account/generations.log` y el
+esquema `internal/store/migrations/035_auth_generation.sql`.
+
+Siguiente acción: CLOSE-identidad-015 (los dos emisores exigen la generación
+observada y no hay overload por user ID), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
