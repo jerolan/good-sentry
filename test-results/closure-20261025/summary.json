@@ -4529,6 +4529,11 @@
       "scope": "scope limitation: unsupported CPU contexts/CFI/signal recovery/nested depth beyond eight and symbol server, with supported archive/Mach-O/DWARF paths retained",
       "evidence_files": ["nativo-023/limitations.log", "nativo-023/symbol-server-absent.txt", "nativo-023/summary.json"]
     },
+    "CLOSE-nativo-024": {
+      "evidence": "vigente",
+      "scope": "classic PDB symbol-scope Parent/End offsets normalized to the module substream origin including its four-byte signature",
+      "evidence_files": ["nativo-024/scope-pointers.log", "nativo-024/native.log", "nativo-024/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

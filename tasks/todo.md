@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -023 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -024 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-024. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-025. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1750,7 +1750,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
-| [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -9064,6 +9064,24 @@ Límites registrados: esta entrada acredita que los límites siguen vigentes y n
 autoriza anunciar soporte de los formatos ausentes. La aceptación real
 multi-arquitectura y la imagen final siguen abiertas; el producto no se declara
 completo.
+
+### Ejecución 2026-10-26: punteros de scope PDB
+
+Selección registrada antes de trabajar: CLOSE-nativo-024. Revisión de producto
+`eaf4c73`; no hizo falta cambiar producto: los owners inline y de anidamiento ya
+prueban el origen con firma. Este incremento solo añade documentación.
+
+| Elemento | Comprobante |
+|---|---|---|
+| Parent/End se interpretan desde el inicio del substream, incluida la firma de 4 bytes | `TestParseNativePDBExpandsNestedInlineFrames`; `TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/nesting_depth` |
+| Offsets normalizados antes de validar el anidamiento | `TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets` (offsets construidos con `+4`) |
+| Parent/End truncados, fuera de rango o con fin incorrecto rechazan el PDB | `TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols` |
+
+Evidencia: `test-results/closure-20261025/nativo-024/scope-pointers.log` y
+`native.log`.
+
+Límites registrados: no se usó la imagen final ni el CI público; la imagen y el
+CI siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

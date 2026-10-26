@@ -1,0 +1,38 @@
+=== RUN   TestParseNativePDBExpandsNestedInlineFrames
+--- PASS: TestParseNativePDBExpandsNestedInlineFrames (0.00s)
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_IPI_stream
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/invalid_procedure_end_pointer
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/procedure_end_kind_mismatch
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/inline_parent_pointer_mismatch
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/inline_end_pointer_escapes_parent
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unknown_inlinee_ID
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_inlinee_checksum
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_inlinee-lines_subsection
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unknown_annotation_opcode
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/truncated_annotation_operand
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unbalanced_inline_scope
+--- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_IPI_stream (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/invalid_procedure_end_pointer (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/procedure_end_kind_mismatch (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/inline_parent_pointer_mismatch (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/inline_end_pointer_escapes_parent (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unknown_inlinee_ID (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_inlinee_checksum (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_inlinee-lines_subsection (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unknown_annotation_opcode (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/truncated_annotation_operand (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unbalanced_inline_scope (0.00s)
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/site_count
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/nesting_depth
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/IPI_type_records
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/annotation_operations
+--- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets (0.00s)
+    --- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/site_count (0.00s)
+    --- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/nesting_depth (0.00s)
+    --- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/IPI_type_records (0.00s)
+    --- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/annotation_operations (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.009s
