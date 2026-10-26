@@ -1443,12 +1443,13 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032, 034–046 están vigentes y 033/047
-bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI. Siguiente
-acción: CLOSE-errores-048 (bulk PUT de issues). No se declara aceptación ni
-cierre del producto. El avance se informa por criterios/evidencia, sin
-porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
-producto ni borran este registro.
+publicación/CI; errores 001–005, 007–032, 034–046 y 048–059 están vigentes y
+033/047 bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI.
+Siguiente acción: CLOSE-errores-060 (aceptación CLI) o, si el binario no está
+disponible, 061 (comments). No se declara aceptación ni cierre del producto.
+El avance se informa por criterios/evidencia, sin porcentaje de casillas;
+tiempo y presupuesto de un Goal no completan el producto ni borran este
+registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1583,18 +1584,18 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-045](../SPEC.md#close-errores-045) | Compatible hashes and future grouping reset: Add a Future grouping section to native issue detail with real pa… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI hashes |
 | [CLOSE-errores-046](../SPEC.md#close-errores-046) | Compatible hashes and future grouping reset: Verification must apply test-audit before authorship. PostgreSQL… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-047](../SPEC.md#close-errores-047) | Compatible hashes and future grouping reset: Acceptance requires actual official SDK captures before/after res… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
-| [CLOSE-errores-048](../SPEC.md#close-errores-048) | Compatible bulk issue changes and merging: Complete PUT /api/0/projects/{org}/{project}/issues/ and PUT /api/0… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-049](../SPEC.md#close-errores-049) | Compatible bulk issue changes and merging: Authorities are the public project bulk contract(https://docs.sentr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-050](../SPEC.md#close-errores-050) | Compatible bulk issue changes and merging: A separate unmodified GlitchTip6.2.6 image a3d8eb1b36c1e1603d55ab32… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-051](../SPEC.md#close-errores-051) | Compatible bulk issue changes and merging: Both bulk PUTs require the existing event:write capability or an au… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-052](../SPEC.md#close-errores-052) | Compatible bulk issue changes and merging: Accept repeated id/project/environment and scalar query/status/sort… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-053](../SPEC.md#close-errores-053) | Compatible bulk issue changes and merging: Reuse implemented issue orders, default -last_seen, with determinis… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-054](../SPEC.md#close-errores-054) | Compatible bulk issue changes and merging: The strict1MiB JSON object accepts the individual fields status/ass… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-055](../SPEC.md#close-errores-055) | Compatible bulk issue changes and merging: All selected operations commit atomically in one ReadCommitted tran… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-056](../SPEC.md#close-errores-056) | Compatible bulk issue changes and merging: Share the native merge body through applyIssueMerge(ctx,tx,userID,r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-057](../SPEC.md#close-errores-057) | Compatible bulk issue changes and merging: Internal contracts: CompatibleIssueBulkFilter contains IDs/ProjectR… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-058](../SPEC.md#close-errores-058) | Compatible bulk issue changes and merging: Return200 with a partial acknowledgement object, not an array of is… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-059](../SPEC.md#close-errores-059) | Compatible bulk issue changes and merging: Owning verification: parser tests cover bulk-only aliases, tri-stat… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-048](../SPEC.md#close-errores-048) | Compatible bulk issue changes and merging: Complete PUT /api/0/projects/{org}/{project}/issues/ and PUT /api/0… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-049](../SPEC.md#close-errores-049) | Compatible bulk issue changes and merging: Authorities are the public project bulk contract(https://docs.sentr… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-050](../SPEC.md#close-errores-050) | Compatible bulk issue changes and merging: A separate unmodified GlitchTip6.2.6 image a3d8eb1b36c1e1603d55ab32… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-051](../SPEC.md#close-errores-051) | Compatible bulk issue changes and merging: Both bulk PUTs require the existing event:write capability or an au… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-052](../SPEC.md#close-errores-052) | Compatible bulk issue changes and merging: Accept repeated id/project/environment and scalar query/status/sort… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-053](../SPEC.md#close-errores-053) | Compatible bulk issue changes and merging: Reuse implemented issue orders, default -last_seen, with determinis… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-054](../SPEC.md#close-errores-054) | Compatible bulk issue changes and merging: The strict1MiB JSON object accepts the individual fields status/ass… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-055](../SPEC.md#close-errores-055) | Compatible bulk issue changes and merging: All selected operations commit atomically in one ReadCommitted tran… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-056](../SPEC.md#close-errores-056) | Compatible bulk issue changes and merging: Share the native merge body through applyIssueMerge(ctx,tx,userID,r… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-057](../SPEC.md#close-errores-057) | Compatible bulk issue changes and merging: Internal contracts: CompatibleIssueBulkFilter contains IDs/ProjectR… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-058](../SPEC.md#close-errores-058) | Compatible bulk issue changes and merging: Return200 with a partial acknowledgement object, not an array of is… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-059](../SPEC.md#close-errores-059) | Compatible bulk issue changes and merging: Owning verification: parser tests cover bulk-only aliases, tri-stat… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-060](../SPEC.md#close-errores-060) | Compatible bulk issue changes and merging: Acceptance requires actual official sentry-cli3.8.0 against newly i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-061](../SPEC.md#close-errores-061) | Compatible issue comments: GET/POST /api/0/issues/{issue}/comments/ and the corresponding organization-prefixe… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-062](../SPEC.md#close-errores-062) | Compatible issue comments: POST and PUT accept only {"data":{"text":"..."}} and return CommentSchema with nume… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3804,6 +3805,28 @@ Evidencia: `test-results/closure-20261025/grouping-reset/` y
 
 Siguiente acción: CLOSE-errores-048 (bulk PUT de issues), con 047 aún bloqueada
 por aceptación pública/SDK.
+
+### Ejecución 2026-10-26: bulk issue changes
+
+Selección registrada antes de trabajar: CLOSE-errores-048 a -059. Candidata
+`5097023`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners de parseo, store y HTTP con `-race`.
+
+Resultado observado: ambas rutas PUT de proyecto/organización exigen
+`event:write` o sesión protegida; la selección repetida de id/proyecto/entorno
+y los escalares query/status/sort/página se validan, con containment antes de
+límites y dedup de aliases. El objeto JSON de 1 MiB admite status/assignment y
+las políticas individuales, incluidos `snoozeDuration:null`/`muted`, rechaza
+tipos/duplicados y opera atómicamente en Read Committed. Merge usa el cuerpo
+nativo compartido, conserva historia/futuras rutas y devuelve el acknowledgement
+parcial 200 con el actor committed. Gate ordering, cancelación, recheck tras
+merge nativo y límites de 100/101 se prueban. Subresultados pendientes de los
+bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-048-059.log`.
+
+Siguiente acción: revisar los criterios restantes de la familia de errores
+(060+ y los clientes SDK) antes de pasar a alertas.
 
 ### Comprobante de integración documental
 

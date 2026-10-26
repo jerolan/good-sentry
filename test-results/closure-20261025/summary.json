@@ -28,7 +28,9 @@
         "pgx v5 with transactions",
         "relational membership/key/grouping schema and JSONB event data"
       ],
-      "evidence_files": ["unit.log"]
+      "evidence_files": [
+        "unit.log"
+      ]
     },
     "CLOSE-operacion-005": {
       "evidence": "vigente",
@@ -42,7 +44,10 @@
         "row-locked leases recover after expiry",
         "Valkey is rejected rather than required"
       ],
-      "evidence_files": ["store-targeted-race.log", "full-race-final.log"]
+      "evidence_files": [
+        "store-targeted-race.log",
+        "full-race-final.log"
+      ]
     },
     "CLOSE-operacion-006": {
       "evidence": "vigente",
@@ -54,7 +59,13 @@
         "readyz returned 503 while PostgreSQL was stopped and 200 after recovery",
         "no automatic destructive rollback migrations"
       ],
-      "evidence_files": ["lifecycle.log", "readiness-negative.log", "migration-lock-18087.log", "migration-lock-18088.log", "full-race-final.log"]
+      "evidence_files": [
+        "lifecycle.log",
+        "readiness-negative.log",
+        "migration-lock-18087.log",
+        "migration-lock-18088.log",
+        "full-race-final.log"
+      ]
     },
     "CLOSE-operacion-007": {
       "evidence": "vigente",
@@ -67,7 +78,14 @@
         "telemetry including a malicious title remains text; no innerHTML or equivalent sink exists",
         "Tailwind CSS 4.3.3 is compiled and embedded; runtime image is distroless non-root without Node"
       ],
-      "evidence_files": ["browser/report.json", "browser/*.png", "member-permission/report.json", "member-permission/*.png", "browser.log", "member-permission.log"]
+      "evidence_files": [
+        "browser/report.json",
+        "browser/*.png",
+        "member-permission/report.json",
+        "member-permission/*.png",
+        "browser.log",
+        "member-permission.log"
+      ]
     },
     "CLOSE-operacion-008": {
       "evidence": "vigente",
@@ -82,7 +100,18 @@
         "no separate web, worker or cron containers",
         "public image starts against an externally managed PostgreSQL URL"
       ],
-      "evidence_files": ["compose/summary.json", "compose/config-default.json", "compose/config-local.json", "compose/pull-public.log", "compose/up-public.log", "compose/up-source-build.log", "compose/image-build.log", "compose/setup.json", "compose/me.json", "compose/me-after-restart.json"]
+      "evidence_files": [
+        "compose/summary.json",
+        "compose/config-default.json",
+        "compose/config-local.json",
+        "compose/pull-public.log",
+        "compose/up-public.log",
+        "compose/up-source-build.log",
+        "compose/image-build.log",
+        "compose/setup.json",
+        "compose/me.json",
+        "compose/me-after-restart.json"
+      ]
     },
     "CLOSE-operacion-009": {
       "evidence": "vigente",
@@ -94,7 +123,10 @@
         "ENABLE_OPENAPI and ENABLE_ADMIN control only GoodSentry surfaces and are opt-in",
         "GOODSENTRY_ENABLE_ORGANIZATION_CREATION defaults false, accepts the GlitchTip alias and wins over it"
       ],
-      "evidence_files": ["config/loader-tests.log", "config/surfaces-tests.log"]
+      "evidence_files": [
+        "config/loader-tests.log",
+        "config/surfaces-tests.log"
+      ]
     },
     "CLOSE-operacion-010": {
       "evidence": "vigente",
@@ -109,7 +141,13 @@
         "required mode does not provision an implicit owner and real setup/login/logout pass",
         "MCP OAuth uses the implicit owner in open mode"
       ],
-      "evidence_files": ["open-auth/tests.log", "open-auth/app.log", "open-auth/report.json", "open-auth/restart.json", "open-auth/*.png"]
+      "evidence_files": [
+        "open-auth/tests.log",
+        "open-auth/app.log",
+        "open-auth/report.json",
+        "open-auth/restart.json",
+        "open-auth/*.png"
+      ]
     },
     "CLOSE-operacion-011": {
       "evidence": "vigente",
@@ -123,7 +161,10 @@
         "short and long change_me placeholder secrets are rejected",
         "local development defaults are documented separately"
       ],
-      "evidence_files": ["operations/tests.log", "docs/getting-started.md diff"]
+      "evidence_files": [
+        "operations/tests.log",
+        "docs/getting-started.md diff"
+      ]
     },
     "CLOSE-operacion-012": {
       "evidence": "vigente",
@@ -134,7 +175,12 @@
         "VmRSS 28.75 MiB baseline to 34.47 MiB after load; VmHWM 34.47 MiB",
         "PostgreSQL memory excluded and operational target not claimed"
       ],
-      "evidence_files": ["rss/summary.json", "rss/workload.json", "rss/app.log", "rss/workload-sha256.txt"]
+      "evidence_files": [
+        "rss/summary.json",
+        "rss/workload.json",
+        "rss/app.log",
+        "rss/workload-sha256.txt"
+      ]
     },
     "CLOSE-identidad-001": {
       "evidence": "vigente",
@@ -148,7 +194,12 @@
         "Hashed, revocable, scoped management bearer tokens that cannot read native account data",
         "SDK keys authorize ingestion only and cannot manage releases"
       ],
-      "evidence_files": ["identity/tests.log", "lifecycle.log", "readiness-negative.log", "browser/report.json"]
+      "evidence_files": [
+        "identity/tests.log",
+        "lifecycle.log",
+        "readiness-negative.log",
+        "browser/report.json"
+      ]
     },
     "CLOSE-identidad-002": {
       "evidence": "vigente",
@@ -161,7 +212,10 @@
         "owners/admins manage workspace resources while members keep the issue workflow",
         "HTTP identifiers are opaque strings"
       ],
-      "evidence_files": ["identity/tenancy.log", "identity/tests.log"]
+      "evidence_files": [
+        "identity/tenancy.log",
+        "identity/tests.log"
+      ]
     },
     "CLOSE-identidad-003": {
       "evidence": "vigente",
@@ -175,7 +229,10 @@
         "idempotent 204 revocation and stopped authorization after revocation/expiry",
         "compatible project reads return authorized projects without DSN or SDK key"
       ],
-      "evidence_files": ["identity/tests.log", "identity/tokens.log"]
+      "evidence_files": [
+        "identity/tests.log",
+        "identity/tokens.log"
+      ]
     },
     "CLOSE-identidad-004": {
       "evidence": "vigente",
@@ -188,7 +245,9 @@
         "expiry and revocation stop later requests without aborting an authorized one",
         "active/expired/revoked metadata pages and duplicate names remain distinct"
       ],
-      "evidence_files": ["identity/grants.log"]
+      "evidence_files": [
+        "identity/grants.log"
+      ]
     },
     "CLOSE-identidad-005": {
       "evidence": "vigente",
@@ -201,7 +260,9 @@
         "canonical cursors, limit/per_page agreement, case-insensitive literal query and previous/next Links",
         "malformed percent encoding and noncanonical cursors return 400"
       ],
-      "evidence_files": ["identity/tests.log"]
+      "evidence_files": [
+        "identity/tests.log"
+      ]
     },
     "CLOSE-identidad-007": {
       "evidence": "vigente",
@@ -212,7 +273,9 @@
         "the disabled next Link at offset 100000000 keeps a canonical cursor and reports no next page",
         "following the maximum next Link returns a valid empty page"
       ],
-      "evidence_files": ["identity/tests.log"]
+      "evidence_files": [
+        "identity/tests.log"
+      ]
     },
     "CLOSE-identidad-006": {
       "evidence": "vigente",
@@ -226,7 +289,12 @@
         "member has no navigation, form, metadata or direct access",
         "320/768/1440 captures without overflow"
       ],
-      "evidence_files": ["token-ui/summary.json", "token-ui/run.log", "token-ui/app.log", "token-ui/*.png"]
+      "evidence_files": [
+        "token-ui/summary.json",
+        "token-ui/run.log",
+        "token-ui/app.log",
+        "token-ui/*.png"
+      ]
     },
     "CLOSE-identidad-008": {
       "evidence": "vigente",
@@ -236,7 +304,12 @@
         "owner and member can change their own password through the real Account UI without email",
         "recovery and invitations remain separate handlers"
       ],
-      "evidence_files": ["account/summary.json", "account/generations.log", "account-owner/report.json", "account-member/report.json"]
+      "evidence_files": [
+        "account/summary.json",
+        "account/generations.log",
+        "account-owner/report.json",
+        "account-member/report.json"
+      ]
     },
     "CLOSE-identidad-009": {
       "evidence": "vigente",
@@ -247,7 +320,10 @@
         "session and API-token issuers recheck after waiting under an explicit Read Committed transaction",
         "password change atomically invalidates every owned credential"
       ],
-      "evidence_files": ["account/generations.log", "account/summary.json"]
+      "evidence_files": [
+        "account/generations.log",
+        "account/summary.json"
+      ]
     },
     "CLOSE-identidad-010": {
       "evidence": "vigente",
@@ -258,7 +334,12 @@
         "another session and the old password fail; the new password signs in",
         "three responsive widths without overflow"
       ],
-      "evidence_files": ["account-owner/report.json", "account-member/report.json", "account-owner/*.png", "account-member/*.png"]
+      "evidence_files": [
+        "account-owner/report.json",
+        "account-member/report.json",
+        "account-owner/*.png",
+        "account-member/*.png"
+      ]
     },
     "CLOSE-identidad-011": {
       "evidence": "vigente",
@@ -268,7 +349,10 @@
         "consolemail and loopback SMTP delivery, retries and TLS protection pass",
         "reset outbox migration, leases, retry and expiry pass"
       ],
-      "evidence_files": ["account-mail/summary.json", "account-mail/tests.log"]
+      "evidence_files": [
+        "account-mail/summary.json",
+        "account-mail/tests.log"
+      ]
     },
     "CLOSE-identidad-012": {
       "evidence": "vigente",
@@ -279,7 +363,10 @@
         "token link uses 64 hex, is single-use and expiry/lease behavior is covered",
         "old session and password fail; new password signs in; replay returns 400"
       ],
-      "evidence_files": ["account-mail/summary.json", "account-mail/tests.log"]
+      "evidence_files": [
+        "account-mail/summary.json",
+        "account-mail/tests.log"
+      ]
     },
     "CLOSE-identidad-013": {
       "evidence": "vigente",
@@ -291,7 +378,10 @@
         "team assignments follow IDs through acceptance",
         "compatible acceptance and mutation HTTP contracts"
       ],
-      "evidence_files": ["invitations/summary.json", "invitations/tests.log"]
+      "evidence_files": [
+        "invitations/summary.json",
+        "invitations/tests.log"
+      ]
     },
     "CLOSE-identidad-014": {
       "evidence": "vigente",
@@ -302,7 +392,9 @@
         "bootstrap, email lookup, ID lookup and session admission carry the generation",
         "AuthGeneration is excluded from JSON; zero/missing never authorizes issuance"
       ],
-      "evidence_files": ["account/generations.log"]
+      "evidence_files": [
+        "account/generations.log"
+      ]
     },
     "CLOSE-identidad-015": {
       "evidence": "vigente",
@@ -312,7 +404,9 @@
         "login/bootstrap/token creation/reset call sites pass the originally observed generation",
         "stale issuance tests reject changed generations"
       ],
-      "evidence_files": ["account/generations.log"]
+      "evidence_files": [
+        "account/generations.log"
+      ]
     },
     "CLOSE-identidad-016": {
       "evidence": "vigente",
@@ -323,7 +417,9 @@
         "token issuance locks sorted selected projects after membership and before the credential",
         "scope, role, expiry, secret and CSRF behavior preserved"
       ],
-      "evidence_files": ["account/generations.log"]
+      "evidence_files": [
+        "account/generations.log"
+      ]
     },
     "CLOSE-identidad-017": {
       "evidence": "vigente",
@@ -335,7 +431,9 @@
         "prior revoked rows, other users, project keys and telemetry preserved",
         "bigint overflow rolls back; commit uncertainty is not retried"
       ],
-      "evidence_files": ["account/generations.log"]
+      "evidence_files": [
+        "account/generations.log"
+      ]
     },
     "CLOSE-identidad-018": {
       "evidence": "vigente",
@@ -346,7 +444,11 @@
         "two changes with the same generation have one winner",
         "pre-revocation admission cannot issue a fresh credential; later login succeeds with the new password"
       ],
-      "evidence_files": ["account/generations.log", "account-owner/report.json", "account-member/report.json"]
+      "evidence_files": [
+        "account/generations.log",
+        "account-owner/report.json",
+        "account-member/report.json"
+      ]
     },
     "CLOSE-identidad-019": {
       "evidence": "vigente",
@@ -356,7 +458,9 @@
         "real interleaving observes the committed generation after the wait",
         "session and token issuers both recheck; no sleeps or production hooks"
       ],
-      "evidence_files": ["account/generations.log"]
+      "evidence_files": [
+        "account/generations.log"
+      ]
     },
     "CLOSE-identidad-020": {
       "evidence": "vigente",
@@ -367,7 +471,9 @@
         "current 1-72 bytes; new 12-72 UTF-8 bytes; no trimming",
         "same password still performs revocation; owner HTTP cases pass"
       ],
-      "evidence_files": ["account/route.log"]
+      "evidence_files": [
+        "account/route.log"
+      ]
     },
     "CLOSE-identidad-021": {
       "evidence": "vigente",
@@ -378,7 +484,10 @@
         "malformed/wrong password 400 without state change; stale identity 401; invalid session/CSRF 401/403",
         "storage 503 is generic; login/token stale generation is 401, not conflict"
       ],
-      "evidence_files": ["account/route.log", "account/generations.log"]
+      "evidence_files": [
+        "account/route.log",
+        "account/generations.log"
+      ]
     },
     "CLOSE-identidad-022": {
       "evidence": "vigente",
@@ -388,7 +497,11 @@
         "prefix/HttpOnly/SameSite/Secure cookie expiry and no replacement credential",
         "old session 401; new password login 200; no password/hash/generation in output"
       ],
-      "evidence_files": ["account/route.log", "account-owner/report.json", "account-member/report.json"]
+      "evidence_files": [
+        "account/route.log",
+        "account-owner/report.json",
+        "account-member/report.json"
+      ]
     },
     "CLOSE-identidad-023": {
       "evidence": "vigente",
@@ -400,7 +513,16 @@
         "503/network copy offers verification by new sign-in without auto retry",
         "320/768/1024/1440 without overflow or page errors"
       ],
-      "evidence_files": ["account-owner/report.json", "account-owner-1024/report.json", "account-member/report.json", "account-noorg/report.json", "account-owner/*.png", "account-owner-1024/*.png", "account-member/*.png", "account-noorg/*.png"]
+      "evidence_files": [
+        "account-owner/report.json",
+        "account-owner-1024/report.json",
+        "account-member/report.json",
+        "account-noorg/report.json",
+        "account-owner/*.png",
+        "account-owner-1024/*.png",
+        "account-member/*.png",
+        "account-noorg/*.png"
+      ]
     },
     "CLOSE-identidad-024": {
       "evidence": "vigente",
@@ -411,7 +533,10 @@
         "both issuer/change orderings, two concurrent changes and fresh-generation issuance",
         "new injected failure after revocation and deferred COMMIT failure roll back all state"
       ],
-      "evidence_files": ["account/generations.log", "account/rollback.log"]
+      "evidence_files": [
+        "account/generations.log",
+        "account/rollback.log"
+      ]
     },
     "CLOSE-identidad-025": {
       "evidence": "bloqueada por publicacion",
@@ -425,7 +550,15 @@
         "cause": "matching-source publication/CI is required by the contract but not authorized; commits remain local",
         "unlock": "publish image/CI from the candidate or provide an equivalent public artifact, then repeat the public acceptance"
       },
-      "evidence_files": ["identity-025/summary.json", "identity-025/build.log", "identity-025/flow.json", "identity-025/envelope-after.json", "identity-025/image.txt", "identity-025/restart.txt", "identity-025/app.log"]
+      "evidence_files": [
+        "identity-025/summary.json",
+        "identity-025/build.log",
+        "identity-025/flow.json",
+        "identity-025/envelope-after.json",
+        "identity-025/image.txt",
+        "identity-025/restart.txt",
+        "identity-025/app.log"
+      ]
     },
     "CLOSE-identidad-026": {
       "evidence": "vigente",
@@ -436,7 +569,11 @@
         "retain prior image and separately restored backup; no older issuer after a password change",
         "Compose has only goodsentry and postgres; app-only restart verified"
       ],
-      "evidence_files": ["docs/configuration.md diff", "identity-025/restart.txt", "compose/config-default.json"]
+      "evidence_files": [
+        "docs/configuration.md diff",
+        "identity-025/restart.txt",
+        "compose/config-default.json"
+      ]
     },
     "CLOSE-identidad-027": {
       "evidence": "vigente",
@@ -447,7 +584,9 @@
         "due/lease/user indexes without rewriting prior rows",
         "retry, expiry and stale-lease behavior pass"
       ],
-      "evidence_files": ["account-mail/tests.log"]
+      "evidence_files": [
+        "account-mail/tests.log"
+      ]
     },
     "CLOSE-identidad-028": {
       "evidence": "vigente",
@@ -458,7 +597,9 @@
         "Read Committed enqueue with observed generation; recent request keeps one delivery",
         "no caller-supplied destination or account-existence disclosure; 503 is generic"
       ],
-      "evidence_files": ["account-mail/tests.log"]
+      "evidence_files": [
+        "account-mail/tests.log"
+      ]
     },
     "CLOSE-identidad-029": {
       "evidence": "vigente",
@@ -469,7 +610,9 @@
         "usable only after sent, current generation, unconsumed and before 30-minute expiry",
         "token never returned/logged/telemetried"
       ],
-      "evidence_files": ["account-mail/tests.log"]
+      "evidence_files": [
+        "account-mail/tests.log"
+      ]
     },
     "CLOSE-identidad-030": {
       "evidence": "vigente",
@@ -480,7 +623,9 @@
         "SMTP delivery, temporary/permanent outcomes, TLS and credential protection pass",
         "retry/expiry/stale lease and sent-before-redemption pass"
       ],
-      "evidence_files": ["account-mail/tests.log"]
+      "evidence_files": [
+        "account-mail/tests.log"
+      ]
     },
     "CLOSE-identidad-031": {
       "evidence": "vigente",
@@ -491,7 +636,9 @@
         "hash/generation replacement, all sessions deleted, all unrevoked tokens revoked, reset consumed and siblings invalidated",
         "invalid tokens 400 without writes; success 204; password change invalidates pending resets"
       ],
-      "evidence_files": ["account-mail/tests.log"]
+      "evidence_files": [
+        "account-mail/tests.log"
+      ]
     },
     "CLOSE-identidad-032": {
       "evidence": "vigente",
@@ -502,7 +649,10 @@
         "consumed replay 400 and 60-second floor suppresses a second email",
         "320/768/1024/1440 without page errors"
       ],
-      "evidence_files": ["recovery-ui/report.json", "recovery-ui/*.png"]
+      "evidence_files": [
+        "recovery-ui/report.json",
+        "recovery-ui/*.png"
+      ]
     },
     "CLOSE-identidad-033": {
       "evidence": "bloqueada por publicacion",
@@ -516,7 +666,11 @@
         "cause": "copied-image/restart, exact source/publication and CI remain required and publication is not authorized",
         "unlock": "publish/CI the candidate and repeat the copied-image/restart acceptance"
       },
-      "evidence_files": ["account-mail/tests.log", "recovery-ui/report.json", "recovery-ui/*.png"]
+      "evidence_files": [
+        "account-mail/tests.log",
+        "recovery-ui/report.json",
+        "recovery-ui/*.png"
+      ]
     },
     "CLOSE-identidad-034": {
       "evidence": "vigente",
@@ -524,10 +678,12 @@
       "covered": [
         "additive nullable TOTP columns plus recovery codes and login challenges",
         "AES-256-GCM label-derived secret; plaintext only in enrollment/check memory",
-        "HMAC-SHA1 six digits 30 seconds, window ±1, constant-time compare",
+        "HMAC-SHA1 six digits 30 seconds, window \u00b11, constant-time compare",
         "store refuses step at or below the last accepted step; enrollment/challenge/recovery tests pass"
       ],
-      "evidence_files": ["identity/totp.log"]
+      "evidence_files": [
+        "identity/totp.log"
+      ]
     },
     "CLOSE-identidad-035": {
       "evidence": "vigente",
@@ -538,7 +694,9 @@
         "fifth failure/expiry/consumption/generation/unknown token return 401 without session",
         "credential change invalidates a pending challenge"
       ],
-      "evidence_files": ["identity/totp-login.log"]
+      "evidence_files": [
+        "identity/totp-login.log"
+      ]
     },
     "CLOSE-identidad-036": {
       "evidence": "vigente",
@@ -549,7 +707,10 @@
         "disable and regeneration require the current password",
         "mutations use session/same-origin/CSRF and no-store JSON"
       ],
-      "evidence_files": ["identity/totp-state.log", "identity/totp.log"]
+      "evidence_files": [
+        "identity/totp-state.log",
+        "identity/totp.log"
+      ]
     },
     "CLOSE-identidad-037": {
       "evidence": "vigente",
@@ -560,7 +721,11 @@
         "password-only login requires the TOTP step; disable requires password",
         "320/768/1440 without page errors"
       ],
-      "evidence_files": ["two-factor-ui/report.json", "two-factor-ui/*.png", "tests/compat/two_factor_browser.mjs"]
+      "evidence_files": [
+        "two-factor-ui/report.json",
+        "two-factor-ui/*.png",
+        "tests/compat/two_factor_browser.mjs"
+      ]
     },
     "CLOSE-identidad-038": {
       "evidence": "vigente",
@@ -570,7 +735,9 @@
         "compatible detail/update accepts require2FA; enabling requires the actor's confirmed TOTP",
         "native Organization view exposes the setting"
       ],
-      "evidence_files": ["identity/require2fa.log"]
+      "evidence_files": [
+        "identity/require2fa.log"
+      ]
     },
     "CLOSE-identidad-039": {
       "evidence": "vigente",
@@ -581,7 +748,9 @@
         "enrollment restores access; disabling is rejected while required",
         "gate does not disclose the triggering organization"
       ],
-      "evidence_files": ["identity/require2fa.log"]
+      "evidence_files": [
+        "identity/require2fa.log"
+      ]
     },
     "CLOSE-identidad-040": {
       "evidence": "vigente",
@@ -591,7 +760,9 @@
         "same-origin/CSRF and canonical IDs; foreign/absent rows 404",
         "People view available to authorized roles"
       ],
-      "evidence_files": ["identity/tenancy.log"]
+      "evidence_files": [
+        "identity/tenancy.log"
+      ]
     },
     "CLOSE-identidad-041": {
       "evidence": "vigente",
@@ -602,7 +773,9 @@
         "organization lock before membership changes",
         "removal deletes membership/team/tokens/assignments without deleting the user"
       ],
-      "evidence_files": ["identity/tenancy.log"]
+      "evidence_files": [
+        "identity/tenancy.log"
+      ]
     },
     "CLOSE-identidad-042": {
       "evidence": "vigente",
@@ -612,7 +785,9 @@
         "default team cannot be deleted; other deletion removes memberships/associations",
         "legacy project team mirror selects the smallest remaining ID or null"
       ],
-      "evidence_files": ["identity/tenancy.log"]
+      "evidence_files": [
+        "identity/tenancy.log"
+      ]
     },
     "CLOSE-identidad-043": {
       "evidence": "vigente",
@@ -621,7 +796,9 @@
         "owner/manager/admin boundaries for joined and unjoined teams",
         "204 add/remove and member detail reflects the change"
       ],
-      "evidence_files": ["identity/tenancy.log"]
+      "evidence_files": [
+        "identity/tenancy.log"
+      ]
     },
     "CLOSE-identidad-044": {
       "evidence": "vigente",
@@ -631,7 +808,9 @@
         "real PostgreSQL organization lock, owner rules, last owner and cascade",
         "HTTP role failures and team membership behavior"
       ],
-      "evidence_files": ["identity/tenancy.log"]
+      "evidence_files": [
+        "identity/tenancy.log"
+      ]
     },
     "CLOSE-identidad-045": {
       "evidence": "vigente",
@@ -641,7 +820,9 @@
         "delivery, organization, email, role, teams, token hash/ciphertext, generation, expiry, state and timestamps",
         "no rewrite of prior rows"
       ],
-      "evidence_files": ["invitations/tests.log"]
+      "evidence_files": [
+        "invitations/tests.log"
+      ]
     },
     "CLOSE-identidad-046": {
       "evidence": "vigente",
@@ -651,7 +832,9 @@
         "last-owner and role mutation rules",
         "team assignments and authority"
       ],
-      "evidence_files": ["invitations/tests.log"]
+      "evidence_files": [
+        "invitations/tests.log"
+      ]
     },
     "CLOSE-identidad-047": {
       "evidence": "vigente",
@@ -661,7 +844,9 @@
         "no bearer acceptance",
         "replay and cancellation behavior"
       ],
-      "evidence_files": ["invitations/tests.log"]
+      "evidence_files": [
+        "invitations/tests.log"
+      ]
     },
     "CLOSE-identidad-048": {
       "evidence": "vigente",
@@ -670,7 +855,9 @@
         "GET/POST /api/0/accept maps to the native acceptance",
         "new and existing identities accepted"
       ],
-      "evidence_files": ["invitations/tests.log"]
+      "evidence_files": [
+        "invitations/tests.log"
+      ]
     },
     "CLOSE-identidad-049": {
       "evidence": "vigente",
@@ -680,7 +867,9 @@
         "real PostgreSQL migration, teams and participation",
         "HTTP acceptance, replay, cancellation and secondary verified email"
       ],
-      "evidence_files": ["invitations/tests.log"]
+      "evidence_files": [
+        "invitations/tests.log"
+      ]
     },
     "CLOSE-identidad-050": {
       "evidence": "vigente",
@@ -690,7 +879,9 @@
         "state/nonce/PKCE and HttpOnly flow cookie",
         "verified email, issuer/audience and session validation"
       ],
-      "evidence_files": ["identity/oidc.log"]
+      "evidence_files": [
+        "identity/oidc.log"
+      ]
     },
     "CLOSE-identidad-051": {
       "evidence": "vigente",
@@ -699,7 +890,9 @@
         "random state/nonce/verifier and hashed storage",
         "callback validates them and rejects tampering"
       ],
-      "evidence_files": ["identity/oidc.log"]
+      "evidence_files": [
+        "identity/oidc.log"
+      ]
     },
     "CLOSE-identidad-052": {
       "evidence": "vigente",
@@ -708,7 +901,9 @@
         "normalized email, user and login instants",
         "unique provider/subject and existing-account link without duplication"
       ],
-      "evidence_files": ["identity/oidc.log"]
+      "evidence_files": [
+        "identity/oidc.log"
+      ]
     },
     "CLOSE-identidad-053": {
       "evidence": "vigente",
@@ -717,7 +912,9 @@
         "enabled/display name only; no issuer/client/secret leakage",
         "disabled public configuration passes"
       ],
-      "evidence_files": ["identity/oidc.log"]
+      "evidence_files": [
+        "identity/oidc.log"
+      ]
     },
     "CLOSE-identidad-054": {
       "evidence": "vigente",
@@ -726,7 +923,9 @@
         "apps persist per organization without rewriting prior rows",
         "compatible app routes and public discovery"
       ],
-      "evidence_files": ["identity/social.log"]
+      "evidence_files": [
+        "identity/social.log"
+      ]
     },
     "CLOSE-identidad-055": {
       "evidence": "vigente",
@@ -735,7 +934,9 @@
         "authorized CRUD and scope validation",
         "public discovery exposes only public fields"
       ],
-      "evidence_files": ["identity/social.log"]
+      "evidence_files": [
+        "identity/social.log"
+      ]
     },
     "CLOSE-identidad-056": {
       "evidence": "vigente",
@@ -744,7 +945,9 @@
         "callback path uses provider ID",
         "state/PKCE and verified identity are enforced"
       ],
-      "evidence_files": ["identity/social.log"]
+      "evidence_files": [
+        "identity/social.log"
+      ]
     },
     "CLOSE-identidad-057": {
       "evidence": "vigente",
@@ -753,7 +956,9 @@
         "provider+subject link creates/joins one member",
         "unverified profiles rejected"
       ],
-      "evidence_files": ["identity/social.log"]
+      "evidence_files": [
+        "identity/social.log"
+      ]
     },
     "CLOSE-identidad-058": {
       "evidence": "vigente",
@@ -762,7 +967,9 @@
         "each preset creates the organization member",
         "unverified preset profiles rejected"
       ],
-      "evidence_files": ["identity/social.log"]
+      "evidence_files": [
+        "identity/social.log"
+      ]
     },
     "CLOSE-identidad-059": {
       "evidence": "vigente",
@@ -771,7 +978,9 @@
         "tenant identity is used",
         "stored provider remains openid_connect"
       ],
-      "evidence_files": ["identity/social.log"]
+      "evidence_files": [
+        "identity/social.log"
+      ]
     },
     "CLOSE-identidad-060": {
       "evidence": "vigente",
@@ -780,7 +989,9 @@
         "same social:{providerID} identity is reused",
         "organization membership is created once"
       ],
-      "evidence_files": ["identity/social.log"]
+      "evidence_files": [
+        "identity/social.log"
+      ]
     },
     "CLOSE-identidad-061": {
       "evidence": "vigente",
@@ -789,7 +1000,9 @@
         "additive 056 preserves prior rows",
         "user-scoped tokens and recovery-code storage"
       ],
-      "evidence_files": ["identity/account-tokens.log"]
+      "evidence_files": [
+        "identity/account-tokens.log"
+      ]
     },
     "CLOSE-identidad-062": {
       "evidence": "vigente",
@@ -798,7 +1011,9 @@
         "owner isolation, cursor pages and revocation",
         "open-mode owner behavior"
       ],
-      "evidence_files": ["identity/account-tokens.log"]
+      "evidence_files": [
+        "identity/account-tokens.log"
+      ]
     },
     "CLOSE-identidad-063": {
       "evidence": "vigente",
@@ -807,7 +1022,9 @@
         "bearer reads and scope",
         "native account access remains denied"
       ],
-      "evidence_files": ["identity/account-tokens.log"]
+      "evidence_files": [
+        "identity/account-tokens.log"
+      ]
     },
     "CLOSE-identidad-064": {
       "evidence": "vigente",
@@ -816,7 +1033,9 @@
         "GET/POST generate-recovery-codes",
         "single-use consumption, replay and regeneration"
       ],
-      "evidence_files": ["identity/account-tokens.log"]
+      "evidence_files": [
+        "identity/account-tokens.log"
+      ]
     },
     "CLOSE-errores-001": {
       "evidence": "vigente",
@@ -826,7 +1045,9 @@
         "403 absent/invalid key; management tokens are not SDK keys",
         "store and envelope work under a URL prefix"
       ],
-      "evidence_files": ["ingest.log"]
+      "evidence_files": [
+        "ingest.log"
+      ]
     },
     "CLOSE-errores-002": {
       "evidence": "vigente",
@@ -836,7 +1057,9 @@
         "binary/newline/zero-length/unknown items preserve framing",
         "truncated, negative/overflow, multiline/padded and trailing bytes rejected"
       ],
-      "evidence_files": ["ingest.log"]
+      "evidence_files": [
+        "ingest.log"
+      ]
     },
     "CLOSE-errores-003": {
       "evidence": "vigente",
@@ -846,7 +1069,9 @@
         "compressed/decompressed limits and item bounds",
         "400/413/415/503 mapping and 429/CORS owners"
       ],
-      "evidence_files": ["ingest.log"]
+      "evidence_files": [
+        "ingest.log"
+      ]
     },
     "CLOSE-errores-004": {
       "evidence": "vigente",
@@ -856,7 +1081,9 @@
         "attachments stored as bytes with server SHA-256 and filename as metadata",
         "project scope revalidated; native/compatible read/download/pagination pass"
       ],
-      "evidence_files": ["ingest-attachments.log"]
+      "evidence_files": [
+        "ingest-attachments.log"
+      ]
     },
     "CLOSE-errores-005": {
       "evidence": "vigente",
@@ -867,7 +1094,9 @@
         "resolved issue regresses visibly; statuses/assignment/comments/search/sort/pages pass",
         "merge/unmerge preserve partitions and history"
       ],
-      "evidence_files": ["errors-grouping.log"]
+      "evidence_files": [
+        "errors-grouping.log"
+      ]
     },
     "CLOSE-errores-007": {
       "evidence": "vigente",
@@ -877,7 +1106,9 @@
         "membership/project authorization and snapshot counts",
         "invalid/duplicate/encoding inputs rejected"
       ],
-      "evidence_files": ["issue-search.log"]
+      "evidence_files": [
+        "issue-search.log"
+      ]
     },
     "CLOSE-errores-008": {
       "evidence": "vigente",
@@ -886,7 +1117,9 @@
         "strict query/selector/status/sort/page bounds",
         "duplicate or unknown parameters rejected"
       ],
-      "evidence_files": ["issue-search.log"]
+      "evidence_files": [
+        "issue-search.log"
+      ]
     },
     "CLOSE-errores-009": {
       "evidence": "vigente",
@@ -896,7 +1129,9 @@
         "bare keys stay message; no invented aliases",
         "SQL-looking values remain literal"
       ],
-      "evidence_files": ["issue-search.log"]
+      "evidence_files": [
+        "issue-search.log"
+      ]
     },
     "CLOSE-errores-010": {
       "evidence": "vigente",
@@ -905,7 +1140,9 @@
         "typed text/terms/status/environment/release/sort/page values",
         "no implicit coercion"
       ],
-      "evidence_files": ["issue-search.log"]
+      "evidence_files": [
+        "issue-search.log"
+      ]
     },
     "CLOSE-errores-011": {
       "evidence": "vigente",
@@ -915,7 +1152,9 @@
         "status independent from matching event",
         "snapshot survives concurrent triage"
       ],
-      "evidence_files": ["issue-search.log"]
+      "evidence_files": [
+        "issue-search.log"
+      ]
     },
     "CLOSE-errores-012": {
       "evidence": "vigente",
@@ -924,7 +1163,9 @@
         "membership and project boundary",
         "count/pages over authorized snapshot"
       ],
-      "evidence_files": ["issue-search.log"]
+      "evidence_files": [
+        "issue-search.log"
+      ]
     },
     "CLOSE-errores-013": {
       "evidence": "vigente",
@@ -933,7 +1174,10 @@
         "text/project/status/environment/release/sort controls",
         "combined filters write URL and preserve values"
       ],
-      "evidence_files": ["issue-filters/report.json", "issue-filters/*.png"]
+      "evidence_files": [
+        "issue-filters/report.json",
+        "issue-filters/*.png"
+      ]
     },
     "CLOSE-errores-014": {
       "evidence": "vigente",
@@ -944,7 +1188,11 @@
         "structured tag+environment+release intersection",
         "no overflow or page errors"
       ],
-      "evidence_files": ["issue-filters/report.json", "issue-filters/*.png", "tests/compat/issue_filters_browser.mjs"]
+      "evidence_files": [
+        "issue-filters/report.json",
+        "issue-filters/*.png",
+        "tests/compat/issue_filters_browser.mjs"
+      ]
     },
     "CLOSE-errores-015": {
       "evidence": "vigente",
@@ -954,73 +1202,145 @@
         "management session and event:admin scope",
         "detail and selected UI confirmation"
       ],
-      "evidence_files": ["errores-015-026.log", "issue-delete/report.json", "issue-delete/*.png"]
+      "evidence_files": [
+        "errores-015-026.log",
+        "issue-delete/report.json",
+        "issue-delete/*.png"
+      ]
     },
     "CLOSE-errores-016": {
       "evidence": "vigente",
       "scope": "individual 204 and organization bulk 200 status contract",
-      "covered": ["individual global/organization 204", "bulk 200", "hidden/unknown selectors"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "individual global/organization 204",
+        "bulk 200",
+        "hidden/unknown selectors"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-017": {
       "evidence": "vigente",
       "scope": "exact DELETE routes and aliases",
-      "covered": ["all four exact routes", "strict slash/query/IDs", "alias canonicalization"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "all four exact routes",
+        "strict slash/query/IDs",
+        "alias canonicalization"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-018": {
       "evidence": "vigente",
       "scope": "020 event:admin scope migration and preservation",
-      "covered": ["only event:admin added", "old rows/scopes preserved", "reopen checksum"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "only event:admin added",
+        "old rows/scopes preserved",
+        "reopen checksum"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-019": {
       "evidence": "vigente",
       "scope": "bulk selectors, containment, dedup and limits",
-      "covered": ["id/project/environment/query/status/sort/page/category", "containment", "dedup"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "id/project/environment/query/status/sort/page/category",
+        "containment",
+        "dedup"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-020": {
       "evidence": "vigente",
       "scope": "ID-less same-occurrence selection and hidden scope precedence",
-      "covered": ["historical same-event search", "hidden containment before limit", "typed state"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "historical same-event search",
+        "hidden containment before limit",
+        "typed state"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-021": {
       "evidence": "vigente",
       "scope": "DeleteCompatibleIssue(s) interfaces and ManagementAccess",
-      "covered": ["atomic current membership/admission", "whole-group provider", "bounded bulk"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "atomic current membership/admission",
+        "whole-group provider",
+        "bounded bulk"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-022": {
       "evidence": "vigente",
       "scope": "whole-group deletion and independent history",
-      "covered": ["root plus partitions", "independent history retained", "new generation"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "root plus partitions",
+        "independent history retained",
+        "new generation"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-023": {
       "evidence": "vigente",
       "scope": "new matching capture after deletion creates a fresh issue",
-      "covered": ["retry identity", "fresh generation", "no resurrection of old partitions"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "retry identity",
+        "fresh generation",
+        "no resurrection of old partitions"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-024": {
       "evidence": "vigente",
       "scope": "atomic child attachment/opaque storage and deletion ordering",
-      "covered": ["no post-commit gap", "capture waits/fencing", "cancel/rollback"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "no post-commit gap",
+        "capture waits/fencing",
+        "cancel/rollback"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-025": {
       "evidence": "vigente",
       "scope": "envelope boundary collects only normalized parent attachments/opaque",
-      "covered": ["parent-only child storage", "mixed envelope independence", "retry"]
-      ,"evidence_files": ["errores-015-026.log"]
+      "covered": [
+        "parent-only child storage",
+        "mixed envelope independence",
+        "retry"
+      ],
+      "evidence_files": [
+        "errores-015-026.log"
+      ]
     },
     "CLOSE-errores-026": {
       "evidence": "vigente",
       "scope": "native Delete issue/Delete selected with confirmation",
-      "covered": ["bulk exactly selected", "detail confirmation", "320/768/1440 without errors"]
-      ,"evidence_files": ["issue-delete/report.json", "issue-delete/*.png", "tests/compat/issue_delete_browser.mjs"]
+      "covered": [
+        "bulk exactly selected",
+        "detail confirmation",
+        "320/768/1440 without errors"
+      ],
+      "evidence_files": [
+        "issue-delete/report.json",
+        "issue-delete/*.png",
+        "tests/compat/issue_delete_browser.mjs"
+      ]
     },
     "CLOSE-errores-027": {
       "evidence": "vigente",
@@ -1030,7 +1350,10 @@
         "discard is the only mutation; event:write/admin scopes and CSRF",
         "204 after commit and native UI confirmation"
       ],
-      "evidence_files": ["errores-027-031.log", "issue-delete/report.json"]
+      "evidence_files": [
+        "errores-027-031.log",
+        "issue-delete/report.json"
+      ]
     },
     "CLOSE-errores-028": {
       "evidence": "vigente",
@@ -1040,7 +1363,9 @@
         "detached hashes untouched; markers survive reset/merge/restart",
         "project cascade only"
       ],
-      "evidence_files": ["errores-027-031.log"]
+      "evidence_files": [
+        "errores-027-031.log"
+      ]
     },
     "CLOSE-errores-029": {
       "evidence": "vigente",
@@ -1050,7 +1375,10 @@
         "no parent throttle/key quota; fingerprint identity only",
         "native and SDK captures"
       ],
-      "evidence_files": ["errores-027-031.log", "issue-delete/report.json"]
+      "evidence_files": [
+        "errores-027-031.log",
+        "issue-delete/report.json"
+      ]
     },
     "CLOSE-errores-030": {
       "evidence": "vigente",
@@ -1060,7 +1388,9 @@
         "independent logs/spans keep quota in an admitted request",
         "throttled mixed requests reject before writes"
       ],
-      "evidence_files": ["errores-027-031.log"]
+      "evidence_files": [
+        "errores-027-031.log"
+      ]
     },
     "CLOSE-errores-031": {
       "evidence": "vigente",
@@ -1070,7 +1400,9 @@
         "event:write/admin and session/CSRF boundaries",
         "204 after commit"
       ],
-      "evidence_files": ["errores-027-031.log"]
+      "evidence_files": [
+        "errores-027-031.log"
+      ]
     },
     "CLOSE-errores-032": {
       "evidence": "vigente",
@@ -1080,7 +1412,10 @@
         "full-group deletion, raw/attachment/opaque ownership and rollback/cancel",
         "signed project gate ordering, ABA, selection, dedup/limits and HTTP status/admission"
       ],
-      "evidence_files": ["errores-015-026.log", "errores-027-031.log"]
+      "evidence_files": [
+        "errores-015-026.log",
+        "errores-027-031.log"
+      ]
     },
     "CLOSE-errores-033": {
       "evidence": "bloqueada por publicacion y aceptacion externa",
@@ -1092,73 +1427,142 @@
         "cause": "official SDK/CLI and copied-image/public CI acceptance remain, and publication is not authorized",
         "unlock": "run the pinned official SDK/CLI/browser/image acceptance and publish matching source/CI"
       },
-      "evidence_files": ["errores-027-031.log", "issue-delete/report.json"]
+      "evidence_files": [
+        "errores-027-031.log",
+        "issue-delete/report.json"
+      ]
     },
     "CLOSE-errores-034": {
       "evidence": "vigente",
       "scope": "compatible hash listing and future-only detachment",
-      "covered": ["full/summary pages and cursor Links", "exact signature reset", "historical events retained"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "full/summary pages and cursor Links",
+        "exact signature reset",
+        "historical events retained"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-035": {
       "evidence": "vigente",
       "scope": "DELETE 202 future-route removal and new-generation routing",
-      "covered": ["202 response", "future route removed only", "new generation after reset"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "202 response",
+        "future route removed only",
+        "new generation after reset"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-036": {
       "evidence": "vigente",
       "scope": "019 issue_hash_routes migration/backfill/constraints",
-      "covered": ["preserves legacy membership", "backfills routes", "inconsistent ownership rejected atomically"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "preserves legacy membership",
+        "backfills routes",
+        "inconsistent ownership rejected atomically"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-037": {
       "evidence": "vigente",
       "scope": "capture retry serialization and reset ordering",
-      "covered": ["capture before reset stays historical", "canceled/concurrent reset", "no lost generation"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "capture before reset stays historical",
+        "canceled/concurrent reset",
+        "no lost generation"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-038": {
       "evidence": "vigente",
       "scope": "native/compatible merge flattening and route history",
-      "covered": ["merged membership retained", "original partitions and aliases", "future routing"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "merged membership retained",
+        "original partitions and aliases",
+        "future routing"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-039": {
       "evidence": "vigente",
       "scope": "exact GET/DELETE hash routes and strict bodies",
-      "covered": ["exact routes", "strict query/body admission", "prefixed Links and authoritative scopes"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "exact routes",
+        "strict query/body admission",
+        "prefixed Links and authoritative scopes"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-040": {
       "evidence": "vigente",
       "scope": "hash GET scalar limit/cursor/full admission",
-      "covered": ["single scalar parameters", "invalid/duplicate/encoding inputs rejected", "exact route"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "single scalar parameters",
+        "invalid/duplicate/encoding inputs rejected",
+        "exact route"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-041": {
       "evidence": "vigente",
       "scope": "latest retained event projection and empty/error states",
-      "covered": ["newest occurrence timestamp", "sample projection", "empty state"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "newest occurrence timestamp",
+        "sample projection",
+        "empty state"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-042": {
       "evidence": "vigente",
       "scope": "hash DELETE repeated id body and 202",
-      "covered": ["1..1000 canonical UUIDs", "dedup and empty body", "202 after commit"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "1..1000 canonical UUIDs",
+        "dedup and empty body",
+        "202 after commit"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-043": {
       "evidence": "vigente",
       "scope": "capture/reset serialization and gate ordering",
-      "covered": ["capture before/after reset", "canceled reset", "no inverse lock cycle"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "capture before/after reset",
+        "canceled reset",
+        "no inverse lock cycle"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-044": {
       "evidence": "vigente",
       "scope": "typed hash filter/item and provider contracts",
-      "covered": ["scoped snapshot and limits", "ReadOnly/canonical validation", "shared route helper"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "scoped snapshot and limits",
+        "ReadOnly/canonical validation",
+        "shared route helper"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-045": {
       "evidence": "vigente",
@@ -1169,23 +1573,121 @@
         "existing events stay historical; next matching capture creates a new issue",
         "320/768/1440 without page errors"
       ],
-      "evidence_files": ["grouping-reset/report.json", "grouping-reset/*.png", "tests/compat/issue_grouping_reset_browser.mjs"]
+      "evidence_files": [
+        "grouping-reset/report.json",
+        "grouping-reset/*.png",
+        "tests/compat/issue_grouping_reset_browser.mjs"
+      ]
     },
     "CLOSE-errores-046": {
       "evidence": "vigente",
       "scope": "hash verification across migration, races, auth and HTTP",
-      "covered": ["019 preservation", "reset/merge/alias/grant cases", "exact routes/status/Links"]
-      ,"evidence_files": ["errores-034-039.log"]
+      "covered": [
+        "019 preservation",
+        "reset/merge/alias/grant cases",
+        "exact routes/status/Links"
+      ],
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
     },
     "CLOSE-errores-047": {
       "evidence": "bloqueada por publicacion y aceptacion externa",
       "scope": "official SDK before/after reset and copied-image/publication acceptance",
-      "covered": ["local hash/reset/browser contracts"],
+      "covered": [
+        "local hash/reset/browser contracts"
+      ],
       "blocker": {
         "cause": "official SDK captures, copied-image restart, exact public tree/CI/deployed checks are not available without publication authorization",
         "unlock": "run the official SDK/image acceptance and publish matching source/CI"
       },
-      "evidence_files": ["errores-034-039.log"]
+      "evidence_files": [
+        "errores-034-039.log"
+      ]
+    },
+    "CLOSE-errores-048": {
+      "evidence": "vigente",
+      "scope": "both bulk PUT routes, individual fields and merge",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-049": {
+      "evidence": "vigente",
+      "scope": "public bulk contracts and pinned sentry-cli request authority",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-050": {
+      "evidence": "vigente",
+      "scope": "observed GlitchTip defects treated as non-requirements",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-051": {
+      "evidence": "vigente",
+      "scope": "event:write/session authority and CSRF",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-052": {
+      "evidence": "vigente",
+      "scope": "repeated selectors, containment and scalar query/status/sort/page",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-053": {
+      "evidence": "vigente",
+      "scope": "issue orders, default last_seen and deterministic pages",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-054": {
+      "evidence": "vigente",
+      "scope": "strict 1 MiB JSON with individual fields and policy aliases",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-055": {
+      "evidence": "vigente",
+      "scope": "atomic Read Committed commit of selected operations",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-056": {
+      "evidence": "vigente",
+      "scope": "shared native merge body and topology preservation",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-057": {
+      "evidence": "vigente",
+      "scope": "typed CompatibleIssueBulkFilter/internal provider contracts",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-058": {
+      "evidence": "vigente",
+      "scope": "200 partial acknowledgement with committed actor",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
+    },
+    "CLOSE-errores-059": {
+      "evidence": "vigente",
+      "scope": "parser/store/HTTP owning verification",
+      "evidence_files": [
+        "errores-048-059.log"
+      ]
     }
   },
   "commands": [
@@ -1215,7 +1717,11 @@
     "failure": "The first full race run failed TestRetentionWorkersDrainRetryAndStop/releases after 6.44s against a 5s drain deadline; the isolated run passed in 1.16s for that subtest.",
     "diagnosis": "The 601-row release backlog is drained in bounded 250-row passes. Under full-suite race instrumentation and a shared PostgreSQL instance, three passes exceeded the fixed 5s window; no lost row, error or data race was observed.",
     "change": "Raised only the test drain deadline to 15s, preserving a bounded assertion. Production retention behavior is unchanged.",
-    "evidence": ["full-race-1-failure.log", "jobs-isolated.log", "full-race-final.log"]
+    "evidence": [
+      "full-race-1-failure.log",
+      "jobs-isolated.log",
+      "full-race-final.log"
+    ]
   },
   "limits": [
     "No browser, Docker image, compose, SDK, S3, external provider or publication acceptance was performed in this increment.",
