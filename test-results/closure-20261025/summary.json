@@ -1129,6 +1129,52 @@
       "scope": "exact GET/DELETE hash routes and strict bodies",
       "covered": ["exact routes", "strict query/body admission", "prefixed Links and authoritative scopes"]
       ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-040": {
+      "evidence": "vigente",
+      "scope": "hash GET scalar limit/cursor/full admission",
+      "covered": ["single scalar parameters", "invalid/duplicate/encoding inputs rejected", "exact route"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-041": {
+      "evidence": "vigente",
+      "scope": "latest retained event projection and empty/error states",
+      "covered": ["newest occurrence timestamp", "sample projection", "empty state"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-042": {
+      "evidence": "vigente",
+      "scope": "hash DELETE repeated id body and 202",
+      "covered": ["1..1000 canonical UUIDs", "dedup and empty body", "202 after commit"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-043": {
+      "evidence": "vigente",
+      "scope": "capture/reset serialization and gate ordering",
+      "covered": ["capture before/after reset", "canceled reset", "no inverse lock cycle"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-044": {
+      "evidence": "vigente",
+      "scope": "typed hash filter/item and provider contracts",
+      "covered": ["scoped snapshot and limits", "ReadOnly/canonical validation", "shared route helper"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-046": {
+      "evidence": "vigente",
+      "scope": "hash verification across migration, races, auth and HTTP",
+      "covered": ["019 preservation", "reset/merge/alias/grant cases", "exact routes/status/Links"]
+      ,"evidence_files": ["errores-034-039.log"]
+    },
+    "CLOSE-errores-047": {
+      "evidence": "bloqueada por publicacion y aceptacion externa",
+      "scope": "official SDK before/after reset and copied-image/publication acceptance",
+      "covered": ["local hash/reset/browser contracts"],
+      "blocker": {
+        "cause": "official SDK captures, copied-image restart, exact public tree/CI/deployed checks are not available without publication authorization",
+        "unlock": "run the official SDK/image acceptance and publish matching source/CI"
+      },
+      "evidence_files": ["errores-034-039.log"]
     }
   },
   "commands": [

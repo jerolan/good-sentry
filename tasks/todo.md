@@ -1443,11 +1443,12 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032 y 034–039 están vigentes y 033
-bloqueada; 006 espera proveedores de releases/artefactos/nativo/CLI. Siguiente
-acción: CLOSE-alertas-001. No se declara aceptación ni cierre del producto. El
-avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+publicación/CI; errores 001–005, 007–032, 034–044 y 046 están vigentes y
+033/047 bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI.
+Siguiente acción: CLOSE-errores-045 (Future grouping UI). No se declara
+aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1574,14 +1575,14 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-037](../SPEC.md#close-errores-037) | Compatible hashes and future grouping reset: Ingest retains retry advisory serialization and the existing earl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ingesta |
 | [CLOSE-errores-038](../SPEC.md#close-errores-038) | Compatible hashes and future grouping reset: Native and compatible merges continue to flatten issue membership… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de merge |
 | [CLOSE-errores-039](../SPEC.md#close-errores-039) | Compatible hashes and future grouping reset: Register exact GET and DELETE /api/0/organizations/{org}/issues/{… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
-| [CLOSE-errores-040](../SPEC.md#close-errores-040) | Compatible hashes and future grouping reset: GET accepts only scalar limit, cursor and full, rejecting duplica… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-041](../SPEC.md#close-errores-041) | Compatible hashes and future grouping reset: latestEvent is the newest retained event by occurrence timestamp… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-042](../SPEC.md#close-errores-042) | Compatible hashes and future grouping reset: DELETE accepts only repeated id parameters,1..1000 supplied UUID… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-043](../SPEC.md#close-errores-043) | Compatible hashes and future grouping reset: A concurrent capture and reset serialize on the project gate. A c… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-044](../SPEC.md#close-errores-044) | Compatible hashes and future grouping reset: Internal contracts: CompatibleIssueHashFilter contains Offset/Lim… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-040](../SPEC.md#close-errores-040) | Compatible hashes and future grouping reset: GET accepts only scalar limit, cursor and full, rejecting duplica… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-041](../SPEC.md#close-errores-041) | Compatible hashes and future grouping reset: latestEvent is the newest retained event by occurrence timestamp… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-042](../SPEC.md#close-errores-042) | Compatible hashes and future grouping reset: DELETE accepts only repeated id parameters,1..1000 supplied UUID… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-043](../SPEC.md#close-errores-043) | Compatible hashes and future grouping reset: A concurrent capture and reset serialize on the project gate. A c… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-044](../SPEC.md#close-errores-044) | Compatible hashes and future grouping reset: Internal contracts: CompatibleIssueHashFilter contains Offset/Lim… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-045](../SPEC.md#close-errores-045) | Compatible hashes and future grouping reset: Add a Future grouping section to native issue detail with real pa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-046](../SPEC.md#close-errores-046) | Compatible hashes and future grouping reset: Verification must apply test-audit before authorship. PostgreSQL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-047](../SPEC.md#close-errores-047) | Compatible hashes and future grouping reset: Acceptance requires actual official SDK captures before/after res… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-046](../SPEC.md#close-errores-046) | Compatible hashes and future grouping reset: Verification must apply test-audit before authorship. PostgreSQL… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-047](../SPEC.md#close-errores-047) | Compatible hashes and future grouping reset: Acceptance requires actual official SDK captures before/after res… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
 | [CLOSE-errores-048](../SPEC.md#close-errores-048) | Compatible bulk issue changes and merging: Complete PUT /api/0/projects/{org}/{project}/issues/ and PUT /api/0… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-049](../SPEC.md#close-errores-049) | Compatible bulk issue changes and merging: Authorities are the public project bulk contract(https://docs.sentr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-050](../SPEC.md#close-errores-050) | Compatible bulk issue changes and merging: A separate unmodified GlitchTip6.2.6 image a3d8eb1b36c1e1603d55ab32… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3759,8 +3760,30 @@ Subresultados pendientes de los bloques: ninguno.
 
 Evidencia: `test-results/closure-20261025/errores-034-039.log`.
 
-Siguiente acción: la familia de errores queda cerrada salvo 006/033 por sus
-proveedores/publicación; continuar con alertas desde CLOSE-alertas-001.
+Siguiente acción: cerrar 040–044/046; después 045 (Future grouping UI) y 047
+(aceptación SDK/imagen/CI, bloqueada por publicación).
+
+### Ejecución 2026-10-26: contratos y consultas de hashes
+
+Selección registrada antes de trabajar: CLOSE-errores-040 a -044 y -046.
+Candidata `cba1504`; producto sin cambios desde `54db6e4`. La evidencia
+proviene de `errores-034-039.log` y los owners de parse/HTTP/store.
+
+Resultado observado: GET acepta solo `limit`, `cursor` y `full` escalares y
+rechaza duplicados/encoding inválido; `latestEvent` es el evento retenido más
+reciente por timestamp y conserva sample/empty. DELETE acepta únicamente
+`id` repetidos 1..1000, UUID de 32 hex o 36 con guiones, deduplica y exige
+body vacío; devuelve 202 sin body tras el commit. Captura/reset se serializan
+en el gate del proyecto y un reset cancelado no pierde historia. Los contratos
+internos `CompatibleIssueHashFilter`/`CompatibleIssueHash` y los providers
+`CompatibleIssueHashes`/`ResetCompatibleIssueHashes` mantienen scoped snapshot,
+límites y errores consistentes. Los tests de migración, carreras, autorización
+y HTTP cubren 046. Subresultados pendientes de 040–044/046: ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-034-039.log`.
+
+Siguiente acción: CLOSE-errores-045 (sección Future grouping en la UI),
+después 047 (aceptación SDK/imagen/CI, bloqueada).
 
 ### Comprobante de integración documental
 
