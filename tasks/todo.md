@@ -1443,12 +1443,12 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032, 034–046, 048–068 y 069–083 están
-vigentes; 033/047/084 bloqueadas; 006 espera proveedores de releases/
-artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-099 (UI Affected users).
-No se declara aceptación ni cierre del producto. El avance se informa por
-criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
-Goal no completan el producto ni borran este registro.
+publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083 y
+085–100 están vigentes; 033/047/084 bloqueadas; 006 espera proveedores de
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-101 (event
+inspection). No se declara aceptación ni cierre del producto. El avance se
+informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1634,7 +1634,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-096](../SPEC.md#close-errores-096) | Compatible issue summaries and real analytics: Issue-stats requires repeated groups canonical positive IDs,1..… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-097](../SPEC.md#close-errores-097) | Compatible issue summaries and real analytics: Internal contracts: IssueAnalytics contains UserCount int64 and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-098](../SPEC.md#close-errores-098) | Compatible issue summaries and real analytics: Add compatible GET /api/0/issues/{issue}/commits/ and /api/0/or… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-099](../SPEC.md#close-errores-099) | Compatible issue summaries and real analytics: Native issue detail displays Affected users (identified retaine… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-099](../SPEC.md#close-errores-099) | Compatible issue summaries and real analytics: Native issue detail displays Affected users (identified retaine… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI |
 | [CLOSE-errores-100](../SPEC.md#close-errores-100) | Compatible issue summaries and real analytics: Owning PostgreSQL tests cover grants/current membership/alias a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-101](../SPEC.md#close-errores-101) | Compatible event inspection: Implement compatible event inspection as the first vertical part of the required… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-102](../SPEC.md#close-errores-102) | Compatible event inspection: Register GET /api/0/projects/{org}/{project}/events/ and .../events/{event}/. Reg… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3929,6 +3929,24 @@ Evidencia: `test-results/closure-20261025/errores-085-098.log`.
 
 Siguiente acción: CLOSE-errores-099 (UI Affected users); después 101 (event
 inspection).
+
+### Ejecución 2026-10-26: Affected users en detalle
+
+Selección registrada antes de trabajar: CLOSE-errores-099. Candidata
+`3b8491a`; producto sin cambios desde `54db6e4`. La evidencia proviene de un
+contrato de navegador con eventos reales.
+
+Resultado observado: un issue con tres eventos, dos usuarios identificados
+distintos y uno sin usuario muestra `Affected users` = 2 en el detalle, con la
+nota `Identified retained users`. Las capturas cubren 320/768/1440 sin
+desbordamiento ni errores de página. Subresultados pendientes del bloque:
+ninguno.
+
+Evidencia: `test-results/closure-20261025/affected-users/` y
+`tests/compat/issue_affected_users_browser.mjs`.
+
+Siguiente acción: CLOSE-errores-101 (compatible event inspection), con sus
+rutas y proyección tipada.
 
 ### Comprobante de integración documental
 

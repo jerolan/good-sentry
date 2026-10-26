@@ -2022,6 +2022,20 @@
       "evidence_files": [
         "errores-085-098.log"
       ]
+    },
+    "CLOSE-errores-099": {
+      "evidence": "vigente",
+      "scope": "Affected users count and label in native issue detail",
+      "covered": [
+        "two distinct identified users counted",
+        "unidentified event excluded",
+        "320/768/1440 without errors"
+      ],
+      "evidence_files": [
+        "affected-users/report.json",
+        "affected-users/*.png",
+        "tests/compat/issue_affected_users_browser.mjs"
+      ]
     }
   },
   "commands": [
