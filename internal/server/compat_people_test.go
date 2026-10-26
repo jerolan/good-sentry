@@ -227,6 +227,19 @@ func TestCompatibleOrganizationMemberManagementHTTP(t *testing.T) {
 		t.Fatalf("idempotent remove member HTTP: %+v %v", team, err)
 	}
 	f.request(t, f.client, "POST", memberBase+"teams/missing/", "", csrf, 404)
+	invitation, err := f.db.InviteMember(f.ctx, f.owner.ID, f.org.Slug, "pending-member@test", "member", strings.Repeat("cd", 32), bytes.Repeat([]byte{2}, 92), 7*24*time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	invitationBase := orgBase + "/members/" + invitation.ID + "/"
+	var pendingMember store.CompatibleOrganizationUser
+	if err := json.Unmarshal(f.request(t, f.client, "GET", invitationBase, "", nil, 200), &pendingMember); err != nil || !pendingMember.Pending || pendingMember.User != nil || pendingMember.Email != "pending-member@test" {
+		t.Fatalf("pending invitation detail: %+v %v", pendingMember, err)
+	}
+	f.request(t, memberClient, "GET", invitationBase, "", nil, 404)
+	f.request(t, f.client, "PUT", invitationBase, `{"orgRole":"admin"}`, csrf, 400)
+	f.request(t, f.client, "DELETE", invitationBase, "", csrf, 204)
+
 
 	readToken := issueManagementToken(t, f, f.org.Slug, "Member read", []string{"org:read"}, []string{f.project.ID})
 	readHeaders := http.Header{"Authorization": {"Bearer " + readToken}}

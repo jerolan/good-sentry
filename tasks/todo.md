@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-088 (detalle y mutaciones de miembro). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-identidad-089 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1928,7 +1928,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-085](../SPEC.md#close-identidad-085) | Compatible project update and deletion: GET /api/0/projects/{org}/{project}/environments/ and its /{name}/ det… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-086](../SPEC.md#close-identidad-086) | Compatible project update and deletion: The read-only people surface is GET /api/0/organizations/{org}/members… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-087](../SPEC.md#close-identidad-087) | Compatible project update and deletion: Organization people use OrganizationUserSchema with the real user id,… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-088](../SPEC.md#close-identidad-088) | Compatible project update and deletion: GET /api/0/organizations/{org}/members/{member}/ returns the same Orga… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-088](../SPEC.md#close-identidad-088) | Compatible project update and deletion: GET /api/0/organizations/{org}/members/{member}/ returns the same Orga… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-089](../SPEC.md#close-identidad-089) | Compatible project update and deletion: Real PostgreSQL covers organization/member/team visibility, ordered te… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-090](../SPEC.md#close-identidad-090) | Compatible project update and deletion: Additive040 expands the API-token scope constraint with org:write. Exi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-091](../SPEC.md#close-identidad-091) | Compatible project update and deletion: Additive migration062 extends membership and invitation role constrain… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5089,6 +5089,34 @@ se cubre el rechazo estricto de parámetros y el 404 de equipos ajenos.
 Evidencia: `test-results/closure-20261025/identidad-086-087-go.log` con los
 owners de personas, gestión de miembros, accesos y store, además del owner
 ampliado en `internal/server/compat_people_test.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: detalle y mutaciones de miembro
+
+Selección registrada antes de trabajar: CLOSE-identidad-088. Candidata
+`60718ed`.
+
+Resultado observado: el detalle de miembro acepta ID canónico o `me`,
+responde 400 para IDs malformados, 404 para ausentes o ajenos, 400 con consultas
+y exige membresía actual. Un ID hexadecimal de invitación devuelve la fila
+pendiente a propietarios, managers y administradores con `pending:true`,
+`user:null` y los slugs de equipo asignados, mientras un miembro recibe 404.
+`PUT` acepta solo `{orgRole,teamRoles?}` con roles válidos, ignora `role` en
+las entradas de equipo, no cambia asignaciones de un miembro activo, rechaza
+cambios de rol sobre invitaciones pendientes y devuelve 400 con campos
+desconocidos, `teamRoles` malformados o múltiples valores JSON. Las reglas de
+jerarquía se cubren con 403 de miembro, 409 al degradar o borrar al último
+propietario, 403 de administrador sobre equipos donde no participa y permiso de
+manager sobre equipos ajenos. `DELETE` devuelve 204 con la garantía del último
+propietario y, para una invitación, la cancela; las asignaciones de equipo se
+añaden y quitan de forma idempotente devolviendo el `TeamProjectSchema`.
+
+Añadí al owner la cobertura de invitación pendiente: detalle para el propietario,
+404 para el miembro, 400 al intentar cambiar su rol y 204 al cancelarla.
+
+Evidencia: `test-results/closure-20261025/identidad-088-go.log` con los owners
+HTTP de gestión de miembros, detalle de equipo y transferencia de propiedad.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

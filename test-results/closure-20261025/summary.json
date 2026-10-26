@@ -3393,6 +3393,13 @@
       "evidence_files": [
         "identidad-086-087-go.log"
       ]
+    },
+    "CLOSE-identidad-088": {
+      "evidence": "vigente",
+      "scope": "member detail, role hierarchy, pending invitations and team assignments",
+      "evidence_files": [
+        "identidad-088-go.log"
+      ]
     }
   },
   "commands": [
