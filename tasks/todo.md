@@ -1442,10 +1442,10 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–049 siguen pendientes; 014–024, 026–032 y 034–039 ya
+bloques detallados 014–049 siguen pendientes; 014–024, 026–032 y 034–044 ya
 están vigentes y 025/033 están bloqueadas por publicación/CI. Siguiente acción:
-CLOSE-identidad-040 (People/teams, roles y 404). No se declara aceptación ni
-cierre del producto. El avance se informa por criterios/evidencia, sin
+CLOSE-identidad-045 (migración 037 de invitaciones). No se declara aceptación
+ni cierre del producto. El avance se informa por criterios/evidencia, sin
 porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
 producto ni borran este registro.
 
@@ -1504,11 +1504,11 @@ producto ni borran este registro.
 | [CLOSE-identidad-037](../SPEC.md#close-identidad-037) | Two-factor authentication: The Account view exposes the two-factor state, the manual-entry secret and otpauth… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI 2FA |
 | [CLOSE-identidad-038](../SPEC.md#close-identidad-038) | Two-factor authentication: Additive migration 073_organization_require_2fa.sql adds organizations.require_2fa… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de require2FA |
 | [CLOSE-identidad-039](../SPEC.md#close-identidad-039) | Two-factor authentication: When any current organization requires two-factor authentication and the account ha… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del gate |
-| [CLOSE-identidad-040](../SPEC.md#close-identidad-040) | Organization people and teams: Organization members and project teams are managed through the native authentic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-041](../SPEC.md#close-identidad-041) | Organization people and teams: GET /api/v1/organizations/{org}/members returns {data:{id,name,email,role}} ord… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-042](../SPEC.md#close-identidad-042) | Organization people and teams: GET/POST /api/v1/organizations/{org}/teams lists or creates teams; GET/PATCH/DE… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-043](../SPEC.md#close-identidad-043) | Organization people and teams: POST/DELETE /api/v1/organizations/{org}/teams/{team}/members/{member} adds/remo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-044](../SPEC.md#close-identidad-044) | Organization people and teams: Pure/API checks own canonical IDs and strict bodies. Real PostgreSQL owns owner… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-040](../SPEC.md#close-identidad-040) | Organization people and teams: Organization members and project teams are managed through the native authentic… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de People |
+| [CLOSE-identidad-041](../SPEC.md#close-identidad-041) | Organization people and teams: GET /api/v1/organizations/{org}/members returns {data:{id,name,email,role}} ord… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de roles |
+| [CLOSE-identidad-042](../SPEC.md#close-identidad-042) | Organization people and teams: GET/POST /api/v1/organizations/{org}/teams lists or creates teams; GET/PATCH/DE… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de equipos |
+| [CLOSE-identidad-043](../SPEC.md#close-identidad-043) | Organization people and teams: POST/DELETE /api/v1/organizations/{org}/teams/{team}/members/{member} adds/remo… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de members |
+| [CLOSE-identidad-044](../SPEC.md#close-identidad-044) | Organization people and teams: Pure/API checks own canonical IDs and strict bodies. Real PostgreSQL owns owner… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de People |
 | [CLOSE-identidad-045](../SPEC.md#close-identidad-045) | Organization invitations: Additive migration037 after036 stores organization email invitations: delivery ID, o… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-046](../SPEC.md#close-identidad-046) | Organization invitations: Owners may invite owner, manager, admin or member; managers may invite manager, admi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-047](../SPEC.md#close-identidad-047) | Organization invitations: Public request/accept routes are same-origin, contain no bearer authentication and r… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3454,6 +3454,32 @@ Evidencia: `test-results/closure-20261025/identity/require2fa.log`.
 
 Siguiente acción: CLOSE-identidad-040 (People/teams nativos, roles y 404),
 con dependencias locales resueltas.
+
+### Ejecución 2026-10-26: People, roles y equipos
+
+Selección registrada antes de trabajar: CLOSE-identidad-040 a -044, en orden
+del plan. Candidata `1752c78`; producto sin cambios desde `54db6e4`. La
+evidencia proviene de `tenancy.log` (tests de store/HTTP con `-race`).
+
+Resultado observado: las rutas nativas de members y teams exigen autenticación
+y CSRF/mismo origen; IDs canónicos positivos, roles/nombres estrictos y
+404 para usuarios/equipos ajenos o ausentes. La lista de members ordena por
+nombre case-insensitive y luego ID; owners/managers pueden asignar manager,
+admins no tocan managers/owners y solo un owner transfiere owner. La fila de
+organización se bloquea antes de membership; el último owner no puede
+degradarse/eliminarse (409). Eliminar un member borra membership, equipos y
+assignments/tokens dependientes sin borrar al usuario ni sus sesiones de otras
+organizaciones. Teams crean/listan/leen/renombran/eliminan con slug inmutable,
+conflicto 409, default no borrable, mirror de proyecto al equipo menor y
+members/equipos ordenados. Add/remove team member devuelve 204 y respeta la
+autoridad del rol. Los tests HTTP y PostgreSQL cubren la matriz. Subresultados
+pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/tenancy.log` y
+`internal/server/people_test.go`/`internal/store/people_test.go`.
+
+Siguiente acción: CLOSE-identidad-045 (migración 037 de invitaciones y
+contratos de entrega), primer bloque detallado de invitaciones.
 
 ### Comprobante de integración documental
 

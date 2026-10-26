@@ -582,6 +582,56 @@
         "gate does not disclose the triggering organization"
       ],
       "evidence_files": ["identity/require2fa.log"]
+    },
+    "CLOSE-identidad-040": {
+      "evidence": "vigente",
+      "scope": "native People API/view, session/CSRF controls, canonical IDs and 404",
+      "covered": [
+        "owners/managers/admins mutate members/teams; members read",
+        "same-origin/CSRF and canonical IDs; foreign/absent rows 404",
+        "People view available to authorized roles"
+      ],
+      "evidence_files": ["identity/tenancy.log"]
+    },
+    "CLOSE-identidad-041": {
+      "evidence": "vigente",
+      "scope": "member listing/order, role matrix, last-owner protection and removal cascade",
+      "covered": [
+        "case-insensitive name then numeric ID ordering",
+        "owner/manager/admin role boundaries and 409 last owner",
+        "organization lock before membership changes",
+        "removal deletes membership/team/tokens/assignments without deleting the user"
+      ],
+      "evidence_files": ["identity/tenancy.log"]
+    },
+    "CLOSE-identidad-042": {
+      "evidence": "vigente",
+      "scope": "team list/create/read/rename/delete, slug/default and project mirror rules",
+      "covered": [
+        "team names/slug immutability, 409 conflict",
+        "default team cannot be deleted; other deletion removes memberships/associations",
+        "legacy project team mirror selects the smallest remaining ID or null"
+      ],
+      "evidence_files": ["identity/tenancy.log"]
+    },
+    "CLOSE-identidad-043": {
+      "evidence": "vigente",
+      "scope": "add/remove team members with role authority",
+      "covered": [
+        "owner/manager/admin boundaries for joined and unjoined teams",
+        "204 add/remove and member detail reflects the change"
+      ],
+      "evidence_files": ["identity/tenancy.log"]
+    },
+    "CLOSE-identidad-044": {
+      "evidence": "vigente",
+      "scope": "pure/API IDs and strict bodies plus real PostgreSQL ownership/last-owner/cascade",
+      "covered": [
+        "canonical IDs/roles/names and strict HTTP bodies",
+        "real PostgreSQL organization lock, owner rules, last owner and cascade",
+        "HTTP role failures and team membership behavior"
+      ],
+      "evidence_files": ["identity/tenancy.log"]
     }
   },
   "commands": [
