@@ -16,6 +16,7 @@ func TestDeploymentConfiguration(t *testing.T) {
 	}{
 		{"valid", nil, ""},
 		{"short secret", map[string]string{"SECRET_KEY": "change_me"}, "SECRET_KEY"},
+		{"long placeholder secret", map[string]string{"SECRET_KEY": strings.Repeat("x", 20) + "change_me" + strings.Repeat("y", 20)}, "placeholder"},
 		{"invalid boolean", map[string]string{"GLITCHTIP_ENABLE_LOGS": "sometimes"}, "LOGS"},
 		{"invalid port", map[string]string{"PORT": "70000"}, "PORT"},
 		{"bad domain", map[string]string{"GOODSENTRY_DOMAIN": "ftp://example.com"}, "DOMAIN"},

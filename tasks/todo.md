@@ -1439,12 +1439,12 @@ tocar. Se eligieron, en orden del plan, CLOSE-operacion-004, CLOSE-operacion-005
 y CLOSE-operacion-006; después se completaron CLOSE-operacion-007 con Chromium
 real y un estado de permiso, CLOSE-operacion-008 con el Compose público, la
 imagen construida y PostgreSQL externo, CLOSE-operacion-009 con el loader y
-los alias, y CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
-sesiones. Sus comprobantes vigentes están abajo. Siguiente acción:
-CLOSE-operacion-011 (Valkey vacío, disponibilidad real de features, correo
-local/SMTP, uploads y secretos de ejemplo), cuyas dependencias locales están
-resueltas. No se declara aceptación ni cierre del producto. El avance se
-informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+los alias, CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
+sesiones, y CLOSE-operacion-011 con features, correo, uploads y secretos. Sus
+comprobantes vigentes están abajo. Siguiente acción: CLOSE-operacion-012 (RSS
+bajo una carga explícita y publicación del resultado), con dependencias
+locales resueltas. No se declara aceptación ni cierre del producto. El avance
+se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
@@ -1461,7 +1461,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-operacion-008](../SPEC.md#close-operacion-008) | Deployment and configuration: Default HTTP port is 8000. docker compose up -d pulls the verified public applic… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de imagen/Compose |
 | [CLOSE-operacion-009](../SPEC.md#close-operacion-009) | Deployment and configuration: Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del loader |
 | [CLOSE-operacion-010](../SPEC.md#close-operacion-010) | Deployment and configuration: GOODSENTRY_AUTH defaults to disabled for frictionless local startup. If SECRET_K… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de auth/sesiones |
-| [CLOSE-operacion-011](../SPEC.md#close-operacion-011) | Deployment and configuration: An empty VALKEY_URL selects PostgreSQL-only operation. Optional features must re… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-011](../SPEC.md#close-operacion-011) | Deployment and configuration: An empty VALKEY_URL selects PostgreSQL-only operation. Optional features must re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de features/correo |
 | [CLOSE-operacion-012](../SPEC.md#close-operacion-012) | Deployment and configuration: Memory target: measure application RSS under an explicit repeatable workload and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-001](../SPEC.md#close-identidad-001) | Runtime and workspace contracts: Provide /healthz for process health and /readyz for database readiness. Setup… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-002](../SPEC.md#close-identidad-002) | Runtime and workspace contracts: Organizations contain memberships and teams. Projects belong to an organizati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2480,6 +2480,41 @@ guardaron.
 Siguiente acción: CLOSE-operacion-011 (Valkey vacío, disponibilidad real de
 features, correo local/SMTP, uploads y rechazo de secretos de ejemplo), con
 dependencias locales resueltas.
+
+### Ejecución 2026-10-26: features, correo, uploads y secretos
+
+Selección registrada antes de trabajar: CLOSE-operacion-011, siguiente en el
+plan. Candidata `9f6edcd`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad añade un caso de secreto placeholder largo y
+corrige una afirmación documental sobre el contenido del volumen de uploads.
+
+Procedimiento reproducible:
+`go test ./internal/config -run '^(TestDeploymentConfiguration|TestFeatureAliasesAndRuntimeOptions|TestOpenModeGeneratesAndReusesPersistentSecret)$' -v`
+y
+`go test ./internal/notify -run '^(TestValidateMail|TestConsoleMailMIMEAndConcurrentWrites|TestSMTPDeliveryAndResponses|TestSMTPRequiredTLSAndCredentialProtection)$' -v`;
+revisión de `ValidateRuntimeAvailability`, `loadSecret`, `parseMail`, el mapa
+`features` de `/api/v1/me`, `UPLOAD_DIR`, Compose y la documentación local.
+
+Resultado observado: `VALKEY_URL` vacío deja el servicio en PostgreSQL-only y
+un valor no vacío se rechaza en vez de fingir soporte. `/api/v1/me` reporta
+las features reales (`logs`, `uptime`, `alerts`, `alertDelivery`, `mcp`,
+`openapi`, `admin`, `oidc`, recuperación de contraseña y modo requerido), no
+una lista estática. `EMAIL_URL` acepta `consolemail://`, `smtp`, `smtp+starttls`
+y `smtps`; los tests usan receptores reales de loopback, comprueban TLS
+obligatorio y que las credenciales no aparecen en errores, comandos ni logs.
+`UPLOAD_DIR` es configurable y Compose monta el volumen `uploads` en `/data`;
+ahí persisten el archivo Parquet local y el secreto generado en modo abierto.
+Los attachments y source maps se guardan en PostgreSQL; `docs/getting-started.md`
+afirmaba lo contrario y se corrigió. Un `SECRET_KEY` largo que contiene
+`change_me` se rechaza como placeholder, igual que uno corto. Los defaults de
+desarrollo local están separados en `docs/development.md` y
+`docs/configuration.md`. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/operations/tests.log` y el diff de
+`docs/getting-started.md`.
+
+Siguiente acción: CLOSE-operacion-012 (RSS bajo una carga explícita y
+publicación del resultado), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 

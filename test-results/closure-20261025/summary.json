@@ -110,6 +110,20 @@
         "MCP OAuth uses the implicit owner in open mode"
       ],
       "evidence_files": ["open-auth/tests.log", "open-auth/app.log", "open-auth/report.json", "open-auth/restart.json", "open-auth/*.png"]
+    },
+    "CLOSE-operacion-011": {
+      "evidence": "vigente",
+      "scope": "PostgreSQL-only availability, real feature reporting, console/SMTP mail, configurable uploads directory, placeholder secrets and local defaults",
+      "covered": [
+        "empty VALKEY_URL stays PostgreSQL-only; nonempty Valkey is rejected",
+        "api/v1/me reports actual feature availability",
+        "consolemail, smtp, smtp+starttls and smtps work with loopback receivers; credentials are not logged",
+        "UPLOAD_DIR is configurable; Compose mounts the uploads volume at /data for local archive and generated key",
+        "attachments and source maps are retained in PostgreSQL; the backup guide was corrected accordingly",
+        "short and long change_me placeholder secrets are rejected",
+        "local development defaults are documented separately"
+      ],
+      "evidence_files": ["operations/tests.log", "docs/getting-started.md diff"]
     }
   },
   "commands": [

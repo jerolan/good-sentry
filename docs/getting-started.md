@@ -54,7 +54,7 @@ docker compose up -d
 curl -fsS http://localhost:8000/readyz
 ```
 
-The PostgreSQL dump and uploads archive must come from the same stopped-app backup. The uploads volume contains local Parquet objects under `/data/archive`, attachments, source maps and (when generated) the open-mode application key. Keep both backup files outside Docker. With the S3 backend, preserve the bucket objects separately and restore the same bucket, region, endpoint and prefix before starting GoodSentry.
+The PostgreSQL dump and uploads archive must come from the same stopped-app backup. The uploads volume contains local Parquet objects under `/data/archive` and, when generated, the open-mode application key. Attachments and source maps are stored in PostgreSQL and are covered by the database dump. Keep both backup files outside Docker. With the S3 backend, preserve the bucket objects separately and restore the same bucket, region, endpoint and prefix before starting GoodSentry.
 
 To restore into a new empty Compose database and uploads volume, start PostgreSQL, create (but do not start) the application container to allocate its named volume, restore the files, then restore the database:
 
