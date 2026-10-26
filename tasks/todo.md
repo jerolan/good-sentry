@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -027
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-028. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-028 (métricas oficiales Go/Node e imagen reiniciada). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1860,7 +1860,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | por contrastar | pendiente | Parcial: UI y 503 verificados; faltan métricas oficiales Go/Node e imagen reiniciada |
 | [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7583,6 +7583,30 @@ Evidencia: `test-results/closure-20261025/rendimiento-027/segment-attribution.lo
 Límites registrados: el comprobante es de almacén/PostgreSQL; la UI consume
 estos grupos en criterios posteriores. El CI público y la imagen final siguen
 pendientes para la auditoría final.
+
+### Avance parcial 2026-10-26: Operations y desglose en Transactions
+
+CLOSE-rendimiento-028 sigue pendiente. Ejecuté
+`browser-transaction-span-groups.mjs` con su helper de bloqueo de
+proyección contra PostgreSQL 18 desechable; el owner termina con `ok: true` y
+tres comprobaciones:
+
+- Acciones Operations reales junto a los enlaces de ocurrencia; columnas de
+  métricas reales, nulo frente a cero, nombres largos seguros y explicación de
+  asociación y solapamiento.
+- 51 grupos con paginación 50+1; recarga, refresco, apertura de ocurrencia y
+  atrás conservan identidad inmutable, proyecto y ventana absoluta; rutas legacy
+  por proyecto y ambos estados vacíos; la navegación limpia el desglose.
+- 503 histórico con guía de indexación y reintento útil sin métricas parciales;
+  al liberar el bloqueo externo, el trabajador normal produce estadísticas
+  visibles.
+
+Faltan para cerrar: métricas de hijos con los SDK oficiales Go y Node, y la
+imagen reiniciada. Evidencia:
+`test-results/closure-20261025/rendimiento-028/report.json` y sus capturas.
+
+Siguiente paso: generar métricas de hijos con Go 0.50.0 y Node 11.7.0 y repetir
+la verificación sobre la imagen reiniciada cuando la publicación lo permita.
 
 ### Comprobante de integración documental
 
