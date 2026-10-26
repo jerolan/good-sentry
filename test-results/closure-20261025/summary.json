@@ -2036,6 +2036,97 @@
         "affected-users/*.png",
         "tests/compat/issue_affected_users_browser.mjs"
       ]
+    },
+    "CLOSE-errores-101": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-102": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-103": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-104": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-105": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-106": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-107": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-108": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-109": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-110": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-111": {
+      "evidence": "vigente",
+      "scope": "compatible event inspection routes, filters, cursor, projection and snapshot",
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
+    },
+    "CLOSE-errores-112": {
+      "evidence": "bloqueada por publicacion y aceptacion externa",
+      "scope": "official SDK event inspection, copied image and public CI",
+      "covered": [
+        "local event inspection store/HTTP contracts"
+      ],
+      "blocker": {
+        "cause": "official SDK/image/public-source acceptance and publication are not authorized",
+        "unlock": "run official SDK/image acceptance and publish matching source/CI"
+      },
+      "evidence_files": [
+        "errores-101-112.log"
+      ]
     }
   },
   "commands": [

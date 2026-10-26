@@ -1443,10 +1443,10 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083 y
-085–100 están vigentes; 033/047/084 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-101 (event
-inspection). No se declara aceptación ni cierre del producto. El avance se
+publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
+y 101–111 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-113 (merge/
+unmerge nativo). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1636,18 +1636,18 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-098](../SPEC.md#close-errores-098) | Compatible issue summaries and real analytics: Add compatible GET /api/0/issues/{issue}/commits/ and /api/0/or… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-099](../SPEC.md#close-errores-099) | Compatible issue summaries and real analytics: Native issue detail displays Affected users (identified retaine… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI |
 | [CLOSE-errores-100](../SPEC.md#close-errores-100) | Compatible issue summaries and real analytics: Owning PostgreSQL tests cover grants/current membership/alias a… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-101](../SPEC.md#close-errores-101) | Compatible event inspection: Implement compatible event inspection as the first vertical part of the required… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-102](../SPEC.md#close-errores-102) | Compatible event inspection: Register GET /api/0/projects/{org}/{project}/events/ and .../events/{event}/. Reg… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-103](../SPEC.md#close-errores-103) | Compatible event inspection: Migration017 extends only the current token scope constraint with event:read. Do… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-104](../SPEC.md#close-errores-104) | Compatible event inspection: Use read-only repeatable-read transactions for current membership/project authori… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-105](../SPEC.md#close-errores-105) | Compatible event inspection: List queries accept only limit/per_page, cursor, full, sample, environment, query… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-106](../SPEC.md#close-errores-106) | Compatible event inspection: Time filters use stored occurrence time, with inclusive start and exclusive end.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-107](../SPEC.md#close-errores-107) | Compatible event inspection: Use canonical cursor0:offset:direction, where offset is a nonnegative decimal no… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-108](../SPEC.md#close-errores-108) | Compatible event inspection: Serialize actual event data with id/eventID as SDK ID strings, projectID as integ… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-109](../SPEC.md#close-errores-109) | Compatible event inspection: The GlitchTip Request/APIEventBreadcrumb schemas are reachable from the event res… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-110](../SPEC.md#close-errores-110) | Compatible event inspection: The JSON view is a legacy compatibility projection, not byte-identical SDK transp… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-111](../SPEC.md#close-errores-111) | Compatible event inspection: Internal contracts: eventview.Record contains ID/GroupID strings, ProjectID int64… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-112](../SPEC.md#close-errores-112) | Compatible event inspection: Require actual official SDK events queried through compatible project and issue U… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-101](../SPEC.md#close-errores-101) | Compatible event inspection: Implement compatible event inspection as the first vertical part of the required… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-102](../SPEC.md#close-errores-102) | Compatible event inspection: Register GET /api/0/projects/{org}/{project}/events/ and .../events/{event}/. Reg… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-103](../SPEC.md#close-errores-103) | Compatible event inspection: Migration017 extends only the current token scope constraint with event:read. Do… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-104](../SPEC.md#close-errores-104) | Compatible event inspection: Use read-only repeatable-read transactions for current membership/project authori… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-105](../SPEC.md#close-errores-105) | Compatible event inspection: List queries accept only limit/per_page, cursor, full, sample, environment, query… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-106](../SPEC.md#close-errores-106) | Compatible event inspection: Time filters use stored occurrence time, with inclusive start and exclusive end.… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-107](../SPEC.md#close-errores-107) | Compatible event inspection: Use canonical cursor0:offset:direction, where offset is a nonnegative decimal no… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-108](../SPEC.md#close-errores-108) | Compatible event inspection: Serialize actual event data with id/eventID as SDK ID strings, projectID as integ… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-109](../SPEC.md#close-errores-109) | Compatible event inspection: The GlitchTip Request/APIEventBreadcrumb schemas are reachable from the event res… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-110](../SPEC.md#close-errores-110) | Compatible event inspection: The JSON view is a legacy compatibility projection, not byte-identical SDK transp… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-111](../SPEC.md#close-errores-111) | Compatible event inspection: Internal contracts: eventview.Record contains ID/GroupID strings, ProjectID int64… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-errores-112](../SPEC.md#close-errores-112) | Compatible event inspection: Require actual official SDK events queried through compatible project and issue U… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
 | [CLOSE-errores-113](../SPEC.md#close-errores-113) | Native merge, original partitions and unmerge: Complete native merging and separation of error issues through… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-114](../SPEC.md#close-errores-114) | Native merge, original partitions and unmerge: An issue row owns its original project/fingerprint forever. A v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-115](../SPEC.md#close-errores-115) | Native merge, original partitions and unmerge: Historical group counts and fresh-capture progress are distinct… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3947,6 +3947,27 @@ Evidencia: `test-results/closure-20261025/affected-users/` y
 
 Siguiente acción: CLOSE-errores-101 (compatible event inspection), con sus
 rutas y proyección tipada.
+
+### Ejecución 2026-10-26: compatible event inspection
+
+Selección registrada antes de trabajar: CLOSE-errores-101 a -112. Candidata
+`2186c0d`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners store/HTTP con `-race`.
+
+Resultado observado: 017 añade solo `event:read` y preserva filas/recibos; las
+rutas global/proyecto/issue aceptan limit/per_page, cursor, full, sample,
+environment, query, time y selectores canónicos, con ventanas inclusivas/exclusivas
+y cursor `0:offset:direction`. La lectura usa repeatable-read y revalida
+membership/proyecto/alias; el detalle devuelve el evento real con id/eventID
+string, projectID entero, breadcrumbs/request y siblings, sin efectos laterales.
+Los snapshots sobreviven merge/split, la autoridad de lookup precede ambigüedad
+y la proyección legacy no promete bytes idénticos. 101–111 quedan vigentes;
+112 exige SDK oficial, imagen copiada/reiniciada, fuente y CI pública, por lo
+que queda bloqueada, no cerrada.
+
+Evidencia: `test-results/closure-20261025/errores-101-112.log`.
+
+Siguiente acción: CLOSE-errores-113 (merge/original partitions/unmerge nativo).
 
 ### Comprobante de integración documental
 
