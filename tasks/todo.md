@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -017 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -018 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-018. No se declara
+runtime preservado. Siguiente acción: CLOSE-nativo-019. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1744,7 +1744,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-016](../SPEC.md#close-nativo-016) | CFI extended dereference: Add RISC-V64 minidump support for Breakpad architecture 0x8006 and Crashpad Minidump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-017](../SPEC.md#close-nativo-017) | CFI extended dereference: RISC-V64 ELF CFI accepts little-endian ELF64 EM_RISCV .eh_frame or .debug_frame and… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8921,6 +8921,34 @@ Evidencia: `test-results/closure-20261025/nativo-013/implicit.log`,
 Límites registrados: no se usó la imagen final ni el CI público. La aceptación
 con SDK nativo real y la imagen final siguen pendientes para la auditoría
 final.
+
+### Ejecución 2026-10-26: símbolos de procedimiento PDB/MSF 7
+
+Selección registrada antes de trabajar: CLOSE-nativo-018. Revisión de producto
+`8117489`; el incremento extrae el parser de secciones PE para probar su
+presupuesto y añade pruebas de bloques MSF, tipos de procedimiento, módulos,
+ortografía y tamaño máximo.
+
+| Elemento | Comprobante |
+|---|---|
+| MSF 7 hasta 64MiB; geometría, directorio y streams referenciados validados | `TestPDBOversizedFile`; `TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols` |
+| Tamaños de bloque 512/1024/2048/4096 aceptados; truncamiento rechazado | `TestPDBMSFBlockSizes` |
+| Máximo 4096 streams, 4096 módulos y 512 secciones PE | `TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/too_many_streams`; `TestPDBModuleBudget`; `TestPDBSectionsBudget` |
+| Máximo 200 000 procedimientos y 1 000 000 registros CodeView | `TestParsePDBModuleSymbolsEnforcesRecordAndProcedureBudgets`; `TestParseNativePDBPublicSymbolsEnforcesStreamBudgets` |
+| GUID/age de stream 1, módulos de DBI stream 3 y secciones del slot 5 | `TestParseNativePDBProcedureSymbols`; `TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/PDB_age_disagrees_with_DBI` y `/section_header_stream_missing` |
+| Firma C13 (4) obligatoria | `TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/invalid_CodeView_module_signature` |
+| `S_GPROC32`, `S_LPROC32`, formas `_ID` y DPC (`0x1155`/`0x1156`) | `TestPDBProcedureKindsAndOriginalSpelling` (seis tipos) |
+| Sección ejecutable one-based, VA + offset y tamaño declarado como rango | `TestParseNativePDBProcedureSymbols`; `TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols` |
+| Identidad GUID+age y Debug ID multipart discordante ineligibles | `TestParseNativePDBProcedureSymbols`; `TestNativePDBSymbolicationUsesEmbeddedDebugID` |
+| Ortografía original del procedimiento preservada | `TestPDBProcedureKindsAndOriginalSpelling` (nombre con espacios y paréntesis) |
+| PDB como miembro regular de ZIP/TAR/TAR.GZ | `TestParseNativePDBProcedureSymbols` (variantes standalone/tar/tar.gz/zip) |
+| Entrada malformada no devuelve símbolos parciales | `TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols`; `TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols`; `TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols`; `TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols` |
+
+Evidencia: `test-results/closure-20261025/nativo-018/pdb.log` y `native.log`.
+
+Límites registrados: PDB legado/Portable y el desenrollado nativo completo
+siguen fuera de este slice. No se usó la imagen final ni el CI público; la
+imagen y el CI siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

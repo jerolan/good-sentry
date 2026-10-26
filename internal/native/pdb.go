@@ -125,18 +125,12 @@ func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
 	optionalStart := moduleStart + moduleSize + sectionContributionSize + sectionMapSize + sourceInfoSize + typeServerSize
 	sectionStreamIndex := binary.LittleEndian.Uint16(dbi[optionalStart+5*2:])
 	sectionsData, ok := msf.readStream(sectionStreamIndex)
-	if !ok || len(sectionsData) == 0 || len(sectionsData)%40 != 0 || len(sectionsData)/40 > maxPDBSections {
+	if !ok {
 		return "", nil, false
 	}
-	sections := make([]pdbSection, len(sectionsData)/40)
-	for i := range sections {
-		header := sectionsData[i*40 : (i+1)*40]
-		sections[i] = pdbSection{
-			virtualSize: binary.LittleEndian.Uint32(header[8:]),
-			virtualAddr: binary.LittleEndian.Uint32(header[12:]),
-			rawSize:     binary.LittleEndian.Uint32(header[16:]),
-			flags:       binary.LittleEndian.Uint32(header[36:]),
-		}
+	sections, ok := parsePDBSections(sectionsData)
+	if !ok {
+		return "", nil, false
 	}
 	moduleData := dbi[moduleStart : moduleStart+moduleSize]
 	functions, ok := parsePDBModules(msf, moduleData, sections, info)
@@ -165,6 +159,23 @@ func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
 		return functions[i].Name < functions[j].Name
 	})
 	return debugID, functions, true
+}
+
+func parsePDBSections(data []byte) ([]pdbSection, bool) {
+	if len(data) == 0 || len(data)%40 != 0 || len(data)/40 > maxPDBSections {
+		return nil, false
+	}
+	sections := make([]pdbSection, len(data)/40)
+	for i := range sections {
+		header := data[i*40 : (i+1)*40]
+		sections[i] = pdbSection{
+			virtualSize: binary.LittleEndian.Uint32(header[8:]),
+			virtualAddr: binary.LittleEndian.Uint32(header[12:]),
+			rawSize:     binary.LittleEndian.Uint32(header[16:]),
+			flags:       binary.LittleEndian.Uint32(header[36:]),
+		}
+	}
+	return sections, true
 }
 
 func parsePDBMSF(data []byte) (*pdbMSFFile, bool) {

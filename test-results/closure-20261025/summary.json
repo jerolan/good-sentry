@@ -4499,6 +4499,11 @@
       "scope": "RISC-V64 ELF CFI return column, integer register propagation and fail-closed unsupported state",
       "evidence_files": ["nativo-017/riscv-cfi.log", "nativo-017/summary.json"]
     },
+    "CLOSE-nativo-018": {
+      "evidence": "vigente",
+      "scope": "classic MSF 7 PDB geometry, block sizes, stream/module/section/record budgets, six procedure kinds, GUID+age identity, PE section conversion, spelling and archive members",
+      "evidence_files": ["nativo-018/pdb.log", "nativo-018/native.log", "nativo-018/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

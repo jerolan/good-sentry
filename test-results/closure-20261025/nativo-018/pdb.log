@@ -1,0 +1,140 @@
+=== RUN   TestPDBMSFBlockSizes
+--- PASS: TestPDBMSFBlockSizes (0.02s)
+=== RUN   TestPDBProcedureKindsAndOriginalSpelling
+--- PASS: TestPDBProcedureKindsAndOriginalSpelling (0.00s)
+=== RUN   TestPDBModuleBudget
+--- PASS: TestPDBModuleBudget (0.00s)
+=== RUN   TestPDBSectionsBudget
+--- PASS: TestPDBSectionsBudget (0.00s)
+=== RUN   TestPDBOversizedFile
+--- PASS: TestPDBOversizedFile (0.00s)
+=== RUN   TestParseNativePDBProcedureSymbols
+=== RUN   TestParseNativePDBProcedureSymbols/standalone
+=== RUN   TestParseNativePDBProcedureSymbols/tar
+=== RUN   TestParseNativePDBProcedureSymbols/tar.gz
+=== RUN   TestParseNativePDBProcedureSymbols/zip
+--- PASS: TestParseNativePDBProcedureSymbols (0.00s)
+    --- PASS: TestParseNativePDBProcedureSymbols/standalone (0.00s)
+    --- PASS: TestParseNativePDBProcedureSymbols/tar (0.00s)
+    --- PASS: TestParseNativePDBProcedureSymbols/tar.gz (0.00s)
+    --- PASS: TestParseNativePDBProcedureSymbols/zip (0.00s)
+=== RUN   TestParseNativePDBPublicSymbolsFromStrippedPDB
+--- PASS: TestParseNativePDBPublicSymbolsFromStrippedPDB (0.00s)
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/truncated_global_symbol_record
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/invalid_segment_index
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/invalid_alignment_byte
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/unknown_public_flags
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/mapping_outside_executable_section
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/selector_mapping
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/absolute_mapping
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/group_mapping
+=== RUN   TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/frame_outside_PE_sections
+--- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/truncated_global_symbol_record (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/invalid_segment_index (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/invalid_alignment_byte (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/unknown_public_flags (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/mapping_outside_executable_section (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/selector_mapping (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/absolute_mapping (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/group_mapping (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols/frame_outside_PE_sections (0.00s)
+=== RUN   TestParseNativePDBPublicSymbolsRejectsExcessiveAlignmentPadding
+--- PASS: TestParseNativePDBPublicSymbolsRejectsExcessiveAlignmentPadding (0.00s)
+=== RUN   TestSymbolicatePrefersExactPDBProcedureToPublicFallback
+--- PASS: TestSymbolicatePrefersExactPDBProcedureToPublicFallback (0.00s)
+=== RUN   TestParseNativePDBPublicSymbolsEnforcesStreamBudgets
+=== RUN   TestParseNativePDBPublicSymbolsEnforcesStreamBudgets/global_symbol_record_limit
+=== RUN   TestParseNativePDBPublicSymbolsEnforcesStreamBudgets/public_function_limit
+--- PASS: TestParseNativePDBPublicSymbolsEnforcesStreamBudgets (0.03s)
+    --- PASS: TestParseNativePDBPublicSymbolsEnforcesStreamBudgets/global_symbol_record_limit (0.00s)
+    --- PASS: TestParseNativePDBPublicSymbolsEnforcesStreamBudgets/public_function_limit (0.02s)
+=== RUN   TestParseNativePDBC13SourceLines
+=== RUN   TestParseNativePDBC13SourceLines/module_string_table
+=== RUN   TestParseNativePDBC13SourceLines/global_PDB_names_stream
+--- PASS: TestParseNativePDBC13SourceLines (0.00s)
+    --- PASS: TestParseNativePDBC13SourceLines/module_string_table (0.00s)
+    --- PASS: TestParseNativePDBC13SourceLines/global_PDB_names_stream (0.00s)
+=== RUN   TestParseNativePDBExpandsNestedInlineFrames
+--- PASS: TestParseNativePDBExpandsNestedInlineFrames (0.00s)
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_IPI_stream
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/invalid_procedure_end_pointer
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/procedure_end_kind_mismatch
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/inline_parent_pointer_mismatch
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/inline_end_pointer_escapes_parent
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unknown_inlinee_ID
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_inlinee_checksum
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_inlinee-lines_subsection
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unknown_annotation_opcode
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/truncated_annotation_operand
+=== RUN   TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unbalanced_inline_scope
+--- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_IPI_stream (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/invalid_procedure_end_pointer (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/procedure_end_kind_mismatch (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/inline_parent_pointer_mismatch (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/inline_end_pointer_escapes_parent (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unknown_inlinee_ID (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_inlinee_checksum (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/missing_inlinee-lines_subsection (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unknown_annotation_opcode (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/truncated_annotation_operand (0.00s)
+    --- PASS: TestParseNativePDBInlineRejectsMalformedInputWithoutPartialSymbols/unbalanced_inline_scope (0.00s)
+=== RUN   TestPDBInlineAnnotationsResolveLineAndFileChanges
+--- PASS: TestPDBInlineAnnotationsResolveLineAndFileChanges (0.00s)
+=== RUN   TestPDBInlineRangesCoverUsesAdjacentRangesAndRejectsGaps
+--- PASS: TestPDBInlineRangesCoverUsesAdjacentRangesAndRejectsGaps (0.00s)
+=== RUN   TestPDBC13InlineeLinesParsesExtraFilesAndRecordBudgets
+--- PASS: TestPDBC13InlineeLinesParsesExtraFilesAndRecordBudgets (0.00s)
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/site_count
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/nesting_depth
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/IPI_type_records
+=== RUN   TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/annotation_operations
+--- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets (0.00s)
+    --- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/site_count (0.00s)
+    --- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/nesting_depth (0.00s)
+    --- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/IPI_type_records (0.00s)
+    --- PASS: TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets/annotation_operations (0.00s)
+=== RUN   TestParseNativePDBC13KeepsSourceLinesWithinTheirModule
+--- PASS: TestParseNativePDBC13KeepsSourceLinesWithinTheirModule (0.00s)
+=== RUN   TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols
+=== RUN   TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/truncated_subsection
+=== RUN   TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/missing_checksum_entry
+=== RUN   TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/invalid_line_segment
+=== RUN   TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/line_contribution_exceeds_section
+=== RUN   TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/decreasing_line_offsets
+=== RUN   TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/missing_global_names_stream
+=== RUN   TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/missing_source_filename
+--- PASS: TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols (0.00s)
+    --- PASS: TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/truncated_subsection (0.00s)
+    --- PASS: TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/missing_checksum_entry (0.00s)
+    --- PASS: TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/invalid_line_segment (0.00s)
+    --- PASS: TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/line_contribution_exceeds_section (0.00s)
+    --- PASS: TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/decreasing_line_offsets (0.00s)
+    --- PASS: TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/missing_global_names_stream (0.00s)
+    --- PASS: TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols/missing_source_filename (0.00s)
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/invalid_block_size
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/block_count_exceeds_file
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/block_map_outside_file
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/directory_block_outside_file
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/too_many_streams
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/PDB_age_disagrees_with_DBI
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/invalid_CodeView_module_signature
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/section_header_stream_missing
+=== RUN   TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/later_procedure_is_truncated
+--- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/invalid_block_size (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/block_count_exceeds_file (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/block_map_outside_file (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/directory_block_outside_file (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/too_many_streams (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/PDB_age_disagrees_with_DBI (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/invalid_CodeView_module_signature (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/section_header_stream_missing (0.00s)
+    --- PASS: TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols/later_procedure_is_truncated (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.072s
