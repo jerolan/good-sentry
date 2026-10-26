@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "checks": [
+    "Native token form lists org:write and explains it",
+    "Native form issues a token with org:write",
+    "Token list keeps org:write after reload without exposing the secret"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/tokens-ui/token-form-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/tokens-ui/token-form-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/tokens-ui/token-form-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/tokens-ui/token-list-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/tokens-ui/token-list-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/tokens-ui/token-list-1440.png"
+  ],
+  "pageErrors": [],
+  "issuedScopes": [
+    "org:read",
+    "org:write",
+    "project:read"
+  ]
+}

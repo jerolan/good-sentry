@@ -224,3 +224,33 @@ func mailCall(t *testing.T, ctx context.Context, client *http.Client, server *ht
 	}
 	return raw
 }
+
+func TestOrgWriteScopeUsesCurrentMembershipHTTP(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	teams := "/api/0/organizations/" + f.org.Slug + "/teams/"
+	adminID := insertDiscoveryMember(t, f, "scope-admin@management.test", "Scope admin", "admin")
+	adminClient, adminCSRF := loginManagementMember(t, f, "scope-admin@management.test")
+	adminHeaders := http.Header{"X-CSRF-Token": {adminCSRF}}
+	var issued struct{ Token string }
+	body := resolutionJSON(t, map[string]any{"name": "Admin org writer", "scopes": []string{"org:write"}, "projectIds": []string{f.project.ID}, "expiresInDays": 1})
+	if err := json.Unmarshal(f.request(t, adminClient, "POST", "/api/v1/organizations/"+f.org.Slug+"/api-tokens", body, adminHeaders, 201), &issued); err != nil || issued.Token == "" {
+		t.Fatalf("admin token: %+v %v", issued, err)
+	}
+	bearer := http.Header{"Authorization": {"Bearer " + issued.Token}}
+	f.request(t, http.DefaultClient, "POST", teams, `{"slug":"scope-token-team"}`, bearer, 201)
+	f.request(t, adminClient, "POST", teams, `{"slug":"scope-session-team"}`, adminHeaders, 201)
+
+	if _, err := f.sql.Exec(f.ctx, `UPDATE memberships SET role='member' WHERE organization_id=$1::bigint AND user_id=$2::bigint`, f.org.ID, adminID); err != nil {
+		t.Fatal(err)
+	}
+	f.request(t, http.DefaultClient, "POST", teams, `{"slug":"demoted-token-team"}`, bearer, 403)
+	f.request(t, adminClient, "POST", teams, `{"slug":"demoted-session-team"}`, adminHeaders, 403)
+
+	if _, err := f.sql.Exec(f.ctx, `DELETE FROM memberships WHERE organization_id=$1::bigint AND user_id=$2::bigint`, f.org.ID, adminID); err != nil {
+		t.Fatal(err)
+	}
+	// Removing the creator's membership invalidates the credential itself, so the
+	// Bearer request is rejected before any organization lookup.
+	f.request(t, http.DefaultClient, "POST", teams, `{"slug":"removed-token-team"}`, bearer, 401)
+	f.request(t, adminClient, "POST", teams, `{"slug":"removed-session-team"}`, adminHeaders, 404)
+}

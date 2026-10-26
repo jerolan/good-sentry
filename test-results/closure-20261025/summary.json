@@ -3417,6 +3417,20 @@
         "people-ui/people-after-delete-768.png",
         "people-ui/people-after-delete-1440.png"
       ]
+    },
+    "CLOSE-identidad-090": {
+      "evidence": "vigente",
+      "scope": "org:write scope constraint, Bearer alias, current-role recheck and native token form",
+      "evidence_files": [
+        "identidad-090-go.log",
+        "tokens-ui/report.json",
+        "tokens-ui/token-form-320.png",
+        "tokens-ui/token-form-768.png",
+        "tokens-ui/token-form-1440.png",
+        "tokens-ui/token-list-320.png",
+        "tokens-ui/token-list-768.png",
+        "tokens-ui/token-list-1440.png"
+      ]
     }
   },
   "commands": [

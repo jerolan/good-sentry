@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -089 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-090
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -090 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-091
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1932,7 +1932,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-087](../SPEC.md#close-identidad-087) | Compatible project update and deletion: Organization people use OrganizationUserSchema with the real user id,… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-088](../SPEC.md#close-identidad-088) | Compatible project update and deletion: GET /api/0/organizations/{org}/members/{member}/ returns the same Orga… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-089](../SPEC.md#close-identidad-089) | Compatible project update and deletion: Real PostgreSQL covers organization/member/team visibility, ordered te… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-090](../SPEC.md#close-identidad-090) | Compatible project update and deletion: Additive040 expands the API-token scope constraint with org:write. Exi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-090](../SPEC.md#close-identidad-090) | Compatible project update and deletion: Additive040 expands the API-token scope constraint with org:write. Exi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-091](../SPEC.md#close-identidad-091) | Compatible project update and deletion: Additive migration062 extends membership and invitation role constrain… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-092](../SPEC.md#close-identidad-092) | Compatible project update and deletion: Compatible team mutations are POST /api/0/organizations/{org}/teams/ w… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-093](../SPEC.md#close-identidad-093) | Compatible project update and deletion: Real PostgreSQL covers040 token preservation/reopen, org:write issuanc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5178,6 +5178,48 @@ primera corrida de Chromium falló por un selector ambiguo del propio guion y se
 repitió con el ámbito del equipo; la base desechable se reinició antes de
 sembrar la organización. La tabla de miembros exige desplazamiento horizontal en
 320 px, sin desbordar la página.
+
+### Ejecución 2026-10-26: scope org:write y rol vigente
+
+Selección registrada antes de trabajar: CLOSE-identidad-090. Candidata
+`dad036a`.
+
+Resultado observado: la migración 040 amplía la restricción de `api_tokens`
+con `org:write` y el owner de store comprueba que la reapertura reaplica la
+migración dos veces sin alterar los tokens previos, las sesiones, el grant del
+token anterior a 040 ni los recibos 001–039; el recibo de 040 sigue
+correspondiendo al SHA-256 del archivo. El mismo scope se emite y autentica con
+sus proyectos y permite crear, actualizar y borrar organizaciones, invitar y
+gestionar miembros y equipos por Bearer. La autoridad se revalida en cada
+petición contra la membresía actual: un administrador con token `org:write`
+crea un equipo antes de ser degradado a miembro y recibe 403 después; su sesión
+sigue el mismo rol y responde 403, y al eliminar la membresía el token deja de
+autenticar (401) mientras la sesión responde 404. El formulario nativo de
+tokens lista `org:write` con la explicación «org:write invites members and
+manages teams.», emite un token con ese scope desde el navegador y la lista
+posterior conserva `org:write` sin mostrar el secreto.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Restricción de scope ampliada con `org:write` | store `TestOrgWriteScopeMigration040PreservesTokensAndReopens` |
+| Scopes, grants y sesiones previos exactos | store `TestOrgWriteScopeMigration040PreservesTokensAndReopens` (instantáneas de `api_tokens`, `sessions` y grant reautenticado) |
+| Recibos 001–039 exactos y recibo 040 con su checksum | store `TestOrgWriteScopeMigration040PreservesTokensAndReopens` |
+| Alias Bearer para organizaciones | HTTP `TestCreateCompatibleOrganizationHTTP`, `TestCompatibleOrganizationUpdateDeleteHTTP` |
+| Alias Bearer para miembros y equipos | HTTP `TestCompatibleOrganizationInvitationMutationHTTP`, `TestCompatibleTeamMutationsHTTP` |
+| Rol actual y autoridad por endpoint revalidados en storage | HTTP `TestOrgWriteScopeUsesCurrentMembershipHTTP`; store `TestAPITokenInvalidationUsesCurrentDatabaseState`, `TestAPITokenAdministrationAndAtomicProjectBoundary` |
+| Sesiones con su rol actual, sin scopes de token | HTTP `TestOrgWriteScopeUsesCurrentMembershipHTTP`, `TestPeopleAndTeamHTTPContract` |
+| Formulario nativo lista y explica `org:write` | `tokens-ui/report.json` y capturas 320/768/1440 |
+
+Evidencia: `test-results/closure-20261025/identidad-090-go.log` con nueve
+owners y `test-results/closure-20261025/tokens-ui/` con `report.json` y seis
+capturas del formulario y de la lista de tokens.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. El
+token del navegador se emitió dos veces por una repetición del guion para
+encuadrar la fila de la lista; la base es desechable y solo se capturaron
+prefijos, nunca secretos.
 
 ### Comprobante de integración documental
 
