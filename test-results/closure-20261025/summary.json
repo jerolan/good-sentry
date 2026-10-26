@@ -857,6 +857,17 @@
         "project scope revalidated; native/compatible read/download/pagination pass"
       ],
       "evidence_files": ["ingest-attachments.log"]
+    },
+    "CLOSE-errores-005": {
+      "evidence": "vigente",
+      "scope": "deterministic project grouping, fingerprints, counts, regression and issue workflow",
+      "covered": [
+        "exception/location hash with message fallback, custom fingerprints and default marker",
+        "concurrent duplicate creates one issue with Count=1; later events increment once",
+        "resolved issue regresses visibly; statuses/assignment/comments/search/sort/pages pass",
+        "merge/unmerge preserve partitions and history"
+      ],
+      "evidence_files": ["errors-grouping.log"]
     }
   },
   "commands": [

@@ -1443,11 +1443,11 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–004 ya están vigentes. Siguiente acción:
-CLOSE-errores-005 (agrupación y regresión). No se declara aceptación ni cierre
-del producto. El avance se informa por criterios/evidencia, sin porcentaje de
-casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
-este registro.
+publicación/CI; errores 001–005 ya están vigentes. 006 espera sus proveedores
+de releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-errores-007 (issue
+search). No se declara aceptación ni cierre del producto. El avance se informa
+por criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de
+un Goal no completan el producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1539,7 +1539,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-002](../SPEC.md#close-errores-002) | Ingestion contract: Envelope headers and item headers are one-line UTF-8 JSON. Item length counts bytes and pe… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de framing |
 | [CLOSE-errores-003](../SPEC.md#close-errores-003) | Ingestion contract: Accept identity, gzip, zlib-wrapped deflate, Brotli and Zstandard HTTP bodies. Support leg… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de compresión |
 | [CLOSE-errores-004](../SPEC.md#close-errores-004) | Ingestion contract: Persist errors/messages with timestamps, exception chains, stack frames, breadcrumbs, tags… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de captura |
-| [CLOSE-errores-005](../SPEC.md#close-errores-005) | Issues and artifacts: Default grouping is an independently designed stable hash of exception type and normaliz… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-005](../SPEC.md#close-errores-005) | Issues and artifacts: Default grouping is an independently designed stable hash of exception type and normaliz… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de grouping |
 | [CLOSE-errores-006](../SPEC.md#close-errores-006) | Issues and artifacts: Merge groups without losing events or their original grouping keys; subsequent events fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-007](../SPEC.md#close-errores-007) | Issue search, historical filters and pages: Complete the existing native session-authenticated GET /api/v1/org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-008](../SPEC.md#close-errores-008) | Issue search, historical filters and pages: The native query accepts single project, query, status, environmen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3620,6 +3620,29 @@ Evidencia: `test-results/closure-20261025/ingest-attachments.log`.
 
 Siguiente acción: CLOSE-errores-005 (agrupación estable, fingerprint, conteos
 y regresión).
+
+### Ejecución 2026-10-26: agrupación y regresión
+
+Selección registrada antes de trabajar: CLOSE-errores-005. Candidata
+`a78b6b3`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners de captura, merge y HTTP con PostgreSQL.
+
+Resultado observado: el hash por defecto combina tipo de excepción y
+localización normalizada, con fallback de mensaje; los fingerprints custom y
+el marcador `{{ default }}` se respetan, el proyecto forma parte de la clave y
+el resultado es determinista. Ocho capturas concurrentes del mismo evento
+producen un issue con `Count=1`; eventos posteriores incrementan first/last y
+el contador una sola vez. Un evento para un issue resuelto genera regresión
+visible y los estados unresolved/resolved/ignored, assignment, comments,
+búsqueda por texto/estado/entorno/release/tags, orden y paginación están
+cubiertos por los owners de issues. Merge/unmerge conservan particiones e
+historial. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/errors-grouping.log`.
+
+Siguiente acción: CLOSE-errores-006 queda a la espera de sus proveedores de
+releases/artefactos/nativo/CLI; avanzar en CLOSE-errores-007 (issue search) y
+los criterios independientes de la familia mientras tanto.
 
 ### Comprobante de integración documental
 
