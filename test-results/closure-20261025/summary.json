@@ -3438,6 +3438,13 @@
       "evidence_files": [
         "identidad-091-go.log"
       ]
+    },
+    "CLOSE-identidad-092": {
+      "evidence": "vigente",
+      "scope": "compatible team creation, rename, deletion, authority and metadata-only membership",
+      "evidence_files": [
+        "identidad-092-go.log"
+      ]
     }
   },
   "commands": [

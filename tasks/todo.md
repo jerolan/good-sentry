@@ -1445,8 +1445,8 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -091 están
-vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-092
+releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -092 están
+vigentes con sus comprobantes abajo. Siguiente acción: CLOSE-identidad-093
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -1934,7 +1934,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-089](../SPEC.md#close-identidad-089) | Compatible project update and deletion: Real PostgreSQL covers organization/member/team visibility, ordered te… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-090](../SPEC.md#close-identidad-090) | Compatible project update and deletion: Additive040 expands the API-token scope constraint with org:write. Exi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-091](../SPEC.md#close-identidad-091) | Compatible project update and deletion: Additive migration062 extends membership and invitation role constrain… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-092](../SPEC.md#close-identidad-092) | Compatible project update and deletion: Compatible team mutations are POST /api/0/organizations/{org}/teams/ w… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-092](../SPEC.md#close-identidad-092) | Compatible project update and deletion: Compatible team mutations are POST /api/0/organizations/{org}/teams/ w… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-093](../SPEC.md#close-identidad-093) | Compatible project update and deletion: Real PostgreSQL covers040 token preservation/reopen, org:write issuanc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-094](../SPEC.md#close-identidad-094) | Compatible project update and deletion: PUT /api/0/organizations/{org}/ accepts only OrganizationInSchema {nam… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-095](../SPEC.md#close-identidad-095) | Compatible project update and deletion: POST /api/0/organizations/ is available only when GOODSENTRY_ENABLE_OR… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5265,6 +5265,42 @@ owners y los cambios en
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 `gofmt` retiró una línea en blanco sobrante en el owner de personas; no cambia
 comportamiento.
+
+### Ejecución 2026-10-26: mutaciones compatibles de equipo
+
+Selección registrada antes de trabajar: CLOSE-identidad-092. Candidata
+`726103e`.
+
+Resultado observado: el owner de store comprueba que crear, renombrar y borrar
+equipos conserva el identificador, el instante de creación y los enlaces de
+proyecto al renombrar, rechaza slugs inválidos y protege el equipo por defecto, y
+que el borrado deja el proyecto sin equipo. Las mismas mutaciones por HTTP
+responden 201/200/204 con `TeamProjectSchema`, devuelven 409 al repetir slug y
+400 con cuerpos malformados o slugs fuera del formato canónico de 50 caracteres,
+prohíben la sesión de un miembro y permiten sesiones de propietario,
+administrador y manager, además de tokens Bearer con `org:write`. Añadí la
+comprobación de que la pertenencia al equipo es solo metadato: un miembro del
+equipo que agrupa el proyecto sigue sin acceso a ese proyecto cuando su grant no
+lo incluye.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Creación con `{slug}`, respuesta `TeamProjectSchema` | HTTP `TestCompatibleTeamMutationsHTTP`; store `TestCompatibleTeamMutationsPreserveProjectRelations` |
+| Slug canónico de hasta 50 caracteres | HTTP `TestCompatibleTeamMutationsHTTP` (400 para mayúsculas, vacío y 51 caracteres) |
+| Renombrado conserva id, proyectos y creación | store `TestCompatibleTeamMutationsPreserveProjectRelations` |
+| Borrado en cascada con 204 | store `TestCompatibleTeamMutationsPreserveProjectRelations`; HTTP `TestCompatibleTeamMutationsHTTP` |
+| Equipo por defecto protegido | store `TestCompatibleTeamMutationsPreserveProjectRelations`; HTTP `TestCompatibleTeamMutationsHTTP` (403) |
+| Miembros de sesión prohibidos; owner, manager y admin permitidos | HTTP `TestCompatibleTeamMutationsHTTP`, `TestPeopleAndTeamHTTPContract` |
+| Tokens Bearer con `org:write` | HTTP `TestCompatibleTeamMutationsHTTP` |
+| Duplicados 409 y cuerpos 400 | HTTP `TestCompatibleTeamMutationsHTTP` |
+| La pertenencia no amplía acceso a proyecto o evento | store `TestCompatibleTeamMutationsPreserveProjectRelations` |
+
+Evidencia: `test-results/closure-20261025/identidad-092-go.log` con cinco
+owners y el cambio en `internal/store/compat_people_test.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

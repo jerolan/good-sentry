@@ -85,16 +85,38 @@ func TestCompatibleTeamMutationsPreserveProjectRelations(t *testing.T) {
 		t.Fatal(err)
 	}
 	assignProjectTeam(t, ctx, db, project.ID, team.ID)
+	before, err := db.CompatibleTeam(ctx, owner.ID, org.Slug, "on-call")
+	if err != nil || before.ID != team.ID || before.DateCreated.IsZero() || len(before.Projects) != 1 {
+		t.Fatalf("team before rename: %+v %v", before, err)
+	}
 	if _, err := db.UpdateCompatibleTeam(ctx, owner.ID, org.Slug, "on-call", "bad slug"); !errors.Is(err, ErrInvalidTeam) {
 		t.Fatalf("invalid team slug error: %v", err)
 	}
 	renamed, err := db.UpdateCompatibleTeam(ctx, owner.ID, org.Slug, "on-call", "incident-response")
-	if err != nil || renamed.Slug != "incident-response" || len(renamed.Projects) != 1 || renamed.Projects[0].ID != project.ID {
+	if err != nil || renamed.ID != before.ID || !renamed.DateCreated.Equal(before.DateCreated) || renamed.Slug != "incident-response" || len(renamed.Projects) != 1 || renamed.Projects[0].ID != project.ID {
 		t.Fatalf("rename team: %+v %v", renamed, err)
 	}
 	if _, err := db.CompatibleTeam(ctx, owner.ID, org.Slug, "on-call"); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("old team slug remained: %v", err)
 	}
+	var metadataMember User
+	if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name) VALUES('team-metadata@compat-people.test',$1,'Team metadata') RETURNING id::text,auth_generation`, []byte("already-hashed")).Scan(&metadataMember.ID, &metadataMember.AuthGeneration); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `INSERT INTO memberships(organization_id,user_id,role) VALUES($1::bigint,$2::bigint,'member')`, org.ID, metadataMember.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.AddTeamMember(ctx, owner.ID, org.Slug, renamed.ID, metadataMember.ID); err != nil {
+		t.Fatal(err)
+	}
+	metadataAccess := ManagementAccess{UserID: metadataMember.ID, OrganizationID: org.ID, ProjectIDs: []int64{referenceID(project.ID) + 1}}
+	if page, err := db.ManagementProjects(ctx, metadataAccess, "", 0, 100); err != nil || len(page) != 0 {
+		t.Fatalf("team membership expanded project access: %+v %v", page, err)
+	}
+	if _, err := db.ManagementProject(ctx, metadataAccess, project.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("team membership expanded project detail: %v", err)
+	}
+
 	if _, err := db.UpdateCompatibleTeam(ctx, owner.ID, org.Slug, "default", "changed-default"); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("default team rename error: %v", err)
 	}
