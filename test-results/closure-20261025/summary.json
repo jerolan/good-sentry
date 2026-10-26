@@ -4309,6 +4309,14 @@
         "alertas-004/alerts-core.log"
       ]
     },
+    "CLOSE-alertas-005": {
+      "evidence": "vigente",
+      "scope": "native alert routes with CSRF, member destination isolation, configuration ranges, recipient validation and team fallback",
+      "evidence_files": [
+        "uptime-014/native-monitors.log",
+        "alertas-004/alerts-core.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-alertas-005. No se declara
+runtime preservado. Siguiente acción: CLOSE-alertas-006. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -8463,6 +8463,26 @@ Evidencia: `test-results/closure-20261025/alertas-004/alerts-core.log`.
 Límites registrados: la entrega es at-least-once con identificadores estables;
 no se afirma exactly-once externo. Los envíos reales a proveedores viven en
 009/010. El CI público y la imagen final siguen pendientes.
+
+### Ejecución 2026-10-26: API nativa de alertas
+
+Selección registrada antes de trabajar: CLOSE-alertas-005. Se reutilizan las
+ejecuciones de 014 y 004 sobre el mismo backend.
+
+| Elemento | Comprobante |
+|---|---|
+| Rutas nativas GET/POST y GET/PUT/DELETE/test con CSRF | `verifyAlertWorkflow` dentro de `TestAccountDSNCaptureAndTriage` |
+| Miembros sin destinos ni metadatos de entrega | `TestAlertPermissionsAssignedTeamAndDestinationSnapshots` |
+| Configuración y rangos (nombre, cantidad, ventana, cooldown, entornos) | `TestErrorAlertsUseReceiptCrossingCooldownAndEnvironment` y validación de la API |
+| Destinatarios y fallback de equipo | `TestAlertPermissionsAssignedTeamAndDestinationSnapshots` |
+| Disponibilidad `features.alerts`/`features.alertDelivery` | `verifyAlertWorkflow` |
+
+Evidencia: `test-results/closure-20261025/uptime-014/native-monitors.log` y
+`test-results/closure-20261025/alertas-004/alerts-core.log`.
+
+Límites registrados: el envío externo y los proveedores viven en 009/010; aquí
+se acredita la API, los permisos y la configuración. El CI público y la imagen
+final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
