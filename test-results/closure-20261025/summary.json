@@ -149,6 +149,19 @@
         "SDK keys authorize ingestion only and cannot manage releases"
       ],
       "evidence_files": ["identity/tests.log", "lifecycle.log", "readiness-negative.log", "browser/report.json"]
+    },
+    "CLOSE-identidad-002": {
+      "evidence": "vigente",
+      "scope": "memberships, teams, project associations, tenant scope, owner control and opaque HTTP IDs",
+      "covered": [
+        "organizations contain memberships and teams; projects accept multiple teams",
+        "cross-organization reads and captures return 404 without membership",
+        "bootstrap is closed after the first owner, including concurrent attempts",
+        "concurrent owner demotions retain an owner",
+        "owners/admins manage workspace resources while members keep the issue workflow",
+        "HTTP identifiers are opaque strings"
+      ],
+      "evidence_files": ["identity/tenancy.log", "identity/tests.log"]
     }
   },
   "commands": [

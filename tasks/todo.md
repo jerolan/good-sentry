@@ -1442,11 +1442,13 @@ imagen construida y PostgreSQL externo, CLOSE-operacion-009 con el loader y
 los alias, CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
 sesiones, CLOSE-operacion-011 con features, correo, uploads y secretos, y
 CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
-abajo. Siguiente acción: CLOSE-identidad-002 (memberships, equipos, proyectos,
-autorización por alcance, bootstrap cerrado e IDs opacos), con dependencias
-locales resueltas. No se declara aceptación ni cierre del producto. El avance
-se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+y CLOSE-identidad-002 con memberships, equipos y alcance. Sus comprobantes
+vigentes están abajo. Siguiente acción: CLOSE-identidad-003 (credenciales de
+automatización nativas, alcance por organización/proyecto, HMAC y
+revocación), con dependencias locales resueltas. No se declara aceptación ni
+cierre del producto. El avance se informa por criterios/evidencia, sin
+porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
+producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1465,7 +1467,7 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-operacion-011](../SPEC.md#close-operacion-011) | Deployment and configuration: An empty VALKEY_URL selects PostgreSQL-only operation. Optional features must re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de features/correo |
 | [CLOSE-operacion-012](../SPEC.md#close-operacion-012) | Deployment and configuration: Memory target: measure application RSS under an explicit repeatable workload and… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ingestión |
 | [CLOSE-identidad-001](../SPEC.md#close-identidad-001) | Runtime and workspace contracts: Provide /healthz for process health and /readyz for database readiness. Setup… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de sesiones/tokens |
-| [CLOSE-identidad-002](../SPEC.md#close-identidad-002) | Runtime and workspace contracts: Organizations contain memberships and teams. Projects belong to an organizati… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-002](../SPEC.md#close-identidad-002) | Runtime and workspace contracts: Organizations contain memberships and teams. Projects belong to an organizati… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de workspace/authz |
 | [CLOSE-identidad-003](../SPEC.md#close-identidad-003) | Runtime and workspace contracts: The automation-credential prerequisite belongs to workspace, before compatibl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-004](../SPEC.md#close-identidad-004) | Runtime and workspace contracts: An omitted or empty project list explicitly grants all current and future org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-005](../SPEC.md#close-identidad-005) | Runtime and workspace contracts: Consume these credentials through Sentry-compatible GET /api/0/organizations/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2586,6 +2588,44 @@ CSRF.
 Siguiente acción: CLOSE-identidad-002 (memberships, equipos, proyectos,
 autorización por alcance, bootstrap cerrado e IDs opacos), con dependencias
 locales resueltas.
+
+### Ejecución 2026-10-26: organizaciones, equipos y alcance
+
+Selección registrada antes de trabajar: CLOSE-identidad-002, siguiente en el
+plan. Candidata `a4961ca`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad no cambia producto; ejecuta los owners de
+memberships, equipos, proyectos y aislamiento.
+
+Procedimiento reproducible con PostgreSQL desechable y `-race`:
+`TestPeopleMembershipsTeamsAndLastOwner`,
+`TestConcurrentOwnerDemotionsRetainOneOwner`,
+`TestDurableCaptureAndTenantScope`,
+`TestCompatibleProjectTeamAssignmentMultipleRelations` y
+`TestPeopleAndTeamHTTPContract`; revisión del esquema `organizations`,
+`memberships`, `teams`, `project_teams`, `projects` y de las consultas que
+unen la identidad actual con la organización/proyecto.
+
+Resultado observado: las organizaciones contienen memberships y equipos; los
+proyectos pertenecen a una organización y aceptan múltiples equipos con
+attach/detach idempotente y 404 para equipos ausentes o fuera de alcance. Una
+identidad accede a otra organización solo mediante su membership; el dueño de
+una organización no obtiene acceso a un proyecto ajeno y la captura/lectura
+cruzada devuelve 404. `Bootstrap` acepta un solo primer owner y las llamadas
+posteriores devuelven conflicto, incluso concurrentes; el setup HTTP posterior
+al primer owner también falla. Las bajas concurrentes de owners conservan al
+menos uno. Owners/admins gestionan memberships, equipos, proyectos,
+credenciales y alertas, mientras un member conserva el flujo de issues; los
+tests HTTP cubren los 403 correspondientes. Los IDs de usuario, organización,
+equipo y proyecto se exponen como cadenas opacas, con `id::text` en las
+proyecciones y sin filtrar claves internas. Subresultados pendientes del
+bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/tenancy.log` y el esquema
+descrito en el comprobante 004.
+
+Siguiente acción: CLOSE-identidad-003 (credenciales de automatización nativas,
+alcance por organización/proyecto, HMAC y ciclo de revocación), con
+dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
