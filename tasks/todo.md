@@ -1454,9 +1454,9 @@ final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -011 quedan
-vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
+vigentes; -012 queda parcial con brechas registradas abajo. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-012. No se declara
+runtime preservado. Siguiente acción: completar CLOSE-nativo-012. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1738,7 +1738,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | implementada (parcial) | parcial | Completar fixtures x86/ARM64 ELF y ARM64 Mach-O y límites 262144/16MiB |
 | [CLOSE-nativo-013](../SPEC.md#close-nativo-013) | CFI extended dereference: Scalar CFI expressions support DW_OP_implicit_value with an unsigned-LEB128 byte len… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-014](../SPEC.md#close-nativo-014) | CFI extended dereference: Decode CFI ULEB128 and SLEB128 operands without truncation: accept only values repre… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -8867,6 +8867,38 @@ Límites registrados: PostgreSQL desechable y binario local; no se usó la image
 final ni el CI público. La aceptación con el SDK nativo real pertenece a
 criterios posteriores. La imagen y el CI siguen pendientes para la auditoría
 final.
+
+### Ejecución 2026-10-26: reconstrucción de pilas y CFI (parcial)
+
+Selección registrada antes de trabajar: CLOSE-nativo-012. Revisión de producto
+`2fb3064`; el incremento corrige la selección de `__debug_frame`/`.debug_frame`
+cuando `__eh_frame`/`.eh_frame` existe pero está vacío, y añade pruebas de
+operaciones y defaults ARM32.
+
+| Elemento | Comprobante |
+|---|---|
+| Cadena de frame pointer AMD64/x86/ARM32/ARM64/RISC-V64 y LR de ARM32 | `TestParseMinidumpAndBreakpadSymbols`; `TestParseX86MinidumpFromContextShape`; `TestParseARM32MinidumpContext`; `TestParseARM32MinidumpUsesLinkRegisterWithoutFramePointer`; `TestParseARM32MinidumpDoesNotGuessFromStackPointer`; `TestParseARM64Minidump`; `TestParseRISCV64MinidumpContext` |
+| CFI ELF AMD64 y ARM32 DWARF/EHABI, incluido `.ARM.exidx`/`.ARM.extab` | `TestCFIUnwindsWithoutFramePointer`; `TestARM32CFIUnwindsUsingRestoredRegisters`; `TestARM32EHABIUnwindsInlineAndExtabTables`; `TestARM32EHABIVSPAndCoreRegisterOperations` |
+| CFI ELF RISC-V64 con columna de retorno | `TestRISCV64ELFCFIUsesReturnColumnAndRestoredRegisters` |
+| CFI Mach-O AMD64 desde `__debug_frame` de un dSYM con `__eh_frame` vacío | `TestMachODSYMDebugFrameUnwinds` (corrección de producto) |
+| CIE v4 con address-size 4/8 y segmento distinto de cero rechazado | `TestParseCFIECIEV4AddressAndSegmentSizes` |
+| Defaults ARM32: r4–r8/r10/r11/r13 mismo valor, r9 indefinido, reglas explícitas preservadas | `TestARM32DefaultCFIRegisters` |
+| Límite de 256 operaciones por marco EHABI | `TestARM32EHABIFrameOperationBound` |
+| Expresiones CFI: branch, shifts, aritmética, módulo, pila, LEB, punteros, personalidad, registro/stack-value, deref, addr, implícitos | `TestCFIExpression*`; `TestCFILEB*`; `TestCFIIndirectCIEPersonality*`; `TestCFIRegisterExpressionsHonorStackValue`; `TestCFIParserRejectsTruncatedSection` |
+| Offsets firmados, signal frame y reglas por defecto/desconocidas | `TestCFISignedCFAOffsetsUseDataAlignment`; `TestCFISignedFactoredOffsetsRejectOverflow`; `TestCFISignalFrameUsesUnadjustedReturnAddress`; `TestARM32EHABIFailsClosed` |
+| Formatos almacenados y presupuesto 25/64MiB | `TestParseDebugArchiveObjects`; `TestParseELFObjectSymbols`; `TestParseMachODSYMObjectSymbols`; CLOSE-nativo-004 |
+
+Evidencia: `test-results/closure-20261025/nativo-012/cfi.log` y `native.log`.
+
+Brechas registradas, no cubiertas por este incremento: fixtures que ejerzan CFI
+ELF para x86 y ARM64, CFI Mach-O ARM64, el límite de 262 144 entradas
+`.ARM.exidx` por archivo y el límite de 16MiB de operaciones EHABI decodificadas.
+El criterio no se declara vigente hasta cerrar esas brechas; la siguiente
+acción es completar CLOSE-nativo-012.
+
+Límites registrados: las pruebas son unitarias y de integración nativa; no se
+usó la imagen final ni el CI público. La imagen y el CI siguen pendientes para
+la auditoría final.
 
 ### Comprobante de integración documental
 

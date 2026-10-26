@@ -253,7 +253,7 @@ func ParseObjectUnwind(name string, data []byte) (string, *UnwindTable) {
 			pointerSize = 4
 		}
 		section := file.Section(".eh_frame")
-		if section == nil {
+		if section == nil || section.Size == 0 {
 			section = file.Section(".debug_frame")
 		}
 		if section != nil {
@@ -287,7 +287,7 @@ func ParseObjectUnwind(name string, data []byte) (string, *UnwindTable) {
 		}
 		base := machoImageBase(file)
 		section := file.Section("__eh_frame")
-		if section == nil {
+		if section == nil || section.Size == 0 {
 			section = file.Section("__debug_frame")
 		}
 		if section != nil {

@@ -1,0 +1,376 @@
+=== RUN   TestARM32EHABIFrameOperationBound
+--- PASS: TestARM32EHABIFrameOperationBound (0.00s)
+=== RUN   TestARM32DefaultCFIRegisters
+--- PASS: TestARM32DefaultCFIRegisters (0.00s)
+=== RUN   TestMachODSYMDebugFrameUnwinds
+--- PASS: TestMachODSYMDebugFrameUnwinds (0.00s)
+=== RUN   TestARM32CFIUnwindsUsingRestoredRegisters
+=== RUN   TestARM32CFIUnwindsUsingRestoredRegisters/restore_callee-saved_r4
+=== RUN   TestARM32CFIUnwindsUsingRestoredRegisters/unavailable_saved_r4_stops
+--- PASS: TestARM32CFIUnwindsUsingRestoredRegisters (0.00s)
+    --- PASS: TestARM32CFIUnwindsUsingRestoredRegisters/restore_callee-saved_r4 (0.00s)
+    --- PASS: TestARM32CFIUnwindsUsingRestoredRegisters/unavailable_saved_r4_stops (0.00s)
+=== RUN   TestARM32EHABIUnwindsInlineAndExtabTables
+=== RUN   TestARM32EHABIUnwindsInlineAndExtabTables/inline_compact_entry
+=== RUN   TestARM32EHABIUnwindsInlineAndExtabTables/extab_long_entry
+--- PASS: TestARM32EHABIUnwindsInlineAndExtabTables (0.00s)
+    --- PASS: TestARM32EHABIUnwindsInlineAndExtabTables/inline_compact_entry (0.00s)
+    --- PASS: TestARM32EHABIUnwindsInlineAndExtabTables/extab_long_entry (0.00s)
+=== RUN   TestARM32EHABIFailsClosed
+=== RUN   TestARM32EHABIFailsClosed/unavailable_restore_memory
+=== RUN   TestARM32EHABIFailsClosed/malformed_index_section
+=== RUN   TestARM32EHABIFailsClosed/unsupported_instruction
+=== RUN   TestARM32EHABIFailsClosed/function_prel31_outside_executable_section
+=== RUN   TestARM32EHABIFailsClosed/unsorted_function_entries
+=== RUN   TestARM32EHABIFailsClosed/function_prel31_high_bit
+=== RUN   TestARM32EHABIFailsClosed/generic_personality
+=== RUN   TestARM32EHABIFailsClosed/reserved_compact_personality
+=== RUN   TestARM32EHABIFailsClosed/overlong_ULEB_operand
+--- PASS: TestARM32EHABIFailsClosed (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/unavailable_restore_memory (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/malformed_index_section (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/unsupported_instruction (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/function_prel31_outside_executable_section (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/unsorted_function_entries (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/function_prel31_high_bit (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/generic_personality (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/reserved_compact_personality (0.00s)
+    --- PASS: TestARM32EHABIFailsClosed/overlong_ULEB_operand (0.00s)
+=== RUN   TestARM32EHABIVSPAndCoreRegisterOperations
+=== RUN   TestARM32EHABIVSPAndCoreRegisterOperations/positive_vsp_adjustment
+=== RUN   TestARM32EHABIVSPAndCoreRegisterOperations/negative_vsp_adjustment
+=== RUN   TestARM32EHABIVSPAndCoreRegisterOperations/vsp_from_r4
+=== RUN   TestARM32EHABIVSPAndCoreRegisterOperations/pop_r4_and_lr
+=== RUN   TestARM32EHABIVSPAndCoreRegisterOperations/pop_low_register
+=== RUN   TestARM32EHABIVSPAndCoreRegisterOperations/large_vsp_adjustment
+--- PASS: TestARM32EHABIVSPAndCoreRegisterOperations (0.00s)
+    --- PASS: TestARM32EHABIVSPAndCoreRegisterOperations/positive_vsp_adjustment (0.00s)
+    --- PASS: TestARM32EHABIVSPAndCoreRegisterOperations/negative_vsp_adjustment (0.00s)
+    --- PASS: TestARM32EHABIVSPAndCoreRegisterOperations/vsp_from_r4 (0.00s)
+    --- PASS: TestARM32EHABIVSPAndCoreRegisterOperations/pop_r4_and_lr (0.00s)
+    --- PASS: TestARM32EHABIVSPAndCoreRegisterOperations/pop_low_register (0.00s)
+    --- PASS: TestARM32EHABIVSPAndCoreRegisterOperations/large_vsp_adjustment (0.00s)
+=== RUN   TestRISCV64FrameRecordsAndLinkRegisterFallback
+--- PASS: TestRISCV64FrameRecordsAndLinkRegisterFallback (0.00s)
+=== RUN   TestRISCV64FrameRecordChainStopsAt64Frames
+--- PASS: TestRISCV64FrameRecordChainStopsAt64Frames (0.00s)
+=== RUN   TestRISCV64FrameRecordsRejectInvalidLinks
+=== RUN   TestRISCV64FrameRecordsRejectInvalidLinks/unavailable_memory
+=== RUN   TestRISCV64FrameRecordsRejectInvalidLinks/return_address_outside_captured_memory
+=== RUN   TestRISCV64FrameRecordsRejectInvalidLinks/nonmonotonic_caller_frame
+=== RUN   TestRISCV64FrameRecordsRejectInvalidLinks/repeated_return_address
+=== RUN   TestRISCV64FrameRecordsRejectInvalidLinks/frame_pointer_underflow
+--- PASS: TestRISCV64FrameRecordsRejectInvalidLinks (0.00s)
+    --- PASS: TestRISCV64FrameRecordsRejectInvalidLinks/unavailable_memory (0.00s)
+    --- PASS: TestRISCV64FrameRecordsRejectInvalidLinks/return_address_outside_captured_memory (0.00s)
+    --- PASS: TestRISCV64FrameRecordsRejectInvalidLinks/nonmonotonic_caller_frame (0.00s)
+    --- PASS: TestRISCV64FrameRecordsRejectInvalidLinks/repeated_return_address (0.00s)
+    --- PASS: TestRISCV64FrameRecordsRejectInvalidLinks/frame_pointer_underflow (0.00s)
+=== RUN   TestParseELFObjectSymbols
+=== RUN   TestParseELFObjectSymbols/function_entry
+=== RUN   TestParseELFObjectSymbols/first_line_final_instruction
+=== RUN   TestParseELFObjectSymbols/first_source_transition
+=== RUN   TestParseELFObjectSymbols/second_line_final_instruction
+=== RUN   TestParseELFObjectSymbols/second_source_transition
+=== RUN   TestParseELFObjectSymbols/main_entry
+=== RUN   TestParseELFObjectSymbols/next_source_transition
+=== RUN   TestParseELFObjectSymbols/final_sequence_instruction
+--- PASS: TestParseELFObjectSymbols (0.00s)
+    --- PASS: TestParseELFObjectSymbols/function_entry (0.00s)
+    --- PASS: TestParseELFObjectSymbols/first_line_final_instruction (0.00s)
+    --- PASS: TestParseELFObjectSymbols/first_source_transition (0.00s)
+    --- PASS: TestParseELFObjectSymbols/second_line_final_instruction (0.00s)
+    --- PASS: TestParseELFObjectSymbols/second_source_transition (0.00s)
+    --- PASS: TestParseELFObjectSymbols/main_entry (0.00s)
+    --- PASS: TestParseELFObjectSymbols/next_source_transition (0.00s)
+    --- PASS: TestParseELFObjectSymbols/final_sequence_instruction (0.00s)
+=== RUN   TestSymbolicateByDebugID
+--- PASS: TestSymbolicateByDebugID (0.00s)
+=== RUN   TestCFIUnwindsWithoutFramePointer
+=== RUN   TestCFIUnwindsWithoutFramePointer/cfi-amd64
+=== RUN   TestCFIUnwindsWithoutFramePointer/cfi-amd64-pie
+--- PASS: TestCFIUnwindsWithoutFramePointer (0.00s)
+    --- PASS: TestCFIUnwindsWithoutFramePointer/cfi-amd64 (0.00s)
+    --- PASS: TestCFIUnwindsWithoutFramePointer/cfi-amd64-pie (0.00s)
+=== RUN   TestCFISignedCFAOffsetsUseDataAlignment
+=== RUN   TestCFISignedCFAOffsetsUseDataAlignment/def_cfa_sf
+=== RUN   TestCFISignedCFAOffsetsUseDataAlignment/def_cfa_offset_sf
+--- PASS: TestCFISignedCFAOffsetsUseDataAlignment (0.00s)
+    --- PASS: TestCFISignedCFAOffsetsUseDataAlignment/def_cfa_sf (0.00s)
+    --- PASS: TestCFISignedCFAOffsetsUseDataAlignment/def_cfa_offset_sf (0.00s)
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/offset_extended_sf
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/offset_extended_sf/positive_overflow
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/offset_extended_sf/negative_overflow
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_sf
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_sf/positive_overflow
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_sf/negative_overflow
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_offset_sf
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_offset_sf/positive_overflow
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_offset_sf/negative_overflow
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/val_offset_sf
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/val_offset_sf/positive_overflow
+=== RUN   TestCFISignedFactoredOffsetsRejectOverflow/val_offset_sf/negative_overflow
+--- PASS: TestCFISignedFactoredOffsetsRejectOverflow (0.00s)
+    --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/offset_extended_sf (0.00s)
+        --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/offset_extended_sf/positive_overflow (0.00s)
+        --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/offset_extended_sf/negative_overflow (0.00s)
+    --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_sf (0.00s)
+        --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_sf/positive_overflow (0.00s)
+        --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_sf/negative_overflow (0.00s)
+    --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_offset_sf (0.00s)
+        --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_offset_sf/positive_overflow (0.00s)
+        --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/def_cfa_offset_sf/negative_overflow (0.00s)
+    --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/val_offset_sf (0.00s)
+        --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/val_offset_sf/positive_overflow (0.00s)
+        --- PASS: TestCFISignedFactoredOffsetsRejectOverflow/val_offset_sf/negative_overflow (0.00s)
+=== RUN   TestCFISignalFrameUsesUnadjustedReturnAddress
+--- PASS: TestCFISignalFrameUsesUnadjustedReturnAddress (0.00s)
+=== RUN   TestRISCV64ELFCFIUsesReturnColumnAndRestoredRegisters
+--- PASS: TestRISCV64ELFCFIUsesReturnColumnAndRestoredRegisters (0.00s)
+=== RUN   TestCFIExpressionBranchControl
+=== RUN   TestCFIExpressionBranchControl/forward_skip
+=== RUN   TestCFIExpressionBranchControl/branch_not_taken
+=== RUN   TestCFIExpressionBranchControl/branch_taken
+=== RUN   TestCFIExpressionBranchControl/branch_into_operand
+=== RUN   TestCFIExpressionBranchControl/branch_into_implicit-value_block
+=== RUN   TestCFIExpressionBranchControl/branch_out_of_range
+=== RUN   TestCFIExpressionBranchControl/truncated_skip_operand
+=== RUN   TestCFIExpressionBranchControl/truncated_branch_operand
+=== RUN   TestCFIExpressionBranchControl/unbounded_loop
+--- PASS: TestCFIExpressionBranchControl (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/forward_skip (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/branch_not_taken (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/branch_taken (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/branch_into_operand (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/branch_into_implicit-value_block (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/branch_out_of_range (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/truncated_skip_operand (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/truncated_branch_operand (0.00s)
+    --- PASS: TestCFIExpressionBranchControl/unbounded_loop (0.00s)
+=== RUN   TestCFIExpressionShiftOperations
+=== RUN   TestCFIExpressionShiftOperations/32-bit
+=== RUN   TestCFIExpressionShiftOperations/64-bit
+=== RUN   TestCFIExpressionShiftOperations/arithmetic-32-bit
+=== RUN   TestCFIExpressionShiftOperations/arithmetic-64-bit
+=== RUN   TestCFIExpressionShiftOperations/invalid-64-bit_count
+=== RUN   TestCFIExpressionShiftOperations/invalid-32-bit_count
+=== RUN   TestCFIExpressionShiftOperations/invalid-stack_underflow
+--- PASS: TestCFIExpressionShiftOperations (0.00s)
+    --- PASS: TestCFIExpressionShiftOperations/32-bit (0.00s)
+    --- PASS: TestCFIExpressionShiftOperations/64-bit (0.00s)
+    --- PASS: TestCFIExpressionShiftOperations/arithmetic-32-bit (0.00s)
+    --- PASS: TestCFIExpressionShiftOperations/arithmetic-64-bit (0.00s)
+    --- PASS: TestCFIExpressionShiftOperations/invalid-64-bit_count (0.00s)
+    --- PASS: TestCFIExpressionShiftOperations/invalid-32-bit_count (0.00s)
+    --- PASS: TestCFIExpressionShiftOperations/invalid-stack_underflow (0.00s)
+=== RUN   TestCFIExpressionSignedArithmetic
+=== RUN   TestCFIExpressionSignedArithmetic/absolute_value
+=== RUN   TestCFIExpressionSignedArithmetic/negation
+=== RUN   TestCFIExpressionSignedArithmetic/bitwise_complement
+=== RUN   TestCFIExpressionSignedArithmetic/signed_division
+=== RUN   TestCFIExpressionSignedArithmetic/equal
+=== RUN   TestCFIExpressionSignedArithmetic/greater-or-equal_is_signed
+=== RUN   TestCFIExpressionSignedArithmetic/greater_than
+=== RUN   TestCFIExpressionSignedArithmetic/less-or-equal
+=== RUN   TestCFIExpressionSignedArithmetic/less_than_is_signed
+=== RUN   TestCFIExpressionSignedArithmetic/not_equal
+=== RUN   TestCFIExpressionSignedArithmetic/invalid-division_by_zero
+=== RUN   TestCFIExpressionSignedArithmetic/invalid-division_overflow
+=== RUN   TestCFIExpressionSignedArithmetic/invalid-absolute_overflow
+=== RUN   TestCFIExpressionSignedArithmetic/invalid-negation_overflow
+=== RUN   TestCFIExpressionSignedArithmetic/invalid-unary_underflow
+=== RUN   TestCFIExpressionSignedArithmetic/invalid-binary_underflow
+=== RUN   TestCFIExpressionSignedArithmetic/invalid-comparison_underflow
+--- PASS: TestCFIExpressionSignedArithmetic (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/absolute_value (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/negation (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/bitwise_complement (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/signed_division (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/equal (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/greater-or-equal_is_signed (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/greater_than (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/less-or-equal (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/less_than_is_signed (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/not_equal (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/invalid-division_by_zero (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/invalid-division_overflow (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/invalid-absolute_overflow (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/invalid-negation_overflow (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/invalid-unary_underflow (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/invalid-binary_underflow (0.00s)
+    --- PASS: TestCFIExpressionSignedArithmetic/invalid-comparison_underflow (0.00s)
+=== RUN   TestCFIExpressionModulo
+=== RUN   TestCFIExpressionModulo/negative_numerator
+=== RUN   TestCFIExpressionModulo/negative_denominator
+=== RUN   TestCFIExpressionModulo/exact_division
+=== RUN   TestCFIExpressionModulo/invalid-zero_divisor
+=== RUN   TestCFIExpressionModulo/invalid-signed_overflow
+=== RUN   TestCFIExpressionModulo/invalid-stack_underflow
+--- PASS: TestCFIExpressionModulo (0.00s)
+    --- PASS: TestCFIExpressionModulo/negative_numerator (0.00s)
+    --- PASS: TestCFIExpressionModulo/negative_denominator (0.00s)
+    --- PASS: TestCFIExpressionModulo/exact_division (0.00s)
+    --- PASS: TestCFIExpressionModulo/invalid-zero_divisor (0.00s)
+    --- PASS: TestCFIExpressionModulo/invalid-signed_overflow (0.00s)
+    --- PASS: TestCFIExpressionModulo/invalid-stack_underflow (0.00s)
+=== RUN   TestCFIExpressionStackManipulation
+=== RUN   TestCFIExpressionStackManipulation/rotate_top_three
+=== RUN   TestCFIExpressionStackManipulation/nop_preserves_value
+=== RUN   TestCFIExpressionStackManipulation/invalid-empty_stack
+=== RUN   TestCFIExpressionStackManipulation/invalid-two_values
+--- PASS: TestCFIExpressionStackManipulation (0.00s)
+    --- PASS: TestCFIExpressionStackManipulation/rotate_top_three (0.00s)
+    --- PASS: TestCFIExpressionStackManipulation/nop_preserves_value (0.00s)
+    --- PASS: TestCFIExpressionStackManipulation/invalid-empty_stack (0.00s)
+    --- PASS: TestCFIExpressionStackManipulation/invalid-two_values (0.00s)
+=== RUN   TestCFILEB128ReadersRejectOverflow
+=== RUN   TestCFILEB128ReadersRejectOverflow/ULEB_zero
+=== RUN   TestCFILEB128ReadersRejectOverflow/ULEB_uint64_max
+=== RUN   TestCFILEB128ReadersRejectOverflow/ULEB_tenth_payload_overflow
+=== RUN   TestCFILEB128ReadersRejectOverflow/ULEB_continuation_beyond_width
+=== RUN   TestCFILEB128ReadersRejectOverflow/ULEB_truncated
+=== RUN   TestCFILEB128ReadersRejectOverflow/SLEB_int64_max
+=== RUN   TestCFILEB128ReadersRejectOverflow/SLEB_int64_min
+=== RUN   TestCFILEB128ReadersRejectOverflow/SLEB_positive_tenth-byte_overflow
+=== RUN   TestCFILEB128ReadersRejectOverflow/SLEB_negative_tenth-byte_overflow
+=== RUN   TestCFILEB128ReadersRejectOverflow/SLEB_continuation_beyond_width
+=== RUN   TestCFILEB128ReadersRejectOverflow/SLEB_truncated
+--- PASS: TestCFILEB128ReadersRejectOverflow (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/ULEB_zero (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/ULEB_uint64_max (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/ULEB_tenth_payload_overflow (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/ULEB_continuation_beyond_width (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/ULEB_truncated (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/SLEB_int64_max (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/SLEB_int64_min (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/SLEB_positive_tenth-byte_overflow (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/SLEB_negative_tenth-byte_overflow (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/SLEB_continuation_beyond_width (0.00s)
+    --- PASS: TestCFILEB128ReadersRejectOverflow/SLEB_truncated (0.00s)
+=== RUN   TestCFILEBPointerEncodingUnwinds
+--- PASS: TestCFILEBPointerEncodingUnwinds (0.00s)
+=== RUN   TestCFIIndirectCIEPersonalityEncodingUnwinds
+--- PASS: TestCFIIndirectCIEPersonalityEncodingUnwinds (0.00s)
+=== RUN   TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation
+=== RUN   TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/pointer_crosses_augmentation
+=== RUN   TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/truncated_pointer
+--- PASS: TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation (0.00s)
+    --- PASS: TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/pointer_crosses_augmentation (0.00s)
+    --- PASS: TestCFIIndirectCIEPersonalityRejectsMalformedAugmentation/truncated_pointer (0.00s)
+=== RUN   TestCFIIndirectFDEPointerEncodingRemainsUnsupported
+--- PASS: TestCFIIndirectFDEPointerEncodingRemainsUnsupported (0.00s)
+=== RUN   TestCFIExpressionRejectsRegisterIDTruncation
+=== RUN   TestCFIExpressionRejectsRegisterIDTruncation/valid_regx
+=== RUN   TestCFIExpressionRejectsRegisterIDTruncation/valid_bregx
+=== RUN   TestCFIExpressionRejectsRegisterIDTruncation/regx_above_uint32
+=== RUN   TestCFIExpressionRejectsRegisterIDTruncation/bregx_above_uint32
+--- PASS: TestCFIExpressionRejectsRegisterIDTruncation (0.00s)
+    --- PASS: TestCFIExpressionRejectsRegisterIDTruncation/valid_regx (0.00s)
+    --- PASS: TestCFIExpressionRejectsRegisterIDTruncation/valid_bregx (0.00s)
+    --- PASS: TestCFIExpressionRejectsRegisterIDTruncation/regx_above_uint32 (0.00s)
+    --- PASS: TestCFIExpressionRejectsRegisterIDTruncation/bregx_above_uint32 (0.00s)
+=== RUN   TestCFIExpressionDereferenceRespectsSizeOperands
+=== RUN   TestCFIExpressionDereferenceRespectsSizeOperands/pointer-4
+=== RUN   TestCFIExpressionDereferenceRespectsSizeOperands/pointer-8
+=== RUN   TestCFIExpressionDereferenceRespectsSizeOperands/missing_size_operand
+=== RUN   TestCFIExpressionDereferenceRespectsSizeOperands/zero_size
+=== RUN   TestCFIExpressionDereferenceRespectsSizeOperands/larger_than_pointer
+=== RUN   TestCFIExpressionDereferenceRespectsSizeOperands/larger_than_four-byte_pointer
+=== RUN   TestCFIExpressionDereferenceRespectsSizeOperands/outside_captured_memory
+--- PASS: TestCFIExpressionDereferenceRespectsSizeOperands (0.00s)
+    --- PASS: TestCFIExpressionDereferenceRespectsSizeOperands/pointer-4 (0.00s)
+    --- PASS: TestCFIExpressionDereferenceRespectsSizeOperands/pointer-8 (0.00s)
+    --- PASS: TestCFIExpressionDereferenceRespectsSizeOperands/missing_size_operand (0.00s)
+    --- PASS: TestCFIExpressionDereferenceRespectsSizeOperands/zero_size (0.00s)
+    --- PASS: TestCFIExpressionDereferenceRespectsSizeOperands/larger_than_pointer (0.00s)
+    --- PASS: TestCFIExpressionDereferenceRespectsSizeOperands/larger_than_four-byte_pointer (0.00s)
+    --- PASS: TestCFIExpressionDereferenceRespectsSizeOperands/outside_captured_memory (0.00s)
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-1
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-2
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-3
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-4
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-1
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-2
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-3
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-4
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-5
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-6
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-7
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-8
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/nonzero_address_space
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_address-space_identifier
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_address
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_size_operand
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/zero_size
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/size_larger_than_pointer
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/size_larger_than_four-byte_pointer
+=== RUN   TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/read_beyond_captured_bytes
+--- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-1 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-2 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-3 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-4/xderef-size-4 (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-1 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-2 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-3 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-4 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-5 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-6 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-7 (0.00s)
+        --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/pointer-8/xderef-size-8 (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/nonzero_address_space (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_address-space_identifier (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_address (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/missing_size_operand (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/zero_size (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/size_larger_than_pointer (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/size_larger_than_four-byte_pointer (0.00s)
+    --- PASS: TestCFIExpressionExtendedDereferenceUsesCapturedAddressSpace/read_beyond_captured_bytes (0.00s)
+=== RUN   TestCFIExpressionAddressUsesTargetWidth
+--- PASS: TestCFIExpressionAddressUsesTargetWidth (0.00s)
+=== RUN   TestCFIExpressionImplicitValues
+=== RUN   TestCFIExpressionImplicitValues/pointer-4
+=== RUN   TestCFIExpressionImplicitValues/pointer-8
+--- PASS: TestCFIExpressionImplicitValues (0.00s)
+    --- PASS: TestCFIExpressionImplicitValues/pointer-4 (0.00s)
+    --- PASS: TestCFIExpressionImplicitValues/pointer-8 (0.00s)
+=== RUN   TestCFIRegisterExpressionsHonorStackValue
+=== RUN   TestCFIRegisterExpressionsHonorStackValue/expression_value
+=== RUN   TestCFIRegisterExpressionsHonorStackValue/expression_address
+=== RUN   TestCFIRegisterExpressionsHonorStackValue/expression_implicit-value_address
+=== RUN   TestCFIRegisterExpressionsHonorStackValue/value_expression
+=== RUN   TestCFIRegisterExpressionsHonorStackValue/value_expression_implicit_scalar
+--- PASS: TestCFIRegisterExpressionsHonorStackValue (0.00s)
+    --- PASS: TestCFIRegisterExpressionsHonorStackValue/expression_value (0.00s)
+    --- PASS: TestCFIRegisterExpressionsHonorStackValue/expression_address (0.00s)
+    --- PASS: TestCFIRegisterExpressionsHonorStackValue/expression_implicit-value_address (0.00s)
+    --- PASS: TestCFIRegisterExpressionsHonorStackValue/value_expression (0.00s)
+    --- PASS: TestCFIRegisterExpressionsHonorStackValue/value_expression_implicit_scalar (0.00s)
+=== RUN   TestParseCFIECIEV4AddressAndSegmentSizes
+=== RUN   TestParseCFIECIEV4AddressAndSegmentSizes/address_size_4
+=== RUN   TestParseCFIECIEV4AddressAndSegmentSizes/address_size_8
+=== RUN   TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_address_size
+=== RUN   TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_segment_size
+=== RUN   TestParseCFIECIEV4AddressAndSegmentSizes/truncated_sizes
+--- PASS: TestParseCFIECIEV4AddressAndSegmentSizes (0.00s)
+    --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/address_size_4 (0.00s)
+    --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/address_size_8 (0.00s)
+    --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_address_size (0.00s)
+    --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/unsupported_segment_size (0.00s)
+    --- PASS: TestParseCFIECIEV4AddressAndSegmentSizes/truncated_sizes (0.00s)
+=== RUN   TestCFIParserRejectsTruncatedSection
+--- PASS: TestCFIParserRejectsTruncatedSection (0.00s)
+=== RUN   TestSymbolicatePrefersExactPDBProcedureToPublicFallback
+--- PASS: TestSymbolicatePrefersExactPDBProcedureToPublicFallback (0.00s)
+PASS
+ok  	goodsentry/internal/native	0.010s
