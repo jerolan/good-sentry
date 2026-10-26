@@ -1,0 +1,94 @@
+{
+  "contract": "SPEC.md#closure-contract-v1",
+  "date": "2026-10-25",
+  "timezone": "America/Mexico_City",
+  "candidate_tested": "54db6e48bf2e52e9a84efe397e3e5b44c27e4d91",
+  "candidate_note": "The receipt commit adds only this evidence, task documentation and the bounded retention-test deadline. No production path, schema, configuration, client or image changed.",
+  "environment": {
+    "go": "1.27.2",
+    "os": "linux/amd64",
+    "postgres": "18, disposable container goodsentry-closure-20261025 on 127.0.0.1:18085",
+    "database": "disposable local PostgreSQL; no production or shared database used"
+  },
+  "concurrency": {
+    "untracked_foreign_file": "tests/compat/otlp_python_smoke.py",
+    "foreign_file_touched": false,
+    "git_index_before": "clean; only the untracked foreign file was present"
+  },
+  "criteria": {
+    "CLOSE-operacion-004": {
+      "evidence": "vigente",
+      "scope": "architecture source audit plus build/vet",
+      "covered": [
+        "one server Go module at the repository root; tests/compat and examples/sentry-go are separate non-runtime client modules",
+        "cmd/goodsentry executable",
+        "net/http routing and explicit dependency construction",
+        "go:embed static UI and migrations",
+        "no external CDN or runtime build service in embedded UI",
+        "pgx v5 with transactions",
+        "relational membership/key/grouping schema and JSONB event data"
+      ],
+      "evidence_files": ["unit.log"]
+    },
+    "CLOSE-operacion-005": {
+      "evidence": "vigente",
+      "scope": "durable capture, retry identity, atomic alert enqueue, grouping concurrency and job leases",
+      "covered": [
+        "capture commits before success and survives close/reopen",
+        "event and alert work commit in one transaction",
+        "PostgreSQL owns jobs and retry state",
+        "project/event-id uniqueness prevents retry double counting",
+        "concurrent grouping and triage remain atomic",
+        "row-locked leases recover after expiry",
+        "Valkey is rejected rather than required"
+      ],
+      "evidence_files": ["store-targeted-race.log", "full-race-final.log"]
+    },
+    "CLOSE-operacion-006": {
+      "evidence": "vigente",
+      "scope": "process lifecycle, forward migrations, concurrent startup and readiness",
+      "covered": [
+        "signal-driven HTTP shutdown and closed database connections",
+        "73 forward-only migrations applied under a PostgreSQL advisory lock",
+        "two concurrent starts on a fresh database both became ready with 73 unique checksums",
+        "readyz returned 503 while PostgreSQL was stopped and 200 after recovery",
+        "no automatic destructive rollback migrations"
+      ],
+      "evidence_files": ["lifecycle.log", "readiness-negative.log", "migration-lock-18087.log", "migration-lock-18088.log", "full-race-final.log"]
+    }
+  },
+  "commands": [
+    "go build ./...",
+    "go vet ./...",
+    "go test ./...",
+    "DATABASE_URL=<disposable> go test -tags=integration ./...",
+    "DATABASE_URL=<disposable> go test -race -count=1 -tags=integration ./...",
+    "start bin, GET /healthz and /readyz, stop PostgreSQL, GET /readyz, restart PostgreSQL, SIGTERM"
+  ],
+  "observed": {
+    "unit": "pass",
+    "integration": "pass",
+    "full_race": "pass; server 207.087s, store 368.206s, jobs 27.770s",
+    "healthz": 200,
+    "readyz_up": 200,
+    "readyz_down": 503,
+    "readyz_recovered": 200,
+    "sigterm_exit": 0,
+    "remaining_database_connections": 0,
+    "migrations": 73,
+    "bad_checksums": 0,
+    "concurrent_migration_starts": 2,
+    "data_races": 0
+  },
+  "repair_history": {
+    "failure": "The first full race run failed TestRetentionWorkersDrainRetryAndStop/releases after 6.44s against a 5s drain deadline; the isolated run passed in 1.16s for that subtest.",
+    "diagnosis": "The 601-row release backlog is drained in bounded 250-row passes. Under full-suite race instrumentation and a shared PostgreSQL instance, three passes exceeded the fixed 5s window; no lost row, error or data race was observed.",
+    "change": "Raised only the test drain deadline to 15s, preserving a bounded assertion. Production retention behavior is unchanged.",
+    "evidence": ["full-race-1-failure.log", "jobs-isolated.log", "full-race-final.log"]
+  },
+  "limits": [
+    "No browser, Docker image, compose, SDK, S3, external provider or publication acceptance was performed in this increment.",
+    "CLOSE-operacion-007 and CLOSE-operacion-008 remain pending and are the next plan-order criteria.",
+    "The candidate is not declared an acceptance candidate or a closed product."
+  ]
+}

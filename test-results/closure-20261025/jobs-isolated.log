@@ -1,0 +1,81 @@
+=== RUN   TestRetentionWorkersDrainRetryAndStop
+=== RUN   TestRetentionWorkersDrainRetryAndStop/logs
+2026/10/25 23:43:29 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=250 batches=0
+2026/10/25 23:43:29 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=250 batches=0
+2026/10/25 23:43:29 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=101 batches=0
+2026/10/25 23:43:29 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=3 batches=0
+2026/10/25 23:43:29 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=2 batches=0
+2026/10/25 23:43:29 ERROR Log retention pass failed entryPoint=log_retention_worker operation=cleanup_logs
+2026/10/25 23:43:29 ERROR Log retention pass failed entryPoint=log_retention_worker operation=cleanup_logs
+2026/10/25 23:43:29 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=1 batches=0
+=== RUN   TestRetentionWorkersDrainRetryAndStop/transactions
+2026/10/25 23:43:30 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=250 spans=250 archiveObjects=0
+2026/10/25 23:43:30 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=250 spans=250 archiveObjects=0
+2026/10/25 23:43:30 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=101 spans=101 archiveObjects=0
+2026/10/25 23:43:30 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=3 spans=3 archiveObjects=0
+2026/10/25 23:43:30 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=2 spans=2 archiveObjects=0
+2026/10/25 23:43:30 ERROR Transaction retention pass failed entryPoint=transaction_retention_worker operation=cleanup_transactions
+2026/10/25 23:43:30 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=1 spans=1 archiveObjects=0
+=== RUN   TestRetentionWorkersDrainRetryAndStop/events
+2026/10/25 23:43:31 INFO Event retention cleanup committed entryPoint=event_retention_worker events=250
+2026/10/25 23:43:31 INFO Event retention cleanup committed entryPoint=event_retention_worker events=250
+2026/10/25 23:43:31 INFO Event retention cleanup committed entryPoint=event_retention_worker events=101
+2026/10/25 23:43:31 INFO Event retention cleanup committed entryPoint=event_retention_worker events=3
+2026/10/25 23:43:31 INFO Event retention cleanup committed entryPoint=event_retention_worker events=2
+2026/10/25 23:43:31 ERROR Event retention pass failed entryPoint=event_retention_worker operation=cleanup_events
+2026/10/25 23:43:31 INFO Event retention cleanup committed entryPoint=event_retention_worker events=1
+=== RUN   TestRetentionWorkersDrainRetryAndStop/uptime
+2026/10/25 23:43:32 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=250
+2026/10/25 23:43:32 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=250
+2026/10/25 23:43:32 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=101
+2026/10/25 23:43:32 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=3
+2026/10/25 23:43:32 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=2
+2026/10/25 23:43:32 ERROR Uptime retention pass failed entryPoint=uptime_retention_worker operation=cleanup_monitor_checks
+2026/10/25 23:43:32 ERROR Uptime retention pass failed entryPoint=uptime_retention_worker operation=cleanup_monitor_checks
+2026/10/25 23:43:32 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=1
+=== RUN   TestRetentionWorkersDrainRetryAndStop/files
+2026/10/25 23:43:33 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=250 attachments=250 items=250
+2026/10/25 23:43:33 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=250 attachments=250 items=250
+2026/10/25 23:43:33 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=101 attachments=101 items=101
+2026/10/25 23:43:34 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=3 attachments=3 items=3
+2026/10/25 23:43:34 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=0 attachments=2 items=2
+2026/10/25 23:43:34 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=2 attachments=0 items=0
+2026/10/25 23:43:34 ERROR File retention pass failed entryPoint=file_retention_worker operation=cleanup_files
+2026/10/25 23:43:34 ERROR File retention pass failed entryPoint=file_retention_worker operation=cleanup_files
+2026/10/25 23:43:34 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=1 attachments=1 items=1
+=== RUN   TestRetentionWorkersDrainRetryAndStop/releases
+2026/10/25 23:43:35 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=250
+2026/10/25 23:43:35 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=250
+2026/10/25 23:43:35 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=101
+2026/10/25 23:43:35 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=3
+2026/10/25 23:43:35 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=2
+2026/10/25 23:43:35 ERROR Release retention pass failed entryPoint=release_retention_worker operation=cleanup_releases
+2026/10/25 23:43:35 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=1
+=== RUN   TestRetentionWorkersDrainRetryAndStop/pending_reports
+2026/10/25 23:43:36 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=250
+2026/10/25 23:43:36 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=250
+2026/10/25 23:43:36 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=101
+2026/10/25 23:43:36 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=3
+2026/10/25 23:43:36 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=2
+2026/10/25 23:43:36 ERROR Pending user report cleanup failed entryPoint=pending_user_reports_worker operation=cleanup_pending_user_reports
+2026/10/25 23:43:36 ERROR Pending user report cleanup failed entryPoint=pending_user_reports_worker operation=cleanup_pending_user_reports
+2026/10/25 23:43:36 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=1
+=== RUN   TestRetentionWorkersDrainRetryAndStop/feedback_associations
+2026/10/25 23:43:45 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=250
+2026/10/25 23:43:45 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=250
+2026/10/25 23:43:45 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=101
+2026/10/25 23:43:45 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=3
+2026/10/25 23:43:45 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=2
+2026/10/25 23:43:46 ERROR Feedback association pass failed entryPoint=feedback_associations_worker operation=bind_pending_feedback_associations
+2026/10/25 23:43:46 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=1
+--- PASS: TestRetentionWorkersDrainRetryAndStop (17.39s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/logs (1.02s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/transactions (0.95s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/events (0.81s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/uptime (1.29s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/files (1.58s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/releases (1.16s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/pending_reports (0.90s)
+    --- PASS: TestRetentionWorkersDrainRetryAndStop/feedback_associations (9.66s)
+PASS
+ok  	goodsentry/internal/jobs	18.407s

@@ -1431,13 +1431,17 @@ la evidencia afectada queda invalidada hasta comprobarlo.
 
 ### Punto de continuación
 
-No hay criterio de ejecución reclamado ni candidata de aceptación elegida.
-Siguiente acción, cuando se autorice ejecutar: revisar Git/índice/reclamaciones,
-comparar la revisión y dependencias con cada comprobante reutilizable, actualizar
-estados y seleccionar el primer ID exigible sin evidencia vigente con dependencias
-resueltas, según el plan y luego el ID. Registrar esa selección antes de trabajar.
-El avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo
-y presupuesto de un Goal no completan el producto ni borran este registro.
+Ejecución autorizada por instrucción del usuario el 2026-10-25. Se revisaron
+Git, índice y reclamaciones antes de editar: no había criterio reclamado, la
+candidata probada fue `54db6e48bf2e52e9a84efe397e3e5b44c27e4d91` y el único
+archivo ajeno era `tests/compat/otlp_python_smoke.py`, sin seguimiento y sin
+tocar. Se eligieron, en orden del plan, CLOSE-operacion-004, CLOSE-operacion-005
+y CLOSE-operacion-006; sus comprobantes vigentes están abajo. Siguiente acción:
+CLOSE-operacion-007, verificar la interfaz real en Chromium a 320/768/1440 con
+sus estados, controles y permisos; después CLOSE-operacion-008 (Compose,
+imagen y arranque limpio). No se declara aceptación ni cierre del producto. El
+avance se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1446,9 +1450,9 @@ y presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-operacion-001](../SPEC.md#close-operacion-001) | Objective and acceptance boundary: Build an independently authored Go error tracking and observability server.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-002](../SPEC.md#close-operacion-002) | Objective and acceptance boundary: GlitchTip's publicly documented functionality is the minimum target, not me… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-003](../SPEC.md#close-operacion-003) | Clean-room method: Use public protocol specifications, product documentation, release notes, published API con… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-004](../SPEC.md#close-operacion-004) | Architecture: Use one Go module, a small executable in cmd/goodsentry, net/http routing and explicit dependenc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-005](../SPEC.md#close-operacion-005) | Architecture: Ingest events durably before returning success. A request may normalize synchronously and commit… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-006](../SPEC.md#close-operacion-006) | Architecture: HTTP, workers and scheduler stop on termination signals and close database connections. Startup… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-004](../SPEC.md#close-operacion-004) | Architecture: Use one Go module, a small executable in cmd/goodsentry, net/http routing and explicit dependenc… | implementada | vigente | Comprobante 2026-10-25 abajo; mantener ante cambios de arquitectura |
+| [CLOSE-operacion-005](../SPEC.md#close-operacion-005) | Architecture: Ingest events durably before returning success. A request may normalize synchronously and commit… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de captura o colas |
+| [CLOSE-operacion-006](../SPEC.md#close-operacion-006) | Architecture: HTTP, workers and scheduler stop on termination signals and close database connections. Startup… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de arranque o migraciones |
 | [CLOSE-operacion-007](../SPEC.md#close-operacion-007) | Architecture: Serve an original, responsive application UI with a compact sidebar, neutral surfaces, a teal ac… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-008](../SPEC.md#close-operacion-008) | Deployment and configuration: Default HTTP port is 8000. docker compose up -d pulls the verified public applic… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-009](../SPEC.md#close-operacion-009) | Deployment and configuration: Canonical variables are DATABASE_URL, SECRET_KEY, GOODSENTRY_DOMAIN, PORT, EMAIL… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2175,6 +2179,113 @@ y presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-alertas-040](../SPEC.md#close-alertas-040) | Recibos reales de canales específicos de alertas. Conservar proveedores, controles y pruebas locales; webhook… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
 | [CLOSE-identidad-112](../SPEC.md#close-identidad-112) | Recibos reales del proveedor de correo. Conservar SMTP local, recuperación, invitaciones y controles contratad… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
 | [CLOSE-identidad-113](../SPEC.md#close-identidad-113) | Recibos reales de inicio de sesión externo. Conservar OAuth/OIDC, proveedores sociales, capacidades y controle… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
+
+### Ejecución 2026-10-25: arquitectura, durabilidad y ciclo de vida
+
+Selección registrada antes de trabajar: candidata
+`54db6e48bf2e52e9a84efe397e3e5b44c27e4d91`, sin criterio reclamado por otro
+agente y con `tests/compat/otlp_python_smoke.py` ajeno sin seguimiento. Se
+eligieron en orden del plan CLOSE-operacion-004, CLOSE-operacion-005 y
+CLOSE-operacion-006. Los tres dependen solo de las reglas de arquitectura y
+del PostgreSQL local; no dependen de SDKs, navegador, imagen externa ni
+proveedores. Esta unidad no ejecutó SDKs, Chromium, Compose, Docker image, S3
+ni recibos externos.
+
+Entorno: Go 1.27.2 linux/amd64; PostgreSQL 18 en el contenedor desechable
+`goodsentry-closure-20261025` (`127.0.0.1:18085`). Sin secretos de producto.
+La revisión probada es `54db6e4`; el commit de este comprobante solo añade el
+test acotado descrito abajo y documentación/evidencia, sin cambio de
+comportamiento, esquema, configuración, clientes ni imagen.
+
+#### CLOSE-operacion-004: módulo, ejecutable, rutas, dependencias y datos
+
+Procedimiento reproducible: `find . -name go.mod` fuera de cachés y copias de
+trabajo; `go build ./...`; `go vet ./...`; `rg -n 'go:embed' internal`;
+inspección de `internal/server/web/index.html`; `rg -n 'pgx/v5' go.mod`; lectura
+de `internal/store/migrations/001_initial.sql` y del uso de transacciones en
+`internal/store`.
+
+Resultado esperado: un módulo de servidor, un ejecutable pequeño, rutas
+`net/http`, construcción explícita, UI y migraciones embebidas, `pgx`,
+transacciones y esquema relacional con datos estructurados en JSONB.
+Observado: el servidor es un único módulo en la raíz y `cmd/goodsentry` es su
+ejecutable. `tests/compat` y `examples/sentry-go` son módulos separados de
+clientes de prueba/ejemplo, fuera del binario y la imagen, como documenta
+`docs/development.md`. `server.go` embebe `web/index.html`, `web/app.css` y
+`web/*.js`; `store.go` embebe `migrations/*.sql`. `index.html` carga solo
+`app.css` y `app.js` locales, sin CDN ni servicio de build en ejecución. El
+módulo usa `github.com/jackc/pgx/v5 v5.11.0`; las operaciones de captura,
+credenciales, alertas, monitores y gestión abren transacciones. `001_initial`
+define `users`, `organizations`, `memberships`, `projects`, `project_keys`,
+`issues` y `events`, con `UNIQUE(project_id,fingerprint)`,
+`UNIQUE(project_id,event_id)` y columnas `jsonb` para el evento original.
+`go build` y `go vet` pasan. Subresultados pendientes: ninguno del bloque;
+los módulos auxiliares no son parte del servidor ni de la imagen.
+
+#### CLOSE-operacion-005: captura durable, idempotencia y trabajo reclamable
+
+Procedimiento reproducible:
+`DATABASE_URL=<desechable> go test -race -tags=integration ./internal/store -run '^(TestDurableCaptureAndTenantScope|TestAlertClaimsRetryBackoffAndTokenFencing|TestAlertExpiredClaimsRecoverOrStopAtAttemptBudget|TestErrorAlertsUseReceiptCrossingCooldownAndEnvironment|TestMonitorClaimsFenceUpdatesPauseAndExpiredLeases|TestIssueGroupsConcurrentCapturesTriageAndSplit)$' -v`.
+Resultado esperado: captura confirmada solo tras commit, supervivencia a
+reinicio, identidad de reintento, agrupación concurrente atómica, alertas en la
+misma transacción y recuperación de leases vencidos. Observado: los seis tests
+pasaron con `-race` en 5.732s. `TestDurableCaptureAndTenantScope` comprueba ocho
+capturas concurrentes del mismo evento con un solo issue y `Count=1`, cierra y
+reabre la base y conserva el issue. `TestErrorAlerts...` comprueba el cruce de
+recibos y el encolado de alerta desde la captura. Los tests de cola prueban
+`FOR UPDATE`, reintento con backoff y recuperación de leases vencidos; el de
+monitores prueba fencing y expiración. `Ingest` abre una transacción, bloquea
+recibos e issues, inserta el evento y encola las alertas antes de `Commit`.
+`001_initial` y las migraciones posteriores aportan las claves únicas de
+proyecto/evento y proyecto/fingerprint; el estado de colas vive en PostgreSQL.
+`ValidateRuntimeAvailability` rechaza un `VALKEY_URL` no vacío en vez de fingir
+una dependencia de Valkey. Subresultados pendientes: ninguno del bloque.
+
+#### CLOSE-operacion-006: parada, migraciones, readiness y rollback
+
+Procedimiento reproducible: compilar `cmd/goodsentry`; arrancar en modo
+`required` sobre la base desechable; consultar `/healthz` y `/readyz`; detener
+PostgreSQL y consultar `/readyz`; reiniciarlo; enviar `SIGTERM`; consultar
+`pg_stat_activity` y `schema_migrations`. Después, arrancar dos procesos
+simultáneos sobre una base vacía `goodsentry_closure_lock` en puertos distintos.
+Resultado esperado: parada limpia y cierre de conexiones, migraciones hacia
+adelante serializadas, readiness ligada a la base y ausencia de rollback
+destructivo automático. Observado: `/healthz` 200 y `/readyz` 200 con la base
+arriba; `/readyz` 503 con la base detenida y 200 tras recuperarla; `SIGTERM`
+terminó con código 0, cero conexiones restantes y 73 migraciones aplicadas. Los
+dos arranques concurrentes quedaron listos en 200, con 73 versiones únicas,
+checksums válidos y salida 0. `store.migrate` usa
+`pg_advisory_xact_lock(73042189)` y `schema_migrations` con checksum; no existe
+ninguna migración `down`/`rollback` y el rollback documentado exige binario
+compatible o restauración de backup. Subresultados pendientes: ninguno del
+bloque.
+
+#### Reparación de la primera corrida completa
+
+La primera corrida completa `-race` falló únicamente
+`TestRetentionWorkersDrainRetryAndStop/releases`: el subtest agotó un plazo fijo
+de 5s tras 6.44s bajo la carga de toda la suite. En aislamiento el mismo subtest
+pasó en 1.16s. La retención borra en lotes acotados de 250; 601 releases exigen
+tres pasadas bajo instrumentación de carrera y una base compartida. Se elevó
+únicamente el plazo de drenaje del test a 15s, manteniendo una aserción acotada
+y sin cambiar código de producción. La corrida completa final sin caché pasó:
+`cmd/goodsentry` 2.580s, `jobs` 27.770s, `server` 207.087s, `store` 368.206s,
+sin `DATA RACE`. Historial en
+`test-results/closure-20261025/full-race-1-failure.log` y
+`jobs-isolated.log`; resultado final en `full-race-final.log`.
+
+#### Vigencia, invalidaciones y siguiente acción
+
+`go build ./...`, `go vet ./...`, `go test ./...`, la integración PostgreSQL y
+la suite completa `-race -count=1 -tags=integration ./...` pasan sobre la
+candidata y el cambio de test. Los comprobantes de 004, 005 y 006 quedan
+vigentes. El cambio de test no invalida evidencia de producción; cualquier
+cambio futuro de captura, colas, arranque, esquema o migraciones invalidará el
+comprobante afectado y exigirá repetirlo. No se ejecutaron SDKs, navegador,
+imagen, Compose, S3 ni proveedores externos; esas pruebas siguen pendientes y
+no se infieren de esta unidad. Siguiente acción concreta: CLOSE-operacion-007,
+verificar la interfaz real en Chromium a 320, 768 y 1440 con sus estados,
+controles y permisos, y continuar después con CLOSE-operacion-008.
 
 ### Comprobante de integración documental
 

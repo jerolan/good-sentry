@@ -545,8 +545,9 @@ La autoridad es [SPEC.md#closure-contract-v1](../SPEC.md#closure-contract-v1).
 Este orden organiza los criterios registrados en
 [todo.md#closure-evidence-v1](todo.md#closure-evidence-v1); no sustituye sus resultados
 ni las dependencias particulares de los contratos anteriores. La integración
-actual es documental. Implementación, aceptación completa y cualquier operación
-sobre Goals quedan fuera de esta sesión por instrucción del usuario.
+documental quedó registrada el 2026-10-25. La ejecución posterior fue autorizada
+por instrucción expresa del usuario y se registra en `todo.md`; este orden no
+crea presupuesto, no elige una candidata de aceptación y no declara cierre.
 
 1. Revisar instrucciones, Git/índice/reclamaciones y vigencia de evidencia contra
    la revisión candidata. Contrastar fuentes y comprobantes históricos por ID,

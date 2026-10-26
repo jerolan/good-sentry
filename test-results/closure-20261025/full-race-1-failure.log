@@ -1,0 +1,79 @@
+ok  	goodsentry/cmd/goodsentry	2.242s
+ok  	goodsentry/internal/accountmail	1.014s
+ok  	goodsentry/internal/artifact	4.048s
+ok  	goodsentry/internal/config	1.077s
+ok  	goodsentry/internal/event	1.088s
+ok  	goodsentry/internal/eventview	1.044s
+2026/10/25 23:42:33 http: TLS handshake error from 127.0.0.1:40756: remote error: tls: bad certificate
+2026/10/25 23:42:35 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=250 batches=0
+2026/10/25 23:42:35 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=250 batches=0
+2026/10/25 23:42:35 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=101 batches=0
+2026/10/25 23:42:35 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=3 batches=0
+2026/10/25 23:42:35 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=2 batches=0
+2026/10/25 23:42:35 ERROR Log retention pass failed entryPoint=log_retention_worker operation=cleanup_logs
+2026/10/25 23:42:35 INFO Log retention cleanup committed entryPoint=log_retention_worker logs=1 batches=0
+2026/10/25 23:42:36 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=250 spans=250 archiveObjects=0
+2026/10/25 23:42:36 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=250 spans=250 archiveObjects=0
+2026/10/25 23:42:36 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=101 spans=101 archiveObjects=0
+2026/10/25 23:42:36 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=3 spans=3 archiveObjects=0
+2026/10/25 23:42:36 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=2 spans=2 archiveObjects=0
+2026/10/25 23:42:36 ERROR Transaction retention pass failed entryPoint=transaction_retention_worker operation=cleanup_transactions
+2026/10/25 23:42:36 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=1 spans=1 archiveObjects=0
+2026/10/25 23:42:37 INFO Event retention cleanup committed entryPoint=event_retention_worker events=250
+2026/10/25 23:42:37 INFO Event retention cleanup committed entryPoint=event_retention_worker events=250
+2026/10/25 23:42:37 INFO Event retention cleanup committed entryPoint=event_retention_worker events=101
+2026/10/25 23:42:37 INFO Event retention cleanup committed entryPoint=event_retention_worker events=3
+2026/10/25 23:42:37 INFO Event retention cleanup committed entryPoint=event_retention_worker events=2
+2026/10/25 23:42:37 ERROR Event retention pass failed entryPoint=event_retention_worker operation=cleanup_events
+2026/10/25 23:42:37 INFO Event retention cleanup committed entryPoint=event_retention_worker events=1
+2026/10/25 23:42:38 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=250
+2026/10/25 23:42:38 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=250
+2026/10/25 23:42:38 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=101
+2026/10/25 23:42:38 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=3
+2026/10/25 23:42:39 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=2
+2026/10/25 23:42:39 ERROR Uptime retention pass failed entryPoint=uptime_retention_worker operation=cleanup_monitor_checks
+2026/10/25 23:42:39 INFO Uptime retention cleanup committed entryPoint=uptime_retention_worker checks=1
+2026/10/25 23:42:39 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=250 attachments=250 items=250
+2026/10/25 23:42:39 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=250 attachments=250 items=250
+2026/10/25 23:42:39 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=101 attachments=101 items=101
+2026/10/25 23:42:40 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=3 attachments=3 items=3
+2026/10/25 23:42:40 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=2 attachments=2 items=2
+2026/10/25 23:42:40 ERROR File retention pass failed entryPoint=file_retention_worker operation=cleanup_files
+2026/10/25 23:42:40 INFO File retention cleanup committed entryPoint=file_retention_worker sourceMaps=1 attachments=1 items=1
+2026/10/25 23:42:42 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=250
+2026/10/25 23:42:46 INFO Release retention cleanup committed entryPoint=release_retention_worker removedReleases=250
+2026/10/25 23:42:46 ERROR Release retention pass failed entryPoint=release_retention_worker operation=cleanup_releases
+2026/10/25 23:42:47 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=250
+2026/10/25 23:42:47 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=250
+2026/10/25 23:42:47 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=101
+2026/10/25 23:42:47 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=3
+2026/10/25 23:42:47 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=2
+2026/10/25 23:42:47 ERROR Pending user report cleanup failed entryPoint=pending_user_reports_worker operation=cleanup_pending_user_reports
+2026/10/25 23:42:47 INFO Pending user report cleanup committed entryPoint=pending_user_reports_worker removedPendingReports=1
+2026/10/25 23:42:56 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=250
+2026/10/25 23:42:57 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=250
+2026/10/25 23:42:57 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=101
+2026/10/25 23:42:57 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=3
+2026/10/25 23:42:57 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=2
+2026/10/25 23:42:57 ERROR Feedback association pass failed entryPoint=feedback_associations_worker operation=bind_pending_feedback_associations
+2026/10/25 23:42:57 ERROR Feedback association pass failed entryPoint=feedback_associations_worker operation=bind_pending_feedback_associations
+2026/10/25 23:42:57 INFO Feedback associations committed entryPoint=feedback_associations_worker boundFeedback=1
+--- FAIL: TestRetentionWorkersDrainRetryAndStop (23.24s)
+    --- FAIL: TestRetentionWorkersDrainRetryAndStop/releases (6.44s)
+        retention_test.go:284: running retention worker did not drain real expired rows
+2026/10/25 23:42:58 INFO Transaction retention cleanup committed entryPoint=transaction_retention_worker transactions=0 spans=1 archiveObjects=0
+FAIL
+FAIL	goodsentry/internal/jobs	30.874s
+ok  	goodsentry/internal/native	7.762s
+?   	goodsentry/internal/nettarget	[no test files]
+ok  	goodsentry/internal/notify	6.270s
+ok  	goodsentry/internal/otlp	1.061s
+ok  	goodsentry/internal/protocol	1.082s
+ok  	goodsentry/internal/releaseorder	1.025s
+ok  	goodsentry/internal/server	211.854s
+ok  	goodsentry/internal/spanarchive	1.179s
+ok  	goodsentry/internal/store	382.850s
+?   	goodsentry/internal/testfixture/nativepdb	[no test files]
+?   	goodsentry/internal/testfixture/nativesymcache	[no test files]
+ok  	goodsentry/internal/uptime	11.406s
+FAIL

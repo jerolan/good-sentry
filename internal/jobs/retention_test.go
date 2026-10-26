@@ -266,7 +266,10 @@ func retentionWorkerLifecycle(t *testing.T, class string) {
 	}
 	waitEmpty := func() {
 		t.Helper()
-		deadline := time.Now().Add(5 * time.Second)
+		// The full suite shares one PostgreSQL instance while race instrumentation
+		// slows every batch. Keep the drain assertion bounded without turning
+		// scheduler contention into a false retention failure.
+		deadline := time.Now().Add(15 * time.Second)
 		for time.Now().Before(deadline) {
 			var count int
 			if err := f.admin.QueryRow(f.ctx, countQuery).Scan(&count); err != nil {
