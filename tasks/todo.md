@@ -1445,7 +1445,7 @@ correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
 publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 085–100
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
-releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-014 (Discord como proveedor específico). No se declara aceptación ni cierre del producto. El avance se
+releases/artefactos/nativo/CLI. Siguiente acción: CLOSE-alertas-016 (Discord como proveedor específico). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1882,8 +1882,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-011](../SPEC.md#close-alertas-011) | Sentry spans and native telemetry reads: List project delivery history at /api/v1/organizations/{org}/projects… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-012](../SPEC.md#close-alertas-012) | Sentry spans and native telemetry reads: On 2026-10-14 the user explicitly authorized automatic delivery to ru… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-013](../SPEC.md#close-alertas-013) | Slack incoming webhooks: Provider-specific alerts are independent of SSL certificate monitors and account reco… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-014](../SPEC.md#close-alertas-014) | Slack incoming webhooks: Add explicit recipient type slack using the same destination admission as webhook: an… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-alertas-015](../SPEC.md#close-alertas-015) | Slack incoming webhooks: Additive034_slack_alerts.sql expands only alert_deliveries_recipient_type_check to al… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-alertas-014](../SPEC.md#close-alertas-014) | Slack incoming webhooks: Add explicit recipient type slack using the same destination admission as webhook: an… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-alertas-015](../SPEC.md#close-alertas-015) | Slack incoming webhooks: Additive034_slack_alerts.sql expands only alert_deliveries_recipient_type_check to al… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-016](../SPEC.md#close-alertas-016) | Slack incoming webhooks: Use Slack's incoming webhook JSON contract(https://docs.slack.dev/messaging/sending-m… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-017](../SPEC.md#close-alertas-017) | Slack incoming webhooks: The summary is GoodSentry: rule name, then a Project line. Frequency adds the optiona… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-018](../SPEC.md#close-alertas-018) | Slack incoming webhooks: Keep POST, JSON content type and the two existing GoodSentry identity headers for Sla… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -4534,6 +4534,29 @@ Límites registrados: la red real de Slack, la UI específica de proveedores y l
 imagen final siguen siendo compuertas abiertas de esta capacidad; CLOSE-alertas-013
 solo cierra lo localmente verificable. El CI público sigue pendiente para la
 auditoría final.
+
+### Ejecución 2026-10-26: tipo explícito Slack y migración034
+
+Selección registrada antes de trabajar: CLOSE-alertas-014 y -015. Candidata
+`fb3b55e`.
+
+Resultado observado: el tipo `slack` existe como selección explícita, con la
+misma admisión de destino que `webhook` —URL absoluta HTTP/HTTPS de hasta 2000
+caracteres Unicode, sin credenciales ni fragmento—, conservando el recorte
+exterior y los componentes secretos de ruta y consulta. Una regla Slack y una
+webhook con el mismo destino permanecen entradas distintas, de modo que el
+formato lo decide el tipo elegido y no el nombre del host. Los permisos de
+reglas y entregas no cambian, y los motivos guardados son códigos estáticos sin
+la URL. La migración `034_slack_alerts.sql` solo amplía la restricción de tipo
+de destinatario para admitir `email`, `webhook` y `slack`, y su owner
+comprueba que reglas, destinos, hashes, payloads, intentos y estado
+preexistentes se conservan.
+
+Evidencia: `test-results/closure-20261025/alertas-014-015-go.log` con los
+owners de validación de destinos Slack, entrega por proveedor y migración, y
+`alertas-slack.json` para la entrega real con el tipo explícito.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

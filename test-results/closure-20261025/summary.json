@@ -3047,6 +3047,22 @@
         "alertas-slack.json",
         "alertas-001-003-go.log"
       ]
+    },
+    "CLOSE-alertas-014": {
+      "evidence": "vigente",
+      "scope": "explicit Slack recipient admission and the 034 migration preserving existing alert data",
+      "evidence_files": [
+        "alertas-014-015-go.log",
+        "alertas-slack.json"
+      ]
+    },
+    "CLOSE-alertas-015": {
+      "evidence": "vigente",
+      "scope": "explicit Slack recipient admission and the 034 migration preserving existing alert data",
+      "evidence_files": [
+        "alertas-014-015-go.log",
+        "alertas-slack.json"
+      ]
     }
   },
   "commands": [
