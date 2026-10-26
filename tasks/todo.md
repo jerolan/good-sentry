@@ -1451,8 +1451,8 @@ CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
 CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
-CLOSE-sourcemaps-013 a -018 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-019. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-013 a -020 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-021. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1715,8 +1715,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-016](../SPEC.md#close-sourcemaps-016) | JavaScript artifacts: Negotiate an absolute upload URL derived from the configured public domain/prefix, hashA… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-017](../SPEC.md#close-sourcemaps-017) | JavaScript artifacts: Persist chunks in PostgreSQL with organization, checksum, bytes, size and expiry; migrat… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-018](../SPEC.md#close-sourcemaps-018) | JavaScript artifacts: Assembly accepts one bounded JSON object with required checksum, nonempty ordered chunks… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-019](../SPEC.md#close-sourcemaps-019) | JavaScript artifacts: Use source_map file URLs as map names/source-resolution bases, never ZIP member paths or… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-sourcemaps-020](../SPEC.md#close-sourcemaps-020) | JavaScript artifacts: Materialize maps for all deduplicated authorized projects in one transaction. Enforce AR… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-019](../SPEC.md#close-sourcemaps-019) | JavaScript artifacts: Use source_map file URLs as map names/source-resolution bases, never ZIP member paths or… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-sourcemaps-020](../SPEC.md#close-sourcemaps-020) | JavaScript artifacts: Materialize maps for all deduplicated authorized projects in one transaction. Enforce AR… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-022](../SPEC.md#close-sourcemaps-022) | JavaScript artifacts: The first artifact integration stores validated JavaScript source maps by project, artif… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -6556,6 +6556,76 @@ owners de ensamblado) y `sourcemaps-017-go.log`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final. No
 se requiere cola, caché ni sidecar.
+
+### Ejecución 2026-10-26: identidad y alias de mapas de bundle
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-019. Candidata
+`eb72938`.
+
+Resultado observado: el nombre y la base de resolución del mapa salen de la URL
+del archivo, nunca de la ruta del miembro ZIP ni del debug ID de bundle. La
+release y `dist` del manifiesto son opcionales y deben coincidir con los
+metadatos HTTP cuando ambos existen; sin release, cada mapa necesita un debug ID
+de archivo válido. El propietario HTTP añadido comprueba coincidencia de
+manifiesto, desacuerdo de release con `state:error` y ausencia de release sin
+debug ID. Los owners del decodificador normalizan debug IDs de archivo, cabecera
+y contenido, rechazan identidades contradictorias y enlazan scripts por cabecera
+resuelta o ID coincidente conservando alias `~/` y semántica absoluta/relativa,
+con comparación de URL completa incluida query y fragmento; duplicados ambiguos
+no inventan enlace. Los alias de script se persisten en el mapa sin sustituir su
+URL real. La resolución de tramas usa `abs_path` no vacío y válido primero y
+`filename` cuando falta, es nulo o vacío, sin adivinar rutas. Las claves de
+selección idénticas por nombre/debug ID/checksum se agrupan sin duplicar.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| URL como nombre y base | artefacto `TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs` |
+| Manifiesto release/dist y acuerdo HTTP | HTTP `TestArtifactUploadsHTTPContract/manifest_metadata_agreement_and_debug_id_requirement` (nuevo) |
+| Debug IDs y contradicciones | artefacto `TestBundleSourceMapsHeaderInheritanceAndAmbiguity`, `TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs` |
+| Enlace por cabecera/ID y URL completa | artefacto `TestBundleSourceMapsHeaderIdentityKeepsQueryAndFragment` |
+| Alias de archivos de código | store `TestArtifactBundleAtomicMapsAliasesAndReleaseIndependence`, `TestArtifactSourceMapsCoalesceEquivalentSelectors` |
+| `abs_path` frente a `filename` | artefacto `TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority` |
+| Deduplicación por nombre/debug ID/checksum | store `TestArtifactSourceMapsCoalesceEquivalentSelectors` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-019-020-go.log` y el cambio
+en `internal/server/artifact_uploads_test.go`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: materialización atómica de mapas
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-020. Candidata
+`eb72938`.
+
+Resultado observado: el ensamblado materializa los mapas de todos los proyectos
+autorizados y deduplicados en una transacción, aplica
+`ARTIFACT_MAX_MAP_RECORDS` al producto de mapas por proyectos seleccionados
+antes de insertar y conserva la semántica inmutable de bytes/SHA-256. Los alias
+de mapas idénticos se fusionan de forma determinista sin perder alias ni
+marcas de recepción previas. La coordinación toma la fila de release antes de
+los bloqueos numéricos de proyecto y usa los mismos bloqueos por
+proyecto/versión que el borrado. Una subida compatible con `--release` no crea
+la release ni asocia proyectos: el selector es solo de artefacto. Una subida
+posterior autorizada puede restaurar un mapa borrado y el reintento sin borrado
+sigue siendo idempotente, conservando eventos, agrupación, stacks
+mapeados/crudos, migraciones y comportamiento nativo.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Materialización multi-proyecto en una transacción | store `TestArtifactBundleAtomicMapsAliasesAndReleaseIndependence`; HTTP `TestArtifactUploadsHTTPContract` |
+| Límite por mapas × proyectos | config `TestArtifactDeploymentOptions`; HTTP `TestArtifactUploadsHTTPContract` |
+| Fusión determinista de alias y marcas | store `TestArtifactSourceMapsCoalesceEquivalentSelectors` |
+| Bloqueos y borrado concurrente | store `TestArtifactBundleConcurrentAliasesAndReleaseDeletion` |
+| Selector no crea release | HTTP `TestArtifactUploadsHTTPContract/complete_bundle_commits_only_authorized_maps` |
+| Migraciones y comportamiento nativo | store `TestArtifactMigrationPreservesExistingMaps` y suites previas |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-019-020-go.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
 
 ### Comprobante de integración documental
 

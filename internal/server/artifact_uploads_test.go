@@ -442,6 +442,15 @@ func TestArtifactUploadsHTTPContract(t *testing.T) {
 		}
 		want(t, "artifact selector does not create release metadata", call("GET", "/api/0/organizations/"+org.Slug+"/releases/"+url.PathEscape(version)+"/", nil, writer), 404)
 	})
+	t.Run("manifest metadata agreement and debug id requirement", func(t *testing.T) {
+		matched := artifactHTTPBundleMeta(t, "manifest release", "manifest-rel", "m1", "")
+		want(t, "stage manifest bundle", upload([]part{{"file", digest(matched), matched}}), 200)
+		state(t, "manifest metadata matches", call("POST", assemblyPath, assembly(digest(matched), []string{digest(matched)}, projectRefs, map[string]any{"version": "manifest-rel", "dist": "m1"}), writer), "ok", empty)
+		state(t, "manifest release disagreement", call("POST", assemblyPath, assembly(digest(matched), []string{digest(matched)}, projectRefs, map[string]any{"version": "other-rel", "dist": "m1"}), writer), "error", empty)
+		bare := artifactHTTPBundleMeta(t, "bare map", "", "", "")
+		want(t, "stage bare bundle", upload([]part{{"file", digest(bare), bare}}), 200)
+		state(t, "map without debug id needs a release", call("POST", assemblyPath, assembly(digest(bare), []string{digest(bare)}, projectRefs, nil), writer), "error", empty)
+	})
 }
 
 // Produce the wire fixture independently with standard ZIP/JSON writers. The
@@ -461,6 +470,51 @@ func artifactHTTPBundle(t *testing.T, source string) []byte {
 		{"js/http.js", `throw new Error("minified");`},
 	}
 	for _, file := range files {
+		member, err := zw.Create(file.name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := io.WriteString(member, file.data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return output.Bytes()
+}
+func artifactHTTPBundleMeta(t *testing.T, source, manifestRelease, manifestDist, mapDebugID string) []byte {
+	t.Helper()
+	var output bytes.Buffer
+	output.Write([]byte{'S', 'Y', 'S', 'B', 2, 0, 0, 0})
+	zw := zip.NewWriter(&output)
+	mapBody := map[string]any{"version": 3, "file": "http.js", "sources": []string{"../src/http.js"}, "sourcesContent": []string{source}, "names": []string{}, "mappings": "AAAA"}
+	if mapDebugID != "" {
+		mapBody["debug_id"] = mapDebugID
+	}
+	sourceMap, err := json.Marshal(mapBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	manifest := map[string]any{"files": map[string]any{
+		"maps/http.map": map[string]any{"type": "source_map", "url": "~/assets/http.js.map"},
+		"js/http.js":    map[string]any{"type": "minified_source", "url": "~/assets/http.js", "headers": map[string]string{"sourcemap": "http.js.map"}},
+	}}
+	if manifestRelease != "" {
+		manifest["release"] = manifestRelease
+	}
+	if manifestDist != "" {
+		manifest["dist"] = manifestDist
+	}
+	encodedManifest, err := json.Marshal(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range []struct{ name, data string }{
+		{"manifest.json", string(encodedManifest)},
+		{"maps/http.map", string(sourceMap)},
+		{"js/http.js", `throw new Error("minified");`},
+	} {
 		member, err := zw.Create(file.name)
 		if err != nil {
 			t.Fatal(err)

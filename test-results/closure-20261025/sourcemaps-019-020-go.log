@@ -1,0 +1,274 @@
+=== RUN   TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs
+=== RUN   TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/https://cdn.example/assets/app.jshttps://cdn.example/maps/output.mapping
+=== RUN   TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/~/assets/app.js~/maps/output.mapping
+=== RUN   TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/assets/app.jsmaps/output.mapping
+=== RUN   TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/https://cdn.example/assets/app.jshttps://maps.example/output.mapping
+=== RUN   TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/~/assets/app.js~/maps/output.mapping?build=A#map
+--- PASS: TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs (0.00s)
+    --- PASS: TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/https://cdn.example/assets/app.jshttps://cdn.example/maps/output.mapping (0.00s)
+    --- PASS: TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/~/assets/app.js~/maps/output.mapping (0.00s)
+    --- PASS: TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/assets/app.jsmaps/output.mapping (0.00s)
+    --- PASS: TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/https://cdn.example/assets/app.jshttps://maps.example/output.mapping (0.00s)
+    --- PASS: TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs/~/assets/app.js~/maps/output.mapping?build=A#map (0.00s)
+=== RUN   TestBundleSourceMapsHeaderInheritanceAndAmbiguity
+=== RUN   TestBundleSourceMapsHeaderInheritanceAndAmbiguity/URL
+=== RUN   TestBundleSourceMapsHeaderInheritanceAndAmbiguity/DebugID
+--- PASS: TestBundleSourceMapsHeaderInheritanceAndAmbiguity (0.00s)
+    --- PASS: TestBundleSourceMapsHeaderInheritanceAndAmbiguity/URL (0.00s)
+    --- PASS: TestBundleSourceMapsHeaderInheritanceAndAmbiguity/DebugID (0.00s)
+=== RUN   TestBundleSourceMapsHeaderIdentityKeepsQueryAndFragment
+--- PASS: TestBundleSourceMapsHeaderIdentityKeepsQueryAndFragment (0.00s)
+=== RUN   TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs
+=== RUN   TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/header_body_conflict
+=== RUN   TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/body_alias_conflict
+=== RUN   TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/invalid_identity
+=== RUN   TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/nonstring_identity
+=== RUN   TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/long_map_URL
+=== RUN   TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/NUL_map_URL
+--- PASS: TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs (0.00s)
+    --- PASS: TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/header_body_conflict (0.00s)
+    --- PASS: TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/body_alias_conflict (0.00s)
+    --- PASS: TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/invalid_identity (0.00s)
+    --- PASS: TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/nonstring_identity (0.00s)
+    --- PASS: TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/long_map_URL (0.00s)
+    --- PASS: TestBundleSourceMapsRejectsContradictoryIdentitiesAndInvalidMapURLs/NUL_map_URL (0.00s)
+=== RUN   TestBundleSourceMapsRejectsInvalidUTF8BeforeJSONReplacement
+--- PASS: TestBundleSourceMapsRejectsInvalidUTF8BeforeJSONReplacement (0.00s)
+=== RUN   TestParseBundleOptionalReleaseAndDist
+--- PASS: TestParseBundleOptionalReleaseAndDist (0.00s)
+=== RUN   TestBundleSourceMapsAcceptsObservedCLIMinifiedMapEntries
+--- PASS: TestBundleSourceMapsAcceptsObservedCLIMinifiedMapEntries (0.00s)
+=== RUN   TestParseBundlePreservesFilesAndSeparatesTheirDebugIDs
+--- PASS: TestParseBundlePreservesFilesAndSeparatesTheirDebugIDs (0.00s)
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/unsafe_manifest_member
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/null_bundle_ID
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/missing_member
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/invalid_JSON
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/non-string_type
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/non-object_file
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/missing_type
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/non-string_header
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/files_array
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/non-string_URL
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/non-object_headers
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/non-object_manifest
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/null_URL
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/wrong_version
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/invalid_zip
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/missing_manifest
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/null_manifest
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/null_header
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/non-string_bundle_ID
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/empty_URL
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/missing_files
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/null_files
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/empty_type
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/missing_URL
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/invalid_source_map
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/truncated_header
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/wrong_magic
+=== RUN   TestParseBundleRejectsMalformedInputAndManifest/null_headers
+--- PASS: TestParseBundleRejectsMalformedInputAndManifest (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/unsafe_manifest_member (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/null_bundle_ID (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/missing_member (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/invalid_JSON (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/non-string_type (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/non-object_file (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/missing_type (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/non-string_header (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/files_array (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/non-string_URL (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/non-object_headers (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/non-object_manifest (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/null_URL (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/wrong_version (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/invalid_zip (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/missing_manifest (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/null_manifest (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/null_header (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/non-string_bundle_ID (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/empty_URL (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/missing_files (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/null_files (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/empty_type (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/missing_URL (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/invalid_source_map (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/truncated_header (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/wrong_magic (0.00s)
+    --- PASS: TestParseBundleRejectsMalformedInputAndManifest/null_headers (0.00s)
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/../escape
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/files/../escape
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers//absolute
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/files\escape
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/C:/absolute
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/files/./alias
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/files//alias
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/#00
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/duplicate_file
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/duplicate_manifest
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/directory
+=== RUN   TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/symlink
+--- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/../escape (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/files/../escape (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers//absolute (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/files\escape (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/C:/absolute (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/files/./alias (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/files//alias (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/#00 (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/duplicate_file (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/duplicate_manifest (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/directory (0.00s)
+    --- PASS: TestParseBundleRejectsUnsafeAndDuplicateArchiveMembers/symlink (0.00s)
+=== RUN   TestParseBundleEnforcesInputAndExpansionLimits
+=== RUN   TestParseBundleEnforcesInputAndExpansionLimits/input
+=== RUN   TestParseBundleEnforcesInputAndExpansionLimits/member_expansion
+=== RUN   TestParseBundleEnforcesInputAndExpansionLimits/total_expansion
+=== RUN   TestParseBundleEnforcesInputAndExpansionLimits/manifest_expansion
+=== RUN   TestParseBundleEnforcesInputAndExpansionLimits/entry_count
+--- PASS: TestParseBundleEnforcesInputAndExpansionLimits (0.00s)
+    --- PASS: TestParseBundleEnforcesInputAndExpansionLimits/input (0.00s)
+    --- PASS: TestParseBundleEnforcesInputAndExpansionLimits/member_expansion (0.00s)
+    --- PASS: TestParseBundleEnforcesInputAndExpansionLimits/total_expansion (0.00s)
+    --- PASS: TestParseBundleEnforcesInputAndExpansionLimits/manifest_expansion (0.00s)
+    --- PASS: TestParseBundleEnforcesInputAndExpansionLimits/entry_count (0.00s)
+=== RUN   TestSourceMapUnmappedSegmentsDoNotBorrowPreviousSources
+--- PASS: TestSourceMapUnmappedSegmentsDoNotBorrowPreviousSources (0.00s)
+=== RUN   TestSourceMapRejectsInvalidIndicesAndPositionsAtUpload
+--- PASS: TestSourceMapRejectsInvalidIndicesAndPositionsAtUpload (0.00s)
+=== RUN   TestSourceMapCarriesIndicesAcrossLinesAndKeepsUnmappedLines
+--- PASS: TestSourceMapCarriesIndicesAcrossLinesAndKeepsUnmappedLines (0.00s)
+=== RUN   TestSourceMapNullSourceAndSourceRootContext
+--- PASS: TestSourceMapNullSourceAndSourceRootContext (0.00s)
+=== RUN   TestSourceMapIndexedOffsetsApplyColumnOnlyToFirstLine
+--- PASS: TestSourceMapIndexedOffsetsApplyColumnOnlyToFirstLine (0.00s)
+=== RUN   TestSourceMapSectionBoundariesStopPreviousMappings
+--- PASS: TestSourceMapSectionBoundariesStopPreviousMappings (0.00s)
+=== RUN   TestIndexedSourceMapContextFollowsSelectedSourceRecord
+--- PASS: TestIndexedSourceMapContextFollowsSelectedSourceRecord (0.00s)
+=== RUN   TestSourceMapParserBudgetsAreEnforced
+--- PASS: TestSourceMapParserBudgetsAreEnforced (0.26s)
+=== RUN   TestSourceMapAcceptsBoundedNegativeGeneratedDeltas
+--- PASS: TestSourceMapAcceptsBoundedNegativeGeneratedDeltas (0.00s)
+=== RUN   TestSymbolicateCodeFileAliasesKeepMapSourceBase
+=== RUN   TestSymbolicateCodeFileAliasesKeepMapSourceBase/https://cdn.example/assets/chunk.js?v=1#frame
+=== RUN   TestSymbolicateCodeFileAliasesKeepMapSourceBase/https://other.example/assets/other.js
+=== RUN   TestSymbolicateCodeFileAliasesKeepMapSourceBase/relative.js
+=== RUN   TestSymbolicateCodeFileAliasesKeepMapSourceBase/ambiguous_alias
+=== RUN   TestSymbolicateCodeFileAliasesKeepMapSourceBase/debug_ID_only
+--- PASS: TestSymbolicateCodeFileAliasesKeepMapSourceBase (0.00s)
+    --- PASS: TestSymbolicateCodeFileAliasesKeepMapSourceBase/https://cdn.example/assets/chunk.js?v=1#frame (0.00s)
+    --- PASS: TestSymbolicateCodeFileAliasesKeepMapSourceBase/https://other.example/assets/other.js (0.00s)
+    --- PASS: TestSymbolicateCodeFileAliasesKeepMapSourceBase/relative.js (0.00s)
+    --- PASS: TestSymbolicateCodeFileAliasesKeepMapSourceBase/ambiguous_alias (0.00s)
+    --- PASS: TestSymbolicateCodeFileAliasesKeepMapSourceBase/debug_ID_only (0.00s)
+=== RUN   TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority
+=== RUN   TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/absent_abs_path
+=== RUN   TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/null_abs_path
+=== RUN   TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/empty_abs_path
+=== RUN   TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/authoritative_abs_path
+=== RUN   TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/malformed_abs_path
+--- PASS: TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority (0.00s)
+    --- PASS: TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/absent_abs_path (0.00s)
+    --- PASS: TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/null_abs_path (0.00s)
+    --- PASS: TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/empty_abs_path (0.00s)
+    --- PASS: TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/authoritative_abs_path (0.00s)
+    --- PASS: TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority/malformed_abs_path (0.00s)
+=== RUN   TestSymbolicateTraditionalMapKeepsOriginalsAndSDKMetadata
+--- PASS: TestSymbolicateTraditionalMapKeepsOriginalsAndSDKMetadata (0.00s)
+=== RUN   TestSymbolicateDebugIDOverridesDuplicateArtifactNames
+--- PASS: TestSymbolicateDebugIDOverridesDuplicateArtifactNames (0.00s)
+=== RUN   TestSymbolicateBareExceptionArrayPreservesItsShape
+--- PASS: TestSymbolicateBareExceptionArrayPreservesItsShape (0.00s)
+=== RUN   TestSymbolicateNoMatchAndMalformedInput
+--- PASS: TestSymbolicateNoMatchAndMalformedInput (0.00s)
+=== RUN   FuzzSourceMapPublicBoundaries
+=== RUN   FuzzSourceMapPublicBoundaries/seed#0
+=== RUN   FuzzSourceMapPublicBoundaries/seed#1
+=== RUN   FuzzSourceMapPublicBoundaries/seed#2
+=== RUN   FuzzSourceMapPublicBoundaries/seed#3
+--- PASS: FuzzSourceMapPublicBoundaries (0.00s)
+    --- PASS: FuzzSourceMapPublicBoundaries/seed#0 (0.00s)
+    --- PASS: FuzzSourceMapPublicBoundaries/seed#1 (0.00s)
+    --- PASS: FuzzSourceMapPublicBoundaries/seed#2 (0.00s)
+    --- PASS: FuzzSourceMapPublicBoundaries/seed#3 (0.00s)
+PASS
+ok  	goodsentry/internal/artifact	0.284s
+=== RUN   TestArtifactUploadsHTTPContract
+=== RUN   TestArtifactUploadsHTTPContract/authorization_and_exact_negotiation
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/empty_multipart
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/empty_chunk
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/unknown_field
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/missing_filename
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/non-hex_filename
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/normalized_traversal_filename
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/wrong_chunk_checksum
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/malformed_gzip
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/too_many_parts
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/raw_part_size
+=== RUN   TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/HTTP_body_size
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_object
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_object
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/unknown_field
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_checksum
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/bad_checksum
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_chunks
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_chunks
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/invalid_chunk_digest
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_projects
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_projects
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/invalid_version
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/dist_bytes
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/dist_NUL
+=== RUN   TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/second_JSON_value
+=== RUN   TestArtifactUploadsHTTPContract/complete_bundle_commits_only_authorized_maps
+=== RUN   TestArtifactUploadsHTTPContract/manifest_metadata_agreement_and_debug_id_requirement
+--- PASS: TestArtifactUploadsHTTPContract (1.39s)
+    --- PASS: TestArtifactUploadsHTTPContract/authorization_and_exact_negotiation (0.02s)
+    --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls (0.11s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/empty_multipart (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/empty_chunk (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/unknown_field (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/missing_filename (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/non-hex_filename (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/normalized_traversal_filename (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/wrong_chunk_checksum (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/malformed_gzip (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/too_many_parts (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/raw_part_size (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/multipart_boundaries_and_session_controls/HTTP_body_size (0.00s)
+    --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage (0.07s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_object (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_object (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/unknown_field (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_checksum (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/bad_checksum (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_chunks (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_chunks (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/invalid_chunk_digest (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/empty_projects (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/null_projects (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/invalid_version (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/dist_bytes (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/dist_NUL (0.00s)
+        --- PASS: TestArtifactUploadsHTTPContract/strict_assembly_and_credential_coverage/second_JSON_value (0.00s)
+    --- PASS: TestArtifactUploadsHTTPContract/complete_bundle_commits_only_authorized_maps (0.13s)
+    --- PASS: TestArtifactUploadsHTTPContract/manifest_metadata_agreement_and_debug_id_requirement (0.03s)
+PASS
+ok  	goodsentry/internal/server	1.402s
+=== RUN   TestArtifactBundleAtomicMapsAliasesAndReleaseIndependence
+--- PASS: TestArtifactBundleAtomicMapsAliasesAndReleaseIndependence (0.62s)
+=== RUN   TestArtifactBundleConcurrentAliasesAndReleaseDeletion
+--- PASS: TestArtifactBundleConcurrentAliasesAndReleaseDeletion (0.78s)
+=== RUN   TestArtifactMigrationPreservesExistingMaps
+--- PASS: TestArtifactMigrationPreservesExistingMaps (0.46s)
+=== RUN   TestArtifactSourceMapsCoalesceEquivalentSelectors
+--- PASS: TestArtifactSourceMapsCoalesceEquivalentSelectors (0.58s)
+PASS
+ok  	goodsentry/internal/store	2.444s

@@ -3762,6 +3762,20 @@
         "sourcemaps-015-go.log",
         "sourcemaps-017-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-019": {
+      "evidence": "vigente",
+      "scope": "bundle map identity, manifest metadata agreement, debug IDs and code-file aliases",
+      "evidence_files": [
+        "sourcemaps-019-020-go.log"
+      ]
+    },
+    "CLOSE-sourcemaps-020": {
+      "evidence": "vigente",
+      "scope": "atomic multi-project map materialization, alias merge and release-selector semantics",
+      "evidence_files": [
+        "sourcemaps-019-020-go.log"
+      ]
     }
   },
   "commands": [
