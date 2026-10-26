@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "checks": [
+    "Owner navigation,25-row metadata pages/reload, all-current-and-future labels, active status and unsafe names render as actual text",
+    "Real400 retains name/lifetime/scope/project input; scoped UI credential copies correctly, consumes actual compatible project GET, disappears after leaving/Back and is rejected after visible persistent revocation",
+    "Dismiss/refresh cannot retrieve the secret; real member has no credential navigation, metadata or controls and direct navigation shows permission guidance"
+  ],
+  "screenshots": 21
+}

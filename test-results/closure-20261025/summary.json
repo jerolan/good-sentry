@@ -213,6 +213,20 @@
         "following the maximum next Link returns a valid empty page"
       ],
       "evidence_files": ["identity/tests.log"]
+    },
+    "CLOSE-identidad-006": {
+      "evidence": "vigente",
+      "scope": "owner/admin API-token view, creation, one-time reveal, copy, pagination, revocation and member permission",
+      "covered": [
+        "25-row metadata pages, reload, active and revoked states",
+        "unsafe token names render as text",
+        "400 retains name, lifetime, scopes and selected project",
+        "scoped token copy and real compatible project read; secret absent after leaving or dismissing",
+        "revocation visible and token rejected afterward",
+        "member has no navigation, form, metadata or direct access",
+        "320/768/1440 captures without overflow"
+      ],
+      "evidence_files": ["token-ui/summary.json", "token-ui/run.log", "token-ui/app.log", "token-ui/*.png"]
     }
   },
   "commands": [

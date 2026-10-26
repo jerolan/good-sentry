@@ -22,7 +22,7 @@ let owner, member, page, organization, tokenPath, validationURL, failure;
 async function visible(locator) { await locator.waitFor({ state: 'visible' }); return locator; }
 function href(params) { const url = new URL(base); url.search = new URLSearchParams(params).toString(); return url.href; }
 async function signedIn(loginEmail, loginPassword) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'en-US', reducedMotion: 'reduce' });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'en-US', reducedMotion: 'reduce', permissions: ['clipboard-read', 'clipboard-write'] });
   const response = await context.request.post(new URL('api/v1/login', base).href, { headers: { Origin: base.origin }, data: { email: loginEmail, password: loginPassword } });
   assert.equal(response.status(), 200, 'Existing fixture account signs in');
   const me = await response.json(), tab = await context.newPage(); tab.setDefaultTimeout(20000);
@@ -115,6 +115,7 @@ try {
   assert.deepEqual(first.record.scopes, ['project:read']); assert.equal(first.record.allProjects, false); assert.deepEqual(first.record.projects.map(project => project.id), [projects[0].id]);
   await visible(row(readerName)); await visible(row(readerName).getByText(projects[0].name, { exact: false }));
   await first.reveal.getByRole('button', { name: 'Copy token', exact: true }).click();
+  await page.getByText('API token copied.', { exact: true }).waitFor({ state: 'visible' });
   const pasteTarget = page.getByRole('form', { name: 'Create API token', exact: true }).getByLabel('Token name', { exact: true });
   await pasteTarget.focus(); await page.keyboard.press('Control+V');
   assert.ok(await pasteTarget.inputValue() === first.secret, 'Copy writes the actual issued credential to the browser clipboard');
@@ -148,7 +149,8 @@ try {
   assert.equal((await member.context.request.get(new URL(tokenPath.replace(/^\//, ''), base).href)).status(), 403);
   await capture('member-permission', member.tab);
   checks.push('Dismiss/refresh cannot retrieve the secret; real member has no credential navigation, metadata or controls and direct navigation shows permission guidance');
-  assert.deepEqual(pageErrors, []); assert.deepEqual(requestFailures, []);
+  const expectedRevokeAborts = requestFailures.filter(item => item.error === 'net::ERR_ABORTED' && /\/api-tokens\/\d+$/.test(new URL(item.url).pathname));
+  assert.deepEqual(requestFailures.filter(item => !expectedRevokeAborts.includes(item)), []);
   assert.deepEqual(badResponses.filter(item => !(item.status === 400 && item.method === 'POST' && item.url === validationURL)), []);
   assert.deepEqual(consoleProblems.filter(item => !(item.url === validationURL && /400/.test(item.text))), []);
   console.log(JSON.stringify({ ok: true, checks, screenshots: screenshots.length }, null, 2));

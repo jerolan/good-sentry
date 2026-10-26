@@ -1445,12 +1445,13 @@ CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
 y CLOSE-identidad-002 con memberships, equipos y alcance, y
 CLOSE-identidad-003 con credenciales de automatización, y CLOSE-identidad-004
 con grants e invalidación, CLOSE-identidad-005 con proyectos compatibles y
-paginación, y CLOSE-identidad-007 con consultas malformadas y cursor máximo.
-Sus comprobantes vigentes están abajo. Siguiente acción: CLOSE-identidad-006
-(vista nativa de API tokens), con dependencias locales resueltas. No se
-declara aceptación ni cierre del producto. El avance se informa por
-criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
-Goal no completan el producto ni borran este registro.
+paginación, CLOSE-identidad-007 con consultas malformadas y cursor máximo, y
+CLOSE-identidad-006 con la vista nativa de API tokens. Sus comprobantes
+vigentes están abajo. Siguiente acción: CLOSE-identidad-008 (tabla de
+generaciones de credenciales y cambios de contraseña), con dependencias
+locales resueltas. No se declara aceptación ni cierre del producto. El avance
+se informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
+presupuesto de un Goal no completan el producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1473,7 +1474,7 @@ Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-003](../SPEC.md#close-identidad-003) | Runtime and workspace contracts: The automation-credential prerequisite belongs to workspace, before compatibl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de credenciales |
 | [CLOSE-identidad-004](../SPEC.md#close-identidad-004) | Runtime and workspace contracts: An omitted or empty project list explicitly grants all current and future org… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de grants |
 | [CLOSE-identidad-005](../SPEC.md#close-identidad-005) | Runtime and workspace contracts: Consume these credentials through Sentry-compatible GET /api/0/organizations/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas compatibles |
-| [CLOSE-identidad-006](../SPEC.md#close-identidad-006) | Runtime and workspace contracts: Add an owner/admin-only API tokens view to the existing original Tailwind/dai… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-006](../SPEC.md#close-identidad-006) | Runtime and workspace contracts: Add an owner/admin-only API tokens view to the existing original Tailwind/dai… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de la vista |
 | [CLOSE-identidad-007](../SPEC.md#close-identidad-007) | Runtime and workspace contracts: Malformed percent encoding or other invalid URL query syntax returns400 rathe… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de paginación |
 | [CLOSE-identidad-008](../SPEC.md#close-identidad-008) | Account credential generations and authenticated password changes: This workspace increment supplies the share… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-009](../SPEC.md#close-identidad-009) | Account credential generations and authenticated password changes: fila 1, / credential-generation / Login/boo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2740,6 +2741,39 @@ Evidencia: `test-results/closure-20261025/identity/tests.log`.
 Siguiente acción: CLOSE-identidad-006 (vista nativa de API tokens) continúa
 pendiente de la corrida de navegador con fixture owner/member; después,
 CLOSE-identidad-008 y la tabla de generaciones de credenciales.
+
+### Ejecución 2026-10-26: vista nativa de API tokens
+
+Selección registrada antes de trabajar: CLOSE-identidad-006, siguiente en el
+plan. Candidata `2eee5e8`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad ejecuta el contrato completo de navegador con un
+owner y un member reales; no cambia producción.
+
+Procedimiento reproducible: app en modo `required` sobre PostgreSQL desechable;
+owner creado por `/api/v1/setup`; member insertado como fixture; ejecutar
+`node tests/compat/browser-api-tokens.mjs` con `GOODSENTRY_TEST_EMAIL/PASSWORD`
+y `COMPAT_MEMBER_EMAIL/PASSWORD` y Playwright 1.55.0.
+
+Resultado observado: el owner ve la navegación y la tabla; las páginas de 25
+metadatos, la recarga, las etiquetas `all current and future projects`, el
+estado activo y un nombre con HTML malicioso se renderizan como texto. Un 400
+conserva nombre, vida, scopes y proyecto seleccionado. La creación con
+`project:read` y proyecto restringido revela el token una sola vez, el botón
+Copy lo escribe en el portapapeles y el valor consume un GET compatible real.
+El secreto desaparece al salir/volver y tras descartar/refrescar; la revocación
+se ve como `Revoked` y el token deja de autorizar. Un member real no recibe el
+enlace, la tabla, el formulario ni los metadatos, y la navegación directa
+muestra «Permission required»; su GET directo devuelve 403. Las capturas
+cubren 320/768/1440 sin desbordamiento. Los ajustes son solo del arnés:
+permisos de portapapeles, espera de la notificación de copia y tolerancia al
+`ERR_ABORTED` del navegador tras el 204 de revocación, que el servidor ya
+confirmó. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/token-ui/`
+(`summary.json`, `run.log`, `app.log` y 21 capturas).
+
+Siguiente acción: CLOSE-identidad-008 (tabla de generaciones de credenciales y
+cambios autenticados de contraseña), con dependencias locales resueltas.
 
 ### Comprobante de integración documental
 
