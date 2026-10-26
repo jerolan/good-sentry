@@ -1442,11 +1442,12 @@ CLOSE-identidad-007 (salud, sesiones, organizaciones, credenciales, grants,
 lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
-bloques detallados 014–053 están vigentes, salvo 025/033 bloqueadas por
-publicación/CI. Siguiente acción: CLOSE-identidad-054 (social apps por
-organización). No se declara aceptación ni cierre del producto. El avance se
-informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
-presupuesto de un Goal no completan el producto ni borran este registro.
+bloques detallados 014–060 están vigentes, salvo 025/033 bloqueadas por
+publicación/CI. Siguiente acción: CLOSE-identidad-061 (tokens de cuenta y
+recovery codes), última familia de identidad. No se declara aceptación ni
+cierre del producto. El avance se informa por criterios/evidencia, sin
+porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
+producto ni borran este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1517,13 +1518,13 @@ presupuesto de un Goal no completan el producto ni borran este registro.
 | [CLOSE-identidad-051](../SPEC.md#close-identidad-051) | OpenID Connect sign-in: GET /auth/oidc/start creates random state, nonce and PKCE verifier values, stores an H… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios PKCE |
 | [CLOSE-identidad-052](../SPEC.md#close-identidad-052) | OpenID Connect sign-in: Additive045 stores provider, subject, normalized email, user and login instants with u… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 045 |
 | [CLOSE-identidad-053](../SPEC.md#close-identidad-053) | OpenID Connect sign-in: GET /api/v1/auth/config exposes only whether OIDC is enabled and its display name. The… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de config |
-| [CLOSE-identidad-054](../SPEC.md#close-identidad-054) | Organization single sign-on applications: Additive migration 055_social_apps.sql stores organization-managed O… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-055](../SPEC.md#close-identidad-055) | Organization single sign-on applications: GET, POST /api/0/organizations/{org}/social-apps/ and GET, PUT, DELE… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-056](../SPEC.md#close-identidad-056) | Organization single sign-on applications: Each application's callback is {domain}/auth/social/{providerID}/cal… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-057](../SPEC.md#close-identidad-057) | Organization single sign-on applications: Sign-in through an organization application links the verified subje… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-058](../SPEC.md#close-identidad-058) | Organization single sign-on applications: Organization applications also accept the github and gitlab presets.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-059](../SPEC.md#close-identidad-059) | Organization single sign-on applications: The microsoft preset keeps the stored openid_connect provider and de… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-identidad-060](../SPEC.md#close-identidad-060) | Organization single sign-on applications: Successful OAuth2 sign-in writes the same social:{providerID} identi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-054](../SPEC.md#close-identidad-054) | Organization single sign-on applications: Additive migration 055_social_apps.sql stores organization-managed O… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 055 |
+| [CLOSE-identidad-055](../SPEC.md#close-identidad-055) | Organization single sign-on applications: GET, POST /api/0/organizations/{org}/social-apps/ and GET, PUT, DELE… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
+| [CLOSE-identidad-056](../SPEC.md#close-identidad-056) | Organization single sign-on applications: Each application's callback is {domain}/auth/social/{providerID}/cal… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de callback |
+| [CLOSE-identidad-057](../SPEC.md#close-identidad-057) | Organization single sign-on applications: Sign-in through an organization application links the verified subje… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de vínculo |
+| [CLOSE-identidad-058](../SPEC.md#close-identidad-058) | Organization single sign-on applications: Organization applications also accept the github and gitlab presets.… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de presets |
+| [CLOSE-identidad-059](../SPEC.md#close-identidad-059) | Organization single sign-on applications: The microsoft preset keeps the stored openid_connect provider and de… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de Microsoft |
+| [CLOSE-identidad-060](../SPEC.md#close-identidad-060) | Organization single sign-on applications: Successful OAuth2 sign-in writes the same social:{providerID} identi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de identidad social |
 | [CLOSE-identidad-061](../SPEC.md#close-identidad-061) | Compatible user API tokens and recovery codes: Additive migration 056_account_tokens.sql stores user-scoped AP… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-062](../SPEC.md#close-identidad-062) | Compatible user API tokens and recovery codes: GET, POST /api/0/api-tokens/ and DELETE /api/0/api-tokens/{id}/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-063](../SPEC.md#close-identidad-063) | Compatible user API tokens and recovery codes: A user token also authenticates other compatible reads and writ… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3523,6 +3524,28 @@ Evidencia: `test-results/closure-20261025/identity/oidc.log`.
 
 Siguiente acción: CLOSE-identidad-054 (social apps por organización), siguiente
 familia.
+
+### Ejecución 2026-10-26: social apps
+
+Selección registrada antes de trabajar: CLOSE-identidad-054 a -060. Candidata
+`7b5dd06`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+tests de store/server con `-race` y proveedores locales.
+
+Resultado observado: 055 persiste apps OAuth/OIDC por organización sin romper
+las existentes; las rutas compatibles list/create/read/update/delete y el
+descubrimiento público funcionan con autoridad y validación. El callback usa
+`{domain}/auth/social/{providerID}/callback`, state y PKCE, y solo acepta
+perfiles verificados. El vínculo social usa provider+subject y crea/une al
+miembro de la organización. Los presets GitHub, GitLab, Gitea y DigitalOcean
+crean el mismo miembro; Microsoft conserva `openid_connect` y usa la identidad
+de tenant. Los perfiles no verificados se rechazan. Subresultados pendientes de
+los bloques: ninguno. El recibo de un proveedor externo real sigue aplazado por
+identidad-113; aquí se usan proveedores locales.
+
+Evidencia: `test-results/closure-20261025/identity/social.log`.
+
+Siguiente acción: CLOSE-identidad-061 (tokens de cuenta y recovery codes),
+última familia de identidad antes de errores.
 
 ### Comprobante de integración documental
 

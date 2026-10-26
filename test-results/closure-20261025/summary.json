@@ -718,6 +718,69 @@
         "disabled public configuration passes"
       ],
       "evidence_files": ["identity/oidc.log"]
+    },
+    "CLOSE-identidad-054": {
+      "evidence": "vigente",
+      "scope": "055 per-organization social apps and migration preservation",
+      "covered": [
+        "apps persist per organization without rewriting prior rows",
+        "compatible app routes and public discovery"
+      ],
+      "evidence_files": ["identity/social.log"]
+    },
+    "CLOSE-identidad-055": {
+      "evidence": "vigente",
+      "scope": "compatible social-app list/create/read/update/delete",
+      "covered": [
+        "authorized CRUD and scope validation",
+        "public discovery exposes only public fields"
+      ],
+      "evidence_files": ["identity/social.log"]
+    },
+    "CLOSE-identidad-056": {
+      "evidence": "vigente",
+      "scope": "social callback URL, state/PKCE and verified profile",
+      "covered": [
+        "callback path uses provider ID",
+        "state/PKCE and verified identity are enforced"
+      ],
+      "evidence_files": ["identity/social.log"]
+    },
+    "CLOSE-identidad-057": {
+      "evidence": "vigente",
+      "scope": "verified subject link and organization membership",
+      "covered": [
+        "provider+subject link creates/joins one member",
+        "unverified profiles rejected"
+      ],
+      "evidence_files": ["identity/social.log"]
+    },
+    "CLOSE-identidad-058": {
+      "evidence": "vigente",
+      "scope": "GitHub, GitLab, Gitea and DigitalOcean presets",
+      "covered": [
+        "each preset creates the organization member",
+        "unverified preset profiles rejected"
+      ],
+      "evidence_files": ["identity/social.log"]
+    },
+    "CLOSE-identidad-059": {
+      "evidence": "vigente",
+      "scope": "Microsoft preset keeps openid_connect and tenant identity",
+      "covered": [
+        "tenant identity is used",
+        "stored provider remains openid_connect"
+      ],
+      "evidence_files": ["identity/social.log"]
+    },
+    "CLOSE-identidad-060": {
+      "evidence": "vigente",
+      "scope": "successful OAuth2 writes one social identity and membership",
+      "covered": [
+        "same social:{providerID} identity is reused",
+        "organization membership is created once"
+      ],
+      "evidence_files": ["identity/social.log"]
     }
   },
   "commands": [
