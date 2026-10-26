@@ -1,0 +1,10 @@
+=== RUN   TestReleaseSharedIdentityAndCoverage
+--- PASS: TestReleaseSharedIdentityAndCoverage (0.47s)
+PASS
+ok  	goodsentry/internal/store	0.478s
+=== RUN   TestCompatibleReleaseFilesHTTP
+--- PASS: TestCompatibleReleaseFilesHTTP (0.61s)
+=== RUN   TestReleaseHTTPContract
+--- PASS: TestReleaseHTTPContract (1.81s)
+PASS
+ok  	goodsentry/internal/server	2.430s

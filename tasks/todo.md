@@ -1449,8 +1449,8 @@ releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
 CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
 decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
-CLOSE-sourcemaps-001 y -002 quedan vigentes. Siguiente acción:
-CLOSE-sourcemaps-003. No se declara aceptación ni cierre del producto. El avance se
+CLOSE-sourcemaps-001 a -003 quedan vigentes. Siguiente acción:
+CLOSE-sourcemaps-004. No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1697,7 +1697,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-155](../SPEC.md#close-errores-155) | Native assignment, comments and recorded triage activity: Original responsive detail gains searchable/paginate… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-001](../SPEC.md#close-sourcemaps-001) | Release lifecycle, commit metadata and deploys: This artifacts increment provides actual release entities shar… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-002](../SPEC.md#close-sourcemaps-002) | Release lifecycle, commit metadata and deploys: An exact release version is1..255 Unicode characters excluding… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-003](../SPEC.md#close-sourcemaps-003) | Release lifecycle, commit metadata and deploys: Expose compatible organization GET/POST /api/0/organizations/{… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-sourcemaps-003](../SPEC.md#close-sourcemaps-003) | Release lifecycle, commit metadata and deploys: Expose compatible organization GET/POST /api/0/organizations/{… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-004](../SPEC.md#close-sourcemaps-004) | Release lifecycle, commit metadata and deploys: Release JSON returns string id, version, shortVersion (the exa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-005](../SPEC.md#close-sourcemaps-005) | Release lifecycle, commit metadata and deploys: List releases by dateCreated descending then numeric id descen… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-sourcemaps-006](../SPEC.md#close-sourcemaps-006) | Release lifecycle, commit metadata and deploys: Support organization GET/POST .../releases/{version}/commits/,… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5992,6 +5992,36 @@ Mapa de comprobantes:
 
 Evidencia: `test-results/closure-20261025/sourcemaps-002-go.log` con siete
 owners.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final.
+
+### Ejecución 2026-10-26: rutas compatibles de releases
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-003. Candidata
+`0d1fa28`.
+
+Resultado observado: las rutas de organización y de proyecto aceptan referencias
+por slug o ID canónico; la creación de organización exige versión y 1..1000
+proyectos, la de proyecto deriva su proyecto del path y admite omitirlo o
+repetir solo ese proyecto. Un proyecto ausente, ajeno o no autorizado devuelve
+404 sin crear asociaciones parciales. La creación responde 201 o 208 al fusionar
+asociaciones o aplicar metadatos y commits, la entrada idéntica no duplica filas
+ni asociaciones, y la variante de archivo/restauración con `projects: []` y
+estado válido actualiza la versión con 208 conservando todas las asociaciones.
+Los archivos de release exponen listado, detalle y borrado con su alcance.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Rutas de organización y proyecto por slug o ID | HTTP `TestReleaseHTTPContract` |
+| Creación 201 y fusión 208 sin duplicados | HTTP `TestReleaseHTTPContract` |
+| Proyectos 1..1000 y derivación desde el path | HTTP `TestReleaseHTTPContract` |
+| `projects: []` con estado, 208 y asociaciones intactas | HTTP `TestReleaseHTTPContract` |
+| Proyecto ausente/ajeno atómico con 404 | HTTP `TestReleaseHTTPContract`; store `TestReleaseSharedIdentityAndCoverage` |
+| Archivos de release | HTTP `TestCompatibleReleaseFilesHTTP` |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-003-go.log`.
 
 Límites registrados: el CI público sigue pendiente para la auditoría final.
 

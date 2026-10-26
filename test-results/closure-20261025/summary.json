@@ -3643,6 +3643,13 @@
       "evidence_files": [
         "sourcemaps-002-go.log"
       ]
+    },
+    "CLOSE-sourcemaps-003": {
+      "evidence": "vigente",
+      "scope": "compatible organization and project release routes with merge, archive and atomic project resolution",
+      "evidence_files": [
+        "sourcemaps-003-go.log"
+      ]
     }
   },
   "commands": [
