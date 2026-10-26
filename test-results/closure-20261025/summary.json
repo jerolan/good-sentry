@@ -3620,6 +3620,14 @@
         "tokens-110/token-list-1440.png",
         "tokens-110/token-revoked-1440.png"
       ]
+    },
+    "CLOSE-errores-006": {
+      "evidence": "vigente",
+      "scope": "merge and unmerge preservation, releases, source maps, bundles and native symbolication",
+      "evidence_files": [
+        "errores-006-go.log",
+        "errores-006-artifact.log"
+      ]
     }
   },
   "commands": [

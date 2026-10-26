@@ -1,0 +1,204 @@
+=== RUN   TestArtifactBundleAtomicMapsAliasesAndReleaseIndependence
+--- PASS: TestArtifactBundleAtomicMapsAliasesAndReleaseIndependence (0.68s)
+=== RUN   TestArtifactBundleConcurrentAliasesAndReleaseDeletion
+--- PASS: TestArtifactBundleConcurrentAliasesAndReleaseDeletion (1.01s)
+=== RUN   TestArtifactSourceMapsCoalesceEquivalentSelectors
+--- PASS: TestArtifactSourceMapsCoalesceEquivalentSelectors (0.52s)
+=== RUN   TestCompatibleAttachmentMigration032PreservesNativeReceiptsAndReopens
+--- PASS: TestCompatibleAttachmentMigration032PreservesNativeReceiptsAndReopens (1.23s)
+=== RUN   TestCompatibleEventLookupSnapshotDuringNativeMergeAndSplit
+--- PASS: TestCompatibleEventLookupSnapshotDuringNativeMergeAndSplit (1.71s)
+=== RUN   TestCompatibleEventDetailSiblingsReleaseAndNoSideEffects
+--- PASS: TestCompatibleEventDetailSiblingsReleaseAndNoSideEffects (0.83s)
+=== RUN   TestCompatibleEventsSnapshotDuringNativeMergeAndSplit
+--- PASS: TestCompatibleEventsSnapshotDuringNativeMergeAndSplit (2.36s)
+=== RUN   TestCompatibleIssueBulkCombinedMergeRetainsNativeHistoryAndFutureRouting
+--- PASS: TestCompatibleIssueBulkCombinedMergeRetainsNativeHistoryAndFutureRouting (0.84s)
+=== RUN   TestCompatibleIssueBulkGateCancellationPreservesNativeActors
+--- PASS: TestCompatibleIssueBulkGateCancellationPreservesNativeActors (1.21s)
+=== RUN   TestCompatibleIssueBulkRechecksRootsAndFiltersAfterNativeMergeWait
+=== RUN   TestCompatibleIssueBulkRechecksRootsAndFiltersAfterNativeMergeWait/query=
+=== RUN   TestCompatibleIssueBulkRechecksRootsAndFiltersAfterNativeMergeWait/query=is:unresolved
+--- PASS: TestCompatibleIssueBulkRechecksRootsAndFiltersAfterNativeMergeWait (1.79s)
+    --- PASS: TestCompatibleIssueBulkRechecksRootsAndFiltersAfterNativeMergeWait/query= (0.90s)
+    --- PASS: TestCompatibleIssueBulkRechecksRootsAndFiltersAfterNativeMergeWait/query=is:unresolved (0.89s)
+=== RUN   TestCompatibleIssueUpdateResponseDuringNativeCaptureAndGrouping
+--- PASS: TestCompatibleIssueUpdateResponseDuringNativeCaptureAndGrouping (2.37s)
+=== RUN   TestCompatibleIssuesObservedReleasesGroupedCommentsAndCurrentPolicies
+--- PASS: TestCompatibleIssuesObservedReleasesGroupedCommentsAndCurrentPolicies (0.96s)
+=== RUN   TestCompatibleIssuesAndNativeAnalyticsSnapshotDuringFreshCaptures
+    compat_issues_transactions_test.go:150: coherent native/compatible analytics snapshots: before=274 after=150
+--- PASS: TestCompatibleIssuesAndNativeAnalyticsSnapshotDuringFreshCaptures (1.46s)
+=== RUN   TestCompatibleIssuesAnalyticsSnapshotDuringNativeMergeAndSplit
+--- PASS: TestCompatibleIssuesAnalyticsSnapshotDuringNativeMergeAndSplit (1.47s)
+=== RUN   TestDebugFileStorageDeduplicationAndScope
+--- PASS: TestDebugFileStorageDeduplicationAndScope (0.43s)
+=== RUN   TestDebugFileMigration042PreservesProjectsAndReopens
+--- PASS: TestDebugFileMigration042PreservesProjectsAndReopens (0.61s)
+=== RUN   TestEventRetentionRereadsCurrentOwnerAfterInFlightMerge
+--- PASS: TestEventRetentionRereadsCurrentOwnerAfterInFlightMerge (0.62s)
+=== RUN   TestEventRetentionPreservesMergedOriginsAndEmptyOriginReuse
+--- PASS: TestEventRetentionPreservesMergedOriginsAndEmptyOriginReuse (0.69s)
+=== RUN   TestFeedbackCategoryMergeAndMixedBulkRollback
+--- PASS: TestFeedbackCategoryMergeAndMixedBulkRollback (0.64s)
+=== RUN   TestFileRetentionOrdersMultiProjectBundle
+=== RUN   TestFileRetentionOrdersMultiProjectBundle/cleanup
+=== RUN   TestFileRetentionOrdersMultiProjectBundle/bundle
+--- PASS: TestFileRetentionOrdersMultiProjectBundle (1.39s)
+    --- PASS: TestFileRetentionOrdersMultiProjectBundle/cleanup (0.63s)
+    --- PASS: TestFileRetentionOrdersMultiProjectBundle/bundle (0.76s)
+=== RUN   TestIssueGroupsMergeRoutingAndOriginalPartitions
+--- PASS: TestIssueGroupsMergeRoutingAndOriginalPartitions (0.85s)
+=== RUN   TestIssueResolutionSemanticFreshReleaseBoundaries
+=== RUN   TestIssueResolutionSemanticFreshReleaseBoundaries/app@1.9
+=== RUN   TestIssueResolutionSemanticFreshReleaseBoundaries/app@2+one
+=== RUN   TestIssueResolutionSemanticFreshReleaseBoundaries/app@2.0.0+two
+=== RUN   TestIssueResolutionSemanticFreshReleaseBoundaries/app@2.0.1
+=== RUN   TestIssueResolutionSemanticFreshReleaseBoundaries/#00
+=== RUN   TestIssueResolutionSemanticFreshReleaseBoundaries/.
+--- PASS: TestIssueResolutionSemanticFreshReleaseBoundaries (3.17s)
+    --- PASS: TestIssueResolutionSemanticFreshReleaseBoundaries/app@1.9 (0.51s)
+    --- PASS: TestIssueResolutionSemanticFreshReleaseBoundaries/app@2+one (0.51s)
+    --- PASS: TestIssueResolutionSemanticFreshReleaseBoundaries/app@2.0.0+two (0.66s)
+    --- PASS: TestIssueResolutionSemanticFreshReleaseBoundaries/app@2.0.1 (0.50s)
+    --- PASS: TestIssueResolutionSemanticFreshReleaseBoundaries/#00 (0.51s)
+    --- PASS: TestIssueResolutionSemanticFreshReleaseBoundaries/. (0.49s)
+=== RUN   TestIssueResolutionReleaseCandidatesScopePagesAndLiteralQuery
+--- PASS: TestIssueResolutionReleaseCandidatesScopePagesAndLiteralQuery (0.77s)
+=== RUN   TestIssueResolutionCaptureReleaseWaitCancellationIsAtomic
+--- PASS: TestIssueResolutionCaptureReleaseWaitCancellationIsAtomic (0.69s)
+=== RUN   TestIssueResolutionCaptureRuleMutationAndReleaseMetadataOverlap
+--- PASS: TestIssueResolutionCaptureRuleMutationAndReleaseMetadataOverlap (0.57s)
+=== RUN   TestNativeReprocessingQueueCoalescesAndCascades
+--- PASS: TestNativeReprocessingQueueCoalescesAndCascades (0.47s)
+=== RUN   TestNativeReprocessingMigrationReopens
+--- PASS: TestNativeReprocessingMigrationReopens (0.45s)
+=== RUN   TestSDKLogDetailPreservesNativeShape
+--- PASS: TestSDKLogDetailPreservesNativeShape (0.59s)
+=== RUN   TestReleaseFilesListDetailDeleteAndScope
+--- PASS: TestReleaseFilesListDetailDeleteAndScope (0.45s)
+=== RUN   TestReleaseRetentionFreshIdentityClockAfterCleanupWait
+--- PASS: TestReleaseRetentionFreshIdentityClockAfterCleanupWait (0.47s)
+=== RUN   TestReleaseRetentionMigration028PreservesAndReopens
+--- PASS: TestReleaseRetentionMigration028PreservesAndReopens (0.73s)
+=== RUN   TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff
+=== RUN   TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff/boundary
+=== RUN   TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff/newly-old
+=== RUN   TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff/replaced
+--- PASS: TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff (2.22s)
+    --- PASS: TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff/boundary (0.64s)
+    --- PASS: TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff/newly-old (0.52s)
+    --- PASS: TestReleaseRetentionFrozenIDsAndStrictElapsedCutoff/replaced (1.05s)
+=== RUN   TestReleaseRetentionReaderCompletesItsAuthorizedSnapshot
+--- PASS: TestReleaseRetentionReaderCompletesItsAuthorizedSnapshot (0.54s)
+=== RUN   TestReleaseRetentionPreservesFilesTelemetryAndPolicySnapshots
+--- PASS: TestReleaseRetentionPreservesFilesTelemetryAndPolicySnapshots (0.88s)
+=== RUN   TestReleaseRetentionBoundedParentProgress
+--- PASS: TestReleaseRetentionBoundedParentProgress (0.80s)
+=== RUN   TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer
+=== RUN   TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer/writer
+=== RUN   TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer/row
+=== RUN   TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer/maintainer
+--- PASS: TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer (1.56s)
+    --- PASS: TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer/writer (0.53s)
+    --- PASS: TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer/row (0.52s)
+    --- PASS: TestReleaseRetentionSkipsBusyWriterRowsAndMaintainer/maintainer (0.51s)
+=== RUN   TestReleaseRetentionLateFailureAndCancellation
+=== RUN   TestReleaseRetentionLateFailureAndCancellation/statement
+=== RUN   TestReleaseRetentionLateFailureAndCancellation/commit
+=== RUN   TestReleaseRetentionLateFailureAndCancellation/cancel
+--- PASS: TestReleaseRetentionLateFailureAndCancellation (1.94s)
+    --- PASS: TestReleaseRetentionLateFailureAndCancellation/statement (0.73s)
+    --- PASS: TestReleaseRetentionLateFailureAndCancellation/commit (0.60s)
+    --- PASS: TestReleaseRetentionLateFailureAndCancellation/cancel (0.62s)
+=== RUN   TestReleaseSharedIdentityAndCoverage
+--- PASS: TestReleaseSharedIdentityAndCoverage (0.51s)
+=== RUN   TestReleaseCommitRawOrderRepositoriesAndPreviousHead
+--- PASS: TestReleaseCommitRawOrderRepositoriesAndPreviousHead (0.68s)
+=== RUN   TestReleaseDeployScopeObservationAndArtifactDeletion
+--- PASS: TestReleaseDeployScopeObservationAndArtifactDeletion (0.59s)
+=== RUN   TestReleaseConcurrentIdentityAndCommitReplacement
+--- PASS: TestReleaseConcurrentIdentityAndCommitReplacement (1.96s)
+=== RUN   TestReleaseStandaloneObservationFreshOnly
+--- PASS: TestReleaseStandaloneObservationFreshOnly (0.67s)
+=== RUN   TestReleaseMigrationBackfillsPriorHistoryAndReopens
+--- PASS: TestReleaseMigrationBackfillsPriorHistoryAndReopens (0.54s)
+=== RUN   TestReleaseMetadataTimesAreUTC
+--- PASS: TestReleaseMetadataTimesAreUTC (0.42s)
+=== RUN   TestReleaseProjectReferencesResolveWithinAuthorizedScope
+--- PASS: TestReleaseProjectReferencesResolveWithinAuthorizedScope (0.42s)
+=== RUN   TestReleaseSourceMapAcknowledgementAndDeleteOrdering
+--- PASS: TestReleaseSourceMapAcknowledgementAndDeleteOrdering (0.71s)
+=== RUN   TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent
+--- PASS: TestReleaseProjectResolutionIsAtomicAndMembershipIsCurrent (0.48s)
+=== RUN   TestReleaseRepositoryCreateAndScopedList
+--- PASS: TestReleaseRepositoryCreateAndScopedList (0.42s)
+=== RUN   TestSourceMapsMatchBuildAndProjectAfterRestart
+--- PASS: TestSourceMapsMatchBuildAndProjectAfterRestart (0.50s)
+=== RUN   TestSourceMapRetriesConflictAndLoadBudget
+--- PASS: TestSourceMapRetriesConflictAndLoadBudget (1.46s)
+=== RUN   TestSourceMapPermissionsUseActualMembershipAndProjectScope
+--- PASS: TestSourceMapPermissionsUseActualMembershipAndProjectScope (0.46s)
+=== RUN   TestUserReportNativeDetailUsesOneSnapshot
+--- PASS: TestUserReportNativeDetailUsesOneSnapshot (0.47s)
+PASS
+ok  	goodsentry/internal/store	50.296s
+=== RUN   TestNativeIssueAttachmentsHTTP
+--- PASS: TestNativeIssueAttachmentsHTTP (1.05s)
+=== RUN   TestCompatibleReleaseFilesHTTP
+--- PASS: TestCompatibleReleaseFilesHTTP (0.64s)
+=== RUN   TestCompatibleDebugFileUploadListAndPermissions
+--- PASS: TestCompatibleDebugFileUploadListAndPermissions (0.90s)
+=== RUN   TestChunkedDebugFileAssemblyState
+--- PASS: TestChunkedDebugFileAssemblyState (0.66s)
+=== RUN   TestNativeMinidumpSymbolicationAndIngestion
+--- PASS: TestNativeMinidumpSymbolicationAndIngestion (0.49s)
+=== RUN   TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols
+--- PASS: TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols (0.59s)
+=== RUN   TestNativeMinidumpEnvelopeAttachment
+=== RUN   TestNativeMinidumpEnvelopeAttachment/duplicate_dumps
+=== RUN   TestNativeMinidumpEnvelopeAttachment/missing_event
+=== RUN   TestNativeMinidumpEnvelopeAttachment/non-native_event
+=== RUN   TestNativeMinidumpEnvelopeAttachment/malformed_dump
+--- PASS: TestNativeMinidumpEnvelopeAttachment (0.53s)
+    --- PASS: TestNativeMinidumpEnvelopeAttachment/duplicate_dumps (0.00s)
+    --- PASS: TestNativeMinidumpEnvelopeAttachment/missing_event (0.00s)
+    --- PASS: TestNativeMinidumpEnvelopeAttachment/non-native_event (0.00s)
+    --- PASS: TestNativeMinidumpEnvelopeAttachment/malformed_dump (0.00s)
+=== RUN   TestNativeRISCV64MinidumpIngestion
+--- PASS: TestNativeRISCV64MinidumpIngestion (0.47s)
+=== RUN   TestNativePDBSymbolicationUsesEmbeddedDebugID
+=== RUN   TestNativePDBSymbolicationUsesEmbeddedDebugID/matching_identity
+=== RUN   TestNativePDBSymbolicationUsesEmbeddedDebugID/mismatched_uploaded_identity
+--- PASS: TestNativePDBSymbolicationUsesEmbeddedDebugID (1.25s)
+    --- PASS: TestNativePDBSymbolicationUsesEmbeddedDebugID/matching_identity (0.56s)
+    --- PASS: TestNativePDBSymbolicationUsesEmbeddedDebugID/mismatched_uploaded_identity (0.69s)
+=== RUN   TestNativePDBInlineFramesReachMinidumpEvent
+--- PASS: TestNativePDBInlineFramesReachMinidumpEvent (0.50s)
+=== RUN   TestNativeSymCacheSymbolicationUsesEmbeddedDebugID
+=== RUN   TestNativeSymCacheSymbolicationUsesEmbeddedDebugID/matching_module_identity
+=== RUN   TestNativeSymCacheSymbolicationUsesEmbeddedDebugID/mismatched_module_identity
+--- PASS: TestNativeSymCacheSymbolicationUsesEmbeddedDebugID (1.40s)
+    --- PASS: TestNativeSymCacheSymbolicationUsesEmbeddedDebugID/matching_module_identity (0.50s)
+    --- PASS: TestNativeSymCacheSymbolicationUsesEmbeddedDebugID/mismatched_module_identity (0.90s)
+=== RUN   TestNativeELFObjectSymbolicationByDebugID
+--- PASS: TestNativeELFObjectSymbolicationByDebugID (0.49s)
+=== RUN   TestNativeMachODSYMObjectSymbolicationByDebugID
+--- PASS: TestNativeMachODSYMObjectSymbolicationByDebugID (0.51s)
+=== RUN   TestNativeCFIUnwindWithoutFramePointer
+--- PASS: TestNativeCFIUnwindWithoutFramePointer (0.54s)
+=== RUN   TestNativeArchiveObjectSymbolicationByDebugID
+=== RUN   TestNativeArchiveObjectSymbolicationByDebugID/zip
+=== RUN   TestNativeArchiveObjectSymbolicationByDebugID/tar
+=== RUN   TestNativeArchiveObjectSymbolicationByDebugID/tar.gz
+--- PASS: TestNativeArchiveObjectSymbolicationByDebugID (1.98s)
+    --- PASS: TestNativeArchiveObjectSymbolicationByDebugID/zip (0.52s)
+    --- PASS: TestNativeArchiveObjectSymbolicationByDebugID/tar (0.56s)
+    --- PASS: TestNativeArchiveObjectSymbolicationByDebugID/tar.gz (0.89s)
+=== RUN   TestNativeSDKDemoCrashSymbolicates
+    native_sdk_demo_test.go:28: native SDK demo is built only by its dedicated integration workflow
+--- SKIP: TestNativeSDKDemoCrashSymbolicates (0.00s)
+=== RUN   TestReleaseHTTPContract
+--- PASS: TestReleaseHTTPContract (2.10s)
+PASS
+ok  	goodsentry/internal/server	14.122s

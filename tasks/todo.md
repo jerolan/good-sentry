@@ -1447,8 +1447,10 @@ publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
 releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
-CLOSE-identidad-104 a -110 quedan vigentes. Siguiente acción: CLOSE-identidad-111
-(siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
+CLOSE-identidad-104 a -110 quedan vigentes; -111 a -113 están aplazadas por
+decisión expresa y no entran en la cola. CLOSE-errores-006 queda vigente.
+Siguiente acción: CLOSE-sourcemaps-001 (primer criterio pendiente en el orden
+registrado). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
 
@@ -1543,7 +1545,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-003](../SPEC.md#close-errores-003) | Ingestion contract: Accept identity, gzip, zlib-wrapped deflate, Brotli and Zstandard HTTP bodies. Support leg… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de compresión |
 | [CLOSE-errores-004](../SPEC.md#close-errores-004) | Ingestion contract: Persist errors/messages with timestamps, exception chains, stack frames, breadcrumbs, tags… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de captura |
 | [CLOSE-errores-005](../SPEC.md#close-errores-005) | Issues and artifacts: Default grouping is an independently designed stable hash of exception type and normaliz… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de grouping |
-| [CLOSE-errores-006](../SPEC.md#close-errores-006) | Issues and artifacts: Merge groups without losing events or their original grouping keys; subsequent events fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-006](../SPEC.md#close-errores-006) | Issues and artifacts: Merge groups without losing events or their original grouping keys; subsequent events fo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-007](../SPEC.md#close-errores-007) | Issue search, historical filters and pages: Complete the existing native session-authenticated GET /api/v1/org… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de búsqueda |
 | [CLOSE-errores-008](../SPEC.md#close-errores-008) | Issue search, historical filters and pages: The native query accepts single project, query, status, environmen… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de query |
 | [CLOSE-errores-009](../SPEC.md#close-errores-009) | Issue search, historical filters and pages: Search accepts free text plus intersected key:value terms. Bare ke… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de gramática |
@@ -5878,6 +5880,44 @@ Evidencia: `test-results/closure-20261025/identidad-110-go.log` y
 
 Límites registrados: el CI público sigue pendiente para la auditoría final. La
 captura evita el panel de revelación; solo se registran prefijos de token.
+
+### Ejecución 2026-10-26: grupos fusionados y artefactos
+
+Selección registrada antes de trabajar: CLOSE-errores-006. Candidata
+`57d89ab`.
+
+Resultado observado: sesenta y nueve owners pasan contra PostgreSQL real y el
+paquete de artefactos. La fusión conserva eventos, claves originales, historial
+de actividad y el enrutado de capturas posteriores, y la separación restaura las
+particiones originales, también bajo capturas concurrentes. Release cubre alta,
+listado, borrado, metadatos de commit y deploys. Los mapas tradicionales y por
+debug ID convierten una trama minificada en archivo, línea, columna y contexto
+originales, y los artefactos modernos en bundle tienen su propio contrato. Los
+minidumps y símbolos nativos se suben y simbolizan explícitamente en PDB,
+SymCache, ELF, dSYM Mach-O y archivos comprimidos.
+
+Un owner quedó omitido: `TestNativeSDKDemoCrashSymbolicates` exige el flujo de
+integración dedicado del SDK nativo y no forma parte de la prueba de subida y
+simbolización que este criterio pide. El skip no se cuenta como éxito.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Fusión sin perder eventos, claves ni enrutado futuro | store `TestIssueGroupsMergeRoutingAndOriginalPartitions`, `TestCompatibleIssueBulkCombinedMergeRetainsNativeHistoryAndFutureRouting`, `TestCompatibleEventLookupSnapshotDuringNativeMergeAndSplit` |
+| Separación que restaura la partición original | store `TestIssueGroupsMergeRoutingAndOriginalPartitions`, `TestCompatibleEventsSnapshotDuringNativeMergeAndSplit`, `TestCompatibleIssuesAnalyticsSnapshotDuringNativeMergeAndSplit` |
+| Historial de actividad conservado | store `TestIssueGroupsMergeRoutingAndOriginalPartitions`, `TestFeedbackCategoryMergeAndMixedBulkRollback` |
+| Releases: alta, listado, borrado, commits y deploys | store `TestReleaseSharedIdentityAndCoverage`, `TestReleaseCommitRawOrderRepositoriesAndPreviousHead`, `TestReleaseDeployScopeObservationAndArtifactDeletion`, `TestReleaseFilesListDetailDeleteAndScope`; HTTP `TestReleaseHTTPContract`, `TestCompatibleReleaseFilesHTTP` |
+| Mapas tradicionales y por debug ID a fuente original | store `TestSourceMapsMatchBuildAndProjectAfterRestart`; artefacto `TestSymbolicateTraditionalMapKeepsOriginalsAndSDKMetadata`, `TestSymbolicateDebugIDOverridesDuplicateArtifactNames`, `TestSymbolicateNodeFilenameFramesKeepOriginalsAndPathPriority` |
+| Bundles modernos | store `TestArtifactBundleAtomicMapsAliasesAndReleaseIndependence`, `TestArtifactBundleConcurrentAliasesAndReleaseDeletion`; artefacto `TestParseBundlePreservesFilesAndSeparatesTheirDebugIDs`, `TestBundleSourceMapsResolvesFileIdentitiesAndScriptURLs` |
+| Minidumps y símbolos nativos con subida explícita | HTTP `TestNativeMinidumpSymbolicationAndIngestion`, `TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols`, `TestNativePDBSymbolicationUsesEmbeddedDebugID`, `TestNativeSymCacheSymbolicationUsesEmbeddedDebugID`, `TestNativeELFObjectSymbolicationByDebugID`, `TestNativeMachODSYMObjectSymbolicationByDebugID`, `TestNativeArchiveObjectSymbolicationByDebugID` |
+
+Evidencia: `test-results/closure-20261025/errores-006-go.log` (69 passes,
+1 skip justificado) y `errores-006-artifact.log`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. Los
+criterios específicos de sourcemaps, nativo y bundles conservan sus propias
+filas; esta entrada acredita solo el texto de `CLOSE-errores-006`.
 
 ### Comprobante de integración documental
 
