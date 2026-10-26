@@ -49,6 +49,8 @@ investigación en archivos disjuntos, sin ramas research/ ni PR.
 
 - [Decidir qué capacidades de Sentry se aplazan](0005-sacrificios.md): aprobados tres aplazamientos expresos, conservando las capacidades y controles existentes.
 
+- [Acordar las pruebas externas y sus dependencias](0006-evidencia-externa.md): webhook genérico con evidencia de recepción y reintentos; Grafana conserva su criterio y se aplazan comprobantes de proveedores y GitLab.
+
 ## Not yet specified
 
 La referencia y el inventario pueden revelar ambigüedades de equivalencia
