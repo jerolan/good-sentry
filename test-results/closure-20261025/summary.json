@@ -1705,6 +1705,53 @@
         "cli-issues/mute.err",
         "cli-issues/statuses.txt"
       ]
+    },
+    "CLOSE-errores-061": {
+      "evidence": "vigente",
+      "scope": "compatible issue comment routes and authorization",
+      "covered": [
+        "global/**organization-prefixed** GET/POST",
+        "event scope/session authorization",
+        "ordered paginated CommentSchema"
+      ],
+      "evidence_files": [
+        "errores-061-064.log"
+      ]
+    },
+    "CLOSE-errores-062": {
+      "evidence": "vigente",
+      "scope": "strict comment POST/PUT body and response schema",
+      "covered": [
+        "only data.text object accepted",
+        "numeric actor and timestamps",
+        "safe escaped text"
+      ],
+      "evidence_files": [
+        "errores-061-064.log"
+      ]
+    },
+    "CLOSE-errores-063": {
+      "evidence": "vigente",
+      "scope": "compatible issue tag routes and event:read",
+      "covered": [
+        "global/organization-prefixed GET",
+        "event:read authorization"
+      ],
+      "evidence_files": [
+        "errores-061-064.log"
+      ]
+    },
+    "CLOSE-errores-064": {
+      "evidence": "vigente",
+      "scope": "IssueTagSchema aggregation",
+      "covered": [
+        "exact key and title-cased display",
+        "distinct values and totals",
+        "stable retained-event aggregation"
+      ],
+      "evidence_files": [
+        "errores-061-064.log"
+      ]
     }
   },
   "commands": [

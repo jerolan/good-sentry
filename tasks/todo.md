@@ -1443,12 +1443,12 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032, 034–046 y 048–060 están vigentes y
+publicación/CI; errores 001–005, 007–032, 034–046 y 048–064 están vigentes y
 033/047 bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI.
-Siguiente acción: CLOSE-errores-061 (comments). No se declara aceptación ni
-cierre del producto. El avance se informa por criterios/evidencia, sin
-porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
-producto ni borran este registro.
+Siguiente acción: CLOSE-errores-065 (preferencias/emails secundarios). No se
+declara aceptación ni cierre del producto. El avance se informa por
+criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un
+Goal no completan el producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1596,10 +1596,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-058](../SPEC.md#close-errores-058) | Compatible bulk issue changes and merging: Return200 with a partial acknowledgement object, not an array of is… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-059](../SPEC.md#close-errores-059) | Compatible bulk issue changes and merging: Owning verification: parser tests cover bulk-only aliases, tri-stat… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-060](../SPEC.md#close-errores-060) | Compatible bulk issue changes and merging: Acceptance requires actual official sentry-cli3.8.0 against newly i… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir con el CLI fijado |
-| [CLOSE-errores-061](../SPEC.md#close-errores-061) | Compatible issue comments: GET/POST /api/0/issues/{issue}/comments/ and the corresponding organization-prefixe… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-062](../SPEC.md#close-errores-062) | Compatible issue comments: POST and PUT accept only {"data":{"text":"..."}} and return CommentSchema with nume… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-063](../SPEC.md#close-errores-063) | Compatible issue tags: GET /api/0/issues/{issue}/tags/ and the organization-prefixed route require event:read… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-errores-064](../SPEC.md#close-errores-064) | Compatible issue tags: Each IssueTagSchema includes the exact key, a title-cased display name, distinct-value… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-061](../SPEC.md#close-errores-061) | Compatible issue comments: GET/POST /api/0/issues/{issue}/comments/ and the corresponding organization-prefixe… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios |
+| [CLOSE-errores-062](../SPEC.md#close-errores-062) | Compatible issue comments: POST and PUT accept only {"data":{"text":"..."}} and return CommentSchema with nume… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener body estricto |
+| [CLOSE-errores-063](../SPEC.md#close-errores-063) | Compatible issue tags: GET /api/0/issues/{issue}/tags/ and the organization-prefixed route require event:read… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios |
+| [CLOSE-errores-064](../SPEC.md#close-errores-064) | Compatible issue tags: Each IssueTagSchema includes the exact key, a title-cased display name, distinct-value… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener schema |
 | [CLOSE-errores-065](../SPEC.md#close-errores-065) | Compatible user preferences: Additive047 stores a JSONB user-options object and subscribeByDefault preference… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-066](../SPEC.md#close-errores-066) | Compatible user preferences: Additive050_user_emails.sql adds globally unique secondary addresses without rewr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-067](../SPEC.md#close-errores-067) | Compatible user preferences: The emailed link is GET /account/emails/confirm?token=... on the configured domai… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3847,6 +3847,25 @@ Evidencia: `test-results/closure-20261025/cli-issues/`
 (`summary.json`, `resolve.*`, `mute.*`, `statuses.txt`). El token no se guardó.
 
 Siguiente acción: CLOSE-errores-061 (comentarios compatibles) y 063 (tags).
+
+### Ejecución 2026-10-26: comentarios y tags compatibles
+
+Selección registrada antes de trabajar: CLOSE-errores-061 a -064. Candidata
+`3ab2056`; producto sin cambios desde `54db6e4`. La evidencia proviene de los
+owners HTTP/PostgreSQL con `-race`.
+
+Resultado observado: GET/POST de comments en las rutas global y
+organización-prefijada respetan `event:read`/scope y sesión, y POST/PUT exigen
+exactamente `{"data":{"text":"..."}}` devolviendo CommentSchema con el actor
+numérico y timestamps; el texto se escapa y el listado ordena/pagina. GET de
+tags en ambas rutas exige `event:read`; cada IssueTagSchema incluye key exacta,
+display name title-cased, valores distintos y total, con agregación estable
+sobre eventos retenidos. Subresultados pendientes de los bloques: ninguno.
+
+Evidencia: `test-results/closure-20261025/errores-061-064.log`.
+
+Siguiente acción: CLOSE-errores-065 (preferencias de usuario y emails
+secundarios), con sus migraciones.
 
 ### Comprobante de integración documental
 
