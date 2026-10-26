@@ -4549,6 +4549,11 @@
       "scope": "real Linux/amd64 Crashpad crash linked to a PostgreSQL issue, resolving goodsentry_demo_crash/main.c/positive line by ELF Debug ID with no retained dump, including race",
       "evidence_files": ["nativo-027/sdk-issue.log", "nativo-027/sdk-issue-race.log", "nativo-027/summary.json"]
     },
+    "CLOSE-nativo-028": {
+      "evidence": "vigente",
+      "scope": "regression preservation for supported native formats, architectures, CFI, files and the real SDK workflow; no symbol-server claim and no extra real crash per combination",
+      "evidence_files": ["nativo-028/all-unit.log", "nativo-028/vet.log", "nativo-028/summary.json"]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

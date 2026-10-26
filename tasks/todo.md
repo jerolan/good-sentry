@@ -1453,10 +1453,10 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -027 quedan
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-nativo-001 a -028 quedan
 vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-nativo-028. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-001. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2149,7 +2149,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-038](../SPEC.md#close-alertas-038) | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-039](../SPEC.md#close-alertas-039) | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payloa… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | implementada (local) | vigente | Comprobante 2026-10-26 abajo; CI público queda para la auditoría final |
-| [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -9147,6 +9147,30 @@ Evidencia: `test-results/closure-20261025/nativo-027/sdk-issue.log` y
 Límites registrados: ejecución local con PostgreSQL desechable; CI público e
 imagen final siguen pendientes para la auditoría final. No se exige otro crash
 real por cada combinación de arquitectura.
+
+### Ejecución 2026-10-26: regresiones nativas conservadas
+
+Selección registrada antes de trabajar: CLOSE-nativo-028. Revisión de producto
+`16ab706`; la cláusula exige conservar regresiones, no añadir un crash real por
+combinación. Este incremento ejecuta la suite global y reutiliza los
+comprobantes nativos vigentes.
+
+| Elemento | Comprobante |
+|---|---|---|
+| Suite unitaria global completa | `test-results/closure-20261025/nativo-028/all-unit.log` (`go test ./...` con loopback local) |
+| Vet global | `test-results/closure-20261025/nativo-028/vet.log` |
+| Formatos/arquitecturas y CFI conservados | CLOSE-nativo-004 (Breakpad/ELF/Mach-O/ZIP/TAR/PDB), -012 (CFI por arquitectura), -021 (SymCache), -022 (inline) y -026/-027 (crash real) |
+| Archivos y presupuestos de símbolos conservados | CLOSE-nativo-002/003/004/018/021 |
+| Servidores de símbolos no exigidos en este alcance | CLOSE-nativo-023 registra su ausencia; no se afirma soporte |
+| Sin crash real adicional por combinación | El único crash real exigido es Linux/amd64 en CLOSE-nativo-027 |
+
+Evidencia: `test-results/closure-20261025/nativo-028/all-unit.log` y `vet.log`,
+más los comprobantes nativos 004/012/021/022/026/027.
+
+Límites registrados: la suite global se ejecutó con PostgreSQL no requerido para
+los paquetes unitarios y con loopback local; no incluye imagen final ni CI
+público. La matriz nativa queda cerrada, pero el producto completo sigue
+abierto en las demás familias.
 
 ### Comprobante de integración documental
 
