@@ -220,9 +220,10 @@ JavaScript propuestos. Se aprueban los resultados y clientes descritos arriba,
 incluida persistencia tras reinicio. Evidencia: respuesta directa en sesión.
 No se declara ejecutada ni vigente una prueba por registrar su criterio.
 
-## Round 8 pending and original Java proposal superseded
+## Archive approved in round 8 and original Java proposal superseded
 
-Propuestas pendientes de aprobación:
+Archivo aprobado; la propuesta Java de esta ronda fue sustituida por su
+aplazamiento explícito registrado más abajo.
 
 - Archivo y retención: distinguir errores, logs, transacciones y spans.
   Durante la retención acordada, los datos archivados deben poder consultarse
@@ -231,7 +232,7 @@ Propuestas pendientes de aprobación:
   eliminación al vencer el plazo. Exigir backend local y otro compatible S3,
   sin imponer DuckDB como tecnología interna de GoodSentry. Los tipos pueden
   tener estrategias diferentes; no se exige mover spans desde PostgreSQL
-  si ya se almacenan directamente en el archivo. Pendiente de aprobación.
+  si ya se almacenan directamente en el archivo. Aprobado en la ronda 8.
 - Contexto Java: exigir un error real de un cliente Java que muestre función,
   archivo, línea y el fragmento de código fuente correspondiente en el issue.
   El crash nativo y los source maps JavaScript no demuestran este resultado.
@@ -263,7 +264,7 @@ automático con fuentes Java como excepción explícita al mínimo documentado d
 GlitchTip, manteniendo los requisitos de errores ya aprobados y sin declarar
 probado un SDK Java. No se elimina código existente. La propuesta anterior
 de exigir contexto Java queda sustituida por este aplazamiento.
-El criterio de archivo frío de la ronda 8 continúa pendiente.
+El criterio de archivo frío de la ronda 8 fue aprobado posteriormente; ver su resolución.
 
 ## Resolution comments, Java deferral
 
@@ -281,3 +282,40 @@ de bundles Java para el enriquecimiento aplazado. Cualquier aceptación básica
 de cliente Java sería un flujo distinto que todavía no ha sido aprobado.
 Evidencia: respuesta directa del usuario en esta sesión. La decisión de
 compatibilidad global permanece abierta.
+
+## Resolution comments, round 8
+
+2026-10-25, America/Mexico_City. Resolución parcial.
+El usuario respondió "Si" al criterio de archivo y retención retomado tras
+aplazar fuentes Java. Se aprueba consultar errores, logs, transacciones y
+spans archivados con filtros y permisos coherentes, conservarlos tras
+reiniciar y eliminarlos al vencer su retención. Se exigen comprobantes con
+almacenamiento local y compatible S3; cada tipo puede usar una estrategia
+interna distinta. Evidencia: respuesta directa en sesión. No se impone
+DuckDB ni se acredita aceptación ejecutada. El plazo concreto y la evidencia
+por tipo deben remitir a los contratos existentes y sus comprobantes.
+
+## Next round, performance, logs and uptime
+
+Tres criterios independientes propuestos, pendientes de aprobación:
+
+10. Rendimiento: usar los SDK Go/Python/Node/Browser fijados para generar
+    transacciones y spans reales y comprobar en API/UI su identidad, relación
+    padre/hijo, tiempos, desglose y navegación de traza. Verificar cantidades,
+    errores, latencias, tendencias y detección N+1 de los contratos existentes
+    contra un conjunto controlado con resultados esperados explícitos.
+11. Logs: usar logs reales de los SDK fijados y los exportadores OTLP HTTP
+    protobuf/JSON fijados. Verificar valores y tipos, severidad, búsqueda,
+    filtros de tiempo/servicio/entorno/texto/traza y navegación a la traza
+    cuando exista. Consultar los datos mediante API/UI y conservarlos tras
+    reiniciar. Se mantienen los límites y semántica de cada protocolo ya
+    aprobados; no se exige deduplicación donde el contrato no la promete.
+12. Uptime: comprobar desde el scheduler real HEAD/GET/POST, TCP, certificado
+    SSL y heartbeat, incluidos caída, recuperación, umbrales, pausa/reanudación,
+    historial y estado público de los monitores seleccionados. Conservar la
+    configuración y el historial tras reiniciar. Cada fallo debe observarse
+    según el intervalo, timeout y umbral del monitor, sin introducir un SLA
+    nuevo. Los destinos y recibos externos de avisos quedan en su ticket.
+
+Estos criterios concretan resultados sin reducir los contratos ya aprobados.
+No afirman que las pruebas existentes sigan vigentes ni autorizan ejecución.
