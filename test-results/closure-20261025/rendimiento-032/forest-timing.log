@@ -1,0 +1,6 @@
+=== RUN   TestTracePagesDeepChainsAcrossEnvelopesAndRestart
+--- PASS: TestTracePagesDeepChainsAcrossEnvelopesAndRestart (1.60s)
+=== RUN   TestTraceTimingBoundsPreservePartialReversedAndZeroIntervals
+--- PASS: TestTraceTimingBoundsPreservePartialReversedAndZeroIntervals (0.48s)
+PASS
+ok  	goodsentry/internal/store	2.098s

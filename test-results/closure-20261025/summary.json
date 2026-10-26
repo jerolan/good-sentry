@@ -4049,6 +4049,14 @@
         "rendimiento-031/graph-identity.log"
       ]
     },
+    "CLOSE-rendimiento-032": {
+      "evidence": "vigente",
+      "scope": "deep forest traversal and pagination with parent-page coordinates, numeric ordering, global timing bounds and drawable versus unavailable durations",
+      "evidence_files": [
+        "rendimiento-032/forest-timing.log",
+        "rendimiento-031/graph-identity.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

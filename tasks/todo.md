@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -031
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -032
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-032. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-033. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1864,7 +1864,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 026/029) |
 | [CLOSE-rendimiento-031](../SPEC.md#close-rendimiento-031) | Sentry spans and native telemetry reads: A missing resolved parent uses parentId empty and parentPage0; roots/… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-032](../SPEC.md#close-rendimiento-032) | Sentry spans and native telemetry reads: Build the graph from a streamed narrow index of storage identities, v… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7702,6 +7702,28 @@ Evidencia: `test-results/closure-20261025/rendimiento-031/graph-identity.log`.
 Límites registrados: el comprobante es de almacén; la cascada visual sigue en
 criterios posteriores. El CI público y la imagen final siguen pendientes para la
 auditoría final.
+
+### Ejecución 2026-10-26: bosque profundo, orden y tiempos de traza
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-032. Candidata
+`f6fb554`. Pruebas sobre PostgreSQL 18 desechable:
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Cadenas profundas sin límite de profundidad | `TestTracePagesDeepChainsAcrossEnvelopesAndRestart` recorre cadenas largas entre envelopes y tras reiniciar |
+| Orden por inicio, fin como respaldo, nulos al final e identidad numérica | `TestTraceEqualTimeOrderUsesNumericProjectSourceRowAndOrdinal` fija el desempate |
+| Paginación del bosque y coordenadas de página del padre | La prueba de cadenas profundas conserva páginas y `parentPage` |
+| Límites globales con intervalos incompletos o invertidos | `TestTraceTimingBoundsPreservePartialReversedAndZeroIntervals` los conserva |
+| Duración dibujable solo con ambos extremos y fin ≥ inicio | La misma prueba distingue intervalos válidos de no disponibles |
+| Intervalo de duración cero como punto | La prueba mantiene la duración cero como instante |
+
+Evidencia: `test-results/closure-20261025/rendimiento-032/forest-timing.log` y
+`test-results/closure-20261025/rendimiento-031/graph-identity.log`.
+
+Límites registrados: la construcción desde un índice estrecho sin cargar JSON se
+apoya en la implementación y no se mide por columnas en esta prueba; la
+indentación visual y el recorte de sangría pertenecen a la UI posterior. El CI
+público y la imagen final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
