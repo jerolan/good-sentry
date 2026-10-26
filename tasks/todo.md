@@ -1443,13 +1443,12 @@ lecturas compatibles, paginación y vista de API tokens). Después se abrieron
 CLOSE-identidad-008 a CLOSE-identidad-013 (generaciones, cambio de contraseña,
 correo, recuperación e invitaciones); sus comprobantes están abajo y los
 la familia de identidad 001–064 está vigente salvo 025/033, bloqueadas por
-publicación/CI; errores 001–005, 007–032, 034–046 y 048–059 están vigentes y
+publicación/CI; errores 001–005, 007–032, 034–046 y 048–060 están vigentes y
 033/047 bloqueadas; 006 espera proveedores de releases/artefactos/nativo/CLI.
-Siguiente acción: CLOSE-errores-060 (aceptación CLI) o, si el binario no está
-disponible, 061 (comments). No se declara aceptación ni cierre del producto.
-El avance se informa por criterios/evidencia, sin porcentaje de casillas;
-tiempo y presupuesto de un Goal no completan el producto ni borran este
-registro.
+Siguiente acción: CLOSE-errores-061 (comments). No se declara aceptación ni
+cierre del producto. El avance se informa por criterios/evidencia, sin
+porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
+producto ni borran este registro.
 
 Al cierre de este bloque, `go vet ./...` y
 `go test -race -count=1 -tags=integration ./...` pasan (server 214.246s,
@@ -1596,7 +1595,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-057](../SPEC.md#close-errores-057) | Compatible bulk issue changes and merging: Internal contracts: CompatibleIssueBulkFilter contains IDs/ProjectR… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-058](../SPEC.md#close-errores-058) | Compatible bulk issue changes and merging: Return200 with a partial acknowledgement object, not an array of is… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-059](../SPEC.md#close-errores-059) | Compatible bulk issue changes and merging: Owning verification: parser tests cover bulk-only aliases, tri-stat… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-060](../SPEC.md#close-errores-060) | Compatible bulk issue changes and merging: Acceptance requires actual official sentry-cli3.8.0 against newly i… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-errores-060](../SPEC.md#close-errores-060) | Compatible bulk issue changes and merging: Acceptance requires actual official sentry-cli3.8.0 against newly i… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir con el CLI fijado |
 | [CLOSE-errores-061](../SPEC.md#close-errores-061) | Compatible issue comments: GET/POST /api/0/issues/{issue}/comments/ and the corresponding organization-prefixe… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-062](../SPEC.md#close-errores-062) | Compatible issue comments: POST and PUT accept only {"data":{"text":"..."}} and return CommentSchema with nume… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-063](../SPEC.md#close-errores-063) | Compatible issue tags: GET /api/0/issues/{issue}/tags/ and the organization-prefixed route require event:read… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -3827,6 +3826,27 @@ Evidencia: `test-results/closure-20261025/errores-048-059.log`.
 
 Siguiente acción: revisar los criterios restantes de la familia de errores
 (060+ y los clientes SDK) antes de pasar a alertas.
+
+### Ejecución 2026-10-26: aceptación con sentry-cli 3.8.0
+
+Selección registrada antes de trabajar: CLOSE-errores-060. Candidata
+`8b7eb7a`; producto sin cambios desde `54db6e4`. Se usó el binario oficial
+`sentry-cli 3.8.0` disponible en `/tmp`, una app local con proyecto real y un
+token restringido `event:write`.
+
+Resultado observado: `issues resolve -o default-organization -p cli-project -i 3 -i 2`
+salió 0, imprimió `Updated matching issues` y dejó los IDs 2/3 `resolved`.
+`issues mute -o default-organization -p cli-project -s unresolved` salió 0,
+imprimió `new status: muted` y dejó el ID 1 `ignored`; los ya resueltos no
+cambiaron. El CLI emitió un warning de formato de token no estándar (`gs_`),
+pero ambas solicitudes se autenticaron y mutaron datos reales. El byte/estado
+del contrato y el fallback por status quedan cubiertos; no se infiere éxito
+solo por exit code. Subresultados pendientes del bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/cli-issues/`
+(`summary.json`, `resolve.*`, `mute.*`, `statuses.txt`). El token no se guardó.
+
+Siguiente acción: CLOSE-errores-061 (comentarios compatibles) y 063 (tags).
 
 ### Comprobante de integración documental
 

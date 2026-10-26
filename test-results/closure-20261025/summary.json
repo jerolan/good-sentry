@@ -1688,6 +1688,23 @@
       "evidence_files": [
         "errores-048-059.log"
       ]
+    },
+    "CLOSE-errores-060": {
+      "evidence": "vigente",
+      "scope": "official sentry-cli 3.8.0 bulk resolve/mute acceptance",
+      "covered": [
+        "resolve by repeated -i mutates selected IDs",
+        "mute by unresolved status mutates matching issue",
+        "real restricted event:write token; no success inferred from exit code alone"
+      ],
+      "evidence_files": [
+        "cli-issues/summary.json",
+        "cli-issues/resolve.out",
+        "cli-issues/resolve.err",
+        "cli-issues/mute.out",
+        "cli-issues/mute.err",
+        "cli-issues/statuses.txt"
+      ]
     }
   },
   "commands": [

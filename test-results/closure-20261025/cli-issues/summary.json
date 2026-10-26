@@ -1,0 +1,16 @@
+{
+  "cli": "sentry-cli 3.8.0",
+  "org": "default-organization",
+  "project": "cli-project",
+  "project_id": "1",
+  "issue_ids": [
+    "3",
+    "2",
+    "1"
+  ],
+  "commands": [
+    "issues resolve -i 3 -i 2",
+    "issues mute -s unresolved"
+  ],
+  "result": "both exit 0; statuses match"
+}
