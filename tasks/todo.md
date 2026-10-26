@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -023
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -024
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-024. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-025. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1856,7 +1856,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-021](../SPEC.md#close-rendimiento-021) | Sentry spans and native telemetry reads: The child-operation statistics increment groups spans by exact operat… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 016) |
 | [CLOSE-rendimiento-022](../SPEC.md#close-rendimiento-022) | Sentry spans and native telemetry reads: Expose authenticated native GET /api/v1/organizations/{org}/transacti… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 014/016) |
 | [CLOSE-rendimiento-023](../SPEC.md#close-rendimiento-023) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/span-groups/ and… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7476,6 +7476,28 @@ Límites registrados: el redondeo de un umbral fraccionario y el default de 24 h
 para estas rutas compatibles no se sondean por separado en esta ejecución; se
 apoyan en la validación compartida y en el comprobante de 014. El CI público y
 la imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: stats_v2 para paneles Grafana
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-024. Candidata
+`d337258`. La prueba `TestCompatibleStatsV2HTTP` pasa sobre PostgreSQL
+18 desechable.
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Autoridad Bearer o sesión | Sin credenciales 401; token con `event:read` y sesión de miembro leen |
+| `category` y `field` | `transaction` con `sum(quantity)` y `error` con `sum(times_seen)` responden; categoría o campo inválidos 400 |
+| Ventana, intervalo y límite de 1000 | 400 para ventana inválida, intervalo desconocido y `1m` sobre dos días (2880 buckets) |
+| Proyectos | `-1` se combina con un proyecto autorizado; un proyecto ajeno devuelve 404 |
+| Claves no admitidas | `outcome` y `groupBy` devuelven 400 |
+| Envelope publicado | La prueba valida `start`, `end` e `intervals` con los buckets alineados |
+
+Evidencia: `test-results/closure-20261025/rendimiento-024/stats-v2.log`.
+
+Límites registrados: la forma sin zona `2006-01-02T15:04:05` y el default
+`1h` no se sondean por separado en esta ejecución; la alineación de
+buckets y la ventana semiabierta sí están cubiertas. El CI público y la imagen
+final siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 

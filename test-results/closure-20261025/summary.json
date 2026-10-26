@@ -3987,6 +3987,13 @@
         "performance-api-041-044/report.json"
       ]
     },
+    "CLOSE-rendimiento-024": {
+      "evidence": "vigente",
+      "scope": "compatible stats_v2 authority, categories and fields, interval and interval-count bounds, project containment and bucket alignment",
+      "evidence_files": [
+        "rendimiento-024/stats-v2.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

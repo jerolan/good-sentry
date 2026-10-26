@@ -1,0 +1,4 @@
+=== RUN   TestCompatibleStatsV2HTTP
+--- PASS: TestCompatibleStatsV2HTTP (0.62s)
+PASS
+ok  	goodsentry/internal/server	0.631s
