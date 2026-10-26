@@ -4324,6 +4324,14 @@
         "alertas-004/alerts-core.log"
       ]
     },
+    "CLOSE-alertas-007": {
+      "evidence": "vigente",
+      "scope": "monitor environment config and uptime alerts only on confirmed project transitions with identity deduplication",
+      "evidence_files": [
+        "alertas-004/alerts-core.log",
+        "uptime-014/native-monitors.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",
