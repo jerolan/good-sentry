@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -036
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-037. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-037 (UI con transacción Go real). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2092,7 +2092,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-211](../SPEC.md#close-errores-211) | Browser CSP reporting: Acceptance requires pure format/grouping/invalid-batch cases, real prefixed HTTP+Postgr… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-212](../SPEC.md#close-errores-212) | Go 0.50.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-213](../SPEC.md#close-errores-213) | Go 0.50.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras rein… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-rendimiento-037](../SPEC.md#close-rendimiento-037) | Go 0.50.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación de… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-037](../SPEC.md#close-rendimiento-037) | Go 0.50.0: transacciones y spans reales en API/UI con identidad, padre/hijo, tiempos, desglose y navegación de… | por contrastar | pendiente | Parcial: API con Go real verificada; falta la UI con esos datos |
 | [CLOSE-logs-029](../SPEC.md#close-logs-029) | Go 0.50.0: logs reales con valores/tipos, severidad, filtros de tiempo/servicio/entorno/texto/traza, enlace a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-214](../SPEC.md#close-errores-214) | Python 2.72.0: error real por DSN, recuperable en API/UI con contexto, tags, entorno y release. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-errores-215](../SPEC.md#close-errores-215) | Python 2.72.0: agrupación, reintento sin duplicación, búsqueda/filtros, triage contratado y persistencia tras… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7852,6 +7852,23 @@ además de los comprobantes de PostgreSQL, HTTP y navegador ya enumerados.
 Límites registrados: la reanudación v1 se provoca con SQL controlado sobre una
 fila de esta instalación; el worker de la imagen la completa al arrancar. La
 imagen es local y el CI público sigue pendiente para la auditoría final.
+
+### Avance parcial 2026-10-26: Go 0.50.0 en API
+
+CLOSE-rendimiento-037 sigue pendiente. La API con datos reales del SDK oficial
+está verificada; falta la comprobación en la UI con esa misma transacción.
+
+| Elemento | Comprobante |
+|---|---|
+| Identidad, padre/hijo y tiempos de la traza Go | `rendimiento-036/sdk-traces.json`: `go-trace-036` con raíz `http.server` y dos hijos `db.query`/`http.client` a profundidad 1 |
+| Desglose de operaciones del mismo SDK | `rendimiento-028/sdk-child-metrics.json`: `db.query` y `http.client` con count/timed y duración |
+
+Falta: abrir esa transacción Go real en Transactions, entrar a su ocurrencia y
+navegar a la traza en la interfaz, comprobando identidad, orden, tiempos y
+desglose en pantalla.
+
+Siguiente paso: completar el owner de navegador con la transacción Go y
+registrar su comprobante.
 
 ### Comprobante de integración documental
 
