@@ -1442,13 +1442,14 @@ imagen construida y PostgreSQL externo, CLOSE-operacion-009 con el loader y
 los alias, CLOSE-operacion-010 con los modos abierto/autenticado, CSRF y
 sesiones, CLOSE-operacion-011 con features, correo, uploads y secretos, y
 CLOSE-operacion-012 con la medición de RSS. Sus comprobantes vigentes están
-y CLOSE-identidad-002 con memberships, equipos y alcance. Sus comprobantes
-vigentes están abajo. Siguiente acción: CLOSE-identidad-003 (credenciales de
-automatización nativas, alcance por organización/proyecto, HMAC y
-revocación), con dependencias locales resueltas. No se declara aceptación ni
-cierre del producto. El avance se informa por criterios/evidencia, sin
-porcentaje de casillas; tiempo y presupuesto de un Goal no completan el
-producto ni borran este registro.
+y CLOSE-identidad-002 con memberships, equipos y alcance, y
+CLOSE-identidad-003 con credenciales de automatización. Sus comprobantes
+vigentes están abajo. Siguiente acción: CLOSE-identidad-004 (all-projects
+versus lista, pérdida de membership, revalidación y no filtración), con
+dependencias locales resueltas. No se declara aceptación ni cierre del
+producto. El avance se informa por criterios/evidencia, sin porcentaje de
+casillas; tiempo y presupuesto de un Goal no completan el producto ni borran
+este registro.
 
 ### Matriz de trazabilidad y estado inicial
 
@@ -1468,7 +1469,7 @@ producto ni borran este registro.
 | [CLOSE-operacion-012](../SPEC.md#close-operacion-012) | Deployment and configuration: Memory target: measure application RSS under an explicit repeatable workload and… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de ingestión |
 | [CLOSE-identidad-001](../SPEC.md#close-identidad-001) | Runtime and workspace contracts: Provide /healthz for process health and /readyz for database readiness. Setup… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de sesiones/tokens |
 | [CLOSE-identidad-002](../SPEC.md#close-identidad-002) | Runtime and workspace contracts: Organizations contain memberships and teams. Projects belong to an organizati… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de workspace/authz |
-| [CLOSE-identidad-003](../SPEC.md#close-identidad-003) | Runtime and workspace contracts: The automation-credential prerequisite belongs to workspace, before compatibl… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-003](../SPEC.md#close-identidad-003) | Runtime and workspace contracts: The automation-credential prerequisite belongs to workspace, before compatibl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de credenciales |
 | [CLOSE-identidad-004](../SPEC.md#close-identidad-004) | Runtime and workspace contracts: An omitted or empty project list explicitly grants all current and future org… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-005](../SPEC.md#close-identidad-005) | Runtime and workspace contracts: Consume these credentials through Sentry-compatible GET /api/0/organizations/… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-006](../SPEC.md#close-identidad-006) | Runtime and workspace contracts: Add an owner/admin-only API tokens view to the existing original Tailwind/dai… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -2625,6 +2626,41 @@ descrito en el comprobante 004.
 
 Siguiente acción: CLOSE-identidad-003 (credenciales de automatización nativas,
 alcance por organización/proyecto, HMAC y ciclo de revocación), con
+dependencias locales resueltas.
+
+### Ejecución 2026-10-26: credenciales de automatización
+
+Selección registrada antes de trabajar: CLOSE-identidad-003, siguiente en el
+plan. Candidata `d93b926`; producto sin cambios desde `54db6e4`. No había
+criterio reclamado. La unidad no cambia producto; ejecuta los owners de
+credenciales nativas y su consumo compatible.
+
+Procedimiento reproducible con PostgreSQL desechable y `-race`:
+`TestAPITokenHTTPContract`,
+`TestAPITokenAdministrationAndAtomicProjectBoundary`,
+`TestAPITokenPersistsDigestAndGrantAcrossReopen` y `TestReleaseHTTPContract`;
+revisión de `internal/server/compat_api_tokens.go`,
+`internal/store/api_tokens.go` y las rutas nativas.
+
+Resultado observado: solo una sesión con CSRF crea, lista o revoca; un bearer
+no puede emitir ni consumir la API nativa. El token tiene la forma
+`gs_` más 64 hexadecimales, se devuelve una sola vez con prefijo de 11
+caracteres, se guarda como HMAC-SHA256 y conserva el grant tras reabrir. Los
+metadatos incluyen id, nombre, prefijo, scopes, `allProjects`, proyectos,
+creador, fechas y revocación; la lista pagina 25 por página y no expone hash
+ni token. Los defaults son `org:read` y `project:read`, con 90 días; se
+aceptan `projectIds` y `project:releases`, y se rechazan scopes vacíos,
+duplicados o desconocidos, proyectos ausentes/ajenos y cuerpos malformados.
+La revocación devuelve 204, es idempotente y un token revocado/expirado deja
+de autorizar; un proyecto ajeno devuelve 404. El consumo compatible lista y
+detalla solo proyectos autorizados sin DSN ni clave SDK, y `project:releases`
+queda limitado a sus consumidores implementados. Subresultados pendientes del
+bloque: ninguno.
+
+Evidencia: `test-results/closure-20261025/identity/{tests.log,tokens.log}`.
+
+Siguiente acción: CLOSE-identidad-004 (semántica all-projects versus lista,
+revocación por pérdida de membership, revalidación y no filtración), con
 dependencias locales resueltas.
 
 ### Comprobante de integración documental

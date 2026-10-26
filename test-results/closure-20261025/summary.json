@@ -162,6 +162,20 @@
         "HTTP identifiers are opaque strings"
       ],
       "evidence_files": ["identity/tenancy.log", "identity/tests.log"]
+    },
+    "CLOSE-identidad-003": {
+      "evidence": "vigente",
+      "scope": "native organization automation credentials, scope defaults, project grants, pagination, revocation and compatible consumption",
+      "covered": [
+        "session-only create/list/revoke with CSRF",
+        "gs_ plus 64 lowercase hex, one-time disclosure, 11-character prefix and HMAC storage",
+        "metadata fields, 25-row pages and no hash or secret leakage",
+        "default org:read and project:read, optional projectIds and project:releases, 90-day expiry",
+        "invalid scopes, nulls, foreign projects and malformed bodies rejected",
+        "idempotent 204 revocation and stopped authorization after revocation/expiry",
+        "compatible project reads return authorized projects without DSN or SDK key"
+      ],
+      "evidence_files": ["identity/tests.log", "identity/tokens.log"]
     }
   },
   "commands": [
