@@ -136,9 +136,9 @@ plugin Sentry de un Grafana externo, el usuario respondió "Ok bien entonces si"
 Queda confirmado ese alcance de la integración de lectura y las versiones
 aprobadas. Grafana no se incorpora al producto ni a sus dependencias de runtime.
 
-## Next round, native acceptance
+## Native acceptance approved in round 4
 
-Propuesta pendiente: usar Linux/amd64 con sentry-native 0.17.4 y Crashpad
+El usuario aprobó usar Linux/amd64 con sentry-native 0.17.4 y Crashpad
 como plataforma representativa exigida para la prueba nativa real completa.
 El crash debe proceder del mismo ELF/DWARF que se subió, producir un issue
 con función goodsentry_demo_crash, archivo main.c y línea positiva, y no
@@ -146,10 +146,33 @@ conservar los bytes del minidump. La investigación y tasks/todo.md registran
 una ejecución real de ese flujo; su reutilización depende de la revisión
 acreditada y de los cambios que puedan invalidarla.
 
-Se propone conservar la cobertura y regresiones de los formatos y
+Se conserva la cobertura y regresiones de los formatos y
 arquitecturas ya soportados, sin exigir un crash real adicional por cada
-combinación como condición de cierre. Esta última limitación necesita
-aprobación expresa, pues hay pendientes históricos de comprobantes en varias
-arquitecturas. No se declaran resueltos por aprobar el demo representativo
+combinación como condición de cierre. El usuario aprobó expresamente esa limitación de los comprobantes reales;
+los pendientes históricos de recibos por arquitectura deberán reconciliarse
+con este acuerdo al preparar el contrato final. No se declaran resueltos por aprobar el demo representativo
 los otros pendientes nativos de CFI, archivos o servidores de símbolos.
 Contexto Java sigue como una incertidumbre distinta.
+
+## Resolution comments, round 4
+
+2026-10-25, America/Mexico_City. Resolución parcial.
+El usuario respondió "Si" a Linux/amd64 como plataforma representativa de la
+prueba nativa real, con sentry-native 0.17.4 y Crashpad, símbolos del mismo
+ELF, función/archivo/línea y descarte del dump. Se aprueba no exigir otro
+crash real por cada combinación para cerrar, conservando cobertura y
+regresiones de los formatos y arquitecturas soportados. Los demás pendientes
+nativos siguen sujetos a revisión. Evidencia: aprobación directa en sesión.
+
+## Next round, MCP client
+
+Propuesta pendiente: fijar como cliente de aceptación MCP el cliente oficial
+Go modelcontextprotocol/go-sdk v1.8.0, ya fijado en go.mod y SPEC.md y usado
+como mcp.NewClient en internal/server/mcp_test.go. Ejercitar el endpoint real
+por Streamable HTTP, descubrir e invocar las 17 herramientas acordadas y
+verificar los resultados contra datos de GoodSentry, conservando las pruebas
+de autorización y del ciclo OAuth/token exigidas por el contrato existente.
+No exigir una matriz de todas las aplicaciones consumidoras MCP como
+condición de cierre. La selección del cliente no declara vigentes todas las
+pruebas ni elimina los requisitos de OAuth. No se ejecutan pruebas aquí.
+GitLab, contexto Java, archivo frío y los otros flujos siguen pendientes.
