@@ -1447,7 +1447,7 @@ publicación/CI; errores 001–005, 007–032, 034–046, 048–068, 069–083, 
 y 101–111, 139–162, logs 001–011 y logs 012–027 están vigentes; 033/047/084/112 bloqueadas; 006 espera proveedores de
 releases/artefactos/nativo/CLI. Los criterios CLOSE-identidad-085 a -102 están
 vigentes; 103 queda bloqueada por publicación con su comprobante local abajo.
-CLOSE-identidad-104 a -107 quedan vigentes. Siguiente acción: CLOSE-identidad-108
+CLOSE-identidad-104 a -108 quedan vigentes. Siguiente acción: CLOSE-identidad-109
 (siguiente criterio del contrato). No se declara aceptación ni cierre del producto. El avance se
 informa por criterios/evidencia, sin porcentaje de casillas; tiempo y
 presupuesto de un Goal no completan el producto ni borran este registro.
@@ -2145,7 +2145,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-107](../SPEC.md#close-identidad-107) | API y navegador: comprobar OIDC y aplicaciones SSO con controles y pruebas locales, con los resultados y contr… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-108](../SPEC.md#close-identidad-108) | API y navegador: comprobar organizaciones, equipos y miembros, con los resultados y controles de sus contratos… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-identidad-108](../SPEC.md#close-identidad-108) | API y navegador: comprobar organizaciones, equipos y miembros, con los resultados y controles de sus contratos… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-109](../SPEC.md#close-identidad-109) | API y navegador: comprobar proyectos y DSNs, con los resultados y controles de sus contratos actuales, sin exc… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-identidad-110](../SPEC.md#close-identidad-110) | API y navegador: comprobar tokens, permisos/aislamiento, expiración y revocación, con los resultados y control… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-092](../SPEC.md#close-operacion-092) | Arranque de imagen documentada con PostgreSQL y volúmenes vacíos, salud/readiness, UI y captura SDK, sin reque… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -5775,6 +5775,40 @@ Evidencia: `test-results/closure-20261025/identidad-107-go.log` y
 Límites registrados: el CI público sigue pendiente para la auditoría final. El
 proveedor OIDC y los sociales son locales de prueba; no se acredita un proveedor
 público ni un flujo de red externo.
+
+### Ejecución 2026-10-26: organizaciones, equipos y miembros
+
+Selección registrada antes de trabajar: CLOSE-identidad-108. Candidata
+`c93b34c`.
+
+Resultado observado: quince owners cubren la visibilidad de organización,
+miembro y equipo, el orden y la paginación, los límites de propietario,
+manager, administrador y miembro, el detalle y las mutaciones de miembro, las
+mutaciones de equipo con el equipo por defecto protegido, la transferencia de
+propiedad, el último propietario y su carrera, el renombrado y borrado de
+organización con cascadas, y la creación de organización con sus límites. En
+Chromium, el propietario ve miembros, invitación pendiente y equipos, crea y
+renombra «Alpha team», añade y quita al miembro, cambia su rol a manager y borra
+el equipo tras confirmar; las nueve capturas de 320/768/1440 no desbordan la
+página ni registran errores de consola.
+
+Mapa de comprobantes:
+
+| Elemento del criterio | Comprobante |
+|---|---|
+| Visibilidad y esquemas de organización, miembro y equipo | store `TestCompatibleOrganizationPeopleTeamsAndProjects`; HTTP `TestCompatiblePeopleTeamsAndProjectRelationsHTTP` |
+| Roles y detalle de miembro | store `TestCompatibleOrganizationMemberDetailAndTeamMembership`; HTTP `TestCompatibleOrganizationMemberManagementHTTP` |
+| Mutaciones de equipo y equipo por defecto | store `TestCompatibleTeamMutationsPreserveProjectRelations`; HTTP `TestCompatibleTeamMutationsHTTP` |
+| Transferencia de propiedad y último propietario | store `TestSetCompatibleOrganizationOwnerTransfersSingleOwner`, `TestPeopleMembershipsTeamsAndLastOwner`, `TestConcurrentOwnerDemotionsRetainOneOwner`; HTTP `TestCompatibleSetOrganizationOwnerHTTP`, `TestPeopleAndTeamHTTPContract` |
+| Organización: renombrado, borrado y creación | store `TestCompatibleOrganizationUpdateDeleteAndRoleBoundaries`, `TestCreateCompatibleOrganizationOwnershipTeamAndAuthority`; HTTP `TestCompatibleOrganizationUpdateDeleteHTTP`, `TestCreateCompatibleOrganizationHTTP` |
+| Flujo completo en la vista People | `people108/report.json` y nueve capturas |
+
+Evidencia: `test-results/closure-20261025/identidad-108-go.log` y
+`test-results/closure-20261025/people108/`.
+
+Límites registrados: el CI público sigue pendiente para la auditoría final. La
+tabla de miembros exige desplazamiento horizontal en 320 px, sin desbordar la
+página.
 
 ### Comprobante de integración documental
 

@@ -3588,6 +3588,17 @@
         "sso-ui/sso-renamed-1440.png",
         "sso-ui/sso-empty-1440.png"
       ]
+    },
+    "CLOSE-identidad-108": {
+      "evidence": "vigente",
+      "scope": "organizations, teams and members across store, HTTP and the People view",
+      "evidence_files": [
+        "identidad-108-go.log",
+        "people108/report.json",
+        "people108/people-overview-1440.png",
+        "people108/team-detail-1440.png",
+        "people108/people-after-delete-1440.png"
+      ]
     }
   },
   "commands": [

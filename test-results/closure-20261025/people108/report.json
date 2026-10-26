@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "checks": [
+    "Owner sees members, the pending invitation and teams",
+    "Owner creates and renames a team",
+    "Owner adds and removes a team member",
+    "Owner changes a member role to manager",
+    "Owner deletes the team after confirmation"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/people-overview-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/people-overview-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/people-overview-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/team-detail-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/team-detail-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/team-detail-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/people-after-delete-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/people-after-delete-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/people108/people-after-delete-1440.png"
+  ],
+  "pageErrors": []
+}
