@@ -1,0 +1,36 @@
+{
+  "listPage1": 200,
+  "listCount": 1,
+  "hasNext": true,
+  "listPage2": 200,
+  "listPage2Count": 1,
+  "heartbeatChecks": [
+    200,
+    null
+  ],
+  "checks1": {
+    "status": 200,
+    "count": 1,
+    "hasNext": true,
+    "fields": [
+      "isUp",
+      "reason",
+      "responseTime",
+      "startCheck"
+    ],
+    "first": {
+      "isUp": true,
+      "reason": null,
+      "responseTime": null,
+      "startCheck": "2026-10-26T12:45:38.155325-06:00"
+    }
+  },
+  "checks2": {
+    "status": 200,
+    "count": 1
+  },
+  "invalidCursor": 400,
+  "invalidLimit": 400,
+  "checksInvalidLimit": 400,
+  "ok": true
+}

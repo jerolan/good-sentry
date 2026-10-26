@@ -4152,6 +4152,13 @@
         "uptime-003/compat-monitor-contract.log"
       ]
     },
+    "CLOSE-uptime-004": {
+      "evidence": "vigente",
+      "scope": "strict cursor pagination for compatible monitors and checks, public check fields, text reasons and invalid cursor/limit rejection",
+      "evidence_files": [
+        "uptime-004/pagination.json"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

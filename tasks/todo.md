@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-uptime-004. No se declara
+runtime preservado. Siguiente acción: CLOSE-uptime-005. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1756,7 +1756,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-003](../SPEC.md#close-uptime-003) | Compatible uptime monitors: When uptime is enabled, GET/POST /api/0/organizations/{org}/monitors/, GET/PUT/DEL… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-uptime-004](../SPEC.md#close-uptime-004) | Compatible uptime monitors: Lists and checks use strict cursor pagination. Checks expose start time, isUp and… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-005](../SPEC.md#close-uptime-005) | Compatible uptime monitors: Additive057 gives every monitor a stable UUID endpoint identity and a unique index… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-alertas-001](../SPEC.md#close-alertas-001) | Compatible project alerts: GET/POST /api/0/projects/{org}/{project}/alerts/ and PUT/DELETE .../alerts/{id}/ ex… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-002](../SPEC.md#close-alertas-002) | Compatible project alerts: MonitorIn-style fields map as follows: timespanMinutes to the rolling window, quant… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -8042,6 +8042,26 @@ Evidencia: `test-results/closure-20261025/uptime-003/compat-monitors.json` y
 Límites registrados: el cuerpo compatible no acepta `enabled`; se ajustó la
 sonda a los campos publicados y el resto de la matriz pasó. El CI público y la
 imagen final siguen pendientes para la auditoría final.
+
+### Ejecución 2026-10-26: paginación y checks compatibles
+
+Selección registrada antes de trabajar: CLOSE-uptime-004. Candidata
+`3e5e404`.
+
+| Elemento | Resultado |
+|---|---|
+| Lista de monitores con cursor | `limit=1` devuelve una fila y `Link rel="next"`; la página siguiente devuelve la otra |
+| Checks con cursor | `limit=1` devuelve un check y enlace; la página siguiente devuelve el segundo |
+| Campos públicos del check | `startCheck`, `isUp`, `reason` nulo y `responseTime` opcional (nulo en heartbeat) |
+| Razón como texto | No se convierte a un entero del sindicato público |
+| Cursor y límites inválidos | `cursor=bad`, `limit=0` y `limit=101` devuelven 400 |
+| Registro real de check | Dos latidos vía `heartbeatURL` producen dos checks paginables |
+
+Evidencia: `test-results/closure-20261025/uptime-004/pagination.json`.
+
+Límites registrados: el cuerpo de la respuesta de latido no se usa como
+aserción; el check registrado y paginado sí. El CI público y la imagen final
+siguen pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
