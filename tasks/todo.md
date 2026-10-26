@@ -1455,7 +1455,7 @@ CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
 CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -035
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-036. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-036 (trazas Go/Node y reinicio de imagen). No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1868,7 +1868,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-033](../SPEC.md#close-rendimiento-033) | Sentry spans and native telemetry reads: The main trace JSON contains traceId, projectId filter, nodeCount, pr… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 029) |
 | [CLOSE-rendimiento-034](../SPEC.md#close-rendimiento-034) | Sentry spans and native telemetry reads: Related logs from the trace must include identifiers differing only i… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-035](../SPEC.md#close-rendimiento-035) | Sentry spans and native telemetry reads: Add View trace actions beside existing trace-to-logs/copy controls in… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 034) |
-| [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-036](../SPEC.md#close-rendimiento-036) | Sentry spans and native telemetry reads: Acceptance owners: real PostgreSQL protects mixed-source/cross-projec… | por contrastar | pendiente | Parcial: PG/HTTP/navegador verificados; faltan trazas Go/Node y reinicio de imagen con trabajo v1 |
 | [CLOSE-uptime-013](../SPEC.md#close-uptime-013) | Sentry spans and native telemetry reads: Uptime monitors support HEAD, GET, POST with expected status, TCP and… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-014](../SPEC.md#close-uptime-014) | Sentry spans and native telemetry reads: The first uptime slice uses native organization-scoped /api/v1/organi… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-uptime-015](../SPEC.md#close-uptime-015) | Sentry spans and native telemetry reads: Use UTC PostgreSQL timestamptz instants with microsecond precision fo… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7814,6 +7814,25 @@ capturas.
 Límites registrados: la ejecución es de Chromium headless; los 404/503 de consola
 son escenarios provocados. El CI público y la imagen final siguen pendientes
 para la auditoría final.
+
+### Avance parcial 2026-10-26: aceptación del grafo de traza
+
+CLOSE-rendimiento-036 sigue pendiente. Cobertura actual:
+
+| Owner | Comprobante |
+|---|---|
+| PostgreSQL: fuentes mixtas, identidades, padres, ciclos, cadenas, tiempos, orden, paginación >1000, datos preservados y cancelación | `rendimiento-031/graph-identity.log`, `rendimiento-032/forest-timing.log` y `rendimiento-026/projection-tests.log` |
+| HTTP: rutas, auth, parámetros, pendiente, 404 y captura→traza | `rendimiento-029/trace-graph.log` |
+| Navegador: entradas, waveform, navegación de padre, previews/enteros, alcance, navegación preservada, enlaces, logs desactivados, paginación/indexación y 320/768/1440 | `rendimiento-034/report.json` |
+| SDK oficiales: métricas de hijos | `rendimiento-028/sdk-child-metrics.json` y la ejecución sobre imagen en `rendimiento-028-image/image-sdk-metrics.json` |
+
+Falta: verificar con los clientes fijados Go 0.50.0 y Node 11.7.0 la identidad
+raíz/hijos, ascendencia y tiempos de la traza capturada (no solo las métricas de
+operaciones), y demostrar en la imagen final que reanuda trabajo histórico v1 y
+conserva las mismas respuestas autenticadas de traza y raw tras reiniciar.
+
+Siguiente paso: capturar una traza por SDK, comprobarla con el endpoint de traza
+y repetir la reanudación v1 más el reinicio sobre la imagen construida.
 
 ### Comprobante de integración documental
 
