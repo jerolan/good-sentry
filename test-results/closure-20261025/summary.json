@@ -4010,6 +4010,13 @@
         "rendimiento-016/aggregate-sample-tests.log"
       ]
     },
+    "CLOSE-rendimiento-027": {
+      "evidence": "vigente",
+      "scope": "standalone child attribution by typed sentry.segment.id within project and trace, root exclusion, combined legacy groups, partial expression index and multi-envelope paging",
+      "evidence_files": [
+        "rendimiento-027/segment-attribution.log"
+      ]
+    },
     "CLOSE-rendimiento-042": {
       "evidence": "vigente",
       "scope": "controlled transaction and span average, p50 and p95 latencies",

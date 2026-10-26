@@ -1453,9 +1453,9 @@ CLOSE-sourcemaps-001 a -010 quedan vigentes; 011 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-012 queda vigente.
 CLOSE-sourcemaps-013 a -020 quedan vigentes; 021 queda bloqueada por imagen
 final/CI con su comprobante local abajo. CLOSE-sourcemaps-022 queda vigente.
-CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -026
+CLOSE-sourcemaps-023 a -027 quedan vigentes. CLOSE-rendimiento-001 a -007, -012 a -027
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-rendimiento-027. No se declara
+runtime preservado. Siguiente acción: CLOSE-rendimiento-028. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -1859,7 +1859,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-024](../SPEC.md#close-rendimiento-024) | Sentry spans and native telemetry reads: GlitchTip-compatible GET /api/0/organizations/{org}/stats_v2/ serves… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-025](../SPEC.md#close-rendimiento-025) | Sentry spans and native telemetry reads: Compatible transaction-group identity is stored in additive migration… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-026](../SPEC.md#close-rendimiento-026) | Sentry spans and native telemetry reads: Legacy statistics include every nested span record, using the exact G… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-rendimiento-027](../SPEC.md#close-rendimiento-027) | Sentry spans and native telemetry reads: For standalone spans, attribute non-segment children only by an attri… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-028](../SPEC.md#close-rendimiento-028) | Sentry spans and native telemetry reads: In Transactions, add an Operations action for each aggregate, opening… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-029](../SPEC.md#close-rendimiento-029) | Sentry spans and native telemetry reads: The trace increment reconstructs all stored transaction roots, nested… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-rendimiento-030](../SPEC.md#close-rendimiento-030) | Sentry spans and native telemetry reads: Migration008 extends events with normalized legacy root span ID, pare… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -7562,6 +7562,27 @@ Límites registrados: la prueba del trabajador usa el primitivo de proyección y
 la reanudación tras cancelación; no se ejecutan dos réplicas reales en paralelo
 en esta prueba. El CI público y la imagen final siguen pendientes para la
 auditoría final.
+
+### Ejecución 2026-10-26: atribución de hijos de segmentos autónomos
+
+Selección registrada antes de trabajar: CLOSE-rendimiento-027. Candidata
+`172cd95`. Pruebas sobre PostgreSQL 18 desechable.
+
+| Elemento del criterio | Resultado |
+|---|---|
+| Hijos atribuidos solo por una referencia string del segmento | `TestTransactionsCombineSegmentsWithLegacyWithoutCountingChildren` y `TestTransactionSpanGroupsCombineProjectedLegacyAndTypedStandalone` pasan |
+| Nombre persistido como descripción y raíces excluidas | Las mismas pruebas conservan el nombre del span y no cuentan raíces como hijos |
+| Referencias ausentes, malformadas o sin coincidencia sin adivinar | Las pruebas de spans válidos e inválidos cubren nombre, segmento y atributos ausentes sin otorgar pertenencia |
+| Índice parcial de expresión | `007_transaction_span_groups.sql` indexa el valor string de la referencia de segmento con `NOT is_segment` |
+| Segmentos por su propio fin, hijos fuera del intervalo | Cubierto por las pruebas de ventana y combinación |
+| Traza multi-envelope con más de 1000 filas | `TestTransactionSpanGroupsPageAllEnvelopesWithStableOrderingAfterRestart` recorre 1003 filas y reinicia |
+| Legacy y standalone combinados sin raíces | Ambas pruebas combinadas pasan |
+
+Evidencia: `test-results/closure-20261025/rendimiento-027/segment-attribution.log`.
+
+Límites registrados: el comprobante es de almacén/PostgreSQL; la UI consume
+estos grupos en criterios posteriores. El CI público y la imagen final siguen
+pendientes para la auditoría final.
 
 ### Comprobante de integración documental
 
