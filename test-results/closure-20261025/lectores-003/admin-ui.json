@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "widths": [
+    {
+      "width": 320,
+      "documentWidth": 320
+    },
+    {
+      "width": 1440,
+      "documentWidth": 1440
+    }
+  ],
+  "errors": [],
+  "failedRequests": []
+}
