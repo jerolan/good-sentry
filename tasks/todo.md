@@ -3733,6 +3733,28 @@ del árbol público actual ni cierra 033. Siguiente acción: contrastar los
 subresultados restantes y decidir la candidata final de publicación/CI según
 las autorizaciones vigentes, sin afirmar identidad entre árboles distintos.
 
+### Avance parcial 2026-10-27: árbol candidato y reinicio de errores-033
+
+Se compararon las 2.732 entradas blob, modos y hashes del árbol Git público
+de `b77a2cc` con `git ls-tree` de esa revisión: son idénticos. Es la revisión
+específica de la imagen y del CI exitoso `40452038387`; `main` remoto sigue
+siendo otra revisión, como se registra arriba. CI ejecutó gofmt, vet,
+integración PostgreSQL con race y construcción de imagen que incluye Tailwind
+fijado. `node --check` pasó para `app.js` y el harness modificado.
+
+En la base actualizada 019→079 se reinició la misma aplicación candidata:
+los multiconjuntos de todas las filas de sus 73 tablas (94 filas) coincidieron
+antes y después; el evento y el adjunto de cuatro bytes se leyeron otra vez.
+El login de verificación posterior creó su propia sesión después de ambas
+instantáneas. Evidencia:
+`test-results/closure-20261025/errores-033-fresh/candidate-restart-check.json`.
+
+La integración completa sin race está en curso sobre la base separada
+`closure033_migration` (sesión 54217, log privado
+`/tmp/goodsentry-closure-033/integration-full.log`); no se considera pasada
+hasta inspeccionar el resultado.
+Siguiente acción: recoger ese resultado y completar el cotejo de 033.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
