@@ -1,0 +1,57 @@
+{
+  "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+  "user": "65532:65532",
+  "binarySHA256": "2c56f381d077548e45b1dfb05769ffdd0614e9f71fa02a6219e78bc6fcb3fe91",
+  "rebuiltSHA256": "2c56f381d077548e45b1dfb05769ffdd0614e9f71fa02a6219e78bc6fcb3fe91",
+  "reproducibleFrom": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "staticBinary": true,
+  "assets": [
+    {
+      "name": "app.js",
+      "sha256": "020b11d9e55b657f2912c3a7c064467e4ef994ba197ebe466d8548e6165abe00",
+      "bytes": 268298
+    },
+    {
+      "name": "app.css",
+      "sha256": "6236d360631e2c25752c8ff54233eddb94ad156bb328c9b3b54bc63a2ad4db72",
+      "bytes": 124347
+    },
+    {
+      "name": "alerts.js",
+      "sha256": "252f429f4ad2eeb0d1ad31ce3a3fc9d528206e29bcdb59f989c1c94ddac13541",
+      "bytes": 21785
+    },
+    {
+      "name": "releases.js",
+      "sha256": "2825c9737c1699948e3a7a0dfa1cb6246e9961f5169f76a4b2a18bfa7df48cb4",
+      "bytes": 18561
+    },
+    {
+      "name": "hashes.js",
+      "sha256": "fec66875525ab46ee8cb2b8e253a28d7b44ab04de7a3ac54cbfcad7856406c86",
+      "bytes": 9663
+    },
+    {
+      "name": "reports.js",
+      "sha256": "e9e959927574951752750725b8b2d85b3bbe5be4cf78c358c3002f8937bf3fb5",
+      "bytes": 8875
+    },
+    {
+      "name": "feedback.js",
+      "sha256": "88f89e2e7d4f89bdfe0205a1a5e8b104ee17e6c885235145339e15f8ca0177aa",
+      "bytes": 11631
+    }
+  ],
+  "daisyuiLicenseSHA256": "8709e3ac65c84637c422dc8082b893d9997fce093751c77b2f1983bf29dbf9ea",
+  "env": {
+    "GOODSENTRY_DOMAIN": "http://127.0.0.1:18099",
+    "GOODSENTRY_AUTH": "required",
+    "GOODSENTRY_ENABLE_LOGS": "false",
+    "GOODSENTRY_ENABLE_UPTIME": "false",
+    "DATABASE_URL": "postgres://goodsentry:local@172.17.0.4:5432/goodsentry?sslmode=disable",
+    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "PORT": "8000",
+    "UPLOAD_DIR": "/data"
+  }
+}

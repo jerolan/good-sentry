@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "fixturePhase": "seed",
+  "evidencePhase": "sdk-seed-b77a2cc",
+  "runID": "modern-206-live-b77a2cc",
+  "sdkVersion": "11.7.0",
+  "plannedCount": 5,
+  "plannedByKind": {
+    "error": 2,
+    "feedback": 3,
+    "feedback_event": 0
+  },
+  "operations": [
+    {
+      "eventID": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+      "kind": "error",
+      "api": "captureException",
+      "returnedID": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+      "flushed": true
+    },
+    {
+      "eventID": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+      "kind": "feedback",
+      "api": "captureFeedback",
+      "returnedID": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+      "flushed": true
+    },
+    {
+      "eventID": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+      "kind": "feedback",
+      "api": "captureFeedback",
+      "returnedID": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+      "flushed": true
+    },
+    {
+      "eventID": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+      "kind": "feedback",
+      "api": "captureFeedback",
+      "returnedID": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+      "flushed": true
+    },
+    {
+      "eventID": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+      "kind": "error",
+      "api": "captureException",
+      "returnedID": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
+      "flushed": true
+    }
+  ],
+  "defaultTransportConfigured": true,
+  "flushSucceeded": true,
+  "serverAcceptance": false,
+  "clientClosed": true
+}

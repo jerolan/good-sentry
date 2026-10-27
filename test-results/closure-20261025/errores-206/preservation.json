@@ -1,0 +1,35 @@
+{
+  "artifactChunksExpiredBeforeRun": 2,
+  "explanation": "Two artifact chunks had expires_at 2026-10-25 and were removed by the existing TTL job; six activity rows are the deliberate modern/legacy triage round-trips; one session is the verification login; 48 rows are the additive migrations.",
+  "rowDifferences": {
+    "artifact_chunks": {
+      "newColumns": [],
+      "onlyPost": 0,
+      "onlyPre": 2,
+      "post": 0,
+      "pre": 2
+    },
+    "issue_activity": {
+      "newColumns": [],
+      "onlyPost": 6,
+      "onlyPre": 0,
+      "post": 1039,
+      "pre": 1033
+    },
+    "schema_migrations": {
+      "newColumns": [],
+      "onlyPost": 48,
+      "onlyPre": 0,
+      "post": 79,
+      "pre": 31
+    },
+    "sessions": {
+      "newColumns": [],
+      "onlyPost": 1,
+      "onlyPre": 0,
+      "post": 136,
+      "pre": 135
+    }
+  },
+  "tablesCompared": 40
+}

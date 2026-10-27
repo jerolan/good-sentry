@@ -1,0 +1,416 @@
+{
+  "legacy": {
+    "legacy-206-b77a2cc": {
+      "checks": [
+        "refresh retains keyboard focus",
+        "27 reports paged; maximum hostile text exact; actual older-than50 event and binary download; drafts and triage preserved at four widths",
+        "page and missing-event failure/retry preserve context",
+        "stale event selection, page changes and route responses ignored; actual empty issue",
+        "actual module outage and retry preserve issue and draft"
+      ],
+      "console": [
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:18099/api/v1/issues/1548/user-reports?page=2"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://127.0.0.1:18099/api/0/organizations/otlp-acceptance-primary/issues/1548/events/dc3ee5b4128d456bbc9c93fff0c675f1/json/"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:18099/reports.js"
+        }
+      ],
+      "errors": [],
+      "failedRequests": [
+        {
+          "error": "net::ERR_ABORTED",
+          "expected": true,
+          "url": "http://127.0.0.1:18099/reports.js"
+        }
+      ],
+      "outside": [],
+      "passed": true,
+      "phase": "legacy-206-b77a2cc",
+      "unexpected": [],
+      "widths": [
+        {
+          "document": 320,
+          "page": 1,
+          "viewport": 320
+        },
+        {
+          "document": 768,
+          "page": 1,
+          "viewport": 768
+        },
+        {
+          "document": 1024,
+          "page": 1,
+          "viewport": 1024
+        },
+        {
+          "document": 1440,
+          "page": 1,
+          "viewport": 1440
+        },
+        {
+          "document": 320,
+          "page": 2,
+          "viewport": 320
+        },
+        {
+          "document": 768,
+          "page": 2,
+          "viewport": 768
+        },
+        {
+          "document": 1024,
+          "page": 2,
+          "viewport": 1024
+        },
+        {
+          "document": 1440,
+          "page": 2,
+          "viewport": 1440
+        }
+      ]
+    },
+    "legacy-206-final-b77a2cc": {
+      "checks": [
+        "refresh retains keyboard focus",
+        "27 reports paged; maximum hostile text exact; actual older-than50 event and binary download; drafts and triage preserved at four widths",
+        "page and missing-event failure/retry preserve context",
+        "stale event selection, page changes and route responses ignored; actual empty issue",
+        "actual module outage and retry preserve issue and draft"
+      ],
+      "console": [
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:18099/api/v1/issues/1548/user-reports?page=2"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://127.0.0.1:18099/api/0/organizations/otlp-acceptance-primary/issues/1548/events/dc3ee5b4128d456bbc9c93fff0c675f1/json/"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:18099/reports.js"
+        }
+      ],
+      "errors": [],
+      "failedRequests": [
+        {
+          "error": "net::ERR_ABORTED",
+          "expected": true,
+          "url": "http://127.0.0.1:18099/reports.js"
+        }
+      ],
+      "outside": [],
+      "passed": true,
+      "phase": "legacy-206-final-b77a2cc",
+      "unexpected": [],
+      "widths": [
+        {
+          "document": 320,
+          "page": 1,
+          "viewport": 320
+        },
+        {
+          "document": 768,
+          "page": 1,
+          "viewport": 768
+        },
+        {
+          "document": 1024,
+          "page": 1,
+          "viewport": 1024
+        },
+        {
+          "document": 1440,
+          "page": 1,
+          "viewport": 1440
+        },
+        {
+          "document": 320,
+          "page": 2,
+          "viewport": 320
+        },
+        {
+          "document": 768,
+          "page": 2,
+          "viewport": 768
+        },
+        {
+          "document": 1024,
+          "page": 2,
+          "viewport": 1024
+        },
+        {
+          "document": 1440,
+          "page": 2,
+          "viewport": 1440
+        }
+      ]
+    }
+  },
+  "modern": {
+    "modern-206-b77a2cc": {
+      "checks": [
+        "61 receipt pages (25/25/11), oldest selected submission and exact binary, linked current issue and no-fallback states, safe hostile text, triage/drafts/focus, category/direct-link behavior, empty history, retries, stale async invalidation, and 320/768/1024/1440 layouts"
+      ],
+      "console": [
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://127.0.0.1:18099/api/v1/issues/1554/feedback/6eae925e3fc142b08479a5a2ff93d547/associated-event"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:18099/api/v1/issues/1554/feedback"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://127.0.0.1:18099/api/0/organizations/otlp-acceptance-primary/issues/1554/events/6eae925e3fc142b08479a5a2ff93d547/json/"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:18099/feedback.js"
+        }
+      ],
+      "errors": [],
+      "failedRequests": [
+        {
+          "error": "net::ERR_ABORTED",
+          "expected": true,
+          "url": "http://127.0.0.1:18099/feedback.js"
+        }
+      ],
+      "outside": [],
+      "passed": true,
+      "phase": "modern-206-b77a2cc",
+      "unexpected": [
+        {
+          "expected": true,
+          "status": 404,
+          "url": "http://127.0.0.1:18099/api/v1/issues/1554/feedback/6eae925e3fc142b08479a5a2ff93d547/associated-event"
+        },
+        {
+          "expected": true,
+          "status": 503,
+          "url": "http://127.0.0.1:18099/api/v1/issues/1554/feedback"
+        },
+        {
+          "expected": true,
+          "status": 404,
+          "url": "http://127.0.0.1:18099/api/0/organizations/otlp-acceptance-primary/issues/1554/events/6eae925e3fc142b08479a5a2ff93d547/json/"
+        },
+        {
+          "expected": true,
+          "status": 503,
+          "url": "http://127.0.0.1:18099/feedback.js"
+        }
+      ],
+      "widths": [
+        {
+          "document": 320,
+          "state": "page1",
+          "viewport": 320
+        },
+        {
+          "document": 768,
+          "state": "page1",
+          "viewport": 768
+        },
+        {
+          "document": 1024,
+          "state": "page1",
+          "viewport": 1024
+        },
+        {
+          "document": 1440,
+          "state": "page1",
+          "viewport": 1440
+        },
+        {
+          "document": 320,
+          "state": "selectedSubmission",
+          "viewport": 320
+        },
+        {
+          "document": 768,
+          "state": "selectedSubmission",
+          "viewport": 768
+        },
+        {
+          "document": 1024,
+          "state": "selectedSubmission",
+          "viewport": 1024
+        },
+        {
+          "document": 1440,
+          "state": "selectedSubmission",
+          "viewport": 1440
+        }
+      ]
+    },
+    "modern-206-final-b77a2cc": {
+      "checks": [
+        "61 receipt pages (25/25/11), oldest selected submission and exact binary, linked current issue and no-fallback states, safe hostile text, triage/drafts/focus, category/direct-link behavior, empty history, retries, stale async invalidation, and 320/768/1024/1440 layouts"
+      ],
+      "console": [
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://127.0.0.1:18099/api/v1/issues/1554/feedback/6eae925e3fc142b08479a5a2ff93d547/associated-event"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:18099/api/v1/issues/1554/feedback"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://127.0.0.1:18099/api/0/organizations/otlp-acceptance-primary/issues/1554/events/6eae925e3fc142b08479a5a2ff93d547/json/"
+        },
+        {
+          "expected": true,
+          "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:18099/feedback.js"
+        }
+      ],
+      "errors": [],
+      "failedRequests": [
+        {
+          "error": "net::ERR_ABORTED",
+          "expected": true,
+          "url": "http://127.0.0.1:18099/feedback.js"
+        }
+      ],
+      "outside": [],
+      "passed": true,
+      "phase": "modern-206-final-b77a2cc",
+      "unexpected": [
+        {
+          "expected": true,
+          "status": 404,
+          "url": "http://127.0.0.1:18099/api/v1/issues/1554/feedback/6eae925e3fc142b08479a5a2ff93d547/associated-event"
+        },
+        {
+          "expected": true,
+          "status": 503,
+          "url": "http://127.0.0.1:18099/api/v1/issues/1554/feedback"
+        },
+        {
+          "expected": true,
+          "status": 404,
+          "url": "http://127.0.0.1:18099/api/0/organizations/otlp-acceptance-primary/issues/1554/events/6eae925e3fc142b08479a5a2ff93d547/json/"
+        },
+        {
+          "expected": true,
+          "status": 503,
+          "url": "http://127.0.0.1:18099/feedback.js"
+        }
+      ],
+      "widths": [
+        {
+          "document": 320,
+          "state": "page1",
+          "viewport": 320
+        },
+        {
+          "document": 768,
+          "state": "page1",
+          "viewport": 768
+        },
+        {
+          "document": 1024,
+          "state": "page1",
+          "viewport": 1024
+        },
+        {
+          "document": 1440,
+          "state": "page1",
+          "viewport": 1440
+        },
+        {
+          "document": 320,
+          "state": "selectedSubmission",
+          "viewport": 320
+        },
+        {
+          "document": 768,
+          "state": "selectedSubmission",
+          "viewport": 768
+        },
+        {
+          "document": 1024,
+          "state": "selectedSubmission",
+          "viewport": 1024
+        },
+        {
+          "document": 1440,
+          "state": "selectedSubmission",
+          "viewport": 1440
+        }
+      ]
+    }
+  },
+  "screenshots": [
+    "modern-206-b77a2cc-1024-page1.png",
+    "modern-206-b77a2cc-1024-selected.png",
+    "modern-206-b77a2cc-1440-page1.png",
+    "modern-206-b77a2cc-1440-selected.png",
+    "modern-206-b77a2cc-320-page1.png",
+    "modern-206-b77a2cc-320-selected.png",
+    "modern-206-b77a2cc-768-page1.png",
+    "modern-206-b77a2cc-768-selected.png",
+    "modern-206-final-b77a2cc-1024-page1.png",
+    "modern-206-final-b77a2cc-1024-selected.png",
+    "modern-206-final-b77a2cc-1440-page1.png",
+    "modern-206-final-b77a2cc-1440-selected.png",
+    "modern-206-final-b77a2cc-320-page1.png",
+    "modern-206-final-b77a2cc-320-selected.png",
+    "modern-206-final-b77a2cc-768-page1.png",
+    "modern-206-final-b77a2cc-768-selected.png",
+    "legacy-206-b77a2cc-1024-list.png",
+    "legacy-206-b77a2cc-1024-long-report.png",
+    "legacy-206-b77a2cc-1024-selected.png",
+    "legacy-206-b77a2cc-1440-list.png",
+    "legacy-206-b77a2cc-1440-long-report.png",
+    "legacy-206-b77a2cc-1440-selected.png",
+    "legacy-206-b77a2cc-320-list.png",
+    "legacy-206-b77a2cc-320-long-report.png",
+    "legacy-206-b77a2cc-320-selected.png",
+    "legacy-206-b77a2cc-768-list.png",
+    "legacy-206-b77a2cc-768-long-report.png",
+    "legacy-206-b77a2cc-768-selected.png",
+    "legacy-206-final-b77a2cc-1024-list.png",
+    "legacy-206-final-b77a2cc-1024-long-report.png",
+    "legacy-206-final-b77a2cc-1024-selected.png",
+    "legacy-206-final-b77a2cc-1440-list.png",
+    "legacy-206-final-b77a2cc-1440-long-report.png",
+    "legacy-206-final-b77a2cc-1440-selected.png",
+    "legacy-206-final-b77a2cc-320-list.png",
+    "legacy-206-final-b77a2cc-320-long-report.png",
+    "legacy-206-final-b77a2cc-320-selected.png",
+    "legacy-206-final-b77a2cc-768-list.png",
+    "legacy-206-final-b77a2cc-768-long-report.png",
+    "legacy-206-final-b77a2cc-768-selected.png"
+  ],
+  "visuallyInspected": [
+    "modern-206-final-b77a2cc-320-selected.png",
+    "modern-206-final-b77a2cc-1440-page1.png"
+  ]
+}

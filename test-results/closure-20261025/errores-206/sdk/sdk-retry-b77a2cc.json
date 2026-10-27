@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "fixturePhase": "retry",
+  "evidencePhase": "sdk-retry-b77a2cc",
+  "runID": "modern-206-live-b77a2cc",
+  "sdkVersion": "11.7.0",
+  "plannedCount": 1,
+  "plannedByKind": {
+    "error": 0,
+    "feedback": 1,
+    "feedback_event": 0
+  },
+  "operations": [
+    {
+      "eventID": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+      "kind": "feedback",
+      "api": "captureFeedback",
+      "returnedID": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+      "flushed": true
+    }
+  ],
+  "defaultTransportConfigured": true,
+  "flushSucceeded": true,
+  "serverAcceptance": false,
+  "clientClosed": true
+}

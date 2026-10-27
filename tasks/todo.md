@@ -2025,9 +2025,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-176](../SPEC.md#close-errores-176) | Native legacy report UI elaboration: Use an original User reports panel in the issue's left column between eve… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-177](../SPEC.md#close-errores-177) | Native legacy report UI elaboration: Add reports.js as a dynamically imported module through the existing fact… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-178](../SPEC.md#close-errores-178) | Native legacy report UI elaboration: Native issue inspection currently shows its latest payload only. A report… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-179](../SPEC.md#close-errores-179) | Native legacy report UI elaboration: Browser acceptance must show more than25 actual SDK reports, a reported e… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-179](../SPEC.md#close-errores-179) | Native legacy report UI elaboration: Browser acceptance must show more than25 actual SDK reports, a reported e… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
 | [CLOSE-errores-180](../SPEC.md#close-errores-180) | Native legacy report UI elaboration: Explicit report refresh/retry moves focus to the report heading before re… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-181](../SPEC.md#close-errores-181) | Native legacy report UI elaboration: The reusable browser owner is tests/compat/user_reports_browser.mjs. GOOD… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-errores-181](../SPEC.md#close-errores-181) | Native legacy report UI elaboration: The reusable browser owner is tests/compat/user_reports_browser.mjs. GOOD… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
 | [CLOSE-errores-182](../SPEC.md#close-errores-182) | Modern feedback contract: Deliver the distinct modern captureFeedback consumer after the accepted legacy incre… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-183](../SPEC.md#close-errores-183) | Modern feedback contract: Receive feedback as a first-class retained event and issue category, not an opaque i… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-184](../SPEC.md#close-errores-184) | Modern feedback contract: Normalization accepts type feedback and requires an object contexts.feedback with a… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2042,17 +2042,17 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-193](../SPEC.md#close-errores-193) | Modern feedback contract: Native IssueDetail adds first25 FeedbackItems and FeedbackCount in its authorization… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-194](../SPEC.md#close-errores-194) | Modern feedback contract: The reader API is Store.IssueFeedback(ctx,userID,issueID,page)(FeedbackItem,int64,bo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-195](../SPEC.md#close-errores-195) | Modern feedback contract: Pure eventview projection recognizes retained Kind feedback before exception/CSP fie… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-196](../SPEC.md#close-errores-196) | Modern feedback contract: The Feedback UI shows the actual message, supplied contact/source text, receipt time… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-197](../SPEC.md#close-errores-197) | Native Feedback component: Add view=feedback beside Issues in the existing navigation/admission/title map. Bot… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-198](../SPEC.md#close-errores-198) | Native Feedback component: In a feedback detail, show the same simple Resolve/Reopen and Ignore indefinitely a… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-199](../SPEC.md#close-errores-199) | Native Feedback component: The new lazy module web/feedback.js exports createFeedbackUI({node,request,button,d… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-200](../SPEC.md#close-errores-200) | Native Feedback component: The module's state key is organization,issue.id, stored in view.feedback, with page… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-201](../SPEC.md#close-errores-201) | Native Feedback component: Use one inspection area, scoped by selected feedback eventID plus mode submission/a… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-202](../SPEC.md#close-errores-202) | Native Feedback component: Every page/inspection/attachment callback checks the live issue, connected panel an… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-203](../SPEC.md#close-errores-203) | Native Feedback component: Actual browser acceptance on the new copied image must cover navigation/filter/cate… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-204](../SPEC.md#close-errores-204) | Native Feedback component: The reusable SDK owner is tests/compat/modern_feedback_sdk.mjs. GOODSENTRY_MODERN_F… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir ejecución SDK en candidata final |
-| [CLOSE-errores-205](../SPEC.md#close-errores-205) | Native Feedback component: The reusable modern browser owner is tests/compat/modern_feedback_browser.mjs. Its… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
-| [CLOSE-errores-206](../SPEC.md#close-errores-206) | Native Feedback component: Acceptance owners are pure normalization for the public field/default/identity cont… | por contrastar | pendiente | Requiere imagen final, copia de 4569 filas y CI; comprobantes históricos 182-205 abajo |
+| [CLOSE-errores-196](../SPEC.md#close-errores-196) | Modern feedback contract: The Feedback UI shows the actual message, supplied contact/source text, receipt time… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-197](../SPEC.md#close-errores-197) | Native Feedback component: Add view=feedback beside Issues in the existing navigation/admission/title map. Bot… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-198](../SPEC.md#close-errores-198) | Native Feedback component: In a feedback detail, show the same simple Resolve/Reopen and Ignore indefinitely a… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-199](../SPEC.md#close-errores-199) | Native Feedback component: The new lazy module web/feedback.js exports createFeedbackUI({node,request,button,d… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-200](../SPEC.md#close-errores-200) | Native Feedback component: The module's state key is organization,issue.id, stored in view.feedback, with page… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-201](../SPEC.md#close-errores-201) | Native Feedback component: Use one inspection area, scoped by selected feedback eventID plus mode submission/a… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-202](../SPEC.md#close-errores-202) | Native Feedback component: Every page/inspection/attachment callback checks the live issue, connected panel an… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-203](../SPEC.md#close-errores-203) | Native Feedback component: Actual browser acceptance on the new copied image must cover navigation/filter/cate… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-204](../SPEC.md#close-errores-204) | Native Feedback component: The reusable SDK owner is tests/compat/modern_feedback_sdk.mjs. GOODSENTRY_MODERN_F… | implementada | vigente | Comprobante 2026-10-26 abajo; SDK y navegador repetidos 2026-10-27 en b77a2cc |
+| [CLOSE-errores-205](../SPEC.md#close-errores-205) | Native Feedback component: The reusable modern browser owner is tests/compat/modern_feedback_browser.mjs. Its… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
+| [CLOSE-errores-206](../SPEC.md#close-errores-206) | Native Feedback component: Acceptance owners are pure normalization for the public field/default/identity cont… | implementada | vigente | Comprobante 2026-10-27 abajo sobre imagen b77a2cc, copia restaurada y CI 40452038387 |
 | [CLOSE-lectores-001](../SPEC.md#close-lectores-001) | Integrations and compatibility limits: The official sentry-wizard flow is supported through GET /api/0/wizard/… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser/CI históricos |
 | [CLOSE-lectores-002](../SPEC.md#close-lectores-002) | Integrations and compatibility limits: Management API routes use /api/0 where compatible with published Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo; matrices y SDKs frescos |
 | [CLOSE-lectores-003](../SPEC.md#close-lectores-003) | Integrations and compatibility limits: ENABLE_OPENAPI=true exposes GET /api/openapi.json as an OpenAPI 3.1 doc… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -10123,6 +10123,37 @@ Evidencia: `test-results/closure-20261025/operacion-056/`.
 Límites registrados: el flujo limpio usó backend local; los requests S3 se
 cubren en sus owners separados. Siguiente acción: CLOSE-errores-206. El producto
 sigue incompleto.
+
+### Ejecución 2026-10-27: aceptación moderna de Feedback sobre la imagen final
+
+Selección registrada antes de trabajar: CLOSE-errores-206, primer criterio
+pendiente con dependencias resueltas tras publicar `b77a2cc`, su imagen
+`sha256:40b75bd3…` y el CI `40452038387`.
+
+| Elemento | Comprobante |
+|---|---|
+| Copia restaurada y migración 31→79 | 4.980 filas/665 eventos/61 feedback/27 reportes/31 migraciones; 73 tablas; solo columnas aditivas, seis filas de triaje deliberadas, una sesión de verificación y dos fragmentos ya vencidos (`expires_at` 2026-10-25) |
+| Proyección 031 | Volcado previo de 4.569 filas/448 issues: `category='error'` para los 448, resto de campos y tablas idénticos, `feedback_events` nuevo y vacío |
+| Navegador moderno | 61 recibos 25/25/11, texto hostil, binario exacto, enlazado/pendiente/no disponible/sin referencia/cero eventos, triaje/drafts/foco, gates de respuestas y 320/768/1024/1440 sin recorte |
+| Navegador heredado | 27 reportes retenidos, binario de padre anterior a 50 y cuatro anchos; solo seis filas de actividad por triaje |
+| SDK oficial Node 11.7.0 | Capturas standalone, enlace previo, asociación invertida pendiente y adjunto; reintento con el mismo `event_id` conserva el recibo 1720, título y bytes sin fila nueva |
+| Rechazo entre categorías | Fusión de issue error 1615 con feedback 1618 responde 400 y no altera issues, rutas ni eventos |
+| Reinicio y respaldo | Reinicio app-only deja las 73 tablas idénticas; respaldo separado de 569.793 bytes restaura sin diferencias y sirve 25/25/11 más el adjunto exacto |
+| Logs/uptime deshabilitados | `/api/v1/me` informa `false`/`false`; ambos endpoints compatibles responden 404 |
+| Imagen y fuente | Usuario 65532:65532, binario estático que reconstruye byte a byte desde `b77a2cc` (SHA-256 `2c56f381…`), siete recursos servidos idénticos a los blobs; `main` público y árbol iguales; CI de formato, vet, race PostgreSQL e imagen en éxito |
+
+Evidencia: `test-results/closure-20261025/errores-206/{summary,fixture,browser,sdk,preservation,migration-031,restart,recovery,merge-rejection,disabled-features,image,public-ci}.json`,
+`errores-206/browser/`, `errores-206/legacy-browser/` y `errores-206/sdk/`.
+La fixture privada, la sesión y los bytes no se publican. Los comprobantes
+históricos 182-205 quedan reforzados por esta repetición en la candidata final.
+
+Límite registrado: la copia es un restore local desechable; los fragmentos de
+artefacto retirados ya estaban vencidos por política, no por la migración. Los
+pendientes de proveedores externos y las demás filas bloqueadas siguen fuera de
+este cierre. Siguiente acción: CLOSE-identidad-025, primera fila bloqueada por
+publicación en el orden del plan, contrastando su aceptación local con
+`b77a2cc`; después CLOSE-operacion-100 cuando no queden bloqueos exigibles. El
+producto sigue incompleto.
 
 ### Comprobante de integración documental
 

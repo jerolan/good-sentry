@@ -1,0 +1,24 @@
+{
+  "ciConclusion": "success",
+  "ciRun": 40452038387,
+  "ciSteps": [
+    "Set up job",
+    "Initialize containers",
+    "Check out source",
+    "Set up Go",
+    "Check formatting",
+    "Vet",
+    "Run unit and PostgreSQL integration tests with race detection",
+    "Build application image",
+    "Post Set up Go",
+    "Post Check out source",
+    "Stop containers",
+    "Complete job"
+  ],
+  "ciWorkflow": "CI",
+  "githubCommit": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "githubTree": "c22f75b6c13a9ec7f7dd66b43005ac8c5370303a",
+  "head": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "remoteMain": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "tree": "c22f75b6c13a9ec7f7dd66b43005ac8c5370303a"
+}

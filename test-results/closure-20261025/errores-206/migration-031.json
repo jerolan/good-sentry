@@ -1,0 +1,14 @@
+{
+  "issues": {
+    "categories": {
+      "error": 448
+    },
+    "oldRows": 448,
+    "projectedEqual": true
+  },
+  "newTables": [
+    "feedback_events"
+  ],
+  "otherTablesUnchanged": true,
+  "sourceRows": 4569
+}
