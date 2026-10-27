@@ -1,0 +1,14 @@
+{
+  "known_request": 202,
+  "unknown_request": 202,
+  "cross_origin": 403,
+  "malformed_request_no_oracle": 202,
+  "bad_token": 400,
+  "short_password": 400,
+  "bearer_with_token": 400,
+  "emails_before": 1,
+  "emails_after_requests": 1,
+  "enumeration_safe": true,
+  "request_floor_suppressed_known_resend": true,
+  "bearer_does_not_replace_token": true
+}

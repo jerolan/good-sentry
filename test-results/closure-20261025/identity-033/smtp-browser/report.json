@@ -1,0 +1,20 @@
+{
+  "base": "http://127.0.0.1:18103/",
+  "checks": [
+    "Real SMTP email link resets the password through the browser and returns to sign-in",
+    "Consumed token replay is rejected and the request floor suppresses a second email"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-033/smtp-browser/recovery-reset-form-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-033/smtp-browser/recovery-reset-form-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-033/smtp-browser/recovery-reset-form-1024.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-033/smtp-browser/recovery-reset-form-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-033/smtp-browser/recovery-success-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-033/smtp-browser/recovery-success-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-033/smtp-browser/recovery-success-1024.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-033/smtp-browser/recovery-success-1440.png"
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "consoleErrors": []
+}

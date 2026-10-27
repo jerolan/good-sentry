@@ -941,22 +941,19 @@
       ]
     },
     "CLOSE-identidad-033": {
-      "evidence": "bloqueada por publicacion",
-      "scope": "aggregate pure/PostgreSQL/HTTP/SMTP/browser acceptance",
+      "evidence": "vigente",
+      "scope": "account email and single-use password recovery on the published image with a real local SMTP sink",
+      "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+      "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
       "covered": [
-        "pure token/AES-GCM/MIME; PostgreSQL 036/floor/generation/lease/revocation/rollback",
-        "HTTP strict bodies, enumeration, bearer rejection and cookie behavior",
-        "real local SMTP sink plus Chromium delivery/redemption/replay/floor"
+        "real SMTP delivery of a quoted-printable reset message to the sink; browser redeems the link and returns to sign-in",
+        "old password 401 and new password 200; consumed token replay 400; a second request inside the 60-second floor emits no mail",
+        "request endpoint answers an indistinguishable 202 for known, unknown and malformed bodies, rejects cross-origin 403 and emits no extra mail",
+        "reset endpoint rejects malformed token, short password and a bearer that does not replace the token with 400",
+        "app-only restart preserves the user, hash and reset row; new password login 200 and old password 401",
+        "pure token/AES-GCM/MIME, PostgreSQL 036/floor/generation/lease/revocation/rollback and HTTP owners pass in CI 40452038387, which also covers formatting, vet and image build"
       ],
-      "blocker": {
-        "cause": "copied-image/restart, exact source/publication and CI remain required and publication is not authorized",
-        "unlock": "publish/CI the candidate and repeat the copied-image/restart acceptance"
-      },
-      "evidence_files": [
-        "account-mail/tests.log",
-        "recovery-ui/report.json",
-        "recovery-ui/*.png"
-      ]
+      "evidence_files": ["identity-033/summary-20261027.json", "identity-033/smtp-browser", "identity-033/http.json", "identity-033/restart.json", "account-mail/tests.log", "recovery-ui/report.json"]
     },
     "CLOSE-identidad-034": {
       "evidence": "vigente",

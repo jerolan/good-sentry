@@ -1,0 +1,56 @@
+{
+  "criterion": "CLOSE-identidad-033",
+  "state": "vigente",
+  "date": "2026-10-27",
+  "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+  "environment": "fresh disposable goodsentry_033 with a real local SMTP sink; image run as 65532:65532, logs/uptime disabled",
+  "browser": {
+    "checks": [
+      "Real SMTP email link resets the password through the browser and returns to sign-in",
+      "Consumed token replay is rejected and the request floor suppresses a second email"
+    ],
+    "screenshots": [
+      "recovery-reset-form-320.png",
+      "recovery-reset-form-768.png",
+      "recovery-reset-form-1024.png",
+      "recovery-reset-form-1440.png",
+      "recovery-success-320.png",
+      "recovery-success-768.png",
+      "recovery-success-1024.png",
+      "recovery-success-1440.png"
+    ]
+  },
+  "smtp": {
+    "messages": 1,
+    "contentType": "text/plain; charset=UTF-8",
+    "quotedPrintable": true,
+    "subject": "Reset your GoodSentry password"
+  },
+  "http": {
+    "known_request": 202,
+    "unknown_request": 202,
+    "cross_origin": 403,
+    "malformed_request_no_oracle": 202,
+    "bad_token": 400,
+    "short_password": 400,
+    "bearer_with_token": 400,
+    "emails_before": 1,
+    "emails_after_requests": 1,
+    "enumeration_safe": true,
+    "request_floor_suppressed_known_resend": true,
+    "bearer_does_not_replace_token": true
+  },
+  "restart": {
+    "identical": true,
+    "new_password_login_after_restart": 200,
+    "old_password_after_restart": 401,
+    "users_resets_hash": [
+      "1",
+      "1",
+      "50abe66bc90dc3495b81c5e3ffe17ef40fd83d0b1d5c6a014b285d0611a90d89"
+    ]
+  },
+  "ci": "40452038387",
+  "publicSource": "b77a2cc / c22f75b6c13a9ec7f7dd66b43005ac8c5370303a"
+}

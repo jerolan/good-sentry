@@ -1570,7 +1570,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-030](../SPEC.md#close-identidad-030) | Account email and single-use password recovery: The one application worker sends a plain-text MIME message thr… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del worker |
 | [CLOSE-identidad-031](../SPEC.md#close-identidad-031) | Account email and single-use password recovery: POST /api/v1/account/password/reset/request is public but requ… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de reset |
 | [CLOSE-identidad-032](../SPEC.md#close-identidad-032) | Account email and single-use password recovery: The reset form consumes a resetToken query parameter without p… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del formulario |
-| [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | implementada (local) | bloqueada | Publicar y repetir copia/reinicio/CI sobre la fuente; luego cerrar |
+| [CLOSE-identidad-033](../SPEC.md#close-identidad-033) | Account email and single-use password recovery: Pure checks own token parsing, AES-GCM integrity/AAD, generati… | implementada | vigente | Comprobante 2026-10-27 abajo: SMTP real, navegador, HTTP y reinicio en b77a2cc |
 | [CLOSE-identidad-034](../SPEC.md#close-identidad-034) | Two-factor authentication: Additive migration 053_user_totp.sql adds nullable users.totp_secret (AES-256-GCM c… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios TOTP |
 | [CLOSE-identidad-035](../SPEC.md#close-identidad-035) | Two-factor authentication: POST /api/v1/login keeps its strict body and identical Invalid email or password re… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de challenge |
 | [CLOSE-identidad-036](../SPEC.md#close-identidad-036) | Two-factor authentication: GET /api/v1/me/two-factor reports enabled, pending and recoveryCodesRemaining for t… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de endpoints |
@@ -3277,9 +3277,28 @@ Evidencia: `test-results/closure-20261025/identity-025/{summary-20261027,flow-20
 y `browser-{owner,admin,manager,member,noorg}/`. El `summary.json` anterior y
 sus archivos conservan el bloqueo y la aceptación local histórica. CI
 `40452038387` cubre formato, vet, race PostgreSQL e imagen; la fuente pública
-coincide con el árbol `c22f75b`. Siguiente acción: CLOSE-identidad-033, siguiente
+coincide con el árbol `c22f75b`. Siguiente acción: CLOSE-errores-033, siguiente
 fila bloqueada por publicación en el orden del plan. El producto sigue
 incompleto.
+
+### Ejecución 2026-10-27: correo y recuperación de identidad-033
+
+Selección registrada antes de trabajar: CLOSE-identidad-033, siguiente fila
+bloqueada por publicación. Se usó un receptor SMTP local real que escribe los
+mensajes recibidos y una base desechable nueva `goodsentry_033` sobre la imagen
+publicada `sha256:40b75bd3…`.
+
+| Elemento | Comprobante |
+|---|---|
+| Entrega SMTP | Mensaje quoted-printable `text/plain` con asunto y enlace `resetToken` reales |
+| Navegador | Enlace redimido, vuelta a inicio de sesión, contraseña vieja 401, nueva 200, replay 400 y piso de 60 s sin segundo correo; 320/768/1024/1440 sin desbordes |
+| HTTP | Conocido/desconocido/cuerpo malformado responden 202 indistinguible sin correo; origen ajeno 403; token inválido, nueva corta y bearer sin token 400 |
+| Reinicio | Usuario, hash y fila de recuperación idénticos; login nuevo 200 y viejo 401 |
+
+Evidencia: `test-results/closure-20261025/identity-033/{summary-20261027,smtp-browser/http,http,restart}.json`
+y capturas del navegador. Los owners puros/PostgreSQL/HTTP y el CI
+`40452038387` cubren formato, vet, race e imagen. Siguiente acción:
+CLOSE-errores-033. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
