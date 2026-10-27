@@ -3656,6 +3656,23 @@ históricos perdidos.
 CI. Siguiente acción: reconciliar cada exigencia de 033 con comprobantes de la
 candidata y ejecutar lo que falte antes de declarar su evidencia vigente.
 
+### Avance parcial 2026-10-27: recurrencia tras DELETE de errores-033
+
+El cotejo distinguió el descarte permanente del DELETE ordinario. Con la misma
+imagen, un proyecto aislado nuevo y SDK Node 11.7.0, se capturó un error con
+adjunto descargado byte a byte. Una credencial `event:admin` limitada al
+proyecto ejecutó DELETE 204; otra captura oficial de la misma firma recibió
+200 y creó un issue nuevo. La prueba anterior con `event:write` conserva la
+semántica distinta de discard sin recurrencia. Evidencia:
+`test-results/closure-20261025/errores-033-fresh/sdk-delete.mjs` y
+`sdk-delete-report.json`.
+
+El cotejo aún debe demostrar actualización sobre un estado anterior apropiado,
+con los controles de migración conservados por la decisión del contrato, y
+reconciliar todos los subresultados y el CI de la candidata. Siguiente acción:
+preparar una base aislada previa a la migración pertinente y verificar la
+actualización de imagen y preservación de su estado inicial.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
