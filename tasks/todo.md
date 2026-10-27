@@ -1526,9 +1526,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 
 | ID y contrato normativo | Unidad de resultado | Implementación | Evidencia | Acción siguiente |
 |---|---|---|---|---|
-| [CLOSE-operacion-001](../SPEC.md#close-operacion-001) | Objective and acceptance boundary: Build an independently authored Go error tracking and observability server.… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-002](../SPEC.md#close-operacion-002) | Objective and acceptance boundary: GlitchTip's publicly documented functionality is the minimum target, not me… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-003](../SPEC.md#close-operacion-003) | Clean-room method: Use public protocol specifications, product documentation, release notes, published API con… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-001](../SPEC.md#close-operacion-001) | Objective and acceptance boundary: Build an independently authored Go error tracking and observability server.… | implementada | vigente | Comprobante 2026-10-27 abajo: módulo único, imagen, PostgreSQL/Valkey y WSL histórico |
+| [CLOSE-operacion-002](../SPEC.md#close-operacion-002) | Objective and acceptance boundary: GlitchTip's publicly documented functionality is the minimum target, not me… | implementada | pendiente | Criterio paraguas: solo pasa cuando todo lo demás tenga evidencia vigente o excepción |
+| [CLOSE-operacion-003](../SPEC.md#close-operacion-003) | Clean-room method: Use public protocol specifications, product documentation, release notes, published API con… | implementada | vigente | Comprobante 2026-10-27 abajo: auditoría de procedencia y clean-room |
 | [CLOSE-operacion-004](../SPEC.md#close-operacion-004) | Architecture: Use one Go module, a small executable in cmd/goodsentry, net/http routing and explicit dependenc… | implementada | vigente | Comprobante 2026-10-25 abajo; mantener ante cambios de arquitectura |
 | [CLOSE-operacion-005](../SPEC.md#close-operacion-005) | Architecture: Ingest events durably before returning success. A request may normalize synchronously and commit… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de captura o colas |
 | [CLOSE-operacion-006](../SPEC.md#close-operacion-006) | Architecture: HTTP, workers and scheduler stop on termination signals and close database connections. Startup… | implementada | vigente | Comprobante 2026-10-25 abajo; repetir tras cambios de arranque o migraciones |
@@ -3449,9 +3449,26 @@ cuatro bloqueos reales por linajes aceptados perdidos: 033, 047, 084 y
 logs-028. Se requiere que el propietario aporte los volcados de 17/18/19
 migraciones y la base de 4.010 filas, o equivalentes.
 
-Siguiente acción: evidenciar operacion-001/002/003 contra fuentes públicas y el
-repositorio real, y reauditar rendimiento-008..011 contra `b77a2cc`. Después,
-si los cuatro linajes aparecen, cerrar 033/047/084/logs-028 y ejecutar
+### Ejecución 2026-10-27: arquitectura y clean-room (operacion-001/003)
+
+Se verificaron los hechos del repositorio y se auditó la procedencia sin leer
+implementaciones de servidor ajenas.
+
+| Elemento | Comprobante |
+|---|---|
+| Un solo binario | Módulo `goodsentry`, 19 paquetes Go, `cmd/goodsentry`, recursos web y 79 migraciones embebidas |
+| Dependencias | Imagen no root `65532:65532`; Compose solo con `postgres` y `goodsentry`; Valkey rechazado si se configura |
+| WSL | Recibo histórico de Go 1.27.2/PostgreSQL 18/Docker en WSL; la reverificación actual corrió en Linux, registrado como límite |
+| Clean-room | 2.976 archivos rastreados; sin código Rust, Django, tablas `django_*` ni fuentes/tests/esquema de sentry/relay/glitchtip; los `.py` son clientes oficiales; terceros solo daisyUI; 52 enlaces públicos de procedencia |
+
+Evidencia: `test-results/closure-20261025/operacion-001/summary-20261027.json`
+y `operacion-003/summary-20261027.json`. `operacion-002` es el criterio paraguas
+y queda pendiente hasta que todo lo demás esté vigente o exceptuado.
+
+Siguiente acción: readaptar el arnés conservado de
+`.tmp/transaction-retention-acceptance` a la imagen `b77a2cc` y reejecutar
+rendimiento-008..011 con `before-expiry.dump` y `accepted.dump`. Después, si los
+cuatro linajes aparecen, cerrar 033/047/084/logs-028 y ejecutar
 CLOSE-operacion-100. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña

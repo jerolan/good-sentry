@@ -1,0 +1,21 @@
+{
+  "criterion": "CLOSE-operacion-003",
+  "state": "vigente",
+  "date": "2026-10-27",
+  "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "audit": {
+    "trackedFiles": 2976,
+    "goPackages": 19,
+    "serverPythonFiles": 0,
+    "rustFiles": 0,
+    "djangoTablesInMigrations": 0,
+    "migrations": 79,
+    "thirdParty": "daisyui",
+    "pythonFilesAreClients": "tests/compat/errorspython/main.py\ntests/compat/logs_python.py\ntests/compat/otlp_exporters.py\ntests/compat/otlp_logs_exporter.py\ntests/compat/otlp_logs_json_exporter.py\ntests/compat/python_smoke.py\ntests/compat/rss_workload.py",
+    "glitchtipReferencesAreAliasesOrDocs": "82:\tc.Domain = strings.TrimRight(alias(\"GOODSENTRY_DOMAIN\", \"GLITCHTIP_DOMAIN\", \"http://localhost:\"+strconv.Itoa(port)), \"/\")\n88:\tarchiveFlag := firstSet(\"GOODSENTRY_ENABLE_ARCHIVE\", \"GOODSENTRY_ENABLE_DUCKDB\", \"GLITCHTIP_ENABLE_DUCKDB\")\n133:\t\t{\"GOODSENTRY_ENABLE_LOGS\", \"GLITCHTIP_ENABLE_LOGS\", true, &c.Logs},",
+    "provenanceLinks": 52,
+    "officialClients": "tests/compat/go.mod:5:require github.com/getsentry/sentry-go v0.50.0\ntests/compat/javascript_smoke.mjs:11:const sdkPackage = process.env.COMPAT_SENTRY_NODE || \"@sentry/node\";\ntests/compat/javascript_smoke.mjs:124:  console.log(`PASS: @sentry/node ${sdkVersion} exception ${eventID} visible in project ${project.slug}`);\ntests/compat/modern_feedback_sdk.mjs:115:  const moduleName = process.env.GOODSENTRY_SDK_MODULE || '@sentry/node';\ntests/compat/modern_feedback_sdk.mjs:117:  assert.equal(sdk.SDK_VERSION, '11.7.0', 'Use official @sentry/node 11.7.0');"
+  },
+  "method": "Only public protocol/product documentation, published OpenAPI and black-box official SDK/CLI traffic are cited. No Sentry/Relay/GlitchTip server source, tests, assets or schema are tracked or imported.",
+  "limits": "Absence of upstream server code was checked by file type, dependency and schema markers; this is a provenance audit, not a claim of universal behavioral parity."
+}
