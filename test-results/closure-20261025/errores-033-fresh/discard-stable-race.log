@@ -1,0 +1,6 @@
+=== RUN   TestDiscardedCaptureSkipsParentThrottleAndChargesAdmittedSiblings
+--- PASS: TestDiscardedCaptureSkipsParentThrottleAndChargesAdmittedSiblings (0.57s)
+=== RUN   TestProjectKeyRateAdmissionAndWindowReset
+--- PASS: TestProjectKeyRateAdmissionAndWindowReset (2.08s)
+PASS
+ok  	goodsentry/internal/store	3.674s

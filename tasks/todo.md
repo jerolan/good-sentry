@@ -3771,6 +3771,29 @@ fallo ni identifica su causa. Siguiente acción: verificar el caso de frontera
 de ventana y el comportamiento del owner antes de decidir si requiere arreglo;
 conservar la evidencia y no cerrar 033 mientras siga sin resolver.
 
+### Diagnóstico y ajuste 2026-10-27: ventana de cuota de descarte
+
+Una reproducción diagnóstica en una copia temporal desplazó la fila inicial a
+la ventana anterior antes del siguiente cargo: el owner produjo el mismo
+`quota used=1` porque su consulta por clave puede encontrar la fila previa.
+Esto demuestra una debilidad del fixture ante un cambio de ventana; no prueba
+que ese haya sido el motivo concreto del fallo original.
+
+El owner conserva las mismas aserciones y elige una ventana válida con al
+menos 1.200 segundos restantes usando el reloj PostgreSQL. El caso separado
+`TestProjectKeyRateAdmissionAndWindowReset` sigue comprobando el cambio real
+de ventana. Diez ejecuciones del owner ajustado pasaron, y ambos owners
+pasaron juntos con `-race`. No se cambia producto ni se introduce un seam.
+Evidencia: `discard-boundary-diagnostic.log`, `discard-stable.log` y
+`discard-stable-race.log` en `errores-033-fresh/`. El diagnóstico modificó
+solo una copia temporal; su fallo es inducido, no una regresión de producto.
+
+Este cambio de test no invalida la imagen ni las pruebas funcionales de
+`b77a2cc`, pero requiere una integración completa y CI coincidentes con la
+nueva revisión de test antes del cierre. Siguiente acción: ejecutar la suite
+completa en la base aislada y registrar su resultado, sin repetir la ejecución
+fallida como si hubiera pasado.
+
 ### Selección paralela independiente: CLOSE-errores-047
 
 Mientras termina la integración de 033 en `closure033_migration`, iniciar la

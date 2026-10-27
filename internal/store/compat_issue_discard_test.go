@@ -175,7 +175,21 @@ func TestDiscardedCaptureSkipsParentThrottleAndChargesAdmittedSiblings(t *testin
 	if err != nil || len(keys) != 1 {
 		t.Fatalf("initial project key=%+v err=%v", keys, err)
 	}
-	limited, err := f.db.UpdateCompatibleProjectKey(f.ctx, f.access, f.project.ID, keys[0].ID, "discard admission", &CompatibleKeyRateLimit{Window: 60, Count: 4}, nil)
+	// These assertions compare several charges in one fixed window. Choose a
+	// valid window with ample time remaining, using the same clock as admission;
+	// crossing a boundary legitimately resets usage and invalidates the fixture.
+	var epoch int64
+	if err := f.db.pool.QueryRow(f.ctx, `SELECT floor(extract(epoch FROM clock_timestamp()))::bigint`).Scan(&epoch); err != nil {
+		t.Fatal(err)
+	}
+	window := int64(604800)
+	for window > 604000 && window-epoch%window < 1200 {
+		window--
+	}
+	if window <= 604000 {
+		t.Fatal("could not choose a stable rate window")
+	}
+	limited, err := f.db.UpdateCompatibleProjectKey(f.ctx, f.access, f.project.ID, keys[0].ID, "discard admission", &CompatibleKeyRateLimit{Window: int(window), Count: 4}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
