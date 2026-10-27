@@ -16,6 +16,25 @@
     "git_index_before": "clean; only the untracked foreign file was present"
   },
   "criteria": {
+    "CLOSE-operacion-046": {"evidence": "vigente", "scope": "public repository and complete history on main", "covered": ["first publication receipt at 6f8a23b and final publication at b77a2cc with CI 40452038387, image 40452592862 and unchanged Pages assets"], "evidence_files": ["operacion-046-048-067/summary.json", "operacion-046-048-067/remote-main.txt", "operacion-046-048-067/ci.json", "operacion-046-048-067/image-workflow.json", "operacion-046-048-067/ghcr-manifest.json", "operacion-046-048-067/pages.html", "operacion-046-048-067/site-diff.txt"]},
+    "CLOSE-operacion-048": {"evidence": "vigente", "scope": "Pages artifact/deploy publishes only site/ and the live site returns 200", "covered": ["first publication receipt at 6f8a23b and final publication at b77a2cc with CI 40452038387, image 40452592862 and unchanged Pages assets"], "evidence_files": ["operacion-046-048-067/summary.json", "operacion-046-048-067/remote-main.txt", "operacion-046-048-067/ci.json", "operacion-046-048-067/image-workflow.json", "operacion-046-048-067/ghcr-manifest.json", "operacion-046-048-067/pages.html", "operacion-046-048-067/site-diff.txt"]},
+    "CLOSE-operacion-067": {"evidence": "vigente", "scope": "published container image, shared amd64/arm64 index, anonymous pull and Compose default", "covered": ["first publication receipt at 6f8a23b and final publication at b77a2cc with CI 40452038387, image 40452592862 and unchanged Pages assets"], "evidence_files": ["operacion-046-048-067/summary.json", "operacion-046-048-067/remote-main.txt", "operacion-046-048-067/ci.json", "operacion-046-048-067/image-workflow.json", "operacion-046-048-067/ghcr-manifest.json", "operacion-046-048-067/pages.html", "operacion-046-048-067/site-diff.txt"]},
+    "CLOSE-sourcemaps-032": {"evidence": "aplazada por decisi\u00f3n expresa", "scope": "automatic Java source enrichment", "covered": ["existing functions and local controls remain required and are preserved; only the listed result is deferred"], "exception": "SPEC.md#closure-contract-v1 / Excepciones expresas", "evidence_files": ["../../SPEC.md"]},
+    "CLOSE-sourcemaps-033": {"evidence": "aplazada por decisi\u00f3n expresa", "scope": "automatic repository connection and remote commit discovery", "covered": ["existing functions and local controls remain required and are preserved; only the listed result is deferred"], "exception": "SPEC.md#closure-contract-v1 / Excepciones expresas", "evidence_files": ["../../SPEC.md"]},
+    "CLOSE-identidad-111": {"evidence": "aplazada por decisi\u00f3n expresa", "scope": "WebAuthn as a second factor", "covered": ["existing functions and local controls remain required and are preserved; only the listed result is deferred"], "exception": "SPEC.md#closure-contract-v1 / Excepciones expresas", "evidence_files": ["../../SPEC.md"]},
+    "CLOSE-errores-223": {"evidence": "aplazada por decisi\u00f3n expresa", "scope": "global organization event sampling", "covered": ["existing functions and local controls remain required and are preserved; only the listed result is deferred"], "exception": "SPEC.md#closure-contract-v1 / Excepciones expresas", "evidence_files": ["../../SPEC.md"]},
+    "CLOSE-lectores-008": {"evidence": "aplazada por decisi\u00f3n expresa", "scope": "real GitLab Error Tracking receipt", "covered": ["existing functions and local controls remain required and are preserved; only the listed result is deferred"], "exception": "SPEC.md#closure-contract-v1 / Excepciones expresas", "evidence_files": ["../../SPEC.md"]},
+    "CLOSE-alertas-040": {"evidence": "aplazada por decisi\u00f3n expresa", "scope": "real receipts for specific alert channels", "covered": ["existing functions and local controls remain required and are preserved; only the listed result is deferred"], "exception": "SPEC.md#closure-contract-v1 / Excepciones expresas", "evidence_files": ["../../SPEC.md"]},
+    "CLOSE-identidad-112": {"evidence": "aplazada por decisi\u00f3n expresa", "scope": "real mail-provider receipt", "covered": ["existing functions and local controls remain required and are preserved; only the listed result is deferred"], "exception": "SPEC.md#closure-contract-v1 / Excepciones expresas", "evidence_files": ["../../SPEC.md"]},
+    "CLOSE-identidad-113": {"evidence": "aplazada por decisi\u00f3n expresa", "scope": "real external-login provider receipt", "covered": ["existing functions and local controls remain required and are preserved; only the listed result is deferred"], "exception": "SPEC.md#closure-contract-v1 / Excepciones expresas", "evidence_files": ["../../SPEC.md"]},
+    "CLOSE-operacion-001": {"evidence": "pendiente", "scope": "objective and acceptance boundary", "note": "contract row was never transferred from the task matrix into this closure matrix; evidence against public sources and the actual repository is required", "evidence_files": []},
+    "CLOSE-operacion-002": {"evidence": "pendiente", "scope": "GlitchTip documented functionality as minimum target, not a ceiling", "note": "contract row was never transferred from the task matrix into this closure matrix; evidence against public sources and the actual repository is required", "evidence_files": []},
+    "CLOSE-operacion-003": {"evidence": "pendiente", "scope": "clean-room method and public-document provenance", "note": "contract row was never transferred from the task matrix into this closure matrix; evidence against public sources and the actual repository is required", "evidence_files": []},
+    "CLOSE-rendimiento-008": {"evidence": "pendiente", "scope": "transaction/standalone-span retention expiry by receipt age", "note": "the task matrix still marks this blocked on the final image/CI; re-audit existing receipts against b77a2cc before promoting", "evidence_files": []},
+    "CLOSE-rendimiento-009": {"evidence": "pendiente", "scope": "retention runtime receipt and preserved candidate", "note": "the task matrix still marks this blocked on the final image/CI; re-audit existing receipts against b77a2cc before promoting", "evidence_files": []},
+    "CLOSE-rendimiento-010": {"evidence": "pendiente", "scope": "remaining fixtures with logs/uptime disabled", "note": "the task matrix still marks this blocked on the final image/CI; re-audit existing receipts against b77a2cc before promoting", "evidence_files": []},
+    "CLOSE-rendimiento-011": {"evidence": "pendiente", "scope": "transaction/span retention functional closure", "note": "the task matrix still marks this blocked on the final image/CI; re-audit existing receipts against b77a2cc before promoting", "evidence_files": []},
+    "CLOSE-operacion-100": {"evidence": "pendiente", "scope": "final per-requirement audit on an identified candidate and linked image, with all checks, invalidations, limits and public claims matching evidence", "note": "cannot pass while any outstanding row is pending or blocked", "evidence_files": ["summary.json"]},
     "CLOSE-operacion-004": {
       "evidence": "vigente",
       "scope": "architecture source audit plus build/vet",
@@ -1701,7 +1720,7 @@
       ]
     },
     "CLOSE-errores-033": {
-      "evidence": "bloqueada por publicacion y aceptacion externa",
+      "evidence": "bloqueada",
       "scope": "pinned full commands, official SDK/CLI/browser/image/publication",
       "covered": [
         "local integration/race/vet, browser normal/error/alias/bulk/draft in prior receipts"
@@ -1875,7 +1894,7 @@
       ]
     },
     "CLOSE-errores-047": {
-      "evidence": "bloqueada por publicacion y aceptacion externa",
+      "evidence": "bloqueada",
       "scope": "official SDK before/after reset and copied-image/publication acceptance",
       "covered": [
         "local hash/reset/browser contracts"
@@ -2188,7 +2207,7 @@
       ]
     },
     "CLOSE-errores-084": {
-      "evidence": "bloqueada por publicacion y aceptacion externa",
+      "evidence": "bloqueada",
       "scope": "official SDK errors, copied image/restart and public CI",
       "covered": [
         "local issue-update store/HTTP/browser contracts"
@@ -3354,7 +3373,7 @@
       "evidence": "vigente",
       "scope": "Slack message structure, summary formatting bounds and acknowledgment semantics",
       "evidence_files": [
-        "alertas-016-017-go.log",
+        "alertas-016-018-go.log",
         "alertas-slack.json"
       ]
     },
@@ -3362,7 +3381,7 @@
       "evidence": "vigente",
       "scope": "Slack message structure, summary formatting bounds and acknowledgment semantics",
       "evidence_files": [
-        "alertas-016-017-go.log",
+        "alertas-016-018-go.log",
         "alertas-slack.json"
       ]
     },
@@ -3370,7 +3389,7 @@
       "evidence": "vigente",
       "scope": "Slack message structure, summary formatting bounds and acknowledgment semantics",
       "evidence_files": [
-        "alertas-016-017-go.log",
+        "alertas-016-018-go.log",
         "alertas-slack.json"
       ]
     },
@@ -4319,7 +4338,7 @@
         "rendimiento-028/report.json",
         "rendimiento-028/sdk-child-metrics.json",
         "rendimiento-028-image/report.json",
-        "rendimiento-028-image/image-sdk-metrics.json"
+        "rendimiento-028/image-sdk-metrics.json"
       ]
     },
     "CLOSE-rendimiento-029": {

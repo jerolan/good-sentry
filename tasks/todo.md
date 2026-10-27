@@ -3429,11 +3429,30 @@ un objetivo HTTP local controlable para el navegador.
 | Owners TLS/Store/API | Hostname/no confiable/vencido/futuro, rotación, sin bytes HTTP, política privada, timeout/cancelación, lease/estado y scheduler pasan en CI `40452038387` |
 
 Evidencia: `test-results/closure-20261025/uptime-026/{summary-20261027,external-ssl,browser3/report,restart}.json`.
-Con esto solo quedan las filas cuyos linajes aceptados de 17/18/19 migraciones
-no se conservan: 033, 047, 084 y logs-028 (base de 4.010 filas). Sin esos
-volcados no se puede repetir la preservación exigida; se requiere que el
-propietario los aporte o restaure. La auditoría CLOSE-operacion-100 no puede
-pasar mientras esas cuatro filas sigan bloqueadas. El producto sigue incompleto.
+### Auditoría 2026-10-27: trazabilidad completa de las 732 anclas
+
+Se contrastaron las 732 anclas `close-*` de SPEC.md con la matriz. La matriz
+tenía 599 claves: 12 claves agrupadas cubren rangos documentados y faltaban 19
+anclas. Se añadieron todas:
+
+| Grupo | Estado registrado |
+|---|---|
+| 046, 048, 067 | vigente con el recibo de publicación de `6f8a23b` y la publicación final `b77a2cc` |
+| alertas-040, errores-223, identidad-111/112/113, lectores-008, sourcemaps-032/033 | aplazada por decisión expresa de la tabla canónica |
+| operacion-001, 002, 003 | pendiente: objetivo, mínimo documentado y método clean-room nunca se habían trasladado a la matriz |
+| rendimiento-008..011 | pendiente de reauditoría: la matriz de tareas aún las marca bloqueadas por imagen/CI, que ya existen |
+| operacion-100 | pendiente: auditoría final, imposible con filas pendientes o bloqueadas |
+
+También se corrigieron dos rutas de evidencia inexistentes
+(`alertas-016-018-go.log` y `rendimiento-028/image-sdk-metrics.json`). Quedan
+cuatro bloqueos reales por linajes aceptados perdidos: 033, 047, 084 y
+logs-028. Se requiere que el propietario aporte los volcados de 17/18/19
+migraciones y la base de 4.010 filas, o equivalentes.
+
+Siguiente acción: evidenciar operacion-001/002/003 contra fuentes públicas y el
+repositorio real, y reauditar rendimiento-008..011 contra `b77a2cc`. Después,
+si los cuatro linajes aparecen, cerrar 033/047/084/logs-028 y ejecutar
+CLOSE-operacion-100. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
