@@ -3575,6 +3575,29 @@ pendientes, reinicio/preservación y contraste final de fuente/imagen/CI.
 Siguiente acción: completar revocación y comprobar el reinicio de esta misma
 base, preservando los resultados ya capturados.
 
+### Avance parcial 2026-10-27: revocación y reinicio de CLOSE-errores-033
+
+Un cohort nuevo en la misma copia repitió el recorrido de CLI y revocó su
+credencial `event:write`: el siguiente resolve recibió 401, el issue permaneció
+sin resolver y la credencial de lectura independiente siguió listándolo.
+`cli-revoke.mjs` y `cli-revoke-report.json` en
+`test-results/closure-20261025/errores-033-fresh/` conservan procedimiento y
+resultado sin secretos.
+
+Se reinició solo `gsclosure033-goodsentry-1`, conservando la base y los
+volúmenes. Las dos extracciones `pg_dump --data-only --inserts` coinciden tras
+retirar únicamente marcadores aleatorios `restrict/unrestrict` y líneas vacías;
+el SHA-256 normalizado está en `restart-report.json`. La respuesta del issue 8
+coincide salvo `analytics`, que depende del reloj. La primera comparación
+literal falló por esos marcadores y por `analytics`; no se atribuyó a una
+pérdida de datos. Los volcados privados no se publican. Esto demuestra la
+persistencia de la copia nueva, no la de las bases históricas retiradas.
+
+033 sigue pendiente de los flujos de navegador restantes y el cotejo completo
+de sus comprobantes, fuente, imagen y CI. Siguiente acción: contrastar los
+flujos de error/alias/bulk/draft requeridos con los comprobantes existentes y
+ejecutar en esta copia los que no estén acreditados.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
