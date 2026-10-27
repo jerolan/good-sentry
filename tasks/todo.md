@@ -2248,7 +2248,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-075](../SPEC.md#close-mcp-075) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-076](../SPEC.md#close-mcp-076) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-077](../SPEC.md#close-mcp-077) | Cliente oficial Go v1.8.0: autorización y ciclo OAuth/token completos del contrato vigente, incluyendo scopes,… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-100](../SPEC.md#close-operacion-100) | Auditoría por requisito sobre revisión candidata identificada e imagen vinculada, con todos los checks, invali… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-100](../SPEC.md#close-operacion-100) | Auditoría por requisito sobre revisión candidata identificada e imagen vinculada, con todos los checks, invali… | implementada (parcial) | bloqueada | Auditoría registrada en operacion-100/audit.json; faltan imagen/CI/registro externos |
 | [CLOSE-sourcemaps-032](../SPEC.md#close-sourcemaps-032) | Enriquecimiento automático con fuentes Java; no exige SDK/JDK, bundles ni aceptación Java básica por inferenci… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
 | [CLOSE-sourcemaps-033](../SPEC.md#close-sourcemaps-033) | Conexión automática con repositorios y descubrimiento remoto de commits. Conservar releases, commits locales y… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
 | [CLOSE-identidad-111](../SPEC.md#close-identidad-111) | WebAuthn como segundo factor. Conservar TOTP, recuperación y require2FA. | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
@@ -10054,6 +10054,20 @@ Evidencia: `test-results/closure-20261025/operacion-092-096/`.
 Límites registrados: la imagen publicada usada para 093 es el digest local de
 `ghcr.io`; el registro remoto/CI actual sigue en 067. Siguiente acción:
 CLOSE-operacion-100 (auditoría final). El producto sigue incompleto.
+
+### Auditoría de cierre 2026-10-26: bloqueo externo
+
+Se auditó la matriz completa: 732 filas, 677 `implementada|vigente`, 14
+`implementada (histórica)|vigente`, 13 `implementada (local)|bloqueada`, 18
+bloqueadas, 8 aplazadas por decisión expresa y 9 pendientes. El detalle está en
+`test-results/closure-20261025/operacion-100/audit.json`.
+
+Las dependencias restantes son externas: autorización de push/registro/Pages
+(046/048/067), aceptación sobre la imagen final y CI público coincidente
+(056/206 y las filas de imagen/CI bloqueadas) y la auditoría final 100 que
+consume esos recibos. Toda la implementación local de archivo de errores, logs,
+transacciones y spans (068–091) y la operación local de imagen (092–096) quedó
+verificada. No se declara el producto completo ni se ejecutó publicación.
 
 ### Comprobante de integración documental
 

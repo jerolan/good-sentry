@@ -1,0 +1,226 @@
+{
+  "date": "2026-10-26",
+  "product_revision": "70fcb08",
+  "rows": 732,
+  "status_counts": {
+    "por contrastar | pendiente": 9,
+    "implementada | vigente": 677,
+    "implementada (local) | bloqueada": 13,
+    "registrada (limitaci\u00f3n) | vigente": 1,
+    "implementada (local) | vigente": 2,
+    "implementada | bloqueada": 5,
+    "implementada (config-only) | vigente": 1,
+    "implementada (hist\u00f3rica) | vigente": 14,
+    "implementada (prerrequisito) | vigente": 1,
+    "implementada (contrato) | vigente": 1,
+    "por contrastar | aplazada por decisi\u00f3n expresa": 8
+  },
+  "blocked": [
+    {
+      "id": "CLOSE-identidad-025",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Publicar imagen/CI de la misma fuente y repetir aceptaci\u00f3n p\u00fablica",
+      "line": 1564
+    },
+    {
+      "id": "CLOSE-identidad-033",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Publicar y repetir copia/reinicio/CI sobre la fuente; luego cerrar",
+      "line": 1572
+    },
+    {
+      "id": "CLOSE-errores-033",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "SDK/imagen/CI p\u00fablica pendientes; publicar y repetir",
+      "line": 1636
+    },
+    {
+      "id": "CLOSE-errores-047",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "SDK/imagen/CI p\u00fablica pendientes; publicar y repetir",
+      "line": 1650
+    },
+    {
+      "id": "CLOSE-errores-084",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "SDK/imagen/CI p\u00fablica pendientes; publicar y repetir",
+      "line": 1687
+    },
+    {
+      "id": "CLOSE-errores-112",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "SDK/imagen/CI p\u00fablica pendientes; publicar y repetir",
+      "line": 1715
+    },
+    {
+      "id": "CLOSE-sourcemaps-011",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Autorizar imagen final y CI p\u00fablico; repetir el CLI contra la imagen y verificar upgrade/reinicio",
+      "line": 1769
+    },
+    {
+      "id": "CLOSE-sourcemaps-021",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Autorizar imagen final y CI p\u00fablico; repetir CLI/SDK contra la imagen y comprobar licencia/assets",
+      "line": 1779
+    },
+    {
+      "id": "CLOSE-rendimiento-008",
+      "implementation": "implementada",
+      "evidence": "bloqueada",
+      "action": "Bloqueo por imagen/CI y runtime preservado; ver secci\u00f3n 2026-10-26",
+      "line": 1836
+    },
+    {
+      "id": "CLOSE-rendimiento-009",
+      "implementation": "implementada",
+      "evidence": "bloqueada",
+      "action": "Bloqueo por imagen/CI y runtime preservado; ver secci\u00f3n 2026-10-26",
+      "line": 1837
+    },
+    {
+      "id": "CLOSE-rendimiento-010",
+      "implementation": "implementada",
+      "evidence": "bloqueada",
+      "action": "Bloqueo por imagen/CI y runtime preservado; ver secci\u00f3n 2026-10-26",
+      "line": 1838
+    },
+    {
+      "id": "CLOSE-rendimiento-011",
+      "implementation": "implementada",
+      "evidence": "bloqueada",
+      "action": "Bloqueo por imagen/CI y runtime preservado; ver secci\u00f3n 2026-10-26",
+      "line": 1839
+    },
+    {
+      "id": "CLOSE-logs-028",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Restaurar la copia de 4010 filas/524 eventos o autorizar una l\u00ednea base nueva y CI p\u00fablico",
+      "line": 1901
+    },
+    {
+      "id": "CLOSE-uptime-026",
+      "implementation": "implementada",
+      "evidence": "bloqueada",
+      "action": "Bloqueo: imagen/backup/reinicio, CA externo y publicaci\u00f3n; ver secci\u00f3n 2026-10-26",
+      "line": 1940
+    },
+    {
+      "id": "CLOSE-alertas-021",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Recibir en un canal de Slack autorizado y publicar imagen/CI",
+      "line": 1958
+    },
+    {
+      "id": "CLOSE-alertas-031",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Recibos reales de cada proveedor y publicaci\u00f3n/CI",
+      "line": 1968
+    },
+    {
+      "id": "CLOSE-alertas-036",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Recibo real de Mattermost autorizado",
+      "line": 1973
+    },
+    {
+      "id": "CLOSE-identidad-103",
+      "implementation": "implementada (local)",
+      "evidence": "bloqueada",
+      "action": "Autorizar CI p\u00fablico y publicaci\u00f3n; luego repetir la actualizaci\u00f3n con im\u00e1genes en Compose",
+      "line": 2064
+    }
+  ],
+  "pending": [
+    {
+      "id": "CLOSE-operacion-001",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Contrastar contrato, dependencias y comprobantes",
+      "line": 1528
+    },
+    {
+      "id": "CLOSE-operacion-002",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Contrastar contrato, dependencias y comprobantes",
+      "line": 1529
+    },
+    {
+      "id": "CLOSE-operacion-003",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Contrastar contrato, dependencias y comprobantes",
+      "line": 1530
+    },
+    {
+      "id": "CLOSE-operacion-046",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Requiere autorizaci\u00f3n expl\u00edcita de publicaci\u00f3n; no se hizo push",
+      "line": 2008
+    },
+    {
+      "id": "CLOSE-operacion-048",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Depende de 046 y de autorizaci\u00f3n de publicaci\u00f3n/Pages",
+      "line": 2010
+    },
+    {
+      "id": "CLOSE-errores-206",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Requiere imagen final, copia de 4569 filas y CI; comprobantes hist\u00f3ricos 182-205 abajo",
+      "line": 2054
+    },
+    {
+      "id": "CLOSE-operacion-056",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Contrastar contrato, dependencias y comprobantes",
+      "line": 2072
+    },
+    {
+      "id": "CLOSE-operacion-067",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Contrastar contrato, dependencias y comprobantes",
+      "line": 2144
+    },
+    {
+      "id": "CLOSE-operacion-100",
+      "implementation": "por contrastar",
+      "evidence": "pendiente",
+      "action": "Contrastar contrato, dependencias y comprobantes",
+      "line": 2251
+    }
+  ],
+  "completed_archive_tiers": [
+    "errors local/S3 068-073",
+    "logs local/S3 074-079",
+    "transactions local/S3 080-085",
+    "spans local/S3 086-091"
+  ],
+  "remaining_external_dependencies": [
+    "CLOSE-operacion-046/048/067: authorized push, registry publication and remote anonymous-pull/Pages verification",
+    "CLOSE-errores-206 and CLOSE-operacion-056: final copied-image acceptance with matching public CI",
+    "blocked image/CI rows listed above",
+    "CLOSE-operacion-100: final requirement audit cannot finish until those receipts exist"
+  ],
+  "limits": [
+    "No product completion claim; no publication was performed."
+  ]
+}
