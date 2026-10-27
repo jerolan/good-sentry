@@ -1,0 +1,20 @@
+=== RUN   TestEventArchiveS3UploadRestoreAndExpiry
+--- PASS: TestEventArchiveS3UploadRestoreAndExpiry (0.63s)
+=== RUN   TestEventArchiveS3DeleteFailureLeavesCatalog
+--- PASS: TestEventArchiveS3DeleteFailureLeavesCatalog (0.47s)
+=== RUN   TestEventArchiveCopyUnionRestartAndExpiry
+--- PASS: TestEventArchiveCopyUnionRestartAndExpiry (0.55s)
+=== RUN   TestLogArchiveS3UploadRestoreAndExpiry
+--- PASS: TestLogArchiveS3UploadRestoreAndExpiry (0.72s)
+=== RUN   TestLogArchiveCopyUnionRestartAndExpiry
+--- PASS: TestLogArchiveCopyUnionRestartAndExpiry (0.49s)
+=== RUN   TestSpanArchiveS3QueryRestartAndExpiry
+SDK 2026/10/26 18:26:11 DEBUG Response has no supported checksum. Not validating response payload.
+SDK 2026/10/26 18:26:11 DEBUG Response has no supported checksum. Not validating response payload.
+--- PASS: TestSpanArchiveS3QueryRestartAndExpiry (0.59s)
+=== RUN   TestTransactionArchiveS3UploadRestoreAndExpiry
+--- PASS: TestTransactionArchiveS3UploadRestoreAndExpiry (0.54s)
+=== RUN   TestTransactionArchiveCopyUnionRestartAndExpiry
+--- PASS: TestTransactionArchiveCopyUnionRestartAndExpiry (0.99s)
+PASS
+ok  	goodsentry/internal/store	5.002s

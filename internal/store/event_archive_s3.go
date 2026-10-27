@@ -118,7 +118,9 @@ func (s *Store) RestoreEventArchiveS3(ctx context.Context, objects spanarchive.O
 	if limit < 1 || limit > 250 {
 		limit = 250
 	}
-	rows, err := s.pool.Query(ctx, `SELECT project_id,event_id,object_key FROM event_archive_objects ORDER BY created_at,project_id,event_id LIMIT $1`, limit)
+	rows, err := s.pool.Query(ctx, `SELECT o.project_id,o.event_id,o.object_key FROM event_archive_objects o
+ WHERE NOT EXISTS (SELECT 1 FROM event_archive e WHERE e.project_id=o.project_id AND e.event_id=o.event_id)
+ ORDER BY o.created_at,o.project_id,o.event_id LIMIT $1`, limit)
 	if err != nil {
 		return 0, dbError(err)
 	}

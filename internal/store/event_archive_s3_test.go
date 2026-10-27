@@ -81,6 +81,34 @@ func TestEventArchiveS3UploadRestoreAndExpiry(t *testing.T) {
 	}
 	assertEventArchiveReaders(t, ctx, db, owner.ID, access, project.ID, issueID, ev.ID, 1)
 
+	// A second cached row must not hide a later missing row from the restore
+	// selector; the query filters cache hits instead of always taking the first 250.
+	second := groupEvent(t, 704, "event-archive-s3-second", "S3 second archived error", at)
+	if _, fresh, err := db.Ingest(ctx, project.ID, second); err != nil || !fresh {
+		t.Fatal(fresh, err)
+	}
+	if _, err := db.pool.Exec(ctx, `UPDATE events SET created_at=now()-interval '2 days' WHERE event_id=$1`, second.ID); err != nil {
+		t.Fatal(err)
+	}
+	if n, err := db.ArchiveEventsS3(ctx, time.Now().UTC().Add(-24*time.Hour), 250, objects, "events"); err != nil || n != 1 {
+		t.Fatalf("second archive=%d err=%v", n, err)
+	}
+	if _, err := db.pool.Exec(ctx, `DELETE FROM event_archive WHERE event_id=$1`, second.ID); err != nil {
+		t.Fatal(err)
+	}
+	if n, err := db.RestoreEventArchiveS3(ctx, objects, 250); err != nil || n != 1 {
+		t.Fatalf("selective restore=%d err=%v", n, err)
+	}
+	if _, err := db.pool.Exec(ctx, `DELETE FROM events WHERE event_id=$1`, second.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `DELETE FROM event_archive WHERE event_id=$1`, second.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.pool.Exec(ctx, `DELETE FROM event_archive_objects WHERE event_id=$1`, second.ID); err != nil {
+		t.Fatal(err)
+	}
+
 	if _, err := db.pool.Exec(ctx, `UPDATE event_archive_objects SET created_at=now()-interval '40 days' WHERE event_id=$1`, ev.ID); err != nil {
 		t.Fatal(err)
 	}

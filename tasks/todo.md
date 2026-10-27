@@ -10027,6 +10027,11 @@ Evidencia: `test-results/closure-20261025/operacion-086-091/` y los logs de
 Límites registrados: la aceptación de imagen/CI final sigue pendiente. Siguiente
 acción: CLOSE-operacion-092. El producto sigue incompleto.
 
+Reparación registrada: la restauración S3 de errores/logs/transacciones ahora
+selecciona sólo catálogos ausentes de la caché, evitando omitir filas posteriores
+cuando las primeras 250 ya estaban materializadas. Evidencia:
+`test-results/closure-20261025/archive-restore-fix/`.
+
 ### Comprobante de integración documental
 
 - [x] Integrar el contrato aprobado en los tres artefactos canónicos, con ancla

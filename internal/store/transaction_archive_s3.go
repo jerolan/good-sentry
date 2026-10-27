@@ -112,7 +112,9 @@ func (s *Store) RestoreTransactionArchiveS3(ctx context.Context, objects spanarc
 	if limit < 1 || limit > 250 {
 		limit = 250
 	}
-	rows, err := s.pool.Query(ctx, `SELECT project_id,id,object_key FROM transaction_archive_objects ORDER BY created_at,project_id,id LIMIT $1`, limit)
+	rows, err := s.pool.Query(ctx, `SELECT o.project_id,o.id,o.object_key FROM transaction_archive_objects o
+ WHERE NOT EXISTS (SELECT 1 FROM transaction_archive t WHERE t.project_id=o.project_id AND t.id=o.id)
+ ORDER BY o.created_at,o.project_id,o.id LIMIT $1`, limit)
 	if err != nil {
 		return 0, dbError(err)
 	}

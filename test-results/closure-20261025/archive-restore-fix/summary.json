@@ -1,0 +1,7 @@
+{
+  "date": "2026-10-26",
+  "repair": "S3 archive restore selected the first 250 catalog rows even when they were already cached, so a later missing row could be skipped after restart.",
+  "change": "Event, log and transaction restore queries now select only catalog rows absent from the local cache.",
+  "evidence": "store.log: all event/log/transaction local+S3 archive owners pass, including selective restore of a later missing row.",
+  "limits": ["This is a repair to the new local/S3 archive tiers; final image/CI remain pending."]
+}
