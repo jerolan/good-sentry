@@ -1,0 +1,26 @@
+{
+  "criteria": ["CLOSE-operacion-056"],
+  "date": "2026-10-26",
+  "revision": "6f8a23b9f009f71eeee57520ef4869468f034dd5",
+  "image": "ghcr.io/jerolan/good-sentry@sha256:95fb3b945b4547c155a9ff13d400eb3024ac9efff71429df7bbdbedc6cdc8e64",
+  "covered": {
+    "clean_local_image": "published image starts on a fresh PostgreSQL and owned /data volume with local archive, short retention and 1s interval; ready 200",
+    "archive": "official sentry-go error/transaction/log plus a standalone span archive into local tables and /data/archive; hot spans 0, span object 1, transaction archive 1, error archive 7, log archive 1",
+    "query": "trace nodeCount 1, IssueDetail event 1, compatible logs 1",
+    "restart": "app-only restart returns ready 200 and the same trace/issue/log reads",
+    "expiry": "retention 2 days removes span/transaction/error/log archive rows, zero archive files, trace nodes null, logs 0 and issue events 0",
+    "s3_requests": "S3-compatible requests and failure/retry semantics are covered by operacion-071-073, -077-079, -080-085 and -086-091",
+    "checks": "full go test -race -tags=integration ./... passes; CI 40450577549 and image 40451259300 succeed; amd64/arm64 index published"
+  },
+  "observed": {
+    "pre_expiry": {"span_objects": 1, "span_rows": 1, "tx_archive": 1, "error_archive": 7, "log_archive": 1, "hot_spans": 0},
+    "restart": {"ready": 200, "trace_nodes": 1, "issue_events": 1, "logs": 1},
+    "expiry": {"span_objects": 0, "span_rows": 0, "tx_archive": 0, "error_archive": 0, "log_archive": 0, "files": 0}
+  },
+  "evidence": ["image.txt", "gs056-ready.json", "gs056-sdk.log", "gs056-trace.json", "expiry.json", "expiry-files.txt", "summary.json"],
+  "limits": [
+    "The clean-image archive flow used the local backend; S3-compatible backend semantics are covered by their separate fresh owners.",
+    "CLOSE-errores-206 and CLOSE-operacion-100 remain open.",
+    "The product is not declared complete."
+  ]
+}

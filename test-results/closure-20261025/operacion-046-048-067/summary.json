@@ -1,0 +1,26 @@
+{
+  "criteria": ["CLOSE-operacion-046", "CLOSE-operacion-048", "CLOSE-operacion-067"],
+  "date": "2026-10-26",
+  "revision": "6f8a23b9f009f71eeee57520ef4869468f034dd5",
+  "covered": {
+    "046": "public main is 6f8a23b; the repository contains the complete local history and evidence commits",
+    "048": "GitHub Pages deployment 40449235749 succeeded for c1ce0fb; site/ is unchanged between c1ce0fb and 6f8a23b, and the public site returns 200",
+    "067": "CI 40450577549 and Container image 40451259300 succeed for 6f8a23b; ghcr main/latest/sha share OCI index sha256:95fb3b945b4547c155a9ff13d400eb3024ac9efff71429df7bbdbedc6cdc8e64 with amd64/arm64 manifests; anonymous registry token and manifest pull return 200; Compose defaults to ghcr.io/jerolan/good-sentry:main"
+  },
+  "observed": {
+    "remote_main": "6f8a23b9f009f71eeee57520ef4869468f034dd5",
+    "ci": "40450577549 success",
+    "image_workflow": "40451259300 success",
+    "pages_workflow": "40449235749 success",
+    "pages_http": 200,
+    "site_diff": "empty",
+    "oci_index": "sha256:95fb3b945b4547c155a9ff13d400eb3024ac9efff71429df7bbdbedc6cdc8e64",
+    "anonymous_pull": 200
+  },
+  "evidence": ["remote-main.txt", "ci.json", "image-workflow.json", "ghcr-manifest.json", "pages.html", "site-diff.txt", "compose.yml", "summary.json"],
+  "limits": [
+    "CLOSE-operacion-056 and CLOSE-errores-206 still require the final copied-image/archive/browser acceptance; this receipt proves publication, not those remaining product checks.",
+    "CLOSE-operacion-100 remains the final requirement audit.",
+    "The product is not declared complete."
+  ]
+}

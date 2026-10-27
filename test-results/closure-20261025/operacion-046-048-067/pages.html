@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5ec">
+  <meta name="description" content="Independent, self-hosted error tracking and observability in Go. One application container, PostgreSQL, and the Sentry SDKs you already use. GoodSentry is in active development.">
+  <meta property="og:title" content="GoodSentry — Good signals. Your stack.">
+  <meta property="og:description" content="Error tracking and observability in Go. One application container plus PostgreSQL. Independently built and actively developing.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jerolan.github.io/good-sentry/">
+  <meta property="og:image" content="https://jerolan.github.io/good-sentry/assets/app-preview.png">
+  <title>GoodSentry — Good signals. Your stack.</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="brand" href="./" aria-label="GoodSentry home"><img src="assets/logo.svg" alt="GoodSentry" width="204" height="36"></a>
+    <nav aria-label="Main navigation">
+      <a href="#product">The product</a>
+      <a href="#quickstart">Run locally</a>
+      <a class="nav-repo" href="https://github.com/jerolan/good-sentry">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+  <main id="main" tabindex="-1">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="signal-dot" aria-hidden="true"></span> Independent. Self-hosted. Written in Go.</p>
+        <h1 id="hero-title">Good signals.<br><em>Your stack.</em></h1>
+        <p class="hero-description">Error tracking and observability in Go. Run <strong>one application container with PostgreSQL</strong> and connect the Sentry SDKs you already use.</p>
+        <div class="hero-actions"><a class="button button-primary" href="#quickstart">Run GoodSentry <span aria-hidden="true">↗</span></a><a class="text-link" href="https://github.com/jerolan/good-sentry">Explore the code <span aria-hidden="true">→</span></a></div>
+        <a class="development-note" href="#status"><span aria-hidden="true">◌</span> Active development · full parity still ahead</a>
+      </div>
+      <aside class="stack-note" aria-label="Deployment requirements">
+        <div class="note-top"><span class="mono">THE SMALL STACK</span><span aria-hidden="true">↙</span></div>
+        <div class="stack-item"><span class="stack-number">01</span><div><h2>GoodSentry</h2><p>Go server + interface<br>Workers + migrations</p></div><span class="stack-label">ONE APP</span></div>
+        <div class="stack-connector" aria-hidden="true">↓</div>
+        <div class="stack-item"><span class="stack-number">02</span><div><h2>PostgreSQL</h2><p>Your events. Your storage.<br>Your durable work queue.</p></div></div>
+        <div class="note-bottom"><span class="terminal-mark" aria-hidden="true">&gt;_</span><p>Built together.<br>Run on your infrastructure.</p></div>
+      </aside>
+    </section>
+
+    <section id="product" class="product-section wrap" aria-labelledby="product-title">
+      <div class="section-heading"><div><p class="eyebrow">THE WORKSPACE</p><h2 id="product-title">From “something broke”<br>to something you can fix.</h2></div><p>Group the errors. Read the stack.<br>Keep the context close.</p></div>
+      <figure class="product-figure">
+        <div class="product-chrome"><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div><span class="mono">GOODSENTRY / NORTHSTAR DEMO</span><span class="preview-label">Actual product</span></div>
+        <a href="assets/app-preview.png" aria-label="Open the full GoodSentry product screenshot"><img class="app-preview" src="assets/app-preview.png" alt="Actual GoodSentry issue list with six grouped demo issues, project context, status, event counts and filters." width="1440" height="810" fetchpriority="high"></a>
+        <figcaption><span>Actual GoodSentry UI. Fictional demo data.</span><span>Built for the work after the alert.</span></figcaption>
+      </figure>
+      <div class="sdk-proof"><span class="eyebrow">VERIFIED SDK CLIENTS</span><p><span>Go <small>0.50.0</small></span><span>Python <small>2.72.0</small></span><span>Node <small>11.7.0</small></span><span>Browser <small>11.7.0</small></span></p><a href="https://github.com/jerolan/good-sentry#readme">See compatibility scope <span aria-hidden="true">↗</span></a></div>
+    </section>
+
+    <section class="capabilities wrap" aria-labelledby="capabilities-title">
+      <div class="section-heading"><div><p class="eyebrow">WORKING TODAY</p><h2 id="capabilities-title">The useful details,<br>in one place.</h2></div><p>Independently implemented.<br>Verified against real clients and data.</p></div>
+      <div class="feature-showcase">
+        <article class="feature-card">
+          <figure><img src="assets/feature-issues.png" alt="GoodSentry issue list with grouped demo errors, filters and event counts" width="1440" height="1000" loading="lazy"><figcaption>Actual issue list · fictional demo data</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">01 / ERROR TRACKING</span><h3>See the signal, not just the exception.</h3><p>Grouped issues keep stack traces, breadcrumbs, tags, affected users, comments and triage history together. Search and filters stay on durable event data.</p><ul><li>Assign, resolve, ignore, merge and comment</li><li>Release and environment aware history</li><li>Exact event context and binary attachments</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-issue-detail.png" alt="GoodSentry issue detail with stack trace and event context" width="1440" height="1000" loading="lazy"><figcaption>Issue detail · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">02 / DEBUG CONTEXT</span><h3>Read the stack you actually shipped.</h3><p>JavaScript source maps, debug IDs and native symbol files connect minified or compiled frames back to useful source locations without discarding the original event.</p><ul><li>CLI and native source-map uploads</li><li>DWARF, dSYM and Breakpad symbolication</li><li>Raw JSON and attachment inspection</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-performance.png" alt="GoodSentry performance view with transaction latency and pagination" width="1440" height="1000" loading="lazy"><figcaption>Transactions · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">03 / PERFORMANCE</span><h3>Follow the slow path across a trace.</h3><p>Inspect transactions, standalone spans and child operations with latency percentiles, trace ancestry and cross-project waterfall views.</p><ul><li>Average, p50 and p95 latency</li><li>Time windows and operation filters</li><li>Linked logs and related errors</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-logs.png" alt="GoodSentry log explorer with typed attributes and filters" width="1440" height="1000" loading="lazy"><figcaption>Log explorer · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">04 / LOGS</span><h3>Typed logs, without losing the edge cases.</h3><p>Search retained Sentry and OpenTelemetry logs by service, level, environment, time or trace. Inspect attributes without rounding 64-bit integers.</p><ul><li>OTLP/HTTP protobuf and JSON</li><li>Trace-correlated log inspection</li><li>Deduplication and bounded pagination</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-uptime.png" alt="GoodSentry uptime monitor list with health and history states" width="1440" height="1000" loading="lazy"><figcaption>Uptime monitors · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">05 / UPTIME &amp; ALERTS</span><h3>Know when availability changes.</h3><p>Schedule HTTP, TCP, SSL and heartbeat checks. Error-frequency and uptime rules deliver durable email, Slack, provider webhook or generic webhook attempts.</p><ul><li>Failure thresholds and recovery history</li><li>Persistent delivery queues and retries</li><li>Provider-native alert payloads</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-people.png" alt="GoodSentry people and teams view with roles and invitations" width="1440" height="1000" loading="lazy"><figcaption>People and teams · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">06 / PEOPLE &amp; ACCESS</span><h3>Run the workspace close to the work.</h3><p>Invite members, manage owners, admins and teams, scope API tokens, attach projects to multiple teams and verify secondary sign-in emails.</p><ul><li>Owner last-guard and atomic owner transfer</li><li>Organization-contained project teams</li><li>Password recovery, instance and per-organization OIDC, email verification</li></ul></div>
+        </article>
+        <article class="feature-card">
+          <figure><img src="assets/feature-account.png" alt="GoodSentry account security screen" width="1440" height="1000" loading="lazy"><figcaption>Account security · actual product</figcaption></figure>
+          <div class="feature-copy"><span class="feature-index mono">07 / ACCOUNT SECURITY</span><h3>Credentials you can operate yourself.</h3><p>Change the password with global session and token revocation, recover access by email, add verified secondary sign-in addresses, require a TOTP code from your authenticator app and use OIDC when configured.</p><ul><li>Single-use recovery and verification links</li><li>Optional TOTP two-factor sign-in with single-use recovery codes</li><li>Primary and verified secondary email addresses</li><li>Owner-controlled API tokens and permissions</li></ul></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="quickstart" class="quickstart-section" aria-labelledby="quickstart-title">
+      <div class="wrap quickstart-layout">
+        <div><p class="eyebrow">MAKE IT YOURS</p><h2 id="quickstart-title">Bring Docker.<br>Keep your SDK.</h2><p class="quickstart-intro">Pull the public application image and start it alongside PostgreSQL. No separate web or worker services to assemble.</p><ol class="steps"><li><span>01</span><div><h3>Start the stack</h3><p>You need Git, Docker with Compose, and OpenSSL.</p></div></li><li><span>02</span><div><h3>Open your workspace</h3><p>Visit <a href="http://localhost:8000">localhost:8000</a>. The first start creates one owner and organization, so you land in the workspace; add a project and copy its DSN.</p></div></li><li><span>03</span><div><h3>Point your SDK at its DSN</h3><p>Copy the project DSN into your existing Sentry SDK configuration. Verify the capabilities your application needs.</p></div></li></ol></div>
+        <div class="quickstart-code"><div class="code-heading"><span class="mono">TERMINAL / LOCAL SETUP</span><button type="button" data-copy="quickstart-code" aria-label="Copy quickstart commands"><span data-copy-label>Copy commands</span><span aria-hidden="true">⧉</span></button></div><pre><code id="quickstart-code">git clone https://github.com/jerolan/good-sentry.git
+cd good-sentry
+test -f .env || printf 'SECRET_KEY=%s\n' "$(openssl rand -hex 32)" &gt; .env
+docker compose up -d</code></pre><div class="code-note"><span aria-hidden="true">↳</span><p>Keep your <code>.env</code> between restarts. The secret protects sessions. Local mode has no login screen and is meant for a trusted machine or network; set <code>GOODSENTRY_AUTH=required</code> to enable sign-in, then configure your public domain and database credentials before exposing the stack.</p></div><div class="code-footer"><span class="mono">ONE APP CONTAINER + POSTGRESQL</span><a href="https://github.com/jerolan/good-sentry#readme">Installation details <span aria-hidden="true">↗</span></a></div></div>
+      </div>
+    </section>
+
+    <section id="status" class="status-section wrap" aria-labelledby="status-title"><div class="status-mark" aria-hidden="true">G<span>↗</span></div><div><p class="eyebrow">A CLEAR STATUS</p><h2 id="status-title">Useful today.<br>Still being built.</h2><p>GoodSentry is an independent Go implementation in active development. <strong>Full Sentry compatibility and GlitchTip feature parity are not complete.</strong></p><p>Error tracking, performance and typed logs, uptime and alerting, people and team management, verified account emails, optional TOTP two-factor sign-in, instance-wide OIDC plus per-organization OpenID Connect sign-in applications with a shareable login page, Sentry-compatible management APIs, minidump and DWARF/dSYM symbolication, Grafana Sentry data source panels and an opt-in MCP server with OAuth PKCE are implemented and tested. Vendor-specific provider deployments and external identity-provider receipts, automatic repository synchronization, advanced administration and the final requirement audit remain on the roadmap. OpenTelemetry log ingestion works through standard OTLP/HTTP exporters. Optional local/S3 Parquet cold span archival is queryable and retains spans through the configured transaction-retention deadline. Public amd64 and arm64 application images are available; a repeatable 2,100-request workload measured 34.47 MiB peak application memory with PostgreSQL excluded.</p><div class="status-links"><a class="text-link" href="https://github.com/jerolan/good-sentry/blob/main/SPEC.md">Read the scope <span aria-hidden="true">↗</span></a><a class="text-link" href="https://github.com/jerolan/good-sentry/blob/main/tasks/todo.md">Follow the work <span aria-hidden="true">↗</span></a></div></section>
+  </main>
+  <footer class="site-footer wrap"><a class="brand" href="./" aria-label="GoodSentry home"><img src="assets/logo.svg" alt="GoodSentry" width="181" height="32" loading="lazy"></a><p>Good signals. Your infrastructure.</p><a href="https://github.com/jerolan/good-sentry">View on GitHub <span aria-hidden="true">↗</span></a></footer>
+  <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+</body>
+</html>

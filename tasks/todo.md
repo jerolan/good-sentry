@@ -1500,17 +1500,18 @@ global, conservando abiertos los recibos de proveedores externos.
 CLOSE-mcp-001 a -077 quedan vigentes con la suite MCP fresca, el cliente oficial
 go-sdk 1.8.0 y la aceptación pública histórica como apoyo.
 CLOSE-operacion-058 a -066 quedan vigentes con harnesses, layout, estilo, fuzz,
-SDKs y verificación; 067 espera publicación/registro autorizados.
-CLOSE-operacion-067 conserva el bloqueo de publicación remota; la siguiente
-acción ejecutable es CLOSE-operacion-100 (auditoría final).
+SDKs y verificación. CLOSE-operacion-046, -048 y -067 quedan vigentes con main,
+CI, imagen multiarquitectura, pull anónimo y Pages públicos.
 CLOSE-sourcemaps-028 a -031, CLOSE-lectores-004 a -007 y CLOSE-operacion-068 a
 -096 quedan vigentes; los archivos y la imagen documentada ya tienen owners.
 CLOSE-alertas-037 a -039 quedan vigentes con cola, transiciones y webhook
 genérico probados frescos.
+CLOSE-operacion-056 queda vigente con la imagen publicada, archivo local,
+consulta, reinicio y vencimiento sobre volumen limpio.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-100. No se declara
+runtime preservado. Siguiente acción: CLOSE-errores-206. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2005,9 +2006,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-096](../SPEC.md#close-identidad-096) | Compatible project update and deletion: Real PostgreSQL covers rename preservation, invalid names and owner/ma… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-044](../SPEC.md#close-operacion-044) | Public repository and product site: The user also explicitly requests Tailwind CSS plus daisyUI for the applic… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-045](../SPEC.md#close-operacion-045) | Public repository and product site: Use official daisyUI v5.7.50 standalone daisyui.mjs and daisyui-theme.mjs,… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-046](../SPEC.md#close-operacion-046) | Public repository and product site: The user requests publication of the code to https://github.com/jerolan/go… | por contrastar | pendiente | Requiere autorización explícita de publicación; no se hizo push |
+| [CLOSE-operacion-046](../SPEC.md#close-operacion-046) | Public repository and product site: The user requests publication of the code to https://github.com/jerolan/go… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-047](../SPEC.md#close-operacion-047) | Public repository and product site: Use an original GoodSentry design informed by the public Sentry welcome pa… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-048](../SPEC.md#close-operacion-048) | Public repository and product site: Publish only site/ through the official Pages artifact/deploy workflow on… | por contrastar | pendiente | Depende de 046 y de autorización de publicación/Pages |
+| [CLOSE-operacion-048](../SPEC.md#close-operacion-048) | Public repository and product site: Publish only site/ through the official Pages artifact/deploy workflow on… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-163](../SPEC.md#close-errores-163) | SDK feedback: Feedback parity requires both legacy user reports and modern captureFeedback events. Implement a… | implementada | vigente | Comprobante 2026-10-26 abajo (paridad legacy 164-181 + moderno 182-205) |
 | [CLOSE-errores-164](../SPEC.md#close-errores-164) | Legacy report identity and storage: Receive SDK envelope items of type user_report and POST /api/0/projects/{o… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-165](../SPEC.md#close-errores-165) | Legacy report identity and storage: Migration029 adds only user_reports: numeric ID, project FK with cascade,… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2069,7 +2070,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-053](../SPEC.md#close-operacion-053) | Instance user administration: The additive catalog migration marks pre-index manifests incomplete. When archiv… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-054](../SPEC.md#close-operacion-054) | Instance user administration: Readers lock selected ready manifests FOR SHARE before downloading their objects… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-055](../SPEC.md#close-operacion-055) | Instance user administration: GOODSENTRY_ARCHIVE_BACKEND is local by default and may be s3. GOODSENTRY_ARCHIVE… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-056](../SPEC.md#close-operacion-056) | Instance user administration: GOODSENTRY_ENABLE_DUCKDB remains off by default in Compose and retains its docum… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-056](../SPEC.md#close-operacion-056) | Instance user administration: GOODSENTRY_ENABLE_DUCKDB remains off by default in Compose and retains its docum… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-057](../SPEC.md#close-operacion-057) | Instance user administration: Generic OpenID Connect sign-in and organization-managed OIDC applications are im… | implementada | vigente | Comprobante 2026-10-26 abajo; límites externos conservados |
 | [CLOSE-mcp-001](../SPEC.md#close-mcp-001) | Instance user administration: GlitchTip's public MCP guide at https://glitchtip.com/documentation/mcp/ defines… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-002](../SPEC.md#close-mcp-002) | MCP transport and workspace discovery: Use the official github.com/modelcontextprotocol/go-sdk v1.8.0, whose p… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2141,7 +2142,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-066](../SPEC.md#close-operacion-066) | Verification and delivery: Always preserve clean-room provenance, user scope, existing controls and data. Ask… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-207](../SPEC.md#close-errores-207) | Current authorized delivery and compatible attachments (2026-10-18): Implement public Sentry attachment list/r… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-208](../SPEC.md#close-errores-208) | Current authorized delivery and compatible attachments (2026-10-18): Lists cap projected filename to 2048 Unic… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-067](../SPEC.md#close-operacion-067) | Current authorized delivery and compatible attachments (2026-10-18): Simplify the README and move all detailed… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-067](../SPEC.md#close-operacion-067) | Current authorized delivery and compatible attachments (2026-10-18): Simplify the README and move all detailed… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-209](../SPEC.md#close-errores-209) | Browser CSP reporting: Public browser security reports are part of error tracking. Implement both exact /api/{… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-210](../SPEC.md#close-errores-210) | Browser CSP reporting: Validate every report before starting writes. Support csp-violation only; reject unsupp… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-211](../SPEC.md#close-errores-211) | Browser CSP reporting: Acceptance requires pure format/grouping/invalid-batch cases, real prefixed HTTP+Postgr… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -10067,7 +10068,8 @@ Las dependencias restantes son externas: autorización de push/registro/Pages
 (056/206 y las filas de imagen/CI bloqueadas) y la auditoría final 100 que
 consume esos recibos. Toda la implementación local de archivo de errores, logs,
 transacciones y spans (068–091) y la operación local de imagen (092–096) quedó
-verificada. No se declara el producto completo ni se ejecutó publicación.
+verificada. La publicación autorizada de `main`, CI, imagen y Pages se ejecutó
+después de esta auditoría; los recibos están abajo.
 
 Reparación CI `40449235809`: la vista de transacciones omitía columnas de traza
 y proyección (`trace_span_id`, `trace_parent_span_id`, `trace_op`,
@@ -10077,6 +10079,50 @@ local/S3 y el test de migración. `go test -race -tags=integration ./...` pasa
 completo: server 222.293 s, store 416.785 s. Evidencia:
 `test-results/closure-20261025/ci-repair-40449235809/`. Siguiente acción:
 publicar el commit reparado y vigilar el nuevo CI.
+
+### Ejecución 2026-10-26: publicación en main, CI, imagen y Pages
+
+Se publicó `main` en `6f8a23b`. El primer CI (`40449235809`) falló por la vista
+de transacciones incompleta; se reparó, se repitió la suite completa con race y
+se volvió a publicar. El CI reparado `40450577549` y la imagen
+`40451259300` terminaron en éxito.
+
+| Elemento | Comprobante |
+|---|---|
+| `main` remoto en `6f8a23b` | `remote-main.txt` |
+| CI e imagen | `ci.json`; `image-workflow.json` |
+| OCI index `sha256:95fb3b94…` con amd64/arm64, `main`/`latest`/SHA y pull anónimo | `ghcr-manifest.json` |
+| Pages 200; `site/` sin cambios entre c1ce0fb y 6f8a23b | `pages.html`; `site-diff.txt` |
+
+Evidencia: `test-results/closure-20261025/operacion-046-048-067/`. Esto cierra
+046, 048 y 067. Quedan 056 y 206 (aceptación final de imagen/copia) y la
+auditoría 100. Siguiente acción: CLOSE-errores-206.
+
+### Ejecución 2026-10-26: aceptación de archivo en la imagen publicada
+
+Se arrancó la imagen publicada por digest con PostgreSQL y volumen limpios,
+archivo local y retención corta. El SDK Go generó error/transacción/log reales y
+se insertó un span standalone; el worker archivó a `/data/archive`.
+
+| Elemento | Comprobante |
+|---|---|
+| Imagen lista y datos archivados | `gs056-ready.json`; `gs056-sdk.log`; `image.txt` |
+| Consulta desde archivo (traza, issue, log) | `gs056-trace.json`; salidas de API |
+| Reinicio con las mismas lecturas | reinicio app-only, ready 200 |
+| Vencimiento elimina tablas, objetos y archivos | `expiry.json`; `expiry-files.txt` |
+| S3/errores/rollback/reintentos | owners de `operacion-071-073`, `-077-079`, `-080-085`, `-086-091` |
+
+Resultado observado: antes del cutoff, span object 1, transaction archive 1,
+error archive 7, log archive 1 y hot spans 0; traza/issue/log se leen; tras
+reiniciar siguen. Con retención 2 días, todas las tablas de archivo y archivos
+quedan en 0, la traza no devuelve nodos y el issue no tiene eventos. CI
+`40450577549`, imagen `40451259300` y la suite completa con race pasan.
+
+Evidencia: `test-results/closure-20261025/operacion-056/`.
+
+Límites registrados: el flujo limpio usó backend local; los requests S3 se
+cubren en sus owners separados. Siguiente acción: CLOSE-errores-206. El producto
+sigue incompleto.
 
 ### Comprobante de integración documental
 
