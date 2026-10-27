@@ -1767,7 +1767,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-008](../SPEC.md#close-sourcemaps-008) | Release lifecycle, commit metadata and deploys: Organization GET/POST .../releases/{version}/deploys/ records… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-009](../SPEC.md#close-sourcemaps-009) | Release lifecycle, commit metadata and deploys: Fresh accepted SDK error/message/transaction rows and standalo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-010](../SPEC.md#close-sourcemaps-010) | Release lifecycle, commit metadata and deploys: Add an original responsive Tailwind/daisyUI Releases view, laz… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir el CLI contra la imagen y verificar upgrade/reinicio |
+| [CLOSE-sourcemaps-011](../SPEC.md#close-sourcemaps-011) | Release lifecycle, commit metadata and deploys: Acceptance: real PostgreSQL owns shared-version atomic create/… | implementada | vigente | Comprobante 2026-10-27 abajo: CLI 3.8.0, navegador, reinicio y CI en b77a2cc |
 | [CLOSE-sourcemaps-012](../SPEC.md#close-sourcemaps-012) | Compatible release files: Expose compatible organization and project GET .../releases/{version}/files/, GET ..… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-013](../SPEC.md#close-sourcemaps-013) | Compatible release files: The view is backed by the existing release-scoped source_maps rows, not a duplicate… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-014](../SPEC.md#close-sourcemaps-014) | JavaScript artifacts: The observed sentry-cli 3.8.0 artifact flow negotiates chunk parameters at /api/0/organi… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -3355,7 +3355,28 @@ Evidencia: `test-results/closure-20261025/identity-103/{summary-20261027,admin-1
 y capturas. Los clones de 17/18/19 migraciones que exigen 033/047/084 no están
 en ningún volcado conservado (mínimo 21 migraciones), así que esas filas quedan
 bloqueadas por la base aceptada perdida. Siguiente acción: CLOSE-sourcemaps-011,
-primer criterio ejecutable de releases/artefactos. El producto sigue incompleto.
+completado abajo. El producto sigue incompleto.
+
+### Ejecución 2026-10-27: releases con CLI y navegador en la imagen final
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-011. Se repitió contra
+la imagen publicada `b77a2cc` con el binario fijado `sentry-cli 3.8.0`
+(SHA-256 `13f8cb34…`) y una credencial restringida a `project:releases` y
+`org:read` sobre un proyecto nuevo.
+
+| Elemento | Comprobante |
+|---|---|
+| Ciclo CLI | `releases new`, `finalize`, `list`, `info`, `set-commits --local` con dos commits, `deploys new`/`list` en staging, `archive`, `restore` y `delete` terminan en 0 |
+| Estado API | La API confirma dos commits y un deploy del release persistente; tras borrar el release responde 404 |
+| Revocación | Revocar la credencial hace que `releases new` falle con 401 |
+| Reinicio | El release persistente, sus commits/deploy y la credencial válida sobreviven a un reinicio solo de la aplicación |
+| Navegador | Owner y member: versiones exactas con espacios/255 Unicode, metadatos crudos, páginas independientes de commits/deploys, navegación y borrado completo a 320/768/1440; 21 capturas |
+
+El código de store/server/UI de releases no cambió entre `dc3d4bf` y `b77a2cc`;
+los comprobantes históricos de PostgreSQL/HTTP siguen vigentes. CI
+`40452038387` cubre formato, vet, race PostgreSQL e imagen. Evidencia:
+`test-results/closure-20261025/sourcemaps-011/{summary-20261027,cli2,browser,api-state}.json`.
+Siguiente acción: CLOSE-sourcemaps-021. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 

@@ -1,0 +1,7 @@
+error: API request failed
+
+Caused by:
+    sentry reported an error: Credential is invalid, expired or revoked (http status: 401)
+
+Add --log-level=[info|debug] or export SENTRY_LOG_LEVEL=[info|debug] to see more output.
+Please attach the full debug log to all bug reports.

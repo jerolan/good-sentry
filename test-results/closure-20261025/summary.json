@@ -3993,14 +3993,19 @@
       ]
     },
     "CLOSE-sourcemaps-011": {
-      "evidence": "bloqueada",
-      "scope": "local release acceptance with pinned sentry-cli 3.8.0, member workflow and independent paging; final image and CI remain",
-      "evidence_files": [
-        "releases-cli.log",
-        "releases-011/report.json",
-        "releases-011/release-independent-pages-1440.png",
-        "releases-011/release-member-1440.png"
-      ]
+      "evidence": "vigente",
+      "scope": "release lifecycle, commits and deploys with sentry-cli 3.8.0 and browser owners on the published image",
+      "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+      "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+      "covered": [
+        "pinned sentry-cli 3.8.0 with a restricted project:releases/org:read credential creates, finalizes, lists, shows, sets two local commits, records and lists a staging deploy, archives, restores and deletes a release",
+        "deleting the release leaves the API at 404 and a revoked credential answers 401",
+        "a persistent release keeps two commits and one deploy through an app-only restart with the same write credential",
+        "the browser owner passes owner and member workflows, exact spaced and 255-character Unicode versions, raw metadata, independent commit/deploy pages, navigation and whole deletion at 320/768/1440",
+        "release store/server/UI code is unchanged between dc3d4bf and b77a2cc; historical PostgreSQL and HTTP receipts remain valid",
+        "public main/tree and CI 40452038387 match the candidate"
+      ],
+      "evidence_files": ["sourcemaps-011/summary-20261027.json", "sourcemaps-011/cli2", "sourcemaps-011/browser/report.json", "sourcemaps-011/api-state.json", "releases-cli.log", "releases-011/report.json"]
     },
     "CLOSE-sourcemaps-012": {
       "evidence": "vigente",

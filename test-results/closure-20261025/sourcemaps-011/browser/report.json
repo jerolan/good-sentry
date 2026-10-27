@@ -1,0 +1,129 @@
+{
+  "ok": true,
+  "baseURL": "http://127.0.0.1:18104/",
+  "organization": "otlp-acceptance-primary",
+  "projectIds": [
+    "130",
+    "131"
+  ],
+  "version": "  Release / mvq9mjsk-54ae6a <img src=x onerror=\"window.__releaseUnsafe=1\"> 雪  ",
+  "checks": [
+    "Create/edit dialogs close on real Back, stay closed on Forward and reopen without unsaved input; ordinary server400 retains useful fields. Exact spaced/slashed version, safe ref/URL/status, UTC finalize, explicit int64/extreme-exponent commits and independent25+1 history pages work",
+    "Real member reads metadata and both history pages without write controls; project/source-map navigation accepts exact255 Unicode identities, removal deletes only matching maps, confirmed whole deletion returns to preserved filters, and release-write credentials remain opt-in"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/owner-release-overview-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/owner-release-detail-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/owner-release-overview-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/owner-release-detail-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/owner-release-overview-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/owner-release-detail-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/independent-pages-overview-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/independent-pages-detail-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/independent-pages-overview-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/independent-pages-detail-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/independent-pages-overview-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/independent-pages-detail-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/member-release-overview-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/member-release-detail-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/member-release-overview-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/member-release-detail-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/member-release-overview-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/member-release-detail-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/delete-confirmation-overview-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/delete-confirmation-overview-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-011/browser/delete-confirmation-overview-1440.png"
+  ],
+  "dimensions": [
+    {
+      "name": "owner-release",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "owner-release",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "owner-release",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "independent-pages",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "independent-pages",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "independent-pages",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "member-release",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "member-release",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "member-release",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "delete-confirmation",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "delete-confirmation",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "delete-confirmation",
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/releases/"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/releases/%20%20Release%20%2F%20mvq9mjsk-54ae6a%20%3Cimg%20src%3Dx%20onerror%3D%22window.__releaseUnsafe%3D1%22%3E%20%E9%9B%AA%20%20/commits/"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/releases/%20%20Release%20%2F%20mvq9mjsk-54ae6a%20%3Cimg%20src%3Dx%20onerror%3D%22window.__releaseUnsafe%3D1%22%3E%20%E9%9B%AA%20%20/deploys/"
+    }
+  ],
+  "badResponses": [
+    {
+      "url": "http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/releases/",
+      "status": 400
+    },
+    {
+      "url": "http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/releases/%20%20Release%20%2F%20mvq9mjsk-54ae6a%20%3Cimg%20src%3Dx%20onerror%3D%22window.__releaseUnsafe%3D1%22%3E%20%E9%9B%AA%20%20/commits/",
+      "status": 400
+    },
+    {
+      "url": "http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/releases/%20%20Release%20%2F%20mvq9mjsk-54ae6a%20%3Cimg%20src%3Dx%20onerror%3D%22window.__releaseUnsafe%3D1%22%3E%20%E9%9B%AA%20%20/deploys/",
+      "status": 400
+    }
+  ]
+}
