@@ -234,7 +234,7 @@ func (s *Store) CompatibleEvent(ctx context.Context, access ManagementAccess, ta
 		{&record.NextID, ">", "e.timestamp,e.id"},
 	} {
 		var id string
-		err = tx.QueryRow(ctx, "SELECT e.event_id FROM events e"+where+fmt.Sprintf(" AND (e.timestamp,e.id)%s($%d::timestamptz,$%d::bigint) ORDER BY %s LIMIT 1", sibling.comparison, len(args)-1, len(args), sibling.order), args...).Scan(&id)
+		err = tx.QueryRow(ctx, "SELECT e.event_id FROM events_with_archive e"+where+fmt.Sprintf(" AND (e.timestamp,e.id)%s($%d::timestamptz,$%d::bigint) ORDER BY %s LIMIT 1", sibling.comparison, len(args)-1, len(args), sibling.order), args...).Scan(&id)
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return empty, err
 		}

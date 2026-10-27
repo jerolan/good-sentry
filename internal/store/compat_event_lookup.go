@@ -42,7 +42,7 @@ func (s *Store) CompatibleEventLookup(ctx context.Context, access ManagementAcce
 		}
 		projectID = projects[0]
 	}
-	rows, err := tx.Query(ctx, `SELECT e.id FROM events e JOIN projects p ON p.id=e.project_id
+	rows, err := tx.Query(ctx, `SELECT e.id FROM events_with_archive e JOIN projects p ON p.id=e.project_id
  WHERE p.organization_id=$1::bigint AND ($2 OR p.id=ANY($3::bigint[]))
  AND e.event_id=$4 AND ($5::bigint=0 OR p.id=$5) AND ($6 OR e.issue_id IS NOT NULL)
  ORDER BY e.project_id,e.id LIMIT 2`, access.OrganizationID, access.AllProjects, access.ProjectIDs, reference, projectID, filter.IncludeUnassociated)

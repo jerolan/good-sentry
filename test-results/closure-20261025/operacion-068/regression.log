@@ -1,0 +1,11 @@
+=== RUN   TestCompatibleEventsScopedOwnershipAndCurrentMembership
+--- PASS: TestCompatibleEventsScopedOwnershipAndCurrentMembership (0.74s)
+=== RUN   TestCompatibleEventsOrderingFiltersWindowsAndSample
+--- PASS: TestCompatibleEventsOrderingFiltersWindowsAndSample (0.68s)
+=== RUN   TestEventRetentionRecountsPartitionsAndPreservesEmptyIssueHistory
+--- PASS: TestEventRetentionRecountsPartitionsAndPreservesEmptyIssueHistory (0.75s)
+=== RUN   TestIssueDetailSnapshotDuringRealCaptures
+    issues_detail_test.go:138: coherent concurrent snapshots before commit=296 after commit=172
+--- PASS: TestIssueDetailSnapshotDuringRealCaptures (1.27s)
+PASS
+ok  	goodsentry/internal/store	3.446s

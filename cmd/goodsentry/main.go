@@ -91,7 +91,11 @@ func run() error {
 		stopTransactionRetention = jobs.StartTransactionRetentionWithArchive(ctx, db, cfg.TransactionRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second, *archiveOptions)
 	}
 	defer stopTransactionRetention()
-	stopEventRetention := jobs.StartEventRetention(ctx, db, cfg.EventRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	archiveAfterDays := 0
+	if archiveOptions != nil {
+		archiveAfterDays = cfg.ArchiveAfterDays
+	}
+	stopEventRetention := jobs.StartEventRetentionWithArchive(ctx, db, cfg.EventRetentionDays, archiveAfterDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopEventRetention()
 	stopUptimeRetention := jobs.StartUptimeRetention(ctx, db, cfg.UptimeRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopUptimeRetention()

@@ -11,7 +11,7 @@ import (
 const compatibleEventSelect = `SELECT e.id,e.event_id,e.project_id,COALESCE(e.issue_id::text,''),e.kind,e.title,e.level,e.environment,e.release,
  e.timestamp,e.created_at,e.data,r.id::text,r.version,r.created_at,r.date_released,
  report.id::text,report.created_at,report.name,report.email,report.comments`
-const compatibleEventJoins = ` FROM events e LEFT JOIN issues i ON i.id=e.issue_id
+const compatibleEventJoins = ` FROM events_with_archive e LEFT JOIN issues i ON i.id=e.issue_id
  JOIN projects p ON p.id=e.project_id
  LEFT JOIN releases r ON r.organization_id=p.organization_id AND r.version=e.release
  AND EXISTS(SELECT 1 FROM release_projects rp WHERE rp.release_id=r.id AND rp.project_id=e.project_id)

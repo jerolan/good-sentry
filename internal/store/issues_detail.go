@@ -27,7 +27,7 @@ func (s *Store) IssueDetail(ctx context.Context, userID, id string) (IssueDetail
 	}
 	defer tx.Rollback(ctx)
 	detail := IssueDetail{Issue: issue, Event: json.RawMessage(`{}`), Events: []EventSummary{}}
-	rows, err := tx.Query(ctx, `SELECT event_id,timestamp,data FROM events WHERE issue_id=$1::bigint ORDER BY timestamp DESC,id DESC LIMIT 50`, issue.ID)
+	rows, err := tx.Query(ctx, `SELECT event_id,timestamp,data FROM events_with_archive WHERE issue_id=$1::bigint ORDER BY timestamp DESC,id DESC LIMIT 50`, issue.ID)
 	if err != nil {
 		return detail, err
 	}

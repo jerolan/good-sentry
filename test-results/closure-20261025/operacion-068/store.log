@@ -1,0 +1,4 @@
+=== RUN   TestEventArchiveCopyUnionRestartAndExpiry
+--- PASS: TestEventArchiveCopyUnionRestartAndExpiry (0.79s)
+PASS
+ok  	goodsentry/internal/store	0.800s

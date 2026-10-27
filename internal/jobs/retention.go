@@ -64,15 +64,44 @@ func startTransactionRetention(parent context.Context, db *store.Store, days int
 
 // StartEventRetention expires receipts without discarding their issue history.
 func StartEventRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
+	return StartEventRetentionWithArchive(parent, db, days, 0, interval)
+}
+
+// StartEventRetentionWithArchive copies retained error/message receipts into
+// the local durable archive before the ordinary expiry pass. archiveAfterDays
+// is capped by the event lifetime, so an archive never outlives its source.
+func StartEventRetentionWithArchive(parent context.Context, db *store.Store, days, archiveAfterDays int, interval time.Duration) func() {
 	return startRetention(parent, interval, func(ctx context.Context) bool {
+		archived := int64(0)
+		if archiveAfterDays > 0 {
+			archiveDays := min(archiveAfterDays, days)
+			cutoff := time.Now().UTC().Add(-time.Duration(archiveDays) * 24 * time.Hour)
+			var err error
+			archived, err = db.ArchiveEvents(ctx, cutoff, 250)
+			if ctx.Err() != nil {
+				return false
+			}
+			if err != nil {
+				slog.Error("Event archive pass failed", "entryPoint", "event_retention_worker", "operation", "archive_events")
+			}
+			removedArchive, cleanupErr := db.CleanupEventArchive(ctx, time.Now().UTC().Add(-time.Duration(days)*24*time.Hour))
+			if ctx.Err() != nil {
+				return false
+			}
+			if cleanupErr != nil {
+				slog.Error("Event archive retention failed", "entryPoint", "event_retention_worker", "operation", "cleanup_event_archive")
+			} else if removedArchive > 0 {
+				archived += removedArchive
+			}
+		}
 		events, err := db.CleanupEvents(ctx, days)
 		if ctx.Err() != nil {
 			return false
 		}
 		if err != nil {
 			slog.Error("Event retention pass failed", "entryPoint", "event_retention_worker", "operation", "cleanup_events")
-		} else if events > 0 {
-			slog.Info("Event retention cleanup committed", "entryPoint", "event_retention_worker", "events", events)
+		} else if events > 0 || archived > 0 {
+			slog.Info("Event retention cleanup committed", "entryPoint", "event_retention_worker", "events", events, "archived", archived)
 			return true
 		}
 		return false
