@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "source": "b77a2cc",
+  "sdkVersion": "11.7.0",
+  "projectId": "12",
+  "rootIssueId": "1023",
+  "newIssueId": "1025",
+  "resetSignature": "72cc4445720c4365896d254ab80885c5",
+  "events": {
+    "original": "d36d758bed6d4da2bce07cc315c5bf87",
+    "control": "8e26a189c008499c9790931a8d743cc5",
+    "new": "45ca1615da2a456f97d0112dead4d3b8",
+    "controlAfter": "6a6e771ae54048d1bf1f35184f9c7789",
+    "afterSplit": "fbe29733d7f84931982eafd782870bde"
+  },
+  "retiredOriginId": "1024",
+  "acknowledgements": [
+    200,
+    200,
+    200,
+    200,
+    200,
+    200
+  ],
+  "checks": [
+    "project-restricted reader denied reset; writer reset returned empty 202",
+    "fresh reset signature created a new issue with the same signature UUID",
+    "control capture stayed grouped with the historic root",
+    "retry of the original event did not move it or alter historical events",
+    "separating the retired historical origin does not steal the new route",
+    "revoked writer receives 401"
+  ]
+}

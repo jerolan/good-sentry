@@ -3795,6 +3795,22 @@ CLI y actualización de imagen/estado anterior; la integración de 033 continúa
 en la sesión 54217. Siguiente acción: verificar la separación y la ruta nueva
 sin alterar el cohort anterior, con datos adicionales propios.
 
+### Avance parcial 2026-10-27: separación de CLOSE-errores-047
+
+En otro proyecto aislado se creó primero el grupo de control y después la
+partición que se fusionaría. Tras resetear la firma de esa partición y crear
+un nuevo issue con la misma firma, se separó la partición histórica mediante
+`unmerge`. Una captura oficial posterior siguió en el issue nuevo y su UUID
+de firma permaneció igual. Una consulta PostgreSQL independiente confirmó que
+el evento original quedó en la partición histórica separada, los dos eventos
+de control en el grupo original y las dos capturas nuevas en el grupo nuevo.
+Los permisos y la revocación volvieron a pasar en ese cohort. Evidencia:
+`test-results/closure-20261025/errores-047-fresh/split/`.
+
+Quedan variantes de navegador, CLI y actualización de imagen/estado anterior
+de 047. Siguiente acción: comprobar sus flujos de navegador de fallo, vacío,
+alias y borradores y reconciliar el CLI y los owners ya existentes.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
