@@ -3871,6 +3871,27 @@ reinicio y los demás comprobantes completos de 047. Siguiente acción:
 preparar una base con migración 018 y comprobar su actualización a la imagen
 candidata sin afectar las bases de las pruebas anteriores.
 
+### Avance parcial 2026-10-27: actualización de imagen de errores-047
+
+Se construyó localmente la revisión anterior `1a07c42691e805debee2036f8fa6890c53e712eb`
+y se inició sobre una base y volumen nuevos con migraciones 001–018. El SDK
+Node 11.7.0 capturó un evento y adjunto. La imagen candidata `sha256:40b75bd3…`
+actualizó esa misma base a 079: las 30 filas originales conservaron todas sus
+columnas, y la nueva fila de `issue_hash_routes` coincidió por fingerprint,
+proyecto y origen con el issue previo. El evento y los bytes del adjunto se
+leyeron después de actualizar y tras reiniciar la misma aplicación.
+
+Antes y después del reinicio coincidieron los multiconjuntos de 94 filas en
+73 tablas; una sesión de verificación se añadió antes de ambas instantáneas.
+Evidencia y scripts sin contraseña:
+`test-results/closure-20261025/errores-047-fresh/upgrade/`. La imagen anterior
+es reconstruida localmente, no un artefacto histórico publicado. Los snapshots
+privados quedan en `/tmp/goodsentry-closure-047/`.
+
+Siguiente acción: cotejar los controles CLI y demás subresultados de 047 con
+la candidata, y recoger la integración completa en curso de 033 antes de cerrar
+ningún criterio.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
