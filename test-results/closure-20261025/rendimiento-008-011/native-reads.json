@@ -1,0 +1,15 @@
+{
+  "trace": {
+    "nodeCount": 0,
+    "errorCount": 1,
+    "logCount": 1,
+    "logsEnabled": true
+  },
+  "transactions": 0,
+  "spans": 0,
+  "missingEventReads": [
+    404,
+    404
+  ],
+  "eventsAfter": 530
+}

@@ -1834,10 +1834,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-rendimiento-005](../SPEC.md#close-rendimiento-005) | Transaction and standalone-span retention: Under those project gates and pinned event rows, delete envelope_it… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-006](../SPEC.md#close-rendimiento-006) | Transaction and standalone-span retention: Delete standalone spans independently, with no trace-wide cascade.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-007](../SPEC.md#close-rendimiento-007) | Transaction and standalone-span retention: Migration023 adds only receipt-order indexes on events(created_at,i… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-rendimiento-008](../SPEC.md#close-rendimiento-008) | Transaction and standalone-span retention: Acceptance requires real PostgreSQL expiry based on receipt age wit… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
-| [CLOSE-rendimiento-009](../SPEC.md#close-rendimiento-009) | Transaction and standalone-span retention: The transaction/span runtime acceptance on2026-10-17 uses new candi… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
-| [CLOSE-rendimiento-010](../SPEC.md#close-rendimiento-010) | Transaction and standalone-span retention: The same candidate cleans the remaining fixtures with logs and upti… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
-| [CLOSE-rendimiento-011](../SPEC.md#close-rendimiento-011) | Transaction and standalone-span retention: Transaction/span acceptance closes at functional eea9788c236fe8a738… | implementada | bloqueada | Bloqueo por imagen/CI y runtime preservado; ver sección 2026-10-26 |
+| [CLOSE-rendimiento-008](../SPEC.md#close-rendimiento-008) | Transaction and standalone-span retention: Acceptance requires real PostgreSQL expiry based on receipt age wit… | implementada | vigente | Comprobante 2026-10-27 abajo sobre imagen b77a2cc y volcados preservados |
+| [CLOSE-rendimiento-009](../SPEC.md#close-rendimiento-009) | Transaction and standalone-span retention: The transaction/span runtime acceptance on2026-10-17 uses new candi… | implementada | vigente | 4.235 filas/529 eventos preservados y transición reproducida |
+| [CLOSE-rendimiento-010](../SPEC.md#close-rendimiento-010) | Transaction and standalone-span retention: The same candidate cleans the remaining fixtures with logs and upti… | implementada | vigente | Variante con logs/uptime deshabilitados, 4.262→4.258 y reinicio |
+| [CLOSE-rendimiento-011](../SPEC.md#close-rendimiento-011) | Transaction and standalone-span retention: Transaction/span acceptance closes at functional eea9788c236fe8a738… | implementada | vigente | Cierre reestablecido en la candidata final b77a2cc |
 | [CLOSE-operacion-013](../SPEC.md#close-operacion-013) | Error-event retention: After accepted logs and transaction/spans, error-event retention remains required. The… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-014](../SPEC.md#close-operacion-014) | Error-event retention: The accepted configuration prerequisite activates no deletion and adds no worker. Its e… | implementada (config-only) | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-015](../SPEC.md#close-operacion-015) | Error-event retention: Store.CleanupEvents(ctx, days) returns a committed removal count and error. In one Post… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -3465,11 +3465,25 @@ Evidencia: `test-results/closure-20261025/operacion-001/summary-20261027.json`
 y `operacion-003/summary-20261027.json`. `operacion-002` es el criterio paraguas
 y queda pendiente hasta que todo lo demás esté vigente o exceptuado.
 
-Siguiente acción: readaptar el arnés conservado de
-`.tmp/transaction-retention-acceptance` a la imagen `b77a2cc` y reejecutar
-rendimiento-008..011 con `before-expiry.dump` y `accepted.dump`. Después, si los
-cuatro linajes aparecen, cerrar 033/047/084/logs-028 y ejecutar
-CLOSE-operacion-100. El producto sigue incompleto.
+### Ejecución 2026-10-27: retención de transacciones y spans (rendimiento-008..011)
+
+Se restauraron los volcados conservados y se reejecutó el vencimiento sobre la
+imagen publicada `b77a2cc`.
+
+| Elemento | Comprobante |
+|---|---|
+| Volcados preservados | 4.235 filas/529 eventos/22 migraciones/38 tablas; 4.262/532/23/38 con los dos recibos propios; 4.258/530/23/38 aceptado |
+| Vencimiento | Se envejecieron solo los dos recibos y dos spans propios; el worker los eliminó en un tick y dejó 530 eventos/22 spans/17 operaciones |
+| Igualdad | La copia vencida proyecta exactamente al estado aceptado, excluyendo solo campos generados al migrar, recibos de migración y seis sesiones posteriores ya documentadas |
+| Lecturas nativas | Traza 0 nodos con 1 error y 1 log retenidos; transacciones/spans vacíos; padres ausentes 404 |
+| Replay | Reenviar el `event_id` vencido crea un recibo nuevo (1544) y el segundo reenvío es idempotente |
+| Variante deshabilitada | Con logs/uptime off también quedan 530 eventos/22 spans y proyección exacta |
+| Reinicio y respaldo | El reinicio conserva las filas; el respaldo de 4.262 filas restaura con 23 migraciones y los dos recibos |
+
+Evidencia: `test-results/closure-20261025/rendimiento-008-011/{summary-20261027,native-reads,replay,restart-recovery,disabled-cleanup}.json`.
+Quedan los cuatro bloqueos por linajes perdidos (033/047/084/logs-028) y el
+criterio paraguas 002; CLOSE-operacion-100 sigue pendiente. El producto sigue
+incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
