@@ -3558,6 +3558,23 @@ permisos y flujos de navegador, reinicio/preservación y cotejo final de
 fuente/imagen/CI. Siguiente acción: ejecutar el recorrido CLI con credenciales
 restringidas y registrar después el resultado; conservar la misma base.
 
+### Avance parcial 2026-10-27: CLI de CLOSE-errores-033
+
+En la misma copia aislada, un proyecto nuevo recibió un error real de Node
+11.7.0. `sentry-cli 3.8.0`, con credenciales limitadas a ese proyecto, listó
+el issue con `event:read`; esa credencial recibió 403 al resolverlo. Con
+`event:write`, CLI resolvió, reabrió, silenció y reabrió; una lectura nativa
+después de cada operación conservó el mismo event ID. El CLI no tiene comando
+de borrado o descarte: esos comportamientos se prueban por API y navegador.
+Evidencia reproducible y resultado sin credenciales:
+`test-results/closure-20261025/errores-033-fresh/cli.mjs` y `cli-report.json`.
+El script usa `/tmp/sentry-cli-3.8.0`, el SDK fijado y la copia activa en 18533.
+
+Quedan la revocación y variantes restantes del CLI, flujos de navegador
+pendientes, reinicio/preservación y contraste final de fuente/imagen/CI.
+Siguiente acción: completar revocación y comprobar el reinicio de esta misma
+base, preservando los resultados ya capturados.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el

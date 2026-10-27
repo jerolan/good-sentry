@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "cliVersion": "3.8.0",
+  "sdkVersion": "11.7.0",
+  "projectId": "4",
+  "issueId": "7",
+  "eventId": "28e768f157bd4b6587e20fe0c917bda1",
+  "checks": [
+    "restricted reader lists the SDK issue",
+    "reader resolve is denied with 403",
+    "restricted writer resolves, reopens, mutes and reopens",
+    "native reads retain the SDK event after every mutation"
+  ],
+  "limitation": "CLI 3.8.0 does not provide delete or discard"
+}
