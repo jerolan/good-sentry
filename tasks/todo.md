@@ -3617,6 +3617,22 @@ selección múltiple, el cotejo completo de la evidencia y fuente/imagen/CI.
 Siguiente acción: comprobar el reintento tras 204 y los controles bulk sin
 alterar los datos ya capturados.
 
+### Avance parcial 2026-10-27: reintento y bulk de CLOSE-errores-033
+
+En un proyecto nuevo de la copia aislada, el borrado individual devolvió 204;
+un 503 inyectado en la siguiente lectura de lista presentó el error y el
+reintento recuperó la lista sin emitir un segundo DELETE. Otro flujo seleccionó
+dos issues y eliminó uno externamente: el DELETE múltiple devolvió 200 con
+objeto vacío, informó el no-op, limpió la selección y conservó el otro issue.
+Ambos estados se verificaron a 320/768/1440 sin errores de página. Solo el 503
+es simulado; los borrados y el no-op son respuestas reales. Evidencia:
+`test-results/closure-20261025/errores-033-fresh/browser-retry-bulk.mjs` y
+`browser-retry-bulk/`.
+
+Quedan los límites de selección múltiple, el cotejo de comprobantes completos
+y fuente/imagen/CI. Siguiente acción: verificar los límites de selección y
+fusión sobre datos propios, luego reconciliar todos los subresultados de 033.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
