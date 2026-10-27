@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "source": "b77a2cc",
+  "sdkVersion": "11.7.0",
+  "projectId": "11",
+  "rootIssueId": "1020",
+  "newIssueId": "1022",
+  "resetSignature": "d3d642d5376943b298b573bb2da78130",
+  "events": {
+    "original": "8d80fce39dcf4fcdbe3738742d09f7cb",
+    "control": "6781f4a95f0c4b1a8a94338106158187",
+    "new": "8f1f5e3dbc1e46bd963e83d4acfc6cae",
+    "controlAfter": "9e949515b70b4d679ecb4bae441c6d24"
+  },
+  "acknowledgements": [
+    200,
+    200,
+    200,
+    200,
+    200
+  ],
+  "checks": [
+    "project-restricted reader denied reset; writer reset returned empty 202",
+    "fresh reset signature created a new issue with the same signature UUID",
+    "control capture stayed grouped with the historic root",
+    "retry of the original event did not move it or alter historical events",
+    "revoked writer receives 401"
+  ]
+}

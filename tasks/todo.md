@@ -3778,6 +3778,23 @@ casos de 047. Siguiente acción: capturar con el SDK fijado antes/después del
 reset, verificar control, reintento y credenciales, y completar los controles
 de actualización, navegador y CI pendientes.
 
+### Avance parcial 2026-10-27: SDK y permisos de CLOSE-errores-047
+
+Node SDK 11.7.0 envió dos firmas y, tras fusionar sus issues, una credencial
+`event:write` limitada al proyecto reseteó una de ellas con 202 y cuerpo vacío;
+`event:read` recibió 403. Una captura nueva de esa firma creó otro issue con
+el mismo UUID de firma; una captura de control permaneció en el grupo original.
+El retry del event ID anterior no cambió la lista histórica ni movió el evento.
+Tras revocar el writer, el reset recibió 401. Los cinco envíos recibieron 200.
+Una consulta PostgreSQL independiente confirmó una sola fila por cada uno de
+los cuatro event IDs y sus grupos original/nuevo. Evidencia:
+`test-results/closure-20261025/errores-047-fresh/sdk/`.
+
+Faltan la separación nativa de la partición retirada, variantes de navegador,
+CLI y actualización de imagen/estado anterior; la integración de 033 continúa
+en la sesión 54217. Siguiente acción: verificar la separación y la ruta nueva
+sin alterar el cohort anterior, con datos adicionales propios.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el

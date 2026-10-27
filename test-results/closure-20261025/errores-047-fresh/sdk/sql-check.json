@@ -1,0 +1,13 @@
+{
+  "database": "gsclosure033_pg",
+  "rootIssueId": "1020",
+  "newIssueId": "1022",
+  "events": {
+    "original": {"id": "8d80fce39dcf4fcdbe3738742d09f7cb", "issueId": "1020"},
+    "control": {"id": "6781f4a95f0c4b1a8a94338106158187", "issueId": "1020"},
+    "new": {"id": "8f1f5e3dbc1e46bd963e83d4acfc6cae", "issueId": "1022"},
+    "controlAfter": {"id": "9e949515b70b4d679ecb4bae441c6d24", "issueId": "1020"}
+  },
+  "query": "SELECT issue_id,event_id FROM events WHERE event_id IN (the four IDs) ORDER BY event_id",
+  "observedRows": 4
+}
