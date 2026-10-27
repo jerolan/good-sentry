@@ -3755,6 +3755,15 @@ La integración completa sin race está en curso sobre la base separada
 hasta inspeccionar el resultado.
 Siguiente acción: recoger ese resultado y completar el cotejo de 033.
 
+### Selección paralela independiente: CLOSE-errores-047
+
+Mientras termina la integración de 033 en `closure033_migration`, iniciar la
+comprobación de navegador de 047 en un proyecto nuevo de la copia aislada
+`gsclosure033`, sin alterar los proyectos de 033. La selección se basa en la
+decisión que retiró el linaje histórico y no presupone que 033 esté cerrado.
+Siguiente acción: ejecutar el owner de reset en Chromium y registrar su
+alcance; después completar SDK, permisos, actualización y demás controles 047.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
