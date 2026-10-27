@@ -1,0 +1,30 @@
+{
+  "criteria": ["CLOSE-operacion-086", "CLOSE-operacion-087", "CLOSE-operacion-088", "CLOSE-operacion-089", "CLOSE-operacion-090", "CLOSE-operacion-091"],
+  "date": "2026-10-26",
+  "product_revision": "0578539",
+  "covered": {
+    "086": "local span archive query through the hybrid reader, including hot+cold union and trace seed expansion",
+    "087": "local manifests/catalog survive reopen and still serve archived spans",
+    "088": "local expiry removes archived rows/objects at the receipt cutoff",
+    "089": "S3-compatible span archive query after materialization",
+    "090": "S3 manifests/catalog restore reads after a fresh Store connection",
+    "091": "S3 object cleanup removes object+catalog at expiry"
+  },
+  "fresh_tests": {
+    "span_s3": "PASS in 0.699s: S3 upload, hybrid query, reopen and expiry",
+    "local_existing": "operacion-049-055: TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces, TestSpanArchivePreservesReceiptLifetimeAndDeletedProjectCleanup, retention/read race owners"
+  },
+  "observed": {
+    "s3_objects_before": 1,
+    "hybrid_spans_after_archive": 2,
+    "hybrid_spans_after_reopen": 2,
+    "s3_objects_after_expiry": 0,
+    "hybrid_spans_after_expiry": 1
+  },
+  "evidence": ["store.log", "../operacion-049-055/store.log", "../operacion-049-055/spanarchive.log", "../operacion-049-055/spanarchive-race.log", "summary.json"],
+  "limits": [
+    "Local span archive evidence is the existing fresh owner set; S3 query/restart/expiry is the new real httptest S3 owner.",
+    "The final copied image and matching public CI remain pending.",
+    "The product is not declared complete."
+  ]
+}
