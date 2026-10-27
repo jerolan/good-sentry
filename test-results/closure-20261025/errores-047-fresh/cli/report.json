@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "source": "b77a2cc",
+  "sdkVersion": "11.7.0",
+  "cliVersion": "3.8.0",
+  "projectId": "14",
+  "issueIds": [
+    "1029",
+    "1028"
+  ],
+  "checks": [
+    "all resolves both SDK issues",
+    "repeated IDs reopen both issues",
+    "status filter mutes and reopens both issues"
+  ],
+  "limitation": "CLI does not reset or delete grouping"
+}

@@ -3892,6 +3892,20 @@ Siguiente acción: cotejar los controles CLI y demás subresultados de 047 con
 la candidata, y recoger la integración completa en curso de 033 antes de cerrar
 ningún criterio.
 
+### Avance parcial 2026-10-27: CLI múltiple de errores-047
+
+En un proyecto nuevo de `gsclosure033`, Node SDK 11.7.0 capturó dos issues.
+Con una credencial `event:write` limitada al proyecto, sentry-cli 3.8.0
+resolvió ambos con `--all`, reabrió ambos con IDs repetidos, y silenció y
+reabrió ambos con filtros de estado. La lectura nativa comprobó cada estado.
+El CLI no ofrece reset ni DELETE; esos comportamientos tienen owners de API y
+navegador. Evidencia reproducible:
+`test-results/closure-20261025/errores-047-fresh/cli/`.
+
+Siguiente acción: recoger la integración completa que sigue en la sesión
+26168 y reconciliar los subresultados de 033 y 047 con el CI de la revisión
+de test ajustada.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
