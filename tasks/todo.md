@@ -3673,6 +3673,22 @@ reconciliar todos los subresultados y el CI de la candidata. Siguiente acción:
 preparar una base aislada previa a la migración pertinente y verificar la
 actualización de imagen y preservación de su estado inicial.
 
+### Avance parcial 2026-10-27: migración 020 de CLOSE-errores-033
+
+En PostgreSQL 18 se creó `closure033_migration`, separada de la base de
+aceptación, y pasó `go test -tags=integration ./internal/store -run
+'^TestCompatibleIssueDeletionMigration020PreservesRowsScopesAndReopen$'
+-count=1 -v` sobre la fuente de producto `b77a2cc`. El owner crea datos y
+credenciales representativos, retira la metadata y recibo 020 dentro de su
+esquema de prueba, comprueba los recibos 001–019 y la preservación de filas,
+alcances y reapertura al aplicar 020. Evidencia:
+`test-results/closure-20261025/errores-033-fresh/migration-020.log`.
+
+Límite: el fixture conserva migraciones posteriores a 020; esto prueba el
+owner de migración, no una actualización de imagen desde un estado realmente
+anterior. Siguiente acción: verificar esa actualización de imagen en una base
+aislada de versión previa y luego reconciliar los subresultados de 033.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
