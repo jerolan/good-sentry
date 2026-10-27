@@ -3538,6 +3538,26 @@ reinicio y preservación de la nueva base, y contraste final de fuente/imagen/CI
 Siguiente acción: preparar un proyecto y credenciales aisladas, ejecutar las
 capturas oficiales y el recorrido CLI, conservando la misma base de prueba.
 
+### Avance parcial 2026-10-27: SDK y descarte de CLOSE-errores-033
+
+Sobre la misma imagen y base aislada, Node SDK 11.7.0 envió un error con
+adjunto binario: el evento quedó visible y los cuatro bytes del archivo se
+descargaron idénticos. Un token `event:write` limitado al nuevo proyecto ejecutó
+`discard:true` con 204; una segunda captura oficial de la misma firma recibió
+200 y no reapareció en la lista. Ambos envíos usaron el transporte real. Se
+ejecutó primero un cohort que comprobó captura y descarte; otro cohort nuevo
+añadió la lectura binaria sin alterar el primero. La prueba protege el flujo
+SDK→transporte→adjunto→descarte→recurrencia, que los owners HTTP aislados no
+demuestran, sin seam de producción. Evidencia reproducible y resultado sin
+credenciales: `test-results/closure-20261025/errores-033-fresh/sdk.mjs` y
+`sdk-report.json`. El script requiere el SDK fijado instalado en
+`/tmp/goodsentry-sdk/node_modules/@sentry/node` y la copia activa en 18533.
+
+Faltan los demás controles de 033, en particular CLI 3.8.0, variantes de
+permisos y flujos de navegador, reinicio/preservación y cotejo final de
+fuente/imagen/CI. Siguiente acción: ejecutar el recorrido CLI con credenciales
+restringidas y registrar después el resultado; conservar la misma base.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el

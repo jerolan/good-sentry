@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "sdkVersion": "11.7.0",
+  "source": "b77a2cc",
+  "projectId": "3",
+  "issueId": "6",
+  "firstEventId": "9b62100ef2cc43b9b73cfe50fcd2fde3",
+  "secondEventId": "b11df76a2400411c8a6ddc545b5ea3d5",
+  "acknowledgements": [
+    200,
+    200
+  ],
+  "checks": [
+    "A project-restricted event:write token is issued",
+    "Official Node 11.7.0 capture is acknowledged and readable",
+    "The SDK attachment is listed and downloaded byte for byte",
+    "Restricted writer permanently discards the captured issue",
+    "A new matching SDK capture is acknowledged and remains absent after discard"
+  ],
+  "attachmentSent": "proof.bin: 4 bytes"
+}
