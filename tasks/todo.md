@@ -1956,7 +1956,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-018](../SPEC.md#close-alertas-018) | Slack incoming webhooks: Keep POST, JSON content type and the two existing GoodSentry identity headers for Sla… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-019](../SPEC.md#close-alertas-019) | Slack incoming webhooks: Slack rate-limit responses(https://docs.slack.dev/apis/web-api/rate-limits/) include… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-020](../SPEC.md#close-alertas-020) | Slack incoming webhooks: Expose Slack incoming webhook as a recipient choice in the existing original Alert di… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-021](../SPEC.md#close-alertas-021) | Slack incoming webhooks: Pure owning checks cover configured Slack acceptance/deduplication/URL rejection, act… | implementada (local) | bloqueada | Recibir en un canal de Slack autorizado y publicar imagen/CI |
+| [CLOSE-alertas-021](../SPEC.md#close-alertas-021) | Slack incoming webhooks: Pure owning checks cover configured Slack acceptance/deduplication/URL rejection, act… | implementada | vigente | Comprobante 2026-10-27 abajo; recibo real diferido por CLOSE-alertas-040 |
 | [CLOSE-alertas-022](../SPEC.md#close-alertas-022) | Additional provider webhooks: The remaining incoming-webhook providers are explicit recipient types discord, t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-023](../SPEC.md#close-alertas-023) | Additional provider webhooks: Additive038_provider_alerts.sql expands only alert_deliveries_recipient_type_che… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-024](../SPEC.md#close-alertas-024) | Additional provider webhooks: All six providers receive the same human-readable summary as Slack: GoodSentry:… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1966,12 +1966,12 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-028](../SPEC.md#close-alertas-028) | Additional provider webhooks: Feishu receives {"msg_type":"text","content":{"text": summary + newline + canoni… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-029](../SPEC.md#close-alertas-029) | Additional provider webhooks: ntfy receives the summary and canonical URL as a UTF-8 plain-text POST of at mos… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-030](../SPEC.md#close-alertas-030) | Additional provider webhooks: Zulip uses its documented Slack-compatible incoming webhook URL and receives {"t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-031](../SPEC.md#close-alertas-031) | Additional provider webhooks: The Alert dialog exposes each provider type beside Slack, labels the destination… | implementada (local) | bloqueada | Recibos reales de cada proveedor y publicación/CI |
+| [CLOSE-alertas-031](../SPEC.md#close-alertas-031) | Additional provider webhooks: The Alert dialog exposes each provider type beside Slack, labels the destination… | implementada | vigente | Comprobante 2026-10-27 abajo; recibos reales diferidos por CLOSE-alertas-040 |
 | [CLOSE-alertas-032](../SPEC.md#close-alertas-032) | Mattermost incoming webhooks: GlitchTip supports Mattermost incoming-webhook alert recipients. GoodSentry adds… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-033](../SPEC.md#close-alertas-033) | Mattermost incoming webhooks: Additive migration 058_mattermost_alerts.sql expands only alert_deliveries_recip… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-034](../SPEC.md#close-alertas-034) | Mattermost incoming webhooks: POST Content-Type: application/json with {"text": summary plus resource link}. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-035](../SPEC.md#close-alertas-035) | Mattermost incoming webhooks: Mattermost succeeds only for HTTP 200 with a complete response body that trims t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-alertas-036](../SPEC.md#close-alertas-036) | Mattermost incoming webhooks: Expose Mattermost in the existing Alert dialog with its own label/help and a rem… | implementada (local) | bloqueada | Recibo real de Mattermost autorizado |
+| [CLOSE-alertas-036](../SPEC.md#close-alertas-036) | Mattermost incoming webhooks: Expose Mattermost in the existing Alert dialog with its own label/help and a rem… | implementada | vigente | Comprobante 2026-10-27 abajo; recibo real diferido por CLOSE-alertas-040 |
 | [CLOSE-identidad-065](../SPEC.md#close-identidad-065) | Compatible discovery surface: Organization JSON uses the public case-sensitive require2FA boolean from the per… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-066](../SPEC.md#close-identidad-066) | Compatible discovery surface: Expose the read-only discovery routes used by Sentry-compatible clients: authent… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-067](../SPEC.md#close-identidad-067) | Compatible discovery surface: Organization responses use the public OpenAPI OrganizationSchema fields with rea… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -3394,8 +3394,26 @@ fragmentos SYSB a través de un reinicio.
 | Imagen | Los siete recursos servidos y la licencia MIT coinciden con los blobs; CI `40452038387` y árbol público coinciden |
 
 Evidencia: `test-results/closure-20261025/sourcemaps-021/{summary-20261027,artifact/report,resume,restart}.json`.
-Siguiente acción: CLOSE-alertas-021, primer criterio de alertas con excepción
-expresa para el recibo real del proveedor. El producto sigue incompleto.
+Siguiente acción: CLOSE-alertas-021, completado abajo. El producto sigue
+incompleto.
+
+### Ejecución 2026-10-27: proveedores de alertas en la imagen final
+
+Selección registrada antes de trabajar: CLOSE-alertas-021, seguido de 031 y 036.
+El dueño de navegador de proveedores se ejecutó sobre una base desechable nueva
+y la imagen publicada `b77a2cc`.
+
+| Elemento | Comprobante |
+|---|---|
+| Diálogo | Ocho opciones (Slack, Discord, Teams, Google Chat, Feishu, ntfy, Zulip, Mattermost) con URL, ayuda y etiquetas accesibles distintas |
+| Roundtrip | Una regla real conserva los ocho destinatarios tras recargar y tras reiniciar solo la aplicación |
+| Transporte local | Serialización exacta, admisión PostgreSQL, POST/ack, 429/5xx/redirect/TLS/IP privada/cancelación, sesión/CSRF y secreto para miembros pasan en CI `40452038387` |
+| Excepción | Los recibos reales de cada canal quedan diferidos por CLOSE-alertas-040; no se anuncia ningún proveedor como verificado |
+
+Evidencia compartida: `test-results/closure-20261025/alertas-021/browser/report.json`,
+los resúmenes de `alertas-021/031/036` y los logs históricos de transporte.
+Siguiente acción: CLOSE-uptime-026, último criterio de operación ejecutable.
+El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 

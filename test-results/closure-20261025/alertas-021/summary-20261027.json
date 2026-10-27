@@ -1,0 +1,26 @@
+{
+  "criterion": "CLOSE-alertas-021",
+  "state": "vigente",
+  "scope": "Slack incoming webhook local controls",
+  "date": "2026-10-27",
+  "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+  "browserChecks": [
+    "Create dialog exposes eight provider choices with distinct URLs, help and accessible labels",
+    "Real rule roundtrip preserves project, rule and all eight recipients through reload"
+  ],
+  "browserScreenshots": [
+    "provider-alert-create-320.png",
+    "provider-alert-create-768.png",
+    "provider-alert-create-1440.png",
+    "provider-alert-create-bottom-320.png",
+    "provider-alert-rule-320.png",
+    "provider-alert-rule-768.png",
+    "provider-alert-rule-1440.png"
+  ],
+  "restart": "one error_frequency rule with eight provider recipients survives an app-only restart",
+  "localControls": "pure payload/serialization, PostgreSQL preservation/admission, HTTP POST bytes/headers/ack/429/5xx/redirect/TLS/private policy/cancellation and session/CSRF/member secrecy are exercised by the Go owners in CI 40452038387",
+  "exception": "real provider receipts are deferred by CLOSE-alertas-040; this closes local controls only and does not announce verified providers",
+  "ci": "40452038387",
+  "publicSource": "b77a2cc / c22f75b6c13a9ec7f7dd66b43005ac8c5370303a"
+}

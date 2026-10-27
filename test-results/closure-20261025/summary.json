@@ -3389,14 +3389,11 @@
       ]
     },
     "CLOSE-alertas-021": {
-      "evidence": "bloqueada",
-      "scope": "Slack acceptance matrix locally green; provider closure needs an authorized Slack channel and publication",
-      "evidence_files": [
-        "alertas-021-go.log",
-        "alerts-slack-ui/report.json",
-        "alertas-slack.json"
-      ],
-      "blocked": "Falta un canal de Slack autorizado y autorización de publicación/CI."
+      "evidence": "vigente",
+      "scope": "Slack local controls and provider UI on the published image; real channel receipt deferred",
+      "covered": ["eight provider choices with distinct URLs/help in the create dialog; Slack webhook roundtrip survives reload and restart", "payload serialization, PostgreSQL admission, HTTP transport/ack failures/TLS/private policy/cancellation, session/CSRF and member secrecy pass in CI 40452038387"],
+      "exception": "real authorized Slack channel receipt is deferred by CLOSE-alertas-040; provider availability is not announced",
+      "evidence_files": ["alertas-021/summary-20261027.json", "alertas-021/browser/report.json", "alerts-slack-ui/report.json", "alertas-slack.json", "alertas-021-go.log"]
     },
     "CLOSE-alertas-022": {
       "evidence": "vigente",
@@ -3466,12 +3463,11 @@
       ]
     },
     "CLOSE-alertas-031": {
-      "evidence": "bloqueada",
-      "scope": "provider UI and acceptance matrix; real provider receipts unavailable",
-      "evidence_files": [
-        "alertas-022-025-go.log"
-      ],
-      "blocked": "Faltan recibos reales de cada proveedor y autorización de publicación/CI."
+      "evidence": "vigente",
+      "scope": "provider dialog and roundtrip for Discord, Teams, Google Chat, Feishu, ntfy, Zulip and Slack-compatible endpoints on the published image",
+      "covered": ["create dialog exposes distinct provider URLs, help and accessible labels", "one real rule preserves all eight recipients through reload and app-only restart", "exact payloads, migration 038 preservation, HTTP acknowledgment and session/role controls pass in CI 40452038387"],
+      "exception": "real provider receipts are deferred by CLOSE-alertas-040; local controls only",
+      "evidence_files": ["alertas-031/summary-20261027.json", "alertas-021/browser/report.json", "alertas-022-025-go.log"]
     },
     "CLOSE-alertas-032": {
       "evidence": "vigente",
@@ -3502,12 +3498,11 @@
       ]
     },
     "CLOSE-alertas-036": {
-      "evidence": "bloqueada",
-      "scope": "Mattermost UI and acceptance; real receipt unavailable",
-      "evidence_files": [
-        "alertas-032-036-go.log"
-      ],
-      "blocked": "Falta un recibo real de Mattermost autorizado."
+      "evidence": "vigente",
+      "scope": "Mattermost dialog, exact payload and local roundtrip on the published image",
+      "covered": ["provider dialog exposes Mattermost with its own URL/help", "all eight recipients persist through reload and restart", "migration 058 preservation, JSON/Markdown escaping, loopback POST/ack and browser roundtrip pass in CI 40452038387"],
+      "exception": "real Mattermost receipt is deferred by CLOSE-alertas-040; local controls only",
+      "evidence_files": ["alertas-036/summary-20261027.json", "alertas-021/browser/report.json", "alertas-032-036-go.log"]
     },
     "CLOSE-identidad-065": {
       "evidence": "vigente",
