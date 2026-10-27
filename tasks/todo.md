@@ -3906,6 +3906,15 @@ Siguiente acción: recoger la integración completa que sigue en la sesión
 26168 y reconciliar los subresultados de 033 y 047 con el CI de la revisión
 de test ajustada.
 
+### Selección independiente: CLOSE-errores-084
+
+Mientras la integración completa permanece activa en `closure033_migration`,
+preparar la actualización 017→actual de 084 en una base y volumen nuevos,
+separados de 033 y 047. La decisión del contrato sustituye la base histórica
+perdida, pero mantiene los controles de migración, SDK, navegador y CI.
+Siguiente acción: identificar una revisión previa a 018, capturar datos propios
+y comparar su estado antes y después de la imagen candidata.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
