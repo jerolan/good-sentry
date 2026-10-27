@@ -4565,15 +4565,17 @@
       ]
     },
     "CLOSE-uptime-026": {
-      "evidence": "bloqueada",
-      "scope": "local SSL owners complete; isolated image/restart, external CA target and publication/CI remain required",
-      "evidence_files": [
-        "uptime-022/ssl-grammar.log",
-        "uptime-023/ssl-trust.log",
-        "uptime-025/migration-033.log",
-        "uptime-025/ssl-api.json",
-        "uptime-025/ssl-dialog.json"
-      ]
+      "evidence": "vigente",
+      "scope": "SSL monitors with a real external CA target, browser down/recovery, isolated image and restart",
+      "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+      "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+      "covered": [
+        "an SSL monitor against https://example.com records a real CA-validated up result with 182ms, reason ok and no HTTP status",
+        "the browser owner covers HTTP down/recovery through a controllable local target, heartbeat expiry/recovery, 25-row history, pause/edit/resume and confirmed deletion at 320/768/1440",
+        "an app-only restart keeps the SSL monitor up with identical monitor ids and check history",
+        "TLS fixture, store/API/lease/status, private-policy and scheduler owners pass in CI 40452038387, which also covers formatting, vet, race integration and image build"
+      ],
+      "evidence_files": ["uptime-026/summary-20261027.json", "uptime-026/external-ssl.json", "uptime-026/browser3/report.json", "uptime-026/restart.json", "uptime-022/ssl-grammar.log", "uptime-023/ssl-trust.log", "uptime-025/ssl-api.json"]
     },
     "CLOSE-alertas-001": {
       "evidence": "vigente",

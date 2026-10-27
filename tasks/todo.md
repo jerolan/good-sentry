@@ -1938,7 +1938,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-023](../SPEC.md#close-uptime-023) | Sentry spans and native telemetry reads: Each SSL check creates a new TCP connection through the existing nett… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-024](../SPEC.md#close-uptime-024) | Sentry spans and native telemetry reads: Share one configured deadline across resolution, connect and handshak… | implementada | vigente | Comprobante 2026-10-26 abajo (reutiliza 013/023) |
 | [CLOSE-uptime-025](../SPEC.md#close-uptime-025) | Sentry spans and native telemetry reads: Add SSL to the database kind constraint in additive033 without rewrit… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-026](../SPEC.md#close-uptime-026) | Sentry spans and native telemetry reads: Extend owning configuration tests for accepted origins and distinct r… | implementada | bloqueada | Bloqueo: imagen/backup/reinicio, CA externo y publicación; ver sección 2026-10-26 |
+| [CLOSE-uptime-026](../SPEC.md#close-uptime-026) | Sentry spans and native telemetry reads: Extend owning configuration tests for accepted origins and distinct r… | implementada | vigente | Comprobante 2026-10-27 abajo: SSL externo real, navegador, reinicio y CI en b77a2cc |
 | [CLOSE-alertas-004](../SPEC.md#close-alertas-004) | Sentry spans and native telemetry reads: Alert rules use error counts over a rolling window and notify on thre… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-005](../SPEC.md#close-alertas-005) | Sentry spans and native telemetry reads: The first alert workflow uses owner/admin native project-scoped /api/… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-006](../SPEC.md#close-alertas-006) | Sentry spans and native telemetry reads: Frequency means all non-transaction issue events in the project, incl… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -3412,8 +3412,28 @@ y la imagen publicada `b77a2cc`.
 
 Evidencia compartida: `test-results/closure-20261025/alertas-021/browser/report.json`,
 los resúmenes de `alertas-021/031/036` y los logs históricos de transporte.
-Siguiente acción: CLOSE-uptime-026, último criterio de operación ejecutable.
-El producto sigue incompleto.
+Siguiente acción: CLOSE-uptime-026, completado abajo. El producto sigue
+incompleto.
+
+### Ejecución 2026-10-27: SSL y uptime en la imagen final
+
+Selección registrada antes de trabajar: CLOSE-uptime-026. Se usó una base nueva
+con uptime habilitado, un monitor SSL contra un objetivo externo con CA válida y
+un objetivo HTTP local controlable para el navegador.
+
+| Elemento | Comprobante |
+|---|---|
+| CA externa | Monitor `SSL` a `https://example.com`: estado `up`, 182 ms, razón `ok`, sin código HTTP |
+| Navegador | HTTP caída/recuperación, heartbeat con vencimiento/recuperación, historial de 25 filas, pausa/edición/reanudación y borrado confirmado a 320/768/1440; 18 capturas |
+| Reinicio | El monitor SSL sigue `up`, con los mismos IDs e historial tras reiniciar solo la aplicación |
+| Owners TLS/Store/API | Hostname/no confiable/vencido/futuro, rotación, sin bytes HTTP, política privada, timeout/cancelación, lease/estado y scheduler pasan en CI `40452038387` |
+
+Evidencia: `test-results/closure-20261025/uptime-026/{summary-20261027,external-ssl,browser3/report,restart}.json`.
+Con esto solo quedan las filas cuyos linajes aceptados de 17/18/19 migraciones
+no se conservan: 033, 047, 084 y logs-028 (base de 4.010 filas). Sin esos
+volcados no se puede repetir la preservación exigida; se requiere que el
+propietario los aporte o restaure. La auditoría CLOSE-operacion-100 no puede
+pasar mientras esas cuatro filas sigan bloqueadas. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 

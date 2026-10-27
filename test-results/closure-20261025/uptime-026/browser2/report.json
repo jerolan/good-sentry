@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "checks": [],
+  "screenshots": [],
+  "pageErrors": [],
+  "requestFailures": [],
+  "consoleProblems": [],
+  "failure": "apiRequestContext.post: connect ECONNREFUSED 172.17.0.1:2527\nCall log:\n\u001b[2m  - → POST http://172.17.0.1:2527/control\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.16 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 44\u001b[22m\n"
+}

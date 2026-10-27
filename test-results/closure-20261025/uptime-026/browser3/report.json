@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "checks": [
+    "Documented defaults, conditional fields, retained rejection inputs and real HTTP down/recovery work",
+    "Real heartbeat expiry/recovery, URL copy, 25-row history, pause/edit/resume work",
+    "Concrete delete confirmation cancels safely and removes only the selected monitors"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-create-form-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-create-form-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-create-form-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-http-down-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-http-down-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-http-down-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-http-recovered-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-http-recovered-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-http-recovered-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-heartbeat-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-heartbeat-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-heartbeat-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-monitor-list-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-monitor-list-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-monitor-list-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-list-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-list-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/uptime-026/browser3/uptime-list-1440.png"
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "location": "http://127.0.0.1:18108/api/v1/me"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "location": "http://127.0.0.1:18108/api/v1/organizations/uptime-026-org/monitors"
+    }
+  ]
+}
