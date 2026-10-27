@@ -127,7 +127,7 @@ func (s *Store) StatsV2(ctx context.Context, access ManagementAccess, category s
 		}
 		query := `WITH telemetry AS (
  SELECT date_trunc($5::text,e.timestamp) AS bucket
- FROM events e JOIN projects p ON p.id=e.project_id
+ FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id
  JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
  WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[]))` + projectFilter + `
  AND ` + kind + ` AND e.timestamp>=$6::timestamptz AND e.timestamp<$7::timestamptz

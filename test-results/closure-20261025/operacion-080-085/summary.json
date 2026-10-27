@@ -1,0 +1,31 @@
+{
+  "criteria": ["CLOSE-operacion-080", "CLOSE-operacion-081", "CLOSE-operacion-082", "CLOSE-operacion-083", "CLOSE-operacion-084", "CLOSE-operacion-085"],
+  "date": "2026-10-26",
+  "product_revision": "20521ec",
+  "implementation": {
+    "migration_local": "078_transaction_archive.sql: transaction_archive full event copy and transactions_with_archive hot-preference view",
+    "migration_s3": "079_transaction_archive_s3.sql: per-transaction object catalog with immutable key and receipt time",
+    "store": "ArchiveTransactions/ArchiveTransactionsS3 copy bounded cohorts idempotently; restore and cleanup cover local cache, catalog and objects",
+    "readers": "native transaction groups, detail, trace graph/raw, scoped/compatible performance, stats_v2 and span-group roots use transactions_with_archive",
+    "worker": "transaction retention archives before expiry for local or S3 backend; S3 startup restores catalogued objects"
+  },
+  "fresh_tests": {
+    "archive_owner": "PASS in 1.115s: local + S3 upload/materialize/restore/expiry/delete-failure",
+    "regression": "PASS in 2.032s: transaction aggregation, detail/restart and segment+legacy combination"
+  },
+  "covered": {
+    "080": "local transaction event archive queryable through existing native/compatible readers with filters, permissions and pagination",
+    "081": "local archive persists across a fresh Store connection and serves the same transaction",
+    "082": "local cleanup removes only expired copies at the receipt cutoff",
+    "083": "S3-compatible transaction objects are queryable after materialization",
+    "084": "catalog + objects restore the local cache after restart",
+    "085": "S3 expiry deletes object+catalog+cache and a failed delete remains retryable"
+  },
+  "observed": {"archived": 1, "readers_after_hot_delete": 1, "readers_after_restart": 1, "readers_after_expiry": 0},
+  "evidence": ["store.log", "regression.log", "summary.json"],
+  "limits": [
+    "The transaction_archive table is a materialized cache; S3 and the catalog are the durable source for the S3 backend.",
+    "Span archive rows 086-091 reuse the existing span archive owners and are recorded separately.",
+    "The product is not declared complete."
+  ]
+}

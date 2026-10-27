@@ -82,10 +82,10 @@ func (s *Store) traceWithRead(ctx context.Context, tx pgx.Tx, organizationID int
 	}
 	rows, err := tx.Query(ctx, `WITH nodes AS (
 	 SELECT e.project_id,0 AS source,e.id AS row_id,0 AS ordinal,e.trace_span_id AS span_id,e.trace_parent_span_id AS parent_span_id,e.trace_start_timestamp AS start_at,e.timestamp AS end_at
-	 FROM events e JOIN projects p ON p.id=e.project_id WHERE p.organization_id=$1::bigint AND e.trace_id<>'' AND lower(e.trace_id)=$2 AND ($3='' OR e.project_id=NULLIF($3,'')::bigint) AND e.kind='transaction'
+	 FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id WHERE p.organization_id=$1::bigint AND e.trace_id<>'' AND lower(e.trace_id)=$2 AND ($3='' OR e.project_id=NULLIF($3,'')::bigint) AND e.kind='transaction'
 	 UNION ALL
 	 SELECT e.project_id,1,e.id,o.ordinal,o.span_id,o.parent_span_id,o.start_timestamp,o.end_timestamp
-	 FROM events e JOIN projects p ON p.id=e.project_id JOIN transaction_span_operations o ON o.event_id=e.id
+	 FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id JOIN transaction_span_operations o ON o.event_id=e.id
 	 WHERE p.organization_id=$1::bigint AND e.trace_id<>'' AND lower(e.trace_id)=$2 AND ($3='' OR e.project_id=NULLIF($3,'')::bigint) AND e.kind='transaction'
 	 UNION ALL
 	 SELECT s.project_id,2,s.id,0,s.span_id,s.parent_span_id,s.start_timestamp,s.end_timestamp

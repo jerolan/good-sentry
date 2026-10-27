@@ -220,6 +220,15 @@ func configureSpanArchive(ctx context.Context, db *store.Store, cfg config.Confi
 				break
 			}
 		}
+		for batch := 0; batch < 20; batch++ {
+			restored, err := db.RestoreTransactionArchiveS3(ctx, objects, 250)
+			if err != nil {
+				return nil, fmt.Errorf("restore S3 transaction archive before serving: %w", err)
+			}
+			if restored < 250 {
+				break
+			}
+		}
 	}
 	return &options, nil
 }

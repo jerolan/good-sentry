@@ -54,7 +54,7 @@ func (s *Store) traceNodeDataWithRead(ctx context.Context, tx pgx.Tx, organizati
 		args = append(args, ordinal)
 		err := tx.QueryRow(ctx, `SELECT e.project_id::text,e.span_projection_version,
 		 CASE WHEN $5::integer=0 THEN e.data WHEN jsonb_typeof(e.data->'spans')='array' THEN (e.data->'spans')->($5::integer-1) END
-		 FROM events e JOIN projects p ON p.id=e.project_id
+		 FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id
 		 WHERE p.organization_id=$1::bigint AND e.trace_id<>'' AND lower(e.trace_id)=$2 AND ($3='' OR e.project_id=NULLIF($3,'')::bigint) AND e.id=$4 AND e.kind='transaction'`, args...).Scan(&result.ProjectID, &version, &result.Data)
 		if err != nil {
 			return TraceNodeData{}, dbError(err)

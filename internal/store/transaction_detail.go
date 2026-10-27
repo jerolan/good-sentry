@@ -28,7 +28,7 @@ func (s *Store) TransactionDetail(ctx context.Context, userID, orgSlug, source, 
 		if source == "event" {
 			err = tx.QueryRow(ctx, `SELECT e.project_id::text,p.name,e.event_id,e.trace_id,e.transaction_name,
 				e.environment,e.release,e.timestamp,e.duration,e.data
-				FROM events e JOIN projects p ON p.id=e.project_id
+				FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id
 				WHERE p.organization_id=$1 AND e.id=$2 AND e.kind='transaction'`, orgID, rowID).Scan(
 				&detail.Sample.ProjectID, &detail.ProjectName, &detail.EventID, &detail.TraceID, &detail.Name,
 				&detail.Environment, &detail.Release, &detail.EndTimestamp, &detail.Duration, &detail.Data)

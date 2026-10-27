@@ -95,7 +95,7 @@ func compatibleTransactionQuery(access ManagementAccess, filter CompatibleTransa
  COALESCE(e.data#>>'{request,method}','') AS method,e.duration,
  (e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed,
  e.timestamp
- FROM events e JOIN projects p ON p.id=e.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
+ FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
  WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND e.kind='transaction' AND ` + eventRange + eventWhere + `
  UNION ALL
  SELECT s.project_id,s.name,s.op,

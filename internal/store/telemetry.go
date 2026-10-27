@@ -95,7 +95,7 @@ func (s *Store) Transactions(ctx context.Context, userID, orgSlug, projectID str
 		SELECT e.transaction_name AS name,COALESCE(e.data#>>'{contexts,trace,op}','') AS op,e.duration,
 		(e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed,
 		e.timestamp AS timestamp,e.trace_id,e.id,0 AS source,e.project_id
-		FROM events e JOIN projects p ON p.id=e.project_id
+		FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id
 		WHERE p.organization_id::text=$1 AND ($2='' OR e.project_id::text=$2) AND e.kind='transaction' AND `+eventRange+`
 		UNION ALL
 		SELECT s.name,s.op,s.duration,s.status='error',s.end_timestamp,s.trace_id,s.id,1,s.project_id

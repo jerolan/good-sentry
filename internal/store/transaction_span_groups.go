@@ -88,7 +88,7 @@ func (s *Store) transactionSpanGroupsWithRead(ctx context.Context, read *spanArc
 	}
 	if source == "event" {
 		err = tx.QueryRow(ctx, `SELECT e.project_id::text,e.transaction_name,COALESCE(e.data#>>'{contexts,trace,op}','')
-			FROM events e JOIN projects p ON p.id=e.project_id
+			FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id
 			WHERE p.organization_id=$1::bigint AND e.id=$2 AND e.kind='transaction'`, orgID, rowID).Scan(
 			&result.Sample.ProjectID, &result.Transaction, &result.Op)
 	} else {

@@ -163,7 +163,7 @@ func (s *Store) ScopedTransactions(ctx context.Context, access ManagementAccess,
  SELECT e.transaction_name AS name,COALESCE(e.data#>>'{contexts,trace,op}','') AS op,e.duration,
  (e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed,
  e.timestamp AS timestamp,e.trace_id,e.id,0 AS source,e.project_id
- FROM events e JOIN projects p ON p.id=e.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
+ FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
  WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND e.kind='transaction' AND ` + eventRange + eventProject + `
  UNION ALL
  SELECT s.name,s.op,s.duration,s.status='error',s.end_timestamp,s.trace_id,s.id,1,s.project_id
@@ -530,7 +530,7 @@ func (s *Store) ScopedTransactionTrend(ctx context.Context, access ManagementAcc
 	}
 	query := `WITH telemetry AS (
  SELECT e.timestamp,e.duration,(e.level IN ('error','fatal') OR COALESCE(e.data#>>'{contexts,trace,status}','') NOT IN ('','ok','unknown')) AS failed
- FROM events e JOIN projects p ON p.id=e.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
+ FROM transactions_with_archive e JOIN projects p ON p.id=e.project_id JOIN memberships m ON m.organization_id=p.organization_id AND m.user_id::text=$2
  WHERE p.organization_id::text=$1 AND ($3 OR p.id=ANY($4::bigint[])) AND e.kind='transaction' AND ` + eventRange + eventFilter + `
  UNION ALL
  SELECT s.end_timestamp,s.duration,s.status='error'

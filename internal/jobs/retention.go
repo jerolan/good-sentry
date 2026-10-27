@@ -121,6 +121,37 @@ func startTransactionRetention(parent context.Context, db *store.Store, days int
 	return startRetention(parent, interval, func(ctx context.Context) bool {
 		var transactions, spans, objects int64
 		var err error
+		archivedTransactions := int64(0)
+		if archive != nil && archive.Backend == "local" && archive.AfterDays > 0 {
+			archiveDays := min(archive.AfterDays, days)
+			cutoff := time.Now().UTC().Add(-time.Duration(archiveDays) * 24 * time.Hour)
+			if n, archiveErr := db.ArchiveTransactions(ctx, cutoff, 250); archiveErr != nil {
+				slog.Error("Transaction archive pass failed", "entryPoint", "transaction_retention_worker", "operation", "archive_transactions")
+			} else {
+				archivedTransactions += n
+			}
+			expired := time.Now().UTC().Add(-time.Duration(days) * 24 * time.Hour)
+			if n, cleanupErr := db.CleanupTransactionArchive(ctx, expired); cleanupErr != nil {
+				slog.Error("Transaction archive retention failed", "entryPoint", "transaction_retention_worker", "operation", "cleanup_transaction_archive")
+			} else {
+				archivedTransactions += n
+			}
+		}
+		if archive != nil && archive.Backend == "s3" && archive.AfterDays > 0 {
+			archiveDays := min(archive.AfterDays, days)
+			cutoff := time.Now().UTC().Add(-time.Duration(archiveDays) * 24 * time.Hour)
+			if n, archiveErr := db.ArchiveTransactionsS3(ctx, cutoff, 250, archive.Objects, archive.S3Prefix); archiveErr != nil {
+				slog.Error("Transaction S3 archive pass failed", "entryPoint", "transaction_retention_worker", "operation", "archive_transactions_s3")
+			} else {
+				archivedTransactions += n
+			}
+			expired := time.Now().UTC().Add(-time.Duration(days) * 24 * time.Hour)
+			if n, cleanupErr := db.CleanupTransactionArchiveS3(ctx, expired, archive.Objects, 250); cleanupErr != nil {
+				slog.Error("Transaction S3 archive retention failed", "entryPoint", "transaction_retention_worker", "operation", "cleanup_transaction_archive_s3")
+			} else {
+				archivedTransactions += n
+			}
+		}
 		if archive == nil {
 			transactions, spans, err = db.CleanupTransactions(ctx, days)
 		} else {
@@ -131,8 +162,8 @@ func startTransactionRetention(parent context.Context, db *store.Store, days int
 		}
 		if err != nil {
 			slog.Error("Transaction retention pass failed", "entryPoint", "transaction_retention_worker", "operation", "cleanup_transactions")
-		} else if transactions > 0 || spans > 0 || objects > 0 {
-			slog.Info("Transaction retention cleanup committed", "entryPoint", "transaction_retention_worker", "transactions", transactions, "spans", spans, "archiveObjects", objects)
+		} else if transactions > 0 || spans > 0 || objects > 0 || archivedTransactions > 0 {
+			slog.Info("Transaction retention cleanup committed", "entryPoint", "transaction_retention_worker", "transactions", transactions, "spans", spans, "archiveObjects", objects, "archivedTransactions", archivedTransactions)
 			return true
 		}
 		return false

@@ -1502,15 +1502,15 @@ go-sdk 1.8.0 y la aceptación pública histórica como apoyo.
 CLOSE-operacion-058 a -066 quedan vigentes con harnesses, layout, estilo, fuzz,
 SDKs y verificación; 067 espera publicación/registro autorizados.
 CLOSE-operacion-067 conserva el bloqueo de publicación remota; la siguiente
-acción ejecutable es CLOSE-operacion-080 (archivo local de transacciones).
+acción ejecutable es CLOSE-operacion-086 (archivo local de spans).
 CLOSE-sourcemaps-028 a -031, CLOSE-lectores-004 a -007 y CLOSE-operacion-068 a
--079 quedan vigentes; errores local/S3 y logs local/S3 ya tienen owners.
+-085 quedan vigentes; errores, logs y transacciones ya tienen owners.
 CLOSE-alertas-037 a -039 quedan vigentes con cola, transiciones y webhook
 genérico probados frescos.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-080. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-086. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2187,12 +2187,12 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-077](../SPEC.md#close-operacion-077) | Archivo de logs, backend compatible S3: consulta durante retención mediante lectores UI/API aplicables, con fi… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-078](../SPEC.md#close-operacion-078) | Archivo de logs, backend compatible S3: persistencia y consulta tras reinicio. Comprobante propio del tipo y b… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-079](../SPEC.md#close-operacion-079) | Archivo de logs, backend compatible S3: eliminación al vencer el plazo contratado. Comprobante propio del tipo… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-080](../SPEC.md#close-operacion-080) | Archivo de transacciones, backend local: consulta durante retención mediante lectores UI/API aplicables, con f… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-081](../SPEC.md#close-operacion-081) | Archivo de transacciones, backend local: persistencia y consulta tras reinicio. Comprobante propio del tipo y… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-082](../SPEC.md#close-operacion-082) | Archivo de transacciones, backend local: eliminación al vencer el plazo contratado. Comprobante propio del tip… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-083](../SPEC.md#close-operacion-083) | Archivo de transacciones, backend compatible S3: consulta durante retención mediante lectores UI/API aplicable… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-084](../SPEC.md#close-operacion-084) | Archivo de transacciones, backend compatible S3: persistencia y consulta tras reinicio. Comprobante propio del… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-085](../SPEC.md#close-operacion-085) | Archivo de transacciones, backend compatible S3: eliminación al vencer el plazo contratado. Comprobante propio… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-080](../SPEC.md#close-operacion-080) | Archivo de transacciones, backend local: consulta durante retención mediante lectores UI/API aplicables, con f… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-081](../SPEC.md#close-operacion-081) | Archivo de transacciones, backend local: persistencia y consulta tras reinicio. Comprobante propio del tipo y… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-082](../SPEC.md#close-operacion-082) | Archivo de transacciones, backend local: eliminación al vencer el plazo contratado. Comprobante propio del tip… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-083](../SPEC.md#close-operacion-083) | Archivo de transacciones, backend compatible S3: consulta durante retención mediante lectores UI/API aplicable… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-084](../SPEC.md#close-operacion-084) | Archivo de transacciones, backend compatible S3: persistencia y consulta tras reinicio. Comprobante propio del… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-operacion-085](../SPEC.md#close-operacion-085) | Archivo de transacciones, backend compatible S3: eliminación al vencer el plazo contratado. Comprobante propio… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-086](../SPEC.md#close-operacion-086) | Archivo de spans, backend local: consulta durante retención mediante lectores UI/API aplicables, con filtros y… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-087](../SPEC.md#close-operacion-087) | Archivo de spans, backend local: persistencia y consulta tras reinicio. Comprobante propio del tipo y backend;… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
 | [CLOSE-operacion-088](../SPEC.md#close-operacion-088) | Archivo de spans, backend local: eliminación al vencer el plazo contratado. Comprobante propio del tipo y back… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
@@ -9444,7 +9444,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-operacion-080. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-operacion-086. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9464,7 +9464,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-080. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-086. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9484,7 +9484,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-080. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-086. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9515,7 +9515,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-080. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-086. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9544,7 +9544,7 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-080. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-086. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Node 11.7.0
@@ -9573,7 +9573,7 @@ Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-080. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-086. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Browser 11.7.0
@@ -9602,7 +9602,7 @@ Evidencia: `test-results/closure-20261025/errores-218-219/` con el fixture, el
 hash del bundle, las capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-080. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-086. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: filas paraguas de conservación
@@ -9619,7 +9619,7 @@ composición de owners frescos e históricos ya registrados.
 
 Límites registrados: las capturas de navegador de 179/181 y 196–198/203 son
 históricas y se repiten en la candidata final; 206, la copia de 4569 filas y el
-CI público siguen pendientes. Siguiente acción: CLOSE-operacion-080. El producto
+CI público siguen pendientes. Siguiente acción: CLOSE-operacion-086. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: navegador real a 320, 768 y 1440
@@ -9672,7 +9672,7 @@ resultado del CLI, el informe de navegador, capturas, CI/imagen históricos y
 `summary.json`.
 
 Límites registrados: las aceptaciones de CLI/navegador/CI son históricas y se
-repiten en la candidata final. Siguiente acción: CLOSE-operacion-080. El producto
+repiten en la candidata final. Siguiente acción: CLOSE-operacion-086. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: matriz de API de gestión y SDKs
@@ -9748,7 +9748,7 @@ Evidencia: `test-results/closure-20261025/operacion-049-055/` con logs,
 Límites registrados: CLOSE-operacion-056 sigue abierto porque exige la imagen
 con volumen limpio a través de archivo/consulta/reinicio/expiración, S3 real o
 compatible, suite completa con race/vet/build, CI público e imágenes
-publicadas. Siguiente acción: CLOSE-operacion-080. El producto sigue incompleto.
+publicadas. Siguiente acción: CLOSE-operacion-086. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: estado de OIDC y administración global
 
@@ -9824,7 +9824,7 @@ informes y `summary.json`.
 
 Límites registrados: CLOSE-operacion-067 sigue abierto porque la publicación
 actual del registro y la verificación remota multiarquitectura requieren
-autorización externa. Siguiente acción: CLOSE-operacion-080. El producto sigue
+autorización externa. Siguiente acción: CLOSE-operacion-086. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: releases, commits, deploys y artefactos
@@ -9848,7 +9848,7 @@ Evidencia: `test-results/closure-20261025/sourcemaps-028-031/`.
 
 Límites registrados: los recibos CLI/imagen/navegador son históricos y se
 repiten en la candidata final; la conexión automática con repositorios sigue
-aplazada. Siguiente acción: CLOSE-operacion-080. El producto sigue incompleto.
+aplazada. Siguiente acción: CLOSE-operacion-086. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: Grafana y revocación de tokens
 
@@ -9894,7 +9894,7 @@ Evidencia: `test-results/closure-20261025/alertas-037-039/`, incluyendo el fallo
 inicial por base ausente y su repetición verde.
 
 Límites registrados: los canales externos específicos siguen fuera de esta fila.
-Siguiente acción: CLOSE-operacion-080. El producto sigue incompleto.
+Siguiente acción: CLOSE-operacion-086. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: archivo local de errores
 
@@ -9940,7 +9940,7 @@ Evidencia: `test-results/closure-20261025/operacion-071-073/`.
 
 Límites registrados: la fila PostgreSQL es caché materializada; S3 y el catálogo
 son la fuente durable. Los archivos de logs/transacciones (074–096) siguen
-pendientes. Siguiente acción: CLOSE-operacion-080. El producto sigue incompleto.
+pendientes. Siguiente acción: CLOSE-operacion-086. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: archivo local de logs
 
@@ -9961,7 +9961,7 @@ Evidencia: `test-results/closure-20261025/operacion-074-076/`.
 
 Límites registrados: copia durable dentro de la retención; las filas calientes
 siguen siendo la autoridad. El backend S3 de logs (077–079) y transacciones
-(080–096) siguen pendientes. Siguiente acción: CLOSE-operacion-080. El producto
+(080–096) siguen pendientes. Siguiente acción: CLOSE-operacion-086. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: archivo S3 de logs
@@ -9983,7 +9983,28 @@ Evidencia: `test-results/closure-20261025/operacion-077-079/`.
 
 Límites registrados: `log_archive` es caché materializada; S3 y el catálogo son
 la fuente durable. Transacciones (080–096) siguen pendientes. Siguiente acción:
-CLOSE-operacion-080. El producto sigue incompleto.
+CLOSE-operacion-086. El producto sigue incompleto.
+
+### Ejecución 2026-10-26: archivo local/S3 de transacciones
+
+Selección registrada antes de trabajar: CLOSE-operacion-080 a -085. Revisión
+`20521ec`; migraciones 078/079, copia/objetos y lectores híbridos.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 080–082 | Copia local, vista `transactions_with_archive`, lectores nativos/compatibles, reinicio y vencimiento | migración 078; `store.log`; `TestTransactionArchiveCopyUnionRestartAndExpiry` |
+| 083–085 | Objetos S3, catálogo, restauración, lectura y vencimiento recuperable | migración 079; `store.log`; `TestTransactionArchiveS3UploadRestoreAndExpiry` |
+| Regresión | Agregación, detalle y combinación segment+legacy | `regression.log` |
+
+Resultado observado: owner local/S3 en 1.115 s; regresión en 2.032 s. La vista
+prefiere la fila caliente; S3 restaura la caché; el borrado fallido conserva el
+catálogo para reintentar.
+
+Evidencia: `test-results/closure-20261025/operacion-080-085/`.
+
+Límites registrados: `transaction_archive` es caché materializada; S3 y el
+catálogo son la fuente durable. Spans (086–091) reutilizan el archivo ya probado.
+Siguiente acción: CLOSE-operacion-086. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 
