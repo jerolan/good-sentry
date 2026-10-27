@@ -3633,6 +3633,29 @@ Quedan los límites de selección múltiple, el cotejo de comprobantes completos
 y fuente/imagen/CI. Siguiente acción: verificar los límites de selección y
 fusión sobre datos propios, luego reconciliar todos los subresultados de 033.
 
+### Avance parcial 2026-10-27: límites bulk de CLOSE-errores-033
+
+Se creó el proyecto aislado 8 con 1.001 errores sintéticos, cada uno con
+fingerprint distinto. Chromium seleccionó 1.000 issues en 40 páginas, observó
+fusión habilitada con 100 y deshabilitada con 125, impidió seleccionar el
+1.001 y mostró el límite. Cancelar conservó la selección; confirmar envió
+exactamente esos 1.000 IDs y dejó solamente el issue no seleccionado. Las
+vistas de límite ajustaron a 320/768/1440 sin errores de página.
+
+El primer intento terminó antes de borrar: `check()` exigía que una casilla
+quedara marcada pese al límite. El segundo terminó antes de borrar por esperar
+el texto `1,000` cuando la UI muestra `1000`. Se corrigieron las expectativas
+del controlador y se reanudó dos veces sobre el mismo proyecto, sin volver a
+sembrar ni reiniciar datos; el tercer intento pasó. Evidencia:
+`test-results/closure-20261025/errores-033-fresh/browser-limit.mjs` y
+`browser-limit/`. El script registrado reanuda el proyecto ya sembrado y no es
+repetible después de su borrado; los resultados no son evidencia de los datos
+históricos perdidos.
+
+033 sigue pendiente del cotejo completo por subresultado y de fuente, imagen y
+CI. Siguiente acción: reconciliar cada exigencia de 033 con comprobantes de la
+candidata y ejecutar lo que falte antes de declarar su evidencia vigente.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
