@@ -3717,6 +3717,22 @@ se comprobó en la copia separada de 033.
 Siguiente acción: reconciliar los subresultados de 033 y contrastar CI, árbol
 público y comandos fijados con la candidata antes de marcar su evidencia.
 
+### Cotejo parcial 2026-10-27: fuente y CI de errores-033
+
+La consulta fresca de GitHub confirma CI `40452038387` exitoso para
+`b77a2cc58032dcb2e2b39634a43b3c673dc5af5c`, árbol `c22f75b6…`, que es la
+fuente vinculada a la imagen de aceptación. `main` remoto apunta ahora a
+`50bd64b8212c819679fb56d10c778ad63432226c`, árbol `b8b88d49…`: no es el
+árbol exacto de la candidata. Entre ambas revisiones no cambian `cmd/`,
+`internal/`, módulos Go, Dockerfile ni Compose; fuera de especificación,
+tareas y evidencia cambia el harness `tests/compat/events_browser.mjs`.
+Comprobante: `test-results/closure-20261025/errores-033-fresh/source-ci-check.json`.
+
+Esto verifica el CI de la fuente de producto pero no prueba identidad exacta
+del árbol público actual ni cierra 033. Siguiente acción: contrastar los
+subresultados restantes y decidir la candidata final de publicación/CI según
+las autorizaciones vigentes, sin afirmar identidad entre árboles distintos.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
