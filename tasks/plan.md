@@ -549,6 +549,13 @@ documental quedó registrada el 2026-10-25. La ejecución posterior fue autoriza
 por instrucción expresa del usuario y se registra en `todo.md`; este orden no
 crea presupuesto, no elige una candidata de aceptación y no declara cierre.
 
+La decisión del 2026-10-27 en SPEC retira la dependencia de las cuatro bases
+históricas perdidas, sin retirar los demás controles de sus criterios. Reanudar
+por CLOSE-errores-033: definir una base aislada con estado previo verificable,
+contrastar sus comprobantes existentes y completar los resultados pendientes.
+Después seleccionar 047, 084 y logs-028 según dependencias y este orden; registrar
+los resultados sin presentar la nueva base como dato histórico preservado.
+
 1. Revisar instrucciones, Git/índice/reclamaciones y vigencia de evidencia contra
    la revisión candidata. Contrastar fuentes y comprobantes históricos por ID,
    sin promover casillas antiguas a evidencia vigente. Registrar dependencias,

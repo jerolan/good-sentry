@@ -1634,7 +1634,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-030](../SPEC.md#close-errores-030) | Permanent issue discard: For a discarded event inside a mixed envelope, only that parent and its attached chil… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de envelope |
 | [CLOSE-errores-031](../SPEC.md#close-errores-031) | Permanent issue discard: Use the public Sentry issue update API(https://docs.sentry.io/api/events/update-an-is… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de API |
 | [CLOSE-errores-032](../SPEC.md#close-errores-032) | Permanent issue discard: Owning PostgreSQL checks cover020 checksum/reopen/all old-row preservation, actual fu… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de SQL/tests |
-| [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | implementada (local) | bloqueada | El clon 312-eventos/1.885 filas/19 migraciones de 18087 ya no existe y no hay volcado equivalente (mínimo conservado: 21 migraciones) |
+| [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | implementada (local) | pendiente | Contrastar comprobantes y completar aceptación con base aislada según decisión 2026-10-27 |
 | [CLOSE-errores-034](../SPEC.md#close-errores-034) | Compatible hashes and future grouping reset: Complete compatible hash listing and future-only detachment, incl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de hashes |
 | [CLOSE-errores-035](../SPEC.md#close-errores-035) | Compatible hashes and future grouping reset: The observed GlitchTip DELETE202 removes a signature's future rou… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 202 |
 | [CLOSE-errores-036](../SPEC.md#close-errores-036) | Compatible hashes and future grouping reset: Add migration019_issue_hash_routes.sql. Create issue_hash_routes… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 019 |
@@ -1648,7 +1648,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-044](../SPEC.md#close-errores-044) | Compatible hashes and future grouping reset: Internal contracts: CompatibleIssueHashFilter contains Offset/Lim… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-045](../SPEC.md#close-errores-045) | Compatible hashes and future grouping reset: Add a Future grouping section to native issue detail with real pa… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI hashes |
 | [CLOSE-errores-046](../SPEC.md#close-errores-046) | Compatible hashes and future grouping reset: Verification must apply test-audit before authorship. PostgreSQL… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-047](../SPEC.md#close-errores-047) | Compatible hashes and future grouping reset: Acceptance requires actual official SDK captures before/after res… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
+| [CLOSE-errores-047](../SPEC.md#close-errores-047) | Compatible hashes and future grouping reset: Acceptance requires actual official SDK captures before/after res… | implementada (local) | pendiente | Contrastar comprobantes y completar aceptación con base aislada según decisión 2026-10-27 |
 | [CLOSE-errores-048](../SPEC.md#close-errores-048) | Compatible bulk issue changes and merging: Complete PUT /api/0/projects/{org}/{project}/issues/ and PUT /api/0… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-049](../SPEC.md#close-errores-049) | Compatible bulk issue changes and merging: Authorities are the public project bulk contract(https://docs.sentr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-050](../SPEC.md#close-errores-050) | Compatible bulk issue changes and merging: A separate unmodified GlitchTip6.2.6 image a3d8eb1b36c1e1603d55ab32… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1685,7 +1685,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-081](../SPEC.md#close-errores-081) | Compatible individual issue changes: Extract the existing native validation and mutation body into validateIss… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-082](../SPEC.md#close-errores-082) | Compatible individual issue changes: Write transactions retain native ReadCommitted and fresh-after-wait behav… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-083](../SPEC.md#close-errores-083) | Compatible individual issue changes: Owning tests: PostgreSQL covers project/organization/current-member gates… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-084](../SPEC.md#close-errores-084) | Compatible individual issue changes: Acceptance requires actual official SDK errors controlled through restric… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
+| [CLOSE-errores-084](../SPEC.md#close-errores-084) | Compatible individual issue changes: Acceptance requires actual official SDK errors controlled through restric… | implementada (local) | pendiente | Contrastar comprobantes y completar aceptación con base aislada según decisión 2026-10-27 |
 | [CLOSE-errores-085](../SPEC.md#close-errores-085) | Compatible issue summaries and real analytics: Deliver organization/project issue lists, global/organization i… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-086](../SPEC.md#close-errores-086) | Compatible issue summaries and real analytics: Register exact GET /api/0/organizations/{org}/issues/, /api/0/p… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-087](../SPEC.md#close-errores-087) | Compatible issue summaries and real analytics: The organization short-ID lookup returns an object with organiz… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1899,7 +1899,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-025](../SPEC.md#close-logs-025) | Native OTLP log reception: Keep the existing native Logs listing/page/filter contract. SDK entries retain thei… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-026](../SPEC.md#close-logs-026) | Native OTLP log reception: The original Tailwind/daisyUI Projects view gains a per-project OpenTelemetry discl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-027](../SPEC.md#close-logs-027) | Native OTLP log reception: Acceptance owners: pure internal/otlp consumer tests prove actual binary/JSON equiv… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-logs-028](../SPEC.md#close-logs-028) | Native OTLP log reception: Run the actual official Python SDK1.45.1 with opentelemetry-exporter-otlp-proto-htt… | implementada (local) | bloqueada | Restaurar la copia de 4010 filas/524 eventos o autorizar una línea base nueva y CI público |
+| [CLOSE-logs-028](../SPEC.md#close-logs-028) | Native OTLP log reception: Run the actual official Python SDK1.45.1 with opentelemetry-exporter-otlp-proto-htt… | implementada (local) | pendiente | Contrastar comprobantes y completar aceptación con base aislada según decisión 2026-10-27 |
 | [CLOSE-rendimiento-012](../SPEC.md#close-rendimiento-012) | Sentry spans and native telemetry reads: Current JavaScript SDKs use standalone span v2 envelopes by default.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-013](../SPEC.md#close-rendimiento-013) | Sentry spans and native telemetry reads: The telemetry UI exposes transaction aggregates and paginated log fil… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-014](../SPEC.md#close-rendimiento-014) | Sentry spans and native telemetry reads: The next telemetry slice adds native start and end query parameters t… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -3486,6 +3486,12 @@ criterio paraguas 002; CLOSE-operacion-100 sigue pendiente. El producto sigue
 incompleto.
 
 ### Bloqueo de cierre 2026-10-27
+
+Estado histórico: la decisión posterior del usuario en SPEC retira la
+dependencia de estas cuatro bases. Los cuatro criterios pasan a pendientes,
+no a vigentes; sus restantes controles y la auditoría final siguen exigibles.
+Siguiente acción: seleccionar CLOSE-errores-033 y contrastar sus comprobantes
+antes de preparar una base aislada y ejecutar los resultados que falten.
 
 No queda trabajo independiente ejecutable. 604 criterios están vigentes, ocho
 resultados están aplazados por decisión expresa y 002/100 no

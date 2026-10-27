@@ -2716,6 +2716,25 @@ ningún Goal. Su ejecución futura requiere la instrucción expresa acordada.
 
 ### Autoridades, referencia y reconciliación
 
+#### Decisión del 27 de octubre de 2026: bases históricas indisponibles
+
+Por instrucción expresa del usuario se retira, exclusivamente para
+CLOSE-errores-033, CLOSE-errores-047, CLOSE-errores-084 y CLOSE-logs-028,
+la obligación de recuperar o preservar las bases históricas identificadas
+respectivamente por 312, 270, 246 y 524 eventos, sus filas y recibos asociados,
+y los runtimes o uploads históricos cuya comparación dependía de ellas.
+Estas frases en los bloques originales quedan sustituidas por esta decisión.
+No se afirma que esos datos se hayan preservado ni que las pruebas hayan pasado.
+
+Para cada criterio se usará un entorno aislado y una base de prueba trazable,
+con su estado inicial y datos de aceptación documentados; comprobar los cambios,
+la persistencia y el reinicio exigidos contra esa base. Los controles de
+migración siguen siendo exigibles mediante un estado anterior apropiado creado
+para la prueba, sin atribuirle identidad histórica. Proteger los datos y
+runtimes existentes y conservar las demás pruebas, versiones, condiciones de
+imagen, publicación y CI de cada bloque. Los comprobantes antiguos siguen
+siendo históricos; la decisión no acredita por sí sola ningún criterio.
+
 El cierre abarca todos los requisitos aprobados de esta especificación y los
 resultados de [WF-0004](tasks/wayfinder/0004-contrato-compatibilidad.md), con las
 resoluciones finales de [WF-0005](tasks/wayfinder/0005-sacrificios.md) y
