@@ -1,0 +1,13 @@
+{
+  "session_survived_restart": true,
+  "restart_token_reads_events": true,
+  "event_count": 3,
+  "raw_hash_after_restart": "0058851f1cac2afe620d7cc27e523199f69d43c233ffaf8fa53dfa13d59cf116",
+  "sdk_rawSHA256_latest": "0058851f1cac2afe620d7cc27e523199f69d43c233ffaf8fa53dfa13d59cf116",
+  "latest_event": "938a23a6bb89414ba29aaa517781e485",
+  "counts": [
+    "669",
+    "513",
+    "7"
+  ]
+}

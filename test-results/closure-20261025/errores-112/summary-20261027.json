@@ -1,0 +1,134 @@
+{
+  "criterion": "CLOSE-errores-112",
+  "state": "vigente",
+  "date": "2026-10-27",
+  "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+  "environment": "restored accepted copy goodsentry_112 migrated 31->79 on the published image; logs/uptime disabled",
+  "sdk": {
+    "version": "11.7.0",
+    "acknowledged": 4,
+    "requests": 23,
+    "checks": [
+      "Project and issue credentials consume actual SDK errors through org/global routes; scopes stay distinct and hidden-project/unauthenticated/malformed-Bearer controls deny access",
+      "Concrete/UUID/latest/detail and legacy JSON preserve real SDK exception/user/tags; transaction is retrievable only in project detail and is excluded from error listings",
+      "Real SDK occurrence dates support start-inclusive/end-exclusive reads, environment OR filters and navigable prefixed pagination Links",
+      "Explicit revocation overrides the still-valid session; all compatible reads leave native SDK payload hashes and error counts unchanged"
+    ]
+  },
+  "browser": {
+    "checks": [
+      "Existing org/project defaults remain checked; release/event scopes are opt-in with visible distinct purposes at320/768/1440",
+      "Keyboard-selected event-only UI credential grants exactly the selected SDK project, reads actual SDK issue events and cannot read project-scoped events; one-time reveal dismisses",
+      "Visible persistent revocation invalidates the browser-issued credential even with the live login cookie; responsive metadata and existing controls remain usable"
+    ],
+    "screenshots": 9,
+    "dimensions": 9
+  },
+  "restart": {
+    "session_survived_restart": true,
+    "restart_token_reads_events": true,
+    "event_count": 3,
+    "raw_hash_after_restart": "0058851f1cac2afe620d7cc27e523199f69d43c233ffaf8fa53dfa13d59cf116",
+    "sdk_rawSHA256_latest": "0058851f1cac2afe620d7cc27e523199f69d43c233ffaf8fa53dfa13d59cf116",
+    "latest_event": "938a23a6bb89414ba29aaa517781e485",
+    "counts": [
+      "669",
+      "513",
+      "7"
+    ]
+  },
+  "preservation": {
+    "tablesCompared": 40,
+    "rowDifferences": {
+      "api_token_projects": {
+        "pre": 46,
+        "post": 53,
+        "onlyPre": 0,
+        "onlyPost": 7
+      },
+      "api_tokens": {
+        "pre": 43,
+        "post": 50,
+        "onlyPre": 0,
+        "onlyPost": 7
+      },
+      "artifact_chunks": {
+        "pre": 2,
+        "post": 0,
+        "onlyPre": 2,
+        "onlyPost": 0
+      },
+      "events": {
+        "pre": 665,
+        "post": 669,
+        "onlyPre": 0,
+        "onlyPost": 4
+      },
+      "issue_activity": {
+        "pre": 1033,
+        "post": 1034,
+        "onlyPre": 0,
+        "onlyPost": 1
+      },
+      "issue_hash_routes": {
+        "pre": 1518,
+        "post": 1519,
+        "onlyPre": 0,
+        "onlyPost": 1
+      },
+      "issues": {
+        "pre": 512,
+        "post": 513,
+        "onlyPre": 0,
+        "onlyPost": 1
+      },
+      "project_keys": {
+        "pre": 95,
+        "post": 97,
+        "onlyPre": 0,
+        "onlyPost": 2
+      },
+      "projects": {
+        "pre": 95,
+        "post": 97,
+        "onlyPre": 0,
+        "onlyPost": 2
+      },
+      "release_projects": {
+        "pre": 118,
+        "post": 119,
+        "onlyPre": 0,
+        "onlyPost": 1
+      },
+      "releases": {
+        "pre": 82,
+        "post": 83,
+        "onlyPre": 0,
+        "onlyPost": 1
+      },
+      "schema_migrations": {
+        "pre": 31,
+        "post": 79,
+        "onlyPre": 0,
+        "onlyPost": 48
+      },
+      "sessions": {
+        "pre": 135,
+        "post": 138,
+        "onlyPre": 0,
+        "onlyPost": 3
+      },
+      "transaction_span_operations": {
+        "pre": 17,
+        "post": 18,
+        "onlyPre": 0,
+        "onlyPost": 1
+      }
+    },
+    "explanation": "Two new projects and their keys, four SDK events, one issue/route/activity/release/span operation are isolated acceptance data; seven API tokens and three sessions are verification credentials; two artifact chunks expired by policy; 48 migration rows are additive."
+  },
+  "ci": "40452038387",
+  "harness_correction": "events_browser scope-description assertions now match the current truthful UI copy; the failed pre-fix report is preserved as browser/harness-copy-mismatch-20261027.json",
+  "publicSource": "b77a2cc / c22f75b6c13a9ec7f7dd66b43005ac8c5370303a"
+}

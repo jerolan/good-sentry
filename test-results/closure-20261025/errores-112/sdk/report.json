@@ -1,0 +1,143 @@
+{
+  "passed": true,
+  "checks": [
+    "Project and issue credentials consume actual SDK errors through org/global routes; scopes stay distinct and hidden-project/unauthenticated/malformed-Bearer controls deny access",
+    "Concrete/UUID/latest/detail and legacy JSON preserve real SDK exception/user/tags; transaction is retrievable only in project detail and is excluded from error listings",
+    "Real SDK occurrence dates support start-inclusive/end-exclusive reads, environment OR filters and navigable prefixed pagination Links",
+    "Explicit revocation overrides the still-valid session; all compatible reads leave native SDK payload hashes and error counts unchanged"
+  ],
+  "requests": [
+    {
+      "path": "/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/issues/1615/events/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/",
+      "status": 403
+    },
+    {
+      "path": "/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/",
+      "status": 403
+    },
+    {
+      "path": "/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/",
+      "status": 403
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/",
+      "status": 403
+    },
+    {
+      "path": "/api/0/projects/otlp-acceptance-primary/excluded-sdk-control-mvq9b7a5-4df51c1f/events/",
+      "status": 404
+    },
+    {
+      "path": "/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/",
+      "status": 401
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/",
+      "status": 401
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/latest/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/issues/1615/events/938A23A6-BB89-414B-A29A-AA517781E485/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/938a23a6bb89414ba29aaa517781e485/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/938a23a6bb89414ba29aaa517781e485/json/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/8d47657c05f64fbcba0b79c51ee6d46e/",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/8d47657c05f64fbcba0b79c51ee6d46e/",
+      "status": 404
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/?environment=events-sdk&environment=absent",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/?environment=absent",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/?start=2026-10-27T05%3A40%3A22.595999Z&end=2026-10-27T05%3A40%3A22.677Z",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/?limit=1&environment=events-sdk",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/?cursor=0%3A1%3A0&environment=events-sdk&limit=1",
+      "status": 200
+    },
+    {
+      "path": "/api/0/organizations/otlp-acceptance-primary/issues/1615/events/",
+      "status": 401
+    }
+  ],
+  "acknowledged": [
+    {
+      "id": "c3e69c5e39ee4155aedfb9841017dc9d",
+      "kind": "event"
+    },
+    {
+      "id": "d0c240052ce44ca38113496589b0a323",
+      "kind": "event"
+    },
+    {
+      "id": "938a23a6bb89414ba29aaa517781e485",
+      "kind": "event"
+    },
+    {
+      "id": "8d47657c05f64fbcba0b79c51ee6d46e",
+      "kind": "transaction"
+    }
+  ],
+  "rawSHA256": {
+    "c3e69c5e39ee4155aedfb9841017dc9d": "05f5b3f166e97e54e990a371d685e6a4fc3235fa4b7616af5cf35bcf0114cd37",
+    "d0c240052ce44ca38113496589b0a323": "e03cf8f2df5385521c509fa4808ad4f795e60fa34fc14dbb8e9d7f5bd2e810fb",
+    "938a23a6bb89414ba29aaa517781e485": "0058851f1cac2afe620d7cc27e523199f69d43c233ffaf8fa53dfa13d59cf116",
+    "8d47657c05f64fbcba0b79c51ee6d46e": "66aaf2eb6872bed2a58f8c3c626750744938ab3e0544a4f890db177b0ad12fc9"
+  },
+  "sdkVersion": "11.7.0",
+  "baseURL": "http://127.0.0.1:18104/",
+  "basePath": "/",
+  "orgSlug": "otlp-acceptance-primary",
+  "projectID": "128",
+  "projectSlug": "event-sdk-mvq9b7a5-4df51c1f",
+  "projectName": "Event SDK mvq9b7a5-4df51c1f",
+  "excludedProjectID": "129",
+  "issueID": "1615",
+  "eventIDs": [
+    "c3e69c5e39ee4155aedfb9841017dc9d",
+    "d0c240052ce44ca38113496589b0a323",
+    "938a23a6bb89414ba29aaa517781e485"
+  ],
+  "transactionID": "8d47657c05f64fbcba0b79c51ee6d46e",
+  "cleanupFailures": []
+}

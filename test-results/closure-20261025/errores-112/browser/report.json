@@ -1,0 +1,15 @@
+{
+  "passed": false,
+  "projectID": "128",
+  "issueID": "1615",
+  "checks": [],
+  "screenshots": [],
+  "dimensions": [],
+  "pageErrors": [],
+  "requestFailures": [],
+  "badResponses": [],
+  "consoleProblems": [],
+  "expectedResponses": [],
+  "observedExpectedResponses": [],
+  "failure": "The input did not match the regular expression /project:read reads project metadata and project-scoped event data/. Input:\n\n'Create API token\\n' +\n  'Token name\\n' +\n  '\\n' +\n  '1–100 characters. Names may be reused.\\n' +\n  '\\n' +\n  'Lifetime (days)\\n' +\n  'Permissions\\n' +\n  'org:read\\n' +\n  'org:write\\n' +\n  'project:read\\n' +\n  'project:write\\n' +\n  'project:releases\\n' +\n  'event:read\\n' +\n  'event:write\\n' +\n  'event:admin\\n' +\n  '\\n' +\n  'org:read lists authorized projects and organization people. org:write invites members and manages teams. project:read reads project metadata, project-scoped event data, attachments and legacy user reports. project:write submits legacy user feedback and reads event attachments; it does not grant other project reads or changes. event:read reads issues, issue events and performance telemetry. event:write reads issues and issue events, changes issue status, assignment and supported mute or release policies individually or in bulk, merges issue groups, and resets future grouping. log:read reads retained logs and is available only for MCP-enabled installations. event:admin deletes whole issue groups and their recorded history; it does not grant read or other write permissions. project:releases reads and manages releases, commits and deploys; writes require a current owner or admin.\\n' +\n  '\\n' +\n  'Project access\\n' +\n  'All current and future projects\\n' +\n  'Selected projects only\\n' +\n  '\\n' +\n  'All current and future projects includes projects created after this token. Selected projects grants access only to your choices.\\n' +\n  '\\n' +\n  'Create token'\n"
+}

@@ -1,0 +1,100 @@
+{
+  "passed": true,
+  "projectID": "128",
+  "issueID": "1615",
+  "checks": [
+    "Existing org/project defaults remain checked; release/event scopes are opt-in with visible distinct purposes at320/768/1440",
+    "Keyboard-selected event-only UI credential grants exactly the selected SDK project, reads actual SDK issue events and cannot read project-scoped events; one-time reveal dismisses",
+    "Visible persistent revocation invalidates the browser-issued credential even with the live login cookie; responsive metadata and existing controls remain usable"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/scope-defaults-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/scope-defaults-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/scope-defaults-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/explicit-event-scope-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/explicit-event-scope-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/explicit-event-scope-1440.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/event-scope-revoked-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/event-scope-revoked-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/errores-112/browser2/event-scope-revoked-1440.png"
+  ],
+  "dimensions": [
+    {
+      "name": "scope-defaults",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "scope-defaults",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "scope-defaults",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "explicit-event-scope",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "explicit-event-scope",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "explicit-event-scope",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "event-scope-revoked",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "event-scope-revoked",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "event-scope-revoked",
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "badResponses": [
+    {
+      "url": "http://127.0.0.1:18104/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/",
+      "status": 403,
+      "expected": true
+    },
+    {
+      "url": "http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/issues/1615/events/",
+      "status": 401,
+      "expected": true
+    }
+  ],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "url": "http://127.0.0.1:18104/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "url": "http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/issues/1615/events/"
+    }
+  ],
+  "expectedResponses": [
+    "GET http://127.0.0.1:18104/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/ 403",
+    "GET http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/issues/1615/events/ 401"
+  ],
+  "observedExpectedResponses": [
+    "GET http://127.0.0.1:18104/api/0/projects/otlp-acceptance-primary/event-sdk-mvq9b7a5-4df51c1f/events/ 403",
+    "GET http://127.0.0.1:18104/api/0/organizations/otlp-acceptance-primary/issues/1615/events/ 401"
+  ]
+}

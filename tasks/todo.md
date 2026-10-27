@@ -1634,7 +1634,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-030](../SPEC.md#close-errores-030) | Permanent issue discard: For a discarded event inside a mixed envelope, only that parent and its attached chil… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de envelope |
 | [CLOSE-errores-031](../SPEC.md#close-errores-031) | Permanent issue discard: Use the public Sentry issue update API(https://docs.sentry.io/api/events/update-an-is… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de API |
 | [CLOSE-errores-032](../SPEC.md#close-errores-032) | Permanent issue discard: Owning PostgreSQL checks cover020 checksum/reopen/all old-row preservation, actual fu… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de SQL/tests |
-| [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
+| [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | implementada (local) | bloqueada | El clon 312-eventos/1.885 filas/19 migraciones de 18087 ya no existe y no hay volcado equivalente (mínimo conservado: 21 migraciones) |
 | [CLOSE-errores-034](../SPEC.md#close-errores-034) | Compatible hashes and future grouping reset: Complete compatible hash listing and future-only detachment, incl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de hashes |
 | [CLOSE-errores-035](../SPEC.md#close-errores-035) | Compatible hashes and future grouping reset: The observed GlitchTip DELETE202 removes a signature's future rou… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 202 |
 | [CLOSE-errores-036](../SPEC.md#close-errores-036) | Compatible hashes and future grouping reset: Add migration019_issue_hash_routes.sql. Create issue_hash_routes… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 019 |
@@ -1713,7 +1713,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-109](../SPEC.md#close-errores-109) | Compatible event inspection: The GlitchTip Request/APIEventBreadcrumb schemas are reachable from the event res… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-110](../SPEC.md#close-errores-110) | Compatible event inspection: The JSON view is a legacy compatibility projection, not byte-identical SDK transp… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-111](../SPEC.md#close-errores-111) | Compatible event inspection: Internal contracts: eventview.Record contains ID/GroupID strings, ProjectID int64… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-112](../SPEC.md#close-errores-112) | Compatible event inspection: Require actual official SDK events queried through compatible project and issue U… | implementada (local) | bloqueada | SDK/imagen/CI pública pendientes; publicar y repetir |
+| [CLOSE-errores-112](../SPEC.md#close-errores-112) | Compatible event inspection: Require actual official SDK events queried through compatible project and issue U… | implementada | vigente | Comprobante 2026-10-27 abajo sobre copia aceptada, imagen b77a2cc y CI |
 | [CLOSE-errores-113](../SPEC.md#close-errores-113) | Native merge, original partitions and unmerge: Complete native merging and separation of error issues through… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-114](../SPEC.md#close-errores-114) | Native merge, original partitions and unmerge: An issue row owns its original project/fingerprint forever. A v… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-115](../SPEC.md#close-errores-115) | Native merge, original partitions and unmerge: Historical group counts and fresh-capture progress are distinct… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -3297,8 +3297,41 @@ publicada `sha256:40b75bd3…`.
 
 Evidencia: `test-results/closure-20261025/identity-033/{summary-20261027,smtp-browser/http,http,restart}.json`
 y capturas del navegador. Los owners puros/PostgreSQL/HTTP y el CI
-`40452038387` cubren formato, vet, race e imagen. Siguiente acción:
-CLOSE-errores-033. El producto sigue incompleto.
+`40452038387` cubren formato, vet, race e imagen.
+
+Al intentar CLOSE-errores-033 se perfilaron todos los volcados conservados
+(`error-retention`, `feedback`, `file-retention`, `release-retention`,
+`transaction-retention`, `uptime-retention` y `errores-206`): la migración más
+antigua disponible es 21, con 527 eventos. El clon exigido de 312 eventos,
+1.885 filas y 19 migraciones en 18087, así como los volcados de 18/17
+migraciones de 18085/18084, ya no existen y no hay equivalente. Bloqueo
+registrado: causa, clon aceptado eliminado; dependencia, restauración del
+runtime/volcado original o un equivalente aportado por el propietario;
+responsable, propietario del entorno; condición de desbloqueo, disponer de esa
+base y repetir la aceptación de SDK/CLI/imagen. No se declara 033 cerrado.
+Siguiente acción: CLOSE-errores-112, que no exige ese linaje.
+
+### Ejecución 2026-10-27: inspección de eventos de errores-112
+
+Selección registrada antes de trabajar: CLOSE-errores-112, primer criterio de
+errores sin el linaje antiguo perdido. Copia aceptada `goodsentry_112`
+migrada 31→79 sobre la imagen publicada, con la suite oficial y el navegador
+reales.
+
+| Elemento | Comprobante |
+|---|---|
+| SDK oficial | Node 11.7.0: tres errores y una transacción reales, 4 ACK, 23 peticiones compatibles; scopes de proyecto/issue distintos; proyecto oculto 404 y bearer ausente/malformado 401 |
+| Lecturas | Concreto, UUID, latest, detalle y JSON legado conservan excepción/usuario/tags; la transacción solo aparece en detalle de proyecto |
+| Filtros y páginas | Fechas de ocurrencia con inicio inclusivo/fin exclusivo, filtros de entorno y Links paginados con prefijo |
+| Revocación | Revocar el token invalida la lectura aun con sesión viva y no altera hashes ni conteos |
+| Navegador | Defaults org/project, scopes de release/event opt-in con propósitos visibles, credencial event-only por teclado, revelado único y revocación persistente a 320/768/1024/1440 |
+| Copia y reinicio | La base migrada conserva todas las filas antiguas; solo hay columnas aditivas, datos aislados, siete tokens y tres sesiones de verificación, y dos fragmentos vencidos el 2026-10-25. El reinicio conserva sesión y un token nuevo lee los tres eventos con el mismo SHA-256 crudo |
+
+Evidencia: `test-results/closure-20261025/errores-112/{summary-20261027,sdk/report,browser2/report,restart,preservation}.json`.
+El fallo previo de copy del navegador se conserva en
+`browser/harness-copy-mismatch-20261027.json`; la comprobación se ajustó al
+texto real de la UI. Siguiente acción: CLOSE-identidad-103. El producto sigue
+incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 

@@ -2398,18 +2398,21 @@
       ]
     },
     "CLOSE-errores-112": {
-      "evidence": "bloqueada por publicacion y aceptacion externa",
-      "scope": "official SDK event inspection, copied image and public CI",
+      "evidence": "vigente",
+      "scope": "official SDK event inspection with limited credentials, browser scope UI, copied-baseline upgrade/restart and public CI",
+      "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+      "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
       "covered": [
-        "local event inspection store/HTTP contracts"
+        "four actual Node 11.7.0 captures (three errors and a transaction) drive 23 compatible requests; project and issue credentials stay distinct and hidden-project, missing and malformed bearer controls deny access",
+        "concrete, UUID, latest, detail and legacy JSON preserve the real exception, user and tags; the transaction is readable only in project detail",
+        "occurrence dates support start-inclusive/end-exclusive and environment filters, with navigable prefixed pagination Links",
+        "revocation overrides the still-valid session and leaves native payload hashes and error counts unchanged",
+        "browser keeps org/project defaults, makes release/event scopes opt-in with visible purposes, issues one keyboard-selected event-only credential, hides the secret after one reveal and persists revocation at 320/768/1024/1440",
+        "the restored accepted baseline migrated 31->79 preserves every old row; only additive columns, isolated acceptance data, seven verification tokens, three sessions and two chunks expired on 2026-10-25 differ",
+        "app-only restart preserves the session and a new token still reads the three events with the same raw SHA-256; public tree and CI 40452038387 match"
       ],
-      "blocker": {
-        "cause": "official SDK/image/public-source acceptance and publication are not authorized",
-        "unlock": "run official SDK/image acceptance and publish matching source/CI"
-      },
-      "evidence_files": [
-        "errores-101-112.log"
-      ]
+      "history": "events_browser scope-copy assertions were corrected to the current truthful UI text; the failed pre-fix report is preserved",
+      "evidence_files": ["errores-112/summary-20261027.json", "errores-112/sdk/report.json", "errores-112/browser2/report.json", "errores-112/browser/harness-copy-mismatch-20261027.json", "errores-112/restart.json", "errores-112/preservation.json", "errores-101-112.log"]
     },
     "CLOSE-errores-113": {
       "evidence": "vigente",
