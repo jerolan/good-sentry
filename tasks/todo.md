@@ -3811,6 +3811,22 @@ Quedan variantes de navegador, CLI y actualización de imagen/estado anterior
 de 047. Siguiente acción: comprobar sus flujos de navegador de fallo, vacío,
 alias y borradores y reconciliar el CLI y los owners ya existentes.
 
+### Avance parcial 2026-10-27: estados de navegador de errores-047
+
+En un proyecto nuevo de `gsclosure033`, Chromium comprobó que un 503 inyectado
+en la lectura de firmas ofrece reintento y conserva cinco borradores; una
+fusión real hace que el reset del alias responda 409 y la navegación al grupo
+vigente conserve esos borradores; y resetear todas las firmas reales muestra
+el estado vacío sin perderlos. El 503 es simulado; fusión, 409 y 202 son del
+servidor. Los tres estados ajustaron a 320/768/1440 sin errores de página.
+Evidencia: `test-results/closure-20261025/errores-047-fresh/browser-extra.mjs`
+y `browser-extra/`.
+
+Faltan la actualización desde un estado anterior apropiado, el cotejo de CLI,
+reinicio y los demás comprobantes completos de 047. Siguiente acción:
+preparar una base con migración 018 y comprobar su actualización a la imagen
+candidata sin afectar las bases de las pruebas anteriores.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
