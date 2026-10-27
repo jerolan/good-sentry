@@ -3485,6 +3485,27 @@ Quedan los cuatro bloqueos por linajes perdidos (033/047/084/logs-028) y el
 criterio paraguas 002; CLOSE-operacion-100 sigue pendiente. El producto sigue
 incompleto.
 
+### Bloqueo de cierre 2026-10-27
+
+No queda trabajo independiente ejecutable. 604 criterios están vigentes, ocho
+resultados están aplazados por decisión expresa y 002/100 no
+pueden pasar mientras existan bloqueos.
+
+| Bloqueo | Dependencia exacta | Condición de desbloqueo |
+|---|---|---|
+| CLOSE-errores-033 | base de 312 eventos/1.885 filas/19 migraciones creada en 18087 | aportar el volcado o restaurar el runtime desde un respaldo |
+| CLOSE-errores-047 | base de 270 eventos/1.455 filas/18 migraciones creada en 18085 | aportar el volcado o restaurar el runtime |
+| CLOSE-errores-084 | runtime de 246 eventos sin la migración 018 en 18084 | aportar el volcado o restaurar el runtime |
+| CLOSE-logs-028 | base aceptada de 4.010 filas/524 eventos en 18088 | aportar el volcado o una referencia inmutable equivalente |
+
+Causa: los contenedores y volúmenes de esas aceptaciones ya no existen; el
+volcado más antiguo conservado es de 21 migraciones y no coincide. Intentos:
+perfilado de todos los `.dump` del workspace, búsqueda de referencias
+inmutables y comprobación de volúmenes/contenedores. Responsable de resolverlo:
+propietario del entorno o de los respaldos. Tras restaurarlos se debe repetir
+la preservación y aceptación de cada fila, reauditar su vigencia y ejecutar
+CLOSE-operacion-100 sobre la candidata `b77a2cc`.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
