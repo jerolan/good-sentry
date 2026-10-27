@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "checks": [
+    "first page shows 25 of 31 accounts with Previous disabled",
+    "suspending an account on page 2 blocks its password login",
+    "reactivation restores the account login",
+    "filter narrows the list to the matching account"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identity-103/admin-users-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identity-103/admin-users-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identity-103/admin-users-1024.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identity-103/admin-users-1440.png"
+  ],
+  "dimensions": [
+    {
+      "width": 320,
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "width": 768,
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "width": 1024,
+      "viewport": 1024,
+      "document": 1024
+    },
+    {
+      "width": 1440,
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "pageErrors": []
+}

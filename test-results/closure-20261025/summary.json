@@ -1881,8 +1881,8 @@
         "local hash/reset/browser contracts"
       ],
       "blocker": {
-        "cause": "official SDK captures, copied-image restart, exact public tree/CI/deployed checks are not available without publication authorization",
-        "unlock": "run the official SDK/image acceptance and publish matching source/CI"
+        "cause": "the required 270-event/1455-row/18-migration 18085 baseline is not preserved; no dump below 21 migrations exists and the official SDK/image acceptance was never run",
+        "unlock": "restore the accepted 18085 runtime or an equivalent dump, then run official SDK before/after reset and copied-image acceptance on published b77a2cc"
       },
       "evidence_files": [
         "errores-034-039.log"
@@ -2194,8 +2194,8 @@
         "local issue-update store/HTTP/browser contracts"
       ],
       "blocker": {
-        "cause": "official SDK/image/public-source acceptance and publication are not authorized",
-        "unlock": "run official SDK/image acceptance and publish matching source/CI"
+        "cause": "the required 246-event runtime without 018 and its clone are not preserved; no pre-21-migration dump exists and the official SDK/image acceptance was never run",
+        "unlock": "restore that accepted runtime or an equivalent dump, then run the official SDK error and image acceptance on b77a2cc"
       },
       "evidence_files": [
         "errores-069-083.log"
@@ -3821,16 +3821,19 @@
       ]
     },
     "CLOSE-identidad-103": {
-      "evidence": "bloqueada",
-      "scope": "local acceptance for instance administration; public CI/image and Compose image upgrade remain",
-      "evidence_files": [
-        "identidad-103-go.log",
-        "full-race-instance-admin.log",
-        "upgrade-064.log",
-        "admin-users-pagination/report.json",
-        "admin-users-pagination/admin-users-page-1-1440.png",
-        "admin-users-pagination/admin-users-page-2-1440.png"
-      ]
+      "evidence": "vigente",
+      "scope": "instance administration on the published image plus an isolated Compose image upgrade from a pre-064 release",
+      "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+      "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+      "covered": [
+        "fresh empty database makes the first owner an instance administrator; 31 accounts paginate 25/6, filter, suspend and reactivate at 320/768/1024/1440 without overflow",
+        "suspension invalidates the live session and password login; reactivation restores login",
+        "CLI grant promotes an existing account, rejects a missing account as not found and an inactive account as forbidden",
+        "Compose upgrades a published pre-064 image at migration 57 to b77a2cc at migration 79: the user and session survive, no administrator is created by the upgrade, admin/users answers 403 until CLI grant and 200 after, and restart keeps the administrator",
+        "admin Go code and migration 064 are unchanged since 87cd9d7; app.js changes fall outside the admin renderers",
+        "historical focused, full race and binary upgrade receipts remain valid and CI 40452038387 covers formatting, vet, race PostgreSQL integration and image build"
+      ],
+      "evidence_files": ["identity-103/summary-20261027.json", "identity-103/admin-103.json", "identity-103/admin-users-*.png", "identity-103/cli.json", "identity-103/compose-upgrade.json", "identity-103/suspension.json", "identidad-103-go.log", "full-race-instance-admin.log", "upgrade-064.log", "admin-users-pagination/report.json"]
     },
     "CLOSE-identidad-104": {
       "evidence": "vigente",

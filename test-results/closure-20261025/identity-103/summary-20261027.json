@@ -1,0 +1,89 @@
+{
+  "criterion": "CLOSE-identidad-103",
+  "state": "vigente",
+  "date": "2026-10-27",
+  "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+  "environment": "fresh goodsentry_103 with ENABLE_ADMIN on 18105 plus an isolated Compose project gs103 upgraded from a published pre-064 image",
+  "browser": {
+    "checks": [
+      "first page shows 25 of 31 accounts with Previous disabled",
+      "suspending an account on page 2 blocks its password login",
+      "reactivation restores the account login",
+      "filter narrows the list to the matching account"
+    ],
+    "dimensions": [
+      {
+        "width": 320,
+        "viewport": 320,
+        "document": 320
+      },
+      {
+        "width": 768,
+        "viewport": 768,
+        "document": 768
+      },
+      {
+        "width": 1024,
+        "viewport": 1024,
+        "document": 1024
+      },
+      {
+        "width": 1440,
+        "viewport": 1440,
+        "document": 1440
+      }
+    ],
+    "screenshots": [
+      "admin-users-320.png",
+      "admin-users-768.png",
+      "admin-users-1024.png",
+      "admin-users-1440.png"
+    ]
+  },
+  "cli": {
+    "grant": {
+      "status": 0,
+      "promoted": true
+    },
+    "missing": {
+      "status": 1,
+      "error": "not found"
+    },
+    "inactive": {
+      "status": 1,
+      "error": "forbidden"
+    }
+  },
+  "suspension": {
+    "session_after_suspend": 401,
+    "login_after_suspend": 401,
+    "reactivated": true
+  },
+  "compose": {
+    "oldImage": "ghcr.io/jerolan/good-sentry@sha256:203b1b1e1207d3193429edd480c0773df3f14b69491efbc9018101186f295221",
+    "oldMigrations": 57,
+    "adminRouteBeforeUpgrade": 404,
+    "usersBefore": 1,
+    "newImage": "ghcr.io/jerolan/good-sentry@sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+    "newMigrations": 79,
+    "userPreserved": "compose-owner-103@example.test",
+    "promotedByUpgrade": false,
+    "adminBeforeGrant": 403,
+    "cliGrant": 0,
+    "adminAfterGrant": 200,
+    "rowsAfterGrant": 1,
+    "restartStatus": 200,
+    "restartAdmin": true,
+    "sessionSurvivedImageUpgrade": true
+  },
+  "sourceContrast": "Admin Go (store/server/cmd) and migration 064 are unchanged between 87cd9d7 and b77a2cc; app.js changes are outside renderAdmin/renderAdminUsers (hunks at 2198 and 2245).",
+  "historical": [
+    "identidad-103-go.log",
+    "full-race-instance-admin.log",
+    "upgrade-064.log",
+    "admin-users-pagination/report.json"
+  ],
+  "ci": "40452038387",
+  "publicSource": "b77a2cc / c22f75b6c13a9ec7f7dd66b43005ac8c5370303a"
+}

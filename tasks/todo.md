@@ -2062,7 +2062,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-100](../SPEC.md#close-identidad-100) | Instance user administration: Every list and update rechecks that the current account is active and an instanc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-101](../SPEC.md#close-identidad-101) | Instance user administration: Once an instance administrator exists, serialized updates and the existing self-… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-102](../SPEC.md#close-identidad-102) | Instance user administration: The first-owner/admin bootstrap must be serialized with user creation. The first… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-identidad-103](../SPEC.md#close-identidad-103) | Instance user administration: Acceptance uses real PostgreSQL migration from063 and reopen, store concurrency… | implementada (local) | bloqueada | Autorizar CI público y publicación; luego repetir la actualización con imágenes en Compose |
+| [CLOSE-identidad-103](../SPEC.md#close-identidad-103) | Instance user administration: Acceptance uses real PostgreSQL migration from063 and reopen, store concurrency… | implementada | vigente | Comprobante 2026-10-27 abajo: navegador, CLI y actualización Compose 57→79 en la imagen pública |
 | [CLOSE-operacion-049](../SPEC.md#close-operacion-049) | Instance user administration: Optional MCP uses Streamable HTTP with authenticated scoped access to issues, lo… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-050](../SPEC.md#close-operacion-050) | Instance user administration: GOODSENTRY_ENABLE_ARCHIVE is the canonical switch. Preserve GOODSENTRY_ENABLE_DU… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-051](../SPEC.md#close-operacion-051) | Instance user administration: Every span read that can include cold data runs on one Repeatable Read, Read Wri… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -3330,8 +3330,32 @@ reales.
 Evidencia: `test-results/closure-20261025/errores-112/{summary-20261027,sdk/report,browser2/report,restart,preservation}.json`.
 El fallo previo de copy del navegador se conserva en
 `browser/harness-copy-mismatch-20261027.json`; la comprobación se ajustó al
-texto real de la UI. Siguiente acción: CLOSE-identidad-103. El producto sigue
-incompleto.
+texto real de la UI. Siguiente acción: CLOSE-identidad-103.
+
+### Ejecución 2026-10-27: administración de instancia de identidad-103
+
+Selección registrada antes de trabajar: CLOSE-identidad-103. Se separaron dos
+pruebas: una base nueva con 31 cuentas para el navegador y un proyecto Compose
+aislado que actualiza una imagen pública anterior a la migración 064.
+
+| Elemento | Comprobante |
+|---|---|
+| Bootstrap y paginación | Base vacía crea al primer owner como administrador; 31 cuentas muestran 25/6, filtro y `Previous` deshabilitado en la primera página |
+| Suspensión | Suspender bloquea el login y la sesión viva (401); reactivar restaura el login |
+| CLI | `admin grant` promueve una cuenta existente, devuelve `not found` para una ausente y `forbidden` para una inactiva |
+| Compose | Imagen pública `sha256:203b1b1e…` en migración 57 con `admin/users` 404; actualización a `sha256:40b75bd3…`, migración 79, usuario y sesión conservados, sin promoción automática, 403 antes del CLI, 200 y una fila después; reinicio conserva al administrador |
+| Navegador | Cuatro anchos 320/768/1024/1440 sin desbordes, con capturas de la lista filtrada |
+
+El código Go de administración y la migración 064 no cambian entre `87cd9d7` y
+`b77a2cc`; los cambios de `app.js` están fuera de los renderizadores de
+administración. Los comprobantes históricos de migración 063→064, concurrencia,
+HTTP y race siguen vigentes y el CI `40452038387` cubre los checks restantes.
+
+Evidencia: `test-results/closure-20261025/identity-103/{summary-20261027,admin-103,cli,compose-upgrade,suspension}.json`
+y capturas. Los clones de 17/18/19 migraciones que exigen 033/047/084 no están
+en ningún volcado conservado (mínimo 21 migraciones), así que esas filas quedan
+bloqueadas por la base aceptada perdida. Siguiente acción: CLOSE-sourcemaps-011,
+primer criterio ejecutable de releases/artefactos. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 

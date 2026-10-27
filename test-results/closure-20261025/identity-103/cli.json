@@ -1,0 +1,14 @@
+{
+  "grant": {
+    "status": 0,
+    "promoted": true
+  },
+  "missing": {
+    "status": 1,
+    "error": "not found"
+  },
+  "inactive": {
+    "status": 1,
+    "error": "forbidden"
+  }
+}
