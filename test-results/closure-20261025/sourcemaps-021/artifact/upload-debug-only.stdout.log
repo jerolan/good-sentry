@@ -1,0 +1,19 @@
+> Found 2 files
+> Analyzing 2 sources
+> Rewriting sources
+> Adding source map references
+> Bundled 2 files for upload
+> Bundle ID: 47ccc875-baad-522b-b332-50c002f0d4dd
+> Uploaded files to Sentry
+> File processing complete
+> Organization: otlp-acceptance-primary
+> Projects: artifact-cli-021
+> Release: None
+> Dist: None
+> Upload type: artifact bundle
+
+Source Map Upload Report
+  Scripts
+    ~/app.js (sourcemap at app.js.map, debug id 2b42c0d2-4abb-58bb-8286-184018c75710)
+  Source Maps
+    ~/app.js.map (debug id 2b42c0d2-4abb-58bb-8286-184018c75710)

@@ -1777,7 +1777,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-018](../SPEC.md#close-sourcemaps-018) | JavaScript artifacts: Assembly accepts one bounded JSON object with required checksum, nonempty ordered chunks… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-019](../SPEC.md#close-sourcemaps-019) | JavaScript artifacts: Use source_map file URLs as map names/source-resolution bases, never ZIP member paths or… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-020](../SPEC.md#close-sourcemaps-020) | JavaScript artifacts: Materialize maps for all deduplicated authorized projects in one transaction. Enforce AR… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | implementada (local) | bloqueada | Autorizar imagen final y CI público; repetir CLI/SDK contra la imagen y comprobar licencia/assets |
+| [CLOSE-sourcemaps-021](../SPEC.md#close-sourcemaps-021) | JavaScript artifacts: Acceptance owners: real PostgreSQL proves quota/expiry, organization/project isolation,… | implementada | vigente | Comprobante 2026-10-27 abajo: CLI/SDK, reanudación de fragmentos, reinicio y CI en b77a2cc |
 | [CLOSE-sourcemaps-022](../SPEC.md#close-sourcemaps-022) | JavaScript artifacts: The first artifact integration stores validated JavaScript source maps by project, artif… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-023](../SPEC.md#close-sourcemaps-023) | JavaScript artifacts: Projects show a source-map disclosure with metadata list and an owner/admin multipart up… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-sourcemaps-024](../SPEC.md#close-sourcemaps-024) | JavaScript artifacts: Integration review reproduced two source-map defects that must be repaired before accept… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -3376,7 +3376,26 @@ El código de store/server/UI de releases no cambió entre `dc3d4bf` y `b77a2cc`
 los comprobantes históricos de PostgreSQL/HTTP siguen vigentes. CI
 `40452038387` cubre formato, vet, race PostgreSQL e imagen. Evidencia:
 `test-results/closure-20261025/sourcemaps-011/{summary-20261027,cli2,browser,api-state}.json`.
-Siguiente acción: CLOSE-sourcemaps-021. El producto sigue incompleto.
+Siguiente acción: CLOSE-sourcemaps-021, completado abajo. El producto sigue
+incompleto.
+
+### Ejecución 2026-10-27: artefactos y mapas de sourcemaps-021
+
+Selección registrada antes de trabajar: CLOSE-sourcemaps-021. Sobre la imagen
+publicada se ejecutó el owner externo de CLI/SDK y una reanudación real de
+fragmentos SYSB a través de un reinicio.
+
+| Elemento | Comprobante |
+|---|---|
+| Inyección y subida | `sentry-cli 3.8.0` inyecta DebugID, sube el build, repite la subida sin duplicar mapas y guarda variantes release/dist y URL legacy |
+| SDK oficial | Seis capturas Node 11.7.0 recuperan la línea 7 original y conservan frames minificados; proyecto, versión o dist incorrectos quedan sin mapear |
+| Reanudación | Bundle SYSB partido en dos fragmentos: el primero persiste tras reiniciar; la asamblea informa exactamente el segundo como faltante antes y después del reinicio y luego termina en `ok`, materializando el mapa del release |
+| Reinicio | Tres filas de mapas y un frame legacy mapeado permanecen idénticos |
+| Imagen | Los siete recursos servidos y la licencia MIT coinciden con los blobs; CI `40452038387` y árbol público coinciden |
+
+Evidencia: `test-results/closure-20261025/sourcemaps-021/{summary-20261027,artifact/report,resume,restart}.json`.
+Siguiente acción: CLOSE-alertas-021, primer criterio de alertas con excepción
+expresa para el recibo real del proveedor. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 

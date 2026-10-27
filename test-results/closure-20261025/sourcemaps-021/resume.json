@@ -1,0 +1,33 @@
+{
+  "bundleBytes": 607,
+  "chunkIDs": [
+    "56100eb64f3a42a197662e5c0aa48bed65932978",
+    "317440083947cb147c3402bc8fc7d2135779134e"
+  ],
+  "firstAssembly": {
+    "missingChunks": [
+      "317440083947cb147c3402bc8fc7d2135779134e"
+    ],
+    "state": "not_found"
+  },
+  "afterRestart": {
+    "missingChunks": [
+      "317440083947cb147c3402bc8fc7d2135779134e"
+    ],
+    "state": "not_found"
+  },
+  "finalAssembly": {
+    "missingChunks": [],
+    "state": "ok"
+  },
+  "repeatAssembly": {
+    "missingChunks": [],
+    "state": "ok"
+  },
+  "sourceMaps": [
+    "~/app.js.map|",
+    "~/app.js.map|goodsentry-artifact-cli-mvq9qnoh-a3f63f225a",
+    "~/assets/resume.js.map|resume-021@1.0.0",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-021/artifact/build-mvq9qnoh-a3f63f225a/legacy/app-legacy.js.map|goodsentry-artifact-legacy-mvq9qnoh-a3f63f225a"
+  ]
+}

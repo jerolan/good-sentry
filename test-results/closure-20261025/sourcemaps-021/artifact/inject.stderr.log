@@ -1,0 +1,4 @@
+  INFO    2026-10-26 23:52:23.652540233 -06:00 sentry-cli was invoked with the following command line: "/tmp/sentry-cli-3.8.0" "sourcemaps" "inject" "/home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-021/artifact/build-mvq9qnoh-a3f63f225a/dist"
+  INFO    2026-10-26 23:52:23.655489927 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-021/artifact/build-mvq9qnoh-a3f63f225a/dist/app.js.map (446 bytes)
+  INFO    2026-10-26 23:52:23.655565376 -06:00 found: /home/dev/projects/SentryGo/test-results/closure-20261025/sourcemaps-021/artifact/build-mvq9qnoh-a3f63f225a/dist/app.js (139 bytes)
+  INFO    2026-10-26 23:52:23.658082244 -06:00 Analyzing completed in 0.002s

@@ -4072,12 +4072,18 @@
       ]
     },
     "CLOSE-sourcemaps-021": {
-      "evidence": "bloqueada",
-      "scope": "local CLI injection/upload variants, official SDK mapped retrieval and chunk resume; final image and CI remain",
-      "evidence_files": [
-        "artifact-cli-sdk/report.json",
-        "sourcemaps-021-restart.log"
-      ]
+      "evidence": "vigente",
+      "scope": "CLI-injected artifacts, official SDK mapping, chunk resume across restart and isolation on the published image",
+      "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+      "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+      "covered": [
+        "sentry-cli 3.8.0 injects a debug ID and uploads the build, repeats the upload without duplicating maps, and stores release/dist and legacy URL-prefix variants",
+        "six official Node captures retrieve mapped original line 7 and preserve minified frames; wrong project, wrong version and wrong dist remain unmapped",
+        "a SYSB bundle split in two chunks persists chunk one across an app-only restart: assembly before and after restart reports exactly the missing second chunk, then succeeds and materializes the release map",
+        "three source-map rows and a mapped legacy frame remain identical across restart",
+        "image assets and MIT notice match the committed blobs; public tree and CI 40452038387 match"
+      ],
+      "evidence_files": ["sourcemaps-021/summary-20261027.json", "sourcemaps-021/artifact/report.json", "sourcemaps-021/resume.json", "sourcemaps-021/restart.json", "artifact-cli-sdk/report.json", "sourcemaps-021-restart.log"]
     },
     "CLOSE-sourcemaps-022": {
       "evidence": "vigente",
