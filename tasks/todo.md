@@ -3598,6 +3598,25 @@ de sus comprobantes, fuente, imagen y CI. Siguiente acción: contrastar los
 flujos de error/alias/bulk/draft requeridos con los comprobantes existentes y
 ejecutar en esta copia los que no estén acreditados.
 
+### Avance parcial 2026-10-27: errores y alias de CLOSE-errores-033
+
+Chromium ejecutó en un proyecto nuevo de la misma copia tres flujos: cancelar
+el borrado preserva cinco borradores y URL; un 503 local declarado antes del
+commit preserva esos borradores y el issue; y una fusión real seguida de un
+DELETE del alias devuelve 409, ofrece el grupo vigente y conserva los cinco
+borradores al navegar. Las vistas de error y conflicto no desbordan a
+320/768/1440 y no hubo errores de página. El 503 es una respuesta inyectada
+de prueba; el 409 procede del servidor. Procedimiento, resultado y capturas:
+`test-results/closure-20261025/errores-033-fresh/browser-extra.mjs` y
+`browser-extra/`. El owner de navegador cubre pérdida de drafts y navegación
+que no pueden demostrar los owners HTTP; usa datos nuevos y ningún seam de
+producción.
+
+Quedan el reintento de lectura tras borrado confirmado, los límites y no-op de
+selección múltiple, el cotejo completo de la evidencia y fuente/imagen/CI.
+Siguiente acción: comprobar el reintento tras 204 y los controles bulk sin
+alterar los datos ya capturados.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
