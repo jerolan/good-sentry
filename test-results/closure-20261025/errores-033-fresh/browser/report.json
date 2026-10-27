@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "checks": [
+    "Bulk deletion removes exactly the selected groups and leaves the unselected issue",
+    "Individual deletion from issue detail requires confirmation and returns to the list without the group",
+    "Native permanent discard removes the issue and suppresses a new matching capture"
+  ],
+  "screenshots": [
+    "/tmp/goodsentry-closure-033/browser/selected-issues-320.png",
+    "/tmp/goodsentry-closure-033/browser/selected-issues-768.png",
+    "/tmp/goodsentry-closure-033/browser/selected-issues-1440.png",
+    "/tmp/goodsentry-closure-033/browser/confirm-detail-delete-320.png",
+    "/tmp/goodsentry-closure-033/browser/confirm-detail-delete-768.png",
+    "/tmp/goodsentry-closure-033/browser/confirm-detail-delete-1440.png"
+  ],
+  "pageErrors": []
+}

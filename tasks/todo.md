@@ -3512,6 +3512,32 @@ propietario del entorno o de los respaldos. Tras restaurarlos se debe repetir
 la preservación y aceptación de cada fila, reauditar su vigencia y ejecutar
 CLOSE-operacion-100 sobre la candidata `b77a2cc`.
 
+### Avance parcial 2026-10-27: CLOSE-errores-033 con base aislada
+
+Selección: CLOSE-errores-033, tras la decisión que retiró la dependencia de
+la base histórica. Desde la candidata de producto `b77a2cc`, `ad5537e` añade
+evidencia, documentación y un ajuste al harness `events_browser.mjs`, sin cambios
+en entradas de producto; se usa la imagen local
+`sha256:40b75bd3bfc2` previamente vinculada a esa candidata, PostgreSQL 18 y
+volúmenes nuevos `gsclosure033_pg` y `gsclosure033_uploads`, en el puerto local
+18533. No se modifica ningún runtime anterior.
+
+El navegador real ejecutó `tests/compat/issue_delete_browser.mjs` en esa copia:
+borrado múltiple selectivo, borrado individual con confirmación y descarte
+permanente con captura posterior suprimida pasaron sin errores de página. Las
+comprobaciones visuales de selección y confirmación pasaron a 320/768/1440.
+Evidencia: `test-results/closure-20261025/errores-033-fresh/browser/`.
+El primer arranque rechazó una clave de prueba demasiado corta; se generó una
+clave válida y el mismo entorno arrancó con `/readyz` listo. Una consulta de
+salud inmediata durante el arranque recibió conexión reiniciada y se repitió
+después de comprobar el estado de los contenedores.
+
+Esto es evidencia parcial: faltan captura oficial con adjuntos y recurrencia,
+credenciales restringidas, CLI, flujos de navegador restantes, comprobación de
+reinicio y preservación de la nueva base, y contraste final de fuente/imagen/CI.
+Siguiente acción: preparar un proyecto y credenciales aisladas, ejecutar las
+capturas oficiales y el recorrido CLI, conservando la misma base de prueba.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
