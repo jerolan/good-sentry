@@ -3689,6 +3689,34 @@ owner de migración, no una actualización de imagen desde un estado realmente
 anterior. Siguiente acción: verificar esa actualización de imagen en una base
 aislada de versión previa y luego reconciliar los subresultados de 033.
 
+### Avance parcial 2026-10-27: actualización real de imagen de errores-033
+
+Se construyó una imagen local desde `a297b43e4376d41c5707a8458ac99ee97ba0499d`,
+cuya base nueva tenía exactamente las migraciones 001–019. Un SDK Node 11.7.0
+real capturó un error con un adjunto binario en esa versión. Tras detener solo
+la aplicación anterior, se arrancó la imagen candidata `sha256:40b75bd3…`
+sobre la misma base y volumen aislados: quedó lista con 79 migraciones.
+
+Antes de iniciar la nueva imagen se registraron 32 filas en 37 tablas; después
+había 93 filas en 73 tablas. Las 32 filas anteriores, incluidos sus recibos,
+coinciden al proyectar todas sus columnas originales; se permiten filas y
+columnas aditivas. Una sesión nueva posterior a la instantánea leyó el evento
+y descargó los cuatro bytes del adjunto sin cambios. Comprobante y scripts:
+`test-results/closure-20261025/errores-033-fresh/upgrade/upgrade-report.json`,
+`upgrade-snapshot.py`, `upgrade-seed.mjs` y `upgrade-verify.mjs`. Los snapshots
+privados permanecen en `/tmp/goodsentry-closure-033/` y no se publican.
+
+La imagen anterior se reconstruyó localmente desde esa revisión; no se afirma
+que sea una imagen histórica publicada. Los primeros intentos de compilación
+fallaron por el cache de Go de solo lectura y por falta de metadata Git en el
+archivo exportado; se corrigieron con cache temporal y `-buildvcs=false`.
+El primer seed recibió 401 porque esa versión exigía setup; se creó su usuario
+de prueba y se continuó sin resetear la base. El reinicio de la candidata ya
+se comprobó en la copia separada de 033.
+
+Siguiente acción: reconciliar los subresultados de 033 y contrastar CI, árbol
+público y comandos fijados con la candidata antes de marcar su evidencia.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
