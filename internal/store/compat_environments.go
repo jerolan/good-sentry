@@ -28,7 +28,7 @@ func ValidCompatibleEnvironmentName(value string) bool {
 
 const projectEnvironmentNames = `SELECT environment AS name FROM events WHERE project_id=$1::bigint AND environment<>'' AND char_length(environment)<=255
  UNION SELECT environment FROM monitors WHERE project_id=$1::bigint AND environment<>'' AND char_length(environment)<=255
- UNION SELECT environment FROM logs WHERE project_id=$1::bigint AND environment<>'' AND char_length(environment)<=255
+ UNION SELECT environment FROM logs_with_archive WHERE project_id=$1::bigint AND environment<>'' AND char_length(environment)<=255
  UNION SELECT environment FROM spans WHERE project_id=$1::bigint AND environment<>'' AND char_length(environment)<=255
  UNION SELECT name FROM project_environments WHERE project_id=$1::bigint`
 
@@ -143,7 +143,7 @@ func (s *Store) CompatibleOrganizationEnvironments(ctx context.Context, access M
 		WHERE p.organization_id=$1::bigint AND ($2 OR p.id=ANY($3::bigint[])) AND e.environment<>'' AND char_length(e.environment)<=255
 		UNION SELECT m.project_id,m.environment FROM monitors m JOIN projects p ON p.id=m.project_id
 		WHERE p.organization_id=$1::bigint AND ($2 OR p.id=ANY($3::bigint[])) AND m.environment<>'' AND char_length(m.environment)<=255
-		UNION SELECT l.project_id,l.environment FROM logs l JOIN projects p ON p.id=l.project_id
+		UNION SELECT l.project_id,l.environment FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
 		WHERE p.organization_id=$1::bigint AND ($2 OR p.id=ANY($3::bigint[])) AND l.environment<>'' AND char_length(l.environment)<=255
 		UNION SELECT s.project_id,s.environment FROM spans s JOIN projects p ON p.id=s.project_id
 		WHERE p.organization_id=$1::bigint AND ($2 OR p.id=ANY($3::bigint[])) AND s.environment<>'' AND char_length(s.environment)<=255

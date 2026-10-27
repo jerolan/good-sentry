@@ -14,7 +14,35 @@ import (
 // intervals. The provider coordinates replicas. Cancellation stops SQL and the
 // idle timer; the returned stop function is safe to call more than once.
 func StartLogRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
+	return StartLogRetentionWithArchive(parent, db, days, 0, interval)
+}
+
+// StartLogRetentionWithArchive copies retained logs into the local archive
+// before the ordinary expiry pass. The threshold is capped by the log lifetime.
+func StartLogRetentionWithArchive(parent context.Context, db *store.Store, days, archiveAfterDays int, interval time.Duration) func() {
 	return startRetention(parent, interval, func(ctx context.Context) bool {
+		archived := int64(0)
+		if archiveAfterDays > 0 {
+			archiveDays := min(archiveAfterDays, days)
+			cutoff := time.Now().UTC().Add(-time.Duration(archiveDays) * 24 * time.Hour)
+			var err error
+			archived, err = db.ArchiveLogs(ctx, cutoff, 250)
+			if ctx.Err() != nil {
+				return false
+			}
+			if err != nil {
+				slog.Error("Log archive pass failed", "entryPoint", "log_retention_worker", "operation", "archive_logs")
+			}
+			removedArchive, cleanupErr := db.CleanupLogArchive(ctx, time.Now().UTC().Add(-time.Duration(days)*24*time.Hour))
+			if ctx.Err() != nil {
+				return false
+			}
+			if cleanupErr != nil {
+				slog.Error("Log archive retention failed", "entryPoint", "log_retention_worker", "operation", "cleanup_log_archive")
+			} else if removedArchive > 0 {
+				archived += removedArchive
+			}
+		}
 		logs, batches, err := db.CleanupLogs(ctx, days)
 		if ctx.Err() != nil {
 			return false
@@ -23,8 +51,8 @@ func StartLogRetention(parent context.Context, db *store.Store, days int, interv
 			// SQL and telemetry may appear in driver errors. Report the failed
 			// operation without copying those values into application logs.
 			slog.Error("Log retention pass failed", "entryPoint", "log_retention_worker", "operation", "cleanup_logs")
-		} else if logs > 0 || batches > 0 {
-			slog.Info("Log retention cleanup committed", "entryPoint", "log_retention_worker", "logs", logs, "batches", batches)
+		} else if logs > 0 || batches > 0 || archived > 0 {
+			slog.Info("Log retention cleanup committed", "entryPoint", "log_retention_worker", "logs", logs, "batches", batches, "archived", archived)
 			return true
 		}
 		return false

@@ -176,7 +176,7 @@ func (s *Store) readLogs(ctx context.Context, access ManagementAccess, f LogFilt
 	}
 	args = append(args, limit, offset)
 	rows, err := s.pool.Query(ctx, `SELECT l.id::text,l.project_id::text,l.timestamp,l.trace_id,l.span_id,
-		l.level,l.body,l.service,l.environment,l.host,l.attributes,l.otlp_batch_id IS NOT NULL FROM logs l JOIN projects p ON p.id=l.project_id
+		l.level,l.body,l.service,l.environment,l.host,l.attributes,l.otlp_batch_id IS NOT NULL FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
 		JOIN memberships m ON m.organization_id=p.organization_id `+
 		where+fmt.Sprintf("ORDER BY l.timestamp DESC,l.id DESC LIMIT $%d OFFSET $%d", len(args)-1, len(args)), args...)
 	if err != nil {

@@ -75,7 +75,7 @@ func (s *Store) readLog(ctx context.Context, access ManagementAccess, orgSlug, l
   l.level,l.body,l.service,l.environment,l.attributes,l.data,l.otlp_batch_id IS NOT NULL,
   CASE WHEN octet_length(b.payload)<=$4 THEN b.payload END,
   COALESCE(octet_length(b.payload),0),COALESCE(b.received_at,l.timestamp),COALESCE(l.otlp_record_index,-1)
-  FROM logs l JOIN projects p ON p.id=l.project_id
+  FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
   JOIN organizations o ON o.id=p.organization_id
   JOIN memberships m ON m.organization_id=o.id AND m.user_id::text=$1
   LEFT JOIN otlp_log_batches b ON b.project_id=l.project_id AND b.id=l.otlp_batch_id

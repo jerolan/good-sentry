@@ -1,0 +1,10 @@
+=== RUN   TestCompatibleLogsFiltersPagingAndContainment
+--- PASS: TestCompatibleLogsFiltersPagingAndContainment (0.47s)
+=== RUN   TestCompatibleLogResourcesAndStats
+--- PASS: TestCompatibleLogResourcesAndStats (0.45s)
+=== RUN   TestLogRetentionPreservesCurrentSDKAndOTLPSiblings
+--- PASS: TestLogRetentionPreservesCurrentSDKAndOTLPSiblings (0.59s)
+=== RUN   TestLogsFilterHalfOpenTimeWindowExactServiceAndScope
+--- PASS: TestLogsFilterHalfOpenTimeWindowExactServiceAndScope (0.58s)
+PASS
+ok  	goodsentry/internal/store	2.110s

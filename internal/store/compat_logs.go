@@ -179,7 +179,7 @@ func (s *Store) CompatibleLogs(ctx context.Context, access ManagementAccess, f C
 		where += fmt.Sprintf("AND (l.timestamp,l.id)<($%d::timestamptz,$%d::bigint) ", len(args)-1, len(args))
 	}
 	args = append(args, f.Limit)
-	rows, err := s.pool.Query(ctx, "SELECT "+compatibleLogColumns+` FROM logs l JOIN projects p ON p.id=l.project_id
+	rows, err := s.pool.Query(ctx, "SELECT "+compatibleLogColumns+` FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
 		JOIN memberships m ON m.organization_id=p.organization_id `+where+
 		fmt.Sprintf("ORDER BY l.timestamp DESC,l.id DESC LIMIT $%d", len(args)), args...)
 	if err != nil {
@@ -204,7 +204,7 @@ func (s *Store) CompatibleLog(ctx context.Context, access ManagementAccess, logI
 		return CompatibleLog{}, err
 	}
 	args = append(args, logID)
-	return scanCompatibleLog(s.pool.QueryRow(ctx, "SELECT "+compatibleLogColumns+` FROM logs l JOIN projects p ON p.id=l.project_id
+	return scanCompatibleLog(s.pool.QueryRow(ctx, "SELECT "+compatibleLogColumns+` FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
 		JOIN memberships m ON m.organization_id=p.organization_id `+where+
 		fmt.Sprintf("AND l.id=$%d::bigint", len(args)), args...))
 }
@@ -223,13 +223,13 @@ func (s *Store) CompatibleLogResources(ctx context.Context, access ManagementAcc
 	args = append(args, resourceType, CompatibleLogResourceLimit)
 	resourceArg, limitArg := len(args)-1, len(args)
 	rows, err := s.pool.Query(ctx, `WITH resources AS (
-	SELECT l.service AS name,'service' AS type,l.timestamp FROM logs l JOIN projects p ON p.id=l.project_id
+	SELECT l.service AS name,'service' AS type,l.timestamp FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
 		JOIN memberships m ON m.organization_id=p.organization_id `+where+`AND l.service<>''
 	UNION ALL
-	SELECT l.environment,'environment',l.timestamp FROM logs l JOIN projects p ON p.id=l.project_id
+	SELECT l.environment,'environment',l.timestamp FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
 		JOIN memberships m ON m.organization_id=p.organization_id `+where+`AND l.environment<>''
 	UNION ALL
-	SELECT l.host,'host',l.timestamp FROM logs l JOIN projects p ON p.id=l.project_id
+	SELECT l.host,'host',l.timestamp FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
 		JOIN memberships m ON m.organization_id=p.organization_id `+where+`AND l.host<>''
 	) SELECT name,type,max(timestamp) FROM resources WHERE ($`+fmt.Sprintf("%d", resourceArg)+`::text='' OR type=$`+fmt.Sprintf("%d", resourceArg)+`::text)
 	GROUP BY name,type ORDER BY max(timestamp) DESC,name LIMIT $`+fmt.Sprintf("%d", limitArg), args...)
@@ -282,7 +282,7 @@ func (s *Store) CompatibleLogStats(ctx context.Context, access ManagementAccess,
 	}
 	args = append(args, f.Window.Start, f.Window.End)
 	rows, err := s.pool.Query(ctx, `SELECT date_trunc('hour',l.timestamp) AS bucket,l.level,count(*)
-	FROM logs l JOIN projects p ON p.id=l.project_id
+	FROM logs_with_archive l JOIN projects p ON p.id=l.project_id
 	JOIN memberships m ON m.organization_id=p.organization_id `+where+
 		fmt.Sprintf("AND l.timestamp>=$%d::timestamptz AND l.timestamp<$%d::timestamptz ", len(args)-1, len(args))+
 		"GROUP BY bucket,l.level ORDER BY bucket,l.level", args...)
