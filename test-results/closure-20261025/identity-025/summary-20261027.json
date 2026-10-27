@@ -1,0 +1,112 @@
+{
+  "criterion": "CLOSE-identidad-025",
+  "state": "vigente",
+  "date": "2026-10-27",
+  "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+  "environment": "fresh disposable goodsentry_025 on PostgreSQL 18; image run as 65532:65532 with logs/uptime disabled",
+  "browser": {
+    "browser-owner": {
+      "checks": [
+        "Confirmation mismatch keeps the account form available",
+        "Password change clears the form, revokes another session and requires the new password"
+      ],
+      "screenshots": [
+        "account-320.png",
+        "account-768.png",
+        "account-1024.png",
+        "account-1440.png"
+      ]
+    },
+    "browser-member": {
+      "checks": [
+        "Confirmation mismatch keeps the account form available",
+        "Password change clears the form, revokes another session and requires the new password"
+      ],
+      "screenshots": [
+        "account-320.png",
+        "account-768.png",
+        "account-1024.png",
+        "account-1440.png"
+      ]
+    },
+    "browser-admin": {
+      "checks": [
+        "Confirmation mismatch keeps the account form available",
+        "Password change clears the form, revokes another session and requires the new password"
+      ],
+      "screenshots": [
+        "account-320.png",
+        "account-768.png",
+        "account-1024.png",
+        "account-1440.png"
+      ]
+    },
+    "browser-manager": {
+      "checks": [
+        "Confirmation mismatch keeps the account form available",
+        "Password change clears the form, revokes another session and requires the new password"
+      ],
+      "screenshots": [
+        "account-320.png",
+        "account-768.png",
+        "account-1024.png",
+        "account-1440.png"
+      ]
+    },
+    "browser-noorg": {
+      "checks": [
+        "Account form remains available without organization membership",
+        "Confirmation mismatch keeps the account form available",
+        "Password change clears the form, revokes another session and requires the new password"
+      ],
+      "screenshots": [
+        "account-320.png",
+        "account-768.png",
+        "account-1024.png",
+        "account-1440.png"
+      ]
+    }
+  },
+  "http": {
+    "organization": "account-025-org",
+    "project": "1",
+    "token_read_before": 200,
+    "envelope_before": 200,
+    "negative": {
+      "no_csrf": 403,
+      "wrong_origin": 403,
+      "bearer_only": 401,
+      "wrong_current": 400,
+      "unknown_field": 400,
+      "short_new": 400,
+      "multibyte_73": 400
+    },
+    "password_change": 204,
+    "set_cookie": "goodsentry_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax",
+    "owner_session_after": 401,
+    "member_session_after": 200,
+    "bearer_after": 401,
+    "old_login": 401,
+    "new_login": 200,
+    "envelope_after": 200,
+    "multibyte_72_login": 200,
+    "counts_and_hashes": [
+      "2",
+      "2",
+      "noorg-025@example.test:c6eeb54329a2eaacb0519e37b1b6b3b3cfafedf93bcb99f8166cae2897dd14f3,owner-025@example.test:3f0f07e07b74cc2225af176c1aa497248de5b7c15fd27fa9e1937e803d2f0798,role-admin-025@example.test:77f3c5b65ecdf561a0fd0ed56c107ba9b944422911fc9bb648b3b9365d810cb4,role-manager-025@example.test:8ebca8ee1d0e658754f9fefdfc8d9bf016c190b2c192c442250cf2ddd5710850,role-member-025@example.test:789f406fcbb398a5d8f3e1870dbea21684de0dfcdbfc65c514a5f259afba34c2,role-owner-025@example.test:20693fa9bd1557baae21c0534d1e3e91664f905b25d05315f76adcb4c0d183c5"
+    ]
+  },
+  "restart": {
+    "identical": true,
+    "member_login_after_restart": 200,
+    "owner_new_password_after_restart": 200,
+    "counts_and_hashes": [
+      "2",
+      "2"
+    ]
+  },
+  "ci": "40452038387",
+  "publicSource": "b77a2cc / c22f75b6c13a9ec7f7dd66b43005ac8c5370303a",
+  "history": "identity-025/summary.json preserves the earlier publication blocker and its local acceptance."
+}

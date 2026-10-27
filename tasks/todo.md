@@ -1562,7 +1562,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de cookie |
 | [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de la vista Account |
 | [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de transacciones |
-| [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | implementada (local) | bloqueada | Publicar imagen/CI de la misma fuente y repetir aceptación pública |
+| [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | implementada | vigente | Comprobante 2026-10-27 abajo sobre imagen b77a2cc y copia desechable |
 | [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener la guía de no-rolling-upgrade |
 | [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 036 |
 | [CLOSE-identidad-028](../SPEC.md#close-identidad-028) | Account email and single-use password recovery: register and login screens expose a password-reset request for… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de request |
@@ -3256,6 +3256,30 @@ con 026/027 sin declarar 025 cerrada.
 Evidencia: `test-results/closure-20261025/identity-025/`
 (`summary.json`, `build.log`, `flow.json`, `envelope-after.json`, `image.txt`,
 `restart.txt`, `app.log`).
+
+### Ejecución 2026-10-27: aceptación pública de identidad-025
+
+Selección registrada antes de trabajar: CLOSE-identidad-025, primera fila
+bloqueada por publicación. El desbloqueo ya existe: `main` público `b77a2cc`,
+imagen `sha256:40b75bd3…` y CI `40452038387`. Se repitió la aceptación sobre una
+base desechable nueva `goodsentry_025` y la imagen publicada.
+
+| Elemento | Comprobante |
+|---|---|
+| Navegador por rol | Owner, admin, manager, member y sin organización a 320/768/1024/1440; validación de confirmación, éxito, limpieza del formulario y revocación de otra sesión |
+| Matriz HTTP negativa | CSRF ausente 403, origen ajeno 403, solo bearer 401; contraseña actual errónea, campo desconocido, nueva corta y 73 bytes multibyte 400 |
+| Cambio y revocación | 204; cookie `goodsentry_session` borrada con `Path=/; Max-Age=0; HttpOnly; SameSite=Lax`; sesión owner 401, member 200, bearer 401, login viejo/nuevo 401/200 |
+| Límite multibyte | Nueva contraseña de 72 bytes (36 `é`) aceptada y login 200 |
+| Ingesta | Envelopes reales 200 antes y después del cambio |
+| Reinicio | Usuarios, digests de contraseña, 2 eventos y 2 issues idénticos; ambos logins nuevos 200 |
+
+Evidencia: `test-results/closure-20261025/identity-025/{summary-20261027,flow-20261027,restart-20261027}.json`
+y `browser-{owner,admin,manager,member,noorg}/`. El `summary.json` anterior y
+sus archivos conservan el bloqueo y la aceptación local histórica. CI
+`40452038387` cubre formato, vet, race PostgreSQL e imagen; la fuente pública
+coincide con el árbol `c22f75b`. Siguiente acción: CLOSE-identidad-033, siguiente
+fila bloqueada por publicación en el orden del plan. El producto sigue
+incompleto.
 
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
@@ -10150,10 +10174,9 @@ históricos 182-205 quedan reforzados por esta repetición en la candidata final
 Límite registrado: la copia es un restore local desechable; los fragmentos de
 artefacto retirados ya estaban vencidos por política, no por la migración. Los
 pendientes de proveedores externos y las demás filas bloqueadas siguen fuera de
-este cierre. Siguiente acción: CLOSE-identidad-025, primera fila bloqueada por
-publicación en el orden del plan, contrastando su aceptación local con
-`b77a2cc`; después CLOSE-operacion-100 cuando no queden bloqueos exigibles. El
-producto sigue incompleto.
+este cierre. Siguiente acción de esta ejecución: CLOSE-identidad-025, completada
+en la sección siguiente; después CLOSE-identidad-033 y CLOSE-operacion-100
+cuando no queden bloqueos exigibles. El producto sigue incompleto.
 
 ### Comprobante de integración documental
 

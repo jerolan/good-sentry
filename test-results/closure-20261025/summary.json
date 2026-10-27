@@ -831,26 +831,20 @@
       ]
     },
     "CLOSE-identidad-025": {
-      "evidence": "bloqueada por publicacion",
-      "scope": "local image acceptance, HTTP/browser password change, revocation, ingestion and app-only restart",
+      "evidence": "vigente",
+      "scope": "published image password change, revocation, ingestion and app-only restart on a fresh disposable copy",
+      "candidate": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+      "image": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
       "covered": [
-        "local image built; 204 change; owner 401, member 200; revoked bearer 401; old/new login 401/200",
-        "envelope 200 before and after; app-only restart preserves users/hashes and 3 events/issues",
-        "HTTP and browser owners at 320/768/1440 including no-organization"
+        "browser owner passes for owner, admin, manager, member and no-organization at 320/768/1024/1440, including mismatch validation, success and another-session revocation",
+        "HTTP rejects missing CSRF and cross-origin 403, bearer-only 401, and wrong current, unknown field, short password and 73-byte multibyte 400",
+        "204 change clears goodsentry_session with Path=/ Max-Age=0 HttpOnly SameSite=Lax; owner session 401, member session 200, bearer 401, old/new login 401/200",
+        "72-byte multibyte replacement is accepted and logs in; envelopes answer 200 before and after",
+        "app-only restart keeps users, password digests, 2 events and 2 issues identical and both new logins answer 200",
+        "public main/tree match b77a2cc/c22f75b and CI 40452038387 passes formatting, vet, race PostgreSQL integration and image build"
       ],
-      "blocker": {
-        "cause": "matching-source publication/CI is required by the contract but not authorized; commits remain local",
-        "unlock": "publish image/CI from the candidate or provide an equivalent public artifact, then repeat the public acceptance"
-      },
-      "evidence_files": [
-        "identity-025/summary.json",
-        "identity-025/build.log",
-        "identity-025/flow.json",
-        "identity-025/envelope-after.json",
-        "identity-025/image.txt",
-        "identity-025/restart.txt",
-        "identity-025/app.log"
-      ]
+      "history": "identity-025/summary.json preserves the earlier publication blocker and its local acceptance",
+      "evidence_files": ["identity-025/summary-20261027.json", "identity-025/flow-20261027.json", "identity-025/restart-20261027.json", "identity-025/browser-owner", "identity-025/browser-admin", "identity-025/browser-manager", "identity-025/browser-member", "identity-025/browser-noorg", "errores-206/image.json"]
     },
     "CLOSE-identidad-026": {
       "evidence": "vigente",

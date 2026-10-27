@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Confirmation mismatch keeps the account form available",
+    "Password change clears the form, revokes another session and requires the new password"
+  ],
+  "screenshots": [
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-025/browser-admin/account-320.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-025/browser-admin/account-768.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-025/browser-admin/account-1024.png",
+    "/home/dev/projects/SentryGo/test-results/closure-20261025/identidad-025/browser-admin/account-1440.png"
+  ],
+  "pageErrors": []
+}
