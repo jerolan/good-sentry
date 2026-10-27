@@ -3764,6 +3764,20 @@ decisión que retiró el linaje histórico y no presupone que 033 esté cerrado.
 Siguiente acción: ejecutar el owner de reset en Chromium y registrar su
 alcance; después completar SDK, permisos, actualización y demás controles 047.
 
+### Avance parcial 2026-10-27: navegador de CLOSE-errores-047
+
+`tests/compat/issue_grouping_reset_browser.mjs` pasó en Chromium sobre la imagen
+`sha256:40b75bd3…` de `b77a2cc`, con un proyecto nuevo en `gsclosure033`.
+El reset de una firma respondió 202 y una captura manual posterior creó otro
+issue mientras se conservaba el histórico. La interfaz ajustó a 320/768/1440
+sin errores de página. Evidencia:
+`test-results/closure-20261025/errores-047-fresh/browser/`.
+
+Este owner usa envelopes manuales, no acredita el SDK oficial ni los demás
+casos de 047. Siguiente acción: capturar con el SDK fijado antes/después del
+reset, verificar control, reintento y credenciales, y completar los controles
+de actualización, navegador y CI pendientes.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
