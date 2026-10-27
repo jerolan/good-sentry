@@ -1,0 +1,8 @@
+=== RUN   TestEventArchiveS3UploadRestoreAndExpiry
+--- PASS: TestEventArchiveS3UploadRestoreAndExpiry (0.96s)
+=== RUN   TestEventArchiveS3DeleteFailureLeavesCatalog
+--- PASS: TestEventArchiveS3DeleteFailureLeavesCatalog (0.79s)
+=== RUN   TestEventArchiveCopyUnionRestartAndExpiry
+--- PASS: TestEventArchiveCopyUnionRestartAndExpiry (0.61s)
+PASS
+ok  	goodsentry/internal/store	2.369s

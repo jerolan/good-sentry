@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"goodsentry/internal/spanarchive"
 	"goodsentry/internal/store"
 )
 
@@ -92,6 +93,54 @@ func StartEventRetentionWithArchive(parent context.Context, db *store.Store, day
 				slog.Error("Event archive retention failed", "entryPoint", "event_retention_worker", "operation", "cleanup_event_archive")
 			} else if removedArchive > 0 {
 				archived += removedArchive
+			}
+		}
+		events, err := db.CleanupEvents(ctx, days)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Event retention pass failed", "entryPoint", "event_retention_worker", "operation", "cleanup_events")
+		} else if events > 0 || archived > 0 {
+			slog.Info("Event retention cleanup committed", "entryPoint", "event_retention_worker", "events", events, "archived", archived)
+			return true
+		}
+		return false
+	})
+}
+
+// StartEventRetentionWithS3Archive uses the S3-compatible object backend for
+// errors. Objects are uploaded before their catalog/local read rows; expiry
+// removes objects, catalog rows and local copies at the same receipt cutoff.
+func StartEventRetentionWithS3Archive(parent context.Context, db *store.Store, days, archiveAfterDays int, objects spanarchive.Objects, prefix string, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		archived := int64(0)
+		if archiveAfterDays > 0 {
+			archiveDays := min(archiveAfterDays, days)
+			cutoff := time.Now().UTC().Add(-time.Duration(archiveDays) * 24 * time.Hour)
+			var err error
+			archived, err = db.ArchiveEventsS3(ctx, cutoff, 250, objects, prefix)
+			if ctx.Err() != nil {
+				return false
+			}
+			if err != nil {
+				slog.Error("Event S3 archive pass failed", "entryPoint", "event_retention_worker", "operation", "archive_events_s3")
+			}
+			expired := time.Now().UTC().Add(-time.Duration(days) * 24 * time.Hour)
+			removedObjects, cleanupErr := db.CleanupEventArchiveS3(ctx, expired, objects, 250)
+			if ctx.Err() != nil {
+				return false
+			}
+			if cleanupErr != nil {
+				slog.Error("Event S3 archive retention failed", "entryPoint", "event_retention_worker", "operation", "cleanup_event_archive_s3")
+			} else if removedObjects > 0 {
+				archived += removedObjects
+			}
+			removedLocal, localErr := db.CleanupEventArchive(ctx, expired)
+			if localErr != nil {
+				slog.Error("Event archive cache retention failed", "entryPoint", "event_retention_worker", "operation", "cleanup_event_archive")
+			} else if removedLocal > 0 {
+				archived += removedLocal
 			}
 		}
 		events, err := db.CleanupEvents(ctx, days)

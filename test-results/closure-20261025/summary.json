@@ -467,6 +467,7 @@
     "CLOSE-lectores-004-007": {"evidence": "vigente (fresh HTTP, historical Grafana/image)", "scope": "Grafana datasource connection, issue query, stats_v2 error series and revoked-token denial", "evidence_files": ["lectores-004-007/server.log", "lectores-004-007/grafana-query.json", "lectores-004-007/grafana-stats-v2-error-1h.json"]},
     "CLOSE-alertas-037-039": {"evidence": "vigente", "scope": "frequency and uptime alert queues plus generic webhook delivery/retry", "evidence_files": ["alertas-037-039/store.log", "alertas-037-039/notify.log", "alertas-037-039/summary.json"]},
     "CLOSE-operacion-068-070": {"evidence": "vigente", "scope": "local durable error archive with union readers, restart persistence and receipt-cutoff expiry", "evidence_files": ["operacion-068/store.log", "operacion-068/regression.log", "operacion-068/summary.json"]},
+    "CLOSE-operacion-071-073": {"evidence": "vigente", "scope": "S3-compatible error objects, catalog, restart restore, query readers and expiry/recovery", "evidence_files": ["operacion-071-073/store.log", "operacion-071-073/s3-client.log", "operacion-071-073/summary.json"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",

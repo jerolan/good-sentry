@@ -91,11 +91,14 @@ func run() error {
 		stopTransactionRetention = jobs.StartTransactionRetentionWithArchive(ctx, db, cfg.TransactionRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second, *archiveOptions)
 	}
 	defer stopTransactionRetention()
-	archiveAfterDays := 0
-	if archiveOptions != nil {
-		archiveAfterDays = cfg.ArchiveAfterDays
+	var stopEventRetention func()
+	if archiveOptions == nil {
+		stopEventRetention = jobs.StartEventRetention(ctx, db, cfg.EventRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	} else if archiveOptions.Backend == "s3" {
+		stopEventRetention = jobs.StartEventRetentionWithS3Archive(ctx, db, cfg.EventRetentionDays, cfg.ArchiveAfterDays, archiveOptions.Objects, archiveOptions.S3Prefix, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	} else {
+		stopEventRetention = jobs.StartEventRetentionWithArchive(ctx, db, cfg.EventRetentionDays, cfg.ArchiveAfterDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	}
-	stopEventRetention := jobs.StartEventRetentionWithArchive(ctx, db, cfg.EventRetentionDays, archiveAfterDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopEventRetention()
 	stopUptimeRetention := jobs.StartUptimeRetention(ctx, db, cfg.UptimeRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	defer stopUptimeRetention()
@@ -190,6 +193,17 @@ func configureSpanArchive(ctx context.Context, db *store.Store, cfg config.Confi
 	}
 	if err := db.EnableSpanArchive(ctx, options, cfg.TransactionRetentionDays); err != nil {
 		return nil, fmt.Errorf("initialize span archive before serving: %w", err)
+	}
+	if cfg.ArchiveBackend == "s3" {
+		for batch := 0; batch < 20; batch++ {
+			restored, err := db.RestoreEventArchiveS3(ctx, objects, 250)
+			if err != nil {
+				return nil, fmt.Errorf("restore S3 event archive before serving: %w", err)
+			}
+			if restored < 250 {
+				break
+			}
+		}
 	}
 	return &options, nil
 }

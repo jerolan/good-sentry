@@ -65,7 +65,7 @@ func assertEventArchiveReaders(t *testing.T, ctx context.Context, db *Store, use
 	}
 	if want == 1 {
 		var payload map[string]any
-		if err := json.Unmarshal(detail.Event, &payload); err != nil || payload["message"] != "Archived error receipt" {
+		if err := json.Unmarshal(detail.Event, &payload); err != nil || payload["event_id"] != eventID {
 			t.Fatalf("IssueDetail payload=%s err=%v", detail.Event, err)
 		}
 	}
