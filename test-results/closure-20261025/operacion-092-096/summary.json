@@ -1,0 +1,37 @@
+{
+  "criteria": ["CLOSE-operacion-092", "CLOSE-operacion-093", "CLOSE-operacion-094", "CLOSE-operacion-095", "CLOSE-operacion-096"],
+  "date": "2026-10-26",
+  "product_revision": "38baf21",
+  "image": {
+    "new": "sha256:9c595b0a8c9a5e3b008bbb021d793df4c280c243ec3f03a91b767e2207b8d958",
+    "new_bytes": 56790960,
+    "published_local": "sha256:2fabe51e980380f588a041cf47548977f7b8c1051272a1b7d36ee8de3cae64fa",
+    "published_bytes": 56683197
+  },
+  "covered": {
+    "092": "documented image starts on empty PostgreSQL and owned /data volume; /healthz and /readyz 200; UI 200; open-mode identity; real sentry-go 0.50.0 error delivered and visible in the compatible issue API",
+    "093": "start from the locally published ghcr.io image at migration 73, switch to the new image on the same database/volume, migrations advance to 79 and the pre-upgrade event persists",
+    "094": "application restart on the same database/volume returns ready 200 and preserves the SDK event",
+    "095": "pg_dump plus copied /data volume restore into an independent PostgreSQL and volume; restore app is ready and preserves the project and event",
+    "096": "optional feature switches remain opt-in/default-off and the existing image/concurrency/recovery evidence is composed; no new promise is added"
+  },
+  "observed": {
+    "health": 200,
+    "readiness": 200,
+    "ui": 200,
+    "sdk_event": "82d19d64b0ff48f0849e83d7cca43579",
+    "upgrade_old_migration": 73,
+    "upgrade_new_migration": 79,
+    "restart_event_preserved": true,
+    "backup_bytes": 190363,
+    "restore_ready": 200,
+    "restore_event_preserved": true
+  },
+  "evidence": ["image.txt", "published-image.txt", "gs092-health.json", "gs092-ready.json", "gs092-ui.html", "gs092-sdk.json", "gs092-issues.json", "gs092-restore-ready.json", "gs092-restore-issue.json", "gs093-project.json", "gs093-sdk.json", "upgrade-old-migration.txt", "upgrade-new-migration.txt", "backup.txt", "summary.json"],
+  "limits": [
+    "The published image used for 093 is the locally present ghcr.io digest; current remote registry publication/anonymous pull remains CLOSE-operacion-067.",
+    "The backup contains PostgreSQL plus the /data volume; no external artifact backend was used.",
+    "The final matching public CI remains pending.",
+    "The product is not declared complete."
+  ]
+}

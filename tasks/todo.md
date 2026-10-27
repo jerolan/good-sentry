@@ -1502,16 +1502,15 @@ go-sdk 1.8.0 y la aceptación pública histórica como apoyo.
 CLOSE-operacion-058 a -066 quedan vigentes con harnesses, layout, estilo, fuzz,
 SDKs y verificación; 067 espera publicación/registro autorizados.
 CLOSE-operacion-067 conserva el bloqueo de publicación remota; la siguiente
-acción ejecutable es CLOSE-operacion-092 (arranque de imagen documentada).
+acción ejecutable es CLOSE-operacion-100 (auditoría final).
 CLOSE-sourcemaps-028 a -031, CLOSE-lectores-004 a -007 y CLOSE-operacion-068 a
--091 quedan vigentes; los archivos local/S3 de errores, logs y transacciones, y
-los spans local/S3, ya tienen owners.
+-096 quedan vigentes; los archivos y la imagen documentada ya tienen owners.
 CLOSE-alertas-037 a -039 quedan vigentes con cola, transiciones y webhook
 genérico probados frescos.
 CLOSE-operacion-001 a -003 son marcos de objetivo y método que se auditan en el
 cierre final. CLOSE-rendimiento-001 a -007, -012 a -040
 y -041 a -044 quedan vigentes; -008 a -011 quedan bloqueados por imagen/CI y
-runtime preservado. Siguiente acción: CLOSE-operacion-092. No se declara
+runtime preservado. Siguiente acción: CLOSE-operacion-100. No se declara
 aceptación ni cierre del producto. El avance se informa por
 criterios/evidencia, sin porcentaje de casillas; tiempo y presupuesto de un Goal
 no completan el producto ni borran este registro.
@@ -2212,11 +2211,11 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-108](../SPEC.md#close-identidad-108) | API y navegador: comprobar organizaciones, equipos y miembros, con los resultados y controles de sus contratos… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-109](../SPEC.md#close-identidad-109) | API y navegador: comprobar proyectos y DSNs, con los resultados y controles de sus contratos actuales, sin exc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-110](../SPEC.md#close-identidad-110) | API y navegador: comprobar tokens, permisos/aislamiento, expiración y revocación, con los resultados y control… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-092](../SPEC.md#close-operacion-092) | Arranque de imagen documentada con PostgreSQL y volúmenes vacíos, salud/readiness, UI y captura SDK, sin reque… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-093](../SPEC.md#close-operacion-093) | Migraciones y actualización desde una versión publicada fijada al ejecutar, con revisión/digest registrados. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-094](../SPEC.md#close-operacion-094) | Persistencia de datos, artefactos y configuración tras reinicio. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-095](../SPEC.md#close-operacion-095) | Backup y restauración en entorno independiente, conservando datos, artefactos y configuración necesarios. | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
-| [CLOSE-operacion-096](../SPEC.md#close-operacion-096) | Disponibilidad real de funciones opcionales y verificaciones de imagen, concurrencia y recuperación existentes… | por contrastar | pendiente | Contrastar contrato, dependencias y comprobantes |
+| [CLOSE-operacion-092](../SPEC.md#close-operacion-092) | Arranque de imagen documentada con PostgreSQL y volúmenes vacíos, salud/readiness, UI y captura SDK, sin reque… | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
+| [CLOSE-operacion-093](../SPEC.md#close-operacion-093) | Migraciones y actualización desde una versión publicada fijada al ejecutar, con revisión/digest registrados. | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
+| [CLOSE-operacion-094](../SPEC.md#close-operacion-094) | Persistencia de datos, artefactos y configuración tras reinicio. | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
+| [CLOSE-operacion-095](../SPEC.md#close-operacion-095) | Backup y restauración en entorno independiente, conservando datos, artefactos y configuración necesarios. | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
+| [CLOSE-operacion-096](../SPEC.md#close-operacion-096) | Disponibilidad real de funciones opcionales y verificaciones de imagen, concurrencia y recuperación existentes… | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
 | [CLOSE-sourcemaps-028](../SPEC.md#close-sourcemaps-028) | Crear y finalizar una release con sentry-cli 3.8.0. No requiere conexión automática con repositorios. | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
 | [CLOSE-sourcemaps-029](../SPEC.md#close-sourcemaps-029) | Asociar metadatos locales de commits y registrar un deploy con sentry-cli 3.8.0. No requiere conexión automáti… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
 | [CLOSE-sourcemaps-030](../SPEC.md#close-sourcemaps-030) | Consultar en API/UI la misma versión, proyectos, archivos y eventos asociados. No requiere conexión automática… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
@@ -9445,7 +9444,7 @@ autoridades públicas quedaron registradas con estado 200 y hash en
 Límites registrados: la aceptación de imagen/navegador/CI es histórica y debe
 repetirse en la candidata final. CLOSE-errores-206 conserva el comprobante
 histórico pero sigue pendiente de esa imagen final, la copia de 4569 filas y el
-CI coincidente. Siguiente acción: CLOSE-operacion-092. El producto sigue
+CI coincidente. Siguiente acción: CLOSE-operacion-100. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: adjuntos compatibles
@@ -9465,7 +9464,7 @@ contratos nativo/compatible en 1.516 s, incluidos download/HEAD, paginación con
 prefijo de despliegue, admisión estricta y credenciales actuales.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-092. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-100. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: reporte CSP del navegador
@@ -9485,7 +9484,7 @@ y `summary.json`. Los formatos puros pasaron en 0.007 s, el contrato HTTP de
 seguridad en 1.271 s y la suite completa del servidor en 122.113 s sin fallos.
 
 Límites registrados: el CI público y la imagen final siguen pendientes para la
-auditoría de cierre. Siguiente acción: CLOSE-operacion-092. El producto sigue
+auditoría de cierre. Siguiente acción: CLOSE-operacion-100. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Go 0.50.0
@@ -9516,7 +9515,7 @@ Evidencia: `test-results/closure-20261025/errores-212-213/` con el driver
 las capturas 320/768/1440 y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-092. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-100. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Python 2.72.0
@@ -9545,7 +9544,7 @@ Evidencia: `test-results/closure-20261025/errores-214-215/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-092. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-100. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Node 11.7.0
@@ -9574,7 +9573,7 @@ Evidencia: `test-results/closure-20261025/errores-216-217/` con el driver, las
 capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-092. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-100. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: error real con SDK Browser 11.7.0
@@ -9603,7 +9602,7 @@ Evidencia: `test-results/closure-20261025/errores-218-219/` con el fixture, el
 hash del bundle, las capturas 320/768/1440, los recibos API y `summary.json`.
 
 Límites registrados: la imagen final, la copia auditada de 4569 filas y el CI
-público siguen pendientes. Siguiente acción: CLOSE-operacion-092. El producto
+público siguen pendientes. Siguiente acción: CLOSE-operacion-100. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: filas paraguas de conservación
@@ -9620,7 +9619,7 @@ composición de owners frescos e históricos ya registrados.
 
 Límites registrados: las capturas de navegador de 179/181 y 196–198/203 son
 históricas y se repiten en la candidata final; 206, la copia de 4569 filas y el
-CI público siguen pendientes. Siguiente acción: CLOSE-operacion-092. El producto
+CI público siguen pendientes. Siguiente acción: CLOSE-operacion-100. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: navegador real a 320, 768 y 1440
@@ -9673,7 +9672,7 @@ resultado del CLI, el informe de navegador, capturas, CI/imagen históricos y
 `summary.json`.
 
 Límites registrados: las aceptaciones de CLI/navegador/CI son históricas y se
-repiten en la candidata final. Siguiente acción: CLOSE-operacion-092. El producto
+repiten en la candidata final. Siguiente acción: CLOSE-operacion-100. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: matriz de API de gestión y SDKs
@@ -9749,7 +9748,7 @@ Evidencia: `test-results/closure-20261025/operacion-049-055/` con logs,
 Límites registrados: CLOSE-operacion-056 sigue abierto porque exige la imagen
 con volumen limpio a través de archivo/consulta/reinicio/expiración, S3 real o
 compatible, suite completa con race/vet/build, CI público e imágenes
-publicadas. Siguiente acción: CLOSE-operacion-092. El producto sigue incompleto.
+publicadas. Siguiente acción: CLOSE-operacion-100. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: estado de OIDC y administración global
 
@@ -9825,7 +9824,7 @@ informes y `summary.json`.
 
 Límites registrados: CLOSE-operacion-067 sigue abierto porque la publicación
 actual del registro y la verificación remota multiarquitectura requieren
-autorización externa. Siguiente acción: CLOSE-operacion-092. El producto sigue
+autorización externa. Siguiente acción: CLOSE-operacion-100. El producto sigue
 incompleto.
 
 ### Ejecución 2026-10-26: releases, commits, deploys y artefactos
@@ -9849,7 +9848,7 @@ Evidencia: `test-results/closure-20261025/sourcemaps-028-031/`.
 
 Límites registrados: los recibos CLI/imagen/navegador son históricos y se
 repiten en la candidata final; la conexión automática con repositorios sigue
-aplazada. Siguiente acción: CLOSE-operacion-092. El producto sigue incompleto.
+aplazada. Siguiente acción: CLOSE-operacion-100. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: Grafana y revocación de tokens
 
@@ -9895,7 +9894,7 @@ Evidencia: `test-results/closure-20261025/alertas-037-039/`, incluyendo el fallo
 inicial por base ausente y su repetición verde.
 
 Límites registrados: los canales externos específicos siguen fuera de esta fila.
-Siguiente acción: CLOSE-operacion-092. El producto sigue incompleto.
+Siguiente acción: CLOSE-operacion-100. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: archivo local de errores
 
@@ -9941,7 +9940,7 @@ Evidencia: `test-results/closure-20261025/operacion-071-073/`.
 
 Límites registrados: la fila PostgreSQL es caché materializada; S3 y el catálogo
 son la fuente durable. Los archivos de logs/transacciones (074–096) siguen
-pendientes. Siguiente acción: CLOSE-operacion-092. El producto sigue incompleto.
+pendientes. Siguiente acción: CLOSE-operacion-100. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: archivo local de logs
 
@@ -9962,7 +9961,7 @@ Evidencia: `test-results/closure-20261025/operacion-074-076/`.
 
 Límites registrados: copia durable dentro de la retención; las filas calientes
 siguen siendo la autoridad. El backend S3 de logs (077–079) y transacciones
-(080–096) siguen pendientes. Siguiente acción: CLOSE-operacion-092. El producto
+(080–096) siguen pendientes. Siguiente acción: CLOSE-operacion-100. El producto
 sigue incompleto.
 
 ### Ejecución 2026-10-26: archivo S3 de logs
@@ -10005,7 +10004,7 @@ Evidencia: `test-results/closure-20261025/operacion-080-085/`.
 
 Límites registrados: `transaction_archive` es caché materializada; S3 y el
 catálogo son la fuente durable. Spans (086–091) reutilizan el archivo ya probado.
-Siguiente acción: CLOSE-operacion-092. El producto sigue incompleto.
+Siguiente acción: CLOSE-operacion-100. El producto sigue incompleto.
 
 ### Ejecución 2026-10-26: archivo local/S3 de spans
 
@@ -10025,12 +10024,36 @@ Evidencia: `test-results/closure-20261025/operacion-086-091/` y los logs de
 `operacion-049-055`.
 
 Límites registrados: la aceptación de imagen/CI final sigue pendiente. Siguiente
-acción: CLOSE-operacion-092. El producto sigue incompleto.
+acción: CLOSE-operacion-100. El producto sigue incompleto.
 
 Reparación registrada: la restauración S3 de errores/logs/transacciones ahora
 selecciona sólo catálogos ausentes de la caché, evitando omitir filas posteriores
 cuando las primeras 250 ya estaban materializadas. Evidencia:
 `test-results/closure-20261025/archive-restore-fix/`.
+
+### Ejecución 2026-10-26: arranque, actualización, reinicio y restauración
+
+Selección registrada antes de trabajar: CLOSE-operacion-092 a -096. Imagen
+documentada `sha256:9c595b0a…`, PostgreSQL y volúmenes desechables.
+
+| Criterio | Elemento | Comprobante |
+|---|---|---|
+| 092 | Arranque con base/volumen vacíos, health/ready/UI 200 y error SDK real | `gs092-health.json`; `gs092-ready.json`; `gs092-ui.html`; `gs092-sdk.json`; `gs092-issues.json` |
+| 093 | Actualización desde imagen publicada local (migración 73) a nueva (79) conservando el evento | `upgrade-old-migration.txt`; `upgrade-new-migration.txt`; `gs093-sdk.json` |
+| 094 | Reinicio de la aplicación con datos persistentes | `gs092-restore-ready.json`; `gs092-issues.json` |
+| 095 | Dump PostgreSQL + volumen copiado y restauración independiente | `backup.txt`; `gs092-restore-issue.json` |
+| 096 | Switches opcionales apagados por defecto y composición de imagen/concurrencia/recuperación ya verificadas | Evidencias de MCP/OpenAPI/archivo y `summary.json` |
+
+Resultado observado: la imagen arranca en 200/200, la UI responde y el SDK Go
+crea un issue real. La actualización pasa de migración 73 a 79 y conserva el
+evento. El reinicio y la restauración independiente devuelven 200 y el mismo
+proyecto/issue. Los digests de imagen y el dump quedan registrados.
+
+Evidencia: `test-results/closure-20261025/operacion-092-096/`.
+
+Límites registrados: la imagen publicada usada para 093 es el digest local de
+`ghcr.io`; el registro remoto/CI actual sigue en 067. Siguiente acción:
+CLOSE-operacion-100 (auditoría final). El producto sigue incompleto.
 
 ### Comprobante de integración documental
 

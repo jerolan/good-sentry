@@ -472,6 +472,7 @@
     "CLOSE-operacion-077-079": {"evidence": "vigente", "scope": "S3-compatible log objects, catalog, restart restore, readers and expiry/recovery", "evidence_files": ["operacion-077-079/store.log", "operacion-077-079/summary.json"]},
     "CLOSE-operacion-080-085": {"evidence": "vigente", "scope": "local and S3 transaction event archive with union readers, restart restore and expiry/recovery", "evidence_files": ["operacion-080-085/store.log", "operacion-080-085/regression.log", "operacion-080-085/summary.json"]},
     "CLOSE-operacion-086-091": {"evidence": "vigente", "scope": "local and S3 span archive query, restart and expiry", "evidence_files": ["operacion-086-091/store.log", "operacion-049-055/store.log", "operacion-049-055/spanarchive-race.log", "operacion-086-091/summary.json"]},
+    "CLOSE-operacion-092-096": {"evidence": "vigente (local image; remote registry/CI in 067)", "scope": "documented image startup, upgrade, restart, independent restore and optional-feature boundary", "evidence_files": ["operacion-092-096/gs092-sdk.json", "operacion-092-096/gs092-restore-issue.json", "operacion-092-096/upgrade-new-migration.txt", "operacion-092-096/summary.json"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",
