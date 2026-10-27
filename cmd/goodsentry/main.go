@@ -85,6 +85,8 @@ func run() error {
 	var stopLogRetention func()
 	if archiveOptions != nil && archiveOptions.Backend == "local" {
 		stopLogRetention = jobs.StartLogRetentionWithArchive(ctx, db, cfg.LogRetentionDays, cfg.ArchiveAfterDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	} else if archiveOptions != nil && archiveOptions.Backend == "s3" {
+		stopLogRetention = jobs.StartLogRetentionWithS3Archive(ctx, db, cfg.LogRetentionDays, cfg.ArchiveAfterDays, archiveOptions.Objects, archiveOptions.S3Prefix, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	} else {
 		stopLogRetention = jobs.StartLogRetention(ctx, db, cfg.LogRetentionDays, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
 	}
@@ -204,6 +206,15 @@ func configureSpanArchive(ctx context.Context, db *store.Store, cfg config.Confi
 			restored, err := db.RestoreEventArchiveS3(ctx, objects, 250)
 			if err != nil {
 				return nil, fmt.Errorf("restore S3 event archive before serving: %w", err)
+			}
+			if restored < 250 {
+				break
+			}
+		}
+		for batch := 0; batch < 20; batch++ {
+			restored, err := db.RestoreLogArchiveS3(ctx, objects, 250)
+			if err != nil {
+				return nil, fmt.Errorf("restore S3 log archive before serving: %w", err)
 			}
 			if restored < 250 {
 				break

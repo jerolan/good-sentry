@@ -469,6 +469,7 @@
     "CLOSE-operacion-068-070": {"evidence": "vigente", "scope": "local durable error archive with union readers, restart persistence and receipt-cutoff expiry", "evidence_files": ["operacion-068/store.log", "operacion-068/regression.log", "operacion-068/summary.json"]},
     "CLOSE-operacion-071-073": {"evidence": "vigente", "scope": "S3-compatible error objects, catalog, restart restore, query readers and expiry/recovery", "evidence_files": ["operacion-071-073/store.log", "operacion-071-073/s3-client.log", "operacion-071-073/summary.json"]},
     "CLOSE-operacion-074-076": {"evidence": "vigente", "scope": "local durable log archive with union readers, restart persistence and receipt-cutoff expiry", "evidence_files": ["operacion-074-076/store.log", "operacion-074-076/regression.log", "operacion-074-076/summary.json"]},
+    "CLOSE-operacion-077-079": {"evidence": "vigente", "scope": "S3-compatible log objects, catalog, restart restore, readers and expiry/recovery", "evidence_files": ["operacion-077-079/store.log", "operacion-077-079/summary.json"]},
     "CLOSE-identidad-001": {
       "evidence": "vigente",
       "scope": "health/readiness, first-owner setup, password hashing, sessions, cookies, CSRF, bearer tokens and SDK keys",

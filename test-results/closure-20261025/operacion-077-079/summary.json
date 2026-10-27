@@ -1,0 +1,33 @@
+{
+  "criteria": ["CLOSE-operacion-077", "CLOSE-operacion-078", "CLOSE-operacion-079"],
+  "date": "2026-10-26",
+  "product_revision": "334def4",
+  "implementation": {
+    "migration": "077_log_archive_s3.sql: per-log object catalog with immutable key and receipt time",
+    "archive": "ArchiveLogsS3 uploads immutable JSON objects first, then materializes log_archive and catalog rows in one transaction",
+    "restore": "RestoreLogArchiveS3 downloads catalogued objects into the local read cache after restart; missing/corrupt objects fail closed",
+    "cleanup": "CleanupLogArchiveS3 deletes object, catalog and local cache; a failed object delete leaves the catalog for retry",
+    "worker": "StartLogRetentionWithS3Archive archives, expires objects/catalog/cache and then runs ordinary log expiry; startup restores before serving"
+  },
+  "fresh_tests": {
+    "archive_owner": "PASS in 1.273s: local + S3 upload/materialize/restore/expiry/delete-failure"
+  },
+  "covered": {
+    "077": "S3-compatible log objects are readable through native/scoped/compatible readers after materialization, preserving filters, permissions and pagination",
+    "078": "catalog + objects restore the local read cache after hot/local rows are removed",
+    "079": "expiry deletes object+catalog+local cache at the log receipt cutoff; failed delete is retryable"
+  },
+  "observed": {
+    "object_keys": "logs/projects/{project}/logs/{id}.json",
+    "restored_rows": 1,
+    "expired_objects": 1,
+    "delete_failure_recoverable": true
+  },
+  "evidence": ["store.log", "summary.json"],
+  "limits": [
+    "log_archive is a materialized read cache; S3 and the catalog are the durable source.",
+    "The test uses an in-memory object implementation for archive semantics; path-style S3 PUT/GET/DELETE is covered by the passing spanarchive S3 client owner.",
+    "Transaction archive rows 080-096 remain unimplemented.",
+    "The product is not declared complete."
+  ]
+}

@@ -1,0 +1,6 @@
+=== RUN   TestLogArchiveS3UploadRestoreAndExpiry
+--- PASS: TestLogArchiveS3UploadRestoreAndExpiry (0.74s)
+=== RUN   TestLogArchiveCopyUnionRestartAndExpiry
+--- PASS: TestLogArchiveCopyUnionRestartAndExpiry (0.52s)
+PASS
+ok  	goodsentry/internal/store	1.273s

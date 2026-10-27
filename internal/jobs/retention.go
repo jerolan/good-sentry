@@ -59,6 +59,54 @@ func StartLogRetentionWithArchive(parent context.Context, db *store.Store, days,
 	})
 }
 
+// StartLogRetentionWithS3Archive uses the S3-compatible object backend for
+// logs. Upload precedes catalog/local materialization; expiry removes object,
+// catalog and cache at the same receipt cutoff.
+func StartLogRetentionWithS3Archive(parent context.Context, db *store.Store, days, archiveAfterDays int, objects spanarchive.Objects, prefix string, interval time.Duration) func() {
+	return startRetention(parent, interval, func(ctx context.Context) bool {
+		archived := int64(0)
+		if archiveAfterDays > 0 {
+			archiveDays := min(archiveAfterDays, days)
+			cutoff := time.Now().UTC().Add(-time.Duration(archiveDays) * 24 * time.Hour)
+			var err error
+			archived, err = db.ArchiveLogsS3(ctx, cutoff, 250, objects, prefix)
+			if ctx.Err() != nil {
+				return false
+			}
+			if err != nil {
+				slog.Error("Log S3 archive pass failed", "entryPoint", "log_retention_worker", "operation", "archive_logs_s3")
+			}
+			expired := time.Now().UTC().Add(-time.Duration(days) * 24 * time.Hour)
+			removedObjects, cleanupErr := db.CleanupLogArchiveS3(ctx, expired, objects, 250)
+			if ctx.Err() != nil {
+				return false
+			}
+			if cleanupErr != nil {
+				slog.Error("Log S3 archive retention failed", "entryPoint", "log_retention_worker", "operation", "cleanup_log_archive_s3")
+			} else if removedObjects > 0 {
+				archived += removedObjects
+			}
+			removedLocal, localErr := db.CleanupLogArchive(ctx, expired)
+			if localErr != nil {
+				slog.Error("Log archive cache retention failed", "entryPoint", "log_retention_worker", "operation", "cleanup_log_archive")
+			} else if removedLocal > 0 {
+				archived += removedLocal
+			}
+		}
+		logs, batches, err := db.CleanupLogs(ctx, days)
+		if ctx.Err() != nil {
+			return false
+		}
+		if err != nil {
+			slog.Error("Log retention pass failed", "entryPoint", "log_retention_worker", "operation", "cleanup_logs")
+		} else if logs > 0 || batches > 0 || archived > 0 {
+			slog.Info("Log retention cleanup committed", "entryPoint", "log_retention_worker", "logs", logs, "batches", batches, "archived", archived)
+			return true
+		}
+		return false
+	})
+}
+
 // StartTransactionRetention shares the log worker's backlog and cancellation
 // lifecycle. Ingestion feature switches do not disable expiry of stored rows.
 func StartTransactionRetention(parent context.Context, db *store.Store, days int, interval time.Duration) func() {
