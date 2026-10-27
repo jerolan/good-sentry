@@ -10,22 +10,28 @@ import (
 )
 
 type transactionArchiveObject struct {
-	ID              int64           `json:"id"`
-	ProjectID       int64           `json:"project_id"`
-	EventID         string          `json:"event_id"`
-	IssueID         *int64          `json:"issue_id"`
-	OriginalIssueID *int64          `json:"original_issue_id"`
-	Kind            string          `json:"kind"`
-	Title           string          `json:"title"`
-	Level           string          `json:"level"`
-	Timestamp       time.Time       `json:"timestamp"`
-	Environment     string          `json:"environment"`
-	Release         string          `json:"release"`
-	TraceID         string          `json:"trace_id"`
-	TransactionName string          `json:"transaction_name"`
-	Duration        float64         `json:"duration"`
-	Data            json.RawMessage `json:"data"`
-	CreatedAt       time.Time       `json:"created_at"`
+	ID                    int64           `json:"id"`
+	ProjectID             int64           `json:"project_id"`
+	EventID               string          `json:"event_id"`
+	IssueID               *int64          `json:"issue_id"`
+	OriginalIssueID       *int64          `json:"original_issue_id"`
+	Kind                  string          `json:"kind"`
+	Title                 string          `json:"title"`
+	Level                 string          `json:"level"`
+	Timestamp             time.Time       `json:"timestamp"`
+	Environment           string          `json:"environment"`
+	Release               string          `json:"release"`
+	TraceID               string          `json:"trace_id"`
+	TransactionName       string          `json:"transaction_name"`
+	Duration              float64         `json:"duration"`
+	Data                  json.RawMessage `json:"data"`
+	CreatedAt             time.Time       `json:"created_at"`
+	SpanProjectionVersion int16           `json:"span_projection_version"`
+	TraceSpanID           string          `json:"trace_span_id"`
+	TraceParentSpanID     string          `json:"trace_parent_span_id"`
+	TraceOp               string          `json:"trace_op"`
+	TraceStatus           string          `json:"trace_status"`
+	TraceStartTimestamp   *time.Time      `json:"trace_start_timestamp"`
 }
 
 func transactionObjectKey(prefix string, projectID, id int64) (string, error) {
@@ -39,7 +45,7 @@ func (s *Store) ArchiveTransactionsS3(ctx context.Context, before time.Time, lim
 	if limit < 1 || limit > 250 {
 		limit = 250
 	}
-	rows, err := s.pool.Query(ctx, `SELECT id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at
+	rows, err := s.pool.Query(ctx, `SELECT id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at,span_projection_version,trace_span_id,trace_parent_span_id,trace_op,trace_status,trace_start_timestamp
  FROM events WHERE kind='transaction' AND created_at < $1 ORDER BY created_at,id LIMIT $2`, before, limit)
 	if err != nil {
 		return 0, dbError(err)
@@ -47,7 +53,7 @@ func (s *Store) ArchiveTransactionsS3(ctx context.Context, before time.Time, lim
 	var candidates []transactionArchiveObject
 	for rows.Next() {
 		var row transactionArchiveObject
-		if err := rows.Scan(&row.ID, &row.ProjectID, &row.EventID, &row.IssueID, &row.OriginalIssueID, &row.Kind, &row.Title, &row.Level, &row.Timestamp, &row.Environment, &row.Release, &row.TraceID, &row.TransactionName, &row.Duration, &row.Data, &row.CreatedAt); err != nil {
+		if err := rows.Scan(&row.ID, &row.ProjectID, &row.EventID, &row.IssueID, &row.OriginalIssueID, &row.Kind, &row.Title, &row.Level, &row.Timestamp, &row.Environment, &row.Release, &row.TraceID, &row.TransactionName, &row.Duration, &row.Data, &row.CreatedAt, &row.SpanProjectionVersion, &row.TraceSpanID, &row.TraceParentSpanID, &row.TraceOp, &row.TraceStatus, &row.TraceStartTimestamp); err != nil {
 			rows.Close()
 			return 0, err
 		}
@@ -88,9 +94,9 @@ func (s *Store) ArchiveTransactionsS3(ctx context.Context, before time.Time, lim
 	var inserted int64
 	for _, item := range data {
 		row := item.row
-		tag, err := tx.Exec(ctx, `INSERT INTO transaction_archive (id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at)
- VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) ON CONFLICT DO NOTHING`,
-			row.ID, row.ProjectID, row.EventID, row.IssueID, row.OriginalIssueID, row.Kind, row.Title, row.Level, row.Timestamp, row.Environment, row.Release, row.TraceID, row.TransactionName, row.Duration, row.Data, row.CreatedAt)
+		tag, err := tx.Exec(ctx, `INSERT INTO transaction_archive (id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at,span_projection_version,trace_span_id,trace_parent_span_id,trace_op,trace_status,trace_start_timestamp)
+ VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) ON CONFLICT DO NOTHING`,
+			row.ID, row.ProjectID, row.EventID, row.IssueID, row.OriginalIssueID, row.Kind, row.Title, row.Level, row.Timestamp, row.Environment, row.Release, row.TraceID, row.TransactionName, row.Duration, row.Data, row.CreatedAt, row.SpanProjectionVersion, row.TraceSpanID, row.TraceParentSpanID, row.TraceOp, row.TraceStatus, row.TraceStartTimestamp)
 		if err != nil {
 			return 0, dbError(err)
 		}
@@ -150,9 +156,9 @@ func (s *Store) RestoreTransactionArchiveS3(ctx context.Context, objects spanarc
 		if row.ProjectID != it.project || row.ID != it.id {
 			return restored, fmt.Errorf("transaction archive object identity mismatch for %s", it.key)
 		}
-		tag, err := s.pool.Exec(ctx, `INSERT INTO transaction_archive (id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at)
- VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) ON CONFLICT DO NOTHING`,
-			row.ID, row.ProjectID, row.EventID, row.IssueID, row.OriginalIssueID, row.Kind, row.Title, row.Level, row.Timestamp, row.Environment, row.Release, row.TraceID, row.TransactionName, row.Duration, row.Data, row.CreatedAt)
+		tag, err := s.pool.Exec(ctx, `INSERT INTO transaction_archive (id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at,span_projection_version,trace_span_id,trace_parent_span_id,trace_op,trace_status,trace_start_timestamp)
+ VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) ON CONFLICT DO NOTHING`,
+			row.ID, row.ProjectID, row.EventID, row.IssueID, row.OriginalIssueID, row.Kind, row.Title, row.Level, row.Timestamp, row.Environment, row.Release, row.TraceID, row.TransactionName, row.Duration, row.Data, row.CreatedAt, row.SpanProjectionVersion, row.TraceSpanID, row.TraceParentSpanID, row.TraceOp, row.TraceStatus, row.TraceStartTimestamp)
 		if err != nil {
 			return restored, dbError(err)
 		}

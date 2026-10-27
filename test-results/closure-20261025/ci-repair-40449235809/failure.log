@@ -1,0 +1,61 @@
+verify	Run unit and PostgreSQL integration tests with race detection	﻿2026-10-27T04:21:35.4240162Z ##[group]Run go test -race -tags=integration ./...
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:35.4240409Z [36;1mgo test -race -tags=integration ./...[0m
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:35.4292194Z shell: /usr/bin/bash -e {0}
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:35.4292340Z env:
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:35.4292543Z   DATABASE_URL: postgres://goodsentry_ci@127.0.0.1:5432/goodsentry_ci?sslmode=disable
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:35.4292771Z   GOTOOLCHAIN: local
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:35.4292891Z ##[endgroup]
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:47.0897535Z ok  	goodsentry/cmd/goodsentry	2.134s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:47.0898429Z ok  	goodsentry/internal/accountmail	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:49.8321278Z ok  	goodsentry/internal/artifact	4.880s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:49.8350649Z ok  	goodsentry/internal/config	1.038s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:49.8351453Z ok  	goodsentry/internal/event	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:21:49.8372299Z ok  	goodsentry/internal/eventview	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:22:09.6432796Z ok  	goodsentry/internal/jobs	22.539s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:22:09.6433820Z ok  	goodsentry/internal/native	9.285s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:22:09.6434381Z ?   	goodsentry/internal/nettarget	[no test files]
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:22:09.6436587Z ok  	goodsentry/internal/notify	6.266s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:22:09.6437102Z ok  	goodsentry/internal/otlp	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:22:09.6437357Z ok  	goodsentry/internal/protocol	1.055s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:22:09.6437568Z ok  	goodsentry/internal/releaseorder	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1972659Z 2026/10/27 04:22:36 ERROR Database operation failed error="ERROR: new row for relation \"attachments\" violates check constraint \"reject_feedback_late\" (SQLSTATE 23514)"
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1973305Z 2026/10/27 04:24:15 ERROR social OAuth2 profile failed provider=github app=oauth2-github error="provider returned no valid verified email"
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1973798Z 2026/10/27 04:24:15 ERROR social OAuth2 profile failed provider=gitlab app=oauth2-gitlab error="provider account is not active and confirmed"
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1974268Z 2026/10/27 04:24:16 ERROR social OAuth2 profile failed provider=gitea app=oauth2-gitea error="provider account is inactive"
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1974793Z 2026/10/27 04:24:16 ERROR social OAuth2 profile failed provider=digitalocean app=oauth2-digitalocean error="provider account is not active and verified"
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1975410Z 2026/10/27 04:24:18 ERROR Database operation failed error="ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)"
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1975795Z --- FAIL: TestTraceHTTPContract (0.43s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1979044Z     trace_test.go:199: read /api/v1/organizations/trace-http/traces/ABCDEFABCDEFABCDEFABCDEFABCDEFAB?project=&page=1&start=2010-01-01T00:00:00Z&end=2010-01-01T00:00:01Z=503 {"detail":"Storage is temporarily unavailable"}
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1980223Z 2026/10/27 04:24:21 ERROR Database operation failed error="ERROR: new row for relation \"user_reports\" violates check constraint \"reject_report_http\" (SQLSTATE 23514)"
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1980580Z FAIL
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1980707Z FAIL	goodsentry/internal/server	148.811s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:24:24.1980886Z ok  	goodsentry/internal/spanarchive	1.073s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2247835Z --- FAIL: TestOTLPMigration021PreservesSDKHistoryAndReopens (0.26s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2248520Z     otlp_migration_test.go:43: ERROR: cannot drop column otlp_batch_id of table logs because other objects depend on it (SQLSTATE 2BP01)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2249172Z --- FAIL: TestSpanArchiveReadCombinesHotAndColdRowsAndExpandsSeedTraces (0.34s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2252813Z     span_archive_read_test.go:105: trace graph hot+cold nodes: {TraceID: ProjectID: NodeCount:0 ProjectCount:0 ErrorCount:0 LogCount:0 LogsEnabled:false StartTimestamp:<nil> EndTimestamp:<nil> Duration:<nil> Relationships:{None:0 Resolved:0 Missing:0 Ambiguous:0 Invalid:0 Cycle:0} InvalidSpanIDCount:0 UntimedCount:0 Data:[] Page:0 PageSize:0 HasMore:false} err=ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2254325Z SDK 2026/10/27 04:24:52 DEBUG Response has no supported checksum. Not validating response payload.
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2254853Z SDK 2026/10/27 04:24:52 DEBUG Response has no supported checksum. Not validating response payload.
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2255773Z --- FAIL: TestTraceResolvesMixedSourcesWithoutGuessingContainerParents (0.26s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2256358Z     trace_test.go:47: ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2256837Z --- FAIL: TestTraceExplicitParentPreferenceAmbiguityAndAllCycleEdges (0.27s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2257385Z     trace_test.go:94: ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2257818Z --- FAIL: TestTracePagesDeepChainsAcrossEnvelopesAndRestart (1.24s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2258369Z     trace_test.go:155: ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2258853Z --- FAIL: TestTraceTimingBoundsPreservePartialReversedAndZeroIntervals (0.25s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2259531Z     trace_test.go:195: ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2259964Z --- FAIL: TestTracePreviewsRawScopeRelatedPagesAndLogFlags (0.34s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2260473Z     trace_test.go:239: ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2261041Z --- FAIL: TestTracePendingVersionOneAndForeignScope (0.25s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2261638Z     trace_test.go:324: pending raw event-1: ERROR: column e.span_projection_version does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2262200Z --- FAIL: TestTraceEqualTimeOrderUsesNumericProjectSourceRowAndOrdinal (0.29s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2262749Z     trace_test.go:414: ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2263267Z --- FAIL: TestTraceSnapshotKeepsGraphMetadataRelatedCountsAndErrorPagesCoherent (0.27s)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2263856Z     trace_test.go:497: ERROR: column e.trace_span_id does not exist (SQLSTATE 42703)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2264169Z FAIL
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2264388Z FAIL	goodsentry/internal/store	200.924s
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2264699Z ?   	goodsentry/internal/testfixture/nativepdb	[no test files]
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2265071Z ?   	goodsentry/internal/testfixture/nativesymcache	[no test files]
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2265398Z ok  	goodsentry/internal/uptime	(cached)
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2265623Z FAIL
+verify	Run unit and PostgreSQL integration tests with race detection	2026-10-27T04:25:19.2800880Z ##[error]Process completed with exit code 1.

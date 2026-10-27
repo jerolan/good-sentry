@@ -37,7 +37,8 @@ func TestOTLPMigration021PreservesSDKHistoryAndReopens(t *testing.T) {
 	}
 	// Reconstruct020 only inside this owned disposable schema. The old SDK row
 	// and every other current table remain intact; no old migration is edited.
-	if _, err := f.db.pool.Exec(f.ctx, `ALTER TABLE logs DROP COLUMN otlp_batch_id,DROP COLUMN otlp_record_index;
+	if _, err := f.db.pool.Exec(f.ctx, `DROP VIEW logs_with_archive;
+ ALTER TABLE logs DROP COLUMN otlp_batch_id,DROP COLUMN otlp_record_index;
  DROP TABLE otlp_log_batches;
  DELETE FROM schema_migrations WHERE version=21`); err != nil {
 		t.Fatal(err)

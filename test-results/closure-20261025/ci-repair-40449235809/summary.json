@@ -1,0 +1,8 @@
+{
+  "date": "2026-10-26",
+  "ci_run": 40449235809,
+  "failure": "transactions_with_archive omitted trace_span_id, trace_parent_span_id, trace_op, trace_status, trace_start_timestamp and span_projection_version, causing trace readers to fail with SQLSTATE 42703; the OTLP migration test could not drop logs.otlp_batch_id because logs_with_archive depended on it.",
+  "change": "extend migration 078, transaction archive copy and S3 object shape with the trace/projection columns; drop the dependent view inside the OTLP migration test before simulating migration 021.",
+  "validation": "targeted store/server owners pass; full go test -race -tags=integration ./... passes: server 222.293s, store 416.785s, jobs 29.811s.",
+  "limits": ["The failed CI run remains visible; the repaired commit still needs a new CI run."]
+}

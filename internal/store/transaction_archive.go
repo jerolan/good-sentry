@@ -10,11 +10,11 @@ func (s *Store) ArchiveTransactions(ctx context.Context, before time.Time, limit
 		limit = 250
 	}
 	tag, err := s.pool.Exec(ctx, `WITH batch AS (
- SELECT id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at
+ SELECT id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at,span_projection_version,trace_span_id,trace_parent_span_id,trace_op,trace_status,trace_start_timestamp
  FROM events WHERE kind='transaction' AND created_at < $1 ORDER BY created_at,id LIMIT $2
 )
-INSERT INTO transaction_archive (id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at)
-SELECT id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at
+INSERT INTO transaction_archive (id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at,span_projection_version,trace_span_id,trace_parent_span_id,trace_op,trace_status,trace_start_timestamp)
+SELECT id,project_id,event_id,issue_id,original_issue_id,kind,title,level,timestamp,environment,release,trace_id,transaction_name,duration,data,created_at,span_projection_version,trace_span_id,trace_parent_span_id,trace_op,trace_status,trace_start_timestamp
 FROM batch ON CONFLICT DO NOTHING`, before, limit)
 	if err != nil {
 		return 0, dbError(err)

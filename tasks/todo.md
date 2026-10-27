@@ -10069,6 +10069,15 @@ consume esos recibos. Toda la implementación local de archivo de errores, logs,
 transacciones y spans (068–091) y la operación local de imagen (092–096) quedó
 verificada. No se declara el producto completo ni se ejecutó publicación.
 
+Reparación CI `40449235809`: la vista de transacciones omitía columnas de traza
+y proyección (`trace_span_id`, `trace_parent_span_id`, `trace_op`,
+`trace_status`, `trace_start_timestamp`, `span_projection_version`), y la vista
+de logs bloqueaba la simulación de migración 021. Se extendió 078, la copia
+local/S3 y el test de migración. `go test -race -tags=integration ./...` pasa
+completo: server 222.293 s, store 416.785 s. Evidencia:
+`test-results/closure-20261025/ci-repair-40449235809/`. Siguiente acción:
+publicar el commit reparado y vigilar el nuevo CI.
+
 ### Comprobante de integración documental
 
 - [x] Integrar el contrato aprobado en los tres artefactos canónicos, con ancla

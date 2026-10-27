@@ -17,6 +17,12 @@ CREATE TABLE transaction_archive (
  duration double precision NOT NULL,
  data jsonb NOT NULL,
  created_at timestamptz NOT NULL,
+ span_projection_version smallint NOT NULL DEFAULT 0,
+ trace_span_id text NOT NULL DEFAULT '',
+ trace_parent_span_id text NOT NULL DEFAULT '',
+ trace_op text NOT NULL DEFAULT '',
+ trace_status text NOT NULL DEFAULT '',
+ trace_start_timestamp timestamptz,
  archived_at timestamptz NOT NULL DEFAULT clock_timestamp(),
  UNIQUE(project_id,event_id)
 );
@@ -25,9 +31,9 @@ CREATE INDEX transaction_archive_trace ON transaction_archive(project_id,trace_i
 CREATE INDEX transaction_archive_created ON transaction_archive(created_at,id);
 
 CREATE VIEW transactions_with_archive AS
- SELECT e.id,e.project_id,e.event_id,e.issue_id,e.original_issue_id,e.kind,e.title,e.level,e.timestamp,e.environment,e.release,e.trace_id,e.transaction_name,e.duration,e.data,e.created_at
+ SELECT e.id,e.project_id,e.event_id,e.issue_id,e.original_issue_id,e.kind,e.title,e.level,e.timestamp,e.environment,e.release,e.trace_id,e.transaction_name,e.duration,e.data,e.created_at,e.span_projection_version,e.trace_span_id,e.trace_parent_span_id,e.trace_op,e.trace_status,e.trace_start_timestamp
  FROM events e
  UNION ALL
- SELECT a.id,a.project_id,a.event_id,a.issue_id,a.original_issue_id,a.kind,a.title,a.level,a.timestamp,a.environment,a.release,a.trace_id,a.transaction_name,a.duration,a.data,a.created_at
+ SELECT a.id,a.project_id,a.event_id,a.issue_id,a.original_issue_id,a.kind,a.title,a.level,a.timestamp,a.environment,a.release,a.trace_id,a.transaction_name,a.duration,a.data,a.created_at,a.span_projection_version,a.trace_span_id,a.trace_parent_span_id,a.trace_op,a.trace_status,a.trace_start_timestamp
  FROM transaction_archive a
  WHERE NOT EXISTS (SELECT 1 FROM events h WHERE h.id=a.id);
