@@ -3794,6 +3794,11 @@ nueva revisión de test antes del cierre. Siguiente acción: ejecutar la suite
 completa en la base aislada y registrar su resultado, sin repetir la ejecución
 fallida como si hubiera pasado.
 
+Ejecución iniciada sobre `closure033_migration`: sesión 26168, salida
+`/tmp/goodsentry-closure-033/integration-stable-full.log`. Sigue pendiente
+hasta recoger el código de salida y revisar el log. Siguiente acción: esperar
+esa sesión; después registrar el resultado y verificar CI de la nueva revisión.
+
 ### Selección paralela independiente: CLOSE-errores-047
 
 Mientras termina la integración de 033 en `closure033_migration`, iniciar la
