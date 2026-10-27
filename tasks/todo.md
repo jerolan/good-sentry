@@ -3755,6 +3755,22 @@ La integración completa sin race está en curso sobre la base separada
 hasta inspeccionar el resultado.
 Siguiente acción: recoger ese resultado y completar el cotejo de 033.
 
+### Fallo de integración 2026-10-27: cuota de descarte
+
+La sesión 54217 terminó con código 1. `server` pasó en 183,606 s, pero
+`TestDiscardedCaptureSkipsParentThrottleAndChargesAdmittedSiblings` falló en
+`store` (390,102 s): leyó cuota 1 donde esperaba 4. Se conserva la salida en
+`test-results/closure-20261025/errores-033-fresh/integration-full-failure.log`.
+Diez ejecuciones aisladas posteriores de ese owner pasaron; su salida está en
+`discard-repro.log`. No se declara pasada la integración completa.
+
+Hipótesis aún no probada: la cuota usa ventanas fijas de 60 segundos y la
+consulta del test filtra por clave, pero no por `window_start`; un cambio de
+ventana podría dejar más de una fila. La repetición aislada no reproduce el
+fallo ni identifica su causa. Siguiente acción: verificar el caso de frontera
+de ventana y el comportamiento del owner antes de decidir si requiere arreglo;
+conservar la evidencia y no cerrar 033 mientras siga sin resolver.
+
 ### Selección paralela independiente: CLOSE-errores-047
 
 Mientras termina la integración de 033 en `closure033_migration`, iniciar la
