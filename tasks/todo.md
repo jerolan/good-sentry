@@ -3799,6 +3799,19 @@ Ejecución iniciada sobre `closure033_migration`: sesión 26168, salida
 hasta recoger el código de salida y revisar el log. Siguiente acción: esperar
 esa sesión; después registrar el resultado y verificar CI de la nueva revisión.
 
+### Integración completa 2026-10-27: fixture de cuota ajustado
+
+La sesión 26168 terminó con código 0: `go test -tags=integration ./cmd/...
+./internal/... -count=1` pasó sobre `closure033_migration`; server 162,416 s,
+store 390,841 s y jobs 31,277 s. La fuente incluye el ajuste de test `a8c1422`
+y el producto permanece igual a `b77a2cc`. Evidencia:
+`test-results/closure-20261025/errores-033-fresh/integration-stable-full.log`.
+El fallo anterior y la hipótesis sobre su causa permanecen registrados.
+
+Siguiente acción: cotejar todos los subresultados de 033 y obtener CI que
+incluya el ajuste de test, sin presentar el CI anterior como coincidente con
+ese cambio. El cierre de 033 y del producto sigue pendiente.
+
 ### Selección paralela independiente: CLOSE-errores-047
 
 Mientras termina la integración de 033 en `closure033_migration`, iniciar la
