@@ -12470,3 +12470,25 @@ del módulo; otros ordinales y formatos de salto permanecen abiertos.
 Siguiente acción concreta: aplicar test-audit y preparar RED del owner público
 y HTTP, implementar ordinal0 y comparar las231 tuplas contra el oracle real;
 verificar que no cambie la atribución de líneas de procedimientos existentes.
+
+### Saltos CodeView antiguos verificados, 2026-10-28
+
+Los módulos C7/C11 ahora emiten el rango declarado de `S_THUNK32_ST` ordinal0
+después de resolver sus líneas. La lectura comparte el límite de procedimientos,
+rechaza nombres, secciones, rangos y alineación inválidos y conserva el rechazo
+integral sin símbolos parciales. Otros ordinales siguen sin implementarse.
+
+RED nativo y HTTP reprodujeron el salto ausente; GREEN verificó C7/C11,
+identidad, aislamiento, corrupción y límite compartido. Una comparación privada
+independiente coincidió en231 saltos y las10191 tuplas previas:10422 en total,
+sin faltantes ni extras. No se incorporan al repositorio los bytes ni nombres
+de la muestra histórica. Race nativo aprobó713 acciones y servidor41; vet y
+build pasaron. Comprobante:
+test-results/closure-20261025/nativo-legacy-thunks/.
+
+Native004 integral, otras variantes de salto, mapas no directos, imagen y CI
+finales siguen abiertos. La primaria revisó el código, el oracle y los checks.
+
+Siguiente acción concreta: investigar otras variantes de salto documentadas y
+su representación real; implementar solo las que tengan semántica y límites
+verificables, mientras continúa la búsqueda de mapas no directos.

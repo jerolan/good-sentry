@@ -10,7 +10,7 @@ import (
 // msf/src/open.rs, and microsoft/microsoft-pdb at
 // 805655a28bd8198004be2ac27e6e0290121a5e89, PDB/msf/msf.cpp and include/cvinfo.h.
 func SmallMSF2(pageSize int, age uint32, streamZeroAlias bool) Fixture {
-	return smallMSF2(pageSize, age, streamZeroAlias, nil, nil, false).Fixture
+	return smallMSF2(pageSize, age, streamZeroAlias, nil, nil, false, nil).Fixture
 }
 
 type C11Fixture struct {
@@ -25,19 +25,19 @@ func WithC11SourceLines() C11Fixture {
 		{name: `C:\src\first.cc`, start: 0x10, end: 0x1f, offsets: []uint32{0x10, 0x10, 0x10, 0x14, 0x18, 0x1c}, lines: []uint16{0, 42, 43, 65535, 0, 44}},
 		{name: `C:\src\second.cc`, start: 0x28, end: 0x3f, offsets: []uint32{0x28, 0x30}, lines: []uint16{52, 53}},
 	})
-	return smallMSF2(1024, 1, false, lines, nil, false)
+	return smallMSF2(1024, 1, false, lines, nil, false, nil)
 }
 
 func WithMultipleC11SourceLineModules() C11Fixture {
 	first, second := multipleC11SourceLinePayloads()
-	return smallMSF2(1024, 1, false, first, second, false)
+	return smallMSF2(1024, 1, false, first, second, false, nil)
 }
 
 // WithV50SourceLines needs companion PE sections and uses the 48-byte MODI50
 // prefix and a direct logical section map.
 func WithV50SourceLines(dbiAge uint32) C11Fixture {
 	first, second := multipleC11SourceLinePayloads()
-	fixture := smallMSF2(1024, 1, false, first, second, true)
+	fixture := smallMSF2(1024, 1, false, first, second, true, nil)
 	binary.LittleEndian.PutUint32(fixture.Data[fixture.DBIBlock*1024+8:], dbiAge)
 	return fixture
 }
@@ -52,7 +52,20 @@ func multipleC11SourceLinePayloads() ([]byte, []byte) {
 	return first, second
 }
 
-func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []byte, v50 bool) C11Fixture {
+func WithLegacyThunk() Fixture {
+	name := []byte("LegacyThunk")
+	record := make([]byte, 26+len(name))
+	binary.LittleEndian.PutUint16(record, uint16(len(record)-2))
+	binary.LittleEndian.PutUint16(record[2:], 0x0206)
+	binary.LittleEndian.PutUint32(record[16:], 0x60)
+	binary.LittleEndian.PutUint16(record[20:], 1)
+	binary.LittleEndian.PutUint16(record[22:], 0x10)
+	record[25] = byte(len(name))
+	copy(record[26:], name)
+	return smallMSF2(1024, 1, false, nil, nil, false, record).Fixture
+}
+
+func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []byte, v50 bool, extra []byte) C11Fixture {
 	fpmPages := 0
 	switch pageSize {
 	case 1024:
@@ -73,6 +86,7 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 	second := stProcedure("OtherFunction", 0x80, 0x10, 0x100a)
 	module := append([]byte{2, 0, 0, 0}, first...)
 	module = append(module, second...)
+	module = append(module, extra...)
 	symbolBytes := len(module)
 	module = append(module, c11...)
 	moduleInfo := moduleInfoRecord(4, symbolBytes, 0, "fixture.obj", "fixture.obj")
@@ -341,7 +355,7 @@ func WithStreamZeroAlias() Fixture {
 // OldDBIC7 builds an old DBI header and two 16-bit-type C7 procedures. The
 // matching PE sections are supplied separately, as with the V50 fixture.
 func OldDBIC7() Fixture {
-	f := smallMSF2(1024, 1, false, nil, nil, true).Fixture
+	f := smallMSF2(1024, 1, false, nil, nil, true, nil).Fixture
 	data := f.Data
 	binary.LittleEndian.PutUint32(data[f.InfoBlock*1024:], 19950623)
 	first := procedure16("CrashFunction", 0x10, 0x20, 0x205)
@@ -367,6 +381,21 @@ func OldDBIC7() Fixture {
 	binary.LittleEndian.PutUint32(data[directory+4+3*8:], uint32(len(dbi)))
 	binary.LittleEndian.PutUint32(data[directory+4+4*8:], uint32(len(module)))
 	f.FirstProcedureLength = len(first)
+	return f
+}
+
+func OldDBIC7WithThunk() Fixture {
+	f := OldDBIC7()
+	source := WithLegacyThunk().Data
+	name := bytes.Index(source, []byte("LegacyThunk"))
+	record := source[name-26 : name+len("LegacyThunk")]
+	dbi := f.DBIBlock * 1024
+	symbolBytes := binary.LittleEndian.Uint32(f.Data[dbi+24+28:])
+	copy(f.Data[f.ModuleBlock*1024+int(symbolBytes):], record)
+	symbolBytes += uint32(len(record))
+	binary.LittleEndian.PutUint32(f.Data[dbi+24+28:], symbolBytes)
+	directory := int(binary.LittleEndian.Uint16(f.Data[60:])) * 1024
+	binary.LittleEndian.PutUint32(f.Data[directory+4+4*8:], symbolBytes)
 	return f
 }
 
