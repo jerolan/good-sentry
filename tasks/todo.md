@@ -2217,10 +2217,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-094](../SPEC.md#close-operacion-094) | Persistencia de datos, artefactos y configuración tras reinicio. | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
 | [CLOSE-operacion-095](../SPEC.md#close-operacion-095) | Backup y restauración en entorno independiente, conservando datos, artefactos y configuración necesarios. | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
 | [CLOSE-operacion-096](../SPEC.md#close-operacion-096) | Disponibilidad real de funciones opcionales y verificaciones de imagen, concurrencia y recuperación existentes… | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
-| [CLOSE-sourcemaps-028](../SPEC.md#close-sourcemaps-028) | Crear y finalizar una release con sentry-cli 3.8.0. No requiere conexión automática con repositorios. | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
-| [CLOSE-sourcemaps-029](../SPEC.md#close-sourcemaps-029) | Asociar metadatos locales de commits y registrar un deploy con sentry-cli 3.8.0. No requiere conexión automáti… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
-| [CLOSE-sourcemaps-030](../SPEC.md#close-sourcemaps-030) | Consultar en API/UI la misma versión, proyectos, archivos y eventos asociados. No requiere conexión automática… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
-| [CLOSE-sourcemaps-031](../SPEC.md#close-sourcemaps-031) | Subida, listado, acceso y eliminación de artefactos sin borrar datos ajenos, con permisos, reintentos y persis… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-sourcemaps-028](../SPEC.md#close-sourcemaps-028) | Crear y finalizar una release con sentry-cli 3.8.0. No requiere conexión automática con repositorios. | implementada | vigente | Recibo final 2026-10-27: sourcemaps-028-031-fresh y cotejo por subresultado abajo |
+| [CLOSE-sourcemaps-029](../SPEC.md#close-sourcemaps-029) | Asociar metadatos locales de commits y registrar un deploy con sentry-cli 3.8.0. No requiere conexión automáti… | implementada | vigente | Recibo final 2026-10-27: sourcemaps-028-031-fresh y cotejo por subresultado abajo |
+| [CLOSE-sourcemaps-030](../SPEC.md#close-sourcemaps-030) | Consultar en API/UI la misma versión, proyectos, archivos y eventos asociados. No requiere conexión automática… | implementada | vigente | Recibo final 2026-10-27: sourcemaps-028-031-fresh y cotejo por subresultado abajo |
+| [CLOSE-sourcemaps-031](../SPEC.md#close-sourcemaps-031) | Subida, listado, acceso y eliminación de artefactos sin borrar datos ajenos, con permisos, reintentos y persis… | implementada | vigente | Recibo final 2026-10-27: sourcemaps-028-031-fresh y cotejo por subresultado abajo |
 | [CLOSE-errores-220](../SPEC.md#close-errores-220) | Conservar y comprobar los flujos de adjuntos, incluidos almacenamiento, listados, acceso/descarga y controles… | implementada | vigente | Comprobante 2026-10-26 abajo (207-208 + 035-043) |
 | [CLOSE-errores-221](../SPEC.md#close-errores-221) | Conservar y comprobar los flujos de feedback legado, transporte, asociación, reportes y UI contratados. | implementada | vigente | Comprobante 2026-10-26 abajo (164-181) |
 | [CLOSE-errores-222](../SPEC.md#close-errores-222) | Conservar y comprobar los flujos de feedback moderno, categoría, asociación, retención, lectura e interfaz con… | implementada | vigente | Comprobante 2026-10-26 abajo (182-205) |
@@ -11448,3 +11448,47 @@ Siguiente selección: CLOSE-sourcemaps-028–031. Contrastar los recibos finales
 011/021 y completar listado/acceso/eliminación de un archivo individual con
 preservación de datos ajenos; vincular la misma versión/proyecto y sus eventos
 al recorrido API/UI, sin inferirlo de borrar una release completa.
+
+### Cotejo completado de releases y archivos028–031, 2026-10-27
+
+La imagen pública f2a7ca2f de8e95 se ejecutó en otra base/volumen propios,
+closure031_current, puerto18531, autenticación requerida y logs/uptime off.
+El worker acotado usó CLI3.8.0 fijado por SHA256 y Node11.7.0 reales.
+La primaria revisó ambos controladores, resultados y captura móvil; tomó
+snapshots PostgreSQL independientes y ejecutó el reinicio y las lecturas finales.
+
+028: CLI creó y finalizó la versión closure031-be754df768f3@1.0.0.
+029: el primer set-commits --local devolvió403 al leer repositorios con solo
+project:releases. Se conservó el fallo y se reanudaron los mismos datos con
+una credencial explícita org:read + project:releases limitada a A, según
+SPEC sección Artifacts. El repo aislado tiene dos commits reales y cero remotes.
+CLI asoció ambos commits y registró un deploy staging, confirmados por API.
+No se conectó ningún proveedor de repositorios.
+
+030: una captura SDK real recibió200 y conserva el eventID, proyecto A y versión
+exactos. API/UI muestran la misma versión, ambos proyectos, commits, deploy y
+archivos; Issues filtrado por release muestra esa captura. Nueve capturas en
+320/768/1440, sin overflow ni errores de página, con DSN ocultos.
+031: cuatro mapas nativos, listado/detalle compatible con SHA1 de bytes, retry
+con ID estable/created:false, aislamiento de B404 y scope insuficiente403.
+La primaria verificó SHA1/SHA256 de los cuatro bytes almacenados antes de DELETE.
+Eliminar solo el archivo1 devolvió204; repetición y lectura404. Los archivos
+3/4/5 conservan metadata y bytes. Las120 filas se redujeron a119 por esa única
+fila source_maps; las demás filas de las73 tablas son exactas, incluidas release,
+commits, deploy y telemetría. El reinicio app-only conservó las119 filas exactas;
+las lecturas autenticadas posteriores recuperaron los tres archivos y el evento.
+
+Comprobantes: test-results/closure-20261025/sourcemaps-028-031-fresh/.
+Los snapshots/configuración/secretos quedan privados; los outputs publicados
+pasaron escaneo contra contraseña y claves de la fixture. GET de file es metadata,
+no se inventa una descarga. El transporte moderno bundle/chunks y seis capturas
+SDK simbolicadas siguen acreditados por sourcemaps-011 y021, summaries del27,
+sobre el runtime idéntico b77/40b75, junto a public-8e95/image-comparison.json,
+CI y árbol exactos. Los owners de permisos/paginación y persistencia permanecen
+vigentes y los vuelve a ejecutar CI8e95. No queda subresultado pendiente028–031.
+
+Siguiente selección: CLOSE-nativo-004 y dependientes026–028. La revisión factual
+confirma que legacy/Portable PDB sigue exigido y que el recibo028 no puede excluir
+symbol-server por sí solo. Primero especificar y conectar la identidad NB10/PDB2
+del Minidump al SymCache PDB2 existente; verificar el resultado sin atribuirle
+soporte completo del contenedor legacy ni cierre de la familia nativa.
