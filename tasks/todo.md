@@ -12305,6 +12305,10 @@ límites por archivo y evita multiplicarlos por los25 archivos del proyecto.
 La selección deberá descartar candidatos de un archivo comprimido inválido y
 considerar ambiguas identidades con contenidos válidos distintos.
 
+El mismo presupuesto compartido limita a64MiB los nombres de documentos
+decodificados retenidos para las identidades seleccionadas; exceder cualquiera
+de los límites conserva la captura sin enriquecimiento Portable parcial.
+
 Siguiente acción concreta: fijar pruebas RED del owner de evento para identidad,
 lookups, documentos, archivos comprimidos y conservación de campos; implementar
 selección y enriquecimiento, y probar ingesta HTTP/PG e aislamiento.

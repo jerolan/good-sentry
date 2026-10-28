@@ -1136,8 +1136,9 @@ the current project's existing25-file/64MiB set, including regular members of
 the already supported bounded archives. A supplied upload Debug ID must match
 the embedded identity; different contents claiming one identity are ambiguous.
 Bound retained decoded sequence points for matching identities in that set to
-1,000,000; if this limit is exceeded, capture the event without any Portable
-PDB enrichment rather than retaining a partial set.
+1,000,000 and retained decoded source-name bytes to64MiB; if either limit is
+exceeded, capture the event without any Portable PDB enrichment rather than
+retaining a partial set.
 
 For captured managed frames with `addr_mode:rel:N`, use N to select a
 `pe_dotnet` image in `debug_meta.images`, `function_id` as its one-based
