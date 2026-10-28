@@ -11360,3 +11360,20 @@ retención en el orden del plan. Preparar otra aplicación/base/volumen nuevos
 en18523; completar pending/errores/limpieza/teclado a través de navegador real,
 sin alterar las copias aceptadas. Después049 y los demás pendientes en orden.
 La restauración de retención sigue conservada para reanudar su recorrido.
+
+### CI dedicado nativo localizado, 2026-10-27
+
+El cotejo remoto encontró `Native SDK demo`40626774229, completado en éxito
+sobre la candidata pública exacta `8e95a6dd`. Se consultaron jobs y log completo
+por el conector GitHub. El job122613484672 construyó demo y Crashpad handler,
+fijó ambas rutas y ejecutó `TestNativeSDKDemoCrashSymbolicates` con race sobre
+PostgreSQL18: paquete server GREEN en1,809s. Se verificó checkout del mismo SHA.
+La primaria contrastó la guardia de skip y las rutas construidas en el owner.
+
+Comprobantes: `public-8e95/native-demo.{json,log}`. Esto resuelve la ausencia de
+recibo CI dedicado señalada por la revisión local; no se atribuye ese resultado
+al CI genérico. El owner usa su servidor HTTP de prueba real y no arranca por
+sí mismo la imagen publicada. Los demás subresultados nativos y el contraste
+de alcance004/023/028 continúan pendientes. Siguiente acción activa: recoger
+la ejecución de navegador Account023/025 y atender sus resultados antes de
+pasar a la siguiente familia del plan.
