@@ -1634,7 +1634,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-030](../SPEC.md#close-errores-030) | Permanent issue discard: For a discarded event inside a mixed envelope, only that parent and its attached chil… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de envelope |
 | [CLOSE-errores-031](../SPEC.md#close-errores-031) | Permanent issue discard: Use the public Sentry issue update API(https://docs.sentry.io/api/events/update-an-is… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de API |
 | [CLOSE-errores-032](../SPEC.md#close-errores-032) | Permanent issue discard: Owning PostgreSQL checks cover020 checksum/reopen/all old-row preservation, actual fu… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de SQL/tests |
-| [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | implementada (local) | bloqueada | CI público de la revisión con ajuste del test; cotejo final por subresultado pendiente |
+| [CLOSE-errores-033](../SPEC.md#close-errores-033) | Permanent issue discard: Use the current pinned environment and commands: go test -tags=integration ./cmd/...… | implementada | vigente | Cotejo por subresultado 2026-10-27 abajo; imagen/CI públicos 8e95a6dd verificados |
 | [CLOSE-errores-034](../SPEC.md#close-errores-034) | Compatible hashes and future grouping reset: Complete compatible hash listing and future-only detachment, incl… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de hashes |
 | [CLOSE-errores-035](../SPEC.md#close-errores-035) | Compatible hashes and future grouping reset: The observed GlitchTip DELETE202 removes a signature's future rou… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 202 |
 | [CLOSE-errores-036](../SPEC.md#close-errores-036) | Compatible hashes and future grouping reset: Add migration019_issue_hash_routes.sql. Create issue_hash_routes… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 019 |
@@ -1648,7 +1648,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-044](../SPEC.md#close-errores-044) | Compatible hashes and future grouping reset: Internal contracts: CompatibleIssueHashFilter contains Offset/Lim… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-045](../SPEC.md#close-errores-045) | Compatible hashes and future grouping reset: Add a Future grouping section to native issue detail with real pa… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de UI hashes |
 | [CLOSE-errores-046](../SPEC.md#close-errores-046) | Compatible hashes and future grouping reset: Verification must apply test-audit before authorship. PostgreSQL… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-047](../SPEC.md#close-errores-047) | Compatible hashes and future grouping reset: Acceptance requires actual official SDK captures before/after res… | implementada (local) | bloqueada | CI público de la revisión con ajuste del test; cotejo final por subresultado pendiente |
+| [CLOSE-errores-047](../SPEC.md#close-errores-047) | Compatible hashes and future grouping reset: Acceptance requires actual official SDK captures before/after res… | implementada | vigente | Cotejo por subresultado 2026-10-27 abajo; imagen/CI públicos 8e95a6dd verificados |
 | [CLOSE-errores-048](../SPEC.md#close-errores-048) | Compatible bulk issue changes and merging: Complete PUT /api/0/projects/{org}/{project}/issues/ and PUT /api/0… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-049](../SPEC.md#close-errores-049) | Compatible bulk issue changes and merging: Authorities are the public project bulk contract(https://docs.sentr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-050](../SPEC.md#close-errores-050) | Compatible bulk issue changes and merging: A separate unmodified GlitchTip6.2.6 image a3d8eb1b36c1e1603d55ab32… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11207,3 +11207,40 @@ snapshots completos privados en `/tmp/goodsentry-closure-028/`.
 Subresultados pendientes de 028: ninguno. Siguiente acción: registrar el
 cotejo final de 033/047 y las invalidaciones de retención detectadas antes de
 continuar con la auditoría por requisito.
+
+### Cotejo final de CLOSE-errores-033 y -047, 2026-10-27
+
+Se inspeccionaron scripts, resultados, pruebas propietarias y proyecciones de
+snapshots privados, sin aceptar el mero estado de la matriz. Candidata pública
+`8e95a6dd`, imagen `f2a7ca2f…`; su runtime es idéntico a `b77a2cc/40b75bd3…`.
+El árbol público exacto, CI y Tailwind en la construcción final quedan
+verificados por `public-8e95/`; la suite completa local con y sin race,
+vet/formato/Node y sus fallos anteriores se conservan. No hubo cambios de
+producto desde las pruebas funcionales.
+
+| Criterio/subresultado | Resultado comprobado y owner en `test-results/closure-20261025/` |
+|---|---|
+| 033 SDK/adjunto/recurrencia | `errores-033-fresh/sdk*.mjs` y reports: Node11.7, adjunto exacto; event:write descarta y suprime recurrencia; event:admin borra y la nueva captura crea issue nuevo |
+| 033 CLI/permisos/revocación | `cli-revoke.mjs` y report: CLI3.8 reader lista y mutación403; writer resuelve/reabre/silencia/reabre; revocado401; no ofrece DELETE/discard |
+| 033 browser normal/error/alias/bulk/drafts | `browser/`, `browser-extra/`, `browser-retry-bulk/`, `browser-limit/`: confirmación/cancelación, 503 inyectado, 409 real, cinco drafts, no-op, recuperación sin segundo DELETE; 1000 IDs exactos y 1001 bloqueado; 320/768/1440 |
+| 033 migración/reinicio | `upgrade/` y `migration-020.log`: 19→79, 32 filas anteriores exactas en su proyección, recibos intactos, evento/adjunto legibles; reinicio upgrade exacto94 filas y compartido posterior1264 |
+| 047 SDK/rutas/retry | `errores-047-fresh/sdk/` y `split/`: SDK antes/después, control retenido, UUID estable, cuatro/cinco pertenencias SQL correctas, separación histórica no roba ruta nueva |
+| 047 permisos/CLI | reader403, writer202 vacío, revocado401; `cli/`: resolver ambos con --all, reabrir con IDs repetidos y filtros, verificados nativamente |
+| 047 browser | `browser/`, `browser-extra/`, `pagination/`: reset/vacío/error/alias/cinco drafts, selección10+1 y recuperación sin DELETE duplicado; 320/768/1440 |
+| 047 migración/reinicio | `upgrade/`: 18→79, 30 filas antiguas exactas, backfill separado enlazado al issue previo; evento/adjunto legibles y reinicio94 filas exacto; compartido1264 |
+
+El cotejo detectó que el script SDK original de 047 solo comparaba listas de
+eventos durante retry; el owner Go `TestCompatibleIssueHashResetPreservesHistoryAndNewGenerationRouting`
+cubría contadores/estado completo. Para acreditar también el límite HTTP real,
+se reenvió con Node11.7 el evento histórico original del proyecto11. HTTP200;
+las filas completas de issues/events/issue_hash_routes del proyecto y ambos
+objetos issue nativos quedaron exactamente iguales, incluidos conteos3 y1.
+Owner/report: `errores-047-fresh/retry-counts/`. El primer SELECT usó un nombre
+de columna inexistente y falló antes de enviar; se corrigió a `events.data`
+tras leer el esquema, sin modificar datos ni producto.
+
+Subresultados pendientes de 033/047: ninguno. Los 503 de navegador son fallos
+inyectados; los demás estados indicados se observaron contra el servidor real.
+Las bases históricas perdidas no se presentan como preservadas: rige la decisión
+canónica del27-Oct. Siguiente acción: invalidar y ejecutar las revalidaciones
+finales de retención detectadas; después auditar 002/100 y el resto por requisito.
