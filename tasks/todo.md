@@ -3966,6 +3966,15 @@ de un minuto usó el reloj real, no una actualización de timestamps.
 Siguiente acción: cotejar los subresultados de 084, integrar la evidencia de
 la suite completa ya terminada y obtener CI de la revisión de test ajustada.
 
+### Selección independiente: CLOSE-logs-028
+
+Los criterios de errores tienen comprobantes locales adicionales y aún
+requieren el cotejo final de CI. Iniciar 028 en una base y volumen nuevos,
+sin alterar los cohorts anteriores; la decisión del contrato sustituye su
+linaje perdido pero mantiene exportadores oficiales, wire/200, aislamiento,
+navegador, reinicio y demás controles. Siguiente acción: identificar los
+owners y versiones disponibles antes de crear el entorno propio.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
