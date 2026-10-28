@@ -1301,6 +1301,26 @@ remain open. References: Microsoft [V50 modules](https://github.com/microsoft/mi
 [image headers for RVA translation](https://learn.microsoft.com/en-us/visualstudio/debugger/debug-interface-access/idiaaddressmap-set-imageheaders),
 and [PE debug directory](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#debug-directory-image-only).
 
+The next pre-V50 increment supports the old 24-byte DBI header and C7
+signature1 module symbols. The old header contains three stream indices and
+padding followed by four bounded substream lengths for modules, section
+contributions, section map and file information; validate that the four
+substreams exactly fill the stream. It has no DBI age or optional section
+header: require a pre-VC50 Info identity and the same project-scoped NB10 PE
+association and direct section-map checks above. Decode MODI50 records and
+validate their declared extents. Decode C7 `S_LPROC32_16t` and
+`S_GPROC32_16t` with their 16-bit type index, distinct field offsets and bounded
+length-prefixed names. Preserve procedures and exact identities; bound C7 line
+data by its declared extent but do not interpret it until its layout is independently established.
+Reject malformed old headers, mixed incompatible procedure/signature layouts,
+bad stream extents and non-direct section mappings without partial symbols.
+Keep other old record kinds, C7 source lines and the remaining legacy profiles
+open. Owned public and HTTP/PostgreSQL tests must cover matching and mismatched
+PE identity, sections, malformed records and current format regressions.
+References: Microsoft's [old DBI conversion](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/dbi.cpp#L260),
+[C7 signatures and 16-bit-type procedures](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/include/cvinfo.h#L3363),
+and Wine's [old DBI structures](https://github.com/wine-mirror/wine/blob/master/include/wine/mscvpdb.h#L2449).
+
 <a id="close-nativo-019"></a>
 
 For C13 source lines, read each module's declared `C13ByteSize` after its symbol and C11 byte ranges. Keep the C13 subsection reader separate from the legacy C11 reader below. Parse bounded four-byte-aligned subsection records, consuming `DEBUG_S_LINES`, `DEBUG_S_FILECHKSMS`, and `DEBUG_S_STRINGTABLE`; safely skip other well-framed subsection kinds. Resolve checksum filenames through a module string-table subsection when present or through the PDB `/names` global string table named by stream 1's named-stream map. Each line block's name index must point to a checksum record boundary. Resolve its one-based PE section, relocation offset, code size, and line offsets against an executable section, then associate each source location with a procedure from that module and expose it in the existing frame `filename` and `lineno` fields. A location applies from its line offset up to the next line offset in that block or contribution end, clipped to the procedure range; columns are parsed for structural validation but are not returned. Preserve filename spelling without path normalization. Bound C13 subsections to 65,536 per module, source line records to 1,000,000 per PDB, checksum file records to 65,536 per PDB, generated line-to-procedure ranges to 1,000,000 per PDB, and each filename to 4,096 bytes. Invalid subsection framing, missing referenced strings/checksums, invalid ranges or decreasing line offsets invalidate the entire PDB without partial symbols. Keep legacy source-line decoding, Portable PDB and demangling outside this C13 source-line slice. Format references: [LLVM MSF format](https://llvm.org/docs/PDB/MsfFile.html), [PDB Info stream and named-stream map](https://llvm.org/docs/PDB/PdbStream.html), [DBI and module stream contracts](https://llvm.org/docs/PDB/DbiStream.html), [CodeView procedure records](https://llvm.org/docs/PDB/CodeViewSymbols.html), [CodeView line subsection layout](https://www.llvm.org/doxygen/DebugLinesSubsection_8h_source.html), [CodeView checksum records](https://www.llvm.org/doxygen/DebugChecksumsSubsection_8cpp_source.html), [PDB string-table layout](https://www.llvm.org/doxygen/RawTypes_8h_source.html); Microsoft CodeView signatures are documented in [cvinfo.h](https://github.com/microsoft/microsoft-pdb/blob/master/include/cvinfo.h).

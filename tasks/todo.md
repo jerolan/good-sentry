@@ -12052,3 +12052,18 @@ mapas no directos junto con una pareja PDB/PE o un fixture independiente y una
 traducción observable; contrastar selectores, offsets y grupos antes de fijar
 el diseño y emitir símbolos. Si no aparece aún, continuar otro criterio exigible
 con dependencias resueltas sin declarar esta compatibilidad completa.
+
+### Siguiente perfil exigible: old DBI y C7, 2026-10-28
+
+La investigación de los mapas no directos sigue abierta; no impide trabajar en
+el perfil directo anterior a V50. Microsoft documenta la conversión del header
+DBI antiguo y los registros de procedimientos con tipos de16 bits; Wine describe
+su layout de24 bytes. La firma C7 es1 y no debe confundirse con C11 ni C13.
+SPEC native018 ahora especifica este incremento, con asociación PE por NB10 y
+las mismas validaciones directas. No se dispone todavía de muestra real VC4;
+las pruebas propias no sustituirán esa evidencia ni cerrarán formatos pendientes.
+Las líneas C7 siguen abiertas hasta establecer su layout.
+
+Siguiente acción concreta: aplicar test-audit y generar fixtures independientes
+para old DBI/C7 y sus controles públicos y HTTP/PG; observar RED antes de
+implementar, luego ejecutar regresiones y conservar los comprobantes.
