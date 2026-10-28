@@ -112,6 +112,10 @@ page is unknown, functions still resolve but that file contributes no source
 path or line. Old DBI layouts, other C11 filename representations and Portable
 PDB remain unsupported.
 
+SymCache UUID identities with zero age match both the UUID and its Breakpad
+form ending in `0`, including uploads without a declared Debug ID. Mach-O UUIDs
+use the same equivalence; different ages and ELF build IDs require exact matches.
+
 Crashpad Linux modules expose their build ID in the Minidump `BpEL` CodeView record. GoodSentry pairs it with the uploaded ELF GNU build-id note; Mach-O uploads use `LC_UUID`. A crash therefore resolves against the exact uploaded binary even when its filename differs.
 
 Slack, Discord, Microsoft Teams, Google Chat, Feishu, ntfy and Zulip formats pass real local HTTP receiver, PostgreSQL and responsive browser checks. Receipts from external provider channels remain unverified. Configure and test your intended destination before relying on it.

@@ -35,6 +35,10 @@ type DebugObject struct {
 	DebugID   string
 	Functions []SymbolFunction
 	Unwind    *UnwindTable
+
+	// Only a format reader can establish an equivalent identity. A generic
+	// 32-character ID could instead be an ELF build ID with no PDB age.
+	debugIDAlias string
 }
 
 // ParseDebugObjects expands bounded ZIP and TAR debug archives and otherwise
@@ -247,7 +251,13 @@ func parseDebugObject(name string, data []byte) (DebugObject, bool) {
 		return DebugObject{}, false
 	}
 	if debugID, functions, ok := parseSymCache(data); ok {
-		return DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}, true
+		object := DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}
+		// This reader emits 32 characters only for UUID-form DebugIds with
+		// appendix0; the equivalent Breakpad representation includes that0.
+		if len(debugID) == 32 {
+			object.debugIDAlias = debugID + "0"
+		}
+		return object, true
 	}
 	if bytes.HasPrefix(data, msf7Magic) || bytes.HasPrefix(data, msf2Magic) {
 		debugID, functions, ok := parsePDBSymbols(data)
@@ -259,7 +269,11 @@ func parseDebugObject(name string, data []byte) (DebugObject, bool) {
 	key, functions := ParseObjectSymbols(name, data)
 	_, unwind := ParseObjectUnwind(name, data)
 	if len(functions) != 0 || unwind != nil {
-		return DebugObject{Name: key, DebugID: ObjectDebugID(data), Functions: functions, Unwind: unwind}, true
+		object := DebugObject{Name: key, DebugID: ObjectDebugID(data), Functions: functions, Unwind: unwind}
+		if len(data) >= 4 && isMachOMagic(data[:4]) && len(object.DebugID) == 32 {
+			object.debugIDAlias = object.DebugID + "0"
+		}
+		return object, true
 	}
 	key, functions = ParseBreakpad(name, data)
 	if len(functions) == 0 {

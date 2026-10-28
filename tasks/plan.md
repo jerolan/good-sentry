@@ -18,9 +18,13 @@ Recognized malformed MSF2/MSF7 now reject embedded Breakpad text after public
 RED controls reproduced the dispatch defect. Final native/server race, vet and
 build checks pass; todo.md records exact inputs, attempts and limitations.
 Keep unknown encodings/profiles required for full legacy closure; old DBI and
-other legacy layouts remain open. Next reproduce the UUID0 SymCache pairing
-gap at the existing public parser/identity owner before repair; preserve Mach-O
-UUID-only identity and reject a different PDB age. Keep Portable PDB,
+other legacy layouts remain open. The separate UUID0 SymCache repair is now
+verified locally: reader-owned U0 alias, exact metadata admission, ELF identity,
+Mach-O CFI lookup and single indexing when upload name equals alias. Public and
+HTTP/PostgreSQL RED/GREEN, final native/server race, vet and build pass. Native021
+is implemented with integral evidence still invalidated. Next, the primary must
+check the pinned old-DBI header/module/procedure format facts and evidenced gaps
+before specifying a first bounded reader and its owning RED fixture. Keep Portable PDB,
 unwinding and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
 unrelated release/UI proofs without a changed dependency.

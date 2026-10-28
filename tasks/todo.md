@@ -1802,7 +1802,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
-| [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | parcial | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
+| [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | implementada | invalidada | UUID0/metadata/CFI verificados localmente; falta candidata/imagen/CI integral; historial conservado |
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
@@ -11859,3 +11859,75 @@ Siguiente acción concreta: reproducir el emparejamiento SymCacheUUID/age0 sin
 metadata declarada desde el owner público existente; precisar native021 antes
 del arreglo y conservar identidad Mach-O U, matching RSDS U0 y rechazo U1.
 Después regresión nativa/HTTP y commit propio. El Goal permanece activo.
+
+### Selección SymCache UUID/age0, 2026-10-28
+
+El incremento anterior quedó en9030701 con árbol limpio salvo el Python ajeno.
+Native004 sigue siendo el primer criterio pendiente, y el plan selecciona su
+prerequisito native021. La primaria inspeccionó los lectores, BuildSymbolTables,
+la captura HTTP y los owners existentes. Confirmó en rust-debugid fijado que
+from_uuid(U) y from_guid_age(G,0) producen la misma representación type0/age0;
+BreakpadFormat siempre agrega0. No se puede inferir origen Mach-O/RSDS del tipo.
+
+SPEC se amplió antes del plan/registro: conservar U como ID existente del parser
+SymCacheage0 y Mach-O, transportar desde esos lectores el alias privado U0 e
+indexarlo aunque falte metadata. La admisión acepta solo ID embebido o ese alias,
+rechaza edades/UUID distintos y no deduce UUID por longitud de una cadenaELF.
+No se añaden fallbacks por nombre, formatos, permisos, SQL ni dependencias.
+Las invalidaciones integrales nativas ya existentes permanecen.
+
+Siguiente acción concreta: test-audit del owner de identidad y del caso HTTP
+de metadata ausente; registrar RED para U0 y edad distinta, reparar la admisión
+y el índice conservando símbolos/CFI Mach-O y la identidadELF, luego verificar.
+
+### SymCache UUID/age0 verificado localmente, 2026-10-28
+
+La primaria confirmó el contrato con constructores, layout y BreakpadFormat de
+rust-debugid6185e37 y el escritor SymCacheb4571fb fijados. El tipo0/age0 no revela
+si proviene de Mach-O o RSDS. El lector conserva U y establece su alias U0 solo
+tras validar SymCacheUUIDage0 o Mach-O/LC_UUID. BuildSymbolTables admite metadata
+vacía, U o U0, indexa ambas claves y rechaza otra edad/UUID; ELF16 conserva su ID
+exacto. Se retiró la compatibilidad genérica que aceptaba cualquier sufijo de
+un carácter. Los lectores PDB, SymCache binario, DWARF, Minidump y CFI no cambian.
+
+El worker completó test-audit y amplió los dos owners existentes. La primaria
+revisó sus diffs y el RED de SymCache7/8/9, Mach-O y ELF16: faltaban aliases sin
+metadata y se admitían edades/identidades no equivalentes. El RED HTTP/SQL5,152s
+falló solo por la fuente ausente del RSDSage0 sin metadata; los otros10 casos,
+incluidos NB10 y RSDSage1 contra cacheage0, pasaron. Tras el arreglo, el owner
+comprueba CrashFunction y C:\project\src\crash.c:42 con módulo renombrado.
+
+La primaria extendió el mismo owner de identidad para buscar CFI real por U0
+con otro nombre de módulo. RED contraHEAD9030701 devolvió cero frames en los
+casos metadata ausente/U; los dos archivos de producto se restauraron exactos.
+La revisión independiente encontró una duplicación introducida: upload llamado
+U0 con metadata vacía tenía dos tablas unwind bajoU0. Se precisó primero SPEC,
+el mismo owner obtuvo RED primary1/alias2 y la reparación conserva el destino
+por nombre sin volver a indexarlo como alias. CFI, símbolos y cardinalidad de
+destinos pasan; la revisión final no dejó hallazgos. Sigue documentada la
+limitación del host para crear el revisor sin historial y la omisión anunciada
+de revisión por CLI externa, sin atribuirles una revisión que no ocurrió.
+
+Checks finales: native completo con race12,232s y580 acciones pass de tests;
+HTTP/PostgreSQL nativo/reprocessing/DIF seleccionado con race13,950s y27pass.
+Cero fail/skip. Vet native/server/jobs, build trimpath, gofmt y diff-check pasan.
+Binario SHA25659e8329b4175e854408584705b81747f2336cea79cd3ff09780bb229674c6c0e.
+Se reutiliza store02c0999: store/config/event/protocol/go.mod/go.sum permanecen
+idénticos. No se modifican ni reinician las copias aceptadas, ni se publica.
+
+Comprobantes: test-results/closure-20261025/nativo-uuid0-alias/,23 archivos con
+manifiesto e inputs verificados. Acciones HTTP sin Output ni secretos, diagnóstico
+RED reducido, fuentes fijadas, gate, intentos y reparación conservados. Native021
+pasa de parcial a implementada por cerrar el hueco UUID0 de su lector contratado;
+su evidencia integral permanece invalidada hasta candidata/imagen/CI. Native004
+sigue parcial. Las demás invalidaciones nativas se conservan;001/002/005/006,
+008–010 y012–017 mantienen sus recibos sobre lectores, almacenamiento y algoritmos
+sin cambios. La nueva admisión/indexación queda cubierta localmente aquí y sus
+flujos integrales ya estaban invalidados en003/004/007/011/021 y dependientes.
+No se reabre evidencia de releases/UI/retención sin una dependencia modificada.
+
+Siguiente acción concreta: cotejar por primaria los hechos públicos fijados de
+oldDBI, distinguir header y módulos antiguos de NewDBI64 y precisar desconocidos.
+Solo con formato acreditado, ampliar SPEC antes del plan y añadir fixture propia
+RED del owner público. Code pages/perfilesC11, otroslegacy, Portable, unwinding,
+symbol-server y aceptación integral siguen exigidos. El Goal continúa activo.

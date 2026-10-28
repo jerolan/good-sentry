@@ -995,7 +995,8 @@ func TestNativePDBInlineFramesReachMinidumpEvent(t *testing.T) {
 }
 
 func TestNativeSymCacheSymbolicationUsesEmbeddedDebugID(t *testing.T) {
-	const embeddedID = "00112233445566778899AABBCCDDEEFF1"
+	const embeddedUUID = "00112233445566778899AABBCCDDEEFF"
+	const embeddedID = embeddedUUID + "1"
 	nb10 := func(timestamp, age uint32, filename string) []byte {
 		record := make([]byte, 16+len(filename))
 		copy(record, "NB10")
@@ -1010,11 +1011,14 @@ func TestNativeSymCacheSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 		codeView    []byte
 		cacheID     string
 		cacheAge    uint32
+		uuidZeroAge bool
 		wantDebugID string
 		wantSymbol  bool
 	}{
 		{name: "matching module identity", moduleID: embeddedID, wantDebugID: embeddedID, wantSymbol: true},
 		{name: "mismatched module identity", moduleID: "00112233445566778899AABBCCDDEEFF2", wantDebugID: "00112233445566778899AABBCCDDEEFF2"},
+		{name: "RSDS zero age without upload metadata identity", moduleID: embeddedUUID + "0", uuidZeroAge: true, wantDebugID: embeddedUUID + "0", wantSymbol: true},
+		{name: "RSDS age1 cannot match UUID zero age", moduleID: embeddedID, uuidZeroAge: true, wantDebugID: embeddedID},
 		{name: "NB10 matching timestamp and age", codeView: nb10(0x12345678, 1, "different.pdb\x00"), cacheID: "123456781", cacheAge: 1, wantDebugID: "123456781", wantSymbol: true},
 		{name: "NB10 different timestamp", codeView: nb10(0x12345679, 1, "different.pdb\x00"), cacheID: "123456781", cacheAge: 1, wantDebugID: "123456791"},
 		{name: "NB10 different age", codeView: nb10(0x12345678, 2, "different.pdb\x00"), cacheID: "123456781", cacheAge: 1, wantDebugID: "123456782"},
@@ -1027,6 +1031,10 @@ func TestNativeSymCacheSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			cache := nativesymcache.Build(9, 0).Data
 			cacheID := embeddedID
+			if test.uuidZeroAge {
+				cacheID = test.cacheID
+				binary.LittleEndian.PutUint32(cache[8+16:], 0)
+			}
 			if test.codeView != nil {
 				cacheID = test.cacheID
 				clear(cache[8 : 8+16])
