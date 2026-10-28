@@ -1586,7 +1586,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-046](../SPEC.md#close-identidad-046) | Organization invitations: Owners may invite owner, manager, admin or member; managers may invite manager, admi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de roles |
 | [CLOSE-identidad-047](../SPEC.md#close-identidad-047) | Organization invitations: Public request/accept routes are same-origin, contain no bearer authentication and r… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
 | [CLOSE-identidad-048](../SPEC.md#close-identidad-048) | Compatible invitation acceptance: GET/POST /api/0/accept/{invitation}/{token}/ maps GlitchTip's invitation-acc… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios compatibles |
-| [CLOSE-identidad-049](../SPEC.md#close-identidad-049) | Compatible invitation acceptance: Acceptance owners are pure token/MIME tests, real PostgreSQL migration/parti… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-identidad-049](../SPEC.md#close-identidad-049) | Compatible invitation acceptance: Acceptance owners are pure token/MIME tests, real PostgreSQL migration/parti… | implementada | vigente | SMTP/browser320/768/1024/1440 y reinicio exacto: identity-049-fresh, cotejo abajo |
 | [CLOSE-identidad-050](../SPEC.md#close-identidad-050) | OpenID Connect sign-in: OIDC is disabled unless GOODSENTRY_OIDC_ISSUER, GOODSENTRY_OIDC_CLIENT_ID and GOODSENT… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios OIDC |
 | [CLOSE-identidad-051](../SPEC.md#close-identidad-051) | OpenID Connect sign-in: GET /auth/oidc/start creates random state, nonce and PKCE verifier values, stores an H… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios PKCE |
 | [CLOSE-identidad-052](../SPEC.md#close-identidad-052) | OpenID Connect sign-in: Additive045 stores provider, subject, normalized email, user and login instants with u… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 045 |
@@ -11408,3 +11408,43 @@ quedan subresultados pendientes de023/025; ambos vuelven a vigente.
 
 Siguiente acción: CLOSE-identidad-049, completar los anchos768/1024 del flujo
 SMTP/redención en otra copia aislada, conservando los owners ya pasados.
+
+### Selección de invitaciones049, 2026-10-27
+
+Primer criterio pendiente con dependencias resueltas tras023/025. Se preparará
+otra base/volumen/aplicación en18549, con un receptor SMTP local independiente.
+Se reutiliza el owner de redención existente ampliando sus anchos a
+320/768/1024/1440, sin cambiar producto ni tocar cuentas aceptadas. Siguiente
+acción: comprobar entrega SMTP real, redención por navegador y rechazo de replay,
+inspeccionar capturas y registrar resultados antes de promover049.
+
+### Cotejo completado de invitaciones049, 2026-10-27
+
+La imagen pública `f2a7ca2f…` de `8e95a6dd` se arrancó en otra base
+`closure049_ui`, volumen nuevo y puerto18549 con autenticación requerida.
+Un receptor SMTP independiente local, basado en el sink ya existente, recibió
+el correo real del worker; no hubo backend simulado ni inyección de solicitudes.
+
+El owner canónico `invitation_smtp_browser.mjs` se amplió en una copia acotada
+para ejecutar el flujo completo en320/768/1024/1440. Cuatro correos reales a
+direcciones sintéticas de192–193 caracteres; cuatro redenciones200, sesiones
+member de usuarios2/3/4/5 en la única organización invitada, cuatro replay400.
+Ocho capturas masked se ajustan al viewport, sin errores JS. El token deja la
+URL tras redención y no aparece en storage/history.state. El owner conserva
+sus credenciales. La primaria inspeccionó el controlador y la captura1024,
+escaneó los outputs contra contraseña/tokens y comprobó independientemente las
+cuatro membresías y los cuatro estados accepted en PostgreSQL.
+
+El reinicio app-only mantuvo exactas las103 filas/73 tablas; el login owner
+siguió respondiendo200. Los owners previos de migración/outbox/retry/generación/
+permisos permanecen en `invitations/tests.log` y la aceptación histórica; su
+código no cambió desde54db, y la suite completa de CI8e95 vuelve a ejecutarlos.
+La nueva unidad cierra la cobertura de navegador faltante en la imagen final.
+Comprobantes: `test-results/closure-20261025/identity-049-fresh/`.
+Los EML, tokens, contraseñas y snapshots privados no se publican.
+Subresultados pendientes de049: ninguno; evidencia vigente.
+
+Siguiente selección: CLOSE-sourcemaps-028–031. Contrastar los recibos finales
+011/021 y completar listado/acceso/eliminación de un archivo individual con
+preservación de datos ajenos; vincular la misma versión/proyecto y sus eventos
+al recorrido API/UI, sin inferirlo de borrar una release completa.
