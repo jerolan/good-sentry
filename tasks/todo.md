@@ -12234,3 +12234,30 @@ Siguiente acción concreta: aplicar test-audit, construir RED del lector con la
 muestra .NET10 y un oracle independiente de System.Reflection.Metadata; incluir
 identidad, offsets, documentos y corrupción antes de implementar el decodificador.
 Después integrar eventos y verificar HTTP/PG, aislamiento y SDK real.
+
+### Lector Portable PDB independiente, 2026-10-28
+
+Se agregó un lector acotado de metadata Portable PDB: valida raíz, streams,
+tablas, índices, nombres de documento, enteros comprimidos y puntos de secuencia;
+conserva cambios de documento y puntos ocultos y calcula la identidad GUID/stamp.
+El dispatch reconoce BSJB y evita rescatar texto Breakpad incrustado como símbolo
+nativo. Los límites de tamaño, filas, puntos y trabajo de nombres se comparten
+por lectura; corrupción no devuelve mappings parciales.
+
+La fixture propia compilada con .NET10 coincide con System.Reflection.Metadata
+para dos métodos, cambios de documento y puntos ocultos; una segunda muestra
+compilada con .NET6 coincidió en identidad y seis puntos. El primer RED señaló
+que el lector no existía; otro RED reprodujo el fallback BSJB. Race nativo aprobó
+665 acciones y servidor31; vet y build pasaron. Comprobante:
+test-results/closure-20261025/portable-pdb-reader/.
+
+Todavía no hay selección por proyecto ni enriquecimiento de eventos conectado al
+lector; tampoco se ha determinado la política de búsqueda en intervalos ocultos
+frente a Sentry. La primaria revisó el cambio y los oracles; el worker adicional
+sigue sin créditos. Perfiles de metadata adicionales, PDB embebido, SDK real,
+imagen/CI y native004 integral siguen abiertos o invalidados.
+
+Siguiente acción concreta: contrastar con el consumidor Sentry la resolución de
+puntos ocultos y offsets extremos; diseñar el lookup y conectar la selección de
+archivos y frames administrados con pruebas públicas y HTTP/PG. Luego verificar
+un evento real de Sentry .NET SDK y continuar las demás exigencias del contrato.

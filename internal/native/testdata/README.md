@@ -18,3 +18,10 @@ debug/macho/testdata/gcc-amd64-darwin-exec-debug.base64 fixture from Go
 segment has a different address from its zero-byte __TEXT segment. It
 ensures image-relative lookup uses the executable base instead of the
 debug-data segment. The Go license is included as go-LICENSE.
+
+portable-dotnet10.pdb is an original GoodSentry fixture built from
+portable-dotnet10.cs in Debug configuration with .NET SDK 10.0.402. It contains
+method sequence points with document switches and a hidden point. Its metadata
+was independently inspected with System.Reflection.Metadata and PEReader;
+the expected rows and offsets are recorded in portable-dotnet10-oracle.json.
+The compiled sample program is not required to run the Go tests.

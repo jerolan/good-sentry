@@ -285,7 +285,7 @@ func parseDebugObjectWithCompanions(name string, data []byte, companions pdbComp
 		}
 		return DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}, true
 	}
-	if len(data) >= 2 && bytes.Equal(data[:2], []byte("MZ")) {
+	if len(data) >= 2 && bytes.Equal(data[:2], []byte("MZ")) || bytes.HasPrefix(data, []byte("BSJB")) {
 		return DebugObject{}, false
 	}
 	key, functions := ParseObjectSymbols(name, data)

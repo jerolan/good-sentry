@@ -1,0 +1,61 @@
+{
+  "debug": [
+    {
+      "guid": "c6f075cc-4407-4e01-aeee-5d0399a7d7d1",
+      "Age": 1,
+      "Stamp": 2961864952,
+      "MajorVersion": 256,
+      "MinorVersion": 20557
+    }
+  ],
+  "sha256": "1f50cfdb3d2e0707e767cf5f606fc8e049fd9e43802b1adc1df88af2bb9e6d74",
+  "id": "CC75F0C60744014EAEEE5D0399A7D7D1F8788AB0",
+  "methods": [
+    {
+      "row": 1,
+      "points": [
+        {
+          "il": 0,
+          "line": 5,
+          "file": "/tmp/goodsentry-portable-proof/special/Program.cs",
+          "hidden": false
+        },
+        {
+          "il": 1,
+          "line": 100,
+          "file": "/tmp/goodsentry-portable-proof/special/alpha.cs",
+          "hidden": false
+        },
+        {
+          "il": 5,
+          "line": 0,
+          "file": "/tmp/goodsentry-portable-proof/special/alpha.cs",
+          "hidden": true
+        },
+        {
+          "il": 9,
+          "line": 200,
+          "file": "/tmp/goodsentry-portable-proof/special/beta.cs",
+          "hidden": false
+        },
+        {
+          "il": 15,
+          "line": 13,
+          "file": "/tmp/goodsentry-portable-proof/special/Program.cs",
+          "hidden": false
+        }
+      ]
+    },
+    {
+      "row": 2,
+      "points": [
+        {
+          "il": 0,
+          "line": 14,
+          "file": "/tmp/goodsentry-portable-proof/special/Program.cs",
+          "hidden": false
+        }
+      ]
+    }
+  ]
+}
