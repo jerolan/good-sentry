@@ -3812,6 +3812,11 @@ Siguiente acción: cotejar todos los subresultados de 033 y obtener CI que
 incluya el ajuste de test, sin presentar el CI anterior como coincidente con
 ese cambio. El cierre de 033 y del producto sigue pendiente.
 
+La integración completa con `-race` de la revisión de test ajustada está en
+curso en `closure033_migration`, sesión 66384; salida privada
+`/tmp/goodsentry-closure-033/integration-stable-race.log`. Siguiente acción:
+recoger su resultado antes de reconciliar CI y los criterios afectados.
+
 ### Selección paralela independiente: CLOSE-errores-047
 
 Mientras termina la integración de 033 en `closure033_migration`, iniciar la
