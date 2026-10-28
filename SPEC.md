@@ -1138,9 +1138,12 @@ the embedded identity; different contents claiming one identity are ambiguous.
 
 For captured managed frames with `addr_mode:rel:N`, use N to select a
 `pe_dotnet` image in `debug_meta.images`, `function_id` as its one-based
-MethodDef row and `instruction_addr` as function-relative IL offset. Map that
-pair to a source document and line, never to a native RVA or a method name
-invented from the Portable PDB. Enrich applicable top-level, exception and
+MethodDef row and `instruction_addr` as function-relative IL offset. Like
+Sentry's Portable PDB cache, omit hidden points from lookup and use the last
+visible point at or before the offset within that same method. An offset before
+the first visible point has no match; an offset after the last retains the last
+point. Map that pair to a source document and line, never to a native RVA or a
+method name invented from the Portable PDB. Enrich applicable top-level, exception and
 thread stacktraces before normalization; preserve existing source fields and
 all unrelated event data, and do not attach a line to a conflicting existing
 source path. Missing files, identities, metadata or source points leave frames
@@ -1156,7 +1159,9 @@ controls, archive and cross-project controls, and HTTP/PostgreSQL event tests.
 Prove a real Sentry .NET SDK event separately before final acceptance. The
 formats and frame fields follow [.NET Portable PDB metadata](https://github.com/dotnet/runtime/blob/main/docs/design/specs/PortablePdb-Metadata.md),
 [.NET PE debug entries](https://github.com/dotnet/runtime/blob/main/docs/design/specs/PE-COFF.md)
-and the [Sentry Portable PDB protocol](https://github.com/getsentry/rfcs/blob/main/text/0013-portable-pdb.md).
+the [Sentry Portable PDB protocol](https://github.com/getsentry/rfcs/blob/main/text/0013-portable-pdb.md),
+and the Symbolic 13.9.0 [cache writer](https://github.com/getsentry/symbolic/blob/13.9.0/symbolic-ppdb/src/cache/writer.rs)
+and [lookup](https://github.com/getsentry/symbolic/blob/13.9.0/symbolic-ppdb/src/cache/lookup.rs).
 
 <a id="close-nativo-005"></a>
 

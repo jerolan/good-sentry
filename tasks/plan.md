@@ -33,8 +33,8 @@ specified old DBI/C7 direct-map procedure profile has local owned and
 HTTP/PG evidence. The documented ST source-line layout now also has local C7
 and V50 evidence, including unknown root and file bounds. A real VC4 pair and
 non-direct segment mapping evidence remain open. A standalone Portable PDB
-metadata reader now has local .NET6/.NET10 oracle evidence; establish hidden
-point lookup semantics and integrate the project-scoped managed event route.
+metadata reader now has local .NET6/.NET10 oracle evidence; implement the
+verified Symbolic hidden-point lookup and project-scoped managed event route.
 Keep other old records, unknown profiles and complete acceptance open. Keep unwinding
 and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate

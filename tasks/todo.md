@@ -12261,3 +12261,19 @@ Siguiente acción concreta: contrastar con el consumidor Sentry la resolución d
 puntos ocultos y offsets extremos; diseñar el lookup y conectar la selección de
 archivos y frames administrados con pruebas públicas y HTTP/PG. Luego verificar
 un evento real de Sentry .NET SDK y continuar las demás exigencias del contrato.
+
+### Búsqueda Portable PDB contrastada con Sentry, 2026-10-28
+
+Se inspeccionó el paquete público `symbolic-ppdb`13.9.0 (SHA256
+`1949ab1ac6caf9e1fde03d5bd35570727b2839fb399737171784ecf7dc4baa0e`):
+su escritor omite puntos ocultos y su búsqueda elige el último punto visible
+con offset no mayor al solicitado en el mismo método. Antes del primer punto
+no hay resultado; después del último se conserva el último, sin saltar entre
+métodos. SPEC native004 recoge esta regla y enlaza el código publicado. El
+lector actual conserva los puntos ocultos para decodificación, pero todavía no
+implementa ese lookup ni lo conecta con eventos.
+
+Siguiente acción concreta: añadir RED del lookup con puntos ocultos, métodos
+vacíos y límites; implementar selección de PDB por proyecto/identidad y frames
+administrados, con controles de archivos anidados, campos existentes, HTTP/PG y
+SDK .NET real. Mantener el resto de native004 abierto.
