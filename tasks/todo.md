@@ -12406,5 +12406,10 @@ inválidos no impiden la captura ni aportan símbolos parciales. La evidencia
 requerida incluye un PE real, oracle .NET, corrupción, archivos comprimidos,
 aislamiento HTTP y conservación del evento real del SDK.
 
+SPEC también limita a128MiB la suma declarada de expansiones embebidas
+intentadas por evento; sobrepasarla evita todo enriquecimiento Portable. Un
+archivo comprimido inválido descarta tanto sus candidatos como su aporte al
+presupuesto, siguiendo la regla existente de ausencia de resultados parciales.
+
 Siguiente acción concreta: aplicar test-audit, fijar RED con PE real y controles
 de formato y límites, e implementar el extractor y su integración por proyecto.

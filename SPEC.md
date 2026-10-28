@@ -1172,7 +1172,11 @@ including a regular member of the same bounded archives. Read the PE32/PE32+
 debug directory through checked, uniquely file-backed ranges. Accept one
 version1 embedded Portable PDB entry with zero stamp, `MPDB` signature and a
 nonzero declared expanded size at most64MiB; decode the raw Deflate stream to
-exactly that size and reject trailing or corrupt bytes. Parse the result with
+exactly that size and reject trailing or corrupt bytes. Bound cumulative
+declared embedded-PDB expansion to128MiB per event across scanned project
+files, including candidates that later prove invalid; exceeding the budget
+leaves the event without Portable enrichment. Discard the contribution of an
+invalid archive together with its candidates. Parse the result with
 the same standalone reader and include it in the same shared point and name
 budgets and ambiguity rules. If a Portable CodeView entry is present, its
 GUID and debug-directory stamp must match the embedded PDB identity; reject
