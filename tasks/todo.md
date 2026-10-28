@@ -1685,7 +1685,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-081](../SPEC.md#close-errores-081) | Compatible individual issue changes: Extract the existing native validation and mutation body into validateIss… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-082](../SPEC.md#close-errores-082) | Compatible individual issue changes: Write transactions retain native ReadCommitted and fresh-after-wait behav… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-083](../SPEC.md#close-errores-083) | Compatible individual issue changes: Owning tests: PostgreSQL covers project/organization/current-member gates… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-errores-084](../SPEC.md#close-errores-084) | Compatible individual issue changes: Acceptance requires actual official SDK errors controlled through restric… | implementada (local) | bloqueada | CI público de la revisión con ajuste del test; cotejo final por subresultado pendiente |
+| [CLOSE-errores-084](../SPEC.md#close-errores-084) | Compatible individual issue changes: Acceptance requires actual official SDK errors controlled through restric… | implementada | vigente | Cotejo por subresultado 2026-10-27 abajo; imagen/CI públicos 8e95a6dd verificados |
 | [CLOSE-errores-085](../SPEC.md#close-errores-085) | Compatible issue summaries and real analytics: Deliver organization/project issue lists, global/organization i… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-086](../SPEC.md#close-errores-086) | Compatible issue summaries and real analytics: Register exact GET /api/0/organizations/{org}/issues/, /api/0/p… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-087](../SPEC.md#close-errores-087) | Compatible issue summaries and real analytics: The organization short-ID lookup returns an object with organiz… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11142,3 +11142,36 @@ Los contenedores usados para extraer se eliminaron; no se modificó ningún runt
 Siguiente acción: terminar el cotejo por subresultado de 033/047/084/028,
 registrar cualquier hueco y después seleccionar CLOSE-operacion-002 y -100.
 Los criterios aún no se promueven a vigentes por la mera identidad de imagen.
+
+### Cotejo final de CLOSE-errores-084, 2026-10-27
+
+El contraste por subresultado confirmó SDK Node 11.7.0 y writer restringido,
+8 acuses y siete identidades, políticas/asignación/revocación, credenciales y
+borradores en Chromium a 320/768/1440, migración 017→079 con las 31 filas
+previas preservadas y reinicio final exacto de 114 filas. Owners y resultados
+están en `errores-084-fresh/{owners,upgrade}/`. La imagen, el árbol público y
+los checks completos se vinculan a `8e95a6dd` mediante `public-8e95/`; el
+filesystem de la imagen es idéntico al de la aceptación original.
+
+El cotejo detectó que faltaba comparar respuestas nativas completas. Se creó
+otra base `closure084_native`, volumen `gsclosure084_native` y puerto 18586,
+sin alterar las copias previas. El SDK oficial capturó error/adjunto en la
+imagen reconstruida `3e0f605` con 17 migraciones. La imagen pública final
+actualizó a 079 y conservó los 33 registros anteriores. Listado y detalle
+conservaron exactamente sus 116 valores originales comparables; solo se
+excluyó `detail.analytics`, dependiente del reloj. Las seis adiciones de
+Feedback se comprobaron explícitamente con arrays vacíos, conteos cero y
+`category:error`, como exigen 186/191/193; no se ignoraron campos de negocio.
+
+El primer controlador pidió una ruta nativa de adjuntos que aún no existía en
+017 y recibió 404 antes de migrar. Se conservó la misma base y se añadió una
+sesión de fixture antes de ambas instantáneas. El segundo comparador detectó
+las adiciones de Feedback como diferencias de forma; el comprobador final
+exige todos los campos antiguos y valida esas seis adiciones. Ambos intentos
+se conservan; no hubo reparación de producto ni reinicio de datos para pasar.
+
+Pruebas, respuestas sintéticas y hashes: `errores-084-fresh/native-compare/`.
+Los snapshots completos y configuración permanecen privados en `/tmp`.
+Subresultados pendientes de 084: ninguno. Evidencia vigente sobre la candidata
+pública identificada; esto no cierra el producto. Siguiente acción: completar
+el cotejo y persistencia del cuerpo anidado de CLOSE-logs-028.
