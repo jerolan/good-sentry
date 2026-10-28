@@ -1423,8 +1423,9 @@ and [LLVM ordinals](https://github.com/llvm/llvm-project/blob/main/llvm/include/
 
 For pre-VC70 PDB Info, consume a present DBI global symbol-record stream as a
 source-free fallback for `S_PUB32_ST` and `S_PUB32_16t`. Their names are
-length-prefixed; validate their record extents, known flags and at most three
-zero padding bytes. Legacy `S_PROCREF_ST`, `S_DATAREF_ST` and `S_LPROCREF_ST`
+length-prefixed; validate their record extents and at most three zero padding
+bytes. Validate known flags on `S_PUB32_ST`; the 16-bit field in
+`S_PUB32_16t` is an opaque type index, not a flag mask. Legacy `S_PROCREF_ST`, `S_DATAREF_ST` and `S_LPROCREF_ST`
 have an additional aligned length-prefixed name outside the record length;
 consume that name with checked bounds before the next record. Bound the scan
 to1,000,000 records and the existing public-symbol limit. Resolve public names

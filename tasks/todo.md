@@ -12609,3 +12609,7 @@ no directos; no interpreta direcciones mediante selectores desconocidos.
 Siguiente acción concreta: preparar RED público/HTTP para nombres ST, ambas
 estructuras, nombres adicionales y controles de rango y prioridad; implementar
 el lector y compararlo con un oracle independiente de la muestra MSF2.
+
+La definición primaria de `PUBSYM32_16t` identifica su campo de16 bits como
+índice de tipo. SPEC aclara que se conserva opaco; no se le aplica la máscara
+de flags de `S_PUB32_ST`. La muestra real ejercita ST, no la variante16t.
