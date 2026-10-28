@@ -12336,3 +12336,24 @@ Siguiente acción concreta: probar la captura emitida por el SDK real de Sentry
 .NET con una aplicación y su PDB independiente; comprobar la identidad, los
 campos enviados y el resultado persistido, y resolver cualquier diferencia con
 el contrato. Añadir controles de límites agregados antes de acreditar esta ruta.
+
+### Captura real del SDK Sentry .NET, 2026-10-28
+
+Una aplicación propia compilada con .NET10 y Sentry .NET6.12.1 emitió un sobre
+real con su PDB ausente en ejecución. El frame de `ThrowProbe` contenía imagen
+`pe_dotnet`, método3 y offset IL10. System.Reflection.Metadata leyó en el PDB
+independiente la línea18 y el GUID/stamp correspondiente. Con ese PDB guardado
+en el proyecto, la ingesta HTTP/PG persistió el frame en `Program.cs:18` tanto
+para el sobre íntegro recibido del SDK como para una muestra persistente de sus
+campos relevantes. Ambas pruebas pasaron con race; vet de servidor pasó.
+Comprobante: test-results/closure-20261025/portable-pdb-real-sdk/; la muestra,
+PDB y fuente están en internal/server/testdata/portable-sdk/.
+
+El sobre íntegro se usó localmente sin incluir datos de entorno en el repositorio;
+el comprobante conserva su hash. Esta evidencia acredita el recorrido Portable
+independiente probado, no PDB embebido ni native004 completo. Permanecen los
+controles de límites agregados y la auditoría integral, imagen y CI finales.
+
+Siguiente acción concreta: construir entradas válidas que excedan los límites
+agregados de puntos y nombres entre identidades seleccionadas y demostrar que
+la captura continúa sin enriquecimiento parcial; después continuar native004.

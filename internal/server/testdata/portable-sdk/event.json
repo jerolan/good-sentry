@@ -1,0 +1,63 @@
+{
+  "event_id": "3a788ef7e8df40adb5393ecff6f1d8e1",
+  "platform": "csharp",
+  "sdk": {
+    "packages": [
+      {
+        "name": "nuget:sentry.dotnet",
+        "version": "6.12.1"
+      }
+    ],
+    "name": "sentry.dotnet",
+    "version": "6.12.1"
+  },
+  "debug_meta": {
+    "images": [
+      {
+        "type": "pe_dotnet",
+        "debug_id": "f47611dd-a29f-4fba-a19a-94054bf3fca4-d34b6eb7",
+        "debug_checksum": "SHA256:dd1176f49fa2bacf219a94054bf3fca4b76e4bd3e1810965f51fa54fcdbfc9dd",
+        "debug_file": "/tmp/goodsentry-sentry-dotnet/app/obj/Debug/net10.0/Probe.pdb",
+        "code_id": "94D2AC5C8000",
+        "code_file": "/tmp/goodsentry-sentry-dotnet/run/Probe.dll"
+      }
+    ]
+  },
+  "exception": {
+    "values": [
+      {
+        "type": "System.InvalidOperationException",
+        "value": "portable-sdk-probe",
+        "module": "System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+        "thread_id": 1,
+        "stacktrace": {
+          "frames": [
+            {
+              "function": "async Task Program.Main()",
+              "in_app": true,
+              "package": "Probe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "instruction_addr": "0x43",
+              "addr_mode": "rel:0",
+              "function_id": "0xb"
+            },
+            {
+              "function": "void Program.ThrowProbe()",
+              "in_app": true,
+              "package": "Probe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "instruction_addr": "0xa",
+              "addr_mode": "rel:0",
+              "function_id": "0x3"
+            }
+          ]
+        },
+        "mechanism": {
+          "type": "generic",
+          "handled": true,
+          "data": {
+            "HResult": "0x80131509"
+          }
+        }
+      }
+    ]
+  }
+}

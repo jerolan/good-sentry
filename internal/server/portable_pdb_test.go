@@ -3,6 +3,7 @@
 package server
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -13,6 +14,82 @@ import (
 
 	"goodsentry/internal/store"
 )
+
+// The fixture was emitted by Sentry .NET 6.12.1 with Probe.pdb absent at
+// runtime. The optional envelope path also exercises the complete SDK capture.
+func TestPortablePDBRealDotnetSDKCapture(t *testing.T) {
+	f := newResolutionHTTPFixture(t)
+	pdb, err := os.ReadFile("testdata/portable-sdk/Probe.pdb")
+	if err != nil {
+		t.Fatal(err)
+	}
+	event, err := os.ReadFile("testdata/portable-sdk/event.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var original struct {
+		ID string `json:"event_id"`
+	}
+	if err = json.Unmarshal(event, &original); err != nil || original.ID == "" {
+		t.Fatalf("invalid SDK fixture: %v", err)
+	}
+	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+	digest := sha1.Sum(pdb)
+	const debugID = "f47611dd-a29f-4fba-a19a-94054bf3fca4-d34b6eb7"
+	if _, err = f.db.SaveDebugFile(f.ctx, access, f.project.ID, "Probe.pdb", "portablepdb", debugID, "unknown", "Probe.pdb", hex.EncodeToString(digest[:]), nil, nil, pdb); err != nil {
+		t.Fatal(err)
+	}
+	var compact bytes.Buffer
+	if err = json.Compact(&compact, event); err != nil {
+		t.Fatal(err)
+	}
+	body := append([]byte("{}\n{\"type\":\"event\"}\n"), compact.Bytes()...)
+	if envelopePath := os.Getenv("GOODSENTRY_DOTNET_ENVELOPE"); envelopePath != "" {
+		body, err = os.ReadFile(envelopePath)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	endpoint := f.server.URL + "/good/api/" + f.project.ID + "/envelope/?sentry_version=7&sentry_key=" + f.project.PublicKey
+	resp, err := http.Post(endpoint, "text/plain", bytes.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("SDK capture=%d", resp.StatusCode)
+	}
+	var stored []byte
+	if err = f.sql.QueryRow(f.ctx, `SELECT data FROM events WHERE project_id=$1::bigint AND event_id=$2`, f.project.ID, original.ID).Scan(&stored); err != nil {
+		t.Fatal(err)
+	}
+	var result struct {
+		Exception struct {
+			Values []struct {
+				Stacktrace struct {
+					Frames []struct {
+						Function, Filename string
+						Line               int `json:"lineno"`
+					} `json:"frames"`
+				} `json:"stacktrace"`
+			} `json:"values"`
+		} `json:"exception"`
+	}
+	if err = json.Unmarshal(stored, &result); err != nil {
+		t.Fatal(err)
+	}
+	for _, value := range result.Exception.Values {
+		for _, frame := range value.Stacktrace.Frames {
+			if strings.Contains(frame.Function, "ThrowProbe") {
+				if !strings.HasSuffix(frame.Filename, "/Program.cs") || frame.Line != 18 {
+					t.Fatalf("SDK frame: %+v", frame)
+				}
+				return
+			}
+		}
+	}
+	t.Fatal("SDK probe frame missing")
+}
 
 func TestPortablePDBManagedEnvelopeProjectIsolation(t *testing.T) {
 	data, err := os.ReadFile("../native/testdata/portable-dotnet10.pdb")
