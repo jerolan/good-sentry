@@ -304,29 +304,87 @@ func pdbMSFWithGlobalSymbols(records []byte) *pdbMSFFile {
 	}
 }
 
-func TestParseNativePDBC13SourceLines(t *testing.T) {
+func TestParseNativePDBSourceLines(t *testing.T) {
+	type sourceFrame struct {
+		offset   uint64
+		function string
+		file     string
+		line     int
+	}
+	modern := []sourceFrame{
+		{offset: 0x1015, function: "CrashFunction", file: `C:\src\crash.cc`, line: 42},
+		{offset: 0x1025, function: "CrashFunction", file: `C:\src\crash.cc`, line: 43},
+	}
+	c11 := nativepdb.WithC11SourceLines()
+	nonASCII := append([]byte(nil), c11.Data...)
+	firstFile := c11.C11Start + int(binary.LittleEndian.Uint32(nonASCII[c11.C11Start+4:]))
+	nonASCII[firstFile+16+1+7] = 0xe9
 	for _, test := range []struct {
-		name         string
-		localStrings bool
+		name           string
+		data           []byte
+		debugID        string
+		frames         []sourceFrame
+		duplicateLines []int
 	}{
-		{name: "module string table", localStrings: true},
-		{name: "global PDB names stream"},
+		{name: "C13 module string table", data: nativepdb.WithSourceLines(true).Data, debugID: "5a9832e5287241c1838ed98914e9b7ff1", frames: modern},
+		{name: "C13 global PDB names stream", data: nativepdb.WithSourceLines(false).Data, debugID: "5a9832e5287241c1838ed98914e9b7ff1", frames: modern},
+		{name: "C11 inclusive spans duplicate policy and gaps", data: c11.Data, debugID: "65ae75631", duplicateLines: []int{42, 43}, frames: []sourceFrame{
+			{offset: 0x1010, function: "CrashFunction", file: `C:\src\first.cc`, line: 42},
+			{offset: 0x1013, function: "CrashFunction", file: `C:\src\first.cc`, line: 42},
+			{offset: 0x1014, function: "CrashFunction", file: `C:\src\first.cc`, line: 65535},
+			{offset: 0x1017, function: "CrashFunction", file: `C:\src\first.cc`, line: 65535},
+			{offset: 0x1018, function: "CrashFunction", line: -1},
+			{offset: 0x101b, function: "CrashFunction", line: -1},
+			{offset: 0x101c, function: "CrashFunction", file: `C:\src\first.cc`, line: 44},
+			{offset: 0x101f, function: "CrashFunction", file: `C:\src\first.cc`, line: 44},
+			{offset: 0x1020, function: "CrashFunction", line: -1},
+			{offset: 0x1027, function: "CrashFunction", line: -1},
+			{offset: 0x1028, function: "CrashFunction", file: `C:\src\second.cc`, line: 52},
+			{offset: 0x102f, function: "CrashFunction", file: `C:\src\second.cc`, line: 52},
+			{offset: 0x1030},
+			{offset: 0x1085, function: "OtherFunction", line: -1},
+		}},
+		{name: "C11 non ASCII ST path keeps procedures and other files", data: nonASCII, debugID: "65ae75631", frames: []sourceFrame{
+			{offset: 0x1010, function: "CrashFunction", line: -1},
+			{offset: 0x101f, function: "CrashFunction", line: -1},
+			{offset: 0x1028, function: "CrashFunction", file: `C:\src\second.cc`, line: 52},
+		}},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			fixture := nativepdb.WithSourceLines(test.localStrings)
-			objects := ParseDebugObjects("crash.pdb", fixture.Data)
+			objects := ParseDebugObjects("crash.pdb", test.data)
 			if len(objects) != 1 {
 				t.Fatalf("parsed PDB objects=%d, want one", len(objects))
 			}
+			if objects[0].DebugID != test.debugID {
+				t.Fatalf("source PDB identity=%q, want %q", objects[0].DebugID, test.debugID)
+			}
+			if len(test.duplicateLines) > 0 {
+				var lines []int
+				for _, function := range objects[0].Functions {
+					if function.Start == 0x1010 && function.End == 0x1014 && function.Name == "CrashFunction" && function.File == `C:\src\first.cc` {
+						lines = append(lines, function.Line)
+					}
+				}
+				if len(lines) != len(test.duplicateLines) {
+					t.Fatalf("duplicate source lines=%v, want %v", lines, test.duplicateLines)
+				}
+				for i, line := range lines {
+					if line != test.duplicateLines[i] {
+						t.Fatalf("duplicate source lines=%v, want %v", lines, test.duplicateLines)
+					}
+				}
+			}
 			crash := Crash{
-				Modules: []Module{{Name: "crash.exe", Base: 0x140000000, Size: 0x10000, DebugID: "5A9832E5287241C1838ED98914E9B7FF1"}},
-				Frames:  []Frame{{Instruction: 0x140001015, Module: "crash.exe"}, {Instruction: 0x140001025, Module: "crash.exe"}},
+				Modules: []Module{{Name: "crash.exe", Base: 0x140000000, Size: 0x10000, DebugID: test.debugID}},
+			}
+			for _, frame := range test.frames {
+				crash.Frames = append(crash.Frames, Frame{Instruction: 0x140000000 + frame.offset, Module: "crash.exe"})
 			}
 			Symbolicate(&crash, SymbolSet{objects[0].DebugID: objects[0].Functions})
-			for i, wantLine := range []int{42, 43} {
+			for i, want := range test.frames {
 				frame := crash.Frames[i]
-				if frame.Function != "CrashFunction" || frame.File != `C:\src\crash.cc` || frame.Line != wantLine {
-					t.Fatalf("source frame[%d]=%+v, want CrashFunction C:\\src\\crash.cc:%d", i, frame, wantLine)
+				if frame.Function != want.function || frame.File != want.file || frame.Line != want.line {
+					t.Errorf("source frame at %#x=%+v, want %s %s:%d", want.offset, frame, want.function, want.file, want.line)
 				}
 			}
 		})
@@ -577,25 +635,37 @@ func pdbTestCodeViewRecord(kind uint16, body []byte) []byte {
 	return record.Bytes()
 }
 
-func TestParseNativePDBC13KeepsSourceLinesWithinTheirModule(t *testing.T) {
-	fixture := nativepdb.WithMultipleSourceLineModules()
-	objects := ParseDebugObjects("crash.pdb", fixture.Data)
-	if len(objects) != 1 {
-		t.Fatalf("parsed PDB objects=%d, want one", len(objects))
-	}
-	crash := Crash{
-		Modules: []Module{{Name: "crash.exe", Base: 0x140000000, Size: 0x10000, DebugID: "5A9832E5287241C1838ED98914E9B7FF1"}},
-		Frames:  []Frame{{Instruction: 0x140001015, Module: "crash.exe"}, {Instruction: 0x140001045, Module: "crash.exe"}},
-	}
-	Symbolicate(&crash, SymbolSet{objects[0].DebugID: objects[0].Functions})
-	want := []struct {
-		function string
-		line     int
-	}{{"CrashFunction", 42}, {"OtherModuleFunction", 52}}
-	for i, frame := range crash.Frames {
-		if frame.Function != want[i].function || frame.File != `C:\src\crash.cc` || frame.Line != want[i].line {
-			t.Fatalf("multi-module source frame[%d]=%+v, want %s C:\\src\\crash.cc:%d", i, frame, want[i].function, want[i].line)
-		}
+func TestParseNativePDBKeepsSourceLinesWithinTheirModule(t *testing.T) {
+	for _, test := range []struct {
+		name, debugID string
+		data          []byte
+	}{
+		{name: "C13", debugID: "5a9832e5287241c1838ed98914e9b7ff1", data: nativepdb.WithMultipleSourceLineModules().Data},
+		{name: "C11", debugID: "65ae75631", data: nativepdb.WithMultipleC11SourceLineModules().Data},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			objects := ParseDebugObjects("crash.pdb", test.data)
+			if len(objects) != 1 {
+				t.Fatalf("parsed PDB objects=%d, want one", len(objects))
+			}
+			if objects[0].DebugID != test.debugID {
+				t.Fatalf("multi-module identity=%q, want %q", objects[0].DebugID, test.debugID)
+			}
+			crash := Crash{
+				Modules: []Module{{Name: "crash.exe", Base: 0x140000000, Size: 0x10000, DebugID: test.debugID}},
+				Frames:  []Frame{{Instruction: 0x140001015, Module: "crash.exe"}, {Instruction: 0x140001045, Module: "crash.exe"}},
+			}
+			Symbolicate(&crash, SymbolSet{objects[0].DebugID: objects[0].Functions})
+			want := []struct {
+				function string
+				line     int
+			}{{"CrashFunction", 42}, {"OtherModuleFunction", 52}}
+			for i, frame := range crash.Frames {
+				if frame.Function != want[i].function || frame.File != `C:\src\crash.cc` || frame.Line != want[i].line {
+					t.Errorf("multi-module source frame[%d]=%+v, want %s C:\\src\\crash.cc:%d", i, frame, want[i].function, want[i].line)
+				}
+			}
+		})
 	}
 }
 
@@ -627,9 +697,17 @@ func TestParsePDBC13LineRangesStayWithinTheirFileBlocks(t *testing.T) {
 	}
 }
 
-func TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols(t *testing.T) {
+func TestParseNativePDBSourceLinesRejectsMalformedInputWithoutPartialSymbols(t *testing.T) {
 	global := nativepdb.WithSourceLines(false)
 	local := nativepdb.WithSourceLines(true)
+	c11 := nativepdb.WithC11SourceLines()
+	root := c11.C11Start
+	firstFile := root + int(binary.LittleEndian.Uint32(c11.Data[root+4:]))
+	secondFile := root + int(binary.LittleEndian.Uint32(c11.Data[root+8:]))
+	firstTable := root + int(binary.LittleEndian.Uint32(c11.Data[firstFile+4:]))
+	secondTable := root + int(binary.LittleEndian.Uint32(c11.Data[secondFile+4:]))
+	multi := nativepdb.WithMultipleC11SourceLineModules()
+	fallbackText := []byte("\nFUNC 10 10 0 UnexpectedFallback\n")
 	tests := []struct {
 		name    string
 		fixture nativepdb.Fixture
@@ -645,6 +723,47 @@ func TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols(t *testing.
 		}},
 		{name: "missing global names stream", fixture: global, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[global.NamesStreamIndexOffset:], ^uint32(0)) }},
 		{name: "missing source filename", fixture: global, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[global.C13Start+8+56:], ^uint32(0)) }},
+		{name: "malformed MSF7 C13 cannot fall back to embedded Breakpad text", fixture: local, mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[local.LineSubsectionLength:], ^uint32(0))
+			copy(data[len(data)-64:], fallbackText)
+		}},
+		{name: "malformed MSF2 C11 cannot fall back to embedded Breakpad text", fixture: c11.Fixture, mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[firstFile+4:], 0xfffffffc)
+			copy(data[len(data)-64:], fallbackText)
+		}},
+		{name: "C11 extent unaligned", fixture: c11.Fixture, mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[c11.DBIBlock*1024+64+40:], uint32(c11.C11Size-1))
+		}},
+		{name: "C11 root file array truncated", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[root:], 0xffff) }},
+		{name: "C11 root segment array truncated", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[root+2:], 0xffff) }},
+		{name: "C11 file reference outside extent", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[root+4:], 0xfffffffc) }},
+		{name: "C11 file reference unaligned", fixture: c11.Fixture, mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[root+4:], uint32(firstFile-root+1))
+		}},
+		{name: "C11 root range reversed", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[root+12:], 0x40) }},
+		{name: "C11 root last byte outside section", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[root+16:], 0x100) }},
+		{name: "C11 root section unknown", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[root+20:], 2) }},
+		{name: "C11 file contribution arrays truncated", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[firstFile:], 0xffff) }},
+		{name: "C11 line table reference outside extent", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[firstFile+4:], 0xfffffffc) }},
+		{name: "C11 line table reference unaligned", fixture: c11.Fixture, mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[firstFile+4:], uint32(firstTable-root+1))
+		}},
+		{name: "C11 file contribution reversed", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[firstFile+8:], 0x20) }},
+		{name: "C11 file contribution outside root coverage", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[secondFile+12:], 0x40) }},
+		{name: "C11 ST filename empty", fixture: c11.Fixture, mutate: func(data []byte) { data[firstFile+16] = 0 }},
+		{name: "C11 ST filename truncated", fixture: c11.Fixture, mutate: func(data []byte) { data[firstFile+16] = 255 }},
+		{name: "C11 ST filename embedded NUL", fixture: c11.Fixture, mutate: func(data []byte) { data[firstFile+17] = 0 }},
+		{name: "C11 line table section unknown", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[firstTable:], 2) }},
+		{name: "C11 line table pairs truncated", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[firstTable+2:], 0xffff) }},
+		{name: "C11 line offset outside contribution", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[firstTable+4:], 0xf) }},
+		{name: "C11 decreasing line offsets", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[firstTable+4+5*4:], 0x17) }},
+		{name: "C11 late file reference invalidates earlier symbols", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[secondFile+4:], 0xfffffffc) }},
+		{name: "C11 late line range invalidates earlier symbols", fixture: c11.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[secondTable+8:], 0x40) }},
+		{name: "C11 late module reference invalidates earlier symbols", fixture: multi.Fixture, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[multi.SecondC11Start+4:], 0xfffffffc) }},
+		{name: "C11 non ASCII filename still validates line arrays", fixture: c11.Fixture, mutate: func(data []byte) {
+			data[firstFile+17+7] = 0xe9
+			binary.LittleEndian.PutUint16(data[firstTable+2:], 0xffff)
+		}},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -657,7 +776,7 @@ func TestParseNativePDBC13RejectsMalformedInputWithoutPartialSymbols(t *testing.
 	}
 }
 
-func TestParsePDBC13EnforcesRecordBudgets(t *testing.T) {
+func TestParsePDBSourceLinesEnforceRecordBudgets(t *testing.T) {
 	fixture := nativepdb.WithSourceLines(true)
 	lineData := fixture.Data[fixture.C13Start+8 : fixture.C13Start+8+48]
 	sections := []pdbSection{{virtualSize: 0x100, virtualAddr: 0x1000, rawSize: 0x100, flags: 0x20000000}}
@@ -693,6 +812,60 @@ func TestParsePDBC13EnforcesRecordBudgets(t *testing.T) {
 		files := 0
 		if _, ok := parsePDBC13Checksums(data, []byte{0, 'x', 0}, &files); ok {
 			t.Fatal("parser accepted more checksum files than the per-PDB budget")
+		}
+	})
+	c11 := nativepdb.WithC11SourceLines()
+	c11Data := c11.Data[c11.C11Start : c11.C11Start+c11.C11Size]
+	procedures := []SymbolFunction{{Start: 0x1010, End: 0x1030, Name: "CrashFunction", Line: -1}}
+	for _, test := range []struct {
+		name   string
+		budget pdbSourceBudget
+	}{
+		{name: "C11 cumulative bytes", budget: pdbSourceBudget{c11Bytes: maxPDBBytes - len(c11Data)}},
+		{name: "C11 cumulative source files", budget: pdbSourceBudget{files: maxPDBSourceFiles - 2}},
+		{name: "C11 cumulative line pairs", budget: pdbSourceBudget{lines: maxPDBSourceLines - 8}},
+		{name: "C11 cumulative mappings", budget: pdbSourceBudget{mappings: maxPDBLineMappings - 5}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			budget := test.budget
+			if mapped, ok := parsePDBC11(c11Data, sections, procedures, &budget); !ok || len(mapped) != 5 {
+				t.Fatalf("last available capacity rejected valid C11 source: mappings=%d accepted=%t", len(mapped), ok)
+			}
+			if mapped, ok := parsePDBC11(c11Data, sections, procedures, &budget); ok || len(mapped) != 0 {
+				t.Fatalf("repeated C11 exceeded cumulative budget: mappings=%d accepted=%t", len(mapped), ok)
+			}
+		})
+	}
+	t.Run("C11 empty tables consume references", func(t *testing.T) {
+		data := append([]byte(nil), c11Data...)
+		for _, fileField := range []int{4, 8} {
+			file := int(binary.LittleEndian.Uint32(data[fileField:]))
+			table := int(binary.LittleEndian.Uint32(data[file+4:]))
+			binary.LittleEndian.PutUint16(data[table+2:], 0)
+		}
+		for _, test := range []struct {
+			remaining int
+			accepted  bool
+		}{{remaining: 3, accepted: true}, {remaining: 2}} {
+			budget := pdbSourceBudget{c11References: maxPDBC11References - test.remaining}
+			mapped, ok := parsePDBC11(data, sections, procedures, &budget)
+			if ok != test.accepted || len(mapped) != 0 {
+				t.Fatalf("empty tables with %d references remaining: accepted=%t mappings=%d", test.remaining, ok, len(mapped))
+			}
+		}
+	})
+	t.Run("C11 root ranges consume references without files", func(t *testing.T) {
+		data := make([]byte, 16)
+		binary.LittleEndian.PutUint16(data[2:], 1)
+		binary.LittleEndian.PutUint32(data[4:], 0x10)
+		binary.LittleEndian.PutUint32(data[8:], 0x3f)
+		binary.LittleEndian.PutUint16(data[12:], 1)
+		budget := pdbSourceBudget{c11References: maxPDBC11References - 1}
+		if mapped, ok := parsePDBC11(data, sections, procedures, &budget); !ok || len(mapped) != 0 {
+			t.Fatal("last root reference rejected")
+		}
+		if mapped, ok := parsePDBC11(data, sections, procedures, &budget); ok || len(mapped) != 0 {
+			t.Fatal("root reference exceeded the cumulative budget")
 		}
 	})
 }

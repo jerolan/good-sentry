@@ -2,20 +2,25 @@
 
 Authority: ../SPEC.md. The user approved the capability map and authorized specification, planning and execution on 2026-10-14, then named the product GoodSentry. No further routine phase approvals are required. Changes to scope or consequential design decisions still follow the specification.
 
-Current closure increment, 2026-10-27: releases028–031 and the local NB10/PDB2
+Current closure increment, 2026-10-28: releases028–031 and the local NB10/PDB2
 identity repair are verified, with receipts in todo.md. Continue native004
 and its dependents. The EC/optional-header prerequisite is repaired and verified.
 The first bounded legacy procedure reader in native018 is now verified locally:
 Small MSF2, pre-VC70 Info identity, ST procedures and obsolete stream0 reuse in
 MSF2/MSF7, with strict active page ownership and modern CV4 restrictions retained.
 Owned RED/GREEN, two killed guard mutations, native/server race checks and the
-independent private comparison of 686 procedures are recorded in todo.md. Next check
-the reduced C11 format facts against pinned Microsoft sources, resolve inclusive
-range and filename-encoding semantics, specify the bounded source mapper, then
-add its owned public parser fixture before implementation. Old DBI and other
-legacy layouts remain open.
-Reproduce the UUID0 SymCache pairing
-gap separately and preserve Mach-O identity behavior. Keep Portable PDB,
+independent private comparison of 686 procedures are recorded in todo.md. The
+primary checked C11 structures, inclusive extents, duplicate preservation and
+MBCS conversion against pinned Microsoft sources. The first historical ASCII
+C11 reader is verified locally, including shared budgets, indexed root coverage,
+owned RED/GREEN and mutations, and an independent comparison of10191 tuples.
+Recognized malformed MSF2/MSF7 now reject embedded Breakpad text after public
+RED controls reproduced the dispatch defect. Final native/server race, vet and
+build checks pass; todo.md records exact inputs, attempts and limitations.
+Keep unknown encodings/profiles required for full legacy closure; old DBI and
+other legacy layouts remain open. Next reproduce the UUID0 SymCache pairing
+gap at the existing public parser/identity owner before repair; preserve Mach-O
+UUID-only identity and reject a different PDB age. Keep Portable PDB,
 unwinding and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
 unrelated release/UI proofs without a changed dependency.

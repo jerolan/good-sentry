@@ -10,6 +10,35 @@ import (
 // msf/src/open.rs, and microsoft/microsoft-pdb at
 // 805655a28bd8198004be2ac27e6e0290121a5e89, PDB/msf/msf.cpp and include/cvinfo.h.
 func SmallMSF2(pageSize int, age uint32, streamZeroAlias bool) Fixture {
+	return smallMSF2(pageSize, age, streamZeroAlias, nil, nil).Fixture
+}
+
+type C11Fixture struct {
+	Fixture
+	C11Start       int
+	C11Size        int
+	SecondC11Start int
+}
+
+func WithC11SourceLines() C11Fixture {
+	lines := c11SourceLines(0x10, 0x3f, []c11SourceFile{
+		{name: `C:\src\first.cc`, start: 0x10, end: 0x1f, offsets: []uint32{0x10, 0x10, 0x10, 0x14, 0x18, 0x1c}, lines: []uint16{0, 42, 43, 65535, 0, 44}},
+		{name: `C:\src\second.cc`, start: 0x28, end: 0x3f, offsets: []uint32{0x28, 0x30}, lines: []uint16{52, 53}},
+	})
+	return smallMSF2(1024, 1, false, lines, nil)
+}
+
+func WithMultipleC11SourceLineModules() C11Fixture {
+	first := c11SourceLines(0x10, 0x5f, []c11SourceFile{
+		{name: `C:\src\crash.cc`, start: 0x10, end: 0x5f, offsets: []uint32{0x10, 0x40}, lines: []uint16{42, 99}},
+	})
+	second := c11SourceLines(0x10, 0x5f, []c11SourceFile{
+		{name: `C:\src\crash.cc`, start: 0x10, end: 0x5f, offsets: []uint32{0x10, 0x20, 0x40}, lines: []uint16{77, 78, 52}},
+	})
+	return smallMSF2(1024, 1, false, first, second)
+}
+
+func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []byte) C11Fixture {
 	fpmPages := 0
 	switch pageSize {
 	case 1024:
@@ -30,7 +59,20 @@ func SmallMSF2(pageSize int, age uint32, streamZeroAlias bool) Fixture {
 	second := stProcedure("OtherFunction", 0x80, 0x10, 0x100a)
 	module := append([]byte{2, 0, 0, 0}, first...)
 	module = append(module, second...)
-	moduleInfo := moduleInfoRecord(4, len(module), 0, "fixture.obj", "fixture.obj")
+	symbolBytes := len(module)
+	module = append(module, c11...)
+	moduleInfo := moduleInfoRecord(4, symbolBytes, 0, "fixture.obj", "fixture.obj")
+	binary.LittleEndian.PutUint32(moduleInfo[40:], uint32(len(c11)))
+	var secondModule []byte
+	secondSymbolBytes := 0
+	if secondC11 != nil {
+		secondModule = append([]byte{2, 0, 0, 0}, stProcedure("OtherModuleFunction", 0x40, 0x20, 0x100b)...)
+		secondSymbolBytes = len(secondModule)
+		secondModule = append(secondModule, secondC11...)
+		record := moduleInfoRecord(6, secondSymbolBytes, 0, "fixture-extra.obj", "fixture-extra.obj")
+		binary.LittleEndian.PutUint32(record[40:], uint32(len(secondC11)))
+		moduleInfo = append(moduleInfo, record...)
+	}
 	dbi := make([]byte, 64)
 	binary.LittleEndian.PutUint32(dbi, ^uint32(0))
 	binary.LittleEndian.PutUint32(dbi[4:], 19970606) // NewDBI V60
@@ -54,6 +96,9 @@ func SmallMSF2(pageSize int, age uint32, streamZeroAlias bool) Fixture {
 	binary.LittleEndian.PutUint32(section[16:], 0x100)
 	binary.LittleEndian.PutUint32(section[36:], 0x60000020)
 	streams := [][]byte{nil, info, nil, dbi, module, section}
+	if secondModule != nil {
+		streams = append(streams, secondModule)
+	}
 	if streamZeroAlias {
 		streams[0] = info
 	}
@@ -101,10 +146,71 @@ func SmallMSF2(pageSize int, age uint32, streamZeroAlias bool) Fixture {
 			copy(data[pages[i]*pageSize:], streams[i])
 		}
 	}
-	return Fixture{
-		Data: data, InfoBlock: pages[1], DBIBlock: pages[3], ModuleBlock: pages[4],
-		FirstProcedureLength: len(first),
+	fixture := C11Fixture{
+		Fixture: Fixture{
+			Data: data, InfoBlock: pages[1], DBIBlock: pages[3], ModuleBlock: pages[4],
+			FirstProcedureLength: len(first),
+		},
+		C11Start: pages[4]*pageSize + symbolBytes, C11Size: len(c11),
 	}
+	if secondModule != nil {
+		fixture.SecondC11Start = pages[6]*pageSize + secondSymbolBytes
+	}
+	return fixture
+}
+
+type c11SourceFile struct {
+	name       string
+	start, end uint32
+	offsets    []uint32
+	lines      []uint16
+}
+
+// c11SourceLines uses the pinned cvlines.h structures: referenced offsets are
+// relative to this extent, and every SE end is inclusive. File records are
+// deliberately written in reverse order, after their referenced line tables.
+func c11SourceLines(rootStart, rootEnd uint32, files []c11SourceFile) []byte {
+	rootSize := 4 + 4*len(files) + 8 + 2
+	data := make([]byte, (rootSize+3)&^3)
+	binary.LittleEndian.PutUint16(data, uint16(len(files)))
+	binary.LittleEndian.PutUint16(data[2:], 1)
+	ranges := 4 + 4*len(files)
+	binary.LittleEndian.PutUint32(data[ranges:], rootStart)
+	binary.LittleEndian.PutUint32(data[ranges+4:], rootEnd)
+	binary.LittleEndian.PutUint16(data[ranges+8:], 1)
+	for i := rootSize; i < len(data); i++ {
+		data[i] = 0xa5
+	}
+	for i := len(files) - 1; i >= 0; i-- {
+		file := files[i]
+		if len(file.offsets) != len(file.lines) || len(file.name) > 255 {
+			panic("invalid owned C11 fixture")
+		}
+		lineOffset := len(data)
+		data = binary.LittleEndian.AppendUint16(data, 1)
+		data = binary.LittleEndian.AppendUint16(data, uint16(len(file.lines)))
+		for _, offset := range file.offsets {
+			data = binary.LittleEndian.AppendUint32(data, offset)
+		}
+		for _, line := range file.lines {
+			data = binary.LittleEndian.AppendUint16(data, line)
+		}
+		for len(data)%4 != 0 {
+			data = append(data, 0xa5)
+		}
+		binary.LittleEndian.PutUint32(data[4+i*4:], uint32(len(data)))
+		data = binary.LittleEndian.AppendUint16(data, 1)
+		data = binary.LittleEndian.AppendUint16(data, 0xa5a5)
+		data = binary.LittleEndian.AppendUint32(data, uint32(lineOffset))
+		data = binary.LittleEndian.AppendUint32(data, file.start)
+		data = binary.LittleEndian.AppendUint32(data, file.end)
+		data = append(data, byte(len(file.name)))
+		data = append(data, file.name...)
+		for len(data)%4 != 0 {
+			data = append(data, 0xa5)
+		}
+	}
+	return data
 }
 
 func stProcedure(name string, offset, size uint32, kind uint16) []byte {

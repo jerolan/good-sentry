@@ -249,7 +249,11 @@ func parseDebugObject(name string, data []byte) (DebugObject, bool) {
 	if debugID, functions, ok := parseSymCache(data); ok {
 		return DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}, true
 	}
-	if debugID, functions, ok := parsePDBSymbols(data); ok {
+	if bytes.HasPrefix(data, msf7Magic) || bytes.HasPrefix(data, msf2Magic) {
+		debugID, functions, ok := parsePDBSymbols(data)
+		if !ok {
+			return DebugObject{}, false
+		}
 		return DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}, true
 	}
 	key, functions := ParseObjectSymbols(name, data)

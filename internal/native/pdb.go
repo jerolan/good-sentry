@@ -471,8 +471,7 @@ func inferredPDBPublicFunctions(publicFunctions []pdbPublicFunction) []SymbolFun
 func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, pdbInfo []byte) ([]SymbolFunction, bool) {
 	var functions []SymbolFunction
 	modules, procedures, records := 0, 0, 0
-	sourceLines := 0
-	sourceFiles, lineMappings := 0, 0
+	sourceBudget := pdbSourceBudget{}
 	inlineSites, inlineRecords, inlineAnnotations, inlineeRecords := 0, 0, 0, 0
 	var inlineNames map[uint32]string
 	for offset := 0; offset < len(moduleInfo); {
@@ -521,10 +520,18 @@ func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, 
 			return nil, false
 		}
 		moduleProceduresEnd := len(functions)
+		if c11Bytes > 0 && signature == 2 && pdbInfoHeaderSize(pdbInfo) == 12 {
+			c11End := uint64(symbolBytes) + uint64(c11Bytes)
+			lines, ok := parsePDBC11(moduleStream[symbolBytes:c11End], sections, functions[moduleFunctionsStart:moduleProceduresEnd], &sourceBudget)
+			if !ok {
+				return nil, false
+			}
+			functions = append(functions, lines...)
+		}
 		if c13Bytes > 0 {
 			c13Start := uint64(symbolBytes) + uint64(c11Bytes)
 			c13End := c13Start + uint64(c13Bytes)
-			lines, checksums, inlinees, ok := parsePDBC13WithInlinees(moduleStream[c13Start:c13End], msf, pdbInfo, sections, functions[moduleFunctionsStart:moduleProceduresEnd], &sourceLines, &sourceFiles, &lineMappings, &inlineeRecords)
+			lines, checksums, inlinees, ok := parsePDBC13WithInlinees(moduleStream[c13Start:c13End], msf, pdbInfo, sections, functions[moduleFunctionsStart:moduleProceduresEnd], &sourceBudget.lines, &sourceBudget.files, &sourceBudget.mappings, &inlineeRecords)
 			if !ok {
 				return nil, false
 			}

@@ -1231,13 +1231,13 @@ procedure kinds and C13/inline data continue to require signature4. Add
 `S_LPROC32_ST`/`S_GPROC32_ST` (0x100a/0x100b), whose procedure fields have
 the existing layout and whose names use a bounded one-byte length prefix.
 Retain exact names, section/range and scope validation, and identity matching.
-Read declared C11 extents only for bounds at this stage, without emitting
-source locations. Owned fixtures must prove procedure output and matching
+Bound declared C11 extents in the procedure reader; native019 defines the
+following source-reader increment. Owned fixtures must prove procedure output and matching
 NB10 identity, malformed lengths/pages/names/ranges rejecting all symbols,
 stream-0 reuse in MSF2 and MSF7, and continued MSF7/C13 behavior. A privately
 inspected external PDB can supplement those fixtures without redistribution
 or executing its companion binary. This is a prerequisite of native004;
-old DBI, C11 source mapping, other legacy layouts, Portable PDB and the broader
+old DBI, unresolved legacy source profiles, other legacy layouts, Portable PDB and the broader
 native requirements remain open. References: Microsoft's pinned [PDB Info
 versions](https://github.com/microsoft/pdb-rs/blob/2081a0dd6f1150cf965dec10855e75cfecfde176/docs/pdb/pdbi_stream.md#L24),
 [DBI structures](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/dbi.h#L94)
@@ -1245,7 +1245,71 @@ and [CodeView procedure layout](https://github.com/microsoft/microsoft-pdb/blob/
 
 <a id="close-nativo-019"></a>
 
-For C13 source lines, read each module's declared `C13ByteSize` after its symbol and C11 byte ranges. Accept only C13 for this slice; nonzero C11 data remains unsupported. Parse bounded four-byte-aligned subsection records, consuming `DEBUG_S_LINES`, `DEBUG_S_FILECHKSMS`, and `DEBUG_S_STRINGTABLE`; safely skip other well-framed subsection kinds. Resolve checksum filenames through a module string-table subsection when present or through the PDB `/names` global string table named by stream 1's named-stream map. Each line block's name index must point to a checksum record boundary. Resolve its one-based PE section, relocation offset, code size, and line offsets against an executable section, then associate each source location with a procedure from that module and expose it in the existing frame `filename` and `lineno` fields. A location applies from its line offset up to the next line offset in that block or contribution end, clipped to the procedure range; columns are parsed for structural validation but are not returned. Preserve filename spelling without path normalization. Bound C13 subsections to 65,536 per module, source line records to 1,000,000 per PDB, checksum file records to 65,536 per PDB, generated line-to-procedure ranges to 1,000,000 per PDB, and each filename to 4,096 bytes. Invalid subsection framing, missing referenced strings/checksums, invalid ranges or decreasing line offsets invalidate the entire PDB without partial symbols. Keep legacy source-line decoding, Portable PDB and demangling outside this C13 source-line slice. Format references: [LLVM MSF format](https://llvm.org/docs/PDB/MsfFile.html), [PDB Info stream and named-stream map](https://llvm.org/docs/PDB/PdbStream.html), [DBI and module stream contracts](https://llvm.org/docs/PDB/DbiStream.html), [CodeView procedure records](https://llvm.org/docs/PDB/CodeViewSymbols.html), [CodeView line subsection layout](https://www.llvm.org/doxygen/DebugLinesSubsection_8h_source.html), [CodeView checksum records](https://www.llvm.org/doxygen/DebugChecksumsSubsection_8cpp_source.html), [PDB string-table layout](https://www.llvm.org/doxygen/RawTypes_8h_source.html); Microsoft CodeView signatures are documented in [cvinfo.h](https://github.com/microsoft/microsoft-pdb/blob/master/include/cvinfo.h).
+For C13 source lines, read each module's declared `C13ByteSize` after its symbol and C11 byte ranges. Keep the C13 subsection reader separate from the legacy C11 reader below. Parse bounded four-byte-aligned subsection records, consuming `DEBUG_S_LINES`, `DEBUG_S_FILECHKSMS`, and `DEBUG_S_STRINGTABLE`; safely skip other well-framed subsection kinds. Resolve checksum filenames through a module string-table subsection when present or through the PDB `/names` global string table named by stream 1's named-stream map. Each line block's name index must point to a checksum record boundary. Resolve its one-based PE section, relocation offset, code size, and line offsets against an executable section, then associate each source location with a procedure from that module and expose it in the existing frame `filename` and `lineno` fields. A location applies from its line offset up to the next line offset in that block or contribution end, clipped to the procedure range; columns are parsed for structural validation but are not returned. Preserve filename spelling without path normalization. Bound C13 subsections to 65,536 per module, source line records to 1,000,000 per PDB, checksum file records to 65,536 per PDB, generated line-to-procedure ranges to 1,000,000 per PDB, and each filename to 4,096 bytes. Invalid subsection framing, missing referenced strings/checksums, invalid ranges or decreasing line offsets invalidate the entire PDB without partial symbols. Keep legacy source-line decoding, Portable PDB and demangling outside this C13 source-line slice. Format references: [LLVM MSF format](https://llvm.org/docs/PDB/MsfFile.html), [PDB Info stream and named-stream map](https://llvm.org/docs/PDB/PdbStream.html), [DBI and module stream contracts](https://llvm.org/docs/PDB/DbiStream.html), [CodeView procedure records](https://llvm.org/docs/PDB/CodeViewSymbols.html), [CodeView line subsection layout](https://www.llvm.org/doxygen/DebugLinesSubsection_8h_source.html), [CodeView checksum records](https://www.llvm.org/doxygen/DebugChecksumsSubsection_8cpp_source.html), [PDB string-table layout](https://www.llvm.org/doxygen/RawTypes_8h_source.html); Microsoft CodeView signatures are documented in [cvinfo.h](https://github.com/microsoft/microsoft-pdb/blob/master/include/cvinfo.h).
+
+The following legacy source increment consumes raw C11 in the native018
+pre-VC70 Info/NewDBI64 profile with module CodeView signature2. Read exactly
+the declared C11 bytes immediately after `SymBytes`, whose count already
+includes the four-byte module signature. Require a four-byte-aligned extent.
+All fields are little-endian. The root contains u16 file/segment counts,
+u32 file offsets, segment start/end u32 pairs and u16 segment IDs. Each file
+record contains u16 contribution count/padding, u32 line-table offsets,
+start/end pairs and a one-byte-length-prefixed filename, aligned to four bytes.
+Each line table contains u16 segment/pair counts, u32 section offsets, u16 line
+numbers and alignment to four bytes. File and line-table offsets are relative
+to the beginning of the C11 extent. Check all counts, aligned referenced
+extents and names before reading; do not assume physical ordering or require
+unused padding to be zero. Empty or embedded-NUL ST names, invalid references,
+unknown sections, reversed/out-of-section ranges and decreasing line offsets
+invalidate the entire PDB, including its previously decoded procedures.
+Once the MSF2 or MSF7 signature identifies a PDB, a parse failure must not
+fall through to other object readers or salvage embedded Breakpad text.
+
+Interpret each SE end as the last included byte and convert to a half-open
+extent with checked uint64 arithmetic. Validate root ranges against their PE
+sections. Once per module, sort and merge root ranges by segment; each file
+contribution must be covered by that segment's union using binary search,
+never a scan of all root ranges per contribution. This bounds coverage work
+to O(R log R + T log R). Root envelopes only validate coverage: never use
+them to bridge gaps between file contributions. Parse non-executable-section
+metadata for validity but emit mappings only to executable sections and
+procedures from the same module. A line applies from its section offset to
+the next distinct offset in that table or the contribution end plus one,
+clipped to the procedure range. Preserve every duplicate in input order;
+the existing equal-span resolver selects the first positive source record.
+This is GoodSentry's deterministic policy, not a claim about a Microsoft
+debugger's unresolved tie rule. Line0 emits no source fields but remains a
+boundary; retain every positive u16 line, including65535. The modern inverse
+C13 converter's special-marker convention does not reserve65535 universally
+in historical C11.
+
+Share the existing per-PDB limits of1,000,000 source pairs,65,536 source files
+and1,000,000 emitted line/procedure ranges across C11 and C13. Additionally
+charge all processed C11 extents, including repeated references, against64MiB,
+and all root-segment plus file-table references, including zero-pair tables,
+against1,000,000 per PDB. Preserve function-only fallback outside source spans.
+Historical MBCS ST filenames containing only ASCII are emitted byte-exact,
+without path normalization. For non-ASCII historical bytes, validate the
+complete structure and budgets but omit that file's source mappings while
+retaining its procedures: do not guess a code page or replace bytes with a
+misleading path. Code-page-aware decoding remains required for full legacy
+closure; this fallback is not an accepted scope exception. Other C11 filename
+profiles remain bounds-only until their representation is established. Do not
+infer the missing `IS_SZ_FORMAT_PDB` macro from an unrelated version test.
+
+Acceptance extends the public source-line parser owner with owned legacy
+fixtures for exact identity/function/path/line, the final included byte and
+first excluded byte, duplicate offsets,65535, zero-line boundaries, contribution
+gaps and module isolation. Add late malformed references/ranges/names, unknown
+code-page fallback and cumulative-budget controls at their strongest owners.
+Preserve existing C13/inline tests and use an independently decoded private
+C11 sample only as supplemental evidence, without redistribution or executing
+its companion binary. Portable PDB, other legacy profiles and broader native
+requirements remain open. References: Microsoft's pinned [C11 structures](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/include/cvlines.h#L10),
+[historical ST filename reader](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/mli.cpp#L451),
+[C11 consumer and inclusive ranges](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/mod.cpp#L3961),
+[MBCS conversion](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/include/szst.h#L222)
+and [system ANSI code-page meaning](https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar).
 
 <a id="close-nativo-020"></a>
 

@@ -1799,14 +1799,14 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-016](../SPEC.md#close-nativo-016) | CFI extended dereference: Add RISC-V64 minidump support for Breakpad architecture 0x8006 and Crashpad Minidump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-017](../SPEC.md#close-nativo-017) | CFI extended dereference: RISC-V64 ELF CFI accepts little-endian ELF64 EM_RISCV .eh_frame or .debug_frame and… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
-| [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
-| [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
+| [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
+| [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
+| [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | parcial | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
-| [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
+| [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
-| [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
-| [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
+| [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
+| [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11747,3 +11747,115 @@ como reparación separada y publicación/CI para la candidata integral.
 El informe factual siguiente está en /tmp/goodsentry-closure-legacy-research/
 c11-format-facts.txt; queda pendiente el cotejo de primaria antes de decidir
 semántica C11 o ampliar el contrato de implementación.
+
+### Lectura C11 seleccionada y especificada, 2026-10-27
+
+El turno anterior fue progreso: commit de78840 verificó SmallMSF2/ST y dejó
+los732 criterios trazados, con004 parcial. La primaria comprobó el árbol actual
+(solo el archivo Python ajeno sigue sin seguimiento), el plan y los informes
+C11 de87/85 líneas. Contrastó directamente los layouts, la conversión C11->C13
+con end-start+1, los pares emitidos en orden y la conversión MBCS mediante
+CP_ACP. Releyó y ejecutó el sondeo independiente:22 extents y572 tablas válidas;
+esto acredita estructura, no todavía mapeos del consumidor GoodSentry.
+
+Native019 se amplió antes del plan y este registro. El primer perfil C11 será
+el raw histórico de Info preVC70/NewDBI64 y firma2: extremos inclusivos,
+contribuciones sin puentes de huecos, nombresST ASCII exactos y procedimientos
+solo del mismo módulo. Los nombres no ASCII siguen pendientes de code page;
+se conserva el fallback de función, sin inventar rutas ni convertir esa
+limitación en una excepción aprobada. Otros perfiles C11 y el macro SZ no
+establecido continúan pendientes; Portable/oldDBI y demás exigencias no cambian.
+
+Revisión de diseño: dos hallazgos accionables, reconciliados por primaria.
+Conservar65535 como línea positiva: la reserva del conversor moderno no prueba
+una reserva universal en C11 histórico. Construir una unión ordenada por
+segmento una vez y consultar por búsqueda binaria: contar referencias no basta
+si cada contribución recorre todos los rangos raíz. El revisor verificó ambas
+correcciones y no dejó otro contraejemplo concreto. Se mantiene la limitación
+del revisor independiente existente, porque el host no pudo crear uno sin
+historial, y la omisión anunciada de CLI externo en este Goal autónomo.
+
+Presupuestos compartidos C11/C13: pares/archivos/mapeos actuales; además64MiB
+de extentsC11 procesadas y1M referencias raíz/tabla, incluidas vacías, por PDB.
+No se cambian SQL, autorización, dependencias ni configuración. Se conservan
+las invalidaciones nativas y los comprobantes de otros dominios.
+
+Siguiente acción concreta: gate test-audit, fixtures propias C11 y RED del
+owner público de fuente con identidad/path/line,65535, duplicados, extremos,
+huecos, módulo y malformados tardíos. Después implementar el lector acotado,
+verificar native/HTTP y cotejar mapeos privados independientes antes del commit.
+
+### Rechazo integral C11: defecto de selección de formato, 2026-10-28
+
+Las primeras suites nativa/HTTP y la comparación de10191 tuplas pasaron. Durante
+el cotejo final de la regla de rechazo integral, la primaria construyó un PDB
+propio con referenciaC11 inválida y una líneaBreakpad en padding no consumido.
+ParseDebugObjects devolvió UnexpectedFallback: parsePDBSymbols devolvía false
+y el selector continuaba al lector de texto. Se conserva el sondeo en
+/tmp/goodsentry-closure-c11/polyglot-probe.json. Es una violación comprobada
+del rechazo integral, no una ampliación de formatos ni de permisos.
+
+SPEC precisa primero que una firmaMSF2/MSF7 reconocida impide ese fallback.
+Siguiente acción: ampliar el mismo owner público de fuentes malformadas con
+C11/MSF2 y C13/MSF7 que contengan textoBreakpad, registrar RED, reparar solo
+la selección de PDB y repetir los checks afectados conservando el intento
+anterior. Las limitaciones de code page/perfil siguen abiertas.
+
+### Lectura C11 y rechazo integral verificados localmente, 2026-10-28
+
+La primaria integró y revisó el lector del perfil histórico ya especificado:
+Info preVC70, NewDBI64 y firma2. Las contribuciones inclusivas se validan contra
+secciones y la unión raíz indexada; los spans quedan dentro de procedimientos
+del mismo módulo. Se conservan duplicados,65535, límites de línea0, huecos y
+fallback de función. Los nombres no ASCII se validan y consumen presupuesto,
+pero no producen una ruta con code page inventada. Ese requisito sigue abierto.
+
+Los owners públicos existentes conservaron C13 y añadieron C11 con identidad,
+función/ruta/línea exactas, extremos incluidos/excluidos, duplicados42/43 en
+orden, módulos y24 entradas malformadas. RED mostró la ausencia de fuente y
+el retorno indebido de procedimientos para referencias corruptas. El owner de
+presupuestos cubre acumulación de bytes/archivos/pares/mapeos y referencias
+raíz/tabla vacías sin generar insumos gigantes ni añadir seams de producción.
+Dos mutaciones separadas, quitar el cargo de tablas vacías y cambiar43 por42,
+fallaron en sus controles; el lector se restauró byte por byte antes del cierre.
+
+La regla de rechazo integral también falló en dos casos públicos propios:
+MSF2/C11 y MSF7/C13 malformados con textoBreakpad válido en padding. La reparación
+acota el selector a la firma PDB reconocida, devuelve cero objetos ante error y
+conserva los demás lectores. Ambos controles pasan. Las suites inicialmente
+verdes se guardan como intento anterior; el cambio real de selección justificó
+repetir las comprobaciones afectadas. No se usó un reintento para ocultar fallos.
+
+La primaria inspeccionó y ejecutó el decoder independiente privado, sin importar
+el parser Go ni su fixture, y comprobó la salida real de ParseDebugObjects:
+10191 tuplas completas start/end/name/file/line iguales,686 procedimientos y9505
+ubicaciones de fuente, DebugID65ae75631. SHA256 canónico
+5ac0e114bae3d996fdcaa0396e2451f34b96b1349244cf01b8cf0f3e25c6b84a.
+Se leyó solo el miembro PDB cuyo hash estaba fijado, en memoria; no se leyó ni
+ejecutó la DLL ni se redistribuyen bytes, nombres, rutas o tuplas de la muestra.
+Los controles propios acreditan65535/cero/noASCII que esa muestra no ejercita.
+
+Checks finales sobre el arreglo de selección: native completo con race12,073s,
+490 acciones pass de tests; HTTP/PostgreSQL seleccionados con race7,854s,15pass.
+Cero fail/skip. Vet native/server/jobs, build trimpath, gofmt y diff-check pasan.
+Binario SHA256e1cdca5319182c42e4745e46a139f85609c006fb17d5d22879e778fbd2b724f5.
+Store/config/event/protocol/go.mod/go.sum no cambian desde02c0999, por lo que se
+reutiliza el recibo store recuperado sin otra ejecución. El revisor independiente
+existente no dejó hallazgos tras resolver los de diseño y cobertura; se mantiene
+registrada la limitación del host para crear el revisor sin historial y la
+omisión anunciada de la CLI externa durante este Goal autónomo.
+
+Comprobantes: test-results/closure-20261025/nativo-c11-sources/,29 archivos con
+manifiesto verificado, entradas exactas, acciones sin Output de fixtures, RED,
+GREEN, mutaciones y comparación privada reducida. Las notas factuales son
+históricas; SPEC conserva la autoridad sobre las decisiones resultantes.
+No se atribuyen imagen ni CI remoto nuevos. Native004 sigue parcial y los
+recibos integrales nativos continúan invalidados hasta la candidata y su auditoría.
+Code pages/perfilesC11, oldDBI/otroslegacy, Portable/unwinding/symbol-server y
+los demás requisitos pendientes permanecen exigidos. No cambia ninguna excepción
+ni se pierde evidencia de releases, retención u otros dominios.
+
+Siguiente acción concreta: reproducir el emparejamiento SymCacheUUID/age0 sin
+metadata declarada desde el owner público existente; precisar native021 antes
+del arreglo y conservar identidad Mach-O U, matching RSDS U0 y rechazo U1.
+Después regresión nativa/HTTP y commit propio. El Goal permanece activo.

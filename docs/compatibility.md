@@ -105,6 +105,13 @@ Available capabilities and limits:
 
 Native Minidump ingestion currently supports AMD64, x86, ARM32, ARM64 and RISC-V64 dumps with textual Breakpad `.sym`, ELF/DWARF, Mach-O/DWARF, classic PDB function/line/inline symbols and SymCache v7-v9 physical symbols. The normal Sentry Native capture route also accepts one native `event` plus one `attachment_type: event.minidump`; it overlays the recovered stack and module metadata onto the SDK event, preserves the event ID and context, and does not retain the dump bytes. Duplicate typed dumps, missing or non-native events, and malformed dumps are rejected before the event is stored. RISC-V64 support uses Crashpad/Breakpad context v1 integer state; it does not restore floating-point, vector or CSR state, or infer platform signal contexts. Bounded ZIP, TAR and gzip-TAR archives are read without extraction through at most eight archive layers, and only regular TAR members are considered. Frame pointers, bounded DWARF CFI and ARM EHABI reconstruct stacks from captured memory. Raw dumps are parsed and discarded, and symbolicated or unresolved frames become normal issues. The official `sentry-cli 3.8.0` completes chunk negotiation and upload. Other unimplemented native formats remain unsupported, and receipts from real crash-reporting providers remain open.
 
+Legacy Small MSF2 PDBs with pre-VC70 Info and NewDBI headers support NB10
+timestamp/age identities, ST procedures and historical C11 source lines.
+C11 paths currently require ASCII. For non-ASCII historical names whose code
+page is unknown, functions still resolve but that file contributes no source
+path or line. Old DBI layouts, other C11 filename representations and Portable
+PDB remain unsupported.
+
 Crashpad Linux modules expose their build ID in the Minidump `BpEL` CodeView record. GoodSentry pairs it with the uploaded ELF GNU build-id note; Mach-O uploads use `LC_UUID`. A crash therefore resolves against the exact uploaded binary even when its filename differs.
 
 Slack, Discord, Microsoft Teams, Google Chat, Feishu, ntfy and Zulip formats pass real local HTTP receiver, PostgreSQL and responsive browser checks. Receipts from external provider channels remain unverified. Configure and test your intended destination before relying on it.
