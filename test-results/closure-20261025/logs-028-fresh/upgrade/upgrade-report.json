@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "oldSource": "5cabe6c149902a0c3cf1e8a1e510ddc82d277cd6",
+  "oldBinarySHA256": "a44801373cfacfcd8b2f458d884938daa32f3658f220c7d1c26e834fc4f77986",
+  "newSource": "b77a2cc58032dcb2e2b39634a43b3c673dc5af5c",
+  "candidateImage": "sha256:40b75bd3bfc2e8f571865da1367b34d1161282e50a323aa7de5e095a41c7ccea",
+  "before": {
+    "tables": 37,
+    "rows": 34,
+    "migrations": 20
+  },
+  "after": {
+    "tables": 73,
+    "rows": 94,
+    "migrations": 79
+  },
+  "oldRowsPreserved": true,
+  "legacyLogReferencesNull": true,
+  "restartRowsEqual": true,
+  "restartRows": 96,
+  "sdkEventAndAttachment": {
+    "passed": true,
+    "issueId": "1",
+    "eventId": "e36e5116916347fa9cbc4384208448d7",
+    "checks": [
+      "Historical SDK event remains readable after migration",
+      "Attachment remains byte-for-byte readable after migration"
+    ]
+  },
+  "legacySdkLogReadable": true,
+  "notes": [
+    "Old image rebuilt locally, not a published historical image",
+    "Two verification sessions added before restart snapshots"
+  ]
+}

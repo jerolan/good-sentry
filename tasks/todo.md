@@ -4097,6 +4097,23 @@ normal. La interpretación inicial de ese 413 como defecto fue incorrecta;
 no se cambió producto. Siguiente acción: reconciliar todos los subresultados
 de 028 y el CI de la revisión con el test ajustado.
 
+### Avance parcial 2026-10-27: migración OTLP desde 020
+
+Se reconstruyó localmente `5cabe6c149902a0c3cf1e8a1e510ddc82d277cd6` y se
+inició una base y volumen nuevos con 20 migraciones. Node SDK 11.7.0 capturó
+un error, log y adjunto antes de 021. La imagen candidata actualizó esa base a
+079: las 34 filas previas conservaron todos sus campos y el log Sentry conservó
+referencias OTLP nulas. El evento, adjunto y log se leyeron tras actualizar.
+El reinicio de la misma aplicación conservó las 96 filas de 73 tablas; dos
+sesiones de verificación se añadieron antes de ambas instantáneas.
+
+Evidencia y scripts sin contraseña:
+`test-results/closure-20261025/logs-028-fresh/upgrade/`. La imagen anterior
+fue reconstruida localmente y no se presenta como imagen histórica publicada;
+los snapshots privados permanecen en `/tmp`. Siguiente acción: recoger el
+resultado de la integración con race y reconciliar los cuatro criterios con
+la revisión y CI correspondientes.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
