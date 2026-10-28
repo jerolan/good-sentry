@@ -1312,8 +1312,8 @@ validate their declared extents. Decode C7 `S_LPROC32_16t` and
 `S_GPROC32_16t` with their 16-bit type index, distinct field offsets and bounded
 length-prefixed names. Preserve procedures and exact identities. For C7 module
 line data using the documented ST-name `sstSrcModule` layout, apply the native019
-reader and its budgets after validating the declared extent. Unknown file
-contribution extents and other historical line layouts remain required work.
+reader and its budgets after validating the declared extent. Other historical
+line layouts remain required work.
 Reject malformed old headers, mixed incompatible procedure/signature layouts,
 bad stream extents and non-direct section mappings without partial symbols.
 Keep other old record kinds and the remaining legacy profiles
@@ -1349,13 +1349,19 @@ Interpret each known SE end as the last included byte and convert to a half-open
 extent with checked uint64 arithmetic. A root start/end pair of (0,0) denotes
 unknown bounds, not the one-byte range at offset zero. Validate its segment
 and use known file contributions for that segment without asserting root
-coverage. A file contribution with unknown (0,0) bounds is still unsupported
-and rejects the PDB without partial symbols; do not infer its end from
-unrelated functions or claim complete legacy support.
+coverage. A file contribution with unknown (0,0) bounds is resolved from its
+line offsets and same-module procedures: validate each offset in its section
+and any known root coverage, associate it only with procedures containing that
+offset, and end it at the next distinct line offset or that procedure's end,
+whichever comes first. Clip also to the containing known root range when the
+root is known. Do not carry a line into a different procedure without its own
+line record. Preserve duplicates, zero-line boundaries and existing budgets.
+This bounded attribution policy does not establish other historical layouts.
 Validate known root ranges against their PE
-sections. Once per module, sort and merge root ranges by segment; each file
-contribution must be covered by that segment's union using binary search,
-never a scan of all root ranges per contribution. This bounds coverage work
+sections. Once per module, sort and merge known root ranges by segment; each
+known file contribution must be covered by that segment's union using binary
+search unless that segment has an unknown root, never a scan of all root
+ranges per contribution. This bounds coverage work
 to O(R log R + T log R). Root envelopes only validate coverage: never use
 them to bridge gaps between file contributions. Parse non-executable-section
 metadata for validity but emit mappings only to executable sections and

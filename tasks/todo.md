@@ -12147,3 +12147,20 @@ Siguiente acción concreta: investigar la interpretación de contribuciones de
 archivo (0,0), incluyendo el último intervalo de línea sin límite conocido, y
 buscar una pareja VC4 independiente. No atribuir fuente más allá de lo probado;
 continuar otros criterios elegibles si esa evidencia aún no está disponible.
+
+### Política para límites de archivo desconocidos, 2026-10-28
+
+TIS señala que el par de límites (0,0) de archivo se resuelve consultando las
+líneas; el consumidor Wine asocia cada dirección de línea a una función. SPEC
+native019 fija una política explícita y acotada: validar cada offset dentro de
+su sección y raíz conocida, asociarlo solo con procedimientos del mismo módulo
+que contienen ese offset y terminarlo en el siguiente offset distinto o en el
+fin del procedimiento; no propagar una línea a otra función. Para raíz conocida,
+recortar también al intervalo raíz que contiene el offset. La política conserva
+líneas duplicadas, fronteras0 y presupuestos. Es una decisión de GoodSentry,
+no una afirmación de equivalencia universal con todos los depuradores.
+
+Siguiente acción concreta: preparar RED en los owners C7 y C11 para archivo
+sin límites, varias funciones, duplicados, línea0, raíces conocidas y
+desconocidas, y datos fuera de sección; implementar el índice acotado, probar
+HTTP/PG y regresiones, y registrar las limitaciones y comprobantes.
