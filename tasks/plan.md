@@ -47,8 +47,8 @@ accepted without accepting empty checksum filenames; its real C13 source lines
 match the published source. Modern thunk records now resolve the independently
 checked LLVM nonzero-ordinal example and preserve existing source lines. Continue
 the C7/C11 nonzero-ordinal variants are locally verified. A real MSF2 global
-stream contains2126 legacy ST public records; implement the specified bounded
-direct-map public fallback and preserve procedure precedence. Continue non-direct
+stream contains2126 legacy ST public records; the bounded direct-map fallback
+now resolves1119 executable entries and preserves procedure precedence. Continue non-direct
 section-map translation
 and other required records using primary evidence and representative binaries.
 Keep unknown profiles and complete acceptance open. Keep unwinding

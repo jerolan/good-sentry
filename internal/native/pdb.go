@@ -193,6 +193,20 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 	if !ok {
 		return "", nil, false
 	}
+	if binary.LittleEndian.Uint32(info) < 20000404 {
+		globalOffset := 20
+		if version == pdbDBIOldVersion {
+			globalOffset = 4
+		}
+		globalIndex := binary.LittleEndian.Uint16(dbi[globalOffset:])
+		if globalIndex != 0 && globalIndex != pdbModuleStreamAbsent {
+			publicFunctions, valid := parsePDBLegacyPublicFunctions(msf, globalIndex, sectionMapData, sections)
+			if !valid {
+				return "", nil, false
+			}
+			functions = append(functions, publicFunctions...)
+		}
+	}
 	if version != pdbDBIOldVersion && binary.LittleEndian.Uint16(dbi[56:])&(1<<1) != 0 {
 		publicFunctions, ok := parsePDBPublicFunctions(msf, binary.LittleEndian.Uint16(dbi[20:]), sectionMapData, sections)
 		if !ok {

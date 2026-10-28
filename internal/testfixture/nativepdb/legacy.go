@@ -10,7 +10,7 @@ import (
 // msf/src/open.rs, and microsoft/microsoft-pdb at
 // 805655a28bd8198004be2ac27e6e0290121a5e89, PDB/msf/msf.cpp and include/cvinfo.h.
 func SmallMSF2(pageSize int, age uint32, streamZeroAlias bool) Fixture {
-	return smallMSF2(pageSize, age, streamZeroAlias, nil, nil, false, nil).Fixture
+	return smallMSF2(pageSize, age, streamZeroAlias, nil, nil, false, nil, nil).Fixture
 }
 
 type C11Fixture struct {
@@ -25,19 +25,19 @@ func WithC11SourceLines() C11Fixture {
 		{name: `C:\src\first.cc`, start: 0x10, end: 0x1f, offsets: []uint32{0x10, 0x10, 0x10, 0x14, 0x18, 0x1c}, lines: []uint16{0, 42, 43, 65535, 0, 44}},
 		{name: `C:\src\second.cc`, start: 0x28, end: 0x3f, offsets: []uint32{0x28, 0x30}, lines: []uint16{52, 53}},
 	})
-	return smallMSF2(1024, 1, false, lines, nil, false, nil)
+	return smallMSF2(1024, 1, false, lines, nil, false, nil, nil)
 }
 
 func WithMultipleC11SourceLineModules() C11Fixture {
 	first, second := multipleC11SourceLinePayloads()
-	return smallMSF2(1024, 1, false, first, second, false, nil)
+	return smallMSF2(1024, 1, false, first, second, false, nil, nil)
 }
 
 // WithV50SourceLines needs companion PE sections and uses the 48-byte MODI50
 // prefix and a direct logical section map.
 func WithV50SourceLines(dbiAge uint32) C11Fixture {
 	first, second := multipleC11SourceLinePayloads()
-	fixture := smallMSF2(1024, 1, false, first, second, true, nil)
+	fixture := smallMSF2(1024, 1, false, first, second, true, nil, nil)
 	binary.LittleEndian.PutUint32(fixture.Data[fixture.DBIBlock*1024+8:], dbiAge)
 	return fixture
 }
@@ -60,6 +60,46 @@ func WithLegacyThunkVariant() Fixture {
 	return legacyThunk(3, []byte{0xa1, 0xb2, 0xc3, 0xd4})
 }
 
+func WithLegacyPublicSymbols() C11Fixture {
+	lines := c11SourceLines(0x10, 0x3f, []c11SourceFile{{
+		name: `C:\src\first.cc`, start: 0x10, end: 0x1f,
+		offsets: []uint32{0x10, 0x14}, lines: []uint16{42, 43},
+	}})
+	var global []byte
+	appendRecord := func(kind uint16, body []byte) {
+		record := make([]byte, 4+len(body))
+		binary.LittleEndian.PutUint16(record[2:], kind)
+		copy(record[4:], body)
+		for len(record)%4 != 0 {
+			record = append(record, 0)
+		}
+		binary.LittleEndian.PutUint16(record, uint16(len(record)-2))
+		global = append(global, record...)
+	}
+	public := func(kind uint16, name string, offset uint32) {
+		body := make([]byte, 11)
+		if kind == 0x0203 {
+			body = make([]byte, 9)
+			binary.LittleEndian.PutUint32(body, offset)
+			binary.LittleEndian.PutUint16(body[4:], 1)
+			binary.LittleEndian.PutUint16(body[6:], 0x1001)
+			body[8] = byte(len(name))
+		} else {
+			binary.LittleEndian.PutUint32(body[4:], offset)
+			binary.LittleEndian.PutUint16(body[8:], 1)
+			body[10] = byte(len(name))
+		}
+		appendRecord(kind, append(body, []byte(name)...))
+	}
+	public(0x1009, "PublicOverlap", 0x14)
+	public(0x1009, "PublicFirst", 0x60)
+	appendRecord(0x0400, make([]byte, 12))
+	global = append(global, 3, 'r', 'e', 'f')
+	public(0x1009, "PublicAlias", 0x60)
+	public(0x0203, "PublicSecond", 0x70)
+	return smallMSF2(1024, 1, false, lines, nil, false, nil, global)
+}
+
 func legacyThunk(ordinal byte, variant []byte) Fixture {
 	name := []byte("LegacyThunk")
 	record := make([]byte, 26+len(name)+len(variant))
@@ -72,10 +112,10 @@ func legacyThunk(ordinal byte, variant []byte) Fixture {
 	record[25] = byte(len(name))
 	copy(record[26:], name)
 	copy(record[26+len(name):], variant)
-	return smallMSF2(1024, 1, false, nil, nil, false, record).Fixture
+	return smallMSF2(1024, 1, false, nil, nil, false, record, nil).Fixture
 }
 
-func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []byte, v50 bool, extra []byte) C11Fixture {
+func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []byte, v50 bool, extra, global []byte) C11Fixture {
 	fpmPages := 0
 	switch pageSize {
 	case 1024:
@@ -128,9 +168,11 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 	binary.LittleEndian.PutUint32(dbi[48:], 22)
 	binary.LittleEndian.PutUint32(dbi[52:], 25)
 	var sectionMap []byte
-	if v50 {
-		binary.LittleEndian.PutUint32(dbi[4:], 19960307)
-		binary.LittleEndian.PutUint32(dbi[48:], 0)
+	if v50 || global != nil {
+		if v50 {
+			binary.LittleEndian.PutUint32(dbi[4:], 19960307)
+			binary.LittleEndian.PutUint32(dbi[48:], 0)
+		}
 		sectionMap = make([]byte, 24)
 		binary.LittleEndian.PutUint16(sectionMap, 1)
 		binary.LittleEndian.PutUint16(sectionMap[2:], 1)
@@ -160,6 +202,12 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 	}
 	if secondModule != nil {
 		streams = append(streams, secondModule)
+	}
+	globalIndex := 0
+	if global != nil {
+		globalIndex = len(streams)
+		binary.LittleEndian.PutUint16(dbi[20:], uint16(globalIndex))
+		streams = append(streams, global)
 	}
 	if streamZeroAlias {
 		streams[0] = info
@@ -214,6 +262,10 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 			FirstProcedureLength: len(first),
 		},
 		C11Start: pages[4]*pageSize + symbolBytes, C11Size: len(c11),
+	}
+	if global != nil {
+		fixture.PublicSymbolsBlock = pages[globalIndex]
+		fixture.SectionMapStart = pages[3]*pageSize + 64 + len(moduleInfo)
 	}
 	if secondModule != nil {
 		fixture.SecondC11Start = pages[6]*pageSize + secondSymbolBytes
@@ -365,7 +417,7 @@ func WithStreamZeroAlias() Fixture {
 // OldDBIC7 builds an old DBI header and two 16-bit-type C7 procedures. The
 // matching PE sections are supplied separately, as with the V50 fixture.
 func OldDBIC7() Fixture {
-	f := smallMSF2(1024, 1, false, nil, nil, true, nil).Fixture
+	f := smallMSF2(1024, 1, false, nil, nil, true, nil, nil).Fixture
 	data := f.Data
 	binary.LittleEndian.PutUint32(data[f.InfoBlock*1024:], 19950623)
 	first := procedure16("CrashFunction", 0x10, 0x20, 0x205)
@@ -400,6 +452,35 @@ func OldDBIC7WithThunk() Fixture {
 
 func OldDBIC7WithThunkVariant() Fixture {
 	return oldDBIC7WithThunk(WithLegacyThunkVariant())
+}
+
+func OldDBIC7WithPublicSymbols() Fixture {
+	f := OldDBIC7()
+	source := WithLegacyPublicSymbols()
+	sourceDirectory := int(binary.LittleEndian.Uint16(source.Data[60:])) * 1024
+	sourceStream := binary.LittleEndian.Uint16(source.Data[source.DBIBlock*1024+20:])
+	size := binary.LittleEndian.Uint32(source.Data[sourceDirectory+4+int(sourceStream)*8:])
+	global := source.Data[source.PublicSymbolsBlock*1024 : source.PublicSymbolsBlock*1024+int(size)]
+	page := len(f.Data) / 1024
+	f.Data = append(f.Data, make([]byte, 1024)...)
+	copy(f.Data[page*1024:], global)
+	binary.LittleEndian.PutUint16(f.Data[50:], uint16(page+1))
+	directory := int(binary.LittleEndian.Uint16(f.Data[60:])) * 1024
+	oldSize := int(binary.LittleEndian.Uint32(f.Data[52:]))
+	old := append([]byte(nil), f.Data[directory:directory+oldSize]...)
+	count := int(binary.LittleEndian.Uint16(old))
+	entryEnd := 4 + count*8
+	next := append([]byte(nil), old[:entryEnd]...)
+	next = append(next, make([]byte, 8)...)
+	binary.LittleEndian.PutUint32(next[entryEnd:], size)
+	next = append(next, old[entryEnd:]...)
+	next = binary.LittleEndian.AppendUint16(next, uint16(page))
+	binary.LittleEndian.PutUint16(next, uint16(count+1))
+	binary.LittleEndian.PutUint32(f.Data[52:], uint32(len(next)))
+	copy(f.Data[directory:], next)
+	binary.LittleEndian.PutUint16(f.Data[f.DBIBlock*1024+4:], uint16(count))
+	f.PublicSymbolsBlock = page
+	return f
 }
 
 func oldDBIC7WithThunk(sourceFixture Fixture) Fixture {

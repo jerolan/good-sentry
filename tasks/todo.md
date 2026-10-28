@@ -12613,3 +12613,29 @@ el lector y compararlo con un oracle independiente de la muestra MSF2.
 La definición primaria de `PUBSYM32_16t` identifica su campo de16 bits como
 índice de tipo. SPEC aclara que se conserva opaco; no se le aplica la máscara
 de flags de `S_PUB32_ST`. La muestra real ejercita ST, no la variante16t.
+
+### Públicos antiguos con mapa directo, 2026-10-28
+
+Los streams globales pre-VC70 aportan nombres públicos ST y16t como respaldo
+de secciones ejecutables con mapa directo. El lector consume los nombres
+externos de referencias ST, conserva alias y recorta cada rango al siguiente
+inicio o al final de la sección. Procedimientos, saltos y fuentes prevalecen;
+mapas no directos no aportan resultados. Las estructuras inválidas rechazan el
+PDB completo. El índice de tipo16t se conserva opaco.
+
+RED nativo/HTTP reprodujo los públicos ausentes y un segundo RED el rechazo
+indebido de un índice de tipo válido. GREEN cubrió ambas estructuras, C7,
+prioridad, límites, corrupción y aislamiento. El oracle independiente contrastó
+1119 públicos ejecutables y las10422 tuplas previas:11541 exactas, sin faltantes
+ni extras. Race nativo aprobó743 acciones y servidor42; el control C7 adicional
+pasó con race, así como vet y build. Comprobante:
+test-results/closure-20261025/nativo-legacy-publics/.
+
+La muestra real ejercita ST con flags0, no públicos16t. La primaria revisó el
+formato y las pruebas. Mapas no directos, otros perfiles, imagen/CI y el cierre
+nativo integral siguen pendientes.
+
+Siguiente acción concreta: buscar un productor o consumidor que traduzca
+selectores no directos a secciones PE y una muestra discriminante; si aún no
+existe evidencia suficiente, continuar el siguiente perfil nativo exigible sin
+atribuir compatibilidad a ese mapa.
