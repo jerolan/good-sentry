@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "tables": 73,
+  "rows": 1264,
+  "rowMultisetsEqual": true,
+  "after": "033 and 047 SDK/browser/CLI acceptance",
+  "source": "b77a2cc"
+}

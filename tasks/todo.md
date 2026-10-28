@@ -3982,6 +3982,19 @@ reinicio anterior a los owners, sin atribuir una nueva captura al issue que
 el navegador descartó deliberadamente. Siguiente acción: recoger la integración
 con race y cotejar la revisión y el CI antes de cerrar 084.
 
+### Avance parcial 2026-10-27: reinicio posterior a 033 y 047
+
+Tras los cohorts SDK, CLI y navegador de 033/047, se reinició solo la
+aplicación de `gsclosure033`. Los multiconjuntos de 1.264 filas en 73 tablas
+coincidieron exactamente antes y después. Las lecturas nativas volvieron a
+recuperar el evento SDK retenido del issue 7 y la captura posterior a la
+separación del issue 1025. Evidencia:
+`test-results/closure-20261025/errores-033-fresh/main-final-restart-report.json`;
+snapshots privados en `/tmp/goodsentry-closure-033/`.
+
+Siguiente acción: recoger la integración con race y reconciliar los criterios
+con el CI de la revisión de test ajustada.
+
 ### Selección independiente: CLOSE-logs-028
 
 Los criterios de errores tienen comprobantes locales adicionales y aún
