@@ -1844,18 +1844,18 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-016](../SPEC.md#close-operacion-016) | Error-event retention: Delete envelope_items matching each pinned receipt's exact project_id,event_id, then it… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-017](../SPEC.md#close-operacion-017) | Error-event retention: Issue count and its first/last/title/environment/release reflect the surviving stored p… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-018](../SPEC.md#close-operacion-018) | Error-event retention: Preserve existing authorization and snapshot semantics. Native IssueDetail already retu… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
 | [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | vigente | Comprobante 2026-10-26 abajo; imagen/CI final pendientes |
-| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
-| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar navegador/imagen en candidata final |
-| [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar CI/imagen en candidata final |
+| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
+| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
+| [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
 | [CLOSE-uptime-006](../SPEC.md#close-uptime-006) | Uptime check retention: The next required retention class owns monitor_checks, not monitors. Official installa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-007](../SPEC.md#close-uptime-007) | Uptime check retention: Use completed_at as the existing durable server completion clock. Both CompleteMonitor… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-008](../SPEC.md#close-uptime-008) | Uptime check retention: Store.CleanupMonitorChecks(ctx, days) returns a committed removed-check count and erro… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-009](../SPEC.md#close-uptime-009) | Uptime check retention: Preserve every monitor configuration and cached status, consecutive_failures, last_che… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-010](../SPEC.md#close-uptime-010) | Uptime check retention: Keep the current MonitorChecks authorization, completed_at/id ordering, transition-onl… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; repetir navegador en candidata final |
+| [CLOSE-uptime-010](../SPEC.md#close-uptime-010) | Uptime check retention: Keep the current MonitorChecks authorization, completed_at/id ordering, transition-onl… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
 | [CLOSE-uptime-011](../SPEC.md#close-uptime-011) | Uptime check retention: StartUptimeRetention runs unconditionally inside the one application process through t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
+| [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
 | [CLOSE-operacion-024](../SPEC.md#close-operacion-024) | File and release retention prerequisites: Completed-file and release retention remain required after the four… | implementada (prerrequisito) | vigente | Comprobante 2026-10-26 abajo; clases file/release siguen abiertas |
 | [CLOSE-operacion-025](../SPEC.md#close-operacion-025) | File and release retention prerequisites: First add typed Config.FileRetentionDays and Config.ReleaseRetention… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-026](../SPEC.md#close-operacion-026) | Release metadata retention: Release age is the first server receipt of its organization/version identity, rele… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1864,7 +1864,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-029](../SPEC.md#close-operacion-029) | Release metadata retention: Deleting release metadata cascades release_projects, release_commits, release_depl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-030](../SPEC.md#close-operacion-030) | Release metadata retention: Activate StartReleaseRetention unconditionally through the shared in-process lifec… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-031](../SPEC.md#close-operacion-031) | Release metadata retention: Test authoring gate: the Store owner protects actual metadata/cascade removal, str… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-032](../SPEC.md#close-operacion-032) | Release metadata retention: Acceptance requires full native PostgreSQL integration/vet and Linux race, a fresh… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
+| [CLOSE-operacion-032](../SPEC.md#close-operacion-032) | Release metadata retention: Acceptance requires full native PostgreSQL integration/vet and Linux race, a fresh… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
 | [CLOSE-operacion-033](../SPEC.md#close-operacion-033) | Release metadata retention: Extend the existing deployment and telemetry-retention configuration owners, not a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-034](../SPEC.md#close-operacion-034) | Release metadata retention: Before activating either cleanup class, primary must elaborate its complete owners… | implementada (contrato) | vigente | Comprobante 2026-10-26 abajo; proveedor de archivos sigue abierto |
 | [CLOSE-operacion-035](../SPEC.md#close-operacion-035) | Completed-file retention: This increment consumes Config.FileRetentionDays for the currently implemented durab… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1875,7 +1875,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-040](../SPEC.md#close-operacion-040) | Completed-file retention: SourceMaps already preflights and reads bytes/aliases in one repeatable-read snapsho… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-041](../SPEC.md#close-operacion-041) | Completed-file retention: Run StartFileRetention unconditionally through the existing in-process retention lif… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-042](../SPEC.md#close-operacion-042) | Completed-file retention: The real PostgreSQL owning tests must cover independent file/event clocks and curren… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-043](../SPEC.md#close-operacion-043) | Completed-file retention: Acceptance requires full native integration/vet and Linux race, a fresh actual appli… | implementada (histórica) | vigente | Comprobante 2026-10-26 abajo; revalidar imagen/CI en candidata final |
+| [CLOSE-operacion-043](../SPEC.md#close-operacion-043) | Completed-file retention: Acceptance requires full native integration/vet and Linux race, a fresh actual appli… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
 | [CLOSE-errores-156](../SPEC.md#close-errores-156) | Native event attachment access: Attachments are already admitted atomically with their parent SDK receipt, but… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-157](../SPEC.md#close-errores-157) | Native event attachment access: Add session-authenticated GET /api/v1/issues/{issue}/events/{event}/attachment… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-158](../SPEC.md#close-errores-158) | Native event attachment access: Expose Store.IssueEventAttachments(ctx,userID,issueID,eventID,page) and Store.… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11244,3 +11244,36 @@ inyectados; los demás estados indicados se observaron contra el servidor real.
 Las bases históricas perdidas no se presentan como preservadas: rige la decisión
 canónica del27-Oct. Siguiente acción: invalidar y ejecutar las revalidaciones
 finales de retención detectadas; después auditar 002/100 y el resto por requisito.
+
+### Invalidación final de retención, 2026-10-27
+
+La revisión factual confirmó la aprobación WF-0007 y las 732 anclas/filas únicas,
+sin faltantes; las ocho excepciones coinciden exactamente con SPEC. Esto prueba
+trazabilidad documental, no satisfacción de cada requisito. El antiguo
+`operacion-100/audit.json` era un snapshot de estados de `70fcb08`, no la auditoría
+por requisito de la candidata actual. Se conserva como histórico.
+
+Se invalidan 019/021/022/023/032/043 de operación y 010/012 de uptime. Sus propios
+comprobantes aún exigen aceptación final de imagen, navegador, expiración y
+recuperación, pero la matriz decía vigente. `operacion-021-022/summary.json`
+identifica imagen3802aaa4/8884b9d; uptime usa17918bfd, releases b5b4c3a6 y archivos
+9f30b1ca. Esos binarios son diferentes del final. Los proveedores de retención
+siguen iguales, pero `cmd/goodsentry/main.go`, el lifecycle compartido y las
+pantallas compuestas cambiaron. Los tests actuales de proveedor no sustituyen
+esos recorridos finales explícitos. La evidencia de archivo y de navegación
+normal posterior tampoco demuestra todos sus estados vacíos/expiración.
+
+La primaria contrastó las limitaciones y el diff; los lectores acotados
+identificaron las rutas y subresultados pendientes. Ninguna de estas ocho filas
+está cubierta por el retiro de las cuatro bases históricas del27-Oct. No se
+recorta el contrato. Resumen factual de esta revisión incompleta:
+`test-results/closure-20261025/operacion-100/revalidation-8e95.json`.
+
+Selección antes de ejecutar: CLOSE-operacion-019 y sus gates de imagen/retención
+021/022, con 023 como protección/publicación. Están disponibles los backups
+privados `baseline.dump`, `before-expiry.dump` y `accepted.dump` en
+`.tmp/error-retention-acceptance/`. Los controladores históricos fijan nombres
+y puertos de originales; no se ejecutarán sin adaptación. Siguiente acción:
+restaurar `baseline.dump` en otra base/volumen/puerto y cotejar las 4.258 filas
+previas antes de probar retained/empty/recovered en la imagen pública final.
+El producto sigue incompleto; 002/100 permanecen sin aceptación final.
