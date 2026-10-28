@@ -11087,3 +11087,14 @@ cuando no queden bloqueos exigibles. El producto sigue incompleto.
     pertenecen a este incremento. No se ejecutaron SDKs, tests de producto,
     navegador, aceptación completa ni operaciones sobre Goals. Los estados
     de evidencia de producto siguen pendientes o aplazados por decisión expresa.
+
+### Evidencia adicional 2026-10-27: paginación y recuperación de 047
+
+En la candidata `b77a2cc`, Chromium conservó 11 firmas seleccionadas entre
+páginas de 10 y 1, junto con el borrador. Tras un reset confirmado, se inyectó
+un 503 en la actualización: la recuperación no repitió DELETE ni perdió el
+borrador. Las vistas de 320, 768 y 1440 píxeles no desbordaron y no hubo errores
+de página. Comprobante y capturas: `test-results/closure-20261025/errores-047-fresh/pagination/`.
+Esta evidencia complementa las anteriores; sigue pendiente CI público coincidente.
+Siguiente acción: obtener autorización para publicar la revisión exacta y, si
+se autoriza, comprobar CI e imagen antes de auditar el cierre.
