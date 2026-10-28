@@ -2735,6 +2735,25 @@ runtimes existentes y conservar las demás pruebas, versiones, condiciones de
 imagen, publicación y CI de cada bloque. Los comprobantes antiguos siguen
 siendo históricos; la decisión no acredita por sí sola ningún criterio.
 
+#### Decisión del 27 de octubre de 2026: runtimes de retención ausentes
+
+El usuario autorizó aceptar copias verificadas desde los respaldos conservados
+y retirar únicamente la obligación de conservar los runtimes históricos de
+retención que ya no están presentes. Para los checkpoints de retención de
+errores se restauraron y compararon exactamente los respaldos de 4.258, 4.290
+y 4.305 filas, con sus snapshots históricos. Estas copias sustituyen la
+exigencia de mantener los procesos, imágenes/configuración/montajes y estados
+de los originales ausentes al ejecutar sus criterios de retención y protección.
+No se afirma que esos runtimes sigan preservados. Cada copia usada se identifica
+y contrasta con su respaldo; no se infiere identidad de datos de otro checkpoint.
+
+Se conservan los respaldos y comprobantes históricos, las filas y bytes
+recuperables que exige cada criterio, y todas las pruebas funcionales,
+migración, expiración limitada a fixtures propios, permisos, navegador,
+reinicio, recuperación, imagen y CI. Esta decisión no acredita por sí sola
+ningún resultado ni autoriza a alterar un runtime existente. No se atribuye
+preservación a bytes de volúmenes que no estén respaldados y comprobados.
+
 El cierre abarca todos los requisitos aprobados de esta especificación y los
 resultados de [WF-0004](tasks/wayfinder/0004-contrato-compatibilidad.md), con las
 resoluciones finales de [WF-0005](tasks/wayfinder/0005-sacrificios.md) y

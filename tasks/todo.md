@@ -1845,10 +1845,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-017](../SPEC.md#close-operacion-017) | Error-event retention: Issue count and its first/last/title/environment/release reflect the surviving stored p… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-018](../SPEC.md#close-operacion-018) | Error-event retention: Preserve existing authorization and snapshot semantics. Native IssueDetail already retu… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
-| [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | bloqueada | Copias restauradas exactas; falta instrucción sobre originales ausentes y reaceptación final, ver abajo |
-| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | bloqueada | Copias restauradas exactas; falta instrucción sobre originales ausentes y reaceptación final, ver abajo |
-| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | bloqueada | Copias restauradas exactas; falta instrucción sobre originales ausentes y reaceptación final, ver abajo |
-| [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | bloqueada | Copias restauradas exactas; falta instrucción sobre originales ausentes y reaceptación final, ver abajo |
+| [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
+| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
+| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
+| [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
 | [CLOSE-uptime-006](../SPEC.md#close-uptime-006) | Uptime check retention: The next required retention class owns monitor_checks, not monitors. Official installa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-007](../SPEC.md#close-uptime-007) | Uptime check retention: Use completed_at as the existing durable server completion clock. Both CompleteMonitor… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-008](../SPEC.md#close-uptime-008) | Uptime check retention: Store.CleanupMonitorChecks(ctx, days) returns a committed removed-check count and erro… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11315,3 +11315,19 @@ adaptar el recorrido retained/empty/recovered a una copia nueva del baseline,
 con volumen/puerto nuevos y envejecimiento limitado a fixtures propios.
 Mientras tanto continúa el cotejo factual por requisito de otras familias,
 sin emitir aceptación final de la matriz por sus estados.
+
+### Decisión y reanudación de retención, 2026-10-27
+
+El usuario eligió aceptar copias verificadas desde los respaldos conservados y
+retirar solo la obligación de conservar los runtimes históricos ausentes. Se
+integró primero en SPEC y luego en el orden del plan. La restauración exacta de
+4258/4290/4305 queda como comprobante; no se extiende esa identidad a otro
+checkpoint sin restaurarlo y contrastarlo. Se mantienen datos recuperables y
+todas las demás comprobaciones. No se modificará ningún runtime existente.
+
+La dependencia de los originales ausentes queda resuelta por decisión expresa;
+020/021/022/023 vuelven a invalidada, pendientes de aceptación actual, sin
+promoverlas por la autorización. Siguiente acción: preparar una cuarta base
+operativa desde baseline.dump, un volumen nuevo y puerto18519; comprobar la
+proyección tras migración y ejecutar Node11.7/browser/retención real sobre
+fixtures nuevos. Los tres restores de referencia no arrancarán aplicaciones.

@@ -556,6 +556,13 @@ contrastar sus comprobantes existentes y completar los resultados pendientes.
 Después seleccionar 047, 084 y logs-028 según dependencias y este orden; registrar
 los resultados sin presentar la nueva base como dato histórico preservado.
 
+La decisión posterior del27-Oct permite sustituir los runtimes históricos de
+retención ausentes por copias verificadas desde sus respaldos conservados,
+sin retirar datos recuperables ni pruebas funcionales. Para retención de errores,
+los checkpoints4258/4290/4305 ya se restauraron con hashes de fila exactos.
+Reanudar por019 y sus gates020/021/022/023 en otra copia del baseline; conservar
+esos restores como referencias y envejecer exclusivamente fixtures nuevos.
+
 1. Revisar instrucciones, Git/índice/reclamaciones y vigencia de evidencia contra
    la revisión candidata. Contrastar fuentes y comprobantes históricos por ID,
    sin promover casillas antiguas a evidencia vigente. Registrar dependencias,
