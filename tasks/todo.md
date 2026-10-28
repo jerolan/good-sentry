@@ -12029,3 +12029,26 @@ Siguiente acción concreta: investigar con fuentes primarias la traducción de
 mapas V50 no directos y su evidencia real; fijar en SPEC los casos resolubles y
 agregar pruebas de comportamiento antes de implementarlos. Conservar como
 pendiente old DBI y continuar después los demás criterios nativos según el plan.
+
+### Investigación del mapa V50 no directo, 2026-10-28
+
+La especificación histórica TIS para CodeView describe el índice lógico como
+uno basado y sitúa los descriptores de grupo después de los lógicos; `group`
+puede referir esos descriptores. Define `offset` dentro del segmento físico,
+pero el significado de `frame` depende de flags y del overlay: puede ser selector
+o dirección absoluta, no necesariamente un índice de cabecera PE. LLVM también
+advierte que varios campos no están bien entendidos. El productor Microsoft
+`DBI1::AddSec` usa frame igual a la sección suministrada y grupo/overlay cero;
+esto demuestra el perfil directo observado, no la conversión general de un
+selector arbitrario a sección PE. No se ha encontrado aún una pareja histórica
+que discrimine ambos casos ni se atribuye soporte al perfil no directo.
+
+Fuentes: TIS [formatos PE y símbolos](https://open-watcom.github.io/open-watcom-1.9/devel/pe_and_symbols.pdf), páginas impresas76–77;
+[LLVM DBI section map](https://llvm.org/docs/PDB/DbiStream.html#section-map-substream);
+[Microsoft DBI1::AddSec](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/dbi.cpp#L1457).
+
+Siguiente acción concreta: localizar un consumidor o productor verificable de
+mapas no directos junto con una pareja PDB/PE o un fixture independiente y una
+traducción observable; contrastar selectores, offsets y grupos antes de fijar
+el diseño y emitir símbolos. Si no aparece aún, continuar otro criterio exigible
+con dependencias resueltas sin declarar esta compatibilidad completa.
