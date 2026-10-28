@@ -3948,6 +3948,24 @@ snapshots privados quedan en `/tmp/goodsentry-closure-084/`.
 final de CI. Siguiente acción: ejecutar el owner SDK de escritura y su flujo
 de navegador en una copia aislada, preservando sus datos existentes.
 
+### Avance parcial 2026-10-27: SDK y navegador de errores-084
+
+Sobre la base aislada actualizada, el owner de Node 11.7.0 pasó con ocho
+acuses reales: asignación, mute por conteo y tiempo real, releases, retry sin
+reescritura, permisos y revocación con sesión activa. El owner Chromium pasó
+creación y revocación de una credencial `event:write` limitada, teclado,
+revelado, políticas reflejadas en UI y cinco borradores a 320/768/1440.
+La acción final de descarte afecta solo al issue nuevo del owner.
+
+El puerto 18084 que ambos controladores fijan está ocupado por otra instancia;
+se ejecutaron copias que cambian exclusivamente esa comprobación a 18584,
+puerto de la copia aislada. Evidencia sin cookie ni CSRF:
+`test-results/closure-20261025/errores-084-fresh/owners/`. El vencimiento
+de un minuto usó el reloj real, no una actualización de timestamps.
+
+Siguiente acción: cotejar los subresultados de 084, integrar la evidencia de
+la suite completa ya terminada y obtener CI de la revisión de test ajustada.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el

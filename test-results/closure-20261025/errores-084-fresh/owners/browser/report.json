@@ -1,0 +1,252 @@
+{
+  "passed": true,
+  "projectID": "2",
+  "issueID": "2",
+  "eventIDs": [
+    "24b0a1b8912945be8f22bb0afb9315b9",
+    "bc3fb27fb59b4abcbc9050256df4db62",
+    "0e8f614a4d93409983a1ae5a50ea762c",
+    "0ddeaf705a2d40e28f5b0f1dc0079cb9",
+    "0ca4fb15b0814d34976619574b2a474e",
+    "a87f40f60d7041cc8411bdadaae3decf",
+    "83653128bbb142a1b8bd5bab7b386220"
+  ],
+  "checks": [
+    "Keyboard choice emits an event:write-only credential restricted to the SDK project; neutral validation, real clipboard copying and one-time reveal work at320/768/1440",
+    "The real writer reads SDK issue events; release mutation returns403 and token-only native mutation without cookies returns401. Its assigned mute and chosen-release policies appear after native refresh without losing drafts or URL filters",
+    "Native Reopen handles the API-created release policy, and writer unassignment restores the SDK issue baseline while every unsent draft survives",
+    "Issue detail offers a two-step permanent discard, explains future fingerprint handling, supports cancellation, and returns to the issue list after the issue disappears",
+    "Persistent visible revocation denies both compatible reads and writes despite the live session cookie"
+  ],
+  "screenshots": [
+    "/tmp/goodsentry-closure-084/owners/browser/writer-opt-in-320.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-opt-in-768.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-opt-in-1440.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-explicit-project-320.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-explicit-project-768.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-explicit-project-1440.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-secret-copied-320.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-secret-copied-768.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-secret-copied-1440.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-mute-native-320.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-mute-native-768.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-mute-native-1440.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-release-native-320.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-release-native-768.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-release-native-1440.png",
+    "/tmp/goodsentry-closure-084/owners/browser/permanent-discard-confirmation-320.png",
+    "/tmp/goodsentry-closure-084/owners/browser/permanent-discard-confirmation-768.png",
+    "/tmp/goodsentry-closure-084/owners/browser/permanent-discard-confirmation-1440.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-revoked-320.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-revoked-768.png",
+    "/tmp/goodsentry-closure-084/owners/browser/writer-revoked-1440.png"
+  ],
+  "dimensions": [
+    {
+      "name": "writer-opt-in",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "writer-opt-in",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "writer-opt-in",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "writer-explicit-project",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "writer-explicit-project",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "writer-explicit-project",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "writer-secret-copied",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "writer-secret-copied",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "writer-secret-copied",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "writer-mute-native",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "writer-mute-native",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "writer-mute-native",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "writer-release-native",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "writer-release-native",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "writer-release-native",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "permanent-discard-confirmation",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "permanent-discard-confirmation",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "permanent-discard-confirmation",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "writer-revoked",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "writer-revoked",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "writer-revoked",
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "api/0/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/releases/issue-write-mvri59up-f72adbe5%402.0.0/",
+      "status": 403
+    },
+    {
+      "method": "PATCH",
+      "path": "api/v1/issues/2",
+      "status": 401
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/issues/2/",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "api/0/issues/2/",
+      "status": 401
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "badResponses": [
+    {
+      "url": "http://127.0.0.1:18584/api/0/organizations/closure-upgrade/releases/issue-write-mvri59up-f72adbe5%402.0.0/",
+      "status": 403,
+      "expected": true
+    },
+    {
+      "url": "http://127.0.0.1:18584/api/v1/issues/2",
+      "status": 401,
+      "expected": true
+    },
+    {
+      "url": "http://127.0.0.1:18584/api/0/issues/2/",
+      "status": 401,
+      "expected": true
+    },
+    {
+      "url": "http://127.0.0.1:18584/api/0/issues/2/",
+      "status": 401,
+      "expected": true
+    }
+  ],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "url": "http://127.0.0.1:18584/api/0/organizations/closure-upgrade/releases/issue-write-mvri59up-f72adbe5%402.0.0/"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "url": "http://127.0.0.1:18584/api/v1/issues/2"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "url": "http://127.0.0.1:18584/api/0/issues/2/"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "url": "http://127.0.0.1:18584/api/0/issues/2/"
+    }
+  ],
+  "expectedResponses": [
+    "PUT http://127.0.0.1:18584/api/0/organizations/closure-upgrade/releases/issue-write-mvri59up-f72adbe5%402.0.0/ 403",
+    "PATCH http://127.0.0.1:18584/api/v1/issues/2 401",
+    "PUT http://127.0.0.1:18584/api/0/issues/2/ 401",
+    "GET http://127.0.0.1:18584/api/0/issues/2/ 401"
+  ],
+  "observedExpectedResponses": [
+    "PUT http://127.0.0.1:18584/api/0/organizations/closure-upgrade/releases/issue-write-mvri59up-f72adbe5%402.0.0/ 403",
+    "PATCH http://127.0.0.1:18584/api/v1/issues/2 401",
+    "PUT http://127.0.0.1:18584/api/0/issues/2/ 401",
+    "GET http://127.0.0.1:18584/api/0/issues/2/ 401"
+  ]
+}

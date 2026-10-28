@@ -1,0 +1,548 @@
+{
+  "passed": true,
+  "checks": [
+    "Restricted writer changes assignment using actual owner bare ID, user prefix and case-insensitive primary email, plus a real team when listed; null/empty unassign through both PUT families without changing SDK raw",
+    "Actual SDK captures consume two additional-error receipts; a changed SDK retry with the same event_id is acknowledged without consuming the last receipt, observing its release, adding activity or rewriting raw",
+    "A one-minute mute elapses on the actual runtime clock across a fresh official SDK capture; no database timestamp update or clock seam is used",
+    "Chosen release keeps an equal SDK recurrence resolved and a newer release regresses; latest selects a real project association, then a pending next-release policy binds and regresses through a new SDK release",
+    "Writer inherits issue/list/stats/event/legacy reads; release reads return403 and token-only native mutation without a session returns401. Invalid or malformed Bearer on compatible routes cannot fall back to the valid session cookie",
+    "Revocation denies reads and writes with a live cookie; all native latest/raw and legacy projection hashes survive and the SDK issue remains unresolved, unassigned and without policies for browser acceptance"
+  ],
+  "acknowledged": [
+    "24b0a1b8912945be8f22bb0afb9315b9",
+    "bc3fb27fb59b4abcbc9050256df4db62",
+    "bc3fb27fb59b4abcbc9050256df4db62",
+    "0e8f614a4d93409983a1ae5a50ea762c",
+    "0ddeaf705a2d40e28f5b0f1dc0079cb9",
+    "0ca4fb15b0814d34976619574b2a474e",
+    "a87f40f60d7041cc8411bdadaae3decf",
+    "83653128bbb142a1b8bd5bab7b386220"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/bc3fb27fb59b4abcbc9050256df4db62/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/bc3fb27fb59b4abcbc9050256df4db62/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0e8f614a4d93409983a1ae5a50ea762c/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0ddeaf705a2d40e28f5b0f1dc0079cb9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0ca4fb15b0814d34976619574b2a474e/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/a87f40f60d7041cc8411bdadaae3decf/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/83653128bbb142a1b8bd5bab7b386220/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/?project=2&query=",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/projects/closure-upgrade/issue-writer-sdk-mvri59up-f72adbe5/issues/?query=",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues-stats/?groups=2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/issues/2/events/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/bc3fb27fb59b4abcbc9050256df4db62/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0e8f614a4d93409983a1ae5a50ea762c/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0ddeaf705a2d40e28f5b0f1dc0079cb9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0ca4fb15b0814d34976619574b2a474e/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/a87f40f60d7041cc8411bdadaae3decf/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/83653128bbb142a1b8bd5bab7b386220/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/releases/issue-write-mvri59up-f72adbe5%401.0.0/",
+      "status": 403
+    },
+    {
+      "method": "PATCH",
+      "path": "api/v1/issues/2",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "api/0/issues/2/",
+      "status": 401
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/issues/2/",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/24b0a1b8912945be8f22bb0afb9315b9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/bc3fb27fb59b4abcbc9050256df4db62/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0e8f614a4d93409983a1ae5a50ea762c/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0ddeaf705a2d40e28f5b0f1dc0079cb9/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/0ca4fb15b0814d34976619574b2a474e/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/a87f40f60d7041cc8411bdadaae3decf/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/organizations/closure-upgrade/issues/2/events/83653128bbb142a1b8bd5bab7b386220/json/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "api/0/issues/2/",
+      "status": 401
+    },
+    {
+      "method": "PUT",
+      "path": "api/0/organizations/closure-upgrade/issues/2/",
+      "status": 401
+    }
+  ],
+  "captures": [
+    {
+      "eventID": "24b0a1b8912945be8f22bb0afb9315b9",
+      "release": "issue-write-mvri59up-f72adbe5@1.0.0",
+      "timestamp": 1793154328,
+      "duplicate": false
+    },
+    {
+      "eventID": "bc3fb27fb59b4abcbc9050256df4db62",
+      "release": "issue-write-mvri59up-f72adbe5@1.0.0",
+      "timestamp": 1793154318,
+      "duplicate": false
+    },
+    {
+      "eventID": "bc3fb27fb59b4abcbc9050256df4db62",
+      "release": "issue-write-mvri59up-f72adbe5@9.0.0",
+      "timestamp": 1793154308,
+      "duplicate": true
+    },
+    {
+      "eventID": "0e8f614a4d93409983a1ae5a50ea762c",
+      "release": "issue-write-mvri59up-f72adbe5@1.0.0",
+      "timestamp": 1793154298,
+      "duplicate": false
+    },
+    {
+      "eventID": "0ddeaf705a2d40e28f5b0f1dc0079cb9",
+      "release": "issue-write-mvri59up-f72adbe5@1.0.0",
+      "timestamp": 1793154288,
+      "duplicate": false
+    },
+    {
+      "eventID": "0ca4fb15b0814d34976619574b2a474e",
+      "release": "issue-write-mvri59up-f72adbe5@1.0.0",
+      "timestamp": 1793154278,
+      "duplicate": false
+    },
+    {
+      "eventID": "a87f40f60d7041cc8411bdadaae3decf",
+      "release": "issue-write-mvri59up-f72adbe5@1.1.0",
+      "timestamp": 1793154268,
+      "duplicate": false
+    },
+    {
+      "eventID": "83653128bbb142a1b8bd5bab7b386220",
+      "release": "issue-write-mvri59up-f72adbe5@2.0.0",
+      "timestamp": 1793154258,
+      "duplicate": false
+    }
+  ],
+  "legacyProjectionSHA256": {
+    "24b0a1b8912945be8f22bb0afb9315b9": "0106e6c7f3b9a1e3490ef21a45a6773f55a50e870065d6fbe0f76dcc9efb1d95",
+    "bc3fb27fb59b4abcbc9050256df4db62": "955fe770c22d487e1306c0de2dd4126d4237c40b2818e9a1c8603198b8dc2631",
+    "0e8f614a4d93409983a1ae5a50ea762c": "a15bf90ce5cf61af050f95e0aef20914cfc76343662077e17abb66b2eab144f1",
+    "0ddeaf705a2d40e28f5b0f1dc0079cb9": "1c8be3e45fd258a6fff33c45b4db35d09bd0424a0c64e56d322844e1bfa65604",
+    "0ca4fb15b0814d34976619574b2a474e": "6071f49db5a9719de1a5d8787946853b9af1e5b1f5278db034b6b8cc36b97b4d",
+    "a87f40f60d7041cc8411bdadaae3decf": "6a4025a91d285a70d6d4394e37e65dae41728219c6d76de30aaf8b8cf2d9f0a1",
+    "83653128bbb142a1b8bd5bab7b386220": "4fff33784dd6de960595a28ddf833a32f74768275e4259a0ed6e5843f7447d55"
+  },
+  "orgSlug": "closure-upgrade",
+  "projectID": "2",
+  "projectSlug": "issue-writer-sdk-mvri59up-f72adbe5",
+  "projectName": "Issue writer SDK mvri59up-f72adbe5",
+  "sdkVersion": "11.7.0",
+  "issueID": "2",
+  "nativeRawSHA256": "8d6837a22e8c42357508b493643405784f54d5ad88d9b0b53c5ebafce251db3a",
+  "teamAssignment": {
+    "tested": true,
+    "id": "1"
+  },
+  "expiry": {
+    "until": "2026-10-28T02:36:29.234318Z",
+    "elapsedMilliseconds": 61542,
+    "beforeCaptureStatus": "unresolved",
+    "afterCaptureStatus": "unresolved"
+  },
+  "eventIDs": [
+    "24b0a1b8912945be8f22bb0afb9315b9",
+    "bc3fb27fb59b4abcbc9050256df4db62",
+    "0e8f614a4d93409983a1ae5a50ea762c",
+    "0ddeaf705a2d40e28f5b0f1dc0079cb9",
+    "0ca4fb15b0814d34976619574b2a474e",
+    "a87f40f60d7041cc8411bdadaae3decf",
+    "83653128bbb142a1b8bd5bab7b386220"
+  ],
+  "releaseVersion": "issue-write-mvri59up-f72adbe5@2.0.0",
+  "baseURL": "http://127.0.0.1:18584/",
+  "basePath": "/",
+  "finalStatus": "unresolved",
+  "finalCount": 7
+}
