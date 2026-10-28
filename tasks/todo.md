@@ -1899,7 +1899,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-logs-025](../SPEC.md#close-logs-025) | Native OTLP log reception: Keep the existing native Logs listing/page/filter contract. SDK entries retain thei… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-026](../SPEC.md#close-logs-026) | Native OTLP log reception: The original Tailwind/daisyUI Projects view gains a per-project OpenTelemetry discl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-logs-027](../SPEC.md#close-logs-027) | Native OTLP log reception: Acceptance owners: pure internal/otlp consumer tests prove actual binary/JSON equiv… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-logs-028](../SPEC.md#close-logs-028) | Native OTLP log reception: Run the actual official Python SDK1.45.1 with opentelemetry-exporter-otlp-proto-htt… | implementada (local) | bloqueada | CI público de la revisión con ajuste del test; cotejo final por subresultado pendiente |
+| [CLOSE-logs-028](../SPEC.md#close-logs-028) | Native OTLP log reception: Run the actual official Python SDK1.45.1 with opentelemetry-exporter-otlp-proto-htt… | implementada | vigente | Cotejo y cuerpo anidado real 2026-10-27 abajo; imagen/CI públicos 8e95a6dd verificados |
 | [CLOSE-rendimiento-012](../SPEC.md#close-rendimiento-012) | Sentry spans and native telemetry reads: Current JavaScript SDKs use standalone span v2 envelopes by default.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-013](../SPEC.md#close-rendimiento-013) | Sentry spans and native telemetry reads: The telemetry UI exposes transaction aggregates and paginated log fil… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-rendimiento-014](../SPEC.md#close-rendimiento-014) | Sentry spans and native telemetry reads: The next telemetry slice adds native start and end query parameters t… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11175,3 +11175,35 @@ Los snapshots completos y configuración permanecen privados en `/tmp`.
 Subresultados pendientes de 084: ninguno. Evidencia vigente sobre la candidata
 pública identificada; esto no cierra el producto. Siguiente acción: completar
 el cotejo y persistencia del cuerpo anidado de CLOSE-logs-028.
+
+### Cotejo final de CLOSE-logs-028, 2026-10-27
+
+Se inspeccionaron owners y recibos de los ocho envíos oficiales anteriores:
+protobuf/JSON con identity/gzip, HTTP200 y respuestas decodificadas, int64 y
+nanosegundos exactos, recursos/scopes, severidad/traza, duplicados/replay,
+clave/proyecto ajenos, lectura completa y PostgreSQL. Se contrastaron también
+Node 11.7.0 con error/log/adjunto, navegador responsive con permisos/reintento/
+navegación pendiente y flags deshabilitados, límite413 sin pérdida de bytes,
+migración020→079 y reinicios. Owners en `logs-028-fresh/`; se conservan sus
+fallos e interpretaciones corregidas. Fuente/imagen/checks completos vigentes
+por identidad total del runtime y CI público de `8e95a6dd`, en `public-8e95/`.
+
+Faltaban cuerpos anidados reales: se añadieron cuatro envíos de los exportadores
+oficiales fijados, uno por protocolo/compresión. Cada envío contiene cuerpo
+objeto con array/bytes/vacíos/int64 extremos/nanosegundos, cuerpo bytes no vacío
+y cuerpo bytes vacío. Los 12 detalles completos, recursos y scopes son iguales
+al wire oficial decodificado. Los cuatro lotes PostgreSQL son iguales al
+LogsData completo esperado, con tres registros cada uno. Tras reiniciar solo
+`gsclosure028-goodsentry-1`, las 206 filas de las 73 tablas y todos los bytes
+canónicos permanecen exactos; los 12 detalles siguen idénticos. No se editaron
+fechas ni se reinició la base de aceptación.
+
+El worker acotado ejecutó transporte/lecturas y la primaria inspeccionó el
+script y comprobó independientemente PostgreSQL y persistencia. El primer
+intento de red denegada ocurrió antes de enviar datos y queda conservado.
+Pruebas, wire sintético, respuestas, detalles y resultados:
+`test-results/closure-20261025/logs-028-fresh/nested-bodies/`. Configuración y
+snapshots completos privados en `/tmp/goodsentry-closure-028/`.
+Subresultados pendientes de 028: ninguno. Siguiente acción: registrar el
+cotejo final de 033/047 y las invalidaciones de retención detectadas antes de
+continuar con la auditoría por requisito.
