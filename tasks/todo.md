@@ -12097,3 +12097,25 @@ Siguiente acción concreta: contrastar las estructuras históricas de líneas C7
 con fuentes primarias y buscar una pareja VC4 reproducible; diseñar y probar el
 lector de líneas solo cuando la interpretación quede sustentada. Continuar
 la investigación de mapas no directos sin asumir que selector equivale a índice.
+
+### Líneas C7 y límites desconocidos, 2026-10-28
+
+TIS describe `sstSrcModule` con las mismas tablas de archivos y líneas ST;
+Wine lee el primer bloque de líneas del módulo PDB antiguo con ese layout y
+usa nombres Pascal para MSF2/JG. Un par raíz (0,0) significa límites
+desconocidos, no un intervalo de un byte: OpenJDK lo confirma explícitamente.
+El lector actual lo trata como intervalo [0,1), por lo que puede rechazar
+contribuciones válidas. SPEC native018/019 ahora exige admitir raíz desconocida
+por segmento usando las contribuciones conocidas, sin extender su cobertura a
+huecos. Los límites (0,0) de una contribución de archivo siguen abiertos: no se
+ha demostrado aún cómo determinar su final sin atribuir líneas incorrectas.
+
+Fuentes: [TIS, sstSrcModule](https://open-watcom.github.io/open-watcom-1.9/devel/pe_and_symbols.pdf), páginas impresas72–73;
+[Wine, lector de líneas](https://github.com/wine-mirror/wine/blob/master/dlls/dbghelp/msc.c#L1484)
+y [uso en módulos PDB](https://github.com/wine-mirror/wine/blob/master/dlls/dbghelp/msc.c#L3624);
+[OpenJDK, límites raíz desconocidos](https://cr.openjdk.org/~poonam/SA-javadocs/sun/jvm/hotspot/debugger/win32/coff/DebugVC50SSSrcModule.html).
+
+Siguiente acción concreta: preparar RED en el owner C11/C7 con raíz (0,0),
+contribuciones conocidas, límites inválidos y controles de identidad; después
+implementar la lectura compartida y verificar HTTP/PG y regresiones. Conservar
+pendientes límites de archivo desconocidos y una pareja real VC4 independiente.

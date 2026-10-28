@@ -1310,11 +1310,13 @@ header: require a pre-VC50 Info identity and the same project-scoped NB10 PE
 association and direct section-map checks above. Decode MODI50 records and
 validate their declared extents. Decode C7 `S_LPROC32_16t` and
 `S_GPROC32_16t` with their 16-bit type index, distinct field offsets and bounded
-length-prefixed names. Preserve procedures and exact identities; bound C7 line
-data by its declared extent but do not interpret it until its layout is independently established.
+length-prefixed names. Preserve procedures and exact identities. For C7 module
+line data using the documented ST-name `sstSrcModule` layout, apply the native019
+reader and its budgets after validating the declared extent. Unknown file
+contribution extents and other historical line layouts remain required work.
 Reject malformed old headers, mixed incompatible procedure/signature layouts,
 bad stream extents and non-direct section mappings without partial symbols.
-Keep other old record kinds, C7 source lines and the remaining legacy profiles
+Keep other old record kinds and the remaining legacy profiles
 open. Owned public and HTTP/PostgreSQL tests must cover matching and mismatched
 PE identity, sections, malformed records and current format regressions.
 References: Microsoft's [old DBI conversion](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/dbi.cpp#L260),
@@ -1343,8 +1345,14 @@ invalidate the entire PDB, including its previously decoded procedures.
 Once the MSF2 or MSF7 signature identifies a PDB, a parse failure must not
 fall through to other object readers or salvage embedded Breakpad text.
 
-Interpret each SE end as the last included byte and convert to a half-open
-extent with checked uint64 arithmetic. Validate root ranges against their PE
+Interpret each known SE end as the last included byte and convert to a half-open
+extent with checked uint64 arithmetic. A root start/end pair of (0,0) denotes
+unknown bounds, not the one-byte range at offset zero. Validate its segment
+and use known file contributions for that segment without asserting root
+coverage. A file contribution with unknown (0,0) bounds is still unsupported
+and rejects the PDB without partial symbols; do not infer its end from
+unrelated functions or claim complete legacy support.
+Validate known root ranges against their PE
 sections. Once per module, sort and merge root ranges by segment; each file
 contribution must be covered by that segment's union using binary search,
 never a scan of all root ranges per contribution. This bounds coverage work
