@@ -12635,6 +12635,11 @@ La muestra real ejercita ST con flags0, no públicos16t. La primaria revisó el
 formato y las pruebas. Mapas no directos, otros perfiles, imagen/CI y el cierre
 nativo integral siguen pendientes.
 
+Se reconcilió native020 con esta decisión: la prohibición sin flag de privados
+retirados sigue aplicando a `S_PUB32` moderno; native018 define por separado el
+fallback ST/16t pre-VC70, incluso cuando existen privados. La prueba existente
+de `S_PUB32` sin flag continúa exigiendo que no se use ese fallback moderno.
+
 Siguiente acción concreta: buscar un productor o consumidor que traduzca
 selectores no directos a secciones PE y una muestra discriminante; si aún no
 existe evidencia suficiente, continuar el siguiente perfil nativo exigible sin
