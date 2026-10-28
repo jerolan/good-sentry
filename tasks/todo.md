@@ -12492,3 +12492,18 @@ finales siguen abiertos. La primaria revisó el código, el oracle y los checks.
 Siguiente acción concreta: investigar otras variantes de salto documentadas y
 su representación real; implementar solo las que tengan semántica y límites
 verificables, mientras continúa la búsqueda de mapas no directos.
+
+### Prerrequisito `/names` de LLVM, 2026-10-28
+
+La muestra pública `symbolformat.pdb` de LLVM contiene un salto moderno y líneas
+C13, pero GoodSentry rechaza el archivo antes de procesarlas. Su tabla `/names`
+tiene una entrada hash no nula que apunta a una cadena vacía terminada en un
+límite válido. El lector LLVM acepta esa representación; GoodSentry aplica a
+esa entrada auxiliar la regla más estricta de nombre de archivo no vacío.
+SPEC native019 distingue ahora ambos usos y mantiene la validación de nombres
+efectivamente referenciados por checksums y los demás límites.
+
+Siguiente acción concreta: preparar RED público con la tabla y controles de
+límites, corregir solo la validación de buckets y volver a inspeccionar la
+muestra LLVM. La compatibilidad del salto moderno sigue pendiente hasta que
+su archivo y sus rangos puedan verificarse íntegramente.
