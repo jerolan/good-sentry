@@ -10,7 +10,7 @@ import (
 // msf/src/open.rs, and microsoft/microsoft-pdb at
 // 805655a28bd8198004be2ac27e6e0290121a5e89, PDB/msf/msf.cpp and include/cvinfo.h.
 func SmallMSF2(pageSize int, age uint32, streamZeroAlias bool) Fixture {
-	return smallMSF2(pageSize, age, streamZeroAlias, nil, nil).Fixture
+	return smallMSF2(pageSize, age, streamZeroAlias, nil, nil, false).Fixture
 }
 
 type C11Fixture struct {
@@ -25,20 +25,34 @@ func WithC11SourceLines() C11Fixture {
 		{name: `C:\src\first.cc`, start: 0x10, end: 0x1f, offsets: []uint32{0x10, 0x10, 0x10, 0x14, 0x18, 0x1c}, lines: []uint16{0, 42, 43, 65535, 0, 44}},
 		{name: `C:\src\second.cc`, start: 0x28, end: 0x3f, offsets: []uint32{0x28, 0x30}, lines: []uint16{52, 53}},
 	})
-	return smallMSF2(1024, 1, false, lines, nil)
+	return smallMSF2(1024, 1, false, lines, nil, false)
 }
 
 func WithMultipleC11SourceLineModules() C11Fixture {
+	first, second := multipleC11SourceLinePayloads()
+	return smallMSF2(1024, 1, false, first, second, false)
+}
+
+// WithV50SourceLines needs companion PE sections and uses the 48-byte MODI50
+// prefix and a direct logical section map.
+func WithV50SourceLines(dbiAge uint32) C11Fixture {
+	first, second := multipleC11SourceLinePayloads()
+	fixture := smallMSF2(1024, 1, false, first, second, true)
+	binary.LittleEndian.PutUint32(fixture.Data[fixture.DBIBlock*1024+8:], dbiAge)
+	return fixture
+}
+
+func multipleC11SourceLinePayloads() ([]byte, []byte) {
 	first := c11SourceLines(0x10, 0x5f, []c11SourceFile{
 		{name: `C:\src\crash.cc`, start: 0x10, end: 0x5f, offsets: []uint32{0x10, 0x40}, lines: []uint16{42, 99}},
 	})
 	second := c11SourceLines(0x10, 0x5f, []c11SourceFile{
 		{name: `C:\src\crash.cc`, start: 0x10, end: 0x5f, offsets: []uint32{0x10, 0x20, 0x40}, lines: []uint16{77, 78, 52}},
 	})
-	return smallMSF2(1024, 1, false, first, second)
+	return first, second
 }
 
-func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []byte) C11Fixture {
+func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []byte, v50 bool) C11Fixture {
 	fpmPages := 0
 	switch pageSize {
 	case 1024:
@@ -63,6 +77,9 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 	module = append(module, c11...)
 	moduleInfo := moduleInfoRecord(4, symbolBytes, 0, "fixture.obj", "fixture.obj")
 	binary.LittleEndian.PutUint32(moduleInfo[40:], uint32(len(c11)))
+	if v50 {
+		moduleInfo = moduleInfo50(4, symbolBytes, len(c11), "fixture.obj")
+	}
 	var secondModule []byte
 	secondSymbolBytes := 0
 	if secondC11 != nil {
@@ -71,6 +88,9 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 		secondModule = append(secondModule, secondC11...)
 		record := moduleInfoRecord(6, secondSymbolBytes, 0, "fixture-extra.obj", "fixture-extra.obj")
 		binary.LittleEndian.PutUint32(record[40:], uint32(len(secondC11)))
+		if v50 {
+			record = moduleInfo50(6, secondSymbolBytes, len(secondC11), "fixture-extra.obj")
+		}
 		moduleInfo = append(moduleInfo, record...)
 	}
 	dbi := make([]byte, 64)
@@ -83,11 +103,26 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 	binary.LittleEndian.PutUint32(dbi[24:], uint32(len(moduleInfo)))
 	binary.LittleEndian.PutUint32(dbi[48:], 22)
 	binary.LittleEndian.PutUint32(dbi[52:], 25)
+	var sectionMap []byte
+	if v50 {
+		binary.LittleEndian.PutUint32(dbi[4:], 19960307)
+		binary.LittleEndian.PutUint32(dbi[48:], 0)
+		sectionMap = make([]byte, 24)
+		binary.LittleEndian.PutUint16(sectionMap, 1)
+		binary.LittleEndian.PutUint16(sectionMap[2:], 1)
+		binary.LittleEndian.PutUint16(sectionMap[4:], 1|4|8|0x100)
+		binary.LittleEndian.PutUint16(sectionMap[4+6:], 1)
+		binary.LittleEndian.PutUint32(sectionMap[4+16:], 0x100)
+		binary.LittleEndian.PutUint32(dbi[32:], uint32(len(sectionMap)))
+	}
 	dbi = append(dbi, moduleInfo...)
+	dbi = append(dbi, sectionMap...)
 	dbi = append(dbi, bytes.Repeat([]byte{0xe1}, 25)...)
 	optional := bytes.Repeat([]byte{0xff}, 22)
 	binary.LittleEndian.PutUint16(optional[10:], 5)
-	dbi = append(dbi, optional...)
+	if !v50 {
+		dbi = append(dbi, optional...)
+	}
 
 	section := make([]byte, 40)
 	copy(section, ".text")
@@ -96,6 +131,9 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 	binary.LittleEndian.PutUint32(section[16:], 0x100)
 	binary.LittleEndian.PutUint32(section[36:], 0x60000020)
 	streams := [][]byte{nil, info, nil, dbi, module, section}
+	if v50 {
+		streams[5] = nil
+	}
 	if secondModule != nil {
 		streams = append(streams, secondModule)
 	}
@@ -157,6 +195,71 @@ func smallMSF2(pageSize int, age uint32, streamZeroAlias bool, c11, secondC11 []
 		fixture.SecondC11Start = pages[6]*pageSize + secondSymbolBytes
 	}
 	return fixture
+}
+
+func moduleInfo50(stream uint16, symbols, c11 int, name string) []byte {
+	record := make([]byte, 48)
+	binary.LittleEndian.PutUint16(record[26:], stream)
+	binary.LittleEndian.PutUint32(record[28:], uint32(symbols))
+	binary.LittleEndian.PutUint32(record[32:], uint32(c11))
+	record = append(record, name...)
+	record = append(record, 0)
+	record = append(record, name...)
+	record = append(record, 0)
+	for len(record)%4 != 0 {
+		record = append(record, 0)
+	}
+	return record
+}
+
+type PEFixture struct {
+	Data          []byte
+	SectionHeader int
+	DebugEntry    int
+	CodeView      int
+}
+
+// V50CompanionPE is a data-only PE32 with a file-pointer-only NB10 record.
+func V50CompanionPE(timestamp, age uint32) PEFixture {
+	data := make([]byte, 0x600)
+	copy(data, "MZ")
+	binary.LittleEndian.PutUint32(data[0x3c:], 0x80)
+	copy(data[0x80:], "PE\x00\x00")
+	binary.LittleEndian.PutUint16(data[0x84:], 0x14c)
+	binary.LittleEndian.PutUint16(data[0x86:], 1)
+	binary.LittleEndian.PutUint16(data[0x94:], 224)
+	binary.LittleEndian.PutUint16(data[0x96:], 0x2102)
+	const optional = 0x98
+	binary.LittleEndian.PutUint16(data[optional:], 0x10b)
+	binary.LittleEndian.PutUint32(data[optional+16:], 0x1010)
+	binary.LittleEndian.PutUint32(data[optional+20:], 0x1000)
+	binary.LittleEndian.PutUint32(data[optional+28:], 0x400000)
+	binary.LittleEndian.PutUint32(data[optional+32:], 0x1000)
+	binary.LittleEndian.PutUint32(data[optional+36:], 0x200)
+	binary.LittleEndian.PutUint32(data[optional+56:], 0x2000)
+	binary.LittleEndian.PutUint32(data[optional+60:], 0x200)
+	binary.LittleEndian.PutUint16(data[optional+68:], 3)
+	binary.LittleEndian.PutUint32(data[optional+92:], 16)
+	binary.LittleEndian.PutUint32(data[optional+96+6*8:], 0x1200)
+	binary.LittleEndian.PutUint32(data[optional+96+6*8+4:], 28)
+	const section = 0x178
+	copy(data[section:], ".text")
+	binary.LittleEndian.PutUint32(data[section+8:], 0x400)
+	binary.LittleEndian.PutUint32(data[section+12:], 0x1000)
+	binary.LittleEndian.PutUint32(data[section+16:], 0x400)
+	binary.LittleEndian.PutUint32(data[section+20:], 0x200)
+	binary.LittleEndian.PutUint32(data[section+36:], 0x60000020)
+	const debug = 0x400
+	const codeView = 0x480
+	path := []byte("different-name.pdb\x00")
+	binary.LittleEndian.PutUint32(data[debug+12:], 2)
+	binary.LittleEndian.PutUint32(data[debug+16:], uint32(16+len(path)))
+	binary.LittleEndian.PutUint32(data[debug+24:], codeView)
+	copy(data[codeView:], "NB10")
+	binary.LittleEndian.PutUint32(data[codeView+8:], timestamp)
+	binary.LittleEndian.PutUint32(data[codeView+12:], age)
+	copy(data[codeView+16:], path)
+	return PEFixture{Data: data, SectionHeader: section, DebugEntry: debug, CodeView: codeView}
 }
 
 type c11SourceFile struct {

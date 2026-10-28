@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"testing"
 	"time"
 
@@ -125,6 +126,194 @@ func TestParseNativePDBProcedureSymbols(t *testing.T) {
 	Symbolicate(&crash, SymbolSet{object.DebugID: object.Functions})
 	if crash.Frames[0].Function != "" {
 		t.Fatalf("mismatched PDB identity symbolized frame: %+v", crash.Frames[0])
+	}
+}
+
+func TestBuildSymbolTablesV50PDBCompanionSections(t *testing.T) {
+	const id = "65ae75631"
+	pe := nativepdb.V50CompanionPE(0x65ae7563, 1)
+	v50 := nativepdb.WithV50SourceLines(0)
+	v50EqualAge := nativepdb.WithV50SourceLines(1)
+	mutatePE := func(change func([]byte)) []byte {
+		data := append([]byte(nil), pe.Data...)
+		change(data)
+		return data
+	}
+	pair := func(pdb, image []byte) []DebugSymbolFile {
+		return []DebugSymbolFile{{Name: "uploaded.pdb", Content: pdb}, {Name: "different-image.exe", Content: image}}
+	}
+	type archiveEntry struct {
+		name string
+		data []byte
+		mode fs.FileMode
+	}
+	pack := func(format string, entries ...archiveEntry) []byte {
+		var data bytes.Buffer
+		if format == "zip" {
+			writer := zip.NewWriter(&data)
+			for _, item := range entries {
+				header := &zip.FileHeader{Name: item.name, Method: zip.Deflate}
+				if item.mode != 0 {
+					header.SetMode(item.mode)
+				}
+				entry, err := writer.CreateHeader(header)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := entry.Write(item.data); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := writer.Close(); err != nil {
+				t.Fatal(err)
+			}
+		} else {
+			writer := tar.NewWriter(&data)
+			for _, item := range entries {
+				if err := writer.WriteHeader(&tar.Header{Name: item.name, Mode: 0600, Size: int64(len(item.data)), Typeflag: tar.TypeReg}); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := writer.Write(item.data); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := writer.Close(); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if format == "tar.gz" {
+			return pdbGzipDebugArchive(t, data.Bytes())
+		}
+		return data.Bytes()
+	}
+	peEntry := archiveEntry{name: "image.exe", data: pe.Data}
+	pdbEntry := archiveEntry{name: "elsewhere.pdb", data: v50.Data}
+	conflicting := mutatePE(func(data []byte) { binary.LittleEndian.PutUint32(data[pe.SectionHeader+8:], 0x300) })
+	identical := mutatePE(func(data []byte) { data[pe.CodeView+16] = 'x' })
+	nonDirect := append([]byte(nil), v50.Data...)
+	moduleSize := int(binary.LittleEndian.Uint32(nonDirect[v50.DBIBlock*1024+24:]))
+	binary.LittleEndian.PutUint32(nonDirect[v50.DBIBlock*1024+64+moduleSize+4+12:], 0x40)
+	mapDescriptor := v50.DBIBlock*1024 + 64 + moduleSize + 4
+	overlayMap := append([]byte(nil), v50.Data...)
+	binary.LittleEndian.PutUint16(overlayMap[mapDescriptor+2:], 1)
+	groupMap := append([]byte(nil), v50.Data...)
+	binary.LittleEndian.PutUint16(groupMap[mapDescriptor+4:], 1)
+	badFPO := append([]byte(nil), v50.Data...)
+	binary.LittleEndian.PutUint32(badFPO[v50.DBIBlock*1024+64+36:], 0xffffffff)
+	contradictoryRVA := mutatePE(func(data []byte) {
+		size := int(binary.LittleEndian.Uint32(data[pe.DebugEntry+16:]))
+		copy(data[0x4c0:], data[pe.CodeView:pe.CodeView+size])
+		binary.LittleEndian.PutUint32(data[pe.DebugEntry+20:], 0x12c0)
+	})
+	conflictingRecords := mutatePE(func(data []byte) {
+		binary.LittleEndian.PutUint32(data[0x98+96+6*8+4:], 56)
+		copy(data[pe.DebugEntry+28:], data[pe.DebugEntry:pe.DebugEntry+28])
+		size := int(binary.LittleEndian.Uint32(data[pe.DebugEntry+16:]))
+		copy(data[0x4c0:], data[pe.CodeView:pe.CodeView+size])
+		binary.LittleEndian.PutUint32(data[pe.DebugEntry+28+24:], 0x4c0)
+		binary.LittleEndian.PutUint32(data[0x4c0+8:], 0x65ae7564)
+	})
+	ambiguousRVA := append(append([]byte(nil), pe.Data...), make([]byte, 0x200)...)
+	binary.LittleEndian.PutUint16(ambiguousRVA[0x86:], 2)
+	copy(ambiguousRVA[pe.SectionHeader+40:], ambiguousRVA[pe.SectionHeader:pe.SectionHeader+40])
+	binary.LittleEndian.PutUint32(ambiguousRVA[pe.SectionHeader+40+20:], 0x400)
+	copy(ambiguousRVA[0x600:], ambiguousRVA[pe.DebugEntry:pe.DebugEntry+28])
+	own := nativepdb.WithMultipleC11SourceLineModules()
+	badOwn := append([]byte(nil), own.Data...)
+	directory := int(binary.LittleEndian.Uint16(badOwn[60:])) * 1024
+	binary.LittleEndian.PutUint32(badOwn[directory+4+5*8:], 39)
+	type pairCase struct {
+		name             string
+		files            []DebugSymbolFile
+		wantSymbol       bool
+		wantNoObject     bool
+		wantParsedObject bool
+	}
+	cases := []pairCase{
+		{name: "direct pair DBI age zero", files: pair(v50.Data, pe.Data), wantSymbol: true},
+		{name: "direct pair equal DBI age", files: pair(v50EqualAge.Data, pe.Data), wantSymbol: true},
+		{name: "PE precedes PDB", files: []DebugSymbolFile{{Name: "image.exe", Content: pe.Data}, {Name: "symbols.pdb", Content: v50.Data}}, wantSymbol: true},
+		{name: "matching declared identities", files: []DebugSymbolFile{{Name: "uploaded.pdb", DebugID: id, Content: v50.Data}, {Name: "image.exe", DebugID: id, Content: pe.Data}}, wantSymbol: true},
+		{name: "matching CodeView RVA and file pointer", files: pair(v50.Data, mutatePE(func(data []byte) { binary.LittleEndian.PutUint32(data[pe.DebugEntry+20:], 0x1280) })), wantSymbol: true},
+		{name: "identical section tables reused", files: append(pair(v50.Data, pe.Data), DebugSymbolFile{Name: "copy.exe", Content: identical}), wantSymbol: true},
+		{name: "missing companion", files: []DebugSymbolFile{{Name: "uploaded.pdb", Content: v50.Data}}},
+		{name: "PE alone emits no object", files: []DebugSymbolFile{{Name: "image.exe", Content: pe.Data}}},
+		{name: "PE overlay FUNC emits no object", files: []DebugSymbolFile{{Name: "renamed.exe", Content: append(append([]byte(nil), pe.Data...), []byte("\nFUNC 1010 20 0 OverlayFunction\n")...)}}, wantNoObject: true},
+		{name: "companion timestamp differs", files: pair(v50.Data, nativepdb.V50CompanionPE(0x65ae7564, 1).Data)},
+		{name: "companion age differs", files: pair(v50.Data, nativepdb.V50CompanionPE(0x65ae7563, 2).Data)},
+		{name: "PDB metadata cannot relabel identity", files: []DebugSymbolFile{{Name: "uploaded.pdb", DebugID: "65ae75632", Content: v50.Data}, {Name: "image.exe", Content: pe.Data}}},
+		{name: "PE metadata cannot relabel identity", files: []DebugSymbolFile{{Name: "uploaded.pdb", Content: v50.Data}, {Name: "image.exe", DebugID: "65ae75632", Content: pe.Data}}},
+		{name: "nonzero DBI age differs", files: pair(nativepdb.WithV50SourceLines(2).Data, pe.Data)},
+		{name: "non direct section map unsupported", files: pair(nonDirect, pe.Data)},
+		{name: "section map overlay unsupported", files: pair(overlayMap, pe.Data)},
+		{name: "section map group unsupported", files: pair(groupMap, pe.Data)},
+		{name: "FPO extent exceeds module", files: pair(badFPO, pe.Data)},
+		{name: "conflicting section tables ambiguous", files: append(pair(v50.Data, pe.Data), DebugSymbolFile{Name: "conflict.exe", Content: conflicting})},
+		{name: "truncated PE section contents", files: pair(v50.Data, pe.Data[:0x500])},
+		{name: "NB10 header truncated", files: pair(v50.Data, mutatePE(func(data []byte) { binary.LittleEndian.PutUint32(data[pe.DebugEntry+16:], 15) }))},
+		{name: "NB10 filename not terminated", files: pair(v50.Data, mutatePE(func(data []byte) {
+			size := int(binary.LittleEndian.Uint32(data[pe.DebugEntry+16:]))
+			data[pe.CodeView+size-1] = 'x'
+		}))},
+		{name: "CodeView RVA contradicts valid file pointer", files: pair(v50.Data, contradictoryRVA)},
+		{name: "conflicting NB10 records discard whole PE", files: pair(v50.Data, conflictingRecords)},
+		{name: "ambiguous debug directory RVA", files: pair(v50.Data, ambiguousRVA)},
+		{name: "own section stream ignores bad companion", files: pair(own.Data, pe.Data[:0x500]), wantSymbol: true},
+		{name: "malformed own sections not rescued", files: pair(badOwn, pe.Data)},
+		{name: "zip regular PE companion", files: []DebugSymbolFile{{Name: "uploaded.pdb", Content: v50.Data}, {Name: "companion.zip", Content: pack("zip", peEntry)}}, wantSymbol: true},
+		{name: "zip symlink PE supplies no sections", files: []DebugSymbolFile{{Name: "uploaded.pdb", Content: v50.Data}, {Name: "companion.zip", Content: pack("zip", archiveEntry{name: peEntry.name, data: peEntry.data, mode: fs.ModeSymlink | 0777})}}},
+		{name: "nested regular archive pair", files: []DebugSymbolFile{{Name: "outer.zip", Content: pack("zip", archiveEntry{name: "inner.tar", data: pack("tar", peEntry, pdbEntry)})}}, wantSymbol: true, wantParsedObject: true},
+	}
+	for _, format := range []string{"zip", "tar", "tar.gz"} {
+		cases = append(cases, pairCase{name: format + " pair", files: []DebugSymbolFile{{Name: "symbols." + format, Content: pack(format, peEntry, pdbEntry)}}, wantSymbol: true, wantParsedObject: format == "zip"})
+		broken := pack(format, peEntry, archiveEntry{name: "broken.zip", data: []byte{'P', 'K', 3, 4, 0}})
+		cases = append(cases, pairCase{name: format + " failure cannot leak early PE", files: []DebugSymbolFile{{Name: "uploaded.pdb", Content: v50.Data}, {Name: "broken." + format, Content: broken}}})
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			if test.wantNoObject {
+				for _, file := range test.files {
+					if objects := ParseDebugObjects(file.Name, file.Content); len(objects) != 0 {
+						t.Errorf("PE overlay produced symbol objects: %+v", objects)
+					}
+				}
+			}
+			symbols, _ := BuildSymbolTables(test.files)
+			if !test.wantSymbol && len(symbols) != 0 {
+				t.Errorf("unusable V50 pair emitted %d symbol keys", len(symbols))
+			}
+			tables := []SymbolSet{symbols}
+			if test.wantParsedObject {
+				objects := ParseDebugObjects(test.files[0].Name, test.files[0].Content)
+				if len(objects) != 1 || objects[0].DebugID != id {
+					t.Fatalf("public archive parser objects=%+v, want one PDB with identity %q", objects, id)
+				}
+				tables = append(tables, SymbolSet{id: objects[0].Functions})
+			}
+			for tableIndex, table := range tables {
+				crash := Crash{
+					Modules: []Module{{Name: "renamed.exe", Base: 0x140000000, Size: 0x10000, DebugID: id}},
+					Frames: []Frame{
+						{Module: "renamed.exe", Instruction: 0x140001015},
+						{Module: "renamed.exe", Instruction: 0x140001045},
+					},
+				}
+				Symbolicate(&crash, table)
+				for i, want := range []struct {
+					function string
+					line     int
+				}{{"CrashFunction", 42}, {"OtherModuleFunction", 52}} {
+					frame := crash.Frames[i]
+					if test.wantSymbol {
+						if frame.Function != want.function || frame.File != `C:\src\crash.cc` || frame.Line != want.line {
+							t.Errorf("V50 table[%d] frame[%d]=%+v, want %s C:\\src\\crash.cc:%d", tableIndex, i, frame, want.function, want.line)
+						}
+					} else if frame.Function != "" || frame.File != "" || frame.Line != 0 {
+						t.Errorf("unusable V50 pair returned frame[%d]=%+v", i, frame)
+					}
+				}
+			}
+		})
 	}
 }
 

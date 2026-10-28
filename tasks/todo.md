@@ -11994,3 +11994,38 @@ Siguiente acción concreta: revisión independiente del diseño y test-audit,
 fixtures propias con RED de identidad/secciones/edad y archivos comprimidos;
 después implementar el flujo completo, comprobar C11 y comparar las tuplas
 privadas de la pareja real. Old DBI y demás perfiles pendientes no se excluyen.
+
+### Asociación V50 y PE verificada localmente, 2026-10-28
+
+Se implementó el perfil directo de native018: MODI50, edad DBI0, extensión FPO
+validada y secciones PE asociadas por NB10 dentro del conjunto del proyecto.
+La asociación admite archivos y miembros regulares de ZIP/TAR/gzip-TAR, conserva
+los límites por pasada y descarta candidatos de archivos inválidos o tablas
+ambiguas. Los segmentos usados deben tener frame directo, offset, overlay y
+group cero y rangos acotados. La imagen PE aporta solo metadata; un overlay con
+texto Breakpad no produce objetos. Los miembros ZIP simbólicos no aportan datos.
+El selector 0x100 no se rechaza por sí solo: aparece en la muestra y en el
+productor COFF de LLVM. Las tablas propias válidas siguen teniendo prioridad.
+
+El owner público reprodujo primero el fallo del par V50, y después dos defectos
+independientemente revisados (overlay PE y miembro ZIP no regular); controles
+RED adicionales mostraron los campos overlay/group no directos. Los controles
+positivos incluyen dos módulos C11, archivos y anidación, y negativos de identidad,
+edad, metadata, rangos, conflictos y archivos inválidos. El owner HTTP/PG mostró
+RED con el código base y verifica la asociación en el mismo proyecto y su
+rechazo entre proyectos. La primaria comparó 2481 tuplas completas de la pareja
+histórica con el oracle independiente sin publicar ni ejecutar los binarios.
+
+Comprobante: test-results/closure-20261025/nativo-v50-implementacion/.
+La revisión independiente detectó y comprobó las correcciones PE/ZIP; la última
+precisión overlay/group se contrastó con las estructuras Microsoft/LLVM. El
+worker de pruebas quedó sin créditos en su última tarea, pero dejó los controles
+editados y la primaria los terminó, ejecutó y revisó. Las evidencias de native004
+integral y dependientes siguen invalidadas para el candidato final: este perfil
+no acredita mapas V50 no directos, old DBI, otras codificaciones, Portable PDB,
+unwinding, servidor de símbolos, publicación ni CI del candidato.
+
+Siguiente acción concreta: investigar con fuentes primarias la traducción de
+mapas V50 no directos y su evidencia real; fijar en SPEC los casos resolubles y
+agregar pruebas de comportamiento antes de implementarlos. Conservar como
+pendiente old DBI y continuar después los demás criterios nativos según el plan.

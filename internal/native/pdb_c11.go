@@ -127,6 +127,9 @@ func pdbC11SectionRange(segment uint16, start, last uint32, sections []pdbSectio
 		return pdbC11Range{}, false
 	}
 	section := sections[segment-1]
+	if section.invalidMap {
+		return pdbC11Range{}, false
+	}
 	end := uint64(last) + 1
 	if end > uint64(max(section.virtualSize, section.rawSize)) || uint64(section.virtualAddr)+end > uint64(1)<<32 {
 		return pdbC11Range{}, false

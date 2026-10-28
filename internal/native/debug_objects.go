@@ -45,17 +45,36 @@ type DebugObject struct {
 // parses the upload as one object. Unsupported or malformed content yields no
 // objects so a project can retain it without making Minidump ingestion fail.
 func ParseDebugObjects(name string, data []byte) []DebugObject {
+	companions := pdbCompanions{}
+	collectPDBCompanions(companions, name, data, "")
+	return parseDebugObjectsWithCompanions(name, data, companions)
+}
+
+type debugLeafParser func(string, []byte) (DebugObject, bool)
+
+func parseDebugObjectsWithCompanions(name string, data []byte, companions pdbCompanions) []DebugObject {
+	return parseDebugInput(name, data, func(name string, data []byte) (DebugObject, bool) {
+		return parseDebugObjectWithCompanions(name, data, companions)
+	})
+}
+
+func parseDebugInput(name string, data []byte, parse debugLeafParser) []DebugObject {
+	objects, _ := scanDebugInput(name, data, parse)
+	return objects
+}
+
+func scanDebugInput(name string, data []byte, parse debugLeafParser) ([]DebugObject, bool) {
 	if isDebugArchive(data) {
-		objects, err := parseDebugArchive(data, 1, &debugArchiveBudget{})
+		objects, err := parseDebugArchive(data, 1, &debugArchiveBudget{}, parse)
 		if err != nil {
-			return nil
+			return nil, false
 		}
-		return objects
+		return objects, true
 	}
-	if object, ok := parseDebugObject(name, data); ok {
-		return []DebugObject{object}
+	if object, ok := parse(name, data); ok {
+		return []DebugObject{object}, true
 	}
-	return nil
+	return nil, true
 }
 
 func isDebugZIP(data []byte) bool {
@@ -74,22 +93,22 @@ func isGzip(data []byte) bool {
 	return len(data) >= 2 && data[0] == 0x1f && data[1] == 0x8b
 }
 
-func parseDebugArchive(data []byte, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
+func parseDebugArchive(data []byte, depth int, budget *debugArchiveBudget, parse debugLeafParser) ([]DebugObject, error) {
 	if depth < 1 || depth > maxDebugArchiveDepth {
 		return nil, errors.New("debug archive nesting exceeds processing limits")
 	}
 	if isDebugZIP(data) {
-		return parseDebugZIPArchive(data, depth, budget)
+		return parseDebugZIPArchive(data, depth, budget, parse)
 	}
 	if isDebugTAR(data) || isGzip(data) {
-		return parseDebugTARArchive(data, depth, budget)
+		return parseDebugTARArchive(data, depth, budget, parse)
 	}
 	return nil, errors.New("unsupported debug archive")
 }
 
-func parseDebugArchiveEntry(name string, data []byte, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
+func parseDebugArchiveEntry(name string, data []byte, depth int, budget *debugArchiveBudget, parse debugLeafParser) ([]DebugObject, error) {
 	if !isDebugArchive(data) {
-		if object, ok := parseDebugObject(name, data); ok {
+		if object, ok := parse(name, data); ok {
 			return []DebugObject{object}, nil
 		}
 		return nil, nil
@@ -97,10 +116,10 @@ func parseDebugArchiveEntry(name string, data []byte, depth int, budget *debugAr
 	if depth >= maxDebugArchiveDepth {
 		return nil, errors.New("debug archive nesting exceeds processing limits")
 	}
-	return parseDebugArchive(data, depth+1, budget)
+	return parseDebugArchive(data, depth+1, budget, parse)
 }
 
-func parseDebugTARArchive(data []byte, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
+func parseDebugTARArchive(data []byte, depth int, budget *debugArchiveBudget, parse debugLeafParser) ([]DebugObject, error) {
 	var source io.Reader = bytes.NewReader(data)
 	var compressed *gzip.Reader
 	if isGzip(data) {
@@ -113,7 +132,7 @@ func parseDebugTARArchive(data []byte, depth int, budget *debugArchiveBudget) ([
 	}
 	limited := &io.LimitedReader{R: source, N: maxDebugArchiveBytes + 1}
 	counted := &countingReader{Reader: limited}
-	objects, err := parseDebugTAR(counted, depth, budget)
+	objects, err := parseDebugTAR(counted, depth, budget, parse)
 	if err == nil {
 		err = drainTARPadding(limited)
 	}
@@ -131,7 +150,7 @@ func parseDebugTARArchive(data []byte, depth int, budget *debugArchiveBudget) ([
 	return objects, nil
 }
 
-func parseDebugTAR(source *countingReader, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
+func parseDebugTAR(source *countingReader, depth int, budget *debugArchiveBudget, parse debugLeafParser) ([]DebugObject, error) {
 	reader := tar.NewReader(source)
 	objects := []DebugObject{}
 	for {
@@ -169,7 +188,7 @@ func parseDebugTAR(source *countingReader, depth int, budget *debugArchiveBudget
 			}
 			return nil, err
 		}
-		members, err := parseDebugArchiveEntry(header.Name, content, depth, budget)
+		members, err := parseDebugArchiveEntry(header.Name, content, depth, budget, parse)
 		if err != nil {
 			return nil, err
 		}
@@ -206,7 +225,7 @@ func drainTARPadding(source io.Reader) error {
 	}
 }
 
-func parseDebugZIPArchive(data []byte, depth int, budget *debugArchiveBudget) ([]DebugObject, error) {
+func parseDebugZIPArchive(data []byte, depth int, budget *debugArchiveBudget, parse debugLeafParser) ([]DebugObject, error) {
 	reader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil || len(reader.File) == 0 || len(reader.File) > maxDebugArchiveEntries {
 		if err == nil {
@@ -219,7 +238,7 @@ func parseDebugZIPArchive(data []byte, depth int, budget *debugArchiveBudget) ([
 		if err := budget.addEntry(entry.UncompressedSize64); err != nil {
 			return nil, err
 		}
-		if entry.FileInfo().IsDir() || entry.UncompressedSize64 == 0 {
+		if !entry.Mode().IsRegular() || entry.UncompressedSize64 == 0 {
 			continue
 		}
 		file, err := entry.Open()
@@ -237,7 +256,7 @@ func parseDebugZIPArchive(data []byte, depth int, budget *debugArchiveBudget) ([
 		if uint64(len(content)) != entry.UncompressedSize64 {
 			return nil, io.ErrUnexpectedEOF
 		}
-		members, err := parseDebugArchiveEntry(entry.Name, content, depth, budget)
+		members, err := parseDebugArchiveEntry(entry.Name, content, depth, budget, parse)
 		if err != nil {
 			return nil, err
 		}
@@ -246,7 +265,7 @@ func parseDebugZIPArchive(data []byte, depth int, budget *debugArchiveBudget) ([
 	return objects, nil
 }
 
-func parseDebugObject(name string, data []byte) (DebugObject, bool) {
+func parseDebugObjectWithCompanions(name string, data []byte, companions pdbCompanions) (DebugObject, bool) {
 	if isDebugArchive(data) {
 		return DebugObject{}, false
 	}
@@ -260,11 +279,14 @@ func parseDebugObject(name string, data []byte) (DebugObject, bool) {
 		return object, true
 	}
 	if bytes.HasPrefix(data, msf7Magic) || bytes.HasPrefix(data, msf2Magic) {
-		debugID, functions, ok := parsePDBSymbols(data)
+		debugID, functions, ok := parsePDBSymbolsWithCompanions(data, companions)
 		if !ok {
 			return DebugObject{}, false
 		}
 		return DebugObject{Name: moduleKey(name), DebugID: debugID, Functions: functions}, true
+	}
+	if len(data) >= 2 && bytes.Equal(data[:2], []byte("MZ")) {
+		return DebugObject{}, false
 	}
 	key, functions := ParseObjectSymbols(name, data)
 	_, unwind := ParseObjectUnwind(name, data)

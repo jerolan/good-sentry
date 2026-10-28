@@ -19,9 +19,13 @@ type DebugSymbolFile struct {
 func BuildSymbolTables(files []DebugSymbolFile) (SymbolSet, UnwindSet) {
 	symbols := SymbolSet{}
 	unwindTables := UnwindSet{}
+	companions := pdbCompanions{}
+	for _, file := range files {
+		collectPDBCompanions(companions, file.Name, file.Content, file.DebugID)
+	}
 	for _, file := range files {
 		debugKey := DebugKey(file.DebugID)
-		for _, object := range ParseDebugObjects(file.Name, file.Content) {
+		for _, object := range parseDebugObjectsWithCompanions(file.Name, file.Content, companions) {
 			objectDebugKey := DebugKey(object.DebugID)
 			aliasKey := DebugKey(object.debugIDAlias)
 			if objectDebugKey != "" && debugKey != "" && debugKey != objectDebugKey && debugKey != aliasKey {

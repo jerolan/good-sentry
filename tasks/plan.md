@@ -26,9 +26,10 @@ is implemented with integral evidence still invalidated. A real 1997 MSF2/DBI V5
 PDB and its matching PE establish that this profile can have DBI age0, a 48-byte
 module prefix and no optional section-header stream. Its standalone parser yields
 no symbols. Native018 now specifies PE/PDB association, bounded archive handling
-and direct-map V50 parsing using that evidence. Review this design, add owning
-RED fixtures, implement the association and compare full tuples from the real
-sample. Non-direct V50 maps and old DBI remain unresolved profiles. Keep Portable PDB,
+and direct-map V50 parsing. Implemented locally with owned RED/GREEN, project
+isolation and a full 2481-tuple comparison against the independent real-sample
+oracle. Investigate non-direct V50 maps and old DBI as unresolved profiles;
+retain their requirement and do not infer support from this direct-map sample. Keep Portable PDB,
 unwinding and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
 unrelated release/UI proofs without a changed dependency.

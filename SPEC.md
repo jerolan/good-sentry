@@ -1255,9 +1255,9 @@ section RVAs from module names, serialized pointers or the section map.
 
 This increment admits the direct V50 section-map profile: every segment used
 by a procedure or C11 line must have a valid logical descriptor whose physical
-frame equals its one-based segment number, whose offset is zero and whose
-length contains the referenced range. Resolve its RVA from the corresponding
-PE section, checking both descriptor and section bounds. A missing, malformed
+frame equals its one-based segment number, whose offset, overlay and group are
+zero, and whose length contains the referenced range. Resolve its RVA from the
+corresponding PE section, checking both descriptor and section bounds. A missing, malformed
 or non-direct mapping must not produce partial symbols. Mapping other logical
 segments, including nonzero offsets and different frames, remains required
 legacy work and must not be claimed as supported by this increment.

@@ -55,10 +55,14 @@ type pdbSection struct {
 	virtualAddr uint32
 	rawSize     uint32
 	flags       uint32
+	legacyMap   bool
+	invalidMap  bool
 }
 
 type pdbSectionMapEntry struct {
 	flags         uint16
+	overlay       uint16
+	group         uint16
 	frame         uint16
 	offset        uint32
 	sectionLength uint32
@@ -93,6 +97,10 @@ type pdbSymbolScope struct {
 }
 
 func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
+	return parsePDBSymbolsWithCompanions(data, nil)
+}
+
+func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (string, []SymbolFunction, bool) {
 	if len(data) > maxPDBBytes {
 		return "", nil, false
 	}
@@ -113,7 +121,12 @@ func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
 	}
 	age := binary.LittleEndian.Uint32(info[8:])
 	dbi, ok := msf.readStream(3)
-	if !ok || len(dbi) < 64 || int32(binary.LittleEndian.Uint32(dbi)) != -1 || !knownDBIVersion(binary.LittleEndian.Uint32(dbi[4:])) || binary.LittleEndian.Uint32(dbi[8:]) != age {
+	if !ok || len(dbi) < 64 || int32(binary.LittleEndian.Uint32(dbi)) != -1 || !knownDBIVersion(binary.LittleEndian.Uint32(dbi[4:])) {
+		return "", nil, false
+	}
+	version := binary.LittleEndian.Uint32(dbi[4:])
+	dbiAge := binary.LittleEndian.Uint32(dbi[8:])
+	if dbiAge != age && !(version == 19960307 && dbiAge == 0) {
 		return "", nil, false
 	}
 	debugID := pdbInfoDebugID(info)
@@ -124,29 +137,50 @@ func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
 	if !ok {
 		return "", nil, false
 	}
-	if optionalHeaderSize < 12 || optionalHeaderSize%2 != 0 {
-		return "", nil, false
-	}
 	moduleStart := 64
 	optionalStart := moduleStart + moduleSize + sectionContributionSize + sectionMapSize + sourceInfoSize + typeServerSize + ecSize
-	sectionStreamIndex := binary.LittleEndian.Uint16(dbi[optionalStart+5*2:])
-	sectionsData, ok := msf.readStream(sectionStreamIndex)
-	if !ok {
-		return "", nil, false
+	var sections []pdbSection
+	sectionStreamIndex := pdbModuleStreamAbsent
+	if optionalHeaderSize != 0 {
+		if optionalHeaderSize < 12 || optionalHeaderSize%2 != 0 {
+			return "", nil, false
+		}
+		sectionStreamIndex = binary.LittleEndian.Uint16(dbi[optionalStart+5*2:])
 	}
-	sections, ok := parsePDBSections(sectionsData)
-	if !ok {
-		return "", nil, false
+	if version == 19960307 && sectionStreamIndex == pdbModuleStreamAbsent {
+		candidate, found := companions[DebugKey(debugID)]
+		if !found || candidate.ambiguous {
+			return "", nil, false
+		}
+		sections = candidate.sections
+	} else {
+		if optionalHeaderSize == 0 {
+			return "", nil, false
+		}
+		sectionsData, ok := msf.readStream(sectionStreamIndex)
+		if !ok {
+			return "", nil, false
+		}
+		sections, ok = parsePDBSections(sectionsData)
+		if !ok {
+			return "", nil, false
+		}
+	}
+	sectionMapStart := moduleStart + moduleSize + sectionContributionSize
+	sectionMapData := dbi[sectionMapStart : sectionMapStart+sectionMapSize]
+	if version == 19960307 {
+		sections, ok = directPDBLegacySections(sectionMapData, sections)
+		if !ok {
+			return "", nil, false
+		}
 	}
 	moduleData := dbi[moduleStart : moduleStart+moduleSize]
-	functions, ok := parsePDBModules(msf, moduleData, sections, info)
+	functions, ok := parsePDBModulesVersion(msf, moduleData, sections, info, version)
 	if !ok {
 		return "", nil, false
 	}
 	if binary.LittleEndian.Uint16(dbi[56:])&(1<<1) != 0 {
-		sectionMapStart := moduleStart + moduleSize + sectionContributionSize
-		sectionMap := dbi[sectionMapStart : sectionMapStart+sectionMapSize]
-		publicFunctions, ok := parsePDBPublicFunctions(msf, binary.LittleEndian.Uint16(dbi[20:]), sectionMap, sections)
+		publicFunctions, ok := parsePDBPublicFunctions(msf, binary.LittleEndian.Uint16(dbi[20:]), sectionMapData, sections)
 		if !ok {
 			return "", nil, false
 		}
@@ -180,6 +214,30 @@ func parsePDBSections(data []byte) ([]pdbSection, bool) {
 			rawSize:     binary.LittleEndian.Uint32(header[16:]),
 			flags:       binary.LittleEndian.Uint32(header[36:]),
 		}
+	}
+	return sections, true
+}
+
+// Only the observed direct mapping is admitted here. Other logical mappings
+// require their own verified translation rather than guessed PE addresses.
+func directPDBLegacySections(data []byte, physical []pdbSection) ([]pdbSection, bool) {
+	entries, ok := parsePDBSectionMap(data)
+	if !ok {
+		return nil, false
+	}
+	logicalCount := int(binary.LittleEndian.Uint16(data[2:]))
+	sections := make([]pdbSection, logicalCount)
+	for i := range sections {
+		entry := entries[i]
+		sections[i] = pdbSection{legacyMap: true, invalidMap: true}
+		if i >= len(physical) || entry.frame != uint16(i+1) || entry.offset != 0 || entry.overlay != 0 || entry.group != 0 || entry.sectionLength == 0 || entry.flags&(pdbSectionMapAbsolute|pdbSectionMapGroup) != 0 {
+			continue
+		}
+		section := physical[i]
+		section.virtualSize = min(section.virtualSize, entry.sectionLength)
+		section.rawSize = min(section.rawSize, entry.sectionLength)
+		section.legacyMap = true
+		sections[i] = section
 	}
 	return sections, true
 }
@@ -428,7 +486,8 @@ func parsePDBSectionMap(data []byte) ([]pdbSectionMapEntry, bool) {
 	for i := range entries {
 		record := data[4+i*20 : 4+(i+1)*20]
 		entries[i] = pdbSectionMapEntry{
-			flags: binary.LittleEndian.Uint16(record), frame: binary.LittleEndian.Uint16(record[6:]),
+			flags: binary.LittleEndian.Uint16(record), overlay: binary.LittleEndian.Uint16(record[2:]),
+			group: binary.LittleEndian.Uint16(record[4:]), frame: binary.LittleEndian.Uint16(record[6:]),
 			offset: binary.LittleEndian.Uint32(record[12:]), sectionLength: binary.LittleEndian.Uint32(record[16:]),
 		}
 	}
@@ -469,21 +528,39 @@ func inferredPDBPublicFunctions(publicFunctions []pdbPublicFunction) []SymbolFun
 }
 
 func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, pdbInfo []byte) ([]SymbolFunction, bool) {
+	return parsePDBModulesVersion(msf, moduleInfo, sections, pdbInfo, 0)
+}
+
+func parsePDBModulesVersion(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, pdbInfo []byte, version uint32) ([]SymbolFunction, bool) {
 	var functions []SymbolFunction
 	modules, procedures, records := 0, 0, 0
 	sourceBudget := pdbSourceBudget{}
 	inlineSites, inlineRecords, inlineAnnotations, inlineeRecords := 0, 0, 0, 0
 	var inlineNames map[uint32]string
 	for offset := 0; offset < len(moduleInfo); {
-		if len(moduleInfo)-offset < 64 || modules == maxPDBModules {
+		prefixSize := 64
+		if version == 19960307 {
+			prefixSize = 48
+		}
+		if len(moduleInfo)-offset < prefixSize || modules == maxPDBModules {
 			return nil, false
 		}
 		modules++
-		moduleStreamIndex := binary.LittleEndian.Uint16(moduleInfo[offset+34:])
-		symbolBytes := binary.LittleEndian.Uint32(moduleInfo[offset+36:])
-		c11Bytes := binary.LittleEndian.Uint32(moduleInfo[offset+40:])
-		c13Bytes := binary.LittleEndian.Uint32(moduleInfo[offset+44:])
-		nameStart := offset + 64
+		streamOffset := 34
+		if version == 19960307 {
+			streamOffset = 26
+		}
+		moduleStreamIndex := binary.LittleEndian.Uint16(moduleInfo[offset+streamOffset:])
+		symbolBytes := binary.LittleEndian.Uint32(moduleInfo[offset+streamOffset+2:])
+		c11Bytes := binary.LittleEndian.Uint32(moduleInfo[offset+streamOffset+6:])
+		otherBytes := binary.LittleEndian.Uint32(moduleInfo[offset+streamOffset+10:])
+		var c13Bytes, fpoBytes uint32
+		if version == 19960307 {
+			fpoBytes = otherBytes
+		} else {
+			c13Bytes = otherBytes
+		}
+		nameStart := offset + prefixSize
 		nameEnd := bytes.IndexByte(moduleInfo[nameStart:], 0)
 		if nameEnd < 0 {
 			return nil, false
@@ -500,13 +577,13 @@ func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, 
 		}
 		offset = next
 		if moduleStreamIndex == pdbModuleStreamAbsent {
-			if symbolBytes != 0 || c11Bytes != 0 || c13Bytes != 0 {
+			if symbolBytes != 0 || c11Bytes != 0 || c13Bytes != 0 || fpoBytes != 0 {
 				return nil, false
 			}
 			continue
 		}
 		moduleStream, ok := msf.readStream(moduleStreamIndex)
-		streamEnd := uint64(symbolBytes) + uint64(c11Bytes) + uint64(c13Bytes)
+		streamEnd := uint64(symbolBytes) + uint64(c11Bytes) + uint64(c13Bytes) + uint64(fpoBytes)
 		if !ok || symbolBytes < 4 || streamEnd > uint64(len(moduleStream)) || (c11Bytes != 0 && c13Bytes != 0) {
 			return nil, false
 		}
@@ -1138,8 +1215,11 @@ func parsePDBModuleSymbolsWithInlineSites(data []byte, sections []pdbSection, fu
 			if procedure.segment == 0 || int(procedure.segment) > len(sections) {
 				return false
 			}
+			section := sections[procedure.segment-1]
+			if section.invalidMap || section.legacyMap && procedure.size > 0 && (procedure.offset >= max(section.virtualSize, section.rawSize) || procedure.size > max(section.virtualSize, section.rawSize)-procedure.offset) {
+				return false
+			}
 			if procedure.size > 0 {
-				section := sections[procedure.segment-1]
 				sectionSize := max(section.virtualSize, section.rawSize)
 				if section.flags&0x20000000 != 0 {
 					if procedure.offset >= sectionSize || procedure.size > sectionSize-procedure.offset {

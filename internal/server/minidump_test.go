@@ -854,23 +854,56 @@ func TestNativeRISCV64MinidumpIngestion(t *testing.T) {
 func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 	const embeddedID = "5A9832E5287241C1838ED98914E9B7FF1"
 	for _, test := range []struct {
-		name       string
-		uploadedID string
-		wantSymbol bool
+		name                  string
+		uploadedID            string
+		v50                   bool
+		companionOtherProject bool
+		wantSymbol            bool
 	}{
 		{name: "matching identity", uploadedID: embeddedID, wantSymbol: true},
 		{name: "mismatched uploaded identity", uploadedID: "5A9832E5287241C1838ED98914E9B7FF2"},
+		{name: "V50 companion in same project", uploadedID: "65ae75631", v50: true, wantSymbol: true},
+		{name: "V50 companion only in another project", uploadedID: "65ae75631", v50: true, companionOtherProject: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			pdb := nativepdb.WithSourceLines(false).Data
+			if test.v50 {
+				pdb = nativepdb.WithV50SourceLines(0).Data
+			}
 			digest := sha1.Sum(pdb)
 			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
 			if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "crash.pdb", "pdb", test.uploadedID, "x86_64", "crash.exe", hex.EncodeToString(digest[:]), nil, nil, pdb); err != nil {
 				t.Fatal(err)
 			}
+			if test.v50 {
+				companionProjectID := f.project.ID
+				if test.companionOtherProject {
+					other, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Other V50 companion project", "native")
+					if err != nil {
+						t.Fatal(err)
+					}
+					companionProjectID = other.ID
+				}
+				pe := nativepdb.V50CompanionPE(0x65ae7563, 1).Data
+				peDigest := sha1.Sum(pe)
+				if _, err := f.db.SaveDebugFile(f.ctx, access, companionProjectID, "companion.exe", "pe", test.uploadedID, "x86_64", "companion.exe", hex.EncodeToString(peDigest[:]), nil, nil, pe); err != nil {
+					t.Fatal(err)
+				}
+			}
 
 			minidump := buildNativeModuleMinidump(t, "C:\\test\\crash.exe", embeddedID, 0x1015)
+			if test.v50 {
+				codeView := make([]byte, 16+len("unrelated.pdb\x00"))
+				copy(codeView, "NB10")
+				binary.LittleEndian.PutUint32(codeView[8:], 0x65ae7563)
+				binary.LittleEndian.PutUint32(codeView[12:], 1)
+				copy(codeView[16:], "unrelated.pdb\x00")
+				moduleRVA := nativeTestMinidumpStreamRVA(minidump, 4)
+				binary.LittleEndian.PutUint32(minidump[moduleRVA+4+76:], uint32(len(codeView)))
+				binary.LittleEndian.PutUint32(minidump[moduleRVA+4+80:], uint32(len(minidump)))
+				minidump = append(minidump, codeView...)
+			}
 			body, contentType := minidumpForm(t, minidump, nil)
 			req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
 			if err != nil {
@@ -894,6 +927,11 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 				t.Fatalf("stored PDB minidump event: %d %v", len(events), err)
 			}
 			var payload struct {
+				DebugMeta struct {
+					Images []struct {
+						DebugID string `json:"debug_id"`
+					} `json:"images"`
+				} `json:"debug_meta"`
 				Exception struct {
 					Values []struct {
 						Stacktrace struct {
@@ -904,6 +942,9 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 			}
 			if err := json.Unmarshal(events[0].Data, &payload); err != nil {
 				t.Fatal(err)
+			}
+			if test.v50 && (len(payload.DebugMeta.Images) != 1 || native.DebugKey(payload.DebugMeta.Images[0].DebugID) != "65ae75631") {
+				t.Fatalf("V50 minidump identity=%+v, want 65ae75631", payload.DebugMeta.Images)
 			}
 			if len(payload.Exception.Values) != 1 || len(payload.Exception.Values[0].Stacktrace.Frames) == 0 {
 				t.Fatalf("PDB minidump frames: %+v", payload.Exception)
@@ -918,6 +959,9 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 			}
 			if !test.wantSymbol && (frame.Filename != "" || frame.Line != 0) {
 				t.Fatalf("mismatched PDB identity returned source line: %+v", frame)
+			}
+			if test.companionOtherProject && frame.Function != "" {
+				t.Fatalf("another project's PE enabled V50 symbolication: %+v", frame)
 			}
 		})
 	}
