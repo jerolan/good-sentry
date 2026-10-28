@@ -10,6 +10,7 @@ import (
 
 func TestLegacyThunkSymbolication(t *testing.T) {
 	original := nativepdb.WithLegacyThunk().Data
+	variant := nativepdb.WithLegacyThunkVariant().Data
 	name := bytes.Index(original, []byte("LegacyThunk"))
 	if name < 26 {
 		t.Fatal("fixture thunk missing")
@@ -20,6 +21,12 @@ func TestLegacyThunkSymbolication(t *testing.T) {
 		edit(data[offset:])
 		return data
 	}
+	mutateVariant := func(edit func([]byte)) []byte {
+		data := append([]byte(nil), variant...)
+		position := bytes.Index(data, []byte("LegacyThunk")) - 26
+		edit(data[position:])
+		return data
+	}
 	for _, tc := range []struct {
 		name   string
 		data   []byte
@@ -27,7 +34,15 @@ func TestLegacyThunkSymbolication(t *testing.T) {
 		reject bool
 	}{
 		{"ordinal zero", original, "LegacyThunk", false},
-		{"unsupported ordinal", mutate(func(r []byte) { r[24] = 1 }), "", false},
+		{"nonzero ordinal with variant", variant, "LegacyThunk", false},
+		{"first nonzero ordinal", mutateVariant(func(r []byte) { r[24] = 1 }), "LegacyThunk", false},
+		{"vcall ordinal", mutateVariant(func(r []byte) { r[24] = 2 }), "LegacyThunk", false},
+		{"unknown-load ordinal", mutateVariant(func(r []byte) { r[24] = 4 }), "LegacyThunk", false},
+		{"incremental ordinal", mutateVariant(func(r []byte) { r[24] = 5 }), "LegacyThunk", false},
+		{"last documented ordinal", mutateVariant(func(r []byte) { r[24] = 6 }), "LegacyThunk", false},
+		{"variant with invalid name", mutateVariant(func(r []byte) { r[25] = 255 }), "", true},
+		{"variant with invalid range", mutateVariant(func(r []byte) { binary.LittleEndian.PutUint32(r[16:], 0xff) }), "", true},
+		{"unsupported ordinal", mutate(func(r []byte) { r[24] = 7 }), "", false},
 		{"truncated name", mutate(func(r []byte) { r[25] = 255 }), "", true},
 		{"nonzero alignment", mutate(func(r []byte) { r[25]-- }), "", true},
 		{"empty name", mutate(func(r []byte) { r[25] = 0 }), "", true},
@@ -59,6 +74,17 @@ func TestC7LegacyThunkUsesCompanionPE(t *testing.T) {
 	Symbolicate(&crash, tables)
 	if crash.Frames[0].Function != "LegacyThunk" {
 		t.Fatalf("C7 thunk frame=%+v", crash.Frames[0])
+	}
+}
+
+func TestC7LegacyThunkVariantUsesCompanionPE(t *testing.T) {
+	pdb := nativepdb.OldDBIC7WithThunkVariant().Data
+	pe := nativepdb.V50CompanionPE(0x65ae7563, 1).Data
+	tables, _ := BuildSymbolTables([]DebugSymbolFile{{Name: "old.pdb", Content: pdb}, {Name: "old.exe", Content: pe}})
+	crash := Crash{Modules: []Module{{Name: "program.exe", Base: 0x10000000, Size: 0x10000, DebugID: "65ae75631"}}, Frames: []Frame{{Instruction: 0x10001065, Module: "program.exe"}}}
+	Symbolicate(&crash, tables)
+	if crash.Frames[0].Function != "LegacyThunk" {
+		t.Fatalf("C7 thunk variant frame=%+v", crash.Frames[0])
 	}
 }
 

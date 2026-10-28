@@ -12575,3 +12575,23 @@ presentan como verificados con una muestra antigua independiente.
 Siguiente acción concreta: preparar RED público/HTTP de ordinal no cero con
 datos variantes, comprobar límites y rechazo de nombres/rangos inválidos y
 verificar regresiones de ambos formatos y del oracle MSF2 existente.
+
+### Variantes de saltos antiguos verificadas, 2026-10-28
+
+Los módulos C7/C11 resuelven ordinales0–6 por su nombre ST y rango declarado;
+los datos variantes no cero permanecen opacos y los ordinales desconocidos se
+omiten. Los controles de nombre y rango se aplican también a esas variantes.
+
+RED nativo y HTTP reprodujo el salto ausente; GREEN cubrió todos los ordinales
+documentados, datos variantes, C7, límites e aislamiento. La muestra MSF2 real
+de ordinal0 mantuvo sus10422 tuplas sin diferencias. Race nativo aprobó733
+acciones y servidor43; la captura moderna, vet y build pasaron. Comprobante:
+test-results/closure-20261025/nativo-legacy-variants/. No se afirma contar con
+una muestra antigua independiente de ordinal no cero.
+
+La primaria revisó el cambio. Mapas no directos, otras variantes de formato,
+imagen/CI y native004 integral siguen abiertos.
+
+Siguiente acción concreta: investigar los mapas de secciones no directos con
+productores o consumidores verificables; si sigue faltando una relación de
+selector a PE, avanzar otro perfil exigible sin inventar esa traducción.

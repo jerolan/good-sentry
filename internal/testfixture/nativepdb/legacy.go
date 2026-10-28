@@ -53,15 +53,25 @@ func multipleC11SourceLinePayloads() ([]byte, []byte) {
 }
 
 func WithLegacyThunk() Fixture {
+	return legacyThunk(0, nil)
+}
+
+func WithLegacyThunkVariant() Fixture {
+	return legacyThunk(3, []byte{0xa1, 0xb2, 0xc3, 0xd4})
+}
+
+func legacyThunk(ordinal byte, variant []byte) Fixture {
 	name := []byte("LegacyThunk")
-	record := make([]byte, 26+len(name))
+	record := make([]byte, 26+len(name)+len(variant))
 	binary.LittleEndian.PutUint16(record, uint16(len(record)-2))
 	binary.LittleEndian.PutUint16(record[2:], 0x0206)
 	binary.LittleEndian.PutUint32(record[16:], 0x60)
 	binary.LittleEndian.PutUint16(record[20:], 1)
 	binary.LittleEndian.PutUint16(record[22:], 0x10)
+	record[24] = ordinal
 	record[25] = byte(len(name))
 	copy(record[26:], name)
+	copy(record[26+len(name):], variant)
 	return smallMSF2(1024, 1, false, nil, nil, false, record).Fixture
 }
 
@@ -385,10 +395,19 @@ func OldDBIC7() Fixture {
 }
 
 func OldDBIC7WithThunk() Fixture {
+	return oldDBIC7WithThunk(WithLegacyThunk())
+}
+
+func OldDBIC7WithThunkVariant() Fixture {
+	return oldDBIC7WithThunk(WithLegacyThunkVariant())
+}
+
+func oldDBIC7WithThunk(sourceFixture Fixture) Fixture {
 	f := OldDBIC7()
-	source := WithLegacyThunk().Data
+	source := sourceFixture.Data
 	name := bytes.Index(source, []byte("LegacyThunk"))
-	record := source[name-26 : name+len("LegacyThunk")]
+	start := name - 26
+	record := source[start : start+int(binary.LittleEndian.Uint16(source[start:]))+2]
 	dbi := f.DBIBlock * 1024
 	symbolBytes := binary.LittleEndian.Uint32(f.Data[dbi+24+28:])
 	copy(f.Data[f.ModuleBlock*1024+int(symbolBytes):], record)

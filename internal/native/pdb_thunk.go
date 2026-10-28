@@ -28,7 +28,7 @@ func parsePDBThunks(data []byte, sections []pdbSection, procedures *int, signatu
 		if len(body) < 21 {
 			return nil, false
 		}
-		if legacy && body[20] != 0 || !legacy && body[20] > 6 {
+		if body[20] > 6 {
 			continue
 		}
 		if len(body) < 22 {
@@ -41,7 +41,7 @@ func parsePDBThunks(data []byte, sections []pdbSection, procedures *int, signatu
 				return nil, false
 			}
 			tail := body[22+n:]
-			if len(tail) > 3 || bytes.Count(tail, []byte{0}) != len(tail) {
+			if body[20] == 0 && (len(tail) > 3 || bytes.Count(tail, []byte{0}) != len(tail)) {
 				return nil, false
 			}
 			name = string(body[22 : 22+n])

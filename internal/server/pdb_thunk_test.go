@@ -15,12 +15,15 @@ import (
 )
 
 func TestLegacyThunkMinidumpProjectIsolation(t *testing.T) {
-	for _, other := range []bool{false, true} {
-		t.Run(map[bool]string{false: "same project", true: "other project"}[other], func(t *testing.T) {
+	for _, tc := range []struct {
+		name           string
+		other, variant bool
+	}{{"same project", false, false}, {"other project", true, false}, {"nonzero ordinal", false, true}} {
+		t.Run(tc.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
 			project := f.project.ID
-			if other {
+			if tc.other {
 				p, e := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Other thunk project", "native")
 				if e != nil {
 					t.Fatal(e)
@@ -28,6 +31,9 @@ func TestLegacyThunkMinidumpProjectIsolation(t *testing.T) {
 				project = p.ID
 			}
 			pdb := nativepdb.WithLegacyThunk().Data
+			if tc.variant {
+				pdb = nativepdb.WithLegacyThunkVariant().Data
+			}
 			digest := sha1.Sum(pdb)
 			if _, e := f.db.SaveDebugFile(f.ctx, access, project, "legacy.pdb", "pdb", "65ae75631", "x86_64", "legacy.pdb", hex.EncodeToString(digest[:]), nil, nil, pdb); e != nil {
 				t.Fatal(e)
@@ -74,7 +80,7 @@ func TestLegacyThunkMinidumpProjectIsolation(t *testing.T) {
 			}
 			frame := payload.Exception.Values[0].Stacktrace.Frames[0]
 			want := "LegacyThunk"
-			if other {
+			if tc.other {
 				want = ""
 			}
 			if frame.Function != want {
