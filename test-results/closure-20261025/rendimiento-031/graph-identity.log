@@ -1,8 +1,0 @@
-=== RUN   TestTraceResolvesMixedSourcesWithoutGuessingContainerParents
---- PASS: TestTraceResolvesMixedSourcesWithoutGuessingContainerParents (0.45s)
-=== RUN   TestTraceExplicitParentPreferenceAmbiguityAndAllCycleEdges
---- PASS: TestTraceExplicitParentPreferenceAmbiguityAndAllCycleEdges (0.65s)
-=== RUN   TestTraceEqualTimeOrderUsesNumericProjectSourceRowAndOrdinal
---- PASS: TestTraceEqualTimeOrderUsesNumericProjectSourceRowAndOrdinal (0.61s)
-PASS
-ok  	goodsentry/internal/store	1.732s

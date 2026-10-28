@@ -1,9 +1,0 @@
-[
-  {
-    "id": "5",
-    "count": "1",
-    "title": "RuntimeError: Python SDK error run214b",
-    "matchingEventId": "8fa96df723d14a11911b496f1db83acf",
-    "environment": "errors-python-acceptance"
-  }
-]

@@ -1,4 +1,0 @@
-=== RUN   TestChunkedDebugFileAssemblyState
---- PASS: TestChunkedDebugFileAssemblyState (0.58s)
-PASS
-ok  	goodsentry/internal/server	0.588s

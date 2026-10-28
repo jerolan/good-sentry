@@ -1,4 +1,0 @@
-=== RUN   TestArchiveConfigurationAliasesDefaultsAndRuntimeSupport
---- PASS: TestArchiveConfigurationAliasesDefaultsAndRuntimeSupport (0.00s)
-PASS
-ok  	goodsentry/internal/config	0.003s

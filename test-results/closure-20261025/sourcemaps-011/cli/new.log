@@ -1,4 +1,0 @@
-error: A project ID or slug is required (provide with --project)
-
-Add --log-level=[info|debug] or export SENTRY_LOG_LEVEL=[info|debug] to see more output.
-Please attach the full debug log to all bug reports.

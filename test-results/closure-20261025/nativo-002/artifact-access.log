@@ -1,8 +1,0 @@
-=== RUN   TestArtifactUploadCurrentRoleOrganizationAndProjectScope
-=== RUN   TestArtifactUploadCurrentRoleOrganizationAndProjectScope/read-only
-=== RUN   TestArtifactUploadCurrentRoleOrganizationAndProjectScope/empty_project_selection
---- PASS: TestArtifactUploadCurrentRoleOrganizationAndProjectScope (0.46s)
-    --- PASS: TestArtifactUploadCurrentRoleOrganizationAndProjectScope/read-only (0.00s)
-    --- PASS: TestArtifactUploadCurrentRoleOrganizationAndProjectScope/empty_project_selection (0.00s)
-PASS
-ok  	goodsentry/internal/store	0.472s

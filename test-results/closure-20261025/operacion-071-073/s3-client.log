@@ -1,9 +1,0 @@
-=== RUN   TestS3ObjectsUsePathStyleAndRoundTrip
-SDK 2026/10/26 18:09:27 DEBUG Response has no supported checksum. Not validating response payload.
-SDK 2026/10/26 18:09:27 DEBUG Response has no supported checksum. Not validating response payload.
-SDK 2026/10/26 18:09:27 DEBUG Response has no supported checksum. Not validating response payload.
---- PASS: TestS3ObjectsUsePathStyleAndRoundTrip (0.00s)
-=== RUN   TestS3ObjectsRejectInvalidSettingsKeysAndSizes
---- PASS: TestS3ObjectsRejectInvalidSettingsKeysAndSizes (0.00s)
-PASS
-ok  	goodsentry/internal/spanarchive	0.011s

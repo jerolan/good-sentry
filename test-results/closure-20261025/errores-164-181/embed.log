@@ -1,4 +1,0 @@
-=== RUN   TestEmbedErrorPageHTTP
---- PASS: TestEmbedErrorPageHTTP (0.46s)
-PASS
-ok  	goodsentry/internal/server	0.473s

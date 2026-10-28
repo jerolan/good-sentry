@@ -1,6 +1,0 @@
-=== RUN   TestCompatibleDebugFileUploadListAndPermissions
---- PASS: TestCompatibleDebugFileUploadListAndPermissions (0.53s)
-=== RUN   TestCompatibleDebugFilePagingBoundsAndCSRF
---- PASS: TestCompatibleDebugFilePagingBoundsAndCSRF (0.99s)
-PASS
-ok  	goodsentry/internal/server	1.537s

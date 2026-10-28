@@ -1,6 +1,0 @@
-=== RUN   TestSentryWizardHTTPContract
---- PASS: TestSentryWizardHTTPContract (0.50s)
-=== RUN   TestSentryWizardAdmissionExpiryAndBrowserRedirect
---- PASS: TestSentryWizardAdmissionExpiryAndBrowserRedirect (0.49s)
-PASS
-ok  	goodsentry/internal/server	1.002s

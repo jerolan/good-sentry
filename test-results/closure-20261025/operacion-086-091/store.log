@@ -1,6 +1,0 @@
-=== RUN   TestSpanArchiveS3QueryRestartAndExpiry
-SDK 2026/10/26 18:23:14 DEBUG Response has no supported checksum. Not validating response payload.
-SDK 2026/10/26 18:23:14 DEBUG Response has no supported checksum. Not validating response payload.
---- PASS: TestSpanArchiveS3QueryRestartAndExpiry (0.69s)
-PASS
-ok  	goodsentry/internal/store	0.699s

@@ -1,8 +1,0 @@
-{
-  "passed": true,
-  "tables": 73,
-  "rows": 182,
-  "allRowMultisetsEqual": true,
-  "batches": 10,
-  "logs": 60
-}

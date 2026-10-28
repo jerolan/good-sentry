@@ -1,6 +1,0 @@
-{
-  "checks": [],
-  "screenshots": [],
-  "pageErrors": [],
-  "error": "AssertionError [ERR_ASSERTION]: wizard hash endpoint\n\n404 !== 200\n"
-}

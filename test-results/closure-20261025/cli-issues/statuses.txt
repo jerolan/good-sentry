@@ -1,3 +1,0 @@
-before: 1 unresolved, 2 unresolved, 3 unresolved
-after_resolve: 1 unresolved, 2 resolved, 3 resolved
-after_mute: 1 ignored, 2 resolved, 3 resolved

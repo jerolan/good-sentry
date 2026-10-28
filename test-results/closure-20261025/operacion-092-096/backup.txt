@@ -1,1 +1,0 @@
--rw-rw-r-- 1 dev dev 190363 Oct 26 18:35 /tmp/gs092.dump

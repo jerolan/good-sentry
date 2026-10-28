@@ -1,8 +1,0 @@
-{
-  "passed": true,
-  "sdk": "11.7.0",
-  "expiredIdentityFreshOnSameGroup": true,
-  "retainedIdentityDuplicate": true,
-  "muteAdvancedExactlyOnce": true,
-  "firstSeenLifetimeOnce": true
-}

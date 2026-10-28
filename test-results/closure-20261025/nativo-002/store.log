@@ -1,6 +1,0 @@
-=== RUN   TestDebugFileStorageDeduplicationAndScope
---- PASS: TestDebugFileStorageDeduplicationAndScope (0.41s)
-=== RUN   TestDebugFileMigration042PreservesProjectsAndReopens
---- PASS: TestDebugFileMigration042PreservesProjectsAndReopens (0.50s)
-PASS
-ok  	goodsentry/internal/store	0.921s

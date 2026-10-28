@@ -1,8 +1,0 @@
-=== RUN   TestCreateCompatibleProjectInTeam
---- PASS: TestCreateCompatibleProjectInTeam (0.38s)
-PASS
-ok  	goodsentry/internal/store	1.406s
-=== RUN   TestCreateCompatibleProjectHTTP
---- PASS: TestCreateCompatibleProjectHTTP (0.55s)
-PASS
-ok  	goodsentry/internal/server	1.568s

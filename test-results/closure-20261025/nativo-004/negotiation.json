@@ -1,1 +1,0 @@
-{"accept":["debug_files","artifact_bundles"],"chunkSize":1048576,"chunksPerRequest":16,"compression":["gzip"],"concurrency":2,"hashAlgorithm":"sha1","maxFileSize":67108864,"maxRequestSize":33554432,"url":"http://127.0.0.1:18345/api/0/organizations/native-cli-org/chunk-upload/"}

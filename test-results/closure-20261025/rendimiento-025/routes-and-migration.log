@@ -1,8 +1,0 @@
-=== RUN   TestCompatibleTransactionGroupsDetailTrendAndSpansHTTP
---- PASS: TestCompatibleTransactionGroupsDetailTrendAndSpansHTTP (1.14s)
-PASS
-ok  	goodsentry/internal/server	1.148s
-=== RUN   TestCompatibleTransactionGroupMigration052PreservesTelemetryAndReopens
---- PASS: TestCompatibleTransactionGroupMigration052PreservesTelemetryAndReopens (0.95s)
-PASS
-ok  	goodsentry/internal/store	0.959s

@@ -1,8 +1,0 @@
-=== RUN   TestCompatibleProjectTeamAssignmentSingleRelation
---- PASS: TestCompatibleProjectTeamAssignmentSingleRelation (0.39s)
-PASS
-ok  	goodsentry/internal/store	1.413s
-=== RUN   TestCompatibleProjectTeamRelationshipHTTP
---- PASS: TestCompatibleProjectTeamRelationshipHTTP (0.56s)
-PASS
-ok  	goodsentry/internal/server	1.576s

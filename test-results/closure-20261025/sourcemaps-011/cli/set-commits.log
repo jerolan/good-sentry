@@ -1,7 +1,0 @@
-error: API request failed
-
-Caused by:
-    sentry reported an error: Credential requires one of these scopes: org:read (http status: 403)
-
-Add --log-level=[info|debug] or export SENTRY_LOG_LEVEL=[info|debug] to see more output.
-Please attach the full debug log to all bug reports.

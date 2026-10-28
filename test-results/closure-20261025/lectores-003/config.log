@@ -1,8 +1,0 @@
-=== RUN   TestFeatureAliasesAndRuntimeOptions
-=== RUN   TestFeatureAliasesAndRuntimeOptions/ENABLE_ADMIN
-=== RUN   TestFeatureAliasesAndRuntimeOptions/ENABLE_OPENAPI
---- PASS: TestFeatureAliasesAndRuntimeOptions (0.00s)
-    --- PASS: TestFeatureAliasesAndRuntimeOptions/ENABLE_ADMIN (0.00s)
-    --- PASS: TestFeatureAliasesAndRuntimeOptions/ENABLE_OPENAPI (0.00s)
-PASS
-ok  	goodsentry/internal/config	0.004s

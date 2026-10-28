@@ -1,4 +1,0 @@
-=== RUN   TestAccountDSNCaptureAndTriage
---- PASS: TestAccountDSNCaptureAndTriage (20.59s)
-PASS
-ok  	goodsentry/internal/server	20.600s

@@ -1,8 +1,0 @@
-=== RUN   TestTraceProjectionUpgradePreservesStatisticsDuringCancellation
---- PASS: TestTraceProjectionUpgradePreservesStatisticsDuringCancellation (0.50s)
-=== RUN   TestProjectTransactionSpansHistoricalPendingAndExactNormalization
---- PASS: TestProjectTransactionSpansHistoricalPendingAndExactNormalization (0.69s)
-=== RUN   TestTransactionSpanProjectionCommitFailureIsAtomicForIngestAndHistory
---- PASS: TestTransactionSpanProjectionCommitFailureIsAtomicForIngestAndHistory (0.43s)
-PASS
-ok  	goodsentry/internal/store	1.639s

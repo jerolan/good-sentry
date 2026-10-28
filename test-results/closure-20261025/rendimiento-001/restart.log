@@ -1,4 +1,0 @@
-restart healthy true
-trace after restart {"nodeCount":7,"resolved":6,"root":{"name":"GET /compat/performance","op":"http.server","status":"ok","release":"performance-api@1","environment":"performance","duration":100,"childCount":6},"children":6,"satisfied":true}
-transaction group after restart {"groups":2,"selected":{"count":6,"errorCount":0,"average":116.66659450000002,"p50":99.999904,"p95":175.00001125},"satisfied":true}
-persistence verified true

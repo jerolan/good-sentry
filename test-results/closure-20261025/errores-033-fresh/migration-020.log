@@ -1,4 +1,0 @@
-=== RUN   TestCompatibleIssueDeletionMigration020PreservesRowsScopesAndReopen
---- PASS: TestCompatibleIssueDeletionMigration020PreservesRowsScopesAndReopen (0.80s)
-PASS
-ok  	goodsentry/internal/store	0.808s

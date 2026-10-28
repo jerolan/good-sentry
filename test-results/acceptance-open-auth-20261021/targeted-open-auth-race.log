@@ -1,8 +1,0 @@
-=== RUN   TestEnsureDefaultOwnerIsIdempotent
---- PASS: TestEnsureDefaultOwnerIsIdempotent (0.39s)
-PASS
-ok  	goodsentry/internal/store	1.429s
-=== RUN   TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF
---- PASS: TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF (0.46s)
-PASS
-ok  	goodsentry/internal/server	1.485s

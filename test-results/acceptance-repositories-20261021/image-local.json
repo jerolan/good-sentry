@@ -1,8 +1,0 @@
-{
-  "image": "goodsentry:repositories-b8d",
-  "imageID": "sha256:18fcfc59d67d8db2cc70b65b3317cd554bc3d52dfe2fa583f574a975ece64b0f",
-  "architecture": "amd64",
-  "user": "65532:65532",
-  "binarySHA256": "f30b7242fd5e254df933a06ed3d30a29272275528f31d4084aaffdbcd46040d2",
-  "binaryBytes": 23040160
-}

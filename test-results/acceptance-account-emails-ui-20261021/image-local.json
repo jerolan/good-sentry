@@ -1,8 +1,0 @@
-{
-  "image": "goodsentry:account-ui-final",
-  "imageID": "sha256:2fa23de81cebbd4864e2310b20ad3832be6d2b9d3a2ca76c4c1b7dc32c10d5e8",
-  "architecture": "amd64",
-  "user": "65532:65532",
-  "binarySHA256": "df9eb29f9466ba61da318ee4405c0c1f8f5a0ceee6e34489a57aafec7bb7f4d9",
-  "binaryBytes": 23031968
-}

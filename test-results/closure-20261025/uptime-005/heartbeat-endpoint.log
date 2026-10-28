@@ -1,4 +1,0 @@
-=== RUN   TestCompatibleHeartbeatCheckHTTP
---- PASS: TestCompatibleHeartbeatCheckHTTP (0.99s)
-PASS
-ok  	goodsentry/internal/server	1.000s

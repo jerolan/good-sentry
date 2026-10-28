@@ -1,8 +1,0 @@
-{
-  "checks": [
-    "Session span groups combine both selected projects and expose the public fields",
-    "N+1 patterns aggregate repeated children per trace and then by transaction",
-    "Bearer project grants contain span groups and reject hidden project filters",
-    "Strict query admission rejects unsupported sort and bound values"
-  ]
-}

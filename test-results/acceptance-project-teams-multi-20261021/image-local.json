@@ -1,8 +1,0 @@
-{
-  "image": "goodsentry:multi-team-75cdef0",
-  "imageID": "sha256:7721d4855f594035b3b7db04014933b13bbad5fcacc73f109bd7db8d0015c689",
-  "architecture": "amd64",
-  "user": "65532:65532",
-  "binarySHA256": "1e1c452695586915c1fc00ccbbd45af411aca9bc1e243fa72a3c75b9538af156",
-  "binaryBytes": 22933664
-}

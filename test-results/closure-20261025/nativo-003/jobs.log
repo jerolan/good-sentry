@@ -1,4 +1,0 @@
-=== RUN   TestNativeReprocessingWorkerResumesAfterDatabaseReopen
---- PASS: TestNativeReprocessingWorkerResumesAfterDatabaseReopen (0.82s)
-PASS
-ok  	goodsentry/internal/jobs	0.822s

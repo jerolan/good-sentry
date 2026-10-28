@@ -1,8 +1,0 @@
-=== RUN   TestTransactionDetailLegacyPreservesRawOrderTimingAndRestart
---- PASS: TestTransactionDetailLegacyPreservesRawOrderTimingAndRestart (0.51s)
-=== RUN   TestTransactionDetailStandaloneTracePagesAcrossEnvelopes
---- PASS: TestTransactionDetailStandaloneTracePagesAcrossEnvelopes (1.24s)
-=== RUN   TestTransactionDetailMembershipKindSegmentAndTenantScope
---- PASS: TestTransactionDetailMembershipKindSegmentAndTenantScope (0.58s)
-PASS
-ok  	goodsentry/internal/store	2.335s

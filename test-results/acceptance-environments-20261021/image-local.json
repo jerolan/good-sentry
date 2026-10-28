@@ -1,8 +1,0 @@
-{
-  "image": "goodsentry:environments-aef6a02",
-  "imageID": "sha256:a2461e3243ab46c76fd38cf326dbc357a448f34b24e969a1530ff88735e2db47",
-  "architecture": "amd64",
-  "user": "65532:65532",
-  "binarySHA256": "3899f45149de74ee6d00206ce93ca461438e7936a4f24de44268ea3d125a3f1a",
-  "binaryBytes": 22966432
-}

@@ -1,6 +1,0 @@
-=== RUN   TestTransactionArchiveS3UploadRestoreAndExpiry
---- PASS: TestTransactionArchiveS3UploadRestoreAndExpiry (0.54s)
-=== RUN   TestTransactionArchiveCopyUnionRestartAndExpiry
---- PASS: TestTransactionArchiveCopyUnionRestartAndExpiry (0.56s)
-PASS
-ok  	goodsentry/internal/store	1.115s

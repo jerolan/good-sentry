@@ -11098,3 +11098,47 @@ de página. Comprobante y capturas: `test-results/closure-20261025/errores-047-f
 Esta evidencia complementa las anteriores; sigue pendiente CI público coincidente.
 Siguiente acción: obtener autorización para publicar la revisión exacta y, si
 se autoriza, comprobar CI e imagen antes de auditar el cierre.
+
+### Publicación autorizada y CI 2026-10-27
+
+El usuario autorizó publicar `8e95a6dd71d7c4d178d3c776d8556acc6f093b6b`;
+se verificó que `main` remoto seguía en `50bd64b8212c819679fb56d10c778ad63432226c`
+y se publicó exactamente esa revisión. CI
+[40626774240](https://github.com/jerolan/good-sentry/actions/runs/40626774240)
+terminó correctamente, incluyendo formato, vet, integración con PostgreSQL y
+race, y construcción de imagen. El flujo de imagen
+[40627382864](https://github.com/jerolan/good-sentry/actions/runs/40627382864)
+terminó correctamente para esa revisión y ambas arquitecturas.
+
+La comprobación local de la imagen pública quedó pendiente: la revisión
+automática no pudo completarse porque su token de acceso no pudo renovarse; no
+se ejecutó la descarga. No se han cotejado aún los subresultados ni se han
+promovido los cuatro criterios bloqueados. Siguiente acción: restablecer la
+sesión de la revisión automática, identificar y verificar la imagen publicada,
+contrastar los subresultados y continuar con la auditoría de cierre.
+
+### Verificación pública recuperada 2026-10-27
+
+La sesión de revisión automática volvió a funcionar. Se descargó la imagen
+`ghcr.io/jerolan/good-sentry@sha256:f2a7ca2f3c64ea33a3598bf77dfaae91de39807239871b0d22bad47d3202471c`,
+rotulada con la candidata pública `8e95a6dd71d7c4d178d3c776d8556acc6f093b6b`.
+Su ejecutable de 37.802.144 bytes tiene SHA-256
+`2c56f381d077548e45b1dfb05769ffdd0614e9f71fa02a6219e78bc6fcb3fe91` y sus
+15 capas de filesystem son idénticas a la imagen `sha256:40b75bd3…` usada en
+las aceptaciones previas. Conserva usuario `65532:65532` y `/goodsentry`.
+Entre `b77a2cc` y la candidata solo cambió un test dentro de las entradas Go;
+no cambió comportamiento, esquema, recursos incorporados ni Dockerfile. Esta
+comparación permite reutilizar los comprobantes funcionales sobre la imagen
+anterior con el alcance original. No prueba por sí sola su exhaustividad.
+
+GitHub y `git ls-tree -r` coinciden en las 3.140 rutas, modos, tipos y blobs;
+`main` remoto apunta exactamente a la candidata. Los dos flujos de CI/imagen
+terminaron correctamente y tienen ese mismo `headSha`. Comprobantes y log:
+`test-results/closure-20261025/public-8e95/`. Procedimiento: descargar imagen,
+extraer `/goodsentry` de contenedores nuevos sin arrancarlos, comparar SHA-256 y
+capas; contrastar árbol recursivo GitHub y los resultados `gh run view`.
+Los contenedores usados para extraer se eliminaron; no se modificó ningún runtime.
+
+Siguiente acción: terminar el cotejo por subresultado de 033/047/084/028,
+registrar cualquier hueco y después seleccionar CLOSE-operacion-002 y -100.
+Los criterios aún no se promueven a vigentes por la mera identidad de imagen.

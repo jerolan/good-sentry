@@ -1,8 +1,0 @@
-{
-  "image": "goodsentry:compat-monitors-20261020",
-  "imageDigest": "sha256:c42848b6dc8f1c16176a1bd1788bb71fed515d9f09406ac5c26f080d1629ec4e",
-  "architecture": "amd64",
-  "user": "65532:65532",
-  "binarySHA256": "8dc3291c81d9e70489d22bbe679836fc5e18c5f384db0e39365895fc944a384f",
-  "binaryBytes": 22835360
-}

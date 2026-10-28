@@ -1,9 +1,0 @@
-  INFO    2026-10-26 14:10:24.268415195 -06:00 sentry-cli was invoked with the following command line: "/tmp/sentry-cli-3.8.0" "debug-files" "upload" "--org" "native-cli-org" "--project" "native-cli-project" "--log-level" "info" "/tmp/minidump-fixture/test_app-image.sym"
-> Found 1 debug information file
-> Prepared debug information file for upload
-  INFO    2026-10-26 14:10:24.286963236 -06:00 using 'gzip' compression for chunk upload
-  INFO    2026-10-26 14:10:24.338681971 -06:00 Uploading completed in 0.051s
-> Uploaded 1 missing debug information file
-> File processing complete:
-
-       OK 5a9832e5-2872-41c1-838e-d98914e9b7ff-1 (test_app-image.sym; unknown)

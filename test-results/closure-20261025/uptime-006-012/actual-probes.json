@@ -1,9 +1,0 @@
-{
-  "passed": true,
-  "HTTP200Then503Threshold2": true,
-  "TCPActualBridgeRefusal": true,
-  "heartbeatUpDownUp": true,
-  "realCheckRows": 8,
-  "sentTransitionSnapshots": 4,
-  "fixturePriorMetadataFailure": "Docker Networks.bridge path corrected after completed smoke; no app data existed"
-}

@@ -1,4 +1,0 @@
-=== RUN   TestCompatibleIssueTagsAggregation
---- PASS: TestCompatibleIssueTagsAggregation (0.46s)
-PASS
-ok  	goodsentry/internal/server	1.481s

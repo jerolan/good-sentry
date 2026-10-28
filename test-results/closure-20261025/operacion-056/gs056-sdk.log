@@ -1,4 +1,0 @@
-PASS: official sentry-go v0.50.0 exception faed4a7e85bc40a2a8c5856710142785 persisted and visible in project go-sdk-7a44f53fae995fde
-PASS: SDK transaction "GoodSentry SDK transaction 7a44f53fae995fde" retained occurrence context, child-operation metrics and trace ancestry/timing for trace 0ac8f9ac47a5ca1c8a49a0573899179f
-PASS: SDK log "GoodSentry SDK log 7a44f53fae995fde" retained trace 0ac8f9ac47a5ca1c8a49a0573899179f and string/integer/boolean/double attributes
-PASS: official Sentry Go SDK captures exhausted a 60-minute additional-user mute with repeated users and anonymous events handled

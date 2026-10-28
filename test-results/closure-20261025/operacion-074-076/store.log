@@ -1,4 +1,0 @@
-=== RUN   TestLogArchiveCopyUnionRestartAndExpiry
---- PASS: TestLogArchiveCopyUnionRestartAndExpiry (0.53s)
-PASS
-ok  	goodsentry/internal/store	0.538s

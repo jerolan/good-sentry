@@ -1,4 +1,0 @@
-=== RUN   TestCompatibleIssueCommentsContract
---- PASS: TestCompatibleIssueCommentsContract (0.52s)
-PASS
-ok  	goodsentry/internal/server	1.544s

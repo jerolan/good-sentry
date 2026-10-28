@@ -1,8 +1,0 @@
-=== RUN   TestCompatibleUserPreferencesPersist
---- PASS: TestCompatibleUserPreferencesPersist (0.35s)
-PASS
-ok  	goodsentry/internal/store	1.364s
-=== RUN   TestCompatibleUserPreferencesHTTP
---- PASS: TestCompatibleUserPreferencesHTTP (0.42s)
-PASS
-ok  	goodsentry/internal/server	1.437s

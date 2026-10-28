@@ -1,8 +1,0 @@
-=== RUN   TestUpdateAndDeleteManagementProject
---- PASS: TestUpdateAndDeleteManagementProject (0.33s)
-PASS
-ok  	goodsentry/internal/store	1.349s
-=== RUN   TestProjectUpdateAndDeleteHTTP
---- PASS: TestProjectUpdateAndDeleteHTTP (0.46s)
-PASS
-ok  	goodsentry/internal/server	1.478s

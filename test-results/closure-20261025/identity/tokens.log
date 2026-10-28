@@ -1,4 +1,0 @@
-=== RUN   TestAPITokenPersistsDigestAndGrantAcrossReopen
---- PASS: TestAPITokenPersistsDigestAndGrantAcrossReopen (0.47s)
-PASS
-ok  	goodsentry/internal/store	1.489s

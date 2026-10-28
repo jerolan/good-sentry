@@ -1,4 +1,0 @@
-error: Release not found. Ensure that you configured the correct release, project, and organization.
-
-Add --log-level=[info|debug] or export SENTRY_LOG_LEVEL=[info|debug] to see more output.
-Please attach the full debug log to all bug reports.

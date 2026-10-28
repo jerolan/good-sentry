@@ -1,8 +1,0 @@
-upload first chunk 200
-restart application process
-restart healthy true
-after restart assembly {"status":200,"body":{"missingChunks":["b3dcf8f19cb68c0132ad81cc909d582aea23012e"],"state":"not_found"}}
-duplicate first chunk 200
-upload second chunk 200
-both chunks assembly {"status":200,"body":{"detail":"artifact bundle requires a SYSB header","missingChunks":[],"state":"error"}}
-resume verified true

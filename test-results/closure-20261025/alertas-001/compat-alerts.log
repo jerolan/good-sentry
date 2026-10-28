@@ -1,8 +1,0 @@
-=== RUN   TestCompatibleProjectAlertsContract
---- PASS: TestCompatibleProjectAlertsContract (0.51s)
-=== RUN   TestCompatibleProjectAlertsPaginationValidationAndTestQueue
---- PASS: TestCompatibleProjectAlertsPaginationValidationAndTestQueue (0.74s)
-=== RUN   TestCompatibleProjectAlertsTokenScopes
---- PASS: TestCompatibleProjectAlertsTokenScopes (0.70s)
-PASS
-ok  	goodsentry/internal/server	1.949s

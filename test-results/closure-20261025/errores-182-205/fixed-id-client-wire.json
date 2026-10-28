@@ -1,8 +1,0 @@
-{
-  "sdk": "11.7.0",
-  "hintFixedIDHonored": true,
-  "returnedID": "1234567890abcdef1234567890abcdef",
-  "envelopeID": "1234567890abcdef1234567890abcdef",
-  "payloadID": "1234567890abcdef1234567890abcdef",
-  "networkSends": false
-}

@@ -1,6 +1,0 @@
-=== RUN   TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF
---- PASS: TestOpenAuthenticationUsesImplicitOwnerAndKeepsCSRF (0.48s)
-=== RUN   TestPasswordRecoveryHTTPContract
---- PASS: TestPasswordRecoveryHTTPContract (1.63s)
-PASS
-ok  	goodsentry/internal/server	2.124s

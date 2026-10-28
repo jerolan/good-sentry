@@ -1,6 +1,0 @@
-=== RUN   TestResymbolicateEventFillsOnlyMissingNativeFrames
---- PASS: TestResymbolicateEventFillsOnlyMissingNativeFrames (0.00s)
-=== RUN   TestResymbolicateEventLeavesNonNativePayloadUntouched
---- PASS: TestResymbolicateEventLeavesNonNativePayloadUntouched (0.00s)
-PASS
-ok  	goodsentry/internal/native	0.004s
