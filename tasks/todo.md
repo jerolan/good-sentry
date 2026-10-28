@@ -12357,3 +12357,21 @@ controles de límites agregados y la auditoría integral, imagen y CI finales.
 Siguiente acción concreta: construir entradas válidas que excedan los límites
 agregados de puntos y nombres entre identidades seleccionadas y demostrar que
 la captura continúa sin enriquecimiento parcial; después continuar native004.
+
+### Límites agregados Portable verificados, 2026-10-28
+
+Dos PDB generados con identidades distintas se resuelven por separado. Juntos,
+dos archivos con500001 puntos cada uno y otros dos con33913800 bytes de nombres
+cada uno dejan el evento íntegro sin enriquecimiento. En los límites permitidos,
+un millón de puntos y67108464 bytes de nombres, ambos frames sí se enriquecen.
+System.Reflection.Metadata confirmó los puntos y documentos de las muestras
+generadas; las pruebas pasaron con race. Comprobante:
+test-results/closure-20261025/portable-pdb-budgets/.
+
+Esto verifica los presupuestos compartidos de la ruta Portable independiente;
+no acredita formatos Portable embebidos ni los demás perfiles de native004.
+La primaria revisó las pruebas y su oracle.
+
+Siguiente acción concreta: revisar el primer perfil restante exigible de
+native004 y sus dependencias, y contrastar el formato con su fuente primaria
+antes de definir la siguiente implementación verificable.
