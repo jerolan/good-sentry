@@ -3817,6 +3817,18 @@ curso en `closure033_migration`, sesión 66384; salida privada
 `/tmp/goodsentry-closure-033/integration-stable-race.log`. Siguiente acción:
 recoger su resultado antes de reconciliar CI y los criterios afectados.
 
+### Integración con race 2026-10-27: fixture de cuota ajustado
+
+La sesión 66384 terminó con código 0: `go test -race -tags=integration
+./cmd/... ./internal/... -count=1` pasó sobre `closure033_migration`; server
+214,531 s, store 365,052 s y jobs 26,899 s. `go vet ./cmd/... ./internal/...`,
+`node --check` de `app.js` y `events_browser.mjs`, y `git diff --check`
+también pasaron. Evidencia:
+`test-results/closure-20261025/errores-033-fresh/integration-stable-race.log`.
+
+Siguiente acción: cotejar los subresultados y obtener CI público para la
+revisión que incluye el ajuste de test; el CI de `b77a2cc` no lo incluye.
+
 ### Selección paralela independiente: CLOSE-errores-047
 
 Mientras termina la integración de 033 en `closure033_migration`, iniciar la
