@@ -857,6 +857,7 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 		name                  string
 		uploadedID            string
 		v50                   bool
+		oldDBI                bool
 		companionOtherProject bool
 		wantSymbol            bool
 	}{
@@ -864,12 +865,17 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 		{name: "mismatched uploaded identity", uploadedID: "5A9832E5287241C1838ED98914E9B7FF2"},
 		{name: "V50 companion in same project", uploadedID: "65ae75631", v50: true, wantSymbol: true},
 		{name: "V50 companion only in another project", uploadedID: "65ae75631", v50: true, companionOtherProject: true},
+		{name: "old DBI C7 companion in same project", uploadedID: "65ae75631", v50: true, oldDBI: true, wantSymbol: true},
+		{name: "old DBI C7 companion only in another project", uploadedID: "65ae75631", v50: true, oldDBI: true, companionOtherProject: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			pdb := nativepdb.WithSourceLines(false).Data
 			if test.v50 {
 				pdb = nativepdb.WithV50SourceLines(0).Data
+			}
+			if test.oldDBI {
+				pdb = nativepdb.OldDBIC7().Data
 			}
 			digest := sha1.Sum(pdb)
 			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
@@ -954,8 +960,11 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 			if gotSymbol != test.wantSymbol {
 				t.Fatalf("PDB symbolication=%+v, want symbol=%t", frame, test.wantSymbol)
 			}
-			if test.wantSymbol && (frame.Filename != `C:\src\crash.cc` || frame.Line != 42) {
+			if test.wantSymbol && !test.oldDBI && (frame.Filename != `C:\src\crash.cc` || frame.Line != 42) {
 				t.Fatalf("PDB source line=%+v, want C:\\src\\crash.cc:42", frame)
+			}
+			if test.oldDBI && (frame.Filename != "" || frame.Line != 0) {
+				t.Fatalf("C7 procedure produced unsupported source line: %+v", frame)
 			}
 			if !test.wantSymbol && (frame.Filename != "" || frame.Line != 0) {
 				t.Fatalf("mismatched PDB identity returned source line: %+v", frame)

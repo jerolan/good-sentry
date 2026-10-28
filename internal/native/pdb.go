@@ -34,6 +34,7 @@ const (
 	pdbSectionMapAbsolute = 1 << 9
 	pdbSectionMapGroup    = 1 << 10
 	pdbPESectionExecute   = 0x20000000
+	pdbDBIOldVersion      = ^uint32(0)
 )
 
 var msf7Magic = []byte("Microsoft C/C++ MSF 7.00\r\n\x1aDS\x00\x00\x00")
@@ -121,23 +122,36 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 	}
 	age := binary.LittleEndian.Uint32(info[8:])
 	dbi, ok := msf.readStream(3)
-	if !ok || len(dbi) < 64 || int32(binary.LittleEndian.Uint32(dbi)) != -1 || !knownDBIVersion(binary.LittleEndian.Uint32(dbi[4:])) {
-		return "", nil, false
-	}
-	version := binary.LittleEndian.Uint32(dbi[4:])
-	dbiAge := binary.LittleEndian.Uint32(dbi[8:])
-	if dbiAge != age && !(version == 19960307 && dbiAge == 0) {
+	if !ok || len(dbi) < 24 {
 		return "", nil, false
 	}
 	debugID := pdbInfoDebugID(info)
 	if debugID == "" {
 		return "", nil, false
 	}
-	moduleSize, sectionContributionSize, sectionMapSize, sourceInfoSize, typeServerSize, optionalHeaderSize, ecSize, ok := pdbDBISubstreamSizes(dbi)
+	version := pdbDBIOldVersion
+	moduleStart := 24
+	var moduleSize, sectionContributionSize, sectionMapSize, sourceInfoSize, typeServerSize, optionalHeaderSize, ecSize int
+	if binary.LittleEndian.Uint32(dbi) == ^uint32(0) {
+		if len(dbi) < 64 {
+			return "", nil, false
+		}
+		version = binary.LittleEndian.Uint32(dbi[4:])
+		dbiAge := binary.LittleEndian.Uint32(dbi[8:])
+		if !knownDBIVersion(version) || dbiAge != age && !(version == 19960307 && dbiAge == 0) {
+			return "", nil, false
+		}
+		moduleStart = 64
+		moduleSize, sectionContributionSize, sectionMapSize, sourceInfoSize, typeServerSize, optionalHeaderSize, ecSize, ok = pdbDBISubstreamSizes(dbi)
+	} else {
+		if binary.LittleEndian.Uint32(info) >= 19960307 {
+			return "", nil, false
+		}
+		moduleSize, sectionContributionSize, sectionMapSize, sourceInfoSize, ok = pdbOldDBISubstreamSizes(dbi)
+	}
 	if !ok {
 		return "", nil, false
 	}
-	moduleStart := 64
 	optionalStart := moduleStart + moduleSize + sectionContributionSize + sectionMapSize + sourceInfoSize + typeServerSize + ecSize
 	var sections []pdbSection
 	sectionStreamIndex := pdbModuleStreamAbsent
@@ -147,7 +161,7 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 		}
 		sectionStreamIndex = binary.LittleEndian.Uint16(dbi[optionalStart+5*2:])
 	}
-	if version == 19960307 && sectionStreamIndex == pdbModuleStreamAbsent {
+	if (version == 19960307 || version == pdbDBIOldVersion) && sectionStreamIndex == pdbModuleStreamAbsent {
 		candidate, found := companions[DebugKey(debugID)]
 		if !found || candidate.ambiguous {
 			return "", nil, false
@@ -168,7 +182,7 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 	}
 	sectionMapStart := moduleStart + moduleSize + sectionContributionSize
 	sectionMapData := dbi[sectionMapStart : sectionMapStart+sectionMapSize]
-	if version == 19960307 {
+	if version == 19960307 || version == pdbDBIOldVersion {
 		sections, ok = directPDBLegacySections(sectionMapData, sections)
 		if !ok {
 			return "", nil, false
@@ -179,7 +193,7 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 	if !ok {
 		return "", nil, false
 	}
-	if binary.LittleEndian.Uint16(dbi[56:])&(1<<1) != 0 {
+	if version != pdbDBIOldVersion && binary.LittleEndian.Uint16(dbi[56:])&(1<<1) != 0 {
 		publicFunctions, ok := parsePDBPublicFunctions(msf, binary.LittleEndian.Uint16(dbi[20:]), sectionMapData, sections)
 		if !ok {
 			return "", nil, false
@@ -391,6 +405,23 @@ func pdbDBISubstreamSizes(dbi []byte) (module, contribution, sectionMap, source,
 	return sizes[0], sizes[1], sizes[2], sizes[3], sizes[4], sizes[5], sizes[6], true
 }
 
+func pdbOldDBISubstreamSizes(dbi []byte) (module, contribution, sectionMap, source int, ok bool) {
+	if len(dbi) < 24 {
+		return 0, 0, 0, 0, false
+	}
+	var total uint64 = 24
+	var sizes [4]int
+	for i := range sizes {
+		size := binary.LittleEndian.Uint32(dbi[8+i*4:])
+		total += uint64(size)
+		if total > uint64(len(dbi)) {
+			return 0, 0, 0, 0, false
+		}
+		sizes[i] = int(size)
+	}
+	return sizes[0], sizes[1], sizes[2], sizes[3], total == uint64(len(dbi))
+}
+
 func parsePDBPublicFunctions(msf *pdbMSFFile, symbolRecordStream uint16, sectionMapData []byte, sections []pdbSection) ([]SymbolFunction, bool) {
 	sectionMap, ok := parsePDBSectionMap(sectionMapData)
 	if !ok {
@@ -539,7 +570,7 @@ func parsePDBModulesVersion(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSe
 	var inlineNames map[uint32]string
 	for offset := 0; offset < len(moduleInfo); {
 		prefixSize := 64
-		if version == 19960307 {
+		if version == 19960307 || version == pdbDBIOldVersion {
 			prefixSize = 48
 		}
 		if len(moduleInfo)-offset < prefixSize || modules == maxPDBModules {
@@ -547,7 +578,7 @@ func parsePDBModulesVersion(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSe
 		}
 		modules++
 		streamOffset := 34
-		if version == 19960307 {
+		if version == 19960307 || version == pdbDBIOldVersion {
 			streamOffset = 26
 		}
 		moduleStreamIndex := binary.LittleEndian.Uint16(moduleInfo[offset+streamOffset:])
@@ -555,7 +586,7 @@ func parsePDBModulesVersion(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSe
 		c11Bytes := binary.LittleEndian.Uint32(moduleInfo[offset+streamOffset+6:])
 		otherBytes := binary.LittleEndian.Uint32(moduleInfo[offset+streamOffset+10:])
 		var c13Bytes, fpoBytes uint32
-		if version == 19960307 {
+		if version == 19960307 || version == pdbDBIOldVersion {
 			fpoBytes = otherBytes
 		} else {
 			c13Bytes = otherBytes
@@ -588,7 +619,9 @@ func parsePDBModulesVersion(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSe
 			return nil, false
 		}
 		signature := binary.LittleEndian.Uint32(moduleStream)
-		if !knownCodeViewSignature(signature) || signature == 2 && c13Bytes != 0 {
+		if version == pdbDBIOldVersion && signature != 1 ||
+			version != pdbDBIOldVersion && !knownCodeViewSignature(signature) ||
+			signature == 2 && c13Bytes != 0 {
 			return nil, false
 		}
 		moduleFunctionsStart := len(functions)
@@ -1193,7 +1226,9 @@ func parsePDBModuleSymbolsWithInlineSites(data []byte, sections []pdbSection, fu
 			}
 		}
 		if isPDBProcedureKind(kind) {
-			if signature == 2 && kind != 0x100a && kind != 0x100b {
+			if signature == 1 && kind != 0x0204 && kind != 0x0205 ||
+				signature == 2 && kind != 0x100a && kind != 0x100b ||
+				signature != 1 && (kind == 0x0204 || kind == 0x0205) {
 				return false
 			}
 			if strictScopes && len(scopes) != 0 {
@@ -1334,16 +1369,20 @@ func pdbProcedureEndKind(kind uint16) uint16 {
 
 func parsePDBProcedure(data []byte, kind uint16) (pdbProcedure, bool) {
 	var procedure pdbProcedure
-	if len(data) < 36 {
+	nameOffset, addressOffset, segmentOffset := 35, 28, 32
+	if kind == 0x0204 || kind == 0x0205 {
+		nameOffset, addressOffset, segmentOffset = 33, 24, 28
+	}
+	if len(data) <= nameOffset {
 		return procedure, false
 	}
 	procedure.size = binary.LittleEndian.Uint32(data[12:])
 	procedure.parent = binary.LittleEndian.Uint32(data)
 	procedure.end = binary.LittleEndian.Uint32(data[4:])
-	procedure.offset = binary.LittleEndian.Uint32(data[28:])
-	procedure.segment = binary.LittleEndian.Uint16(data[32:])
-	name := data[35:]
-	if kind == 0x100a || kind == 0x100b {
+	procedure.offset = binary.LittleEndian.Uint32(data[addressOffset:])
+	procedure.segment = binary.LittleEndian.Uint16(data[segmentOffset:])
+	name := data[nameOffset:]
+	if kind == 0x100a || kind == 0x100b || kind == 0x0204 || kind == 0x0205 {
 		length := int(name[0])
 		if length == 0 || length > len(name)-1 {
 			return pdbProcedure{}, false
@@ -1361,7 +1400,7 @@ func parsePDBProcedure(data []byte, kind uint16) (pdbProcedure, bool) {
 
 func isPDBProcedureKind(kind uint16) bool {
 	switch kind {
-	case 0x100a, 0x100b, 0x110f, 0x1110, 0x1146, 0x1147, 0x1155, 0x1156:
+	case 0x0204, 0x0205, 0x100a, 0x100b, 0x110f, 0x1110, 0x1146, 0x1147, 0x1155, 0x1156:
 		return true
 	default:
 		return false

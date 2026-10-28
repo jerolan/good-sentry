@@ -1217,3 +1217,74 @@ func pdbGzipDebugArchive(t *testing.T, data []byte) []byte {
 	}
 	return archive.Bytes()
 }
+
+func TestBuildSymbolTablesOldDBIC7Procedures(t *testing.T) {
+	fixture := nativepdb.OldDBIC7()
+	pe := nativepdb.V50CompanionPE(0x65ae7563, 1)
+	mutate := func(change func([]byte)) []byte {
+		data := append([]byte(nil), fixture.Data...)
+		change(data)
+		return data
+	}
+	badHeader := mutate(func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.DBIBlock*1024+8:], 0xffffffff) })
+	badLateName := mutate(func(data []byte) { data[fixture.ModuleBlock*1024+4+fixture.FirstProcedureLength+4+33] = 255 })
+	badSignature := mutate(func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.ModuleBlock*1024:], 4) })
+	badVersion := mutate(func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.InfoBlock*1024:], 19970604) })
+	withC7Lines := mutate(func(data []byte) {
+		dbi := fixture.DBIBlock * 1024
+		symbolBytes := binary.LittleEndian.Uint32(data[dbi+24+28:])
+		binary.LittleEndian.PutUint32(data[dbi+24+32:], 4)
+		directory := int(binary.LittleEndian.Uint16(data[60:])) * 1024
+		binary.LittleEndian.PutUint32(data[directory+4+4*8:], symbolBytes+4)
+		copy(data[fixture.ModuleBlock*1024+int(symbolBytes):], []byte{0xfe, 0xed, 0xba, 0xbe})
+	})
+	badC7Lines := mutate(func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.DBIBlock*1024+24+32:], 0xffffffff) })
+	badMap := mutate(func(data []byte) {
+		dbi := fixture.DBIBlock * 1024
+		mapStart := dbi + 24 + int(binary.LittleEndian.Uint32(data[dbi+8:]))
+		binary.LittleEndian.PutUint16(data[mapStart+4+6:], 2)
+	})
+	for _, test := range []struct {
+		name       string
+		pdb, image []byte
+		want       bool
+	}{
+		{"matching identity", fixture.Data, pe.Data, true},
+		{"opaque C7 lines retain procedures without source", withC7Lines, pe.Data, true},
+		{"missing companion", fixture.Data, nil, false},
+		{"mismatched identity", fixture.Data, nativepdb.V50CompanionPE(0x65ae7564, 1).Data, false},
+		{"malformed old header", badHeader, pe.Data, false},
+		{"C7 line extent exceeds stream", badC7Lines, pe.Data, false},
+		{"malformed late name", badLateName, pe.Data, false},
+		{"incompatible signature", badSignature, pe.Data, false},
+		{"new Info with old header", badVersion, pe.Data, false},
+		{"non-direct map", badMap, pe.Data, false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			files := []DebugSymbolFile{{Name: "old.pdb", Content: test.pdb}}
+			if test.image != nil {
+				files = append(files, DebugSymbolFile{Name: "companion.exe", Content: test.image})
+			}
+			symbols, _ := BuildSymbolTables(files)
+			functions := symbols["65ae75631"]
+			if !test.want {
+				if len(symbols) != 0 {
+					t.Fatalf("invalid pair emitted %d symbol keys", len(symbols))
+				}
+				return
+			}
+			if len(functions) != 2 {
+				t.Fatalf("got %d old C7 procedures, want 2", len(functions))
+			}
+			for i, want := range []struct {
+				name       string
+				start, end uint64
+			}{{"CrashFunction", 0x1010, 0x1030}, {"OtherFunction", 0x1080, 0x1090}} {
+				f := functions[i]
+				if f.Name != want.name || f.Start != want.start || f.End != want.end || f.File != "" || f.Line >= 0 {
+					t.Errorf("procedure %d = %+v, want %s [%x,%x) without source", i, f, want.name, want.start, want.end)
+				}
+			}
+		})
+	}
+}

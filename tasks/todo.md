@@ -12067,3 +12067,33 @@ Las líneas C7 siguen abiertas hasta establecer su layout.
 Siguiente acción concreta: aplicar test-audit y generar fixtures independientes
 para old DBI/C7 y sus controles públicos y HTTP/PG; observar RED antes de
 implementar, luego ejecutar regresiones y conservar los comprobantes.
+
+### Old DBI y procedimientos C7 verificados localmente, 2026-10-28
+
+Se agregó lectura de DBI antiguo de24 bytes con validación exacta de los cuatro
+substreams y selección limitada a Info anterior a VC50. El parser usa MODI50,
+secciones PE del proyecto asociadas por NB10 y el mapa directo ya validado.
+La firma C7 admite procedimientos 0x0204/0x0205 con índices de tipo de16 bits,
+nombre ST y offsets propios; rechaza firmas incompatibles, extents y nombres
+truncados, y no inventa líneas para datos C7 todavía no interpretados.
+
+La prueba pública RED reprodujo la ausencia de dos procedimientos y GREEN
+comprueba nombres y rangos, identidad, ausencia de acompañante, datos de línea
+opacos y truncados, cabecera inválida y mapa no directo. La prueba HTTP/PG RED
+falló por ausencia de símbolo; GREEN comprueba simbolicación y aislamiento
+entre proyectos. Race nativo: 628 acciones de prueba aprobadas; race servidor:
+31 aprobadas. Vet y build pasaron. La pareja V50 histórica sigue coincidiendo
+con sus 2481 tuplas independientes. Comprobante:
+test-results/closure-20261025/nativo-old-dbi-c7/.
+
+La fixture fue construida desde estructuras Microsoft/Wine y no reemplaza una
+muestra independiente VC4. No hubo revisión de código por un agente nuevo: el
+host agotó los créditos del worker, por lo que la primaria inspeccionó el diff,
+fuentes y resultados. C7 source lines, otros records antiguos y mapas no directos
+siguen exigibles; native004 y sus dependientes no recuperan vigencia integral ni
+se acredita publicación/CI por esta prueba local.
+
+Siguiente acción concreta: contrastar las estructuras históricas de líneas C7
+con fuentes primarias y buscar una pareja VC4 reproducible; diseñar y probar el
+lector de líneas solo cuando la interpretación quede sustentada. Continuar
+la investigación de mapas no directos sin asumir que selector equivale a índice.

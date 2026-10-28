@@ -29,9 +29,9 @@ no symbols. Native018 now specifies PE/PDB association, bounded archive handling
 and direct-map V50 parsing. Implemented locally with owned RED/GREEN, project
 isolation and a full 2481-tuple comparison against the independent real-sample
 oracle. Non-direct V50 maps still need evidence for selector translation. Next,
-implement the now-specified old DBI/C7 direct-map profile using
-the documented header and procedure layouts, with owned and HTTP/PG evidence;
-retain C7 source lines and other old records as open. Keep Portable PDB,
+the specified old DBI/C7 direct-map procedure profile has local owned and
+HTTP/PG evidence; investigate C7 source lines and a real VC4 pair next, while
+retaining other old records as open. Keep Portable PDB,
 unwinding and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
 unrelated release/UI proofs without a changed dependency.

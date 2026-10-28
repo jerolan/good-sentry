@@ -337,3 +337,52 @@ func WithStreamZeroAlias() Fixture {
 	copy(fixture.Data[3*pageSize:], directory)
 	return fixture
 }
+
+// OldDBIC7 builds an old DBI header and two 16-bit-type C7 procedures. The
+// matching PE sections are supplied separately, as with the V50 fixture.
+func OldDBIC7() Fixture {
+	f := smallMSF2(1024, 1, false, nil, nil, true).Fixture
+	data := f.Data
+	binary.LittleEndian.PutUint32(data[f.InfoBlock*1024:], 19950623)
+	first := procedure16("CrashFunction", 0x10, 0x20, 0x205)
+	second := procedure16("OtherFunction", 0x80, 0x10, 0x204)
+	module := append([]byte{1, 0, 0, 0}, first...)
+	module = append(module, second...)
+	copy(data[f.ModuleBlock*1024:], module)
+	oldDBI := data[f.DBIBlock*1024:]
+	moduleSize := int(binary.LittleEndian.Uint32(oldDBI[24:]))
+	mapSize := int(binary.LittleEndian.Uint32(oldDBI[32:]))
+	moduleInfo := append([]byte(nil), oldDBI[64:64+moduleSize]...)
+	binary.LittleEndian.PutUint32(moduleInfo[28:], uint32(len(module)))
+	mapData := append([]byte(nil), oldDBI[64+moduleSize:64+moduleSize+mapSize]...)
+	header := make([]byte, 24)
+	binary.LittleEndian.PutUint16(header, 0xffff)
+	binary.LittleEndian.PutUint16(header[4:], 0xffff)
+	binary.LittleEndian.PutUint32(header[8:], uint32(moduleSize))
+	binary.LittleEndian.PutUint32(header[16:], uint32(mapSize))
+	dbi := append(header, moduleInfo...)
+	dbi = append(dbi, mapData...)
+	copy(oldDBI, dbi)
+	directory := int(binary.LittleEndian.Uint16(data[60:])) * 1024
+	binary.LittleEndian.PutUint32(data[directory+4+3*8:], uint32(len(dbi)))
+	binary.LittleEndian.PutUint32(data[directory+4+4*8:], uint32(len(module)))
+	f.FirstProcedureLength = len(first)
+	return f
+}
+
+func procedure16(name string, offset, size uint32, kind uint16) []byte {
+	// PROCSYM32_16t: type index follows segment, unlike PROCSYM32.
+	record := make([]byte, 4+33)
+	binary.LittleEndian.PutUint16(record[2:], kind)
+	binary.LittleEndian.PutUint32(record[4+12:], size)
+	binary.LittleEndian.PutUint32(record[4+24:], offset)
+	binary.LittleEndian.PutUint16(record[4+28:], 1)
+	binary.LittleEndian.PutUint16(record[4+30:], 0x1001)
+	record = append(record, byte(len(name)))
+	record = append(record, name...)
+	for len(record)%4 != 0 {
+		record = append(record, 0)
+	}
+	binary.LittleEndian.PutUint16(record, uint16(len(record)-2))
+	return record
+}
