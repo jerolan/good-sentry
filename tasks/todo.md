@@ -3971,6 +3971,17 @@ de un minuto usó el reloj real, no una actualización de timestamps.
 Siguiente acción: cotejar los subresultados de 084, integrar la evidencia de
 la suite completa ya terminada y obtener CI de la revisión de test ajustada.
 
+### Avance parcial 2026-10-27: reinicio posterior a SDK de errores-084
+
+Tras los owners SDK y navegador, se reinició únicamente
+`gsclosure084-upgrade-new`. Los multiconjuntos de las 114 filas de sus 73
+tablas coincidieron exactamente antes y después. Evidencia:
+`test-results/closure-20261025/errores-084-fresh/upgrade/final-restart-report.json`;
+snapshots privados en `/tmp/goodsentry-closure-084/`. Esto complementa el
+reinicio anterior a los owners, sin atribuir una nueva captura al issue que
+el navegador descartó deliberadamente. Siguiente acción: recoger la integración
+con race y cotejar la revisión y el CI antes de cerrar 084.
+
 ### Selección independiente: CLOSE-logs-028
 
 Los criterios de errores tienen comprobantes locales adicionales y aún

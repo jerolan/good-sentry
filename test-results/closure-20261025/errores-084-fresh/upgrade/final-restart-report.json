@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "tables": 73,
+  "rows": 114,
+  "rowMultisetsEqual": true,
+  "after": "SDK and browser acceptance",
+  "source": "b77a2cc"
+}
