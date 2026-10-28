@@ -1784,15 +1784,15 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
+| [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | parcial | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | implementada | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
 | [CLOSE-nativo-008](../SPEC.md#close-nativo-008) | CFI extended dereference: For each Memory64ListStream range, validate its 64-bit file offset against the dump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | implementada | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
 | [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-013](../SPEC.md#close-nativo-013) | CFI extended dereference: Scalar CFI expressions support DW_OP_implicit_value with an unsigned-LEB128 byte len… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-014](../SPEC.md#close-nativo-014) | CFI extended dereference: Decode CFI ULEB128 and SLEB128 operands without truncation: accept only values repre… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1802,7 +1802,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | parcial | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11492,3 +11492,116 @@ confirma que legacy/Portable PDB sigue exigido y que el recibo028 no puede exclu
 symbol-server por sí solo. Primero especificar y conectar la identidad NB10/PDB2
 del Minidump al SymCache PDB2 existente; verificar el resultado sin atribuirle
 soporte completo del contenedor legacy ni cierre de la familia nativa.
+
+### Incremento seleccionado NB10/PDB2, 2026-10-27
+
+Selección anterior a implementar: native004 continúa sin evidencia vigente;
+007 aporta el contrato concreto del primer prerequisito. La primaria contrastó
+minidump.go, symcache.go, BuildSymbolTables y el owner HTTP existente con la
+definición pública de Breakpad. NB10 no tiene rama; SymCache PDB2 ya interpreta
+timestamp/age, pero omite el sufijo cuando age es0. Se explicita en SPEC primero
+la identidad timestamp8+age, NUL/longitud y ausencia de resolución ante datos
+malformados, conservando RSDS/BpEL y todos los pendientes restantes.
+
+Siguiente acción: ampliar el owner HTTP/PostgreSQL de identidad SymCache con
+NB10 coincidente, distinto, age0 y malformado; reproducir el fallo y reparar
+solo los dos lectores de identidad. Después ejecutar regresiones nativas y
+race/vet antes del commit. No hay nueva exclusión ni aprobación pendiente.
+
+Invalidación acotada antes de la reparación NB10: native003/007/011/021 pierden
+vigencia de sus comprobantes integrales porque dependen del lector de identidad
+o de SymCache. 004/026/027/028 ya estaban invalidados. No cambian permisos,
+esquema, contratos de otros formatos/CFI ni releases/UI; sus owners históricos
+se conservan y las regresiones nativas contrastarán la candidata. El CI/digest
+8e95 sigue describiendo esa fuente, no la futura reparación.
+
+### Verificación NB10 en curso y corte global del harness, 2026-10-27
+
+La regresión HTTP/PostgreSQL falló antes de la reparación: los cuatro NB10
+válidos no aportaron Debug ID, y matching/age0 tampoco símbolos. RSDS y los
+malformados pasaron. Tras dos cambios acotados, rama NB10 y sufijo0 PDB2,
+el owner completo pasa. La primaria contrastó el formato Breakpad del commit
+rust-debugid fijado en SPEC; el Display genérico es distinto y no se confunde
+con la identidad Breakpad usada para emparejar módulos.
+
+La imagen local se construyó con solo archivos seguidos por Git. Su identidad
+es sha256:57fa1d425f03770f78a4ff97bdf21f2da2b4fab8db4008637f2f0f68e1480c94;
+base e8c1e06 más patch4855155d4813, hashes de los dos archivos de producto
+registrados privadamente. Se actualizó la copia closure007_nb10 en18507 desde
+8e95, conservando exactamente85 filas/73tablas y la configuración/volumen.
+Un worker acotado ejecutó el SDK/Crashpad0.17.4 con el mismo ELF subido: evento
+cacc6c9c8ec224c8fb15f142a15aa81c, issue1, goodsentry_demo_crash/main.c:26 por
+GNUbuildid d6bb2a524ad8f404cf2032f9624a220c15963a48. La primaria verificó
+independientemente ese evento y los bytes ELF en PostgreSQL. Cero filas de
+adjuntos, envelope_items o chunks y cero archivos en el volumen de la app.
+El reinicio conservó95 filas exactas y la lectura autenticada devolvió el
+payload completo idéntico. La caché SDK separada se conserva privada.
+
+La suite completa con race pasó server400,972s, native19,946s, jobs34,037s y
+los demás paquetes terminados, incluido el owner del crash real3,08s. Store
+fue cortado por el timeout global de Go de600s durante un test iniciado solo
+1s antes, sin fallo de aserciones previo. No es un recibo verde global.
+Se conservan full-race.jsonl, full-race-report.json y store-timeout.log en
+/tmp/goodsentry-closure-nb10. No se cambian código, tests ni deadlines internos.
+La recuperación ejecuta el paquete store completo, con race y timeout global
+20m, sobre la misma candidata y nuevos schemas aislados de closure_nb10_tests.
+Siguiente acción: recoger esa ejecución40134, diagnosticar cualquier fallo,
+y solo entonces registrar/commit del incremento. Publicación/CI coincidente y
+legacyMSF/Portable/otros pendientes nativos continúan sin acreditarse.
+
+Hallazgos conservados para la continuidad nativa, sin ampliar la reparación
+NB10 ni iniciar otro feature mientras store siga pendiente:
+
+- LegacyMSF2: se adquirió para inspección privada una muestra pública de
+  656384bytes, SHA256d7dd611aed8c0ea9e8de7b643644f756a5abe621adb5554451b16b2ddb1f60dd.
+  MagicMSF2, página1024/FPM9, PDBInfoVC98 sinGUID y NewDBI V60. El informe
+  reducido /tmp/goodsentry-closure-legacy-research/consumer-inspection.txt
+  registra177módulos,30streamsC11,686procedimientos ST,22módulos con líneasC11,
+  ningunaC13, y stream8 de secciones. No se redistribuye la muestra ni se
+  afirma que el producto la consuma. Falta contrastar esos hechos por primaria,
+  especificar el lector acotado y crear fixtures propios a partir del formato
+  público Microsoft. Legacy/Portable continúan exigidos.
+- SymCacheUUID/age0: el comportamiento previo conserva la identidad U de32hex;
+  un módulo RSDS publica U0. Sin metadata declarada U0 no existe alias para
+  esa clave en BuildSymbolTables. La reparación NB10 no cambia esa rama.
+  Falta reproducir el caso y resolver el emparejamiento sin romper MachO U
+  ni aceptar una edad distinta. Native021 sigue invalidado y parcial.
+
+Native004 pasa a implementación parcial por sus lectores exigidos pendientes;
+ningún recibo de negociación/upload o MSF7 se presenta como legacy/Portable.
+
+### Reparación local NB10/PDB2 verificada, 2026-10-27
+
+La recuperación store completó todo el paquete en406,821s, exit0, sin tests
+fallidos ni omitidos. Se compone con los paquetes ya pasados de la ejecución
+general sobre exactamente el mismo código; se conserva su corte600s como
+fallo del intento inicial. El límite global20m no cambió los45s del helper de
+telemetría ni los demás límites internos. No se modificó código de store.
+Vet, gofmt y diff-check pasaron. La primaria inspeccionó los diffs del worker,
+el owner completo y sus nueve casos, los dos lectores de producción, los
+formatos públicos y todos los resultados de imagen/SQL/reinicio.
+
+Comprobantes persistentes sin secretos:
+test-results/closure-20261025/nativo-nb10-fresh/.
+Incluyen RED/GREEN, gate, acciones y estados de todos los tests, corte original,
+recuperación, imagen/build/entradas, crash real, bytes SQL, upgrade85 y
+reinicio95 filas/73tablas, y lectura autenticada del payload exacto. Las acciones
+de Go conservan test/package/tiempos; se omite Output del log privado para no
+publicar datos de fixtures. Los paquetes sin tests se distinguen de skips;
+no se omitió ningún test. Las95 filas corresponden al snapshot anterior al
+login final. El respaldo privado accepted.dump incorpora esa sesión posterior;
+se comprobó pg_restore --list, sin atribuirle una restauración ya ejecutada.
+
+La fuente de cmd/internal coincide en los628 archivos comprobados con el
+contexto de la imagen local, que excluyó el archivo ajeno sin seguimiento.
+No cambian esquema, permisos ni rutas de otros dominios; los únicos consumidores
+de los lectores reparados son Minidump, typed-native envelope y reprocesado.
+Se conservan las invalidaciones nativas registradas hasta su cotejo integral;
+los nuevos recibos acreditan los subresultados locales descritos, no el cierre
+de004/021/028 ni publicación/CI de una fuente que aún no se ha publicado.
+
+Siguiente acción concreta: native004, contrastar por primaria la muestra MSF2
+y las fuentes fijadas de Microsoft del informe reducido, especificar primero
+el lector legacy y fixtures propios, luego ampliar su owner antes de implementar.
+El hueco UUID0 de021 conserva su tarea separada. No hay aprobación pendiente
+para esta reparación local ni se declara complete el Goal.

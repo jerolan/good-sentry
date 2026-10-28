@@ -244,7 +244,7 @@ func parseSymCacheDebugID(raw []byte) (string, bool) {
 		return "", false
 	}
 	appendix := binary.LittleEndian.Uint32(raw[16:20])
-	if appendix != 0 {
+	if appendix != 0 || raw[31] == 1 {
 		id += strconv.FormatUint(uint64(appendix), 16)
 	}
 	return id, true

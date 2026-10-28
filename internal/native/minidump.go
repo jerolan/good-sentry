@@ -403,6 +403,11 @@ func codeViewDebugID(cv []byte) string {
 	switch binary.LittleEndian.Uint32(cv[:4]) {
 	case 0x53445352: // RSDS: PDB GUID, age and path.
 		return codeViewID(cv)
+	case 0x3031424e: // NB10: PDB 2.0 timestamp, age and NUL-terminated path.
+		if len(cv) < 17 || cv[len(cv)-1] != 0 {
+			return ""
+		}
+		return fmt.Sprintf("%08X%x", binary.LittleEndian.Uint32(cv[8:]), binary.LittleEndian.Uint32(cv[12:]))
 	case 0x4270454c: // BpEL: GNU ELF build ID from Crashpad/Breakpad.
 		if len(cv) == 4 || len(cv) > 4+64 {
 			return ""

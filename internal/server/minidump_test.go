@@ -996,24 +996,61 @@ func TestNativePDBInlineFramesReachMinidumpEvent(t *testing.T) {
 
 func TestNativeSymCacheSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 	const embeddedID = "00112233445566778899AABBCCDDEEFF1"
+	nb10 := func(timestamp, age uint32, filename string) []byte {
+		record := make([]byte, 16+len(filename))
+		copy(record, "NB10")
+		binary.LittleEndian.PutUint32(record[8:], timestamp)
+		binary.LittleEndian.PutUint32(record[12:], age)
+		copy(record[16:], filename)
+		return record
+	}
 	for _, test := range []struct {
-		name       string
-		moduleID   string
-		wantSymbol bool
+		name        string
+		moduleID    string
+		codeView    []byte
+		cacheID     string
+		cacheAge    uint32
+		wantDebugID string
+		wantSymbol  bool
 	}{
-		{name: "matching module identity", moduleID: embeddedID, wantSymbol: true},
-		{name: "mismatched module identity", moduleID: "00112233445566778899AABBCCDDEEFF2"},
+		{name: "matching module identity", moduleID: embeddedID, wantDebugID: embeddedID, wantSymbol: true},
+		{name: "mismatched module identity", moduleID: "00112233445566778899AABBCCDDEEFF2", wantDebugID: "00112233445566778899AABBCCDDEEFF2"},
+		{name: "NB10 matching timestamp and age", codeView: nb10(0x12345678, 1, "different.pdb\x00"), cacheID: "123456781", cacheAge: 1, wantDebugID: "123456781", wantSymbol: true},
+		{name: "NB10 different timestamp", codeView: nb10(0x12345679, 1, "different.pdb\x00"), cacheID: "123456781", cacheAge: 1, wantDebugID: "123456791"},
+		{name: "NB10 different age", codeView: nb10(0x12345678, 2, "different.pdb\x00"), cacheID: "123456781", cacheAge: 1, wantDebugID: "123456782"},
+		{name: "NB10 matching zero age", codeView: nb10(0x12345678, 0, "different.pdb\x00"), cacheID: "123456780", wantDebugID: "123456780", wantSymbol: true},
+		{name: "NB10 truncated header", codeView: nb10(0x12345678, 1, "different.pdb\x00")[:15], cacheID: "123456781", cacheAge: 1},
+		{name: "NB10 missing filename", codeView: nb10(0x12345678, 1, ""), cacheID: "123456781", cacheAge: 1},
+		{name: "NB10 unterminated filename", codeView: nb10(0x12345678, 1, "different.pdb"), cacheID: "123456781", cacheAge: 1},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			cache := nativesymcache.Build(9, 0).Data
+			cacheID := embeddedID
+			if test.codeView != nil {
+				cacheID = test.cacheID
+				clear(cache[8 : 8+16])
+				binary.BigEndian.PutUint32(cache[8:], 0x12345678)
+				binary.LittleEndian.PutUint32(cache[8+16:], test.cacheAge)
+				cache[8+31] = 1
+			}
 			digest := sha1.Sum(cache)
 			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
-			if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "symbols.symcache", "symcache", embeddedID, "x86_64", "crash.exe", hex.EncodeToString(digest[:]), nil, nil, cache); err != nil {
+			if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "symbols.symcache", "symcache", cacheID, "x86_64", "crash.exe", hex.EncodeToString(digest[:]), nil, nil, cache); err != nil {
 				t.Fatal(err)
 			}
 
-			minidump := buildNativeModuleMinidump(t, "C:\\test\\renamed.exe", test.moduleID, 0x1015)
+			moduleID := test.moduleID
+			if test.codeView != nil {
+				moduleID = embeddedID
+			}
+			minidump := buildNativeModuleMinidump(t, "C:\\test\\renamed.exe", moduleID, 0x1015)
+			if test.codeView != nil {
+				moduleRVA := nativeTestMinidumpStreamRVA(minidump, 4)
+				binary.LittleEndian.PutUint32(minidump[moduleRVA+4+76:], uint32(len(test.codeView)))
+				binary.LittleEndian.PutUint32(minidump[moduleRVA+4+80:], uint32(len(minidump)))
+				minidump = append(minidump, test.codeView...)
+			}
 			body, contentType := minidumpForm(t, minidump, nil)
 			req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
 			if err != nil {
@@ -1037,6 +1074,11 @@ func TestNativeSymCacheSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 				t.Fatalf("stored SymCache minidump event: %d %v", len(events), err)
 			}
 			var payload struct {
+				DebugMeta struct {
+					Images []struct {
+						DebugID string `json:"debug_id"`
+					} `json:"images"`
+				} `json:"debug_meta"`
 				Exception struct {
 					Values []struct {
 						Stacktrace struct {
@@ -1047,6 +1089,9 @@ func TestNativeSymCacheSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 			}
 			if err := json.Unmarshal(events[0].Data, &payload); err != nil {
 				t.Fatal(err)
+			}
+			if len(payload.DebugMeta.Images) != 1 || payload.DebugMeta.Images[0].DebugID != test.wantDebugID {
+				t.Errorf("SymCache module Debug ID=%+v, want %q", payload.DebugMeta.Images, test.wantDebugID)
 			}
 			if len(payload.Exception.Values) != 1 || len(payload.Exception.Values[0].Stacktrace.Frames) == 0 {
 				t.Fatalf("SymCache minidump frames: %+v", payload.Exception)

@@ -1136,6 +1136,23 @@ For ELF and Mach-O DWARF, derive source mappings from each compilation unit's li
 The first native-processing slice accepts `POST /api/{project}/minidump/` with Sentry DSN version/key authentication, the multipart `upload_file_minidump` field and bounded extra form fields. It parses the public Minidump directory, SystemInfo, ThreadList, ModuleList, Exception and Memory64 streams, selects the exception thread context, requires its supported context layout to match the SystemInfo processor architecture, and distinguishes AMD64, x86, ARM32, ARM64 and RISC-V64 from their public context layouts; for x86, the processor architecture value is 0 according to [Breakpad’s public Minidump format](https://chromium.googlesource.com/breakpad/breakpad/+/HEAD/src/google_breakpad/common/minidump_format.h). For AMD64, accept the 1,232-byte base context or an appended XSTATE area of at most 16,384 bytes when context flags include bit `0x40`; ignore the extension for register recovery. Crashpad defines the XSTATE flag and AMD64 base context in its [context format](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/minidump/minidump_context.h) and [context writer](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/third_party/crashpad/crashpad/minidump/minidump_context_writer.cc); Breakpad bounds optional XSTATE bytes at 16 KiB in its [context reader](https://chromium.googlesource.com/breakpad/breakpad/+/HEAD/src/processor/minidump.cc). For x86, accept the 716-byte base context or an appended XSTATE area of at most 16,384 bytes when context flags include bit `0x40`; ignore the extension for register recovery. Crashpad defines the x86 context size and XSTATE flag in its [context format](https://chromium.googlesource.com/chromium/src/+/cc032bd4e8986d7c14c09d9a04c856395b90fe0b/third_party/crashpad/crashpad/minidump/minidump_context.h) and [context writer](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/third_party/crashpad/crashpad/minidump/minidump_context_writer.cc); use the same 16 KiB extension bound defined by Breakpad’s [context reader](https://chromium.googlesource.com/breakpad/breakpad/+/HEAD/src/processor/minidump.cc). The parser constructs fatal exception/debug-meta JSON and ingests it through the normal durable event path and key quota. The request body is bounded by MAX_BODY_BYTES; unsupported context/architectures, malformed multipart and malformed dumps fail without an event. Raw minidumps are not retained.
 Module CodeView records carry identity in `RSDS` PDB data or the ELF `BpEL` build-id record. Read `BpEL` from its little-endian signature and bounded build-id bytes, without the 24-byte minimum used by `RSDS`, so Crashpad Linux modules match uploaded ELF symbols. The public format is [MDCVInfoELF](https://chromium.googlesource.com/breakpad/breakpad/+/HEAD/src/google_breakpad/common/minidump_format.h).
 
+Also recognize legacy `NB10` CodeView records through the public
+[`MDCVInfoPDB20` layout](https://raw.githubusercontent.com/google/breakpad/main/src/google_breakpad/common/minidump_format.h).
+The fixed header is16 bytes: signature `0x3031424e`, debug-data offset,
+little-endian timestamp and little-endian age. Require at least one filename
+byte after the header and a terminating NUL at the record's end. Identity uses
+the timestamp as eight hexadecimal digits followed by the hexadecimal age,
+including a zero age, consistently with
+[Breakpad's debug identifier](https://chromium.googlesource.com/breakpad/breakpad/+/refs/heads/main/src/processor/minidump.cc).
+The offset and filename do not select or open a local file. A truncated or
+unterminated NB10 record contributes no Debug ID; normal unsymbolicated capture
+continues. The same timestamp/age identity in an uploaded PDB2 SymCache must
+resolve a matching module despite a different basename, including age0, and
+must not resolve another timestamp/age. This connects existing SymCache symbols;
+it does not implement the legacy MSF/PDB or Portable PDB readers required by004.
+Acceptance extends the existing HTTP/PostgreSQL SymCache identity owner with
+matching, mismatched, age0 and malformed NB10 records, retaining RSDS cases.
+
 
 <a id="close-nativo-008"></a>
 

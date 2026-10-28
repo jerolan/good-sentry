@@ -2,6 +2,16 @@
 
 Authority: ../SPEC.md. The user approved the capability map and authorized specification, planning and execution on 2026-10-14, then named the product GoodSentry. No further routine phase approvals are required. Changes to scope or consequential design decisions still follow the specification.
 
+Current closure increment, 2026-10-27: releases028–031 and the local NB10/PDB2
+identity repair are verified, with receipts in todo.md. Continue native004
+and its dependents. Next contrast the acquired MSF2/C11 format facts against
+Microsoft's public definitions and specify the bounded legacy reader with
+owned fixtures before implementing it. Reproduce the UUID0 SymCache pairing
+gap separately and preserve Mach-O identity behavior. Keep Portable PDB,
+unwinding and symbol-server requirements open. Reconcile native receipts,
+publication and matching CI against the final candidate; do not invalidate
+unrelated release/UI proofs without a changed dependency.
+
 1. Establish an executable Go application, validated environment configuration, PostgreSQL migration startup and a reproducible single-image build. Prove readiness against real PostgreSQL.
 2. Deliver setup, login, organization/project creation and DSN display through API and UI. Prove isolation, session lifecycle and first-owner bootstrap closure.
 3. Implement Sentry authentication and store/envelope framing as a bounded package while event normalization/grouping is built independently. Integrate durable error ingestion, issue list and event detail. Prove real SDK error capture, duplicate retry behavior and restart persistence before expanding telemetry.
