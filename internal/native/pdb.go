@@ -24,7 +24,6 @@ const (
 	maxPDBInlineDepth     = 128
 	maxPDBInlineRecords   = 1_000_000
 	maxPDBInlineAnnots    = 1_000_000
-	pdbHeaderSize         = 32
 	pdbStreamAbsent       = ^uint32(0)
 	pdbModuleStreamAbsent = ^uint16(0)
 	pdbPublicSymbolKind   = 0x110e
@@ -94,15 +93,22 @@ type pdbSymbolScope struct {
 }
 
 func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
-	if len(data) < pdbHeaderSize || len(data) > maxPDBBytes || !bytes.Equal(data[:pdbHeaderSize], msf7Magic) {
+	if len(data) > maxPDBBytes {
 		return "", nil, false
 	}
-	msf, ok := parsePDBMSF(data)
+	var msf *pdbMSFFile
+	var ok bool
+	switch {
+	case bytes.HasPrefix(data, msf7Magic):
+		msf, ok = parsePDBMSF(data)
+	case bytes.HasPrefix(data, msf2Magic):
+		msf, ok = parsePDBMSF2(data)
+	}
 	if !ok {
 		return "", nil, false
 	}
 	info, ok := msf.readStream(1)
-	if !ok || len(info) < 28 || !knownPDBInfoVersion(binary.LittleEndian.Uint32(info)) {
+	if !ok || pdbInfoHeaderSize(info) == 0 {
 		return "", nil, false
 	}
 	age := binary.LittleEndian.Uint32(info[8:])
@@ -179,6 +185,9 @@ func parsePDBSections(data []byte) ([]pdbSection, bool) {
 }
 
 func parsePDBMSF(data []byte) (*pdbMSFFile, bool) {
+	if len(data) < 56 || len(data) > maxPDBBytes || !bytes.HasPrefix(data, msf7Magic) {
+		return nil, false
+	}
 	blockSize := binary.LittleEndian.Uint32(data[32:])
 	switch blockSize {
 	case 512, 1024, 2048, 4096:
@@ -249,18 +258,27 @@ func parsePDBMSF(data []byte) (*pdbMSFFile, bool) {
 			streams[i].absent = true
 			continue
 		}
+		blockCounts[i] = uint32((uint64(size) + uint64(blockSize) - 1) / uint64(blockSize))
+		if i == 0 {
+			// Stream 0 is an obsolete directory snapshot, not an active stream.
+			streams[i].absent = true
+			continue
+		}
 		declaredBytes += uint64(size)
 		if declaredBytes > maxPDBBytes {
 			return nil, false
 		}
 		streams[i].size = size
-		blockCounts[i] = uint32((uint64(size) + uint64(blockSize) - 1) / uint64(blockSize))
 	}
 	directoryOffset := 4 + int(streamCount)*4
 	for i := range streams {
 		count := blockCounts[i]
 		if uint64(directoryOffset)+uint64(count)*4 > uint64(len(directory)) {
 			return nil, false
+		}
+		if i == 0 {
+			directoryOffset += int(count) * 4
+			continue
 		}
 		streams[i].blocks = make([]uint32, count)
 		for j := range streams[i].blocks {
@@ -490,12 +508,16 @@ func parsePDBModules(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSection, 
 		}
 		moduleStream, ok := msf.readStream(moduleStreamIndex)
 		streamEnd := uint64(symbolBytes) + uint64(c11Bytes) + uint64(c13Bytes)
-		if !ok || symbolBytes < 4 || streamEnd > uint64(len(moduleStream)) || (c11Bytes != 0 && c13Bytes != 0) || !knownCodeViewSignature(binary.LittleEndian.Uint32(moduleStream)) {
+		if !ok || symbolBytes < 4 || streamEnd > uint64(len(moduleStream)) || (c11Bytes != 0 && c13Bytes != 0) {
+			return nil, false
+		}
+		signature := binary.LittleEndian.Uint32(moduleStream)
+		if !knownCodeViewSignature(signature) || signature == 2 && c13Bytes != 0 {
 			return nil, false
 		}
 		moduleFunctionsStart := len(functions)
 		var moduleInlineSites []pdbInlineSite
-		if !parsePDBModuleSymbolsWithInlineSites(moduleStream[4:symbolBytes], sections, &functions, &procedures, &records, &moduleInlineSites, &inlineSites) {
+		if !parsePDBModuleSymbolsWithInlineSites(moduleStream[4:symbolBytes], sections, &functions, &procedures, &records, &moduleInlineSites, &inlineSites, signature) {
 			return nil, false
 		}
 		moduleProceduresEnd := len(functions)
@@ -889,11 +911,12 @@ func pdbGlobalStringTable(msf *pdbMSFFile, pdbInfo []byte) ([]byte, bool) {
 }
 
 func pdbNamedStreamIndex(info []byte, msf *pdbMSFFile) (uint16, bool) {
-	if len(info) < 32 {
+	headerSize := pdbInfoHeaderSize(info)
+	if headerSize == 0 || len(info) < headerSize+4 || binary.LittleEndian.Uint32(info) == 19941610 {
 		return 0, false
 	}
-	stringBytes := binary.LittleEndian.Uint32(info[28:])
-	stringsStart := uint64(32)
+	stringBytes := binary.LittleEndian.Uint32(info[headerSize:])
+	stringsStart := uint64(headerSize + 4)
 	stringsEnd := stringsStart + uint64(stringBytes)
 	if stringsEnd+8 > uint64(len(info)) {
 		return 0, false
@@ -1017,10 +1040,10 @@ func pdbStringAt(table []byte, offset uint32) (string, bool) {
 }
 
 func parsePDBModuleSymbols(data []byte, sections []pdbSection, functions *[]SymbolFunction, procedures, records *int) bool {
-	return parsePDBModuleSymbolsWithInlineSites(data, sections, functions, procedures, records, nil, nil)
+	return parsePDBModuleSymbolsWithInlineSites(data, sections, functions, procedures, records, nil, nil, 4)
 }
 
-func parsePDBModuleSymbolsWithInlineSites(data []byte, sections []pdbSection, functions *[]SymbolFunction, procedures, records *int, sites *[]pdbInlineSite, siteCount *int) bool {
+func parsePDBModuleSymbolsWithInlineSites(data []byte, sections []pdbSection, functions *[]SymbolFunction, procedures, records *int, sites *[]pdbInlineSite, siteCount *int, signature uint32) bool {
 	currentProcedure := -1
 	strictScopes := false
 	scopeStackInvalid := false
@@ -1086,6 +1109,9 @@ func parsePDBModuleSymbolsWithInlineSites(data []byte, sections []pdbSection, fu
 			}
 		}
 		if isPDBProcedureKind(kind) {
+			if signature == 2 && kind != 0x100a && kind != 0x100b {
+				return false
+			}
 			if strictScopes && len(scopes) != 0 {
 				return false
 			}
@@ -1098,7 +1124,7 @@ func parsePDBModuleSymbolsWithInlineSites(data []byte, sections []pdbSection, fu
 				return false
 			}
 			(*procedures)++
-			procedure, ok := parsePDBProcedure(body)
+			procedure, ok := parsePDBProcedure(body, kind)
 			if !ok {
 				return false
 			}
@@ -1219,7 +1245,7 @@ func pdbProcedureEndKind(kind uint16) uint16 {
 	}
 }
 
-func parsePDBProcedure(data []byte) (pdbProcedure, bool) {
+func parsePDBProcedure(data []byte, kind uint16) (pdbProcedure, bool) {
 	var procedure pdbProcedure
 	if len(data) < 36 {
 		return procedure, false
@@ -1230,6 +1256,14 @@ func parsePDBProcedure(data []byte) (pdbProcedure, bool) {
 	procedure.offset = binary.LittleEndian.Uint32(data[28:])
 	procedure.segment = binary.LittleEndian.Uint16(data[32:])
 	name := data[35:]
+	if kind == 0x100a || kind == 0x100b {
+		length := int(name[0])
+		if length == 0 || length > len(name)-1 {
+			return pdbProcedure{}, false
+		}
+		procedure.name = string(name[1 : 1+length])
+		return procedure, true
+	}
 	end := bytes.IndexByte(name, 0)
 	if end < 0 || end == 0 || end > maxPDBProcedureName {
 		return pdbProcedure{}, false
@@ -1240,7 +1274,7 @@ func parsePDBProcedure(data []byte) (pdbProcedure, bool) {
 
 func isPDBProcedureKind(kind uint16) bool {
 	switch kind {
-	case 0x110f, 0x1110, 0x1146, 0x1147, 0x1155, 0x1156:
+	case 0x100a, 0x100b, 0x110f, 0x1110, 0x1146, 0x1147, 0x1155, 0x1156:
 		return true
 	default:
 		return false
@@ -1248,18 +1282,38 @@ func isPDBProcedureKind(kind uint16) bool {
 }
 
 func knownCodeViewSignature(signature uint32) bool {
-	return signature == 4
+	return signature == 2 || signature == 4
 }
 
 func pdbInfoDebugID(info []byte) string {
-	if len(info) < 28 {
+	headerSize := pdbInfoHeaderSize(info)
+	if headerSize == 0 {
 		return ""
+	}
+	if headerSize == 12 {
+		codeView := make([]byte, 17)
+		copy(codeView, "NB10")
+		copy(codeView[8:16], info[4:12])
+		return DebugKey(codeViewDebugID(codeView))
 	}
 	codeView := make([]byte, 24)
 	copy(codeView, "RSDS")
 	copy(codeView[4:20], info[12:28])
 	binary.LittleEndian.PutUint32(codeView[20:], binary.LittleEndian.Uint32(info[8:]))
 	return DebugKey(codeViewID(codeView))
+}
+
+func pdbInfoHeaderSize(info []byte) int {
+	if len(info) < 12 || !knownPDBInfoVersion(binary.LittleEndian.Uint32(info)) {
+		return 0
+	}
+	if binary.LittleEndian.Uint32(info) < 20000404 {
+		return 12
+	}
+	if len(info) < 28 {
+		return 0
+	}
+	return 28
 }
 
 func knownPDBInfoVersion(version uint32) bool {

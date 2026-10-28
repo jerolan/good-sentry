@@ -7,6 +7,7 @@ import (
 	"compress/gzip"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -15,12 +16,15 @@ import (
 
 func TestParseNativePDBProcedureSymbols(t *testing.T) {
 	data := nativepdb.Minimal().Data
-	archives := []struct {
-		name string
-		data []byte
-	}{
+	type pdbCase struct {
+		name    string
+		data    []byte
+		debugID string
+	}
+	archives := []pdbCase{
 		{name: "standalone", data: data},
 		{name: "standalone with odd-sized EC substream", data: nativepdb.WithECSubstream().Data},
+		{name: "MSF7 obsolete stream zero reuses Info page", data: nativepdb.WithStreamZeroAlias().Data},
 		{name: "tar", data: pdbTARDebugArchive(t, data)},
 		{name: "tar.gz", data: pdbGzipDebugArchive(t, pdbTARDebugArchive(t, data))},
 	}
@@ -36,10 +40,24 @@ func TestParseNativePDBProcedureSymbols(t *testing.T) {
 	if err := zipWriter.Close(); err != nil {
 		t.Fatal(err)
 	}
-	archives = append(archives, struct {
-		name string
-		data []byte
-	}{name: "zip", data: zipBytes.Bytes()})
+	archives = append(archives, pdbCase{name: "zip", data: zipBytes.Bytes()})
+	for _, legacy := range []struct {
+		pageSize int
+		age      uint32
+		alias    bool
+	}{
+		{pageSize: 1024, age: 1},
+		{pageSize: 2048, age: 1},
+		{pageSize: 4096, age: 1},
+		{pageSize: 1024, age: 0},
+		{pageSize: 1024, age: 1, alias: true},
+	} {
+		archives = append(archives, pdbCase{
+			name:    fmt.Sprintf("Small MSF2 page%d age%d stream0alias%t", legacy.pageSize, legacy.age, legacy.alias),
+			data:    nativepdb.SmallMSF2(legacy.pageSize, legacy.age, legacy.alias).Data,
+			debugID: fmt.Sprintf("65ae7563%x", legacy.age),
+		})
+	}
 	wantID := DebugKey("5A9832E5287241C1838ED98914E9B7FF1")
 	want := []SymbolFunction{
 		{Start: 0x1010, End: 0x1030, Name: "CrashFunction", Line: -1},
@@ -47,6 +65,10 @@ func TestParseNativePDBProcedureSymbols(t *testing.T) {
 	}
 	for _, archive := range archives {
 		t.Run(archive.name, func(t *testing.T) {
+			wantID := wantID
+			if archive.debugID != "" {
+				wantID = archive.debugID
+			}
 			objects := ParseDebugObjects("crash.pdb", archive.data)
 			if len(objects) != 1 {
 				t.Fatalf("parsed PDB objects=%d, want one", len(objects))
@@ -61,6 +83,26 @@ func TestParseNativePDBProcedureSymbols(t *testing.T) {
 			for i, function := range object.Functions {
 				if function != want[i] {
 					t.Fatalf("PDB function[%d]=%+v, want %+v", i, function, want[i])
+				}
+			}
+			if archive.debugID != "" {
+				for _, metadata := range []struct {
+					name, debugID, wantFunction string
+				}{
+					{name: "matching multipart identity", debugID: wantID, wantFunction: "CrashFunction"},
+					{name: "mismatching multipart identity", debugID: wantID + "f"},
+				} {
+					t.Run(metadata.name, func(t *testing.T) {
+						symbols, _ := BuildSymbolTables([]DebugSymbolFile{{Name: "uploaded.pdb", DebugID: metadata.debugID, Content: archive.data}})
+						crash := Crash{
+							Modules: []Module{{Name: "renamed.exe", Base: 0x140000000, Size: 0x10000, DebugID: wantID}},
+							Frames:  []Frame{{Instruction: 0x140001015, Module: "renamed.exe"}},
+						}
+						Symbolicate(&crash, symbols)
+						if crash.Frames[0].Function != metadata.wantFunction {
+							t.Fatalf("legacy identity returned frame %+v, want function %q", crash.Frames[0], metadata.wantFunction)
+						}
+					})
 				}
 			}
 		})
@@ -470,7 +512,7 @@ func TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets(t *testing.T) {
 		data := append(append([]byte(nil), procedure...), siteRecord()...)
 		var functions []SymbolFunction
 		procedures, records, siteCount := 0, 0, maxPDBInlineSites
-		if parsePDBModuleSymbolsWithInlineSites(data, sections, &functions, &procedures, &records, new([]pdbInlineSite), &siteCount) {
+		if parsePDBModuleSymbolsWithInlineSites(data, sections, &functions, &procedures, &records, new([]pdbInlineSite), &siteCount, 4) {
 			t.Fatal("parser accepted more than the per-PDB inline-site budget")
 		}
 	})
@@ -502,7 +544,7 @@ func TestPDBInlineParserEnforcesSiteDepthIPIAndAnnotationBudgets(t *testing.T) {
 		var functions []SymbolFunction
 		var sites []pdbInlineSite
 		procedures, records, siteCount := 0, 0, 0
-		if parsePDBModuleSymbolsWithInlineSites(data, sections, &functions, &procedures, &records, &sites, &siteCount) {
+		if parsePDBModuleSymbolsWithInlineSites(data, sections, &functions, &procedures, &records, &sites, &siteCount, 4) {
 			t.Fatal("parser accepted inline nesting beyond the per-PDB limit")
 		}
 	})
@@ -658,8 +700,14 @@ func TestParsePDBC13EnforcesRecordBudgets(t *testing.T) {
 func TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols(t *testing.T) {
 	fixture := nativepdb.Minimal()
 	data, moduleBlock, firstProcedureLen, dbiBlock := fixture.Data, fixture.ModuleBlock, fixture.FirstProcedureLength, fixture.DBIBlock
+	small := nativepdb.SmallMSF2(1024, 1, false)
+	directoryStart := int(binary.LittleEndian.Uint16(small.Data[60:])) * 1024
+	const smallPageList = 4 + 6*8
+	secondProcedure := small.ModuleBlock*1024 + 4 + small.FirstProcedureLength
+	c13 := nativepdb.WithSourceLines(true)
 	tests := []struct {
 		name   string
+		input  []byte
 		mutate func([]byte)
 	}{
 		{name: "invalid block size", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[32:], 256) }},
@@ -669,6 +717,22 @@ func TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols(t *testing.T) 
 		{name: "too many streams", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[3*512:], 4097) }},
 		{name: "PDB age disagrees with DBI", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[5*512+8:], 2) }},
 		{name: "invalid CodeView module signature", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[moduleBlock*512:], 5) }},
+		{name: "modern procedures with CodeView signature2", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[moduleBlock*512:], 2) }},
+		{name: "legacy ST with C13 and CodeView signature2", input: c13.Data, mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[c13.ModuleBlock*512:], 2)
+			// Keep both procedures valid under signature2 so only the C13
+			// signature restriction can reject their valid source mappings.
+			offset := c13.ModuleBlock*512 + 4
+			for _, kind := range []uint16{0x100b, 0x100a} {
+				end := offset + 2 + int(binary.LittleEndian.Uint16(data[offset:]))
+				binary.LittleEndian.PutUint16(data[offset+2:], kind)
+				nameStart := offset + 39
+				nameLength := bytes.IndexByte(data[nameStart:end], 0)
+				copy(data[nameStart+1:nameStart+1+nameLength], data[nameStart:nameStart+nameLength])
+				data[nameStart] = byte(nameLength)
+				offset = end
+			}
+		}},
 		{name: "section header stream missing", mutate: func(data []byte) {
 			moduleInfoSize := binary.LittleEndian.Uint32(data[dbiBlock*512+24:])
 			offset := int(dbiBlock*512) + 64 + int(moduleInfoSize) + 10
@@ -678,11 +742,54 @@ func TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols(t *testing.T) 
 			offset := int(moduleBlock*512) + 4 + firstProcedureLen
 			binary.LittleEndian.PutUint16(data[offset:], ^uint16(0))
 		}},
+		{name: "Small MSF2 header truncated", input: small.Data[:59]},
+		{name: "Small MSF2 signature mismatch", input: small.Data, mutate: func(data []byte) { data[43] = 1 }},
+		{name: "Small MSF2 page size unsupported", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[44:], 512) }},
+		{name: "Small MSF2 FPM invalid", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[48:], 3) }},
+		{name: "Small MSF2 page count exceeds file", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[50:], 100) }},
+		{name: "Small MSF2 directory empty", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[52:], 0) }},
+		{name: "Small MSF2 directory page outside file", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[60:], 0xffff) }},
+		{name: "Small MSF2 directory overlaps FPM", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[60:], 16) }},
+		{name: "Small MSF2 too many streams", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[directoryStart:], 4097) }},
+		{name: "Small MSF2 trailing directory bytes", input: small.Data, mutate: func(data []byte) {
+			binary.LittleEndian.PutUint32(data[52:], binary.LittleEndian.Uint32(data[52:])+2)
+		}},
+		{name: "Small MSF2 stream zero page list truncated", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[directoryStart+4:], 12) }},
+		{name: "Small MSF2 active byte budget exceeded", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[directoryStart+4+8:], 64<<20+1) }},
+		{name: "Small MSF2 active stream overlaps header", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[directoryStart+smallPageList:], 0) }},
+		{name: "Small MSF2 active stream overlaps first FPM last page", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[directoryStart+smallPageList:], 8) }},
+		{name: "Small MSF2 active stream overlaps second FPM last page", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[directoryStart+smallPageList:], 16) }},
+		{name: "Small MSF2 active stream overlaps directory", input: small.Data, mutate: func(data []byte) {
+			binary.LittleEndian.PutUint16(data[directoryStart+smallPageList:], uint16(directoryStart/1024))
+		}},
+		{name: "Small MSF2 active streams share page", input: small.Data, mutate: func(data []byte) {
+			// Give unused active stream 2 twelve bytes on Info's page, keeping
+			// every required stream valid independently of the ownership check.
+			binary.LittleEndian.PutUint32(data[directoryStart+4+2*8:], 12)
+			directorySize := int(binary.LittleEndian.Uint32(data[52:]))
+			insert := directoryStart + smallPageList + 2
+			copy(data[insert+2:directoryStart+directorySize+2], data[insert:directoryStart+directorySize])
+			binary.LittleEndian.PutUint16(data[insert:], uint16(small.InfoBlock))
+			binary.LittleEndian.PutUint32(data[52:], uint32(directorySize+2))
+		}},
+		{name: "Small MSF2 active page outside file", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint16(data[directoryStart+smallPageList:], 0xffff) }},
+		{name: "Small MSF2 Info header truncated", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[directoryStart+4+8:], 11) }},
+		{name: "Small MSF2 Info and DBI ages disagree", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[small.DBIBlock*1024+8:], 2) }},
+		{name: "Small MSF2 later Pascal name truncated", input: small.Data, mutate: func(data []byte) { data[secondProcedure+4+35] = 255 }},
+		{name: "Small MSF2 later procedure range invalid", input: small.Data, mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[secondProcedure+4+12:], 0xffffffff) }},
+		{name: "truncated MSF7 header magic only", input: data[:32]},
+		{name: "truncated MSF7 header 55 bytes", input: data[:55]},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			corrupt := append([]byte(nil), data...)
-			test.mutate(corrupt)
+			input := test.input
+			if input == nil {
+				input = data
+			}
+			corrupt := append([]byte(nil), input...)
+			if test.mutate != nil {
+				test.mutate(corrupt)
+			}
 			if objects := ParseDebugObjects("corrupt.pdb", corrupt); len(objects) != 0 {
 				t.Fatalf("malformed PDB produced partial symbols: %+v", objects)
 			}

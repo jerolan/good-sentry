@@ -4,12 +4,17 @@ Authority: ../SPEC.md. The user approved the capability map and authorized speci
 
 Current closure increment, 2026-10-27: releases028–031 and the local NB10/PDB2
 identity repair are verified, with receipts in todo.md. Continue native004
-and its dependents. Next contrast the acquired MSF2/C11 format facts against
-Microsoft's public definitions and specify the bounded legacy reader with
-owned fixtures before implementing it. The primary found a prerequisite in
-the shared PDB reader: account for the EC substream before the optional debug
-header, with a failing owned fixture and focused native regression proof.
-Resolve that format-order defect first. Reproduce the UUID0 SymCache pairing
+and its dependents. The EC/optional-header prerequisite is repaired and verified.
+The first bounded legacy procedure reader in native018 is now verified locally:
+Small MSF2, pre-VC70 Info identity, ST procedures and obsolete stream0 reuse in
+MSF2/MSF7, with strict active page ownership and modern CV4 restrictions retained.
+Owned RED/GREEN, two killed guard mutations, native/server race checks and the
+independent private comparison of 686 procedures are recorded in todo.md. Next check
+the reduced C11 format facts against pinned Microsoft sources, resolve inclusive
+range and filename-encoding semantics, specify the bounded source mapper, then
+add its owned public parser fixture before implementation. Old DBI and other
+legacy layouts remain open.
+Reproduce the UUID0 SymCache pairing
 gap separately and preserve Mach-O identity behavior. Keep Portable PDB,
 unwinding and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate

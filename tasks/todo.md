@@ -1799,14 +1799,14 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-016](../SPEC.md#close-nativo-016) | CFI extended dereference: Add RISC-V64 minidump support for Breakpad architecture 0x8006 and Crashpad Minidump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-017](../SPEC.md#close-nativo-017) | CFI extended dereference: RISC-V64 ELF CFI accepts little-endian ELF64 EM_RISCV .eh_frame or .debug_frame and… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
-| [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
-| [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
+| [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
+| [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
+| [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | parcial | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
-| [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
+| [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
-| [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
-| [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
+| [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
+| [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | invalidada | EC y primer MSF2/ST verificados localmente; falta cotejo integral con candidata/CI; historial conservado |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11650,3 +11650,100 @@ procedimientos, con sus presupuestos y fixtures propios, contrastando el
 header/directorio u16, Info preVC70 y procedimientos ST de las fuentes
 Microsoft ya fijadas. Después añadir lectura C11 por separado. Conservar
 las copias aceptadas y el hueco UUID0 pendiente de021.
+
+### Primer lector legacy seleccionado y especificado, 2026-10-27
+
+Native004 sigue siendo el primer criterio exigible parcial; native018 aloja
+este incremento de procedimientos. La primaria contrastó magic/header60,
+directorio u16, FPM por geometría, Info12 sin GUID y registros ST con Microsoft
+pdb-rs2081a0d y microsoft-pdb805655a. También comprobó independientemente
+los encabezados y streams de la muestra privada. SPEC se amplió antes del plan
+y este registro: SmallMSF2 con NewDBI64, identidad timestamp+age, nombres Pascal,
+los presupuestos actuales y rechazo integral; C11 solo se acota, sin líneas.
+No se redistribuye la muestra ni se ejecuta la DLL. No reduce legacy/Portable.
+
+Revisión adversarial, dos ciclos: el primer hallazgo válido fue stream0. Es
+un snapshot obsoleto del directorio que puede apuntar a páginas reutilizadas;
+Microsoft lo descarta tras consumir su framing. Se incorpora esa regla en
+MSF2 y MSF7, sin propiedad ni presupuesto activo y sin exponer sus bytes. Las
+páginas de streams1+ conservan los rechazos de solapamiento/reservadas/rango.
+El segundo ciclo no encontró otra violación concreta en la propuesta; quedan
+los cálculos reales sujetos a revisión y pruebas. La creación de un revisor
+sin historial falló por el modelo configurado en el host. Se usó un agente
+independiente del diseño con propuesta y contrato acotados; se conserva esa
+limitación. Se omitió el CLI de otro modelo por ser esta ejecución autónoma
+del Goal, tal como se comunicó. La tolerancia de otros lectores a trailing
+bytes o edades DBI distintas no elimina los controles ya existentes aquí.
+
+Se mantienen las invalidaciones de004/018/019/020/022/024/025 y restantes
+nativos registradas; store y otros dominios no cambian de dependencia.
+Siguiente acción concreta: gate test-audit, fixture propia SmallMSF2 y regresión
+stream0 MSF7 en el owner público ParseDebugObjects, RED; después implementar,
+verificar native y consumidores HTTP/PostgreSQL, cotejar la muestra privada y
+registrar el incremento con commit atómico. C11 y UUID0 conservan pasos propios.
+
+
+### Primer lector SmallMSF2/ST verificado, 2026-10-27
+
+Se implementó el incremento de native018, prerrequisito de 004: SmallMSF2 con
+header de60 bytes, directorio y páginas u16, geometrías de1024/2048/4096 bytes,
+Info de12 bytes y NB10
+signature+age (incluido 0), NewDBI64 y procedimientos ST con nombre Pascal.
+Los pointers obsoletos se ignoran. Stream 0 queda ausente después de consumir
+su framing tanto en MSF2 como en MSF7; no posee páginas ni presupuesto activo.
+Se mantienen la unicidad de páginas activas, FPM/directorio reservados,
+64MiB/4096 streams y los límites existentes. Los headers MSF7 de32/55 bytes ahora
+se rechazan sin leer fuera del límite.
+
+El worker añadió fixture propia y casos al owner público existente. RED:
+cinco positivos MSF2 y el alias de stream0 MSF7 daban0 objetos; cinco modernos pasaban.
+Los dos headers cortos reproducían panic y se conservaron en logs separados.
+La primaria revisó fixtures/diffs/callers y escribió producción. La revisión
+independiente detectó que aceptar CV2 globalmente admitía registros modernos;
+la firma real ahora llega al decoder, CV2 admite procedimientos ST y no C13,
+y los procedimientos modernos siguen exigiendo CV4. Se conserva el RED de tres
+payloads; el owner final usa dos controles distintos: procedimiento moderno
+sin C13 y procedimiento ST válido con C13. Este último evita que otro rechazo
+oculte una guarda de firma ausente; los owners C13/inline positivos se conservan.
+
+Dos experimentos quitaron por separado la propiedad de páginas activas y el
+rechazo CV2+C13. Cada control falló al devolver símbolos del insumo inválido;
+ambos archivos se restauraron byte por byte. El alias activo usa un stream2 no
+consumido que comparte Info1, manteniendo válidos todos los streams requeridos.
+La primaria completó el gate de autoría del control C13 y revisó la aceptación
+final; no se añadieron exports, flags ni hooks de producción para los tests.
+
+La primaria inspeccionó y ejecutó de nuevo el sondeo independiente de la muestra
+privada, luego comparó los 686 tuples completos start/end/name con la salida
+real de ParseDebugObjects: igualdad decodificada y SHA256 canónico
+595f80d34d8235108d373aeb7c43cafda3af2aacb77fd67003efe4245b95c646.
+Debug ID 65ae75631, cero campos de fuente emitidos. Solo se leyó en memoria el
+miembro PDB con hash fijado; no se leyó/ejecutó DLL ni se extrajeron rutas.
+No se redistribuyen bytes ni nombres de la muestra; los tuples quedan privados.
+
+Verificación final: native completo con race 9,250s (454 acciones pass de tests,
+ningún fail/skip); consumidores HTTP/PostgreSQL seleccionados con race8,055s
+(15 pass, ningún fail/skip). Vet native/server/jobs, gofmt, diff-check y build
+trimpath pasaron. El build produjo SHA256
+a42f28a6265480cdbf62bd514085befef9d4f77aa7aafde9f4bf338924725a1c.
+El primer native completo 37,488s también pasó; se repitió por el ajuste final
+del control C13, sin volver a ejecutar HTTP ni store sin cambios de dependencia.
+La prueba store recuperada de 02c0999 conserva vigencia: sus fuentes, config,
+event, protocol y módulos Go siguen iguales. No se atribuye imagen nueva ni CI
+remoto a este código local.
+
+Comprobantes: test-results/closure-20261025/nativo-msf2-procedures/, con hashes
+de entradas y manifiesto. Se conservan las invalidaciones integrales nativas;
+004 sigue parcial por C11/oldDBI/otros legacy/Portable y los demás pendientes.
+Los respaldos y runtimes aceptados permanecen intactos. No hay aprobación
+rutinaria pendiente ni se declara complete el Goal.
+
+Siguiente acción concreta: native004, cotejar por primaria el informe reducido
+C11 con las fuentes Microsoft fijadas, resolver extremos inclusivos y nombres
+ST/MBCS, precisar la primera lectura acotada en SPEC y su aceptación, después
+fixture propia RED en ParseDebugObjects antes de implementar. Mantener UUID0
+como reparación separada y publicación/CI para la candidata integral.
+
+El informe factual siguiente está en /tmp/goodsentry-closure-legacy-research/
+c11-format-facts.txt; queda pendiente el cotejo de primaria antes de decidir
+semántica C11 o ampliar el contrato de implementación.
