@@ -34,8 +34,11 @@ HTTP/PG evidence. The documented ST source-line layout now also has local C7
 and V50 evidence, including unknown root and file bounds. A real VC4 pair and
 non-direct segment mapping evidence remain open. A standalone Portable PDB
 metadata reader and Symbolic-compatible hidden-point lookup have local
-.NET6/.NET10 oracle evidence; integrate the project-scoped managed event route.
-Keep other old records, unknown profiles and complete acceptance open. Keep unwinding
+.NET6/.NET10 oracle evidence. The project-scoped managed event route now has
+HTTP isolation, shared-budget controls and a real Sentry .NET SDK envelope
+verified against the independent metadata oracle. Next investigate embedded
+Portable PDB data in managed PE files, then specify and verify its bounded
+identity and event path. Keep other old records, unknown profiles and complete acceptance open. Keep unwinding
 and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
 unrelated release/UI proofs without a changed dependency.

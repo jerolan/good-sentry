@@ -12375,3 +12375,23 @@ La primaria revisó las pruebas y su oracle.
 Siguiente acción concreta: revisar el primer perfil restante exigible de
 native004 y sus dependencias, y contrastar el formato con su fuente primaria
 antes de definir la siguiente implementación verificable.
+
+### Investigación de Portable PDB embebido, 2026-10-28
+
+La especificación PE/COFF de .NET define la entrada de depuración17 con firma
+`MPDB`, tamaño descomprimido y contenido Deflate; si coexiste CodeView debe
+representar la misma información. Una aplicación propia compilada con PDB
+embebido emitió un evento real con Sentry .NET6.12.1. El SDK identificó la
+imagen administrada y ya proporcionó `Program.cs:18`; esta información debe
+conservarse. `PEReader` leyó independientemente la entrada embebida, el GUID,
+el stamp y el punto de secuencia correspondiente. Comprobante:
+test-results/closure-20261025/portable-pdb-embedded-research/.
+
+Todavía no hay un extractor de PDB embebido ni evidencia de enriquecimiento
+desde un PE cargado; el resultado real solo demuestra el formato y los campos
+enviados por el SDK. Quedan por definir validación PE, identidad CodeView,
+compresión, presupuestos y comportamiento ante datos incoherentes.
+
+Siguiente acción concreta: especificar esas reglas bajo native004 con base en
+PE/COFF y el recorrido Portable existente, y construir RED con la aplicación
+real y controles de corrupción antes de integrar el extractor.
