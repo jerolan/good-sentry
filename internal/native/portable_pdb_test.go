@@ -132,3 +132,10 @@ func TestPortablePDBLookupMatchesSentryCache(t *testing.T) {
 		t.Fatalf("first late point=%+v found=%t", point, found)
 	}
 }
+
+func TestPortablePDBRejectsSequenceHeaderWithoutPoint(t *testing.T) {
+	data := budgetPDB(1, 1, 0, false)
+	if _, ok := ParsePortablePDB(data); ok {
+		t.Fatal("a sequence-point blob must contain a point after its header")
+	}
+}

@@ -524,5 +524,5 @@ func portableSequencePoints(blob []byte, document uint32, documents []string, bu
 		previousLine, previousColumn = line, column
 		hasPoint, hasVisible = true, true
 	}
-	return result, true
+	return result, hasPoint
 }

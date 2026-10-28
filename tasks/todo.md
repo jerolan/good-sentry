@@ -12440,3 +12440,20 @@ primaria revisó el recorrido y las pruebas.
 Siguiente acción concreta: investigar la traducción de selectores no directos
 en mapas de secciones legados con fuentes primarias y un binario representativo;
 especificar el comportamiento y sus límites antes de implementarlo.
+
+### Cabecera Portable sin puntos, 2026-10-28
+
+La gramática de [Portable PDB de .NET](https://github.com/dotnet/runtime/blob/main/docs/design/specs/PortablePdb-Metadata.md#sequence-points-blob)
+exige al menos un punto después de la cabecera de cada blob de secuencias. RED
+reprodujo que el lector aceptaba una cabecera sola; ahora rechaza el archivo
+completo, sin devolver mappings parciales. Race nativo aprobó704 acciones y
+servidor41; vet y build pasaron. Comprobante:
+test-results/closure-20261025/portable-pdb-empty-sequence/.
+
+La pareja histórica localizada en una incidencia pública coincide con la
+muestra MSF2 ya contrastada: usa el perfil directo y no demuestra la traducción
+de selectores no directos. No se infiere soporte adicional de esa muestra.
+
+Siguiente acción concreta: seguir buscando evidencia de selectores no directos
+o avanzar el siguiente perfil nativo exigible con dependencias resueltas;
+mantener abierta la auditoría de native004 y sus dependientes.

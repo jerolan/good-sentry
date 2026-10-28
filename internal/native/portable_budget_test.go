@@ -42,6 +42,9 @@ func budgetPDB(identity uint32, documents, points int, longNames bool) []byte {
 	// The method's initial document is row one. Additional documents are
 	// selected by document records between their visible sequence points.
 	sequence := []byte{0, 0, 0, 1, 1, 1}
+	if points == 0 {
+		sequence = []byte{0}
+	}
 	for i := 1; i < points; i++ {
 		if i < documents {
 			sequence = append(sequence, 0)
