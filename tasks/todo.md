@@ -3993,6 +3993,25 @@ canónico, aislamiento, Sentry SDK, navegador ni reinicio. Siguiente acción:
 comparar los ocho lotes con sus envelopes oficiales y probar aislamiento,
 sin alterar los datos ya capturados.
 
+### Avance parcial 2026-10-27: wire e aislamiento de logs-028
+
+Se decodificaron independientemente los ocho mensajes oficiales y los ocho
+`payload` almacenados como `LogsData`; todos sus campos coincidieron para los
+24 registros. El parser independiente adapta únicamente los identificadores
+hexadecimales de OTLP JSON al formato base64 esperado por ProtoJSON. Resultado
+y procedimiento: `logs-028-fresh/wire-comparison.json` y `compare-wire.py`.
+
+Una clave inválida recibió 403; reenviar el wire a un proyecto propio distinto
+con su clave recibió 200. La API y PostgreSQL confirmaron 8 lotes/24 logs en
+el primero y 1 lote/3 logs en el segundo. El primer controlador falló después
+de ambos envíos al esperar un campo `total` que la API no entrega; se recuperó
+mediante lecturas de ambos proyectos, sin repetir escrituras. Se conservan el
+controlador y `isolation-report.json` en `logs-028-fresh/`.
+
+Faltan autorización entre organizaciones, SDK Sentry, navegador, límites y
+reinicio. Siguiente acción: verificar acceso entre organizaciones y captura
+Sentry en la misma copia antes de preparar el owner de navegador.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el

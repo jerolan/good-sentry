@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "invalidKeyStatus": 403,
+  "secondKeyStatus": 200,
+  "projects": [
+    {"id": "1", "batches": 8, "logs": 24},
+    {"id": "2", "batches": 1, "logs": 3}
+  ],
+  "recovery": "The first controller verified both HTTP statuses and then failed on an absent total field. Read-only API and PostgreSQL checks confirmed the existing data without replaying writes.",
+  "limitations": "Foreign-organization authorization remains to be tested."
+}
