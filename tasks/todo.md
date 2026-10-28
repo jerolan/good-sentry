@@ -1560,9 +1560,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de cookie |
-| [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | implementada | vigente | Cotejo final 2026-10-27: identity-023-fresh más identity-025/summary-20261027.json y public-8e95 |
 | [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de transacciones |
-| [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | implementada | vigente | Cotejo final 2026-10-27: identity-023-fresh más identity-025/summary-20261027.json y public-8e95 |
 | [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener la guía de no-rolling-upgrade |
 | [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 036 |
 | [CLOSE-identidad-028](../SPEC.md#close-identidad-028) | Account email and single-use password recovery: register and login screens expose a password-reset request for… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de request |
@@ -11377,3 +11377,34 @@ sí mismo la imagen publicada. Los demás subresultados nativos y el contraste
 de alcance004/023/028 continúan pendientes. Siguiente acción activa: recoger
 la ejecución de navegador Account023/025 y atender sus resultados antes de
 pasar a la siguiente familia del plan.
+
+### Cotejo completado de Account023/025, 2026-10-27
+
+Se arrancó la imagen pública `f2a7ca2f…`, candidata `8e95a6dd`, sobre otra base
+`closure023_ui`, volumen nuevo y puerto18523, con autenticación requerida y
+logs/uptime deshabilitados. Ninguna contraseña ni copia aceptada fue alterada.
+Un worker acotado ejecutó el navegador; la primaria inspeccionó el controlador,
+resultados, runtime y captura móvil. El escaneo previo al registro no encuentra
+la contraseña de la fixture en ningún artefacto.
+
+En320/768/1024/1440 se comprobaron: validación sin envío; petición retenida,
+botón deshabilitado y ausencia de segundo POST por click/Enter; liberación con
+400 real por contraseña actual incorrecta, formulario editable y alerta con
+foco. Los503/abort/401 fueron inyectados y se identifican como tales. El503 y
+fallo de red mostraron resultado incierto, acción de nuevo login accesible
+por teclado y ningún reintento automático. Navegar fuera y volver dejó los
+campos vacíos;401 eliminó Account; login inválido real401 y reautenticación
+válida no recuperaron secretos anteriores. Labels/autocomplete, teclado/foco,
+52 revisiones de localStorage/sessionStorage/URL/history.state y24 capturas
+enmascaradas pasaron sin overflow ni errores de página.
+
+Owner y comprobantes: `test-results/closure-20261025/identity-023-fresh/`.
+Esta unidad complementa `identity-025/summary-20261027.json`, que ya acredita
+cinco roles/noorg, éxito/revocación, límites HTTP, SDK, copia035 y reinicio.
+Su runtime de `b77a2cc/40b75bd3…` es idéntico a la candidata según
+`public-8e95/image-comparison.json`; CI público y árbol exacto también están
+comprobados allí. Los handlers Account no cambiaron desde esos owners. No
+quedan subresultados pendientes de023/025; ambos vuelven a vigente.
+
+Siguiente acción: CLOSE-identidad-049, completar los anchos768/1024 del flujo
+SMTP/redención en otra copia aislada, conservando los owners ya pasados.
