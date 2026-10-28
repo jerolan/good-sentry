@@ -4076,6 +4076,22 @@ Quedan la prueba del límite de capacidad y el cotejo final de fuente/CI.
 Siguiente acción: usar otra copia independiente con límite reducido, verificar
 el rechazo y la lectura intacta del lote ya almacenado.
 
+### Avance parcial 2026-10-27: límite reducido de CLOSE-logs-028
+
+Una segunda copia restaurada usó `MAX_BODY_BYTES=1024`. Un wire JSON de
+2.199 bytes recibió 413, y el detalle de un lote almacenado de 1.644 bytes
+también recibió 413 sin objeto parcial, como exige el contrato de lector.
+Los bytes del lote permanecieron idénticos y el detalle correspondiente en
+la instancia original con capacidad normal respondió 200 con el cuerpo exacto.
+Evidencia: `test-results/closure-20261025/logs-028-fresh/limit/`.
+
+El primer controlador esperaba erróneamente 200 bajo el límite reducido y
+falló antes de enviar el wire. Se conserva como `first-attempt.py`; el
+controlador corregido verificó el 413 contractual y la lectura en capacidad
+normal. La interpretación inicial de ese 413 como defecto fue incorrecta;
+no se cambió producto. Siguiente acción: reconciliar todos los subresultados
+de 028 y el CI de la revisión con el test ajustado.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
