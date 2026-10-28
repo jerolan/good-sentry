@@ -28,13 +28,14 @@ module prefix and no optional section-header stream. Its standalone parser yield
 no symbols. Native018 now specifies PE/PDB association, bounded archive handling
 and direct-map V50 parsing. Implemented locally with owned RED/GREEN, project
 isolation and a full 2481-tuple comparison against the independent real-sample
-oracle. Non-direct V50 maps still need evidence for selector translation. Next,
-the specified old DBI/C7 direct-map procedure profile has local owned and
+oracle. Non-direct V50 maps still need evidence for selector translation. The
+specified old DBI/C7 direct-map procedure profile has local owned and
 HTTP/PG evidence. The documented ST source-line layout now also has local C7
-and V50 evidence, including unknown root and file bounds. Seek a real VC4 pair
-and resolve other old records and non-direct segment mappings.
-Keep Portable PDB,
-unwinding and symbol-server requirements open. Reconcile native receipts,
+and V50 evidence, including unknown root and file bounds. A real VC4 pair and
+non-direct segment mapping evidence remain open. Next specify and implement
+the Portable PDB method/IL route using the independent .NET SDK fixture; keep
+other old records, unknown profiles and complete acceptance open. Keep unwinding
+and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
 unrelated release/UI proofs without a changed dependency.
 

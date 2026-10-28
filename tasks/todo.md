@@ -12192,3 +12192,29 @@ acreditado con este incremento.
 Siguiente acción concreta: buscar una pareja VC4 independiente y un consumidor
 que aclare selectores de mapas no directos; en ausencia de esa evidencia,
 seleccionar el siguiente criterio exigible con dependencias resueltas del plan.
+
+### Investigación Portable PDB y protocolo administrado, 2026-10-28
+
+El RFC de Sentry identifica cada frame administrado mediante `addr_mode:rel:N`,
+`function_id` y `instruction_addr` como desplazamiento IL; `N` selecciona una
+imagen `pe_dotnet` en debug_meta. Un Portable PDB no ofrece directamente los
+RVA nativos que consume el lector actual. .NET especifica `#Pdb`, tablas
+Document/MethodDebugInformation y sequence points con offsets IL. En una
+muestra propia compilada con .NET10.0.402, System.Reflection.Metadata confirmó
+dos filas de método y sus líneas, y PEReader confirmó GUID y stamp del CodeView
+Portable: la edad PE1 no es el sufijo de esa identidad.
+
+Comprobante reproducible con fuentes propias y salida del runtime:
+test-results/closure-20261025/portable-pdb-investigacion/. No se ejecutó el
+programa de muestra ni se afirma que GoodSentry lo lea. La ingesta conserva
+los campos originales, pero actualmente no selecciona `pe_dotnet` ni resuelve
+la pareja método/IL; el reprocessing existente está especificado para eventos
+nativos y no acredita esta ruta. La primera búsqueda de una pareja VC4 real no
+produjo evidencia admisible. La búsqueda del conector GitHub devolvió herramienta
+no disponible; se usaron fuentes públicas primarias en su lugar.
+
+Siguiente acción concreta: fijar en SPEC la ruta administrada, identidad y
+límites Portable PDB, ubicación del enriquecimiento en ingesta y conservación de
+frames existentes; desglosar el lector y la verificación con la muestra propia,
+pruebas de identidad y eventos .NET reales. Mantener por separado el reprocessing
+nativo existente, la búsqueda VC4 y los mapas históricos no directos.
