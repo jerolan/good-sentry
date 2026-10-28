@@ -4062,6 +4062,20 @@ Siguen pendientes el modo deshabilitado, los límites restantes y el cotejo de
 fuente/CI. Siguiente acción: comprobar el modo deshabilitado sobre una copia
 independiente, sin modificar esta base, y revisar el límite de capacidad.
 
+### Avance parcial 2026-10-27: logs deshabilitados de CLOSE-logs-028
+
+Se restauró un backup de la base de prueba en `closure028_disabled` y se inició
+otra aplicación en 18529 con volumen propio y logs deshabilitados. El navegador
+confirmó que Projects muestra la indisponibilidad sin ofrecer receta activa;
+`POST /v1/logs` con una clave válida de prueba devolvió 404. El owner completo
+pasó diez comprobaciones en esta ejecución. Evidencia sin credenciales:
+`test-results/closure-20261025/logs-028-fresh/disabled/`. La copia principal
+no se cambió para esta variante; el backup privado permanece en `/tmp`.
+
+Quedan la prueba del límite de capacidad y el cotejo final de fuente/CI.
+Siguiente acción: usar otra copia independiente con límite reducido, verificar
+el rechazo y la lectura intacta del lote ya almacenado.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
