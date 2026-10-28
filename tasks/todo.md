@@ -11931,3 +11931,34 @@ oldDBI, distinguir header y módulos antiguos de NewDBI64 y precisar desconocido
 Solo con formato acreditado, ampliar SPEC antes del plan y añadir fixture propia
 RED del owner público. Code pages/perfilesC11, otroslegacy, Portable, unwinding,
 symbol-server y aceptación integral siguen exigidos. El Goal continúa activo.
+
+### Investigación de DBI V50 con pareja real, 2026-10-28
+
+El turno anterior produjo evidencia nueva: la primaria obtuvo de un directorio
+público NOAA de1997 una pareja PDB/PE, guardada solo en un directorio privado.
+No se ejecutó el PE ni se redistribuyen sus bytes, nombres internos o rutas de
+fuente. La primaria inspeccionó y repitió dos decoders de metadatos propios:
+el PDB MSF2 tiene Info y NewDBI V50,46 módulos MODI50,42 streams con firma2,
+180 procedimientos ST y27 módulos con C11. No es una muestra de DBIHdr antiguo.
+
+El PE aporta seis secciones y un registro NB10 con timestamp y edad exactamente
+iguales a Info del PDB; esa edad es33 mientras que DBI contiene0 y no declara
+cabecera de secciones opcional. Microsoft documenta que DBI age0 en PDB antiguos
+desactiva su comprobación adicional y que la sincronización de edad se introdujo
+desde VC60. El lector actual exige igualdad y cabecera opcional: con este PDB
+aislado, ParseDebugObjects devuelve cero objetos en4d77ea7. La prueba no aísla
+esas dos causas y no acredita simbolicación de la pareja.
+
+Comprobante verificable: test-results/closure-20261025/nativo-v50-investigacion/,
+con hashes, scripts de lectura y resultados reducidos, sin archivos externos.
+Se contrastaron estructuras y selección antiguas con fuentes Microsoft fijadas;
+LLVM describe el mapa de segmentos y la tabla de secciones. Old DBIHdr carece de
+edad/cabecera opcional, usa MODI50 y puede contener records16t; no se ha hallado
+una muestra real de ese perfil ni se infieren sus direcciones desde el mapa.
+No cambia la implementación, excepción, vigencia ni estado parcial de native004.
+
+Siguiente acción concreta: establecer en SPEC el diseño de asociación acotada
+entre PDB y PE por identidad, resolver duplicados ambiguos, límites y archivos
+comprimidos, y especificar MODI50/edad V50 con controles de regresión. Revisar
+el diseño y después producir RED en los owners públicos antes de implementar.
+Mantener oldDBI, code pages, Portable y el cierre integral como exigencias abiertas.

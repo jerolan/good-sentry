@@ -22,9 +22,12 @@ other legacy layouts remain open. The separate UUID0 SymCache repair is now
 verified locally: reader-owned U0 alias, exact metadata admission, ELF identity,
 Mach-O CFI lookup and single indexing when upload name equals alias. Public and
 HTTP/PostgreSQL RED/GREEN, final native/server race, vet and build pass. Native021
-is implemented with integral evidence still invalidated. Next, the primary must
-check the pinned old-DBI header/module/procedure format facts and evidenced gaps
-before specifying a first bounded reader and its owning RED fixture. Keep Portable PDB,
+is implemented with integral evidence still invalidated. A real 1997 MSF2/DBI V50
+PDB and its matching PE establish that this profile can have DBI age0, a 48-byte
+module prefix and no optional section-header stream. Its standalone parser yields
+no symbols. Next, specify and review PE/PDB association, bounded archive handling
+and V50 parsing using that evidence, then add owning RED fixtures and compare the
+real sample. Old DBI remains a separate unresolved profile. Keep Portable PDB,
 unwinding and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
 unrelated release/UI proofs without a changed dependency.
