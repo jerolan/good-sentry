@@ -12595,3 +12595,17 @@ imagen/CI y native004 integral siguen abiertos.
 Siguiente acción concreta: investigar los mapas de secciones no directos con
 productores o consumidores verificables; si sigue faltando una relación de
 selector a PE, avanzar otro perfil exigible sin inventar esa traducción.
+
+### Contrato de públicos antiguos, 2026-10-28
+
+La muestra MSF2 ya contrastada contiene2126 `S_PUB32_ST`: todos tienen flags0,
+1119 están en la sección ejecutable directa, y el stream también contiene917
+referencias ST cuyo nombre adicional queda fuera de la longitud del registro.
+Wine documenta ese framing. El lector actual solo consume públicos modernos de
+PDB sin privados. SPEC native018 fija un fallback acotado para públicos antiguos,
+precedencia de procedimientos y saltos, límites, identidad y omisión de mapas
+no directos; no interpreta direcciones mediante selectores desconocidos.
+
+Siguiente acción concreta: preparar RED público/HTTP para nombres ST, ambas
+estructuras, nombres adicionales y controles de rango y prioridad; implementar
+el lector y compararlo con un oracle independiente de la muestra MSF2.
