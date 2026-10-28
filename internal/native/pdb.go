@@ -664,13 +664,11 @@ func parsePDBModulesVersion(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSe
 		} else if len(moduleInlineSites) != 0 {
 			return nil, false
 		}
-		if signature == 1 || signature == 2 {
-			thunks, ok := parsePDBLegacyThunks(moduleStream[4:symbolBytes], sections, &procedures)
-			if !ok {
-				return nil, false
-			}
-			functions = append(functions, thunks...)
+		thunks, ok := parsePDBThunks(moduleStream[4:symbolBytes], sections, &procedures, signature)
+		if !ok {
+			return nil, false
 		}
+		functions = append(functions, thunks...)
 	}
 	return functions, true
 }

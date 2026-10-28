@@ -37,17 +37,17 @@ type Fixture struct {
 }
 
 func Minimal() Fixture {
-	return build(false, false, false, nil)
+	return build(false, false, false, nil, nil)
 }
 
 // WithECSubstream places 25 opaque EC bytes immediately before the optional
 // debug header, without aligning its start.
 func WithECSubstream() Fixture {
-	return build(false, false, false, bytes.Repeat([]byte{0xe1}, 25))
+	return build(false, false, false, bytes.Repeat([]byte{0xe1}, 25), nil)
 }
 
 func WithSourceLines(localStrings bool) Fixture {
-	return build(true, !localStrings, false, nil)
+	return build(true, !localStrings, false, nil, nil)
 }
 
 // WithGlobalEmptyHashEntry retains a nonempty source filename while the
@@ -69,7 +69,21 @@ func WithGlobalEmptyHashEntry() Fixture {
 }
 
 func WithMultipleSourceLineModules() Fixture {
-	return build(true, false, true, nil)
+	return build(true, false, true, nil, nil)
+}
+
+func WithModernThunk() Fixture {
+	name := []byte("ModernThunk")
+	record := make([]byte, 25+len(name)+1+2)
+	binary.LittleEndian.PutUint16(record, uint16(len(record)-2))
+	binary.LittleEndian.PutUint16(record[2:], 0x1102)
+	binary.LittleEndian.PutUint32(record[16:], 0x60)
+	binary.LittleEndian.PutUint16(record[20:], 1)
+	binary.LittleEndian.PutUint16(record[22:], 4)
+	record[24] = 3
+	copy(record[25:], name)
+	copy(record[26+len(name):], []byte{0xaa, 0xbb})
+	return build(true, true, false, nil, record)
 }
 
 func WithInlineFrames() Fixture {
@@ -356,7 +370,7 @@ func inlineIDRecord(name string, kind uint16) []byte {
 	return codeViewRecord(kind, body)
 }
 
-func build(includeLines, globalStrings, multipleModules bool, ec []byte) Fixture {
+func build(includeLines, globalStrings, multipleModules bool, ec, extra []byte) Fixture {
 	const blockSize = 512
 	info := make([]byte, 28)
 	binary.LittleEndian.PutUint32(info, 20000404)
@@ -368,6 +382,11 @@ func build(includeLines, globalStrings, multipleModules bool, ec []byte) Fixture
 	secondProcedure := procedure("OtherFunction", 0x80, 0x10, 0x1147)
 	symbols := append([]byte(nil), firstProcedure...)
 	symbols = append(symbols, secondProcedure...)
+	if extra != nil {
+		binary.LittleEndian.PutUint32(extra[8:], uint32(4+len(symbols)+len(extra)))
+		symbols = append(symbols, extra...)
+		symbols = append(symbols, 2, 0, 6, 0)
+	}
 	module := append([]byte{4, 0, 0, 0}, symbols...)
 	var c13, globalStringsData []byte
 	if includeLines {

@@ -12539,3 +12539,26 @@ compartir presupuestos y conservar la validación de ámbitos y fuentes.
 Siguiente acción concreta: aplicar test-audit, fijar RED público/HTTP con
 ordinales y corrupción, implementar el recorrido y comparar la muestra LLVM
 con sus campos registrados y las líneas que ya se recuperaban.
+
+### Saltos CodeView modernos verificados, 2026-10-28
+
+Los módulos C13 ahora emiten `S_THUNK32` ordinales0–6 con su nombre y rango
+declarados; los datos variantes permanecen opacos y los ordinales desconocidos
+se omiten. Se preservan los ámbitos, las líneas existentes y el presupuesto
+compartido. Un registro reconocido malformado no devuelve símbolos parciales.
+
+RED nativo y HTTP reprodujo el salto ausente; GREEN cubrió ordinales, variante,
+rangos, corrupción, presupuesto e aislamiento. Un lector MSF/DBI independiente
+confirmó en el PDB oficial LLVM un salto ordinal3, sección1, offset349 y
+longitud4; GoodSentry emitió exactamente RVA4445–4449 y conservó las12 líneas
+previamente comprobadas. Race nativo aprobó726 acciones y servidor42; la captura
+legada también pasó, igual que vet y build. Comprobante:
+test-results/closure-20261025/nativo-modern-thunks/.
+
+Persisten variantes antiguas de ordinal distinto de cero, mapas no directos,
+otros formatos nativos, imagen/CI y la auditoría integral. La primaria revisó
+el código y el oracle independiente.
+
+Siguiente acción concreta: contrastar los datos variantes de saltos antiguos
+con fuentes primarias y muestras representativas; continuar los demás perfiles
+nativos exigibles que tengan dependencias resueltas.

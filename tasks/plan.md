@@ -44,8 +44,9 @@ todo.md. The bounded ordinary legacy thunk slice now matches all231 records in
 an independent real MSF2 sample while preserving prior source tuples. Continue
 the native019 prerequisite: LLVM's nonzero empty `/names` hash ID is now
 accepted without accepting empty checksum filenames; its real C13 source lines
-match the published source. Implement the specified modern thunk records and
-verify the LLVM-produced nonzero-ordinal example, then continue non-direct section-map translation
+match the published source. Modern thunk records now resolve the independently
+checked LLVM nonzero-ordinal example and preserve existing source lines. Continue
+non-direct section-map translation
 and other required records using primary evidence and representative binaries.
 Keep unknown profiles and complete acceptance open. Keep unwinding
 and symbol-server requirements open. Reconcile native receipts,
