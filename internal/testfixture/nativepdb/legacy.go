@@ -386,3 +386,21 @@ func procedure16(name string, offset, size uint32, kind uint16) []byte {
 	binary.LittleEndian.PutUint16(record, uint16(len(record)-2))
 	return record
 }
+
+// OldDBIC7SourceLines adds an sstSrcModule ST line table to the C7 fixture.
+func OldDBIC7SourceLines() C11Fixture {
+	f := OldDBIC7()
+	lines := c11SourceLines(0x10, 0x2f, []c11SourceFile{{
+		name: `C:\src\old.cc`, start: 0x10, end: 0x2f,
+		offsets: []uint32{0x10, 0x18}, lines: []uint16{42, 43},
+	}})
+	data := f.Data
+	dbi := f.DBIBlock * 1024
+	symbolBytes := binary.LittleEndian.Uint32(data[dbi+24+28:])
+	binary.LittleEndian.PutUint32(data[dbi+24+32:], uint32(len(lines)))
+	start := f.ModuleBlock*1024 + int(symbolBytes)
+	copy(data[start:], lines)
+	directory := int(binary.LittleEndian.Uint16(data[60:])) * 1024
+	binary.LittleEndian.PutUint32(data[directory+4+4*8:], symbolBytes+uint32(len(lines)))
+	return C11Fixture{Fixture: f, C11Start: start, C11Size: len(lines)}
+}

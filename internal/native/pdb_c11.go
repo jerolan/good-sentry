@@ -32,7 +32,7 @@ func parsePDBC11(data []byte, sections []pdbSection, procedures []SymbolFunction
 	}
 	budget.files += fileCount
 	budget.c11References += segmentCount
-	roots, ok := pdbC11RootRanges(data, fileCount, segmentCount, sections)
+	roots, unknownRoots, ok := pdbC11RootRanges(data, fileCount, segmentCount, sections)
 	if !ok {
 		return nil, false
 	}
@@ -83,13 +83,16 @@ func parsePDBC11(data []byte, sections []pdbSection, procedures []SymbolFunction
 			rangeOffset := fileRanges + uint64(tableIndex)*8
 			start := binary.LittleEndian.Uint32(data[rangeOffset:])
 			last := binary.LittleEndian.Uint32(data[rangeOffset+4:])
+			if start == 0 && last == 0 {
+				return nil, false
+			}
 			contribution, ok := pdbC11SectionRange(segment, start, last, sections)
 			if !ok {
 				return nil, false
 			}
 			union := roots[segment]
 			covering := sort.Search(len(union), func(i int) bool { return union[i].end > contribution.start })
-			if covering == len(union) || union[covering].start > contribution.start || union[covering].end < contribution.end {
+			if !unknownRoots[segment] && (covering == len(union) || union[covering].start > contribution.start || union[covering].end < contribution.end) {
 				return nil, false
 			}
 			section := sections[segment-1]
@@ -137,8 +140,9 @@ func pdbC11SectionRange(segment uint16, start, last uint32, sections []pdbSectio
 	return pdbC11Range{start: uint64(start), end: end}, true
 }
 
-func pdbC11RootRanges(data []byte, fileCount, segmentCount int, sections []pdbSection) (map[uint16][]pdbC11Range, bool) {
+func pdbC11RootRanges(data []byte, fileCount, segmentCount int, sections []pdbSection) (map[uint16][]pdbC11Range, map[uint16]bool, bool) {
 	roots := make(map[uint16][]pdbC11Range)
+	unknown := make(map[uint16]bool)
 	rangesOffset := 4 + fileCount*4
 	segmentsOffset := rangesOffset + segmentCount*8
 	for i := 0; i < segmentCount; i++ {
@@ -147,7 +151,11 @@ func pdbC11RootRanges(data []byte, fileCount, segmentCount int, sections []pdbSe
 		last := binary.LittleEndian.Uint32(data[rangesOffset+i*8+4:])
 		interval, ok := pdbC11SectionRange(segment, start, last, sections)
 		if !ok {
-			return nil, false
+			return nil, nil, false
+		}
+		if start == 0 && last == 0 {
+			unknown[segment] = true
+			continue
 		}
 		roots[segment] = append(roots[segment], interval)
 	}
@@ -168,5 +176,5 @@ func pdbC11RootRanges(data []byte, fileCount, segmentCount int, sections []pdbSe
 		}
 		roots[segment] = merged
 	}
-	return roots, true
+	return roots, unknown, true
 }

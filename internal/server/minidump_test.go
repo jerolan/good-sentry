@@ -875,7 +875,10 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 				pdb = nativepdb.WithV50SourceLines(0).Data
 			}
 			if test.oldDBI {
-				pdb = nativepdb.OldDBIC7().Data
+				fixture := nativepdb.OldDBIC7SourceLines()
+				pdb = fixture.Data
+				binary.LittleEndian.PutUint32(pdb[fixture.C11Start+8:], 0)
+				binary.LittleEndian.PutUint32(pdb[fixture.C11Start+12:], 0)
 			}
 			digest := sha1.Sum(pdb)
 			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
@@ -963,8 +966,8 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 			if test.wantSymbol && !test.oldDBI && (frame.Filename != `C:\src\crash.cc` || frame.Line != 42) {
 				t.Fatalf("PDB source line=%+v, want C:\\src\\crash.cc:42", frame)
 			}
-			if test.oldDBI && (frame.Filename != "" || frame.Line != 0) {
-				t.Fatalf("C7 procedure produced unsupported source line: %+v", frame)
+			if test.oldDBI && test.wantSymbol && (frame.Filename != `C:\src\old.cc` || frame.Line != 42) {
+				t.Fatalf("C7 source line=%+v, want C:\\src\\old.cc:42", frame)
 			}
 			if !test.wantSymbol && (frame.Filename != "" || frame.Line != 0) {
 				t.Fatalf("mismatched PDB identity returned source line: %+v", frame)

@@ -1250,7 +1250,7 @@ func TestBuildSymbolTablesOldDBIC7Procedures(t *testing.T) {
 		want       bool
 	}{
 		{"matching identity", fixture.Data, pe.Data, true},
-		{"opaque C7 lines retain procedures without source", withC7Lines, pe.Data, true},
+		{"malformed C7 lines reject partial procedures", withC7Lines, pe.Data, false},
 		{"missing companion", fixture.Data, nil, false},
 		{"mismatched identity", fixture.Data, nativepdb.V50CompanionPE(0x65ae7564, 1).Data, false},
 		{"malformed old header", badHeader, pe.Data, false},
@@ -1284,6 +1284,56 @@ func TestBuildSymbolTablesOldDBIC7Procedures(t *testing.T) {
 				if f.Name != want.name || f.Start != want.start || f.End != want.end || f.File != "" || f.Line >= 0 {
 					t.Errorf("procedure %d = %+v, want %s [%x,%x) without source", i, f, want.name, want.start, want.end)
 				}
+			}
+		})
+	}
+}
+
+func TestHistoricalPDBUnknownRootAndC7SourceLines(t *testing.T) {
+	pe := nativepdb.V50CompanionPE(0x65ae7563, 1).Data
+	for _, format := range []struct {
+		name     string
+		fixture  nativepdb.C11Fixture
+		filename string
+	}{{"C7 old DBI", nativepdb.OldDBIC7SourceLines(), `C:\src\old.cc`}, {"C11 V50", nativepdb.WithV50SourceLines(0), `C:\src\crash.cc`}} {
+		t.Run(format.name, func(t *testing.T) {
+			f := format.fixture
+			modify := func(change func([]byte)) []byte { d := append([]byte(nil), f.Data...); change(d); return d }
+			unknownRoot := modify(func(d []byte) {
+				binary.LittleEndian.PutUint32(d[f.C11Start+8:], 0)
+				binary.LittleEndian.PutUint32(d[f.C11Start+12:], 0)
+			})
+			unknownFile := modify(func(d []byte) {
+				file := f.C11Start + int(binary.LittleEndian.Uint32(d[f.C11Start+4:]))
+				binary.LittleEndian.PutUint32(d[file+8:], 0)
+				binary.LittleEndian.PutUint32(d[file+12:], 0)
+			})
+			badReference := modify(func(d []byte) { binary.LittleEndian.PutUint32(d[f.C11Start+4:], 0xffffffff) })
+			for _, test := range []struct {
+				name string
+				data []byte
+				want bool
+			}{
+				{"known bounds", f.Data, true}, {"unknown root bounds", unknownRoot, true},
+				{"unknown file bounds", unknownFile, false}, {"invalid file reference", badReference, false},
+			} {
+				t.Run(test.name, func(t *testing.T) {
+					symbols, _ := BuildSymbolTables([]DebugSymbolFile{{Name: "symbols.pdb", Content: test.data}, {Name: "image.exe", Content: pe}})
+					if !test.want {
+						if len(symbols) != 0 {
+							t.Fatalf("invalid source table emitted %d symbol keys", len(symbols))
+						}
+						return
+					}
+					crash := Crash{Modules: []Module{{Name: "renamed.exe", Base: 0x140000000, Size: 0x10000, DebugID: "65ae75631"}}, Frames: []Frame{{Module: "renamed.exe", Instruction: 0x140001015}, {Module: "renamed.exe", Instruction: 0x140001085}}}
+					Symbolicate(&crash, symbols)
+					if got := crash.Frames[0]; got.Function != "CrashFunction" || got.File != format.filename || got.Line != 42 {
+						t.Fatalf("source frame=%+v, want CrashFunction %s:42", got, format.filename)
+					}
+					if got := crash.Frames[1]; got.Function != "OtherFunction" || got.File != "" || got.Line > 0 {
+						t.Fatalf("outside source contribution got frame=%+v", got)
+					}
+				})
 			}
 		})
 	}

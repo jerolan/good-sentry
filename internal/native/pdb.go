@@ -630,7 +630,7 @@ func parsePDBModulesVersion(msf *pdbMSFFile, moduleInfo []byte, sections []pdbSe
 			return nil, false
 		}
 		moduleProceduresEnd := len(functions)
-		if c11Bytes > 0 && signature == 2 && pdbInfoHeaderSize(pdbInfo) == 12 {
+		if c11Bytes > 0 && (signature == 1 || signature == 2) && pdbInfoHeaderSize(pdbInfo) == 12 {
 			c11End := uint64(symbolBytes) + uint64(c11Bytes)
 			lines, ok := parsePDBC11(moduleStream[symbolBytes:c11End], sections, functions[moduleFunctionsStart:moduleProceduresEnd], &sourceBudget)
 			if !ok {

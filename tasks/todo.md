@@ -12119,3 +12119,31 @@ Siguiente acción concreta: preparar RED en el owner C11/C7 con raíz (0,0),
 contribuciones conocidas, límites inválidos y controles de identidad; después
 implementar la lectura compartida y verificar HTTP/PG y regresiones. Conservar
 pendientes límites de archivo desconocidos y una pareja real VC4 independiente.
+
+### Líneas C7 y raíz desconocida verificadas localmente, 2026-10-28
+
+Se conectó el lector ST de native019 a módulos C7 antiguos. El par raíz (0,0)
+se reconoce como límites desconocidos del segmento y se exige que las
+contribuciones de archivo tengan límites conocidos y válidos; se mantienen los
+límites de sección, presupuestos y recorte a procedimientos del mismo módulo.
+Una contribución de archivo (0,0) sigue rechazándose sin salida parcial hasta
+resolver su semántica. No se usan las raíces desconocidas para rellenar huecos.
+
+RED nativo mostró que C7 no emitía líneas, ignoraba datos inválidos y V50
+rechazaba una raíz desconocida válida; GREEN comprueba ambos formatos, límites
+conocidos/desconocidos, ausencia de atribución fuera de la contribución y datos
+malformados. El owner HTTP/PG pasó de función sin línea a fuente y línea42, con
+control de proyecto distinto. Race nativo aprobó639 acciones y servidor31; vet
+y build pasaron. La pareja V50 real sigue coincidiendo con2481 tuplas. El
+comprobante está en test-results/closure-20261025/nativo-c7-source/.
+
+La fixture C7 procede de estructuras publicadas, no de una pareja VC4 real;
+la primaria verificó el cambio y la evidencia porque el worker seguía sin
+créditos. Native004/019 integrales siguen abiertos o invalidados: faltan límites
+de archivo desconocidos, la evidencia VC4 real, mapas no directos, codificaciones
+históricas y demás criterios. No se acredita publicación ni CI del candidato.
+
+Siguiente acción concreta: investigar la interpretación de contribuciones de
+archivo (0,0), incluyendo el último intervalo de línea sin límite conocido, y
+buscar una pareja VC4 independiente. No atribuir fuente más allá de lo probado;
+continuar otros criterios elegibles si esa evidencia aún no está disponible.
