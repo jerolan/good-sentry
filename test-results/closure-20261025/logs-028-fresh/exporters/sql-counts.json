@@ -1,0 +1,8 @@
+{
+  "database": "gsclosure028_pg",
+  "projectId": "1",
+  "otlpBatches": 8,
+  "logRows": 24,
+  "batchesWithThreeDistinctOrdinals": 8,
+  "query": "Counts from otlp_log_batches and logs grouped by otlp_batch_id and otlp_record_index"
+}

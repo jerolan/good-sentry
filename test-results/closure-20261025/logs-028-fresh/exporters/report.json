@@ -1,0 +1,109 @@
+{
+  "passed": true,
+  "projectId": "1",
+  "run": "e518233253a6",
+  "exports": [
+    {
+      "case": "protobuf-identity",
+      "observed": [
+        {
+          "status": 200,
+          "media": "application/x-protobuf",
+          "compression": "",
+          "wireSHA256": "e21635bf3ba2042deaf643cbbfd4ba130cfa6cd419d7463ac5dddc601d8096b5",
+          "wireBytes": 775
+        },
+        {
+          "status": 200,
+          "media": "application/x-protobuf",
+          "compression": "",
+          "wireSHA256": "e21635bf3ba2042deaf643cbbfd4ba130cfa6cd419d7463ac5dddc601d8096b5",
+          "wireBytes": 775
+        }
+      ],
+      "rows": [
+        "5",
+        "4",
+        "2",
+        "1"
+      ]
+    },
+    {
+      "case": "protobuf-gzip",
+      "observed": [
+        {
+          "status": 200,
+          "media": "application/x-protobuf",
+          "compression": "gzip",
+          "wireSHA256": "e18f31065742c5a0356e80dd4a9b950673521b5af7d0809f21b1c02d68de5af2",
+          "wireBytes": 398
+        },
+        {
+          "status": 200,
+          "media": "application/x-protobuf",
+          "compression": "gzip",
+          "wireSHA256": "e18f31065742c5a0356e80dd4a9b950673521b5af7d0809f21b1c02d68de5af2",
+          "wireBytes": 398
+        }
+      ],
+      "rows": [
+        "11",
+        "10",
+        "8",
+        "7"
+      ]
+    },
+    {
+      "case": "json-identity",
+      "observed": [
+        {
+          "status": 200,
+          "media": "application/json",
+          "compression": "",
+          "wireSHA256": "8aa6d1b4f42a436bab7fbc9d24ee902ac0d9246136c9cc3ecc5efe52706d74eb",
+          "wireBytes": 2199
+        },
+        {
+          "status": 200,
+          "media": "application/json",
+          "compression": "",
+          "wireSHA256": "8aa6d1b4f42a436bab7fbc9d24ee902ac0d9246136c9cc3ecc5efe52706d74eb",
+          "wireBytes": 2199
+        }
+      ],
+      "rows": [
+        "17",
+        "16",
+        "14",
+        "13"
+      ]
+    },
+    {
+      "case": "json-gzip",
+      "observed": [
+        {
+          "status": 200,
+          "media": "application/json",
+          "compression": "gzip",
+          "wireSHA256": "a14acf6eca28c5dbbec4d49637a340be033180acbc1438bae8e373458a179fad",
+          "wireBytes": 543
+        },
+        {
+          "status": 200,
+          "media": "application/json",
+          "compression": "gzip",
+          "wireSHA256": "a14acf6eca28c5dbbec4d49637a340be033180acbc1438bae8e373458a179fad",
+          "wireBytes": 543
+        }
+      ],
+      "rows": [
+        "23",
+        "22",
+        "20",
+        "19"
+      ]
+    }
+  ],
+  "logs": 24,
+  "acknowledgments": 8
+}

@@ -3975,6 +3975,24 @@ linaje perdido pero mantiene exportadores oficiales, wire/200, aislamiento,
 navegador, reinicio y demás controles. Siguiente acción: identificar los
 owners y versiones disponibles antes de crear el entorno propio.
 
+### Avance parcial 2026-10-27: exportadores de CLOSE-logs-028
+
+Se creó `gsclosure028` con PostgreSQL y volumen nuevos, imagen candidata
+`sha256:40b75bd3…` de `b77a2cc`, autenticación habilitada y proyecto propio.
+`tests/compat/otlp_exporters.py` usó Python SDK/protobuf HTTP 1.45.1 y JSON
+HTTP 0.66b1: protobuf y JSON, cada uno identity/gzip, con dos envíos reales
+por variante. Se observaron ocho respuestas HTTP 200 y se decodificaron sus
+respuestas; la API recuperó 24 logs, incluyendo duplicados y cuerpos vacíos,
+con enteros de 64 bits, bytes, timestamps y trace/span. PostgreSQL confirmó
+ocho lotes y 24 filas con tres índices distintos por lote. Evidencia sin
+credenciales: `test-results/closure-20261025/logs-028-fresh/exporters/`;
+wire privado en `/tmp/goodsentry-closure-028/exporters/`.
+
+Esto no acredita aún la comparación independiente completa del bytea
+canónico, aislamiento, Sentry SDK, navegador ni reinicio. Siguiente acción:
+comparar los ocho lotes con sus envelopes oficiales y probar aislamiento,
+sin alterar los datos ya capturados.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
