@@ -4012,6 +4012,19 @@ Faltan autorización entre organizaciones, SDK Sentry, navegador, límites y
 reinicio. Siguiente acción: verificar acceso entre organizaciones y captura
 Sentry en la misma copia antes de preparar el owner de navegador.
 
+### Avance parcial 2026-10-27: SDK Sentry de CLOSE-logs-028
+
+Node SDK 11.7.0 capturó en un tercer proyecto propio un error con adjunto y
+un log usando el transporte real; ambos envíos recibieron 200. El error y el
+log se leyeron por API y el adjunto se descargó con sus cuatro bytes exactos.
+Se registró el SHA-256 del evento crudo para la comprobación posterior de
+reinicio. Evidencia sin credenciales:
+`test-results/closure-20261025/logs-028-fresh/sentry/`.
+
+Faltan autorización entre organizaciones, navegador, límites, comparación
+posterior de los datos Sentry y reinicio. Siguiente acción: preparar el
+aislamiento entre organizaciones y el fixture del navegador en la misma copia.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el

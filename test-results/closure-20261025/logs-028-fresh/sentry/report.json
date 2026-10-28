@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "source": "b77a2cc",
+  "sdkVersion": "11.7.0",
+  "projectId": "3",
+  "issueId": "1",
+  "eventId": "7264d229a429456bb18eed33a895689c",
+  "logId": "28",
+  "rawSHA256": "dca83663d9caf2ce697a4303986e80d0d61918ba2da880586aa2b72aef53f4b1",
+  "acknowledgements": [
+    200,
+    200
+  ],
+  "checks": [
+    "official SDK error is readable",
+    "binary attachment downloads byte for byte",
+    "official SDK log is readable"
+  ]
+}
