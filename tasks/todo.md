@@ -3915,6 +3915,26 @@ perdida, pero mantiene los controles de migración, SDK, navegador y CI.
 Siguiente acción: identificar una revisión previa a 018, capturar datos propios
 y comparar su estado antes y después de la imagen candidata.
 
+### Avance parcial 2026-10-27: actualización de imagen de errores-084
+
+Se reconstruyó localmente `3e0f6056defa540befdfc24513fadde9a87699ec` y se
+arrancó sobre base y volumen nuevos con migraciones 001–017. El SDK Node
+11.7.0 capturó un error y adjunto; se creó una credencial `event:read`
+limitada al proyecto antes de 018. La imagen candidata `sha256:40b75bd3…`
+actualizó esa base a 079 conservando todos los campos de las 31 filas
+originales, incluida la credencial. Tras el reinicio coincidieron las 96
+filas de 73 tablas, y el evento y su adjunto se leyeron con bytes exactos.
+La sesión de verificación se creó antes de las instantáneas de reinicio.
+
+Evidencia y scripts sin contraseña:
+`test-results/closure-20261025/errores-084-fresh/upgrade/`. La imagen vieja
+fue reconstruida localmente, no es una imagen histórica publicada; los
+snapshots privados quedan en `/tmp/goodsentry-closure-084/`.
+
+084 sigue pendiente de SDK/credenciales de escritura, navegador y cotejo
+final de CI. Siguiente acción: ejecutar el owner SDK de escritura y su flujo
+de navegador en una copia aislada, preservando sus datos existentes.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
