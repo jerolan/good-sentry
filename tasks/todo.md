@@ -12527,3 +12527,15 @@ imagen, CI y native004 integral siguen pendientes.
 Siguiente acción concreta: contrastar el salto moderno de la muestra LLVM con
 su estructura publicada, definir el tratamiento de ordinal y datos variantes,
 crear RED público/HTTP y comparar el rango resuelto con la muestra real.
+
+### Contrato de salto CodeView moderno, 2026-10-28
+
+Microsoft y LLVM documentan `S_THUNK32` con nombre terminado en NUL y rango
+explícito; LLVM enumera ordinales0–6 y trata el resto del registro como datos
+variantes. La muestra pública `symbolformat.pdb` contiene un salto ordinal3.
+SPEC native018 exige resolver ese rango sin interpretar los datos variantes,
+compartir presupuestos y conservar la validación de ámbitos y fuentes.
+
+Siguiente acción concreta: aplicar test-audit, fijar RED público/HTTP con
+ordinales y corrupción, implementar el recorrido y comparar la muestra LLVM
+con sus campos registrados y las líneas que ya se recuperaban.

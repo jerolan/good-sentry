@@ -1404,6 +1404,19 @@ independent real MSF2 sample with a format-derived oracle. Layout:
 [Microsoft THUNKSYM32](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/include/cvinfo.h#L3429-L3441),
 [CodeView symbol kinds](https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/DebugInfo/CodeView/CodeViewSymbols.def).
 
+For C13 module streams, resolve `S_THUNK32` with a bounded NUL-terminated name
+and the same declared executable range. Accept LLVM's documented ordinals0–6;
+the bounded remaining variant bytes are opaque and are not used to infer a
+target or source line. Skip unknown ordinals. Preserve the existing module
+scope and inline validation, append the resolved ranges after source processing,
+and charge them to the same procedure and record limits. Reject malformed
+recognized names or ranges without partial output. Verify an LLVM-produced
+PDB with a nonzero ordinal against its recorded segment, offset, length and
+name, plus owned invalid, budget, source-preservation and HTTP controls.
+References: [Microsoft thunk record](https://github.com/microsoft/pdb-rs/blob/main/docs/codeview/symbols/s_thunk.md),
+[LLVM serialization](https://github.com/llvm/llvm-project/blob/main/llvm/lib/DebugInfo/CodeView/SymbolRecordMapping.cpp),
+and [LLVM ordinals](https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/DebugInfo/CodeView/CodeView.h).
+
 <a id="close-nativo-019"></a>
 
 For C13 source lines, read each module's declared `C13ByteSize` after its symbol and C11 byte ranges. Keep the C13 subsection reader separate from the legacy C11 reader below. Parse bounded four-byte-aligned subsection records, consuming `DEBUG_S_LINES`, `DEBUG_S_FILECHKSMS`, and `DEBUG_S_STRINGTABLE`; safely skip other well-framed subsection kinds. Resolve checksum filenames through a module string-table subsection when present or through the PDB `/names` global string table named by stream 1's named-stream map. Each line block's name index must point to a checksum record boundary. Resolve its one-based PE section, relocation offset, code size, and line offsets against an executable section, then associate each source location with a procedure from that module and expose it in the existing frame `filename` and `lineno` fields. A location applies from its line offset up to the next line offset in that block or contribution end, clipped to the procedure range; columns are parsed for structural validation but are not returned. Preserve filename spelling without path normalization. Bound C13 subsections to 65,536 per module, source line records to 1,000,000 per PDB, checksum file records to 65,536 per PDB, generated line-to-procedure ranges to 1,000,000 per PDB, and each filename to 4,096 bytes. Invalid subsection framing, missing referenced strings/checksums, invalid ranges or decreasing line offsets invalidate the entire PDB without partial symbols. Keep legacy source-line decoding, Portable PDB and demangling outside this C13 source-line slice. Format references: [LLVM MSF format](https://llvm.org/docs/PDB/MsfFile.html), [PDB Info stream and named-stream map](https://llvm.org/docs/PDB/PdbStream.html), [DBI and module stream contracts](https://llvm.org/docs/PDB/DbiStream.html), [CodeView procedure records](https://llvm.org/docs/PDB/CodeViewSymbols.html), [CodeView line subsection layout](https://www.llvm.org/doxygen/DebugLinesSubsection_8h_source.html), [CodeView checksum records](https://www.llvm.org/doxygen/DebugChecksumsSubsection_8cpp_source.html), [PDB string-table layout](https://www.llvm.org/doxygen/RawTypes_8h_source.html); Microsoft CodeView signatures are documented in [cvinfo.h](https://github.com/microsoft/microsoft-pdb/blob/master/include/cvinfo.h).
