@@ -12507,3 +12507,23 @@ Siguiente acción concreta: preparar RED público con la tabla y controles de
 límites, corregir solo la validación de buckets y volver a inspeccionar la
 muestra LLVM. La compatibilidad del salto moderno sigue pendiente hasta que
 su archivo y sus rangos puedan verificarse íntegramente.
+
+### Entrada vacía de `/names` verificada, 2026-10-28
+
+La validación acepta ahora una cadena vacía en un bucket no nulo de `/names`
+si su desplazamiento es un límite válido. Los checksums siguen exigiendo un
+nombre no vacío; offsets fuera de la tabla siguen rechazándose. RED público
+reprodujo el rechazo; GREEN y HTTP/PG conservaron las líneas esperadas.
+
+La muestra oficial LLVM `symbolformat.pdb`, antes rechazada, ahora produce un
+objeto con26 rangos. Sus líneas `_purecall:6` y `main:69–81` coinciden con el
+archivo fuente publicado, cuyos hashes se conservaron. Race nativo aprobó718
+acciones y servidor42; vet y build pasaron. Comprobante:
+test-results/closure-20261025/pdb-empty-hash/. La primaria revisó el cambio.
+
+La muestra contiene un salto moderno que aún no se emite; otros perfiles,
+imagen, CI y native004 integral siguen pendientes.
+
+Siguiente acción concreta: contrastar el salto moderno de la muestra LLVM con
+su estructura publicada, definir el tratamiento de ordinal y datos variantes,
+crear RED público/HTTP y comparar el rango resuelto con la muestra real.

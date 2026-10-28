@@ -50,6 +50,24 @@ func WithSourceLines(localStrings bool) Fixture {
 	return build(true, !localStrings, false, nil)
 }
 
+// WithGlobalEmptyHashEntry retains a nonempty source filename while the
+// global string hash refers to a separate empty string at a nonzero offset.
+func WithGlobalEmptyHashEntry() Fixture {
+	f := WithSourceLines(false)
+	base := f.NamesBlock * 512
+	stringSize := binary.LittleEndian.Uint32(f.Data[base+8:])
+	hash := base + 12 + int(stringSize)
+	copy(f.Data[hash+1:hash+13], f.Data[hash:hash+12])
+	f.Data[hash] = 0
+	binary.LittleEndian.PutUint32(f.Data[base+8:], stringSize+1)
+	binary.LittleEndian.PutUint32(f.Data[hash+5:], stringSize)
+	streamIndex := binary.LittleEndian.Uint32(f.Data[f.NamesStreamIndexOffset:])
+	directorySize := 3*512 + 4 + int(streamIndex)*4
+	oldSize := binary.LittleEndian.Uint32(f.Data[directorySize:])
+	binary.LittleEndian.PutUint32(f.Data[directorySize:], oldSize+1)
+	return f
+}
+
 func WithMultipleSourceLineModules() Fixture {
 	return build(true, false, true, nil)
 }

@@ -1023,6 +1023,9 @@ func pdbGlobalStringTable(msf *pdbMSFFile, pdbInfo []byte) ([]byte, bool) {
 	for offset := stringsEnd + 4; offset < hashEnd; offset += 4 {
 		id := binary.LittleEndian.Uint32(stream[offset:])
 		if id != 0 {
+			if uint64(id) < uint64(len(strings)) && strings[id] == 0 && strings[id-1] == 0 {
+				continue
+			}
 			if _, ok := pdbStringAt(strings, id); !ok {
 				return nil, false
 			}

@@ -858,10 +858,12 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 		uploadedID            string
 		v50                   bool
 		oldDBI                bool
+		emptyHash             bool
 		companionOtherProject bool
 		wantSymbol            bool
 	}{
 		{name: "matching identity", uploadedID: embeddedID, wantSymbol: true},
+		{name: "empty global names entry", uploadedID: embeddedID, emptyHash: true, wantSymbol: true},
 		{name: "mismatched uploaded identity", uploadedID: "5A9832E5287241C1838ED98914E9B7FF2"},
 		{name: "V50 companion in same project", uploadedID: "65ae75631", v50: true, wantSymbol: true},
 		{name: "V50 companion only in another project", uploadedID: "65ae75631", v50: true, companionOtherProject: true},
@@ -871,6 +873,9 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			pdb := nativepdb.WithSourceLines(false).Data
+			if test.emptyHash {
+				pdb = nativepdb.WithGlobalEmptyHashEntry().Data
+			}
 			if test.v50 {
 				pdb = nativepdb.WithV50SourceLines(0).Data
 			}
