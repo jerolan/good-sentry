@@ -12457,3 +12457,16 @@ de selectores no directos. No se infiere soporte adicional de esa muestra.
 Siguiente acción concreta: seguir buscando evidencia de selectores no directos
 o avanzar el siguiente perfil nativo exigible con dependencias resueltas;
 mantener abierta la auditoría de native004 y sus dependientes.
+
+### Selección de saltos CodeView antiguos, 2026-10-28
+
+El oracle independiente de la muestra MSF2 ya conocida halló231 registros
+`S_THUNK32_ST` ordinarios: todos tienen ordinal0, nombre ASCII, rango válido y
+como máximo tres ceros de alineación. El lector actual no los emite. Microsoft
+publica la estructura y LLVM el identificador. SPEC native018 especifica este
+perfil acotado, su presupuesto, validación y ubicación después de las líneas
+del módulo; otros ordinales y formatos de salto permanecen abiertos.
+
+Siguiente acción concreta: aplicar test-audit y preparar RED del owner público
+y HTTP, implementar ordinal0 y comparar las231 tuplas contra el oracle real;
+verificar que no cambie la atribución de líneas de procedimientos existentes.

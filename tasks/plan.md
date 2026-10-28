@@ -40,8 +40,10 @@ verified against the independent metadata oracle. PE/COFF and a real SDK event
 establish the embedded Portable PDB format. Its bounded PE debug-directory,
 decompression, identity and checksum checks now feed the managed event path;
 real SDK, project isolation, corruption and expansion-budget evidence is in
-todo.md. Continue with legacy non-direct section-map translation and other
-required records, using primary format evidence and representative binaries.
+todo.md. A real MSF2 sample contains231 ordinary legacy thunk records and
+Microsoft documents their layout; implement the specified bounded thunk slice
+with an independent comparison. Continue non-direct section-map translation
+and other required records using primary evidence and representative binaries.
 Keep unknown profiles and complete acceptance open. Keep unwinding
 and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
