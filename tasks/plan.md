@@ -6,7 +6,10 @@ Current closure increment, 2026-10-27: releases028–031 and the local NB10/PDB2
 identity repair are verified, with receipts in todo.md. Continue native004
 and its dependents. Next contrast the acquired MSF2/C11 format facts against
 Microsoft's public definitions and specify the bounded legacy reader with
-owned fixtures before implementing it. Reproduce the UUID0 SymCache pairing
+owned fixtures before implementing it. The primary found a prerequisite in
+the shared PDB reader: account for the EC substream before the optional debug
+header, with a failing owned fixture and focused native regression proof.
+Resolve that format-order defect first. Reproduce the UUID0 SymCache pairing
 gap separately and preserve Mach-O identity behavior. Keep Portable PDB,
 unwinding and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate

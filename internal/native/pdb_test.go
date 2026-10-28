@@ -20,6 +20,7 @@ func TestParseNativePDBProcedureSymbols(t *testing.T) {
 		data []byte
 	}{
 		{name: "standalone", data: data},
+		{name: "standalone with odd-sized EC substream", data: nativepdb.WithECSubstream().Data},
 		{name: "tar", data: pdbTARDebugArchive(t, data)},
 		{name: "tar.gz", data: pdbGzipDebugArchive(t, pdbTARDebugArchive(t, data))},
 	}

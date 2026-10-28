@@ -37,15 +37,21 @@ type Fixture struct {
 }
 
 func Minimal() Fixture {
-	return build(false, false, false)
+	return build(false, false, false, nil)
+}
+
+// WithECSubstream places 25 opaque EC bytes immediately before the optional
+// debug header, without aligning its start.
+func WithECSubstream() Fixture {
+	return build(false, false, false, bytes.Repeat([]byte{0xe1}, 25))
 }
 
 func WithSourceLines(localStrings bool) Fixture {
-	return build(true, !localStrings, false)
+	return build(true, !localStrings, false, nil)
 }
 
 func WithMultipleSourceLineModules() Fixture {
-	return build(true, false, true)
+	return build(true, false, true, nil)
 }
 
 func WithInlineFrames() Fixture {
@@ -332,7 +338,7 @@ func inlineIDRecord(name string, kind uint16) []byte {
 	return codeViewRecord(kind, body)
 }
 
-func build(includeLines, globalStrings, multipleModules bool) Fixture {
+func build(includeLines, globalStrings, multipleModules bool, ec []byte) Fixture {
 	const blockSize = 512
 	info := make([]byte, 28)
 	binary.LittleEndian.PutUint32(info, 20000404)
@@ -375,7 +381,9 @@ func build(includeLines, globalStrings, multipleModules bool) Fixture {
 	binary.LittleEndian.PutUint16(dbi[20:], ^uint16(0))
 	binary.LittleEndian.PutUint32(dbi[24:], uint32(len(moduleInfo)))
 	binary.LittleEndian.PutUint32(dbi[48:], optionalHeaderBytes)
+	binary.LittleEndian.PutUint32(dbi[52:], uint32(len(ec)))
 	dbi = append(dbi, moduleInfo...)
+	dbi = append(dbi, ec...)
 	optional := bytes.Repeat([]byte{0xff}, optionalHeaderBytes)
 	binary.LittleEndian.PutUint16(optional[10:], 5)
 	dbi = append(dbi, optional...)

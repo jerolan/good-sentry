@@ -114,7 +114,7 @@ func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
 	if debugID == "" {
 		return "", nil, false
 	}
-	moduleSize, sectionContributionSize, sectionMapSize, sourceInfoSize, typeServerSize, optionalHeaderSize, _, ok := pdbDBISubstreamSizes(dbi)
+	moduleSize, sectionContributionSize, sectionMapSize, sourceInfoSize, typeServerSize, optionalHeaderSize, ecSize, ok := pdbDBISubstreamSizes(dbi)
 	if !ok {
 		return "", nil, false
 	}
@@ -122,7 +122,7 @@ func parsePDBSymbols(data []byte) (string, []SymbolFunction, bool) {
 		return "", nil, false
 	}
 	moduleStart := 64
-	optionalStart := moduleStart + moduleSize + sectionContributionSize + sectionMapSize + sourceInfoSize + typeServerSize
+	optionalStart := moduleStart + moduleSize + sectionContributionSize + sectionMapSize + sourceInfoSize + typeServerSize + ecSize
 	sectionStreamIndex := binary.LittleEndian.Uint16(dbi[optionalStart+5*2:])
 	sectionsData, ok := msf.readStream(sectionStreamIndex)
 	if !ok {

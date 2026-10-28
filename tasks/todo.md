@@ -1799,14 +1799,14 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-016](../SPEC.md#close-nativo-016) | CFI extended dereference: Add RISC-V64 minidump support for Breakpad architecture 0x8006 and Crashpad Minidump… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-017](../SPEC.md#close-nativo-017) | CFI extended dereference: RISC-V64 ELF CFI accepts little-endian ELF64 EM_RISCV .eh_frame or .debug_frame and… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-018](../SPEC.md#close-nativo-018) | CFI extended dereference: The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
+| [CLOSE-nativo-019](../SPEC.md#close-nativo-019) | CFI extended dereference: For C13 source lines, read each module's declared C13ByteSize after its symbol and C… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
+| [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | parcial | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
-| [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
-| [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
+| [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | invalidada | Revalidar lector PDB compartido tras corrección del orden EC/optional-header; historial conservado |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11605,3 +11605,48 @@ y las fuentes fijadas de Microsoft del informe reducido, especificar primero
 el lector legacy y fixtures propios, luego ampliar su owner antes de implementar.
 El hueco UUID0 de021 conserva su tarea separada. No hay aprobación pendiente
 para esta reparación local ni se declara complete el Goal.
+
+### Prerequisito seleccionado del lector legacy: orden EC de DBI, 2026-10-27
+
+Antes de implementar MSF2, la primaria contrastó el informe reducido y las
+fuentes Microsoft/LLVM. El consumidor actual ya suma EC en el tamaño total de
+DBI, pero ignora su longitud al localizar el optional debug header. La muestra
+MSF2 tiene25bytes EC y expone el defecto también aplicable a MSF7. LLVM sitúa
+expresamente EC antes del optional header. SPEC native018 precisa ese orden,
+conservando los presupuestos y el rechazo integral de longitudes inválidas.
+
+Selección: prerequisite de native004, owner native018. Primero una fixture
+propia MSF7 con25bytes EC opacos debe fallar al pasar por ParseDebugObjects;
+reparar solo el desplazamiento y ejecutar PDB/archivo/nativo con race y vet.
+Se invalidan018/019/020/022/024/025 por depender del lector compartido, sin
+borrar evidencia histórica. Este paso no implementa MSF2/C11 ni cambia sus
+pendientes. Store no depende del lector; su prueba recién pasada conserva
+vigencia y no se repetirá sin un cambio o preocupación que lo justifique.
+Siguiente acción: gate de autoría, fixture y RED del owner público PDB.
+
+### Orden EC de DBI reparado y verificado, 2026-10-27
+
+El worker amplió solo el owner ParseDebugObjects y su fixture propia:25bytes
+opacos0xe1 antes del optional-header, sin padding. RED falló únicamente en
+ese caso; standalone/TAR/TAR.GZ/ZIP anteriores pasaron. La primaria revisó el
+diff y corrigió las dos líneas del consumidor que ignoraban EC. Las longitudes
+continúan validadas por pdbDBISubstreamSizes antes de calcular el offset.
+
+GREEN: todo native con race10,881s, incluido el nuevo EC25; consumidores HTTP
+de PDB/minidump y upload/lectura/paginación/ensamblado con PostgreSQL y race
+7,659s, sin fallos ni skips. Vet de native/server/jobs, gofmt y diff-check
+también pasaron. Los archivos store/config/event/protocol y go.mod/go.sum
+son iguales a02c0999, por lo que se conserva su recibo de recuperación sin
+repetir esa suite. La falta inicial de permiso en la caché Go se resolvió con
+caché privada; se conserva ese intento separado del RED funcional.
+
+Comprobantes: test-results/closure-20261025/nativo-pdb-ec/.
+El incremento acredita este orden de formato en código local; no se afirma
+una imagen nueva ni CI remoto coincidente y se mantienen las invalidaciones
+integrales hasta el cotejo de la candidata. No cierra legacy/Portable ni004.
+
+Siguiente acción concreta: especificar el primer lector MSF2/PDB2 de
+procedimientos, con sus presupuestos y fixtures propios, contrastando el
+header/directorio u16, Info preVC70 y procedimientos ST de las fuentes
+Microsoft ya fijadas. Después añadir lectura C11 por separado. Conservar
+las copias aceptadas y el hueco UUID0 pendiente de021.
