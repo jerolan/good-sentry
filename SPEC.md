@@ -1167,6 +1167,26 @@ the [Sentry Portable PDB protocol](https://github.com/getsentry/rfcs/blob/main/t
 and the Symbolic 13.9.0 [cache writer](https://github.com/getsentry/symbolic/blob/13.9.0/symbolic-ppdb/src/cache/writer.rs)
 and [lookup](https://github.com/getsentry/symbolic/blob/13.9.0/symbolic-ppdb/src/cache/lookup.rs).
 
+Extend this managed event path to a Portable PDB embedded in a stored PE image,
+including a regular member of the same bounded archives. Read the PE32/PE32+
+debug directory through checked, uniquely file-backed ranges. Accept one
+version1 embedded Portable PDB entry with zero stamp, `MPDB` signature and a
+nonzero declared expanded size at most64MiB; decode the raw Deflate stream to
+exactly that size and reject trailing or corrupt bytes. Parse the result with
+the same standalone reader and include it in the same shared point and name
+budgets and ambiguity rules. If a Portable CodeView entry is present, its
+GUID and debug-directory stamp must match the embedded PDB identity; reject
+conflicting entries. Validate supported SHA256 or SHA1 Portable PDB checksum
+entries over the PDB with its20-byte ID zeroed; an invalid or unsupported
+declared checksum makes that PE ineligible. An upload Debug ID must match the
+embedded identity or the matching CodeView GUID and age alias. Malformed,
+unsupported or identity-inconsistent PE files leave captures unchanged. Do
+not infer symbol-server or full native support from this path.
+
+Verify with a real locally compiled embedded-PDB PE and independent .NET
+`PEReader` evidence, corruption and identity controls, bounded archives,
+cross-project HTTP capture and preservation of an actual Sentry .NET event.
+
 <a id="close-nativo-005"></a>
 
 Textual Breakpad symbol files accept the optional `m` marker on `FUNC` and `PUBLIC` records. Skip that marker when locating the same address, size, parameter-size and name fields used for unmarked records, preserving the current handling of parameter sizes. Keep symbol names with spaces. `PUBLIC` entries provide a source-free fallback range from their address up to the next distinct address in a `FUNC` or `PUBLIC` record; multiple starts at the same address share a range and the first public record wins ties. The final public range is limited to the captured module extent during symbolication. If a `PUBLIC` and `FUNC` both cover an instruction, prefer `FUNC`. Line rows attach only to the most recently accepted `FUNC`; encountering any `PUBLIC` or a malformed `FUNC` clears that association so following rows cannot leak onto a previous function. The marker's identical-code-folding meaning and public-range rules follow the [Breakpad symbol-file format](https://chromium.googlesource.com/breakpad/breakpad/+/HEAD/docs/symbol_files.md) and the [Breakpad address resolver](https://chromium.googlesource.com/external/google-breakpad/src/+/refs/heads/master/processor/basic_source_line_resolver.cc).

@@ -12395,3 +12395,16 @@ compresión, presupuestos y comportamiento ante datos incoherentes.
 Siguiente acción concreta: especificar esas reglas bajo native004 con base en
 PE/COFF y el recorrido Portable existente, y construir RED con la aplicación
 real y controles de corrupción antes de integrar el extractor.
+
+### Contrato de Portable PDB embebido, 2026-10-28
+
+SPEC native004 fija extracción PE32/PE32+ acotada, comprobación de CodeView,
+checksum y Deflate, y reutilización del selector y presupuestos Portable. El
+PDB extraído solo aporta líneas si su identidad y la metadata de carga son
+compatibles; el alias CodeView permite la identidad habitual del PE. Archivos
+inválidos no impiden la captura ni aportan símbolos parciales. La evidencia
+requerida incluye un PE real, oracle .NET, corrupción, archivos comprimidos,
+aislamiento HTTP y conservación del evento real del SDK.
+
+Siguiente acción concreta: aplicar test-audit, fijar RED con PE real y controles
+de formato y límites, e implementar el extractor y su integración por proyecto.
