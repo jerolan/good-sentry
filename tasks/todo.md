@@ -12218,3 +12218,19 @@ límites Portable PDB, ubicación del enriquecimiento en ingesta y conservación
 frames existentes; desglosar el lector y la verificación con la muestra propia,
 pruebas de identidad y eventos .NET reales. Mantener por separado el reprocessing
 nativo existente, la búsqueda VC4 y los mapas históricos no directos.
+
+### Diseño Portable PDB independiente, 2026-10-28
+
+SPEC native004 especifica el primer recorrido Portable independiente: identidad
+GUID/stamp desde #Pdb, tablas y blobs acotados, selección por proyecto y archivos
+comprimidos regulares, y enriquecimiento de frames `pe_dotnet` por índice de
+método y offset IL antes de normalizar. Los valores ya presentes se conservan;
+un archivo o punto ausente no rompe la captura. El PDB no inventa nombres de
+método ni traduce IL a RVA nativo. Archivos embebidos, búsqueda remota,
+reprocessing administrado y cierre nativo integral no se acreditan por este
+primer recorrido. La prueba real de Sentry .NET SDK permanece exigible.
+
+Siguiente acción concreta: aplicar test-audit, construir RED del lector con la
+muestra .NET10 y un oracle independiente de System.Reflection.Metadata; incluir
+identidad, offsets, documentos y corrupción antes de implementar el decodificador.
+Después integrar eventos y verificar HTTP/PG, aislamiento y SDK real.

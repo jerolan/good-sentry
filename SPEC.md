@@ -1123,6 +1123,41 @@ The compatible `POST /api/0/projects/{org}/{project}/reprocessing/` keeps Sentry
 
 Chunk negotiation advertises `debug_files` before `artifact_bundles`, a 64MiB maximum file, bounded SHA-1 chunks, the configured request limit, gzip and concurrency2. `POST /api/0/projects/{org}/{project}/files/difs/assemble/` follows the official CLI state contract: missing chunks return200 with `state:not_found` and the exact missing SHA-1 list; the CLI uploads missing gzip parts; a subsequent all-present request verifies the complete SHA-1, saves the original bytes and returns `state:ok` with the stored compatible debug-file DTO. Invalid metadata, cross-project grants, expired/missing chunks and mismatches fail without a partial file. The actual SHA-256-pinned `sentry-cli 3.8.0` completes negotiation, chunk upload and assembly for a textual Breakpad `.sym`; the compatible dSYM multipart route remains available. Stored textual Breakpad, ELF, Mach-O, dSYM companion and bounded ZIP archive formats are consumed by Minidump symbolication. Add bounded TAR and gzip-compressed TAR containers to this consumer: process at most256 logical entries and128MiB of expanded archive bytes in memory, read only regular files as independent candidate objects, and never extract paths or follow links. Require the standard two zero end blocks and zero-only trailing padding; reject malformed/truncated archives and invalid gzip checksums without returning partial symbols. Permit at most eight archive layers, including ZIP, TAR and gzip-compressed TAR. This GoodSentry bound expands compatibility while keeping recursive parsing bounded; share entry and expanded-byte budgets across layers and charge both each nested container member and its expanded descendants. Reject an archive deeper than eight layers or a malformed nested archive as a whole without returning partial symbols. Classic PDB/MSF 7 procedure, C13 source-line, stripped-public and inline records are consumed; legacy/Portable PDB and complete native unwinding remain required. The bounded readers use the Go 1.27 standard-library contracts for [archive/zip](https://pkg.go.dev/archive/zip), [archive/tar](https://pkg.go.dev/archive/tar) and [compress/gzip](https://pkg.go.dev/compress/gzip).
 
+For standalone Portable PDBs, consume the ECMA-335 metadata root, `#Pdb`,
+`#~` and referenced heaps using checked stream and table extents. Resolve
+Document names and MethodDebugInformation sequence points, including document
+switches, signed and unsigned compressed integers and hidden points. Bound
+each input to the existing64MiB debug-file limit, metadata rows and decoded
+sequence points to1,000,000 each, and names to4,096 bytes. Reject malformed
+or unsupported metadata without partial mappings. Derive the debug identity
+from the `#Pdb` GUID and stamp using the Sentry Portable PDB identity convention;
+do not substitute the PE CodeView age. Select matching stored files only from
+the current project's existing25-file/64MiB set, including regular members of
+the already supported bounded archives. A supplied upload Debug ID must match
+the embedded identity; different contents claiming one identity are ambiguous.
+
+For captured managed frames with `addr_mode:rel:N`, use N to select a
+`pe_dotnet` image in `debug_meta.images`, `function_id` as its one-based
+MethodDef row and `instruction_addr` as function-relative IL offset. Map that
+pair to a source document and line, never to a native RVA or a method name
+invented from the Portable PDB. Enrich applicable top-level, exception and
+thread stacktraces before normalization; preserve existing source fields and
+all unrelated event data, and do not attach a line to a conflicting existing
+source path. Missing files, identities, metadata or source points leave frames
+unchanged rather than failing capture. Keep native Minidump symbolication and
+its existing native-only durable reprocessing contract unchanged. Do not
+claim embedded Portable PDB, symbol-server lookup or full native closure from
+this standalone slice.
+
+Verify the decoder against an independent `System.Reflection.Metadata` oracle
+for a real locally compiled .NET Portable PDB, including identity, method rows,
+IL offsets, document changes and hidden points; add owned malformed and budget
+controls, archive and cross-project controls, and HTTP/PostgreSQL event tests.
+Prove a real Sentry .NET SDK event separately before final acceptance. The
+formats and frame fields follow [.NET Portable PDB metadata](https://github.com/dotnet/runtime/blob/main/docs/design/specs/PortablePdb-Metadata.md),
+[.NET PE debug entries](https://github.com/dotnet/runtime/blob/main/docs/design/specs/PE-COFF.md)
+and the [Sentry Portable PDB protocol](https://github.com/getsentry/rfcs/blob/main/text/0013-portable-pdb.md).
+
 <a id="close-nativo-005"></a>
 
 Textual Breakpad symbol files accept the optional `m` marker on `FUNC` and `PUBLIC` records. Skip that marker when locating the same address, size, parameter-size and name fields used for unmarked records, preserving the current handling of parameter sizes. Keep symbol names with spaces. `PUBLIC` entries provide a source-free fallback range from their address up to the next distinct address in a `FUNC` or `PUBLIC` record; multiple starts at the same address share a range and the first public record wins ties. The final public range is limited to the captured module extent during symbolication. If a `PUBLIC` and `FUNC` both cover an instruction, prefer `FUNC`. Line rows attach only to the most recently accepted `FUNC`; encountering any `PUBLIC` or a malformed `FUNC` clears that association so following rows cannot leak onto a previous function. The marker's identical-code-folding meaning and public-range rules follow the [Breakpad symbol-file format](https://chromium.googlesource.com/breakpad/breakpad/+/HEAD/docs/symbol_files.md) and the [Breakpad address resolver](https://chromium.googlesource.com/external/google-breakpad/src/+/refs/heads/master/processor/basic_source_line_resolver.cc).
