@@ -11962,3 +11962,35 @@ entre PDB y PE por identidad, resolver duplicados ambiguos, límites y archivos
 comprimidos, y especificar MODI50/edad V50 con controles de regresión. Revisar
 el diseño y después producir RED en los owners públicos antes de implementar.
 Mantener oldDBI, code pages, Portable y el cierre integral como exigencias abiertas.
+
+### Diseño V50 y secciones PE seleccionado, 2026-10-28
+
+Tras el comprobante b485db7, la primaria confirmó en fuentes Microsoft que las
+secciones IMAGE_SECTION_HEADER permiten traducir RVA y que DBI age0 antiguo no
+activa la comprobación adicional de edad. Un segundo decoder independiente
+encontró en la pareja real180 procedimientos y2301 líneas positivas, todas
+en procedimientos del mismo módulo; la primaria revisó sus lecturas de identidad,
+extents, MODI50 y C11. La muestra solo demuestra el perfil V50/ASCII observado.
+
+SPEC native018 fija primero un lector MODI50 y asociación PE/PDB por NB10,
+acotada al proyecto y aplicable a archivos directos y comprimidos. Las tablas
+conflictivas con igual identidad son ambiguas; los archivos comprimidos inválidos
+no aportan candidatos parciales. Una cabecera de secciones declarada pero corrupta
+no se rescata con otro archivo. La identidad de upload sigue validándose y no se
+usan nombres para emparejar. Los límites existentes se conservan por cada pasada.
+Solo DBI V50 con edad0 omite esa igualdad; las demás edades conservan su control.
+
+La revisión independiente detectó que un segmento lógico puede referir otro
+frame o tener desplazamiento propio. Para evitar direcciones incorrectas, este
+incremento solo admite descriptores directos validados y mantiene los mapas no
+directos pendientes. La muestra observada cumple ese perfil en sus referencias.
+Para datos CodeView con RVA no cero se exige que RVA y puntero indiquen el mismo
+intervalo de archivo. Un oracle independiente reproducido por la primaria fija
+2481 tuplas completas y el SHA256
+`99e201cea23d2e3e6e95b8869d70f42971e014baf2c90a5e6f71433999e95d59`;
+es una referencia privada, no una prueba de aceptación de la implementación.
+
+Siguiente acción concreta: revisión independiente del diseño y test-audit,
+fixtures propias con RED de identidad/secciones/edad y archivos comprimidos;
+después implementar el flujo completo, comprobar C11 y comparar las tuplas
+privadas de la pareja real. Old DBI y demás perfiles pendientes no se excluyen.

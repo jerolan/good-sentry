@@ -1225,7 +1225,7 @@ header and derive the NB10 Debug ID from the eight-hex-digit signature followed
 by hexadecimal age, including age zero. VC70 and later retain GUID+age and the
 28-byte header. Named-stream maps, when required, begin after the applicable
 header; VC2 has no such map. This increment requires the existing 64-byte
-NewDBI header and equal Info/DBI age. Accept module CodeView signatures 2 and 4;
+NewDBI header and equal Info/DBI age, with the V50 age-zero rule below. Accept module CodeView signatures 2 and 4;
 signature2 permits the ST procedure records and opaque C11 extents, while modern
 procedure kinds and C13/inline data continue to require signature4. Add
 `S_LPROC32_ST`/`S_GPROC32_ST` (0x100a/0x100b), whose procedure fields have
@@ -1242,6 +1242,64 @@ native requirements remain open. References: Microsoft's pinned [PDB Info
 versions](https://github.com/microsoft/pdb-rs/blob/2081a0dd6f1150cf965dec10855e75cfecfde176/docs/pdb/pdbi_stream.md#L24),
 [DBI structures](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/dbi.h#L94)
 and [CodeView procedure layout](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/include/cvinfo.h#L3722).
+
+The next legacy increment supports NewDBI V50 (19960307) with the 48-byte
+`MODI50` prefix. Read its module stream index at26, symbol/C11/FPO sizes at
+28/32/36, and two NUL-terminated names after byte48; align each complete record
+to four bytes. Validate the FPO extent but do not interpret it. An absent module
+stream must not claim symbol, C11 or FPO bytes. Preserve the existing signature2
+ST procedure reader and native019 C11 mapping. For V50 only, DBI age zero is
+permitted even when Info age is nonzero; a nonzero DBI age must equal Info age.
+V60 and later retain the existing age equality check. Do not infer the age or
+section RVAs from module names, serialized pointers or the section map.
+
+This increment admits the direct V50 section-map profile: every segment used
+by a procedure or C11 line must have a valid logical descriptor whose physical
+frame equals its one-based segment number, whose offset is zero and whose
+length contains the referenced range. Resolve its RVA from the corresponding
+PE section, checking both descriptor and section bounds. A missing, malformed
+or non-direct mapping must not produce partial symbols. Mapping other logical
+segments, including nonzero offsets and different frames, remains required
+legacy work and must not be claimed as supported by this increment.
+
+When a V50 PDB has no optional PE section-header stream, obtain section headers
+from an uploaded PE image with the same embedded NB10 timestamp and age as the
+PDB Info identity. Read the image as data only. Validate PE headers, section
+extents and the debug-directory records with checked offsets; read each
+CodeView record through its `PointerToRawData`, including when that record's
+`AddressOfRawData` is zero. When the latter is nonzero, require it to map
+unambiguously to the same file extent and size as the pointer. Reject
+truncated or conflicting NB10 records, missing NUL-terminated NB10 paths and
+ambiguous debug-directory address mappings. Bound each input to64MiB, section
+headers to512 and debug-directory records to4096. A supplied upload Debug ID
+must match the embedded identity; never use a filename as identity. Do not emit
+symbols or an object merely because a PE image was uploaded.
+
+Associate PE and PDB candidates only within the current project's selected
+debug-file set, whether they are separate files or regular members of supported
+ZIP/TAR/gzip-TAR archives. Preserve archive-wide failure and the existing depth,
+entry and expanded-byte budgets. If separate passes are used to collect PE
+metadata and decode symbols, each pass must enforce the same archive limits and
+must not retain candidates from a malformed archive. Identical section tables
+for one NB10 identity may be reused; distinct tables for that identity are
+ambiguous and cannot supply external sections. A PDB with no matching usable
+sections emits no partial symbols. Existing PDBs with their own valid section
+stream continue to use it; a declared but malformed section stream is not
+rescued by a companion. Preserve project isolation, upload metadata validation,
+current symbolication and reprocessing behavior.
+
+Extend the existing public parser and HTTP/PostgreSQL owners with independently
+authored V50 PDB/PE fixtures: matching and mismatched identity, absent companion,
+age-zero and different nonzero DBI age, malformed and ambiguous PE records,
+multiple modules and C11 source lines, direct files and archive members. Prove
+whole-archive rejection and the unchanged modern PDB/ELF/Mach-O owners. Compare
+the complete private tuples from a real V50 PDB and its matching PE without
+redistributing or executing either file. The older DBIHdr, other record kinds,
+unknown historical code pages, Portable PDB and all broader native requirements
+remain open. References: Microsoft [V50 modules](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/dbi.h#L1138),
+[age validation](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/pdb.cpp#L826),
+[image headers for RVA translation](https://learn.microsoft.com/en-us/visualstudio/debugger/debug-interface-access/idiaaddressmap-set-imageheaders),
+and [PE debug directory](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#debug-directory-image-only).
 
 <a id="close-nativo-019"></a>
 
