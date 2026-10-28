@@ -12295,3 +12295,16 @@ la limitación de créditos registrada.
 Siguiente acción concreta: aplicar test-audit a la selección de archivos y al
 recorrido de eventos `pe_dotnet`; probar identidad, proyectos, archivos
 comprimidos, conflictos y conservación de campos antes de integrar HTTP/PG.
+
+### Integración Portable y presupuesto de selección, 2026-10-28
+
+SPEC native004 limita a un millón los puntos retenidos de identidades Portable
+requeridas dentro del conjunto de archivos seleccionado; al exceder el límite
+la captura continúa sin enriquecimiento Portable parcial. Esto complementa los
+límites por archivo y evita multiplicarlos por los25 archivos del proyecto.
+La selección deberá descartar candidatos de un archivo comprimido inválido y
+considerar ambiguas identidades con contenidos válidos distintos.
+
+Siguiente acción concreta: fijar pruebas RED del owner de evento para identidad,
+lookups, documentos, archivos comprimidos y conservación de campos; implementar
+selección y enriquecimiento, y probar ingesta HTTP/PG e aislamiento.
