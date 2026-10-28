@@ -45,13 +45,28 @@ func portableCandidates(files []DebugSymbolFile, wanted map[string]bool) map[str
 	selected := map[string]portableCandidate{}
 	total := 0
 	totalNames := 0
+	totalExpansion := 0
 	for _, file := range files {
 		local := map[string]portableCandidate{}
 		localTotal := 0
 		localNames := 0
+		localExpansion := totalExpansion
 		exceeded := false
 		_, valid := scanDebugInput(file.Name, file.Content, func(_ string, data []byte) (DebugObject, bool) {
-			if exceeded || !bytes.HasPrefix(data, []byte("BSJB")) {
+			if exceeded {
+				return DebugObject{}, false
+			}
+			alias := ""
+			if bytes.HasPrefix(data, []byte("MZ")) {
+				var ok bool
+				data, alias, ok = embeddedPortablePDB(data, &localExpansion)
+				if localExpansion > maxEmbeddedPortableExpansion {
+					exceeded = true
+				}
+				if !ok {
+					return DebugObject{}, false
+				}
+			} else if !bytes.HasPrefix(data, []byte("BSJB")) {
 				return DebugObject{}, false
 			}
 			streams, ok := portableStreams(data)
@@ -59,7 +74,8 @@ func portableCandidates(files []DebugSymbolFile, wanted map[string]bool) map[str
 				return DebugObject{}, false
 			}
 			id := portableIdentity(streams["#Pdb"])
-			if !wanted[id] || DebugKey(file.DebugID) != "" && DebugKey(file.DebugID) != id {
+			uploadID := DebugKey(file.DebugID)
+			if !wanted[id] || uploadID != "" && uploadID != id && uploadID != alias {
 				return DebugObject{}, false
 			}
 			hash := sha256.Sum256(data)
@@ -106,6 +122,7 @@ func portableCandidates(files []DebugSymbolFile, wanted map[string]bool) map[str
 		if exceeded {
 			return nil
 		}
+		totalExpansion = localExpansion
 		for id, candidate := range local {
 			if previous, exists := selected[id]; exists {
 				if previous.hash != candidate.hash || candidate.ambiguous {

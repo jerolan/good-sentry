@@ -1,0 +1,71 @@
+{
+  "event_id": "48c9c2dadcd648a1888b59fdfe2e5330",
+  "platform": "csharp",
+  "sdk": {
+    "packages": [
+      {
+        "name": "nuget:sentry.dotnet",
+        "version": "6.12.1"
+      }
+    ],
+    "name": "sentry.dotnet",
+    "version": "6.12.1"
+  },
+  "debug_meta": {
+    "images": [
+      {
+        "type": "pe_dotnet",
+        "debug_id": "6755b4cd-d3c5-4986-89d6-490d7bd5545c-8e698d33",
+        "debug_checksum": "SHA256:cdb45567c5d386a989d6490d7bd5545c338d698efec3ac846d6fa7816ff3178c",
+        "debug_file": "Probe.pdb",
+        "code_id": "829DA468a000",
+        "code_file": "/tmp/goodsentry-embedded-sdk/run/Probe.dll"
+      }
+    ]
+  },
+  "exception": {
+    "values": [
+      {
+        "type": "System.InvalidOperationException",
+        "value": "portable-sdk-probe",
+        "module": "System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+        "thread_id": 1,
+        "stacktrace": {
+          "frames": [
+            {
+              "filename": "Program.cs",
+              "function": "async Task Program.Main()",
+              "lineno": 13,
+              "colno": 15,
+              "abs_path": "/tmp/goodsentry-embedded-sdk/app/Program.cs",
+              "in_app": true,
+              "package": "Probe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "instruction_addr": "0x43",
+              "addr_mode": "rel:0",
+              "function_id": "0xb"
+            },
+            {
+              "filename": "Program.cs",
+              "function": "void Program.ThrowProbe()",
+              "lineno": 18,
+              "colno": 33,
+              "abs_path": "/tmp/goodsentry-embedded-sdk/app/Program.cs",
+              "in_app": true,
+              "package": "Probe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "instruction_addr": "0xa",
+              "addr_mode": "rel:0",
+              "function_id": "0x3"
+            }
+          ]
+        },
+        "mechanism": {
+          "type": "generic",
+          "handled": true,
+          "data": {
+            "HResult": "0x80131509"
+          }
+        }
+      }
+    ]
+  }
+}

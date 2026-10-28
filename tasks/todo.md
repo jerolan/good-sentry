@@ -12413,3 +12413,30 @@ presupuesto, siguiendo la regla existente de ausencia de resultados parciales.
 
 Siguiente acción concreta: aplicar test-audit, fijar RED con PE real y controles
 de formato y límites, e implementar el extractor y su integración por proyecto.
+
+### Captura con Portable PDB embebido, 2026-10-28
+
+El selector administrado consume PDB embebido en PE32/PE32+ y miembros ZIP,
+comprueba los rangos y la identidad CodeView, valida checksums SHA256/SHA1 y
+descomprime Deflate bajo límites individuales y compartidos. Reutiliza el
+lector Portable, sus presupuestos y la detección de identidades ambiguas.
+Rechaza versiones, checksums, identidades, archivos truncados, datos adicionales
+y compresión inválidos sin modificar el evento. La expansión de un archivo
+comprimido inválido no se cobra al conjunto de candidatos.
+
+RED reprodujo la falta de enriquecimiento con PE y ZIP reales. GREEN con race
+cubrió el PE compilado, ausencia y conflicto de CodeView, checksum, truncación,
+límites y corrupción. HTTP/PG verificó el proyecto correcto, aislamiento y el
+sobre íntegro real del SDK con campos de origen conservados. El oracle .NET
+previo identificó `Program.cs:18`. Race nativo aprobó699 acciones y servidor41;
+vet y build pasaron. Comprobante:
+test-results/closure-20261025/portable-pdb-embedded/; oracle independiente:
+test-results/closure-20261025/portable-pdb-embedded-research/.
+
+Este incremento no acredita búsqueda remota de símbolos, perfiles legados
+restantes ni native004 integral; imagen/CI finales siguen invalidados. La
+primaria revisó el recorrido y las pruebas.
+
+Siguiente acción concreta: investigar la traducción de selectores no directos
+en mapas de secciones legados con fuentes primarias y un binario representativo;
+especificar el comportamiento y sus límites antes de implementarlo.

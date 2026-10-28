@@ -37,10 +37,12 @@ metadata reader and Symbolic-compatible hidden-point lookup have local
 .NET6/.NET10 oracle evidence. The project-scoped managed event route now has
 HTTP isolation, shared-budget controls and a real Sentry .NET SDK envelope
 verified against the independent metadata oracle. PE/COFF and a real SDK event
-establish the embedded Portable PDB format. Implement its specified bounded PE
-debug-directory, decompression, identity and checksum checks, then integrate
-the existing managed event path and verify real and corrupted inputs. Keep other
-old records, unknown profiles and complete acceptance open. Keep unwinding
+establish the embedded Portable PDB format. Its bounded PE debug-directory,
+decompression, identity and checksum checks now feed the managed event path;
+real SDK, project isolation, corruption and expansion-budget evidence is in
+todo.md. Continue with legacy non-direct section-map translation and other
+required records, using primary format evidence and representative binaries.
+Keep unknown profiles and complete acceptance open. Keep unwinding
 and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate
 unrelated release/UI proofs without a changed dependency.
