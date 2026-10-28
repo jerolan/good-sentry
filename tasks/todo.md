@@ -4047,6 +4047,21 @@ Quedan el estado de función deshabilitada, límites, reinicio y comparación
 posterior de los datos Sentry. Siguiente acción: verificar el modo deshabilitado
 en una copia independiente y después reiniciar la instancia de aceptación.
 
+### Avance parcial 2026-10-27: reinicio de CLOSE-logs-028
+
+Se reinició solo la aplicación de `gsclosure028`. Antes y después coincidieron
+los multiconjuntos de 182 filas en 73 tablas, incluidos 10 lotes OTLP y 60
+logs; la comparación incluye los bytes almacenados. Una sesión de verificación
+posterior leyó el evento Sentry con el mismo SHA-256, descargó su adjunto con
+los cuatro bytes originales y abrió el detalle del log Sentry. Evidencia y
+procedimientos sin credenciales:
+`test-results/closure-20261025/logs-028-fresh/restart/`; snapshots privados
+en `/tmp/goodsentry-closure-028/`.
+
+Siguen pendientes el modo deshabilitado, los límites restantes y el cotejo de
+fuente/CI. Siguiente acción: comprobar el modo deshabilitado sobre una copia
+independiente, sin modificar esta base, y revisar el límite de capacidad.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el
