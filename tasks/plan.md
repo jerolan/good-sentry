@@ -31,8 +31,8 @@ isolation and a full 2481-tuple comparison against the independent real-sample
 oracle. Non-direct V50 maps still need evidence for selector translation. Next,
 the specified old DBI/C7 direct-map procedure profile has local owned and
 HTTP/PG evidence. The documented ST source-line layout now also has local C7
-and V50 evidence, including unknown root bounds. Implement the newly specified
-unknown-file-bound policy, seek a real VC4 pair and resolve other old records.
+and V50 evidence, including unknown root and file bounds. Seek a real VC4 pair
+and resolve other old records and non-direct segment mappings.
 Keep Portable PDB,
 unwinding and symbol-server requirements open. Reconcile native receipts,
 publication and matching CI against the final candidate; do not invalidate

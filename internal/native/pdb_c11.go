@@ -83,19 +83,24 @@ func parsePDBC11(data []byte, sections []pdbSection, procedures []SymbolFunction
 			rangeOffset := fileRanges + uint64(tableIndex)*8
 			start := binary.LittleEndian.Uint32(data[rangeOffset:])
 			last := binary.LittleEndian.Uint32(data[rangeOffset+4:])
-			if start == 0 && last == 0 {
-				return nil, false
-			}
-			contribution, ok := pdbC11SectionRange(segment, start, last, sections)
-			if !ok {
-				return nil, false
-			}
+			unknownFile := start == 0 && last == 0
 			union := roots[segment]
-			covering := sort.Search(len(union), func(i int) bool { return union[i].end > contribution.start })
-			if !unknownRoots[segment] && (covering == len(union) || union[covering].start > contribution.start || union[covering].end < contribution.end) {
+			if segment == 0 || int(segment) > len(sections) || sections[segment-1].invalidMap || !unknownRoots[segment] && len(union) == 0 {
 				return nil, false
 			}
 			section := sections[segment-1]
+			var contribution pdbC11Range
+			if !unknownFile {
+				var ok bool
+				contribution, ok = pdbC11SectionRange(segment, start, last, sections)
+				if !ok {
+					return nil, false
+				}
+				covering := sort.Search(len(union), func(i int) bool { return union[i].end > contribution.start })
+				if !unknownRoots[segment] && (covering == len(union) || union[covering].start > contribution.start || union[covering].end < contribution.end) {
+					return nil, false
+				}
+			}
 			emit := filename != "" && section.flags&pdbPESectionExecute != 0
 			var lines []pdbC13Line
 			if emit {
@@ -105,7 +110,18 @@ func parsePDBC11(data []byte, sections []pdbSection, procedures []SymbolFunction
 			for pairIndex := 0; pairIndex < pairCount; pairIndex++ {
 				offset := binary.LittleEndian.Uint32(data[tableOffset+4+uint64(pairIndex)*4:])
 				line := binary.LittleEndian.Uint16(data[tableOffset+4+uint64(pairCount)*4+uint64(pairIndex)*2:])
-				if uint64(offset) < contribution.start || uint64(offset) >= contribution.end || pairIndex != 0 && offset < previous {
+				if pairIndex != 0 && offset < previous {
+					return nil, false
+				}
+				if unknownFile {
+					if _, ok := pdbC11SectionRange(segment, offset, offset, sections); !ok {
+						return nil, false
+					}
+					covering := sort.Search(len(union), func(i int) bool { return union[i].end > uint64(offset) })
+					if !unknownRoots[segment] && (covering == len(union) || union[covering].start > uint64(offset)) {
+						return nil, false
+					}
+				} else if uint64(offset) < contribution.start || uint64(offset) >= contribution.end {
 					return nil, false
 				}
 				previous = offset
@@ -114,7 +130,13 @@ func parsePDBC11(data []byte, sections []pdbSection, procedures []SymbolFunction
 				}
 			}
 			if emit {
-				mapped, ok := pdbC13FunctionsForLines(lines, uint32(contribution.end-contribution.start), section, start, index, &budget.mappings)
+				var mapped []SymbolFunction
+				var ok bool
+				if unknownFile {
+					mapped, ok = pdbC11UnknownFileLines(lines, section, index, union, unknownRoots[segment], &budget.mappings)
+				} else {
+					mapped, ok = pdbC13FunctionsForLines(lines, uint32(contribution.end-contribution.start), section, start, index, &budget.mappings)
+				}
 				if !ok {
 					return nil, false
 				}
@@ -123,6 +145,50 @@ func parsePDBC11(data []byte, sections []pdbSection, procedures []SymbolFunction
 		}
 	}
 	return sourceFunctions, true
+}
+
+// Unknown file bounds do not authorize source attribution to a procedure
+// which contains no line record of its own.
+func pdbC11UnknownFileLines(lines []pdbC13Line, section pdbSection, procedures *pdbFunctionIndex, roots []pdbC11Range, unknownRoot bool, mappings *int) ([]SymbolFunction, bool) {
+	ends := make([]uint64, len(lines))
+	for i := len(lines) - 1; i >= 0; i-- {
+		ends[i] = uint64(max(section.virtualSize, section.rawSize))
+		if i+1 < len(lines) {
+			if lines[i+1].offset > lines[i].offset {
+				ends[i] = uint64(lines[i+1].offset)
+			} else {
+				ends[i] = ends[i+1]
+			}
+		}
+	}
+	var result []SymbolFunction
+	for i, line := range lines {
+		if line.line <= 0 {
+			continue
+		}
+		end := ends[i]
+		if !unknownRoot {
+			covering := sort.Search(len(roots), func(j int) bool { return roots[j].end > uint64(line.offset) })
+			if covering == len(roots) || roots[covering].start > uint64(line.offset) {
+				return nil, false
+			}
+			end = min(end, roots[covering].end)
+		}
+		startRVA := uint64(section.virtualAddr) + uint64(line.offset)
+		endRVA := uint64(section.virtualAddr) + end
+		matches := procedures.overlaps(startRVA, startRVA+1)
+		if len(matches) > maxPDBLineMappings-*mappings {
+			return nil, false
+		}
+		*mappings += len(matches)
+		for _, procedure := range matches {
+			end := min(endRVA, procedure.End)
+			if startRVA < end {
+				result = append(result, SymbolFunction{Start: startRVA, End: end, Name: procedure.Name, File: line.file, Line: line.line, procedureStart: procedure.Start})
+			}
+		}
+	}
+	return result, true
 }
 
 func pdbC11SectionRange(segment uint16, start, last uint32, sections []pdbSection) (pdbC11Range, bool) {

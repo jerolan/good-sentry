@@ -879,6 +879,9 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 				pdb = fixture.Data
 				binary.LittleEndian.PutUint32(pdb[fixture.C11Start+8:], 0)
 				binary.LittleEndian.PutUint32(pdb[fixture.C11Start+12:], 0)
+				file := fixture.C11Start + int(binary.LittleEndian.Uint32(pdb[fixture.C11Start+4:]))
+				binary.LittleEndian.PutUint32(pdb[file+8:], 0)
+				binary.LittleEndian.PutUint32(pdb[file+12:], 0)
 			}
 			digest := sha1.Sum(pdb)
 			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}

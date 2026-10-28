@@ -12164,3 +12164,31 @@ Siguiente acción concreta: preparar RED en los owners C7 y C11 para archivo
 sin límites, varias funciones, duplicados, línea0, raíces conocidas y
 desconocidas, y datos fuera de sección; implementar el índice acotado, probar
 HTTP/PG y regresiones, y registrar las limitaciones y comprobantes.
+
+### Límites de archivo desconocidos verificados localmente, 2026-10-28
+
+El lector ST ya acepta contribuciones de archivo con límites (0,0): valida
+cada offset en la sección y raíz conocida, busca los procedimientos del mismo
+módulo que contienen ese offset y recorta cada línea al siguiente offset
+distinto, al fin de procedimiento y a la raíz conocida. Con raíz desconocida
+no se extiende ninguna línea a una función que no tenga su propio registro.
+Se conservan duplicados, fronteras de línea0 y presupuestos existentes.
+
+Los owners C7 y V50 pasaron de RED a GREEN con raíces conocidas/desconocidas,
+archivo desconocido, fin de función, huecos, recorte por raíz, duplicados,
+línea0 y offsets inválidos. El owner HTTP/PG comprobó captura e aislamiento;
+race nativo aprobó646 acciones y servidor31. Vet y build pasaron y la pareja
+V50 real conservó sus2481 tuplas independientes. El comprobante está en
+test-results/closure-20261025/nativo-unknown-file/. La atribución es la política
+explícita de GoodSentry, respaldada por el formato y el consumidor consultados,
+no una afirmación de equivalencia universal con otros depuradores.
+
+La primaria revisó el cambio; no hubo revisión de un worker adicional por la
+limitación de créditos ya registrada. La fixture C7 no sustituye una pareja
+VC4 real. Otros records antiguos, mapas no directos, codificaciones y criterios
+nativos integrales siguen abiertos; publicación y CI del candidato no se han
+acreditado con este incremento.
+
+Siguiente acción concreta: buscar una pareja VC4 independiente y un consumidor
+que aclare selectores de mapas no directos; en ausencia de esa evidencia,
+seleccionar el siguiente criterio exigible con dependencias resueltas del plan.

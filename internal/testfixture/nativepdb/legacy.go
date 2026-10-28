@@ -392,7 +392,7 @@ func OldDBIC7SourceLines() C11Fixture {
 	f := OldDBIC7()
 	lines := c11SourceLines(0x10, 0x2f, []c11SourceFile{{
 		name: `C:\src\old.cc`, start: 0x10, end: 0x2f,
-		offsets: []uint32{0x10, 0x18}, lines: []uint16{42, 43},
+		offsets: []uint32{0x10, 0x10, 0x18, 0x1c}, lines: []uint16{42, 43, 0, 44},
 	}})
 	data := f.Data
 	dbi := f.DBIBlock * 1024

@@ -1308,6 +1308,16 @@ func TestHistoricalPDBUnknownRootAndC7SourceLines(t *testing.T) {
 				binary.LittleEndian.PutUint32(d[file+8:], 0)
 				binary.LittleEndian.PutUint32(d[file+12:], 0)
 			})
+			unknownBoth := append([]byte(nil), unknownFile...)
+			binary.LittleEndian.PutUint32(unknownBoth[f.C11Start+8:], 0)
+			binary.LittleEndian.PutUint32(unknownBoth[f.C11Start+12:], 0)
+			outsideRoot := append([]byte(nil), unknownFile...)
+			file := f.C11Start + int(binary.LittleEndian.Uint32(outsideRoot[f.C11Start+4:]))
+			table := f.C11Start + int(binary.LittleEndian.Uint32(outsideRoot[file+4:]))
+			pairs := int(binary.LittleEndian.Uint16(outsideRoot[table+2:]))
+			binary.LittleEndian.PutUint32(outsideRoot[table+4+(pairs-1)*4:], 0x80)
+			outsideSection := append([]byte(nil), unknownBoth...)
+			binary.LittleEndian.PutUint32(outsideSection[table+4+(pairs-1)*4:], 0x1000)
 			badReference := modify(func(d []byte) { binary.LittleEndian.PutUint32(d[f.C11Start+4:], 0xffffffff) })
 			for _, test := range []struct {
 				name string
@@ -1315,7 +1325,9 @@ func TestHistoricalPDBUnknownRootAndC7SourceLines(t *testing.T) {
 				want bool
 			}{
 				{"known bounds", f.Data, true}, {"unknown root bounds", unknownRoot, true},
-				{"unknown file bounds", unknownFile, false}, {"invalid file reference", badReference, false},
+				{"unknown file bounds", unknownFile, true}, {"unknown root and file", unknownBoth, true},
+				{"line outside known root", outsideRoot, false}, {"line outside section", outsideSection, false},
+				{"invalid file reference", badReference, false},
 			} {
 				t.Run(test.name, func(t *testing.T) {
 					symbols, _ := BuildSymbolTables([]DebugSymbolFile{{Name: "symbols.pdb", Content: test.data}, {Name: "image.exe", Content: pe}})
@@ -1332,6 +1344,27 @@ func TestHistoricalPDBUnknownRootAndC7SourceLines(t *testing.T) {
 					}
 					if got := crash.Frames[1]; got.Function != "OtherFunction" || got.File != "" || got.Line > 0 {
 						t.Fatalf("outside source contribution got frame=%+v", got)
+					}
+					if format.name == "C7 old DBI" {
+						crash.Frames = []Frame{{Module: "renamed.exe", Instruction: 0x140001019}, {Module: "renamed.exe", Instruction: 0x14000101d}, {Module: "renamed.exe", Instruction: 0x14000102f}}
+						Symbolicate(&crash, symbols)
+						if crash.Frames[0].File != "" || crash.Frames[0].Line > 0 || crash.Frames[1].File != format.filename || crash.Frames[1].Line != 44 || crash.Frames[2].File != format.filename || crash.Frames[2].Line != 44 {
+							t.Fatalf("zero-line boundary or following source lost: %+v", crash.Frames)
+						}
+					}
+				})
+			}
+			if format.name == "C7 old DBI" {
+				t.Run("unknown file clips to known root", func(t *testing.T) {
+					data := append([]byte(nil), unknownFile...)
+					binary.LittleEndian.PutUint32(data[f.C11Start+12:], 0x14)
+					binary.LittleEndian.PutUint16(data[table+2:], 1)
+					binary.LittleEndian.PutUint16(data[table+8:], 42)
+					symbols, _ := BuildSymbolTables([]DebugSymbolFile{{Name: "symbols.pdb", Content: data}, {Name: "image.exe", Content: pe}})
+					crash := Crash{Modules: []Module{{Name: "renamed.exe", Base: 0x140000000, Size: 0x10000, DebugID: "65ae75631"}}, Frames: []Frame{{Module: "renamed.exe", Instruction: 0x140001014}, {Module: "renamed.exe", Instruction: 0x140001015}}}
+					Symbolicate(&crash, symbols)
+					if crash.Frames[0].Line != 42 || crash.Frames[1].Function != "CrashFunction" || crash.Frames[1].File != "" || crash.Frames[1].Line > 0 {
+						t.Fatalf("known root clipping failed: %+v", crash.Frames)
 					}
 				})
 			}
