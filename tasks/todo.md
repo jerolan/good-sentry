@@ -1845,10 +1845,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-017](../SPEC.md#close-operacion-017) | Error-event retention: Issue count and its first/last/title/environment/release reflect the surviving stored p… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-018](../SPEC.md#close-operacion-018) | Error-event retention: Preserve existing authorization and snapshot semantics. Native IssueDetail already retu… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
-| [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | vigente | Comprobante 2026-10-26 abajo; imagen/CI final pendientes |
-| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
-| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
-| [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
+| [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | bloqueada | Copias restauradas exactas; falta instrucción sobre originales ausentes y reaceptación final, ver abajo |
+| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | bloqueada | Copias restauradas exactas; falta instrucción sobre originales ausentes y reaceptación final, ver abajo |
+| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | bloqueada | Copias restauradas exactas; falta instrucción sobre originales ausentes y reaceptación final, ver abajo |
+| [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | bloqueada | Copias restauradas exactas; falta instrucción sobre originales ausentes y reaceptación final, ver abajo |
 | [CLOSE-uptime-006](../SPEC.md#close-uptime-006) | Uptime check retention: The next required retention class owns monitor_checks, not monitors. Official installa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-007](../SPEC.md#close-uptime-007) | Uptime check retention: Use completed_at as the existing durable server completion clock. Both CompleteMonitor… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-008](../SPEC.md#close-uptime-008) | Uptime check retention: Store.CleanupMonitorChecks(ctx, days) returns a committed removed-check count and erro… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -11277,3 +11277,41 @@ y puertos de originales; no se ejecutarán sin adaptación. Siguiente acción:
 restaurar `baseline.dump` en otra base/volumen/puerto y cotejar las 4.258 filas
 previas antes de probar retained/empty/recovered en la imagen pública final.
 El producto sigue incompleto; 002/100 permanecen sin aceptación final.
+
+### Recuperación verificada de checkpoints de retención, 2026-10-27
+
+Se restauraron los tres respaldos en nuevas bases del PostgreSQL aislado
+`gsclosure033-postgres-1`, con pg_restore18 y sin arrancar aplicaciones:
+
+| Base nueva | Filas/tablas/eventos/batches/migraciones | Contraste |
+|---|---|---|
+| `closure019_baseline_snapshot` | 4258/38/530/28/23 | Todos los hashes de fila idénticos a baseline-rows.json histórico |
+| `closure019_recovery_snapshot` | 4290/38/533/28/24 | Todos idénticos a before-expiry-rows.json |
+| `closure019_accepted_snapshot` | 4305/38/530/28/24 | Todos idénticos a accepted-rows.json |
+
+No se sobreescribió ninguna base ni backup. Los tres SHA-256 de dumps, los
+procedimientos y resultados están en `operacion-019-023-fresh/`; no se publican
+configuración ni snapshots con datos privados. Esto demuestra recuperación
+lógica exacta de esos checkpoints, sin afirmar preservación de runtimes.
+
+La comprobación actual de Docker no encuentra ninguno de los siete nombres
+protegidos de protected-runtime.json/accepted-runtime.json, ni el volumen
+`gs-event-retention-uploads-20261017`. No puede acreditarse que esos originales
+sigan exactos. La excepción del27-Oct solo cubre cuatro bases de otros
+criterios. Responsable de esta dependencia: usuario, mediante acceso a los
+originales o instrucción explícita que cambie esa obligación. Se solicitó
+escoger entre mantener esa exigencia o aceptar copias verificadas desde los
+respaldos y retirar la conservación de los runtimes ausentes. La respuesta
+sigue pendiente; no se ha extendido la excepción por inferencia.
+
+CLOSE-operacion-020 también exige la imagen/copia/recuperación y protección
+finales en su bloque completo; pasa a bloqueada junto con021/022/023 hasta
+resolver esa dependencia, además de completar sus pruebas actuales. No se
+considera vigente por sus tests de proveedor solamente. 019 sigue invalidada
+hasta repetir su secuencia de UI real.
+
+Siguiente acción: incorporar la instrucción pendiente sobre los originales y
+adaptar el recorrido retained/empty/recovered a una copia nueva del baseline,
+con volumen/puerto nuevos y envejecimiento limitado a fixtures propios.
+Mientras tanto continúa el cotejo factual por requisito de otras familias,
+sin emitir aceptación final de la matriz por sus estados.
