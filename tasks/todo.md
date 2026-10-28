@@ -4025,6 +4025,28 @@ Faltan autorización entre organizaciones, navegador, límites, comparación
 posterior de los datos Sentry y reinicio. Siguiente acción: preparar el
 aislamiento entre organizaciones y el fixture del navegador en la misma copia.
 
+### Avance parcial 2026-10-27: navegador y aislamiento de logs-028
+
+Un usuario de otra organización recibió 404 al solicitar un log del proyecto
+original. Chromium pasó nueve comprobaciones: receta OTLP, detalle tipado y
+texto hostil, lectura diferida, error/reintento, navegación durante carga,
+paginación, filtros/traza, presentación de log Sentry y lectura de un miembro.
+Las vistas capturadas ajustaron a 320/768/1440. El miembro y la organización
+ajena se crearon únicamente en la base de prueba.
+
+El primer intento pasó siete comprobaciones y falló porque el fixture del log
+Sentry real tenía el entero 42 y el owner esperaba el máximo int64. Se añadió
+un envelope Sentry manual suplementario con ese entero y se repitió el owner
+sobre los mismos datos: pasó. Este envelope no se atribuye al SDK oficial, cuya
+captura separada está registrada arriba. Los dos reports y las capturas de
+Logs están en `test-results/closure-20261025/logs-028-fresh/browser/`; las
+capturas de la receta y su ejemplo permanecen privadas porque muestran la
+clave del proyecto. Los scripts de fixture no contienen credenciales.
+
+Quedan el estado de función deshabilitada, límites, reinicio y comparación
+posterior de los datos Sentry. Siguiente acción: verificar el modo deshabilitado
+en una copia independiente y después reiniciar la instancia de aceptación.
+
 ### Ejecución 2026-10-26: despliegue y rollback de contraseña
 
 Selección registrada antes de trabajar: CLOSE-identidad-026, siguiente en el

@@ -1,0 +1,104 @@
+{
+  "passed": true,
+  "checks": [
+    "Projects exposes the exact prefixed OTLP endpoint, copyable key header, exporter variables and DSN distinction",
+    "Logs OTLP row shows badge and lazy detail with resource, scope, record, severity, exact nanoseconds and metadata",
+    "Detail close returns to Logs without stale detail content",
+    "The failed lazy read retries and renders the actual selected backend record",
+    "Close/reopen during loading sends once and a pending response cannot attach after navigation",
+    "Project selection survives log pagination",
+    "Real text/service filters isolate OTLP records and the stored trace link opens its trace",
+    "Existing SDK logs retain their separate attributes disclosure and exact integer text",
+    "Actual organization member reads selected OTLP detail"
+  ],
+  "screenshots": [
+    "/tmp/goodsentry-closure-028/browser-retry/projects-otlp-recipe-320.png",
+    "/tmp/goodsentry-closure-028/browser-retry/projects-otlp-recipe-768.png",
+    "/tmp/goodsentry-closure-028/browser-retry/projects-otlp-recipe-1440.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-otlp-detail-320.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-otlp-detail-768.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-otlp-detail-1440.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-after-close-320.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-after-close-768.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-after-close-1440.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-loading-320.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-loading-768.png",
+    "/tmp/goodsentry-closure-028/browser-retry/logs-loading-1440.png"
+  ],
+  "dimensions": [
+    {
+      "name": "projects-otlp-recipe",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "projects-otlp-recipe",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "projects-otlp-recipe",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-otlp-detail",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-otlp-detail",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-otlp-detail",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-after-close",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-after-close",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-after-close",
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "name": "logs-loading",
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "name": "logs-loading",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "name": "logs-loading",
+      "viewport": 1440,
+      "document": 1440
+    }
+  ],
+  "pageErrors": [],
+  "requestFailures": [],
+  "badResponses": [
+    {
+      "url": "http://127.0.0.1:18528/api/v1/organizations/closure-otlp/logs/29",
+      "status": 503
+    }
+  ],
+  "consoleProblems": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "url": "http://127.0.0.1:18528/api/v1/organizations/closure-otlp/logs/29"
+    }
+  ]
+}
