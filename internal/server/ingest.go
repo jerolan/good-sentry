@@ -183,6 +183,22 @@ func (s *Server) ingest(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
+		if payloadKind.Type != "feedback" && native.PortableEventNeedsSymbols(raw) {
+			symbolFiles, lookupErr := s.db.DebugSymbolFiles(r.Context(), project)
+			if lookupErr != nil {
+				earlyReport(lookupErr)
+				return
+			}
+			files := make([]native.DebugSymbolFile, 0, len(symbolFiles))
+			for _, file := range symbolFiles {
+				files = append(files, native.DebugSymbolFile{Name: file.Name, DebugID: file.DebugID, Content: file.Content})
+			}
+			raw, _, err = native.SymbolicatePortableEvent(raw, files)
+			if err != nil {
+				earlyReport(err)
+				return
+			}
+		}
 		if nativeMinidumpIndex >= 0 && item.Type == "event" {
 			crash, parseErr := native.ParseMinidump(env.Items[nativeMinidumpIndex].Payload)
 			if parseErr != nil {

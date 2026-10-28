@@ -252,6 +252,10 @@ func portableDocumentName(heap []byte, index uint32, work *int) (string, bool) {
 	return name.String(), true
 }
 
+func portableIdentity(pdb []byte) string {
+	return fmt.Sprintf("%08x%04x%04x%x%x", binary.LittleEndian.Uint32(pdb), binary.LittleEndian.Uint16(pdb[4:]), binary.LittleEndian.Uint16(pdb[6:]), pdb[8:16], binary.LittleEndian.Uint32(pdb[16:]))
+}
+
 // ParsePortablePDB decodes source points from a standalone Portable PDB. The
 // method row and IL offset remain separate; neither is a native address.
 func ParsePortablePDB(data []byte) (*PortablePDB, bool) {
@@ -265,7 +269,7 @@ func ParsePortablePDB(data []byte) (*PortablePDB, bool) {
 	if !hasPDB || !hasTables || !hasBlob || len(pdb) < 32 || len(tables) < 24 {
 		return nil, false
 	}
-	id := fmt.Sprintf("%08x%04x%04x%x%x", binary.LittleEndian.Uint32(pdb), binary.LittleEndian.Uint16(pdb[4:]), binary.LittleEndian.Uint16(pdb[6:]), pdb[8:16], binary.LittleEndian.Uint32(pdb[16:]))
+	id := portableIdentity(pdb)
 	external := binary.LittleEndian.Uint64(pdb[24:])
 	if external>>48 != 0 || uint64(32+bits.OnesCount64(external)*4) > uint64(len(pdb)) {
 		return nil, false

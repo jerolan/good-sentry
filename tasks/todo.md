@@ -12312,3 +12312,27 @@ de los límites conserva la captura sin enriquecimiento Portable parcial.
 Siguiente acción concreta: fijar pruebas RED del owner de evento para identidad,
 lookups, documentos, archivos comprimidos y conservación de campos; implementar
 selección y enriquecimiento, y probar ingesta HTTP/PG e aislamiento.
+
+### Captura administrada con Portable PDB, 2026-10-28
+
+La ingesta selecciona archivos del proyecto autenticado y enriquece frames
+administrados mediante la identidad embebida, índice de imagen, método y offset
+IL. Conserva los campos existentes, rechaza identidades ambiguas y descarta
+archivos comprimidos inválidos sin publicar resultados parciales. Los límites
+compartidos de puntos y nombres se aplican antes de enriquecer el evento.
+
+El RED HTTP reprodujo la ausencia de enriquecimiento en el proyecto correcto;
+GREEN cubrió ese caso, otro proyecto y metadata incompatible. Las pruebas
+nativas cubrieron archivo directo y ZIP, duplicados, conflicto de identidad,
+archivo anidado inválido, campos existentes y referencias inválidas. Race nativo
+aprobó677 acciones y servidor36; vet de integración y build pasaron. Comprobante:
+test-results/closure-20261025/portable-pdb-event/. La primaria revisó el cambio.
+
+Los límites agregados aún requieren controles de comportamiento adicionales;
+la prueba con un SDK real de Sentry .NET, Portable embebido, native004 integral,
+imagen y CI finales siguen abiertos. Este incremento no acredita esos requisitos.
+
+Siguiente acción concreta: probar la captura emitida por el SDK real de Sentry
+.NET con una aplicación y su PDB independiente; comprobar la identidad, los
+campos enviados y el resultado persistido, y resolver cualquier diferencia con
+el contrato. Añadir controles de límites agregados antes de acreditar esta ruta.
