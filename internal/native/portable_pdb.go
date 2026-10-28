@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/bits"
+	"sort"
 	"strings"
 	"unicode/utf8"
 )
@@ -20,9 +21,28 @@ type PortableSequencePoint struct {
 }
 
 // PortablePDB contains managed method sequence points, not native addresses.
+// Treat Methods and its slices as read-only after parsing.
 type PortablePDB struct {
 	DebugID string
 	Methods map[uint32][]PortableSequencePoint
+	visible map[uint32][]uint32
+}
+
+// Lookup follows Sentry's Portable PDB cache: hidden points do not stop the
+// previous visible point, and points never cross method boundaries.
+func (p *PortablePDB) Lookup(method, offset uint32) (PortableSequencePoint, bool) {
+	if p == nil {
+		return PortableSequencePoint{}, false
+	}
+	points, visible := p.Methods[method], p.visible[method]
+	if len(visible) > 0 && int(visible[len(visible)-1]) >= len(points) {
+		return PortableSequencePoint{}, false
+	}
+	i := sort.Search(len(visible), func(i int) bool { return points[visible[i]].Offset > offset })
+	if i == 0 {
+		return PortableSequencePoint{}, false
+	}
+	return points[visible[i-1]], true
 }
 
 type portableCursor struct {
@@ -376,7 +396,7 @@ func ParsePortablePDB(data []byte) (*PortablePDB, bool) {
 		}
 		seenDocuments[documents[i]] = true
 	}
-	result := &PortablePDB{DebugID: id, Methods: make(map[uint32][]PortableSequencePoint)}
+	result := &PortablePDB{DebugID: id, Methods: make(map[uint32][]PortableSequencePoint), visible: make(map[uint32][]uint32)}
 	mc := portableCursor{data: tables, pos: starts[1]}
 	points := 0
 	for i := uint32(1); i <= rows[49]; i++ {
@@ -401,6 +421,11 @@ func ParsePortablePDB(data []byte) (*PortablePDB, bool) {
 		}
 		if len(decoded) > 0 {
 			result.Methods[i] = decoded
+			for index, point := range decoded {
+				if !point.Hidden {
+					result.visible[i] = append(result.visible[i], uint32(index))
+				}
+			}
 		}
 	}
 	return result, true

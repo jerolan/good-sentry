@@ -12277,3 +12277,21 @@ Siguiente acción concreta: añadir RED del lookup con puntos ocultos, métodos
 vacíos y límites; implementar selección de PDB por proyecto/identidad y frames
 administrados, con controles de archivos anidados, campos existentes, HTTP/PG y
 SDK .NET real. Mantener el resto de native004 abierto.
+
+### Lookup Portable PDB verificado localmente, 2026-10-28
+
+El lector ya indexa puntos visibles por método y resuelve mediante búsqueda
+binaria el último punto anterior o igual al offset. Omite puntos ocultos como
+Symbolic13.9.0 y no comparte resultados entre métodos. RED señaló que faltaba
+la operación; GREEN cubre los límites antes y después, cambios de documento,
+punto oculto y métodos inexistentes. Race nativo aprobó666 acciones, vet y build
+pasaron. Comprobante: test-results/closure-20261025/portable-pdb-lookup/.
+
+La selección por proyecto y el enriquecimiento de eventos aún no están
+conectados; no se acredita captura .NET SDK, imagen ni CI finales. La primaria
+revisó el código frente a Symbolic y las pruebas; no hubo worker adicional por
+la limitación de créditos registrada.
+
+Siguiente acción concreta: aplicar test-audit a la selección de archivos y al
+recorrido de eventos `pe_dotnet`; probar identidad, proyectos, archivos
+comprimidos, conflictos y conservación de campos antes de integrar HTTP/PG.

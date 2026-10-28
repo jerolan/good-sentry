@@ -92,3 +92,43 @@ func TestPortablePDBCannotFallBackToBreakpadText(t *testing.T) {
 		t.Fatalf("Portable PDB emitted %d native symbol objects", len(objects))
 	}
 }
+
+func TestPortablePDBLookupMatchesSentryCache(t *testing.T) {
+	data, err := os.ReadFile("testdata/portable-dotnet10.pdb")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pdb, ok := ParsePortablePDB(data)
+	if !ok {
+		t.Fatal("fixture rejected")
+	}
+	for _, test := range []struct {
+		method, offset uint32
+		path           string
+		line           int
+		want           bool
+	}{
+		{1, 0, "/Program.cs", 5, true}, {1, 1, "/alpha.cs", 100, true},
+		{1, 5, "/alpha.cs", 100, true}, {1, 8, "/alpha.cs", 100, true},
+		{1, 9, "/beta.cs", 200, true}, {1, 15, "/Program.cs", 13, true},
+		{1, ^uint32(0), "/Program.cs", 13, true}, {2, 0, "/Program.cs", 14, true},
+		{0, 0, "", 0, false}, {3, 0, "", 0, false},
+	} {
+		point, found := pdb.Lookup(test.method, test.offset)
+		if found != test.want || found && (point.Line != test.line || !strings.HasSuffix(point.Document, test.path)) {
+			t.Errorf("lookup method=%d offset=%d: point=%+v found=%t", test.method, test.offset, point, found)
+		}
+	}
+	late := append([]byte(nil), data...)
+	late[0x2a17] = 3 // First sequence point's initial IL offset.
+	latePDB, ok := ParsePortablePDB(late)
+	if !ok {
+		t.Fatal("late-start fixture rejected")
+	}
+	if _, found := latePDB.Lookup(1, 2); found {
+		t.Fatal("offset before first visible point resolved")
+	}
+	if point, found := latePDB.Lookup(1, 3); !found || point.Line != 5 {
+		t.Fatalf("first late point=%+v found=%t", point, found)
+	}
+}
