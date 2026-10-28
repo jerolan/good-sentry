@@ -1391,18 +1391,22 @@ References: Microsoft's [old DBI conversion](https://github.com/microsoft/micros
 [C7 signatures and 16-bit-type procedures](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/include/cvinfo.h#L3363),
 and Wine's [old DBI structures](https://github.com/wine-mirror/wine/blob/master/include/wine/mscvpdb.h#L2449).
 
-For C7/C11 module streams, also resolve ordinary ordinal0 `S_THUNK32_ST`
+For C7/C11 module streams, also resolve `S_THUNK32_ST` ordinals0–6
 records using the declared segment, offset, 16-bit length and ST name. Apply
 the same executable-section and legacy-map bounds, preserve the name and emit
-only the declared range. Validate the complete record and at most three zero
-alignment bytes; malformed recognized records reject the PDB. Charge these
+only the declared range. For ordinal0, accept at most three zero alignment
+bytes after the name; for other documented ordinals, retain the bounded variant
+tail as opaque data and do not infer a target. Skip unknown ordinals. Validate
+the complete record; malformed recognized records reject the PDB. Charge these
 symbols to the existing procedure and record limits. Append thunks after the
 module's source-line and inline processing so they do not change source-line
-ownership. Other thunk ordinals and modern thunk formats remain open. Verify
+ownership. Unknown ordinals and other thunk formats remain open. Verify
 owned malformed and HTTP cases and compare every ordinal0 thunk in an
-independent real MSF2 sample with a format-derived oracle. Layout:
+independent real MSF2 sample with a format-derived oracle; cover nonzero
+ordinals with owned format-derived fixtures. Layout:
 [Microsoft THUNKSYM32](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/include/cvinfo.h#L3429-L3441),
-[CodeView symbol kinds](https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/DebugInfo/CodeView/CodeViewSymbols.def).
+[CodeView symbol kinds](https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/DebugInfo/CodeView/CodeViewSymbols.def),
+and [Wine's thunk consumer](https://github.com/wine-mirror/wine/blob/master/dlls/dbghelp/msc.c).
 
 For C13 module streams, resolve `S_THUNK32` with a bounded NUL-terminated name
 and the same declared executable range. Accept LLVM's documented ordinals0–6;

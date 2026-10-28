@@ -12562,3 +12562,16 @@ el código y el oracle independiente.
 Siguiente acción concreta: contrastar los datos variantes de saltos antiguos
 con fuentes primarias y muestras representativas; continuar los demás perfiles
 nativos exigibles que tengan dependencias resueltas.
+
+### Contrato de ordinales antiguos, 2026-10-28
+
+Microsoft usa el mismo rango y nombre ST para `S_THUNK32_ST`; Wine registra el
+rango independientemente de su ordinal y LLVM documenta los ordinales0–6. SPEC
+extiende la lectura antigua a esos ordinales, conserva opacos los datos variantes
+de los no cero y mantiene el control de alineación del ordinal0. La muestra
+MSF2 real solo ejercita ordinal0; los demás requieren fixtures propios y no se
+presentan como verificados con una muestra antigua independiente.
+
+Siguiente acción concreta: preparar RED público/HTTP de ordinal no cero con
+datos variantes, comprobar límites y rechazo de nombres/rangos inválidos y
+verificar regresiones de ambos formatos y del oracle MSF2 existente.
