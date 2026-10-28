@@ -1560,9 +1560,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-020](../SPEC.md#close-identidad-020) | Account credential generations and authenticated password changes: Register prefix-aware POST /api/v1/account/… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-021](../SPEC.md#close-identidad-021) | Account credential generations and authenticated password changes: Load the user's current password hash and g… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios del handler |
 | [CLOSE-identidad-022](../SPEC.md#close-identidad-022) | Account credential generations and authenticated password changes: Return204 only after the password transacti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de cookie |
-| [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de la vista Account |
+| [CLOSE-identidad-023](../SPEC.md#close-identidad-023) | Account credential generations and authenticated password changes: Expose an Account link beside the signed-in… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-identidad-024](../SPEC.md#close-identidad-024) | Account credential generations and authenticated password changes: Real PostgreSQL owns035 upgrade preservatio… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de transacciones |
-| [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | implementada | vigente | Comprobante 2026-10-27 abajo sobre imagen b77a2cc y copia desechable |
+| [CLOSE-identidad-025](../SPEC.md#close-identidad-025) | Account credential generations and authenticated password changes: Real HTTP owns actual current-password veri… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-identidad-026](../SPEC.md#close-identidad-026) | Account credential generations and authenticated password changes: Deployment must stop every older app proces… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener la guía de no-rolling-upgrade |
 | [CLOSE-identidad-027](../SPEC.md#close-identidad-027) | Account email and single-use password recovery: Account mail is purpose-specific and independent of project al… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener ante cambios de 036 |
 | [CLOSE-identidad-028](../SPEC.md#close-identidad-028) | Account email and single-use password recovery: register and login screens expose a password-reset request for… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de request |
@@ -1586,7 +1586,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-identidad-046](../SPEC.md#close-identidad-046) | Organization invitations: Owners may invite owner, manager, admin or member; managers may invite manager, admi… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de roles |
 | [CLOSE-identidad-047](../SPEC.md#close-identidad-047) | Organization invitations: Public request/accept routes are same-origin, contain no bearer authentication and r… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de rutas |
 | [CLOSE-identidad-048](../SPEC.md#close-identidad-048) | Compatible invitation acceptance: GET/POST /api/0/accept/{invitation}/{token}/ maps GlitchTip's invitation-acc… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios compatibles |
-| [CLOSE-identidad-049](../SPEC.md#close-identidad-049) | Compatible invitation acceptance: Acceptance owners are pure token/MIME tests, real PostgreSQL migration/parti… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios de aceptación |
+| [CLOSE-identidad-049](../SPEC.md#close-identidad-049) | Compatible invitation acceptance: Acceptance owners are pure token/MIME tests, real PostgreSQL migration/parti… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-identidad-050](../SPEC.md#close-identidad-050) | OpenID Connect sign-in: OIDC is disabled unless GOODSENTRY_OIDC_ISSUER, GOODSENTRY_OIDC_CLIENT_ID and GOODSENT… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios OIDC |
 | [CLOSE-identidad-051](../SPEC.md#close-identidad-051) | OpenID Connect sign-in: GET /auth/oidc/start creates random state, nonce and PKCE verifier values, stores an H… | implementada | vigente | Comprobante 2026-10-26 abajo; repetir tras cambios PKCE |
 | [CLOSE-identidad-052](../SPEC.md#close-identidad-052) | OpenID Connect sign-in: Additive045 stores provider, subject, normalized email, user and login instants with u… | implementada | vigente | Comprobante 2026-10-26 abajo; mantener 045 |
@@ -1785,7 +1785,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-007](../SPEC.md#close-nativo-007) | CFI extended dereference: The first native-processing slice accepts POST /api/{project}/minidump/ with Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1807,7 +1807,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | implementada (local) | vigente | Comprobante 2026-10-26 abajo; CI público queda para la auditoría final |
+| [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-rendimiento-001](../SPEC.md#close-rendimiento-001) | Telemetry, uptime and alerts: Transactions persist trace/span relationships, operation, endpoint, duration, st… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-001](../SPEC.md#close-uptime-001) | Uptime status pages: Additive046 stores organization-owned status pages and a many-to-many selection of same-o… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-002](../SPEC.md#close-uptime-002) | Uptime status pages: GET /status/{slug} and GET /api/v1/public/status-pages/{slug} expose only public pages. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2053,7 +2053,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-204](../SPEC.md#close-errores-204) | Native Feedback component: The reusable SDK owner is tests/compat/modern_feedback_sdk.mjs. GOODSENTRY_MODERN_F… | implementada | vigente | Comprobante 2026-10-26 abajo; SDK y navegador repetidos 2026-10-27 en b77a2cc |
 | [CLOSE-errores-205](../SPEC.md#close-errores-205) | Native Feedback component: The reusable modern browser owner is tests/compat/modern_feedback_browser.mjs. Its… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
 | [CLOSE-errores-206](../SPEC.md#close-errores-206) | Native Feedback component: Acceptance owners are pure normalization for the public field/default/identity cont… | implementada | vigente | Comprobante 2026-10-27 abajo sobre imagen b77a2cc, copia restaurada y CI 40452038387 |
-| [CLOSE-lectores-001](../SPEC.md#close-lectores-001) | Integrations and compatibility limits: The official sentry-wizard flow is supported through GET /api/0/wizard/… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser/CI históricos |
+| [CLOSE-lectores-001](../SPEC.md#close-lectores-001) | Integrations and compatibility limits: The official sentry-wizard flow is supported through GET /api/0/wizard/… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-lectores-002](../SPEC.md#close-lectores-002) | Integrations and compatibility limits: Management API routes use /api/0 where compatible with published Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo; matrices y SDKs frescos |
 | [CLOSE-lectores-003](../SPEC.md#close-lectores-003) | Integrations and compatibility limits: ENABLE_OPENAPI=true exposes GET /api/openapi.json as an OpenAPI 3.1 doc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-097](../SPEC.md#close-identidad-097) | Instance user administration: Extend the opt-in ENABLE_ADMIN surface with account operations inspired by Glitc… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2125,12 +2125,12 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-mcp-056](../SPEC.md#close-mcp-056) | MCP OAuth authorization: Add additive044 storage for OAuth clients, hashed authorization codes and hashed refr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-057](../SPEC.md#close-mcp-057) | MCP OAuth authorization: MCP Bearer denial changes from bare WWW-Authenticate: Bearer to include canonical res… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-059](../SPEC.md#close-mcp-059) | MCP OAuth authorization: Acceptance runs real HTTP/PostgreSQL and the official Go MCP client/OAuth handler. It… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-mcp-059](../SPEC.md#close-mcp-059) | MCP OAuth authorization: Acceptance runs real HTTP/PostgreSQL and the official Go MCP client/OAuth handler. It… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-operacion-058](../SPEC.md#close-operacion-058) | Commands and source layout: The external JavaScript artifact acceptance uses official sentry-cli3.8.0 and Node… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-059](../SPEC.md#close-operacion-059) | Commands and source layout: The issue-query SDK acceptance consumes a separate mode0600 fixture with the same… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-060](../SPEC.md#close-operacion-060) | Commands and source layout: The browser fixture additionally supplies disposable owner login credentials, the… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2203,8 +2203,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-037](../SPEC.md#close-alertas-037) | Regla de frecuencia de errores: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entrega… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-038](../SPEC.md#close-alertas-038) | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-039](../SPEC.md#close-alertas-039) | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payloa… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | implementada (local) | vigente | Comprobante 2026-10-26 abajo; CI público queda para la auditoría final |
-| [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2217,20 +2217,20 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-094](../SPEC.md#close-operacion-094) | Persistencia de datos, artefactos y configuración tras reinicio. | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
 | [CLOSE-operacion-095](../SPEC.md#close-operacion-095) | Backup y restauración en entorno independiente, conservando datos, artefactos y configuración necesarios. | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
 | [CLOSE-operacion-096](../SPEC.md#close-operacion-096) | Disponibilidad real de funciones opcionales y verificaciones de imagen, concurrencia y recuperación existentes… | implementada | vigente | Comprobante 2026-10-26 abajo; registro remoto final pendiente en 067 |
-| [CLOSE-sourcemaps-028](../SPEC.md#close-sourcemaps-028) | Crear y finalizar una release con sentry-cli 3.8.0. No requiere conexión automática con repositorios. | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
-| [CLOSE-sourcemaps-029](../SPEC.md#close-sourcemaps-029) | Asociar metadatos locales de commits y registrar un deploy con sentry-cli 3.8.0. No requiere conexión automáti… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
-| [CLOSE-sourcemaps-030](../SPEC.md#close-sourcemaps-030) | Consultar en API/UI la misma versión, proyectos, archivos y eventos asociados. No requiere conexión automática… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
-| [CLOSE-sourcemaps-031](../SPEC.md#close-sourcemaps-031) | Subida, listado, acceso y eliminación de artefactos sin borrar datos ajenos, con permisos, reintentos y persis… | implementada | vigente | Comprobante 2026-10-26 abajo; CLI/browser históricos |
+| [CLOSE-sourcemaps-028](../SPEC.md#close-sourcemaps-028) | Crear y finalizar una release con sentry-cli 3.8.0. No requiere conexión automática con repositorios. | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-sourcemaps-029](../SPEC.md#close-sourcemaps-029) | Asociar metadatos locales de commits y registrar un deploy con sentry-cli 3.8.0. No requiere conexión automáti… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-sourcemaps-030](../SPEC.md#close-sourcemaps-030) | Consultar en API/UI la misma versión, proyectos, archivos y eventos asociados. No requiere conexión automática… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-sourcemaps-031](../SPEC.md#close-sourcemaps-031) | Subida, listado, acceso y eliminación de artefactos sin borrar datos ajenos, con permisos, reintentos y persis… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-errores-220](../SPEC.md#close-errores-220) | Conservar y comprobar los flujos de adjuntos, incluidos almacenamiento, listados, acceso/descarga y controles… | implementada | vigente | Comprobante 2026-10-26 abajo (207-208 + 035-043) |
 | [CLOSE-errores-221](../SPEC.md#close-errores-221) | Conservar y comprobar los flujos de feedback legado, transporte, asociación, reportes y UI contratados. | implementada | vigente | Comprobante 2026-10-26 abajo (164-181) |
 | [CLOSE-errores-222](../SPEC.md#close-errores-222) | Conservar y comprobar los flujos de feedback moderno, categoría, asociación, retención, lectura e interfaz con… | implementada | vigente | Comprobante 2026-10-26 abajo (182-205) |
 | [CLOSE-operacion-097](../SPEC.md#close-operacion-097) | Navegador real a 320px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
 | [CLOSE-operacion-098](../SPEC.md#close-operacion-098) | Navegador real a 768px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
 | [CLOSE-operacion-099](../SPEC.md#close-operacion-099) | Navegador real a 1440px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtro… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
-| [CLOSE-lectores-004](../SPEC.md#close-lectores-004) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: conexión por token con alcance autorizado. Recibo real del… | implementada | vigente | Comprobante 2026-10-26 abajo; Grafana/imagen históricos |
-| [CLOSE-lectores-005](../SPEC.md#close-lectores-005) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: consulta de issues. Recibo real del consumidor, revisión/v… | implementada | vigente | Comprobante 2026-10-26 abajo; Grafana/imagen históricos |
-| [CLOSE-lectores-006](../SPEC.md#close-lectores-006) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: serie temporal de errores. Recibo real del consumidor, rev… | implementada | vigente | Comprobante 2026-10-26 abajo; Grafana/imagen históricos |
-| [CLOSE-lectores-007](../SPEC.md#close-lectores-007) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: revocación del token impide acceso posterior. Recibo real… | implementada | vigente | Comprobante 2026-10-26 abajo; Grafana/imagen históricos |
+| [CLOSE-lectores-004](../SPEC.md#close-lectores-004) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: conexión por token con alcance autorizado. Recibo real del… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-lectores-005](../SPEC.md#close-lectores-005) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: consulta de issues. Recibo real del consumidor, revisión/v… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-lectores-006](../SPEC.md#close-lectores-006) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: serie temporal de errores. Recibo real del consumidor, rev… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-lectores-007](../SPEC.md#close-lectores-007) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: revocación del token impide acceso posterior. Recibo real… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-mcp-060](../SPEC.md#close-mcp-060) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-061](../SPEC.md#close-mcp-061) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-062](../SPEC.md#close-mcp-062) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2248,7 +2248,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-074](../SPEC.md#close-mcp-074) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-075](../SPEC.md#close-mcp-075) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-076](../SPEC.md#close-mcp-076) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-077](../SPEC.md#close-mcp-077) | Cliente oficial Go v1.8.0: autorización y ciclo OAuth/token completos del contrato vigente, incluyendo scopes,… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-mcp-077](../SPEC.md#close-mcp-077) | Cliente oficial Go v1.8.0: autorización y ciclo OAuth/token completos del contrato vigente, incluyendo scopes,… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-operacion-100](../SPEC.md#close-operacion-100) | Auditoría por requisito sobre revisión candidata identificada e imagen vinculada, con todos los checks, invali… | implementada (parcial) | bloqueada | Auditoría registrada en operacion-100/audit.json; faltan imagen/CI/registro externos |
 | [CLOSE-sourcemaps-032](../SPEC.md#close-sourcemaps-032) | Enriquecimiento automático con fuentes Java; no exige SDK/JDK, bundles ni aceptación Java básica por inferenci… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
 | [CLOSE-sourcemaps-033](../SPEC.md#close-sourcemaps-033) | Conexión automática con repositorios y descubrimiento remoto de commits. Conservar releases, commits locales y… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
@@ -11331,3 +11331,32 @@ promoverlas por la autorización. Siguiente acción: preparar una cuarta base
 operativa desde baseline.dump, un volumen nuevo y puerto18519; comprobar la
 proyección tras migración y ejecutar Node11.7/browser/retención real sobre
 fixtures nuevos. Los tres restores de referencia no arrancarán aplicaciones.
+
+### Cotejo factual adicional de familias, 2026-10-27
+
+Las revisiones acotadas de identidad, MCP/lectores, nativo y sourcemaps
+localizaron comprobantes sustanciales y cierres posteriores que superan
+bloqueos históricos. No se contó la existencia de un archivo como aceptación
+integral. La primaria leyó los bloques y owners clave y registra los huecos
+concretos en `operacion-100/family-review-8e95.json`, con sus fuentes.
+
+Se invalidan las filas allí enumeradas hasta cerrar sus subresultados o la
+composición final. En particular, el Account browser actual solo acredita
+mismatch/éxito/revocación, aunque las tareas atribuían pending/errores/vida de
+secretos; invitaciones solo tiene320/1440, faltan768/1024. MCP necesita los
+negativos OAuth explícitos, handler oficial y UI/gates del modo habilitado;
+Grafana necesita el recibo del consumidor tras revocar y la repetición final.
+Nativo requiere unir pruebas posteriores y el crash en imagen final, y
+reconciliar el alcance explícito de004/023 con WF0004 antes de aceptar028.
+Sourcemaps tiene pruebas finales011/021 que deben componerse con el alcance
+completo de028–031; no se exige repetir lo que una comparación acotada acredite.
+
+Estos hallazgos no afirman defectos nuevos de producto. Son pruebas o decisiones
+sin evidencia suficiente; las excepciones canónicas no se amplían. El CI
+público general no sustituye los consumidores/browser/imagen específicos.
+
+Nueva selección antes de ejecutar: CLOSE-identidad-023 y025, anteriores a
+retención en el orden del plan. Preparar otra aplicación/base/volumen nuevos
+en18523; completar pending/errores/limpieza/teclado a través de navegador real,
+sin alterar las copias aceptadas. Después049 y los demás pendientes en orden.
+La restauración de retención sigue conservada para reanudar su recorrido.
