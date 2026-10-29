@@ -11,6 +11,8 @@ with unresolved native004 profiles; broader closure and final CI remain open.
 OMAP range translation now has local source, inline, bounds and HTTP isolation
 evidence, plus an exact comparison against the independent Sentry/Microsoft
 sample; see todo.md. Other native004 profiles and final acceptance remain open.
+Late OMAP PDB reprocessing now has isolated HTTP/PostgreSQL, project isolation,
+idempotency and worker-reopen evidence; final candidate acceptance remains open.
 The first bounded legacy procedure reader in native018 is now verified locally:
 Small MSF2, pre-VC70 Info identity, ST procedures and obsolete stream0 reuse in
 MSF2/MSF7, with strict active page ownership and modern CV4 restrictions retained.

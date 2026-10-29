@@ -12877,3 +12877,23 @@ Siguiente acción concreta: revisar el owner de reprocessing y extender su
 comprobación de extremo a extremo con un PDB OMAP cargado después del evento,
 incluyendo identidad e aislamiento, sin añadir frames ni alterar datos ajenos.
 Mantener abierta la aceptación de imagen/CI y los perfiles históricos.
+
+### Reprocessing tardío con OMAP, 2026-10-29
+
+Una captura Minidump queda sin simbolizar mientras el PDB OMAP coincidente
+está en otro proyecto y otro PDB con las mismas direcciones tiene identidad de
+upload equivocada. La cola termina sin cambiar el evento. Al almacenar el PDB
+correcto, una nueva solicitud resuelve función y línea en el frame existente;
+los demás campos JSON y el número de frames permanecen iguales y un tercer
+reprocessing es idempotente. El control positivo que cambia la identidad del
+PDB incorrecto a la esperada hace fallar la prueba por simbolización prematura.
+
+Pasaron con race el owner HTTP nuevo, el owner previo de reprocessing tardío y
+el worker que reabre la base y reanuda el cursor; vet con integración pasó.
+PostgreSQL temporal quedó detenido. Comprobante:
+test-results/closure-20261025/pdb-omap-reprocessing/. Esta evidencia local no
+sustituye imagen/CI final ni resuelve los perfiles históricos pendientes.
+
+Siguiente acción concreta: continuar native004 con el siguiente perfil verificable;
+investigar evidencia de página MBCS y selectores no directos sin adivinar, y si
+persisten esas dependencias seleccionar el siguiente criterio independiente.
