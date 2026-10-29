@@ -12897,3 +12897,17 @@ sustituye imagen/CI final ni resuelve los perfiles históricos pendientes.
 Siguiente acción concreta: continuar native004 con el siguiente perfil verificable;
 investigar evidencia de página MBCS y selectores no directos sin adivinar, y si
 persisten esas dependencias seleccionar el siguiente criterio independiente.
+
+### Selección de crash real nativo, 2026-10-29
+
+La investigación de MBCS y selectores no directos no ha identificado aún una
+página original o una muestra discriminante. Se conserva el límite, sin
+excluirlo, y se seleccionan CLOSE-nativo-026 y CLOSE-nativo-027 para renovar la
+evidencia local del crash real tras los cambios de identidad y OMAP. No dependen
+de escoger una página histórica. La aceptación vinculada a la imagen final y CI
+sigue pendiente.
+
+El entorno actual es Linux/amd64 y ya no contiene la compilación temporal del
+demo ni CMake. Siguiente acción concreta: preparar en un entorno aislado el SDK
+oficial fijado y Crashpad, ejecutar el owner HTTP/PostgreSQL con el ejecutable
+exacto y conservar versiones, hashes y resultado; no contar un skip como éxito.
