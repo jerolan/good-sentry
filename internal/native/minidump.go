@@ -519,6 +519,8 @@ type SymbolFunction struct {
 	inlineSites    *pdbInlineSiteSet
 	procedureStart uint64
 	publicFallback bool
+	omapOrigin     uint64
+	omapMapped     bool
 }
 
 type SymbolSet map[string][]SymbolFunction
@@ -662,13 +664,21 @@ func Symbolicate(crash *Crash, symbols SymbolSet) {
 			f := funcs[best]
 			frame.Function, frame.File, frame.Line = f.Name, f.File, f.Line
 			procedureStart := f.procedureStart
-			if procedureStart == 0 {
+			if procedureStart == 0 && !f.omapMapped {
 				procedureStart = f.Start
+			}
+			originalOffset := offset
+			if f.omapMapped {
+				originalOffset = f.omapOrigin + offset - f.Start
 			}
 			for j := range funcs {
 				candidate := &funcs[j]
-				if candidate.Start == procedureStart && candidate.inlineSites != nil {
-					frame.InlineFrames = pdbInlineFramesAt(candidate.inlineSites, procedureStart, offset-procedureStart)
+				matchingProcedure := candidate.Start == procedureStart
+				if f.omapMapped {
+					matchingProcedure = candidate.omapMapped && candidate.procedureStart == procedureStart && offset >= candidate.Start && offset < candidate.End
+				}
+				if matchingProcedure && candidate.inlineSites != nil && originalOffset >= procedureStart {
+					frame.InlineFrames = pdbInlineFramesAt(candidate.inlineSites, procedureStart, originalOffset-procedureStart)
 					break
 				}
 			}

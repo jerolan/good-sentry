@@ -996,72 +996,105 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 
 func TestNativePDBInlineFramesReachMinidumpEvent(t *testing.T) {
 	const embeddedID = "5A9832E5287241C1838ED98914E9B7FF1"
-	f := newResolutionHTTPFixture(t)
-	pdb := nativepdb.WithInlineFrames().Data
-	digest := sha1.Sum(pdb)
-	access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
-	if _, err := f.db.SaveDebugFile(f.ctx, access, f.project.ID, "crash-inline.pdb", "pdb", embeddedID, "x86_64", "crash.exe", hex.EncodeToString(digest[:]), nil, nil, pdb); err != nil {
-		t.Fatal(err)
-	}
+	for _, tc := range []struct {
+		name         string
+		fixture      nativepdb.Fixture
+		address      uint64
+		otherProject bool
+	}{
+		{"direct", nativepdb.WithInlineFrames(), 0x1015, false},
+		{"reordered OMAP", nativepdb.WithOMAPInlineFrames(), 0x2045, false},
+		{"OMAP in another project", nativepdb.WithOMAPInlineFrames(), 0x2045, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newResolutionHTTPFixture(t)
+			pdb := tc.fixture.Data
+			digest := sha1.Sum(pdb)
+			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+			projectID := f.project.ID
+			if tc.otherProject {
+				project, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Other OMAP project", "native")
+				if err != nil {
+					t.Fatal(err)
+				}
+				projectID = project.ID
+			}
+			if _, err := f.db.SaveDebugFile(f.ctx, access, projectID, "crash-inline.pdb", "pdb", embeddedID, "x86_64", "crash.exe", hex.EncodeToString(digest[:]), nil, nil, pdb); err != nil {
+				t.Fatal(err)
+			}
 
-	minidump := buildNativeModuleMinidump(t, "C:\\test\\crash.exe", embeddedID, 0x1015)
-	body, contentType := minidumpForm(t, minidump, nil)
-	req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	req.Header.Set("Content-Type", contentType)
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer res.Body.Close()
-	var accepted struct {
-		ID string `json:"id"`
-	}
-	if err := json.NewDecoder(res.Body).Decode(&accepted); err != nil || res.StatusCode != http.StatusOK || accepted.ID == "" {
-		t.Fatalf("inline PDB minidump response=%d %+v %v", res.StatusCode, accepted, err)
-	}
+			minidump := buildNativeModuleMinidump(t, "C:\\test\\crash.exe", embeddedID, tc.address)
+			body, contentType := minidumpForm(t, minidump, nil)
+			req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Content-Type", contentType)
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer res.Body.Close()
+			var accepted struct {
+				ID string `json:"id"`
+			}
+			if err := json.NewDecoder(res.Body).Decode(&accepted); err != nil || res.StatusCode != http.StatusOK || accepted.ID == "" {
+				t.Fatalf("inline PDB minidump response=%d %+v %v", res.StatusCode, accepted, err)
+			}
 
-	events, err := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 10})
-	if err != nil || len(events) == 0 {
-		t.Fatalf("stored inline PDB event: %d %v", len(events), err)
-	}
-	var payload struct {
-		Exception struct {
-			Values []struct {
-				Stacktrace struct {
-					Frames []struct {
-						Function    string `json:"function"`
-						Filename    string `json:"filename"`
-						Line        int    `json:"lineno"`
-						Instruction string `json:"instruction_addr"`
-					} `json:"frames"`
-				} `json:"stacktrace"`
-			} `json:"values"`
-		} `json:"exception"`
-	}
-	if err := json.Unmarshal(events[0].Data, &payload); err != nil {
-		t.Fatal(err)
-	}
-	if len(payload.Exception.Values) != 1 {
-		t.Fatalf("inline PDB exception values=%+v", payload.Exception.Values)
-	}
-	frames := payload.Exception.Values[0].Stacktrace.Frames
-	want := []nativeFrame{
-		{Function: "DeepInline", Filename: `C:\include\deep.hpp`, Line: 300},
-		{Function: "InnerInline", Filename: `C:\include\inner.hpp`, Line: 200},
-		{Function: "OuterInline", Filename: `C:\include\inline.hpp`, Line: 100},
-		{Function: "CrashFunction", Filename: `C:\src\crash.cc`, Line: 42},
-	}
-	if len(frames) != len(want) {
-		t.Fatalf("inline PDB event frames=%+v, want %+v", frames, want)
-	}
-	for i, expected := range want {
-		frame := frames[i]
-		if frame.Function != expected.Function || frame.Filename != expected.Filename || frame.Line != expected.Line || frame.Instruction != "0x140001015" {
-			t.Fatalf("inline PDB frame[%d]=%+v, want %+v at 0x140001015", i, frame, expected)
-		}
+			events, err := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 10})
+			if err != nil || len(events) == 0 {
+				t.Fatalf("stored inline PDB event: %d %v", len(events), err)
+			}
+			var payload struct {
+				Exception struct {
+					Values []struct {
+						Stacktrace struct {
+							Frames []struct {
+								Function    string `json:"function"`
+								Filename    string `json:"filename"`
+								Line        int    `json:"lineno"`
+								Instruction string `json:"instruction_addr"`
+							} `json:"frames"`
+						} `json:"stacktrace"`
+					} `json:"values"`
+				} `json:"exception"`
+			}
+			if err := json.Unmarshal(events[0].Data, &payload); err != nil {
+				t.Fatal(err)
+			}
+			if len(payload.Exception.Values) != 1 {
+				t.Fatalf("inline PDB exception values=%+v", payload.Exception.Values)
+			}
+			frames := payload.Exception.Values[0].Stacktrace.Frames
+			if tc.otherProject {
+				if len(frames) == 0 {
+					t.Fatal("missing captured frame")
+				}
+				for _, frame := range frames {
+					if frame.Function != "" {
+						t.Fatalf("other project's PDB resolved frame: %+v", frame)
+					}
+				}
+				return
+			}
+			want := []nativeFrame{
+				{Function: "DeepInline", Filename: `C:\include\deep.hpp`, Line: 300},
+				{Function: "InnerInline", Filename: `C:\include\inner.hpp`, Line: 200},
+				{Function: "OuterInline", Filename: `C:\include\inline.hpp`, Line: 100},
+				{Function: "CrashFunction", Filename: `C:\src\crash.cc`, Line: 42},
+			}
+			if len(frames) != len(want) {
+				t.Fatalf("inline PDB event frames=%+v, want %+v", frames, want)
+			}
+			for i, expected := range want {
+				frame := frames[i]
+				instruction := fmt.Sprintf("0x%x", uint64(0x140000000)+tc.address)
+				if frame.Function != expected.Function || frame.Filename != expected.Filename || frame.Line != expected.Line || frame.Instruction != instruction {
+					t.Fatalf("inline PDB frame[%d]=%+v, want %+v at %s", i, frame, expected, instruction)
+				}
+			}
+		})
 	}
 }
 

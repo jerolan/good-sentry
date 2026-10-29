@@ -34,6 +34,9 @@ type Fixture struct {
 	SecondProcedureOffset     int
 	PublicSymbolsBlock        int
 	SectionMapStart           int
+	OMAPFromBlock             int
+	OMAPToBlock               int
+	OMAPHeaderOffset          int
 }
 
 func Minimal() Fixture {
@@ -87,6 +90,15 @@ func WithModernThunk() Fixture {
 }
 
 func WithInlineFrames() Fixture {
+	return withInlineFrames(false)
+}
+
+// WithOMAPInlineFrames moves and splits the first procedure, with a deleted gap.
+func WithOMAPInlineFrames() Fixture {
+	return withInlineFrames(true)
+}
+
+func withInlineFrames(omap bool) Fixture {
 	const blockSize = 512
 	info := make([]byte, 28)
 	binary.LittleEndian.PutUint32(info, 20000404)
@@ -159,6 +171,17 @@ func WithInlineFrames() Fixture {
 	binary.LittleEndian.PutUint32(section[36:], 0x60000020)
 
 	streams := [][]byte{nil, info, nil, dbi, inlineIDStream(), module, section}
+	if omap {
+		original := append([]byte(nil), section...)
+		binary.LittleEndian.PutUint32(section[12:], 0x2000)
+		from := omapPairs([][2]uint32{{0x1010, 0x2040}, {0x1018, 0}, {0x101c, 0x2020}, {0x1030, 0}})
+		to := omapPairs([][2]uint32{{0x2020, 0x101c}, {0x2034, 0}, {0x2040, 0x1010}, {0x2048, 0}})
+		binary.LittleEndian.PutUint16(optional[6:], 8)
+		binary.LittleEndian.PutUint16(optional[8:], 7)
+		binary.LittleEndian.PutUint16(optional[20:], 9)
+		copy(dbi[len(dbi)-len(optional):], optional)
+		streams = append(streams, from, to, original)
+	}
 	data, blocks := writeMSF(blockSize, streams)
 	moduleBase := blocks[5][0] * blockSize
 	fixture := Fixture{
@@ -173,7 +196,21 @@ func WithInlineFrames() Fixture {
 		ProcedureEndOffset:        moduleBase + 4 + procedureEndOffset,
 		SecondProcedureOffset:     moduleBase + 4 + secondProcedureOffset,
 	}
+	if omap {
+		fixture.OMAPFromBlock = blocks[7][0]
+		fixture.OMAPToBlock = blocks[8][0]
+		fixture.OMAPHeaderOffset = blocks[3][0]*blockSize + len(dbi) - len(optional)
+	}
 	return fixture
+}
+
+func omapPairs(pairs [][2]uint32) []byte {
+	data := make([]byte, 8*len(pairs))
+	for i, pair := range pairs {
+		binary.LittleEndian.PutUint32(data[8*i:], pair[0])
+		binary.LittleEndian.PutUint32(data[8*i+4:], pair[1])
+	}
+	return data
 }
 
 func WithPublicOnlySymbols() Fixture {

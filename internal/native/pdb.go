@@ -189,6 +189,42 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 			return "", nil, false
 		}
 	}
+	var omap []pdbOMAPEntry
+	var transformedSections []pdbSection
+	if optionalHeaderSize >= 22 {
+		originalIndex := binary.LittleEndian.Uint16(dbi[optionalStart+20:])
+		if originalIndex != pdbModuleStreamAbsent {
+			toIndex := binary.LittleEndian.Uint16(dbi[optionalStart+6:])
+			fromIndex := binary.LittleEndian.Uint16(dbi[optionalStart+8:])
+			if toIndex == pdbModuleStreamAbsent || fromIndex == pdbModuleStreamAbsent {
+				return "", nil, false
+			}
+			originalData, valid := msf.readStream(originalIndex)
+			if !valid {
+				return "", nil, false
+			}
+			originalSections, valid := parsePDBSections(originalData)
+			if !valid {
+				return "", nil, false
+			}
+			toData, valid := msf.readStream(toIndex)
+			if !valid {
+				return "", nil, false
+			}
+			if _, valid = parsePDBOMAP(toData); !valid {
+				return "", nil, false
+			}
+			fromData, valid := msf.readStream(fromIndex)
+			if !valid {
+				return "", nil, false
+			}
+			omap, valid = parsePDBOMAP(fromData)
+			if !valid {
+				return "", nil, false
+			}
+			transformedSections, sections = sections, originalSections
+		}
+	}
 	sectionMapStart := moduleStart + moduleSize + sectionContributionSize
 	sectionMapData := dbi[sectionMapStart : sectionMapStart+sectionMapSize]
 	if version == 19960307 || version == pdbDBIOldVersion {
@@ -222,6 +258,12 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 			return "", nil, false
 		}
 		functions = append(functions, publicFunctions...)
+	}
+	if omap != nil {
+		functions, ok = mapPDBFunctions(functions, omap, transformedSections)
+		if !ok {
+			return "", nil, false
+		}
 	}
 	if len(functions) == 0 {
 		return "", nil, false

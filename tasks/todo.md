@@ -12810,3 +12810,30 @@ Siguiente acción concreta: diagnosticar el rechazo de la muestra, preparar
 RED en el owner público con secciones originales, tramos divididos y eliminados,
 y después implementar la traducción completa con sus límites e inline; verificar
 contra los resultados independientes y el PDB previo sin OMAP.
+
+### Traducción OMAP verificada localmente, 2026-10-29
+
+El lector usa las secciones originales cuando existen, exige ambas tablas OMAP
+y valida orden, tamaño y referencias. Divide funciones, públicos y líneas en
+los límites de cada mapa, omite los tramos eliminados y conserva el origen para
+frames integrados. Los límites de registros, trabajo y fragmentos rechazan el
+PDB sin resultados parciales. La revisión detectó y corrigió también el caso de
+una función original en RVA cero; su prueba reprodujo el fallo anterior.
+
+El rechazo de la muestra real procedía de interpretar sus símbolos mediante
+secciones finales; con secciones originales se reconocen 11.649 públicos. Un
+oracle independiente comparó íntegramente sus 310.126 fragmentos traducidos,
+sin faltantes ni extras, y el símbolo publicado coincide con el RVA de Sentry.
+El PDB real sin OMAP conservó sus 2.504 tuplas públicas. RED/GREEN propios
+cubrieron división, huecos, líneas, inline anidado, entradas inválidas y límites;
+25 acciones de servidor con PostgreSQL aislado incluyeron captura e aislamiento.
+Race nativo, vet y build pasaron; la base temporal se detuvo. Comprobante:
+test-results/closure-20261025/pdb-omap/.
+
+La evidencia no acredita todos los formatos nativos, mapas de selector no
+directos ni la aceptación final de native004. Imagen y CI del candidato siguen
+invalidados por los cambios. La primaria revisó la implementación y el oracle.
+
+Siguiente acción concreta: investigar los metadatos disponibles para descifrar
+nombres históricos MBCS y la traducción de selectores no directos, contrastar
+con fuentes primarias y una muestra antes de precisar el siguiente incremento.
