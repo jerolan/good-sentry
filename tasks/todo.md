@@ -12644,3 +12644,22 @@ Siguiente acción concreta: buscar un productor o consumidor que traduzca
 selectores no directos a secciones PE y una muestra discriminante; si aún no
 existe evidencia suficiente, continuar el siguiente perfil nativo exigible sin
 atribuir compatibilidad a ese mapa.
+
+### Referencias antiguas con privados retirados, 2026-10-29
+
+Un PDB pre-VC70 con el flag de privados retirados también pasa por el lector de
+públicos modernos. Este rechazaba las referencias ST porque su nombre externo
+no forma parte de la longitud del registro. Ambos recorridos comparten ahora la
+validación acotada de ese nombre para referencias de procedimiento, datos y
+procedimiento local; la regla del público moderno sin flag no cambia.
+
+RED contra el código anterior reprodujo el rechazo; GREEN cubrió los tres tipos
+de referencia y la captura HTTP con el flag. Race nativo aprobó747 acciones y
+servidor29, con PostgreSQL temporal aislado; vet y build pasaron. Comprobante:
+test-results/closure-20261025/pdb-legacy-stripped-refs/. La primaria revisó el
+cambio. El entorno temporal anterior ya no estaba disponible; la nueva base de
+pruebas se detuvo al terminar sin modificar la base existente.
+
+Siguiente acción concreta: continuar la investigación de mapas no directos y
+seleccionar el siguiente perfil nativo exigible con evidencia suficiente;
+mantener abiertos native004, sus dependientes y la auditoría final.

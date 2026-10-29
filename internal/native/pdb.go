@@ -208,7 +208,7 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 		}
 	}
 	if version != pdbDBIOldVersion && binary.LittleEndian.Uint16(dbi[56:])&(1<<1) != 0 {
-		publicFunctions, ok := parsePDBPublicFunctions(msf, binary.LittleEndian.Uint16(dbi[20:]), sectionMapData, sections)
+		publicFunctions, ok := parsePDBPublicFunctionsWithLegacyRefs(msf, binary.LittleEndian.Uint16(dbi[20:]), sectionMapData, sections, binary.LittleEndian.Uint32(info) < 20000404)
 		if !ok {
 			return "", nil, false
 		}
@@ -437,6 +437,10 @@ func pdbOldDBISubstreamSizes(dbi []byte) (module, contribution, sectionMap, sour
 }
 
 func parsePDBPublicFunctions(msf *pdbMSFFile, symbolRecordStream uint16, sectionMapData []byte, sections []pdbSection) ([]SymbolFunction, bool) {
+	return parsePDBPublicFunctionsWithLegacyRefs(msf, symbolRecordStream, sectionMapData, sections, false)
+}
+
+func parsePDBPublicFunctionsWithLegacyRefs(msf *pdbMSFFile, symbolRecordStream uint16, sectionMapData []byte, sections []pdbSection, legacyRefs bool) ([]SymbolFunction, bool) {
 	sectionMap, ok := parsePDBSectionMap(sectionMapData)
 	if !ok {
 		return nil, false
@@ -457,6 +461,14 @@ func parsePDBPublicFunctions(msf *pdbMSFFile, symbolRecordStream uint16, section
 		}
 		record := globalSymbols[offset : offset+totalLength]
 		kind := binary.LittleEndian.Uint16(record[2:])
+		if legacyRefs && (kind == 0x0400 || kind == 0x0401 || kind == 0x0403) {
+			next, valid := skipPDBLegacyReferenceName(globalSymbols, offset+totalLength)
+			if !valid {
+				return nil, false
+			}
+			offset = next
+			continue
+		}
 		if kind == pdbPublicSymbolKind {
 			body := record[4:]
 			if len(body) < 11 {

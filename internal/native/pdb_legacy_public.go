@@ -35,14 +35,11 @@ func parsePDBLegacyPublicFunctions(msf *pdbMSFFile, streamIndex uint16, mapData 
 		body := data[offset+4 : offset+total]
 		offset += total
 		if kind == 0x0400 || kind == 0x0401 || kind == 0x0403 {
-			if offset >= len(data) {
+			var valid bool
+			offset, valid = skipPDBLegacyReferenceName(data, offset)
+			if !valid {
 				return nil, false
 			}
-			extra := (int(data[offset]) + 1 + 3) &^ 3
-			if extra > len(data)-offset {
-				return nil, false
-			}
-			offset += extra
 			continue
 		}
 		if kind != 0x1009 && kind != 0x0203 {
@@ -106,4 +103,15 @@ func parsePDBLegacyPublicFunctions(msf *pdbMSFFile, streamIndex uint16, mapData 
 		public = append(public, pdbPublicFunction{section: int(segment) - 1, start: start, descriptorEnd: end, name: string(name)})
 	}
 	return inferredPDBPublicFunctions(public), true
+}
+
+func skipPDBLegacyReferenceName(data []byte, offset int) (int, bool) {
+	if offset < 0 || offset >= len(data) {
+		return 0, false
+	}
+	extra := (int(data[offset]) + 1 + 3) &^ 3
+	if extra > len(data)-offset {
+		return 0, false
+	}
+	return offset + extra, true
 }

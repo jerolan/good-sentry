@@ -153,19 +153,26 @@ func TestModernThunkMinidumpProjectIsolation(t *testing.T) {
 }
 
 func TestLegacyPublicMinidumpProjectIsolation(t *testing.T) {
-	for _, other := range []bool{false, true} {
-		t.Run(map[bool]string{false: "same project", true: "other project"}[other], func(t *testing.T) {
+	for _, tc := range []struct {
+		name            string
+		other, stripped bool
+	}{{"same project", false, false}, {"other project", true, false}, {"private-stripped", false, true}} {
+		t.Run(tc.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
 			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
 			project := f.project.ID
-			if other {
+			if tc.other {
 				p, e := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Other public project", "native")
 				if e != nil {
 					t.Fatal(e)
 				}
 				project = p.ID
 			}
-			pdb := nativepdb.WithLegacyPublicSymbols().Data
+			fixture := nativepdb.WithLegacyPublicSymbols()
+			pdb := fixture.Data
+			if tc.stripped {
+				binary.LittleEndian.PutUint16(pdb[fixture.DBIBlock*1024+56:], 2)
+			}
 			digest := sha1.Sum(pdb)
 			if _, e := f.db.SaveDebugFile(f.ctx, access, project, "legacy.pdb", "pdb", "65ae75631", "x86_64", "legacy.pdb", hex.EncodeToString(digest[:]), nil, nil, pdb); e != nil {
 				t.Fatal(e)
@@ -212,7 +219,7 @@ func TestLegacyPublicMinidumpProjectIsolation(t *testing.T) {
 			}
 			frame := payload.Exception.Values[0].Stacktrace.Frames[0]
 			want := "PublicSecond"
-			if other {
+			if tc.other {
 				want = ""
 			}
 			if frame.Function != want {

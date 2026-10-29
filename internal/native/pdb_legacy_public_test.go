@@ -22,6 +22,15 @@ func TestLegacyPublicFallbackAndFraming(t *testing.T) {
 		valid, public bool
 	}{
 		{"direct map and external reference", func([]byte) {}, true, true},
+		{"private-stripped legacy references", func(b []byte) { binary.LittleEndian.PutUint16(b[f.DBIBlock*1024+56:], 2) }, true, true},
+		{"private-stripped data reference", func(b []byte) {
+			binary.LittleEndian.PutUint16(b[f.DBIBlock*1024+56:], 2)
+			binary.LittleEndian.PutUint16(b[start+ref-16+2:], 0x0401)
+		}, true, true},
+		{"private-stripped local procedure reference", func(b []byte) {
+			binary.LittleEndian.PutUint16(b[f.DBIBlock*1024+56:], 2)
+			binary.LittleEndian.PutUint16(b[start+ref-16+2:], 0x0403)
+		}, true, true},
 		{"truncated external name", func(b []byte) { b[start+ref] = 255 }, false, false},
 		{"truncated symbol record", func(b []byte) { binary.LittleEndian.PutUint16(b[start:], 0xfffc) }, false, false},
 		{"invalid public section", func(b []byte) { binary.LittleEndian.PutUint16(b[start+name-13+8:], 9) }, false, false},
