@@ -13040,3 +13040,20 @@ Siguiente acción concreta: extender el owner de 2FA para probar que el miembro
 no puede obtener un código OAuth antes de confirmar 2FA y que el mismo flujo se
 habilita después, usando HTTP y PostgreSQL aislados; conservar el resto de
 MCP059 y la candidata final pendientes.
+
+### Consentimiento OAuth con 2FA obligatorio, 2026-10-29
+
+La prueba HTTP crea un miembro sin 2FA en una organización que lo exige. El
+GET de consentimiento redirige al enrolamiento, el POST devuelve 403 y la
+base confirma que no se emitió ningún código. Tras confirmar 2FA, el mismo
+flujo emite un código, lo intercambia y ejecuta una herramienta mediante el
+cliente MCP oficial. Una mutación temporal que desactivó ambas puertas OAuth
+hizo fallar la prueba antes del enrolamiento; el archivo se restauró y las
+tres pruebas de integración seleccionadas pasaron con race. Vet de integración
+pasó y PostgreSQL temporal quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-oauth-2fa/.
+
+La comprobación no sustituye la aceptación integral MCP ni la candidata final.
+Siguiente acción concreta: revisar y probar en CLOSE-mcp-055 los rechazos de
+verificador PKCE, cliente y URI de redirección incorrectos, incluida la
+conservación del código legítimo después de cada intento fallido.

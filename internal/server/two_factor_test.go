@@ -3,11 +3,14 @@
 package server
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -289,6 +292,38 @@ func TestOrganizationRequire2FAGatesSessionsAndBearerTokens(t *testing.T) {
 	if _, err := mcpConnection.CallTool(f.ctx, &mcp.CallToolParams{Name: "list_organizations", Arguments: map[string]any{}}); err == nil || !strings.Contains(err.Error(), "two-factor") {
 		t.Fatalf("MCP accepted a 2FA-blocked credential: %v", err)
 	}
+	base := mcpServer.URL + "/good"
+	redirect := base + "/oauth/callback"
+	response, body := oauthJSON(t, member, base+"/oauth/register", `{"client_name":"2FA OAuth","redirect_uris":["`+redirect+`"],"token_endpoint_auth_method":"none"}`)
+	if response.StatusCode != http.StatusCreated {
+		t.Fatalf("OAuth registration status=%d", response.StatusCode)
+	}
+	var client struct {
+		ID string `json:"client_id"`
+	}
+	if json.Unmarshal(body, &client) != nil || client.ID == "" {
+		t.Fatal("OAuth client missing identity")
+	}
+	verifier := strings.Repeat("a", 43)
+	digest := sha256.Sum256([]byte(verifier))
+	form := url.Values{"client_id": {client.ID}, "redirect_uri": {redirect}, "response_type": {"code"}, "state": {"2fa"}, "resource": {"https://public.example.test/good/mcp"}, "scope": {"org:read"}, "code_challenge": {base64.RawURLEncoding.EncodeToString(digest[:])}, "code_challenge_method": {"S256"}, "csrf": {memberMe.CSRFToken}, "organization": {f.org.Slug}, "project": {f.project.ID}, "decision": {"approve"}}
+	noRedirect := &http.Client{Jar: member.Jar, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	get, err := noRedirect.Get(base + "/oauth/authorize?" + form.Encode())
+	if err != nil {
+		t.Fatal(err)
+	}
+	get.Body.Close()
+	if get.StatusCode != http.StatusSeeOther || get.Header.Get("Location") != "/good/" {
+		t.Fatalf("OAuth consent page before enrollment: %d %q", get.StatusCode, get.Header.Get("Location"))
+	}
+	response, _ = oauthForm(t, noRedirect, base+"/oauth/authorize", form)
+	if response.StatusCode != http.StatusForbidden {
+		t.Fatalf("OAuth consent before enrollment: %d", response.StatusCode)
+	}
+	var codes int
+	if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM oauth_authorization_codes WHERE client_id=$1`, client.ID).Scan(&codes); err != nil || codes != 0 {
+		t.Fatalf("OAuth code issued before enrollment: %d %v", codes, err)
+	}
 
 	var memberEnrollment twoFactorHTTPEnrollment
 	decodeTwoFactor(t, f.request(t, member, "POST", "/api/v1/me/two-factor", "", http.Header{"X-CSRF-Token": {memberMe.CSRFToken}}, 200), &memberEnrollment)
@@ -296,6 +331,37 @@ func TestOrganizationRequire2FAGatesSessionsAndBearerTokens(t *testing.T) {
 	f.request(t, member, "GET", "/api/v1/organizations/"+f.org.Slug+"/projects", "", nil, 200)
 	if _, err := mcpConnection.CallTool(f.ctx, &mcp.CallToolParams{Name: "list_organizations", Arguments: map[string]any{}}); err != nil {
 		t.Fatalf("MCP remained blocked after enrollment: %v", err)
+	}
+	get, err = noRedirect.Get(base + "/oauth/authorize?" + form.Encode())
+	if err != nil {
+		t.Fatal(err)
+	}
+	get.Body.Close()
+	if get.StatusCode != http.StatusOK {
+		t.Fatalf("OAuth consent page after enrollment: %d", get.StatusCode)
+	}
+	response, _ = oauthForm(t, noRedirect, base+"/oauth/authorize", form)
+	if response.StatusCode != http.StatusSeeOther {
+		t.Fatalf("OAuth consent after enrollment: %d", response.StatusCode)
+	}
+	callback, err := url.Parse(response.Header.Get("Location"))
+	if err != nil || callback.Query().Get("code") == "" {
+		t.Fatalf("OAuth callback missing code: %v", err)
+	}
+	tokenForm := url.Values{"grant_type": {"authorization_code"}, "client_id": {client.ID}, "redirect_uri": {redirect}, "code": {callback.Query().Get("code")}, "code_verifier": {verifier}}
+	response, body = oauthForm(t, noRedirect, base+"/oauth/token", tokenForm)
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("OAuth exchange after enrollment: %d", response.StatusCode)
+	}
+	var oauthToken struct {
+		Access string `json:"access_token"`
+	}
+	if json.Unmarshal(body, &oauthToken) != nil || oauthToken.Access == "" {
+		t.Fatal("OAuth exchange missing access token")
+	}
+	oauthSession := mcpClient(t, f, mcpServer, oauthToken.Access, "2026-07-28")
+	if _, err := oauthSession.CallTool(f.ctx, &mcp.CallToolParams{Name: "list_organizations", Arguments: map[string]any{}}); err != nil {
+		t.Fatalf("OAuth tool after enrollment: %v", err)
 	}
 	f.request(t, member, "DELETE", "/api/v1/me/two-factor", resolutionJSON(t, map[string]string{"password": "resolution-http-password"}), http.Header{"X-CSRF-Token": {memberMe.CSRFToken}}, 409)
 }
