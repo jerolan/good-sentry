@@ -12837,3 +12837,24 @@ invalidados por los cambios. La primaria revisó la implementación y el oracle.
 Siguiente acción concreta: investigar los metadatos disponibles para descifrar
 nombres históricos MBCS y la traducción de selectores no directos, contrastar
 con fuentes primarias y una muestra antes de precisar el siguiente incremento.
+
+### Investigación de nombres históricos y selectores, 2026-10-29
+
+El código de Microsoft convierte nombres históricos MBCS a Unicode y advierte
+que la conversión falla cuando cliente y servidor usan páginas de códigos
+distintas ([mod.cpp, QuerySrcFileW](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/mod.cpp#L4628)).
+Microsoft documenta que la página ANSI predeterminada puede diferir entre
+equipos o cambiar ([MultiByteToWideChar](https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar)).
+Esto no demuestra que la página original esté almacenada en todos los PDB ni
+autoriza a elegirla por conjetura. No se ha cambiado el comportamiento de
+omisión de rutas no ASCII ni se da por cumplida la decodificación histórica.
+
+El PDB OMAP de Sentry tiene 25 descriptores de sección y ninguno de sus
+selectores es no directo; no resuelve esa traducción. Se conservan abiertos
+native004 y los perfiles históricos sin evidencia.
+
+Siguiente acción concreta: investigar si el PDB o su pareja PE incorpora una
+página de códigos inequívoca y obtener una muestra con nombres no ASCII; en
+paralelo buscar un productor o consumidor con selector no directo verificable.
+Si estas fuentes no resuelven ambos perfiles, avanzar el siguiente criterio
+exigible con dependencias resueltas sin inventar metadatos.
