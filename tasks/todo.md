@@ -12722,3 +12722,22 @@ locales afectados de native018/native020 y sus dependientes.
 Siguiente acción concreta: reproducir el rechazo, implementar la identidad
 moderna y comprobar controles negativos y coincidencia íntegra con el oracle
 independiente antes de acreditar la muestra; mantener la auditoría final abierta.
+
+### Edad DBI moderna y discrepancia GUID, 2026-10-29
+
+El lector acepta Info moderno con edad DBI no nula y no mayor que Info, usa la
+edad DBI para la identidad y mantiene los controles de los formatos antiguos.
+El ensayo propio reprodujo el rechazo anterior y verificó resolución con la
+edad de imagen, rechazo de la edad Info declarada y edades DBI inválidas.
+Race nativo, vet y build pasaron. En el PDB público real, un oracle independiente
+coincidió en los 2504 rangos públicos; hay otros 192 símbolos no públicos.
+Comprobante: test-results/closure-20261025/pdb-modern-dbi-age/.
+
+La identidad real aún no coincide: el lector invierte los ocho últimos bytes
+del GUID, mientras el identificador del servidor de Microsoft los conserva en
+orden. Por tanto no se acredita la asociación con el ejecutable ni se cierran
+native018/native020; sus dependientes e imagen/CI finales siguen invalidados.
+
+Siguiente acción concreta: reproducir la discrepancia GUID con una prueba de
+identidad RSDS conocida, corregir el orden común a Minidump/PE/PDB y verificar
+asociaciones, controles negativos y la muestra real antes de continuar native004.

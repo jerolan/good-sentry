@@ -125,10 +125,7 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 	if !ok || len(dbi) < 24 {
 		return "", nil, false
 	}
-	debugID := pdbInfoDebugID(info)
-	if debugID == "" {
-		return "", nil, false
-	}
+	identityAge := age
 	version := pdbDBIOldVersion
 	moduleStart := 24
 	var moduleSize, sectionContributionSize, sectionMapSize, sourceInfoSize, typeServerSize, optionalHeaderSize, ecSize int
@@ -138,7 +135,15 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 		}
 		version = binary.LittleEndian.Uint32(dbi[4:])
 		dbiAge := binary.LittleEndian.Uint32(dbi[8:])
-		if !knownDBIVersion(version) || dbiAge != age && !(version == 19960307 && dbiAge == 0) {
+		if !knownDBIVersion(version) {
+			return "", nil, false
+		}
+		if pdbInfoHeaderSize(info) == 28 {
+			if dbiAge == 0 || dbiAge > age {
+				return "", nil, false
+			}
+			identityAge = dbiAge
+		} else if dbiAge != age && !(version == 19960307 && dbiAge == 0) {
 			return "", nil, false
 		}
 		moduleStart = 64
@@ -150,6 +155,10 @@ func parsePDBSymbolsWithCompanions(data []byte, companions pdbCompanions) (strin
 		moduleSize, sectionContributionSize, sectionMapSize, sourceInfoSize, ok = pdbOldDBISubstreamSizes(dbi)
 	}
 	if !ok {
+		return "", nil, false
+	}
+	debugID := pdbInfoDebugID(info, identityAge)
+	if debugID == "" {
 		return "", nil, false
 	}
 	optionalStart := moduleStart + moduleSize + sectionContributionSize + sectionMapSize + sourceInfoSize + typeServerSize + ecSize
@@ -1443,7 +1452,7 @@ func knownCodeViewSignature(signature uint32) bool {
 	return signature == 2 || signature == 4
 }
 
-func pdbInfoDebugID(info []byte) string {
+func pdbInfoDebugID(info []byte, age uint32) string {
 	headerSize := pdbInfoHeaderSize(info)
 	if headerSize == 0 {
 		return ""
@@ -1457,7 +1466,7 @@ func pdbInfoDebugID(info []byte) string {
 	codeView := make([]byte, 24)
 	copy(codeView, "RSDS")
 	copy(codeView[4:20], info[12:28])
-	binary.LittleEndian.PutUint32(codeView[20:], binary.LittleEndian.Uint32(info[8:]))
+	binary.LittleEndian.PutUint32(codeView[20:], age)
 	return DebugKey(codeViewID(codeView))
 }
 

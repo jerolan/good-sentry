@@ -42,3 +42,48 @@ func TestModernPublicDirectSelectorAndOpaquePadding(t *testing.T) {
 		})
 	}
 }
+
+func TestModernPDBImageAgeUsesDBI(t *testing.T) {
+	f := nativepdb.WithPublicOnlySymbols()
+	baseline := ParseDebugObjects("symbols.pdb", f.Data)
+	if len(baseline) != 1 {
+		t.Fatal("baseline PDB rejected")
+	}
+	for _, tc := range []struct {
+		name            string
+		infoAge, dbiAge uint32
+		valid           bool
+	}{
+		{"newer Info age", 3, 1, true},
+		{"DBI newer than Info", 1, 3, false},
+		{"zero DBI age", 3, 0, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			data := append([]byte(nil), f.Data...)
+			binary.LittleEndian.PutUint32(data[f.InfoBlock*512+8:], tc.infoAge)
+			binary.LittleEndian.PutUint32(data[f.DBIBlock*512+8:], tc.dbiAge)
+			objects := ParseDebugObjects("symbols.pdb", data)
+			if !tc.valid {
+				if len(objects) != 0 {
+					t.Fatal("invalid ages accepted")
+				}
+				return
+			}
+			if len(objects) != 1 || objects[0].DebugID != baseline[0].DebugID || len(objects[0].Functions) != len(baseline[0].Functions) {
+				t.Fatalf("image identity or symbols lost: %+v", objects)
+			}
+			files := []DebugSymbolFile{{Name: "symbols.pdb", DebugID: baseline[0].DebugID, Content: data}}
+			symbols, _ := BuildSymbolTables(files)
+			crash := Crash{Modules: []Module{{Name: "crash.exe", Base: 0x100000, Size: 0x5000, DebugID: baseline[0].DebugID}}, Frames: []Frame{{Instruction: 0x101035, Module: "crash.exe"}}}
+			Symbolicate(&crash, symbols)
+			if crash.Frames[0].Function != "PublicFirst" {
+				t.Fatalf("image age did not resolve: %+v", crash.Frames[0])
+			}
+			files[0].DebugID = baseline[0].DebugID[:len(baseline[0].DebugID)-1] + "3"
+			symbols, _ = BuildSymbolTables(files)
+			if len(symbols) != 0 {
+				t.Fatal("Info age admitted as image identity")
+			}
+		})
+	}
+}

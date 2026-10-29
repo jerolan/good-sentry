@@ -1092,7 +1092,7 @@ func TestParseNativePDBRejectsMalformedInputWithoutPartialSymbols(t *testing.T) 
 		{name: "block map outside file", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[52:], ^uint32(0)) }},
 		{name: "directory block outside file", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[4*512:], ^uint32(0)) }},
 		{name: "too many streams", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[3*512:], 4097) }},
-		{name: "PDB age disagrees with DBI", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[5*512+8:], 2) }},
+		{name: "DBI age exceeds PDB age", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[fixture.DBIBlock*512+8:], 2) }},
 		{name: "invalid CodeView module signature", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[moduleBlock*512:], 5) }},
 		{name: "modern procedures with CodeView signature2", mutate: func(data []byte) { binary.LittleEndian.PutUint32(data[moduleBlock*512:], 2) }},
 		{name: "legacy ST with C13 and CodeView signature2", input: c13.Data, mutate: func(data []byte) {
