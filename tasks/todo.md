@@ -13027,3 +13027,16 @@ ventanas, upgrade, imagen final ni CI público; CLOSE-mcp-058 sigue invalidado.
 Siguiente acción concreta: comprobar el primer criterio siguiente con evidencia
 no vigente y dependencias resueltas, empezando por MCP059/077 y sus controles
 restantes; mantener abiertos los perfiles PDB históricos y la auditoría final.
+
+### Siguiente selección: 2FA en consentimiento MCP, 2026-10-29
+
+CLOSE-mcp-059 exige comprobar el bloqueo de OAuth con 2FA obligatorio. El
+owner existente comprueba sesiones y herramientas MCP con token nativo, pero
+no demuestra GET/POST de consentimiento OAuth para un miembro sin 2FA. La
+organización, OAuth y las pruebas de enrollamiento ya están disponibles; este
+control es independiente de los perfiles PDB pendientes.
+
+Siguiente acción concreta: extender el owner de 2FA para probar que el miembro
+no puede obtener un código OAuth antes de confirmar 2FA y que el mismo flujo se
+habilita después, usando HTTP y PostgreSQL aislados; conservar el resto de
+MCP059 y la candidata final pendientes.
