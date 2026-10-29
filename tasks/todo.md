@@ -12663,3 +12663,23 @@ pruebas se detuvo al terminar sin modificar la base existente.
 Siguiente acción concreta: continuar la investigación de mapas no directos y
 seleccionar el siguiente perfil nativo exigible con evidencia suficiente;
 mantener abiertos native004, sus dependientes y la auditoría final.
+
+### Selector directo y padding público MSF7, 2026-10-29
+
+El `symbolformat.pdb` oficial de LLVM contiene nueve públicos de función en una
+sección ejecutable cuyo descriptor lleva el bit selector pero coincide con el
+índice PE, sin offset, grupo ni overlay. Varios registros tienen hasta tres
+bytes de padding distintos de F1/F2/F3. La documentación Microsoft describe
+esos valores como convención. Con el flag de privados retirados activado solo
+para el experimento, el lector rechazó el archivo. Normalizar el padding no
+resolvió el rechazo hasta retirar también el bit selector, cuando se obtuvieron
+nueve públicos. La muestra original no es un PDB retirado independiente.
+
+SPEC native020 admite ahora únicamente el perfil selector directo comprobado
+y trata como opacos hasta tres bytes de padding; conserva el rechazo de mapas
+no directos, rangos inválidos y registros sobredimensionados. La reparación
+invalida el recibo local de native020 y los dependientes hasta nueva prueba.
+
+Siguiente acción concreta: preparar RED público/HTTP para ambos casos y sus
+controles negativos, reparar el lector y comparar los nueve públicos de LLVM
+con un oracle independiente, sin atribuir al experimento un PDB retirado real.

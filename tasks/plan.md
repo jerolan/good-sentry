@@ -49,7 +49,9 @@ checked LLVM nonzero-ordinal example and preserve existing source lines. Continu
 the C7/C11 nonzero-ordinal variants are locally verified. A real MSF2 global
 stream contains2126 legacy ST public records; the bounded direct-map fallback
 now resolves1119 executable entries and preserves procedure precedence. Continue non-direct
-section-map translation
+section-map translation. First repair native020: LLVM's real MSF7 sample uses
+direct selector descriptors and nonconventional public-record padding that the
+current stripped-public reader rejects.
 and other required records using primary evidence and representative binaries.
 Keep unknown profiles and complete acceptance open. Keep unwinding
 and symbol-server requirements open. Reconcile native receipts,
