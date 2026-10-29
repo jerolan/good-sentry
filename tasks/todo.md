@@ -13057,3 +13057,23 @@ La comprobación no sustituye la aceptación integral MCP ni la candidata final.
 Siguiente acción concreta: revisar y probar en CLOSE-mcp-055 los rechazos de
 verificador PKCE, cliente y URI de redirección incorrectos, incluida la
 conservación del código legítimo después de cada intento fallido.
+
+### Vinculación y alfabeto del verificador OAuth, 2026-10-29
+
+Los intercambios con cliente registrado incorrecto, redirección distinta o
+verificador equivocado devuelven 400 sin consumir el código legítimo, que
+después se intercambia correctamente. El RED mostró que un verificador con
+`!` y challenge correspondiente se aceptaba con 200. El servidor exige ahora
+43–128 caracteres ASCII base64url antes de verificar el challenge. Rechaza
+caracteres inválidos, padding, Unicode y longitudes fuera de rango sin consumir
+el código; un verificador válido de128 caracteres se acepta.
+
+El owner nuevo, el handler MCP oficial y el flujo OAuth previo pasaron con
+race en PostgreSQL aislado. Vet de integración y build pasaron; la base temporal
+quedó detenida. Comprobante: test-results/closure-20261025/mcp-oauth-verifier/.
+La evidencia de MCP055/059/077 sigue invalidada hasta la candidata y gates
+integrales; no se da por cerrada la compatibilidad general.
+
+Siguiente acción concreta: verificar que intercambios simultáneos del mismo
+código producen exactamente una emisión y que un código vencido no emite
+credenciales, con PostgreSQL aislado y sin usar sleeps como prueba de carrera.

@@ -458,6 +458,19 @@ func oauthJSONError(w http.ResponseWriter, status int, code string) {
 	writeJSON(w, status, map[string]string{"error": code})
 }
 
+func validOAuthVerifier(verifier string) bool {
+	if len(verifier) < 43 || len(verifier) > 128 {
+		return false
+	}
+	for i := 0; i < len(verifier); i++ {
+		c := verifier[i]
+		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-' || c == '_') {
+			return false
+		}
+	}
+	return true
+}
+
 func (s *Server) oauthToken(w http.ResponseWriter, r *http.Request) {
 	oauthNoStore(w)
 	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
@@ -491,7 +504,7 @@ func (s *Server) oauthToken(w http.ResponseWriter, r *http.Request) {
 	switch r.PostForm.Get("grant_type") {
 	case "authorization_code":
 		code, redirect, verifier := r.PostForm.Get("code"), r.PostForm.Get("redirect_uri"), r.PostForm.Get("code_verifier")
-		if code == "" || redirect == "" || len(verifier) < 43 || len(verifier) > 128 {
+		if code == "" || redirect == "" || !validOAuthVerifier(verifier) {
 			oauthJSONError(w, http.StatusBadRequest, "invalid_grant")
 			return
 		}
