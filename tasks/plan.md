@@ -13,6 +13,9 @@ evidence, plus an exact comparison against the independent Sentry/Microsoft
 sample; see todo.md. Other native004 profiles and final acceptance remain open.
 Late OMAP PDB reprocessing now has isolated HTTP/PostgreSQL, project isolation,
 idempotency and worker-reopen evidence; final candidate acceptance remains open.
+The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
+ELF, source-line and issue checks and no retained dump; see todo.md. Final image
+and public CI evidence are still required.
 The first bounded legacy procedure reader in native018 is now verified locally:
 Small MSF2, pre-VC70 Info identity, ST procedures and obsolete stream0 reuse in
 MSF2/MSF7, with strict active page ownership and modern CV4 restrictions retained.

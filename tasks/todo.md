@@ -12911,3 +12911,25 @@ El entorno actual es Linux/amd64 y ya no contiene la compilación temporal del
 demo ni CMake. Siguiente acción concreta: preparar en un entorno aislado el SDK
 oficial fijado y Crashpad, ejecutar el owner HTTP/PostgreSQL con el ejecutable
 exacto y conservar versiones, hashes y resultado; no contar un skip como éxito.
+
+### Crash real nativo actual, 2026-10-29
+
+Se compiló el demo Linux/amd64 con sentry-native 0.17.4, commit
+740313523edd50e3a0cfe2f8f931e893ed7423a5, y Crashpad en un contenedor temporal.
+El ELF exacto tiene 5.543.552 bytes, SHA-256
+e83196cc536d9dd4b6720bd27fa948648eb92c9bc4eb0c026bfc2cf421bc10dc y build ID
+1620ebcec82545348872d5edc7a7b6f907caeabe. La prueba real con race subió ese
+ELF, ejecutó el mismo binario y comprobó `goodsentry_demo_crash`, `main.c`,
+línea positiva, vínculo al issue y ausencia de bytes del dump. Pasó sin skip;
+vet de integración pasó. Comprobante:
+test-results/closure-20261025/native-sdk-current/.
+
+El primer intento recibió 413 porque el fixture común fijaba 1 MiB, insuficiente
+para este ELF válido. El owner usa ahora el límite predeterminado del producto,
+32 MiB, y pasó con el mismo ejecutable. La base y la imagen temporales se
+detuvieron o retiraron. La evidencia es local; no acredita imagen ni CI final,
+ni cierra native004 o los perfiles históricos pendientes.
+
+Siguiente acción concreta: continuar por el primer criterio independiente con
+dependencias resueltas y evidencia no vigente, sin perder la investigación de
+MBCS y selectores ni anticipar la auditoría final de la candidata.

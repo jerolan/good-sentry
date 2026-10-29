@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"goodsentry/internal/config"
 	"goodsentry/internal/native"
 	"goodsentry/internal/store"
 )
@@ -32,7 +33,9 @@ func TestNativeSDKDemoCrashSymbolicates(t *testing.T) {
 		t.Fatal("GOODSENTRY_NATIVE_DEMO_HANDLER is required when the demo binary is configured")
 	}
 
-	f := newResolutionHTTPFixture(t)
+	f := newResolutionHTTPFixtureWithConfig(t, func(cfg *config.Config) {
+		cfg.MaxBodyBytes = 32 << 20
+	})
 	accessToken := issueManagementToken(t, f, f.org.Slug, "Native SDK demo", []string{"project:releases"}, []string{f.project.ID})
 	executable, err := os.ReadFile(binaryPath)
 	if err != nil {
