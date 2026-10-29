@@ -13006,3 +13006,24 @@ Siguiente acción concreta: localizar o preparar un navegador y Playwright en
 un entorno aislado; comprobar en la interfaz `log:read` con MCP/logs activados
 y desactivados, la metadata de una concesión OAuth y su revocación, sin mostrar
 secretos. Registrar el resultado y conservar abiertos los gates finales.
+
+### Interfaz de credenciales MCP, 2026-10-29
+
+Un navegador real aislado inició sesión en una instancia con PostgreSQL nuevo.
+La casilla `log:read` apareció con MCP/logs activos y no apareció al desactivar
+logs o MCP. Una concesión OAuth mostró nombre, proyecto seleccionado, scope y
+estado sin revelar el token ni el refresh; la revocación mediante confirmación
+en la interfaz invalidó tanto el acceso como la renovación. No hubo errores de
+página. Chrome for Testing 156.0.8078.4 y playwright-core 1.57.0 se ejecutaron
+con contextos efímeros; no se usó perfil ni credencial personal.
+
+El owner de integración pasó con race y sin skip; vet y sintaxis JavaScript
+pasaron. PostgreSQL temporal quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-credentials-browser/. El owner dedicado omite
+la ejecución cuando faltan las rutas explícitas del navegador y Playwright;
+ese skip nunca constituye aceptación. La prueba no sustituye los gates de
+ventanas, upgrade, imagen final ni CI público; CLOSE-mcp-058 sigue invalidado.
+
+Siguiente acción concreta: comprobar el primer criterio siguiente con evidencia
+no vigente y dependencias resueltas, empezando por MCP059/077 y sus controles
+restantes; mantener abiertos los perfiles PDB históricos y la auditoría final.

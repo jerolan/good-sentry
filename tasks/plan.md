@@ -17,6 +17,8 @@ The official MCP OAuth handler now completes discovery, registration, selected
 project consent, refresh and revocation over HTTP/PostgreSQL; see todo.md.
 The RFC8414 origin-path alias and bounded registration metadata have local race
 evidence. Other MCP acceptance and final image/CI gates remain open.
+The credential view now also has an isolated real-browser check for conditional
+log scope, OAuth grant metadata and revocation; final viewport/image gates remain.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
