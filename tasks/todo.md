@@ -12858,3 +12858,22 @@ página de códigos inequívoca y obtener una muestra con nombres no ASCII; en
 paralelo buscar un productor o consumidor con selector no directo verificable.
 Si estas fuentes no resuelven ambos perfiles, avanzar el siguiente criterio
 exigible con dependencias resueltas sin inventar metadatos.
+
+### Selección de reprocessing nativo, 2026-10-29
+
+La implementación publicada de Microsoft convierte MBCS con la página ANSI
+del equipo lector, CP_ACP ([szst.h](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/include/szst.h#L222));
+esto no identifica inequívocamente la página del equipo que creó el archivo.
+La búsqueda no aporta aún una muestra con página original verificable ni un
+selector no directo. No se sustituye el requisito por una conjetura.
+
+Se selecciona CLOSE-nativo-003, cuya evidencia quedó invalidada por cambios de
+identidad y cuya ruta puede verificarse con el lector OMAP ya disponible. El
+contrato exige reprocessing duradero de frames existentes, aislamiento por
+proyecto y preservación del resto del evento. Las pruebas previas con Breakpad
+no demuestran la carga tardía de un PDB con direcciones reorganizadas.
+
+Siguiente acción concreta: revisar el owner de reprocessing y extender su
+comprobación de extremo a extremo con un PDB OMAP cargado después del evento,
+incluyendo identidad e aislamiento, sin añadir frames ni alterar datos ajenos.
+Mantener abierta la aceptación de imagen/CI y los perfiles históricos.
