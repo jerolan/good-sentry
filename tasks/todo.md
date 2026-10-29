@@ -12933,3 +12933,19 @@ ni cierra native004 o los perfiles históricos pendientes.
 Siguiente acción concreta: continuar por el primer criterio independiente con
 dependencias resueltas y evidencia no vigente, sin perder la investigación de
 MBCS y selectores ni anticipar la auditoría final de la candidata.
+
+### Selección MCP OAuth oficial, 2026-10-29
+
+La revisión del owner `TestMCPOAuthAuthorizationCodeAndRefresh` confirma que
+usa el cliente MCP oficial para invocar herramientas, pero realiza registro,
+consentimiento e intercambio OAuth mediante peticiones HTTP construidas por la
+prueba. No demuestra el `AuthorizationCodeHandler` oficial exigido por
+CLOSE-mcp-059/077. El comprobante anterior sigue siendo válido para lo que
+ejercitó, pero no acredita ese componente; las filas afectadas permanecen
+invalidadas. `go.mod` fija el SDK oficial Go v1.8.0 y el proveedor HTTP/OAuth
+existente está disponible independientemente de los perfiles PDB pendientes.
+
+Siguiente acción concreta: construir una prueba con el handler oficial y una
+sesión MCP real contra PostgreSQL aislado, con consentimiento, token y una
+herramienta; diagnosticar cualquier incompatibilidad antes de afirmar el ciclo
+completo. Mantener pendientes los requisitos adicionales y la auditoría final.
