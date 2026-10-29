@@ -12993,3 +12993,16 @@ sujetos a conciliación integral sobre la candidata final.
 Siguiente acción concreta: seleccionar el primer criterio independiente sin
 evidencia vigente y dependencias resueltas; mantener abiertos los perfiles
 PDB históricos y los gates integrales de MCP y de la candidata final.
+
+### Siguiente selección: interfaz de credenciales MCP, 2026-10-29
+
+Se selecciona CLOSE-mcp-058, cuyo proveedor de tokens y revocación ya está
+disponible y cuya aceptación de interfaz sigue invalidada. El HTML muestra
+permisos condicionales y filas de tokens, pero las pruebas OAuth recientes son
+HTTP/cliente y no verifican el navegador. El entorno actual no encuentra un
+ejecutable Chromium ni el módulo Playwright en las rutas predeterminadas.
+
+Siguiente acción concreta: localizar o preparar un navegador y Playwright en
+un entorno aislado; comprobar en la interfaz `log:read` con MCP/logs activados
+y desactivados, la metadata de una concesión OAuth y su revocación, sin mostrar
+secretos. Registrar el resultado y conservar abiertos los gates finales.
