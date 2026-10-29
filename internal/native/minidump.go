@@ -393,7 +393,7 @@ func codeViewID(cv []byte) string {
 	if len(cv) < 24 {
 		return ""
 	}
-	return fmt.Sprintf("%08X%04X%04X%016X%X", binary.LittleEndian.Uint32(cv[4:]), binary.LittleEndian.Uint16(cv[8:]), binary.LittleEndian.Uint16(cv[10:]), binary.LittleEndian.Uint64(cv[12:]), binary.LittleEndian.Uint32(cv[20:]))
+	return fmt.Sprintf("%08X%04X%04X%016X%X", binary.LittleEndian.Uint32(cv[4:]), binary.LittleEndian.Uint16(cv[8:]), binary.LittleEndian.Uint16(cv[10:]), binary.BigEndian.Uint64(cv[12:]), binary.LittleEndian.Uint32(cv[20:]))
 }
 
 func codeViewDebugID(cv []byte) string {

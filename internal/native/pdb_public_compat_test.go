@@ -87,3 +87,21 @@ func TestModernPDBImageAgeUsesDBI(t *testing.T) {
 		})
 	}
 }
+
+func TestPDBRSDSCanonicalGUIDIdentity(t *testing.T) {
+	const id = "1b72224d37b8179228200ed8994498b21"
+	guid := []byte{0x4d, 0x22, 0x72, 0x1b, 0xb8, 0x37, 0x92, 0x17, 0x28, 0x20, 0x0e, 0xd8, 0x99, 0x44, 0x98, 0xb2}
+	record := make([]byte, 24)
+	copy(record, "RSDS")
+	copy(record[4:], guid)
+	binary.LittleEndian.PutUint32(record[20:], 1)
+	if got := DebugKey(codeViewDebugID(record)); got != id {
+		t.Fatalf("RSDS identity=%q, want %q", got, id)
+	}
+	f := nativepdb.WithPublicOnlySymbols()
+	copy(f.Data[f.InfoBlock*512+12:], guid)
+	objects := ParseDebugObjects("symbols.pdb", f.Data)
+	if len(objects) != 1 || objects[0].DebugID != id {
+		t.Fatalf("PDB identity does not match RSDS: %+v", objects)
+	}
+}

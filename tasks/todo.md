@@ -12741,3 +12741,23 @@ native018/native020; sus dependientes e imagen/CI finales siguen invalidados.
 Siguiente acción concreta: reproducir la discrepancia GUID con una prueba de
 identidad RSDS conocida, corregir el orden común a Minidump/PE/PDB y verificar
 asociaciones, controles negativos y la muestra real antes de continuar native004.
+
+### Identidad GUID RSDS verificada, 2026-10-29
+
+La prueba de bytes conocidos reprodujo el GUID invertido; el lector compartido
+ahora conserva en orden los últimos ocho bytes y lee los tres primeros campos
+en little endian. Las muestras propias y el generador de Minidump reflejan ese
+formato. El PDB retirado real produce el identificador exacto publicado por
+Microsoft y sus 2504 rangos públicos coinciden íntegramente con el oracle;
+otros 192 símbolos son no públicos. Race nativo y 22 acciones de servidor con
+PostgreSQL temporal pasaron, incluyendo edad Info más nueva, identidad errónea,
+líneas, thunks y aislamiento. Vet y build pasaron; la base temporal se detuvo.
+Comprobante: test-results/closure-20261025/pdb-rsds-guid/.
+
+Esta evidencia resuelve los defectos locales de edad y GUID, no todos los
+perfiles de native004, native018 ni la aceptación integral de native020. La
+imagen y CI finales siguen invalidadas por los cambios posteriores.
+
+Siguiente acción concreta: investigar y verificar el siguiente perfil nativo
+exigible, empezando por la traducción de selectores no directos o una muestra
+VC4/DBI antiguo, y conservar evidencia antes de la auditoría final.

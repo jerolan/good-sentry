@@ -859,10 +859,13 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 		v50                   bool
 		oldDBI                bool
 		emptyHash             bool
+		newerInfoAge          bool
 		companionOtherProject bool
 		wantSymbol            bool
 	}{
 		{name: "matching identity", uploadedID: embeddedID, wantSymbol: true},
+		{name: "newer Info age matches image age", uploadedID: embeddedID, newerInfoAge: true, wantSymbol: true},
+		{name: "newer Info age cannot relabel image", uploadedID: "5A9832E5287241C1838ED98914E9B7FF3", newerInfoAge: true},
 		{name: "empty global names entry", uploadedID: embeddedID, emptyHash: true, wantSymbol: true},
 		{name: "mismatched uploaded identity", uploadedID: "5A9832E5287241C1838ED98914E9B7FF2"},
 		{name: "V50 companion in same project", uploadedID: "65ae75631", v50: true, wantSymbol: true},
@@ -872,7 +875,11 @@ func TestNativePDBSymbolicationUsesEmbeddedDebugID(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			f := newResolutionHTTPFixture(t)
-			pdb := nativepdb.WithSourceLines(false).Data
+			pdbFixture := nativepdb.WithSourceLines(false)
+			pdb := pdbFixture.Data
+			if test.newerInfoAge {
+				binary.LittleEndian.PutUint32(pdb[pdbFixture.InfoBlock*512+8:], 3)
+			}
 			if test.emptyHash {
 				pdb = nativepdb.WithGlobalEmptyHashEntry().Data
 			}
@@ -1323,7 +1330,7 @@ func setCodeViewDebugID(codeView []byte, debugID string) error {
 	binary.LittleEndian.PutUint32(codeView[4:], uint32(values[0]))
 	binary.LittleEndian.PutUint16(codeView[8:], uint16(values[1]))
 	binary.LittleEndian.PutUint16(codeView[10:], uint16(values[2]))
-	binary.LittleEndian.PutUint64(codeView[12:], values[3])
+	binary.BigEndian.PutUint64(codeView[12:], values[3])
 	binary.LittleEndian.PutUint32(codeView[20:], uint32(values[4]))
 	return nil
 }
