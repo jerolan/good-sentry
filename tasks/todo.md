@@ -12784,3 +12784,29 @@ Siguiente acción concreta: verificar con una muestra o un oracle independiente
 los límites, tramos eliminados y divisiones de rango OMAP; definir el contrato
 acotado antes de implementar y comprobar que el PDB sin OMAP conserva sus
 resultados. Continuar en paralelo la investigación de mapas no directos y VC4.
+
+### Contrato OMAP y muestra independiente, 2026-10-29
+
+Las pruebas públicas de Sentry identifican un PDB de Microsoft con ambas tablas
+OMAP y secciones originales. Su archivo de 8.768.512 bytes tiene SHA-256
+ee2876c1634a8c4339255fe8259870324cb2d2c7b2e023913dde1fbfff35f379.
+Un lector independiente comprobó 355.672 pares origen-imagen, el símbolo
+NtWaitForSingleObject en RVA 0x3768c0 y los cinco ejemplos de límites, rangos
+divididos y eliminación publicados por Sentry. El lector del producto rechaza
+actualmente el archivo completo; la causa aún no se ha atribuido.
+
+SPEC define ahora secciones originales, tablas en ambas direcciones, rangos
+divididos, eliminación, fuente, frames integrados, validación y presupuestos.
+Esto invalida la evidencia integral afectada de native004 y sus dependientes;
+no se acredita compatibilidad con OMAP ni se redistribuye el archivo.
+
+Test-authoring gate: el owner público debe proteger direcciones, líneas y
+frames frente a reordenamientos o huecos; la regresión plausible es usar las
+secciones finales directamente y asignar una función o línea a un RVA erróneo.
+Las pruebas existentes no contienen OMAP y no se necesita ningún seam de test.
+Un control HTTP se justifica por identidad/aislamiento y captura persistida.
+
+Siguiente acción concreta: diagnosticar el rechazo de la muestra, preparar
+RED en el owner público con secciones originales, tramos divididos y eliminados,
+y después implementar la traducción completa con sus límites e inline; verificar
+contra los resultados independientes y el PDB previo sin OMAP.

@@ -1277,6 +1277,32 @@ the separately specified pre-VC70 and V50 behavior. Verify matching and rejectio
 with owned fixtures and compare an independently produced stripped PDB against
 an independent bounded public-symbol oracle.
 
+For PDBs with original section headers in DBI optional-debug-header slot10,
+read those headers as the address space of CodeView records and require both
+OMAP-to-source and OMAP-from-source streams (slots3 and4). The ordinary
+section headers in slot5 describe the transformed image. Each OMAP stream is a
+bounded sequence of little-endian `(source RVA, target RVA)` pairs, strictly
+increasing by source RVA. A pair maps its half-open source interval through
+the next pair by adding the source displacement to its target; a zero target
+marks eliminated bytes, and addresses before the first pair have no mapping.
+Split every function, public fallback and source-line range at map boundaries,
+omit eliminated fragments, and preserve names, source fields, precedence and
+inline frames using the original procedure-relative address. Do not bridge
+unmapped gaps or assume transformed fragments retain their original order.
+Reject malformed tables, overflow, missing required streams or mapped function
+fragments outside executable transformed sections without partial symbols.
+Bound each map to1,000,000 pairs and the total mapped symbol fragments to
+1,000,000 per PDB; also bound interval-processing work so repeated overlaps
+cannot cause unbounded expansion. Without original section headers retain the
+existing section behavior. Compare range boundaries and the named public
+symbol in Sentry's independently published [OMAP fixture tests](https://github.com/getsentry/pdb/blob/master/tests/omap_address_translation.rs),
+using their [Microsoft symbol-server sample](https://msdl.microsoft.com/download/symbols/ntkrnlmp.pdb/3844dbb920174967be7aa4a2c20430fa2/ntkrnlmp.pdb)
+without redistributing its bytes. Add owned PDB and symbolication fixtures for
+reordered and deleted fragments, source lines, nested inline frames, invalid
+tables, bounds and identity; retain the independent no-OMAP comparison. Format
+and address-range rules follow Sentry's [OMAP reader](https://docs.rs/pdb/latest/src/pdb/omap.rs.html)
+and [address-map selection](https://docs.rs/pdb/latest/src/pdb/pdb.rs.html).
+
 The first legacy procedure increment also consumes Small MSF 2.00 files with
 the exact 44-byte signature, a 60-byte header, 1024/2048/4096-byte pages and
 16-bit page indices. Require the file length to equal the declared page count

@@ -8,6 +8,10 @@ and its dependents. The EC/optional-header prerequisite is repaired and verified
 The 2026-10-29 modern Info/DBI age and RSDS GUID corrections have local native,
 HTTP/PostgreSQL and real stripped Microsoft PDB evidence; see todo.md. Continue
 with unresolved native004 profiles; broader closure and final CI remain open.
+The next native004 increment is OMAP range translation using original section
+headers and bounded remapping, including source lines and inline frames. The
+independent Sentry/Microsoft fixture supplies real map and boundary evidence;
+its current full-file rejection remains to be diagnosed before acceptance.
 The first bounded legacy procedure reader in native018 is now verified locally:
 Small MSF2, pre-VC70 Info identity, ST procedures and obsolete stream0 reuse in
 MSF2/MSF7, with strict active page ownership and modern CV4 restrictions retained.
