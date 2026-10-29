@@ -204,6 +204,15 @@ func NewWithAccountMailAndDefaultUser(cfg config.Config, db *store.Store, sender
 	if cfg.Prefix != "" {
 		stripped := http.StripPrefix(cfg.Prefix, mux)
 		handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if cfg.MCP && r.URL.Path == "/.well-known/oauth-authorization-server"+cfg.Prefix {
+				if r.Method != http.MethodGet && r.Method != http.MethodHead {
+					w.Header().Set("Allow", "GET, HEAD")
+					http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+					return
+				}
+				s.oauthMetadata(w, r)
+				return
+			}
 			if r.URL.Path == cfg.Prefix {
 				http.Redirect(w, r, cfg.Prefix+"/", http.StatusPermanentRedirect)
 				return

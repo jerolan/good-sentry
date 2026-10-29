@@ -134,13 +134,15 @@ func (s *Server) oauthRegister(w http.ResponseWriter, r *http.Request) {
 		TokenEndpointAuthMethod string   `json:"token_endpoint_auth_method"`
 		GrantTypes              []string `json:"grant_types"`
 		ResponseTypes           []string `json:"response_types"`
+		ApplicationType         string   `json:"application_type"`
 	}{}
-	if err := json.Unmarshal(body, &raw); err != nil {
+	raw, err = issueObject(body, "client_name", "redirect_uris", "token_endpoint_auth_method", "grant_types", "response_types", "application_type")
+	if err != nil {
 		oauthJSONError(w, http.StatusBadRequest, "invalid_client_metadata")
 		return
 	}
-	for key := range raw {
-		if key != "client_name" && key != "redirect_uris" && key != "token_endpoint_auth_method" && key != "grant_types" && key != "response_types" {
+	for _, value := range raw {
+		if string(value) == "null" {
 			oauthJSONError(w, http.StatusBadRequest, "invalid_client_metadata")
 			return
 		}
@@ -150,6 +152,10 @@ func (s *Server) oauthRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if strings.TrimSpace(decoderInput.ClientName) == "" || !credentialText(decoderInput.ClientName, 100) || len(decoderInput.RedirectURIs) == 0 || len(decoderInput.RedirectURIs) > 5 || decoderInput.TokenEndpointAuthMethod != "none" {
+		oauthJSONError(w, http.StatusBadRequest, "invalid_client_metadata")
+		return
+	}
+	if _, present := raw["application_type"]; present && decoderInput.ApplicationType != "native" && decoderInput.ApplicationType != "web" {
 		oauthJSONError(w, http.StatusBadRequest, "invalid_client_metadata")
 		return
 	}

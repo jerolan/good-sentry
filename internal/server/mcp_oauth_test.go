@@ -94,11 +94,20 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 		`{"client_name":"bad","redirect_uris":["http://attacker.example/callback"],"token_endpoint_auth_method":"none"}`,
 		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"client_secret_basic"}`,
 		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","unknown":true}`,
+		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","application_type":null}`,
+		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","application_type":"other"}`,
+		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","application_type":false}`,
+		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","grant_types":null}`,
+		`{"client_name":"bad","client_name":"other","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none"}`,
 	} {
 		res, _ = oauthJSON(t, f.client, base+"/oauth/register", bad)
 		if res.StatusCode != http.StatusBadRequest {
 			t.Fatalf("unsafe registration accepted: %d", res.StatusCode)
 		}
+	}
+	res, _ = oauthJSON(t, f.client, base+"/oauth/register", `{"client_name":"Web client","redirect_uris":["https://client.example/callback"],"token_endpoint_auth_method":"none","application_type":"web"}`)
+	if res.StatusCode != http.StatusCreated {
+		t.Fatalf("valid web client registration=%d", res.StatusCode)
 	}
 	verifier := strings.Repeat("a", 43)
 	digest := sha256.Sum256([]byte(verifier))

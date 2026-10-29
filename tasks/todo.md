@@ -12967,3 +12967,29 @@ traza sin credenciales están en test-results/closure-20261025/mcp-official-oaut
 Siguiente acción concreta: restaurar el owner oficial preparado, implementar
 el alias y la validación de registro, repetir el flujo real y cubrir prefijo,
 modo deshabilitado, métodos y metadatos inválidos antes de acreditar resultados.
+
+### Handler OAuth oficial verificado localmente, 2026-10-29
+
+El servidor expone el alias RFC8414 en el origen para el issuer con prefijo;
+GET/HEAD conserva metadata no-store, mientras otros métodos, rutas erróneas y
+MCP deshabilitado no se admiten. El registro acepta `application_type` nativo
+o web, sin añadir permisos, y rechaza nulos, duplicados, tipos y campos inválidos.
+El RED adicional reprodujo que `grant_types:null` se aceptaba antes del cambio.
+
+El `AuthorizationCodeHandler` oficial Go v1.8.0 completó descubrimiento,
+registro, PKCE, consentimiento de un solo proyecto e invocación real de MCP.
+Tras forzar la expiración mediante el hook público del SDK, renovó ambos tokens,
+conservó el proyecto autorizado y rechazó la reutilización de los anteriores;
+la revocación desde la API impidió la siguiente llamada. La expiración forzada
+usa el token source OAuth real, sin seam de producto. Las suites MCP de servidor
+y OAuth de almacén pasaron con race: 41 y 3 acciones respectivamente; vet de
+integración y build pasaron. PostgreSQL temporal quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-official-oauth/.
+
+Esta evidencia local no sustituye las comprobaciones restantes de navegador,
+upgrade, imagen final y CI público. MCP051/052/059/077 y dependientes siguen
+sujetos a conciliación integral sobre la candidata final.
+
+Siguiente acción concreta: seleccionar el primer criterio independiente sin
+evidencia vigente y dependencias resueltas; mantener abiertos los perfiles
+PDB históricos y los gates integrales de MCP y de la candidata final.
