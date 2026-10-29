@@ -3,14 +3,18 @@
 package server
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"goodsentry/internal/config"
 )
@@ -104,4 +108,120 @@ func TestOAuthCodeExchangeBindingAndVerifierAlphabet(t *testing.T) {
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("valid maximum verifier rejected: %d", response.StatusCode)
 	}
+	t.Run("concurrent single use", func(t *testing.T) {
+		var accessBefore, refreshBefore int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&accessBefore, &refreshBefore); err != nil {
+			t.Fatal(err)
+		}
+		concurrentCode := authorize(verifier)
+		tx, err := f.sql.Begin(f.ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(context.Background())
+		server := &Server{cfg: cfg}
+		var locked string
+		if err := tx.QueryRow(f.ctx, `SELECT code_hash FROM oauth_authorization_codes WHERE code_hash=$1 FOR UPDATE`, server.hash(concurrentCode)).Scan(&locked); err != nil {
+			t.Fatal(err)
+		}
+		values := url.Values{"grant_type": {"authorization_code"}, "client_id": {id}, "redirect_uri": {redirect}, "code": {concurrentCode}, "code_verifier": {verifier}}
+		type result struct {
+			status int
+			err    error
+		}
+		const workers = 8
+		results := make(chan result, workers)
+		start := make(chan struct{})
+		var ready sync.WaitGroup
+		var finished sync.WaitGroup
+		ready.Add(workers)
+		finished.Add(workers)
+		for range workers {
+			go func() {
+				defer finished.Done()
+				ready.Done()
+				<-start
+				req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, base+"/oauth/token", strings.NewReader(values.Encode()))
+				if err != nil {
+					results <- result{err: err}
+					return
+				}
+				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+				res, err := http.DefaultClient.Do(req)
+				if err != nil {
+					results <- result{err: err}
+					return
+				}
+				_, err = io.Copy(io.Discard, res.Body)
+				res.Body.Close()
+				results <- result{status: res.StatusCode, err: err}
+			}()
+		}
+		ready.Wait()
+		close(start)
+		defer func() {
+			_ = tx.Rollback(context.Background())
+			finished.Wait()
+		}()
+		deadline, cancel := context.WithTimeout(f.ctx, 10*time.Second)
+		defer cancel()
+		ticker := time.NewTicker(10 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			var waiting int
+			if _, err := tx.Exec(f.ctx, `SELECT pg_stat_clear_snapshot()`); err != nil {
+				t.Fatal(err)
+			}
+			if err := tx.QueryRow(f.ctx, `SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%FOR UPDATE OF c%'`).Scan(&waiting); err != nil {
+				t.Fatal(err)
+			}
+			if waiting >= 2 {
+				break
+			}
+			select {
+			case <-deadline.Done():
+				t.Fatal("concurrent exchanges did not reach the code lock")
+			case <-ticker.C:
+			}
+		}
+		if err := tx.Commit(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		statuses := map[int]int{}
+		for range workers {
+			result := <-results
+			if result.err != nil {
+				t.Fatal(result.err)
+			}
+			statuses[result.status]++
+		}
+		if statuses[http.StatusOK] != 1 || statuses[http.StatusBadRequest] != workers-1 || len(statuses) != 2 {
+			t.Fatalf("concurrent exchange statuses=%v", statuses)
+		}
+		var accessAfter, refreshAfter int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&accessAfter, &refreshAfter); err != nil || accessAfter != accessBefore+1 || refreshAfter != refreshBefore+1 {
+			t.Fatalf("concurrent token counts=%d/%d to %d/%d: %v", accessBefore, refreshBefore, accessAfter, refreshAfter, err)
+		}
+	})
+	t.Run("expired code", func(t *testing.T) {
+		var accessBefore, refreshBefore int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&accessBefore, &refreshBefore); err != nil {
+			t.Fatal(err)
+		}
+		expiredCode := authorize(verifier)
+		server := &Server{cfg: cfg}
+		result, err := f.sql.Exec(f.ctx, `UPDATE oauth_authorization_codes SET created_at=clock_timestamp()-interval '1 hour', expires_at=clock_timestamp()-interval '1 second' WHERE code_hash=$1`, server.hash(expiredCode))
+		if err != nil || result.RowsAffected() != 1 {
+			t.Fatalf("expire code setup: %v", err)
+		}
+		form := url.Values{"grant_type": {"authorization_code"}, "client_id": {id}, "redirect_uri": {redirect}, "code": {expiredCode}, "code_verifier": {verifier}}
+		res, _ := oauthForm(t, client, base+"/oauth/token", form)
+		if res.StatusCode != http.StatusBadRequest {
+			t.Fatalf("expired code accepted: %d", res.StatusCode)
+		}
+		var accessAfter, refreshAfter int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&accessAfter, &refreshAfter); err != nil || accessAfter != accessBefore || refreshAfter != refreshBefore {
+			t.Fatalf("expired exchange changed token counts: %v", err)
+		}
+	})
 }

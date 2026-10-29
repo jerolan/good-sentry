@@ -13077,3 +13077,23 @@ integrales; no se da por cerrada la compatibilidad general.
 Siguiente acción concreta: verificar que intercambios simultáneos del mismo
 código producen exactamente una emisión y que un código vencido no emite
 credenciales, con PostgreSQL aislado y sin usar sleeps como prueba de carrera.
+
+### Uso único concurrente del código OAuth, 2026-10-29
+
+Una transacción de prueba retuvo el código; ocho solicitudes HTTP se iniciaron
+juntas y PostgreSQL confirmó al menos dos transacciones esperando su bloqueo
+antes de liberarlo. Hubo exactamente un 200, siete 400 y una sola fila nueva
+de acceso y otra de refresh. Un código vencido mediante el reloj de la base se
+rechazó sin emitir credenciales. Al retirar temporalmente las dos comprobaciones
+de uso único, el owner detectó intercambios repetidos; se restauró el producto
+y pasaron con race los tres owners OAuth. Vet de integración pasó y la base
+temporal se detuvo. Comprobante: test-results/closure-20261025/mcp-oauth-concurrency/.
+
+El primer ensayo no observó la contención y dejó solicitudes activas durante el
+control de vencimiento. La base usa `stats_fetch_consistency=cache`; la prueba
+corregida limpia ese snapshot entre consultas y espera todas las solicitudes
+incluso ante fallo. Se conserva ese intento sin atribuirlo al producto.
+
+Siguiente acción concreta: verificar la rotación concurrente del mismo refresh
+con bloqueo observado, una sola pareja nueva, revocación del acceso previo y
+rechazo de reutilización; mantener la aceptación integral y final pendientes.

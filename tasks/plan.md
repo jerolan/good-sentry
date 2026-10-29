@@ -22,8 +22,8 @@ log scope, OAuth grant metadata and revocation; final viewport/image gates remai
 The OAuth consent owner now verifies mandatory 2FA before code issuance and a
 successful official MCP call after enrollment; final MCP acceptance stays open.
 OAuth code exchange now validates the approved verifier alphabet and has local
-binding, rejected-attempt and boundary evidence; concurrent exchange remains
-to be verified before the final candidate gates.
+binding, rejected-attempt, expiry and observed concurrent single-use evidence.
+Concurrent refresh rotation remains to be verified before final candidate gates.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
