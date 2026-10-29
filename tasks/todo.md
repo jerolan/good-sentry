@@ -12706,3 +12706,19 @@ de selectores no directos y los demás perfiles nativos no se acreditan aquí.
 Siguiente acción concreta: buscar un PDB realmente retirado que ejercite el
 perfil moderno y continuar la investigación de mapas no directos u otro perfil
 nativo exigible con dependencias resueltas.
+
+### Identidad de un PDB público real, 2026-10-29
+
+El PDB público kernel32 descargado del servidor de símbolos de Microsoft
+(SHA-256 252aebe40fcdfcb8a044be2e4a8d288ba04ecfea35d1151146247c97e4cc780e)
+tiene flag de privados retirados, edad Info 3 y edad DBI 1. Un lector
+independiente encontró 2504 públicos de función; el producto aún no está
+acreditado para esta muestra. La implementación publicada por Microsoft
+exige edad de imagen igual a DBI y no mayor que Info. SPEC define esa regla
+para Info moderno, mantiene el tratamiento anterior de los perfiles antiguos
+y prohíbe crear un alias con la edad Info. Quedan invalidados los comprobantes
+locales afectados de native018/native020 y sus dependientes.
+
+Siguiente acción concreta: reproducir el rechazo, implementar la identidad
+moderna y comprobar controles negativos y coincidencia íntegra con el oracle
+independiente antes de acreditar la muestra; mantener la auditoría final abierta.

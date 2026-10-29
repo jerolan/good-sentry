@@ -5,6 +5,9 @@ Authority: ../SPEC.md. The user approved the capability map and authorized speci
 Current closure increment, 2026-10-28: releases028–031 and the local NB10/PDB2
 identity repair are verified, with receipts in todo.md. Continue native004
 and its dependents. The EC/optional-header prerequisite is repaired and verified.
+Before further native closure, implement the 2026-10-29 modern Info/DBI age
+matching correction and independently compare the real stripped Microsoft PDB;
+the previous local native018/native020 evidence is invalidated where affected.
 The first bounded legacy procedure reader in native018 is now verified locally:
 Small MSF2, pre-VC70 Info identity, ST procedures and obsolete stream0 reuse in
 MSF2/MSF7, with strict active page ownership and modern CV4 restrictions retained.

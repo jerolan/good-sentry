@@ -1268,6 +1268,15 @@ RISC-V64 ELF CFI accepts little-endian ELF64 `EM_RISCV` `.eh_frame` or `.debug_f
 
 The PDB procedure-symbol slice consumes classic Microsoft PDB/MSF 7 files up to the existing 64MiB per-file processing limit. Validate MSF block geometry, directory and every referenced stream before reading; accept only block sizes 512, 1024, 2048 and 4096, at most 4096 streams, 4096 modules, 512 PE sections, 200,000 procedure records and 1,000,000 CodeView records, and return no symbols from a malformed PDB. Read the PDB GUID and age from stream 1, the module records from DBI stream 3, and the section-header stream referenced by DBI optional-debug-header slot 5. Locate that optional header after the declared module, section-contribution, section-map, source-info, type-server-map and EC substreams. Consume the EC byte extent without interpreting its contents or adding alignment, including a nonzero odd-sized extent; the existing total-length validation must reject a truncated or overflowing declaration before returning symbols. This order follows the [LLVM DBI EC and optional-header layout](https://llvm.org/docs/PDB/DbiStream.html#ec-substream). Acceptance extends the existing public PDB parser owner with an owned fixture containing25 opaque EC bytes, retaining exact identities and procedure ranges. For the modern procedure records, require the C13 signature (4) and extract only `S_GPROC32`, `S_LPROC32`, their `_ID` forms and the corresponding DPC procedure records from module symbol streams. Convert each valid one-based executable PE section plus procedure offset to an image-relative address using the section virtual address, retain the procedure's declared code size as its frame range, and key the result by the embedded GUID+age. A nonempty multipart Debug ID that disagrees with the PDB identity makes that PDB ineligible for the request. Keep the original procedure spelling. A PDB may be a regular member of the already bounded ZIP/TAR readers.
 
+For VC70 and later Info with NewDBI, accept a nonzero DBI age no greater than
+the Info age, and use the DBI age with the Info GUID as the image Debug ID.
+Reject a DBI age greater than Info or zero; do not create an Info-age alias.
+This follows [Microsoft's PDB/image matching rules](https://github.com/microsoft/microsoft-pdb/blob/805655a28bd8198004be2ac27e6e0290121a5e89/PDB/dbi/pdb.cpp#L3457),
+which require image age at most Info age and equal to nonzero DBI age. Preserve
+the separately specified pre-VC70 and V50 behavior. Verify matching and rejection
+with owned fixtures and compare an independently produced stripped PDB against
+an independent bounded public-symbol oracle.
+
 The first legacy procedure increment also consumes Small MSF 2.00 files with
 the exact 44-byte signature, a 60-byte header, 1024/2048/4096-byte pages and
 16-bit page indices. Require the file length to equal the declared page count
@@ -1292,7 +1301,7 @@ Recognized PDB Info versions before VC70 use their 12-byte version/signature/age
 header and derive the NB10 Debug ID from the eight-hex-digit signature followed
 by hexadecimal age, including age zero. VC70 and later retain GUID+age and the
 28-byte header. Named-stream maps, when required, begin after the applicable
-header; VC2 has no such map. This increment requires the existing 64-byte
+header; VC2 has no such map. This legacy increment requires the existing 64-byte
 NewDBI header and equal Info/DBI age, with the V50 age-zero rule below. Accept module CodeView signatures 2 and 4;
 signature2 permits the ST procedure records and opaque C11 extents, while modern
 procedure kinds and C13/inline data continue to require signature4. Add
@@ -1318,7 +1327,7 @@ to four bytes. Validate the FPO extent but do not interpret it. An absent module
 stream must not claim symbol, C11 or FPO bytes. Preserve the existing signature2
 ST procedure reader and native019 C11 mapping. For V50 only, DBI age zero is
 permitted even when Info age is nonzero; a nonzero DBI age must equal Info age.
-V60 and later retain the existing age equality check. Do not infer the age or
+Pre-VC70 V60 and later retain the existing age equality check. Do not infer the age or
 section RVAs from module names, serialized pointers or the section map.
 
 This increment admits the direct V50 section-map profile: every segment used
