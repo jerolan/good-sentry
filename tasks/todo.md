@@ -12761,3 +12761,26 @@ imagen y CI finales siguen invalidadas por los cambios posteriores.
 Siguiente acción concreta: investigar y verificar el siguiente perfil nativo
 exigible, empezando por la traducción de selectores no directos o una muestra
 VC4/DBI antiguo, y conservar evidencia antes de la auditoría final.
+
+### Investigación de traducción OMAP, 2026-10-29
+
+Las búsquedas de una pareja VC4 y de traducción de selectores no directos no
+aportaron una muestra concluyente. En cambio, el lector PDB de Sentry documenta
+una traducción adicional para imágenes reorganizadas: si hay secciones
+originales, usa esas secciones y OMAP para convertir direcciones internas a
+direcciones de imagen. Microsoft distingue expresamente las tablas de imagen a
+origen y de origen a imagen. GoodSentry solo lee la tabla de secciones final y
+no procesa OMAP; por tanto no hay evidencia válida para ese perfil. El PDB
+kernel32 recién comparado carece de ambas tablas OMAP, por lo que esa comparación
+no demuestra el comportamiento con direcciones reorganizadas.
+
+Fuentes: https://docs.rs/pdb/latest/src/pdb/pdb.rs.html (address_map),
+https://docs.rs/pdb/latest/src/pdb/omap.rs.html y
+https://github.com/MicrosoftDocs/win32/blob/docs/desktop-src/Debug/pe-format.md
+(IMAGE_DEBUG_TYPE_OMAP_FROM_SRC y OMAP_TO_SRC). No se han modificado producto ni
+especificación para este perfil; native004 y sus dependientes siguen abiertos.
+
+Siguiente acción concreta: verificar con una muestra o un oracle independiente
+los límites, tramos eliminados y divisiones de rango OMAP; definir el contrato
+acotado antes de implementar y comprobar que el PDB sin OMAP conserva sus
+resultados. Continuar en paralelo la investigación de mapas no directos y VC4.
