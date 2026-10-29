@@ -483,11 +483,6 @@ func parsePDBPublicFunctionsWithLegacyRefs(msf *pdbMSFFile, symbolRecordStream u
 			if len(padding) > 3 {
 				return nil, false
 			}
-			for i, value := range padding {
-				if value != byte(0xf1+i) {
-					return nil, false
-				}
-			}
 			flags := binary.LittleEndian.Uint32(body)
 			if flags&^uint32(pdbPublicKnownFlags) != 0 {
 				return nil, false
@@ -501,8 +496,11 @@ func parsePDBPublicFunctionsWithLegacyRefs(msf *pdbMSFFile, symbolRecordStream u
 					return nil, false
 				}
 				mapping := sectionMap[segment-1]
-				unsupportedFlags := uint16(pdbSectionMapSelector | pdbSectionMapAbsolute | pdbSectionMapGroup)
+				unsupportedFlags := uint16(pdbSectionMapAbsolute | pdbSectionMapGroup)
 				if mapping.flags&pdbSectionMapExecute == 0 || mapping.flags&unsupportedFlags != 0 || mapping.frame == 0 || int(mapping.frame) > len(sections) {
+					return nil, false
+				}
+				if mapping.flags&pdbSectionMapSelector != 0 && (mapping.frame != segment || mapping.offset != 0 || mapping.overlay != 0 || mapping.group != 0) {
 					return nil, false
 				}
 				sectionIndex := int(mapping.frame - 1)

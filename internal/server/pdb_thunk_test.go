@@ -228,3 +228,76 @@ func TestLegacyPublicMinidumpProjectIsolation(t *testing.T) {
 		})
 	}
 }
+
+func TestModernPublicDirectSelectorProjectIsolation(t *testing.T) {
+	for _, tc := range []struct {
+		name              string
+		other, unstripped bool
+	}{{"same project", false, false}, {"other project", true, false}, {"unstripped", false, true}} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newResolutionHTTPFixture(t)
+			access := store.ManagementAccess{UserID: f.owner.ID, OrganizationID: f.org.ID, AllProjects: true}
+			project := f.project.ID
+			if tc.other {
+				p, e := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Other modern public", "native")
+				if e != nil {
+					t.Fatal(e)
+				}
+				project = p.ID
+			}
+			fixture := nativepdb.WithPublicOnlySymbols()
+			pdb := fixture.Data
+			entry := pdb[fixture.SectionMapStart+4:]
+			binary.LittleEndian.PutUint16(entry, binary.LittleEndian.Uint16(entry)|0x100)
+			binary.LittleEndian.PutUint32(entry[12:], 0)
+			pdb[fixture.PublicSymbolsBlock*512+26] = 0x55
+			if tc.unstripped {
+				binary.LittleEndian.PutUint16(pdb[fixture.DBIBlock*512+56:], 0)
+			}
+			digest := sha1.Sum(pdb)
+			const id = "5A9832E5287241C1838ED98914E9B7FF1"
+			if _, e := f.db.SaveDebugFile(f.ctx, access, project, "modern.pdb", "pdb", id, "x86_64", "modern.pdb", hex.EncodeToString(digest[:]), nil, nil, pdb); e != nil {
+				t.Fatal(e)
+			}
+			dump := buildNativeModuleMinidump(t, "C:\\test\\crash.exe", id, 0x1015)
+			body, contentType := minidumpForm(t, dump, nil)
+			req, e := http.NewRequestWithContext(f.ctx, http.MethodPost, f.server.URL+"/good/api/"+f.project.ID+"/minidump/?sentry_version=7&sentry_key="+f.project.PublicKey, body)
+			if e != nil {
+				t.Fatal(e)
+			}
+			req.Header.Set("Content-Type", contentType)
+			res, e := http.DefaultClient.Do(req)
+			if e != nil {
+				t.Fatal(e)
+			}
+			res.Body.Close()
+			if res.StatusCode != http.StatusOK {
+				t.Fatalf("status=%d", res.StatusCode)
+			}
+			events, e := f.db.CompatibleEvents(f.ctx, access, store.EventProjectTarget(f.project.ID), store.CompatibleEventFilter{Limit: 10})
+			if e != nil || len(events) == 0 {
+				t.Fatalf("events=%d err=%v", len(events), e)
+			}
+			var payload struct {
+				Exception struct {
+					Values []struct {
+						Stacktrace struct {
+							Frames []nativeFrame `json:"frames"`
+						} `json:"stacktrace"`
+					} `json:"values"`
+				} `json:"exception"`
+			}
+			if e = json.Unmarshal(events[0].Data, &payload); e != nil {
+				t.Fatal(e)
+			}
+			frame := payload.Exception.Values[0].Stacktrace.Frames[0]
+			want := "PublicFirst"
+			if tc.other || tc.unstripped {
+				want = ""
+			}
+			if frame.Function != want {
+				t.Fatalf("frame=%+v want=%q", frame, want)
+			}
+		})
+	}
+}

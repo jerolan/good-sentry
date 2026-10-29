@@ -12683,3 +12683,26 @@ invalida el recibo local de native020 y los dependientes hasta nueva prueba.
 Siguiente acción concreta: preparar RED público/HTTP para ambos casos y sus
 controles negativos, reparar el lector y comparar los nueve públicos de LLVM
 con un oracle independiente, sin atribuir al experimento un PDB retirado real.
+
+### Selector directo y padding MSF7 verificados, 2026-10-29
+
+El lector de públicos modernos acepta el selector solo cuando el frame coincide
+con la sección lógica y no hay offset, overlay ni grupo; también acepta hasta
+tres bytes opacos después del nombre. Los selectores no directos, rangos y
+padding excesivo siguen rechazándose, y un PDB moderno sin el flag no aporta
+fallback público.
+
+RED nativo/HTTP reprodujo ambos rechazos. GREEN cubrió el caso directo, padding,
+mapas no directos y aislamiento; con el flag activado en la muestra de LLVM,
+un oracle independiente coincidió en los nueve rangos y la línea existente de
+`main` se conservó. Race nativo aprobó753 acciones y servidor33; vet y build
+pasaron. Comprobante: test-results/closure-20261025/pdb-modern-direct-selector/.
+La base de pruebas temporal se detuvo y la primaria revisó el cambio.
+
+Esta prueba usa un flag modificado sobre un PDB real, no un PDB retirado real;
+la aceptación integral y la imagen/CI finales siguen pendientes. La traducción
+de selectores no directos y los demás perfiles nativos no se acreditan aquí.
+
+Siguiente acción concreta: buscar un PDB realmente retirado que ejercite el
+perfil moderno y continuar la investigación de mapas no directos u otro perfil
+nativo exigible con dependencias resueltas.

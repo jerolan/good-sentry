@@ -378,9 +378,6 @@ func TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols(t 
 		{name: "invalid segment index", mutate: func(data []byte) {
 			binary.LittleEndian.PutUint16(data[fixture.PublicSymbolsBlock*512+12:], 3)
 		}},
-		{name: "invalid alignment byte", mutate: func(data []byte) {
-			data[fixture.PublicSymbolsBlock*512+26] = 0
-		}},
 		{name: "unknown public flags", mutate: func(data []byte) {
 			binary.LittleEndian.PutUint32(data[fixture.PublicSymbolsBlock*512+4:], 0x80000000)
 		}},
@@ -390,6 +387,24 @@ func TestParseNativePDBPublicSymbolsRejectsMalformedDataWithoutPartialSymbols(t 
 		{name: "selector mapping", mutate: func(data []byte) {
 			flags := binary.LittleEndian.Uint16(data[fixture.SectionMapStart+4:])
 			binary.LittleEndian.PutUint16(data[fixture.SectionMapStart+4:], flags|1<<8)
+		}},
+		{name: "selector with overlay", mutate: func(data []byte) {
+			record := data[fixture.SectionMapStart+4:]
+			binary.LittleEndian.PutUint16(record, binary.LittleEndian.Uint16(record)|1<<8)
+			binary.LittleEndian.PutUint16(record[2:], 1)
+			binary.LittleEndian.PutUint32(record[12:], 0)
+		}},
+		{name: "selector with group", mutate: func(data []byte) {
+			record := data[fixture.SectionMapStart+4:]
+			binary.LittleEndian.PutUint16(record, binary.LittleEndian.Uint16(record)|1<<8)
+			binary.LittleEndian.PutUint16(record[4:], 1)
+			binary.LittleEndian.PutUint32(record[12:], 0)
+		}},
+		{name: "selector with different frame", mutate: func(data []byte) {
+			record := data[fixture.SectionMapStart+4:]
+			binary.LittleEndian.PutUint16(record, binary.LittleEndian.Uint16(record)|1<<8)
+			binary.LittleEndian.PutUint16(record[6:], 2)
+			binary.LittleEndian.PutUint32(record[12:], 0)
 		}},
 		{name: "absolute mapping", mutate: func(data []byte) {
 			flags := binary.LittleEndian.Uint16(data[fixture.SectionMapStart+4:])
