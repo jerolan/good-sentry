@@ -13,6 +13,9 @@ evidence, plus an exact comparison against the independent Sentry/Microsoft
 sample; see todo.md. Other native004 profiles and final acceptance remain open.
 Late OMAP PDB reprocessing now has isolated HTTP/PostgreSQL, project isolation,
 idempotency and worker-reopen evidence; final candidate acceptance remains open.
+The official MCP OAuth handler exposes a prefix-discovery defect; implement
+the RFC8414 origin-path alias and its bounded registration metadata before
+retesting its full authorization flow. Other MCP and final gates remain open.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.

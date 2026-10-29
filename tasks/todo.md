@@ -12949,3 +12949,21 @@ Siguiente acción concreta: construir una prueba con el handler oficial y una
 sesión MCP real contra PostgreSQL aislado, con consentimiento, token y una
 herramienta; diagnosticar cualquier incompatibilidad antes de afirmar el ciclo
 completo. Mantener pendientes los requisitos adicionales y la auditoría final.
+
+### Descubrimiento RFC8414 para cliente oficial, 2026-10-29
+
+El handler oficial Go v1.8.0 consultó el recurso anunciado, pero para el issuer
+con prefijo pidió `/.well-known/oauth-authorization-server/good`. El servidor
+respondió 404; el handler usó endpoints alternos y el registro terminó en 405.
+La prueba reproduce ese resultado en PostgreSQL aislado. El SDK también añade
+`application_type` al registro dinámico; el contrato anterior rechazaba ese
+campo como desconocido. SPEC fija el alias RFC8414 en el origen y admite solo
+los valores nativos/web de ese metadato sin ampliar permisos ni habilitar OIDC.
+
+Se invalidan los recibos afectados de MCP051/052/059/077 y sus dependientes;
+los demás controles y evidencia históricos se conservan. La prueba RED y la
+traza sin credenciales están en test-results/closure-20261025/mcp-official-oauth-research/.
+
+Siguiente acción concreta: restaurar el owner oficial preparado, implementar
+el alias y la validación de registro, repetir el flujo real y cubrir prefijo,
+modo deshabilitado, métodos y metadatos inválidos antes de acreditar resultados.

@@ -2929,9 +2929,24 @@ When MCP is selected, provide a same-origin OAuth2 authorization server for MCP 
 
 Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: `/.well-known/oauth-protected-resource`, `/.well-known/oauth-protected-resource/mcp` and `/.well-known/oauth-authorization-server`. They advertise the canonical resource `DOMAIN/PREFIX/mcp`, local issuer `DOMAIN/PREFIX`, authorization/token/registration/revocation endpoints, authorization-code+refresh grants, S256 PKCE, token response method POST and only enabled scopes: `org:read`, `project:read`, `event:read`, `event:write`, and, when logs are enabled, `log:read`. No implicit/password grant, client credentials, wildcard redirect URI, bearer query token or credentials in logs.
 
+For a nonempty issuer path PREFIX, also serve RFC8414 discovery at the origin
+path `/.well-known/oauth-authorization-server/PREFIX`, retaining the existing
+prefixed endpoint. This exact GET/HEAD alias returns the same no-store metadata
+only when MCP is enabled; other paths and disabled MCP remain unavailable.
+The location follows [RFC 8414 section 3](https://www.rfc-editor.org/rfc/rfc8414#section-3)
+and is exercised by the pinned official Go MCP OAuth handler.
+
 <a id="close-mcp-052"></a>
 
 `POST /oauth/register` accepts a bounded JSON object: `client_name`1..100 valid characters, `redirect_uris`1..5 distinct absolute HTTPS URIs (HTTP allowed only for loopback `127.0.0.1`/`[::1]` with no fragment/userinfo), `token_endpoint_auth_method` exactly `none`, and `grant_types`/`response_types` omitted or exactly authorization_code/refresh_token and code. Generate an opaque public `client_id`; reject duplicate/unknown/null fields and excessive bodies. Registration never grants a user or token. Consent occurs separately.
+
+Also accept optional `application_type` exactly `native` or `web`, as emitted
+by the official Go MCP handler's dynamic registration. Treat it only as client
+metadata; it grants no permissions and does not enable OpenID Connect. Reject
+null, non-string and other values, keep all existing URI and registration
+checks, and continue rejecting other unknown fields. Verify the complete
+handler-driven registration and authorization, not merely a manually issued
+token used by the MCP client.
 
 <a id="close-mcp-053"></a>
 
