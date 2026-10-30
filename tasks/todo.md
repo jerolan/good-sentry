@@ -14482,3 +14482,16 @@ MIPS32, MIPS CFI, big-endian ni un crash real MIPS.
 Siguiente acción concreta: investigar si el compilador Go cruzado disponible
 produce ELF y CFI MIPS contrastables con readelf, como oráculo independiente
 para un slice CFI; no extrapolar delay slots ni direcciones sign-extended.
+
+### Selección de primera transición CFI MIPS, 2026-10-29
+
+Go 1.27.2 produjo ELF MIPS32EL y MIPS64EL con `.debug_frame` comprimido.
+Readelf muestra un leaf con CFA=SP y retorno r31, y un caller con CFA=SP+16
+o SP+32 y retorno guardado en SP. Una revisión independiente contrastó ambos
+FDE: son DWARF32 incluso en ELF64. No hay ejecución MIPS ni evidencia sobre
+delay slots, microMIPS o el límite de FDE de un caller. SPEC delimita una sola
+transición CFI, sin ajustar ni consultar el PC de retorno como otro FDE.
+
+Siguiente acción concreta: conservar el oráculo generado y su procedencia,
+escribir RED para ambos anchos y SP igual/creciente, y verificar recuperación,
+memoria, identidades, incompatibilidad de arquitecturas y evento persistido.

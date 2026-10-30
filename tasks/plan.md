@@ -857,3 +857,10 @@ mantener MIPS32, big-endian, CFI y crash real MIPS abiertos.
 Leer el layout compartido de 600 bytes con arquitectura y flags O32, sin
 normalizar direcciones de bits altos ni inferir callers. Probar ambas variantes
 MIPS64, rechazos y evento; mantener abierta la representación sign-extended.
+
+### Primera transición CFI MIPS, 2026-10-29
+
+Cubrir un único caller para MIPS32EL/MIPS64EL con CFI ELF y registros
+capturados, incluyendo una función hoja con SP igual. Contrastar con FDE
+generados por Go e inspeccionados con readelf; no inferir el ajuste de delay
+slot ni evaluar FDE de callers posteriores en este incremento.

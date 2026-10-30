@@ -1850,7 +1850,24 @@ persistence without raw-dump retention. [Breakpad's Linux writer](https://github
 [SystemInfo writer](https://github.com/google/breakpad/blob/main/src/client/linux/minidump_writer/minidump_writer.cc),
 and [Crashpad's context layout](https://chromium.googlesource.com/crashpad/crashpad/+/6278690abe6ef0dda047e67dc1d0c49ce7af3811/minidump/minidump_context.h)
 define the representation. This bounded subset does not determine the handling
-of sign-extended addresses, big-endian dumps, MIPS CFI or real MIPS crashes.
+of sign-extended addresses, big-endian dumps, general MIPS CFI or real MIPS crashes.
+
+For the supported MIPS32EL and MIPS64EL contexts, additionally allow one caller
+to be recovered using a matching little-endian MIPS ELF32/ELF64 CFI table from
+the crashing PC. Use the captured GPRs with r0 fixed at zero, SP=r29 and the
+CIE's return column; evaluate the CFA and return rule using the context pointer
+width and captured memory. The caller SP may equal the initial SP for a leaf
+frame or increase; a decreasing SP, unavailable CFA/return address, zero or
+repeated PC stops. Emit the captured caller PC without adjusting it or evaluating
+another caller FDE; retain the existing initial-PC-only result when recovery is
+unavailable. Match ELF class to the Minidump architecture, reject big-endian,
+microMIPS and MIPS16 tables, and do not use tables from another architecture.
+Test Go-generated MIPS32EL and MIPS64EL `.debug_frame` records independently
+inspected with `readelf`, covering same-SP leaf and stack-saved return rules,
+memory bounds, matching identities, class/architecture and 64-frame regressions;
+verify a persisted event through authenticated HTTP. This one-transition slice
+does not establish later caller lookup, delay-slot adjustment, compressed MIPS
+instructions, signal recovery, sign-extended O32 addresses or a real MIPS crash.
 
 As a prerequisite for the Windows and Linux symbol-server work, retain typed
 lookup identity from each valid Minidump CodeView record. For `BpEL`, keep the
