@@ -832,3 +832,10 @@ Cubrir el subconjunto ARM de CLOSE-nativo-012 con ambos frames modernos,
 instrucciones y contexto capturados, distinguiendo CFI/EHABI y marcadores
 históricos. Probar registros, límites y evento persistido; mantener Thumb,
 FDPIC, layouts antiguos y crash real ARM32 fuera de esta evidencia.
+
+### Retorno Thumb de señal Linux ARM32, 2026-10-29
+
+Cubrir el retorno Thumb etiquetado que restaura un contexto ARM moderno, con
+ambas secuencias de kernel, memoria capturada y un caller dependiente del
+registro restaurado. Conservar como pendiente la reconstrucción de un contexto
+interrumpido en Thumb y no inferir soporte general de ese modo.

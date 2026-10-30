@@ -14356,3 +14356,16 @@ los criterios nativos y la candidata siguen pendientes de auditoría integral.
 Siguiente acción concreta: investigar el estado Thumb ARM32 en Minidump y en
 la búsqueda CFI/EHABI, usando fuentes primarias y un oráculo discriminante antes
 de especificar su fallback; conservar abiertas las demás variantes.
+
+### Selección de retorno Thumb a contexto ARM, 2026-10-29
+
+Linux etiqueta el puntero de retorno Thumb y documenta dos secuencias del
+trampolín; su contexto guardado distingue PC y CPSR. La interpretación general
+de PC Thumb y las diferencias de productores no tienen muestra independiente
+local. SPEC delimita un caso verificable: retorno Thumb etiquetado desde CFI que
+restaura un contexto ARM moderno. No acredita ejecución interrumpida en Thumb,
+layouts antiguos, FDPIC ni un crash real ARM32.
+
+Siguiente acción concreta: escribir RED con un caller CFI que entregue el
+puntero Thumb etiquetado, ambos formatos de señal y PC restaurado ARM exacto;
+verificar controles de bytes, estado, precedencia y evento persistido.

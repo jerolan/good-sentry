@@ -1353,7 +1353,26 @@ Linux's [signal setup](https://github.com/torvalds/linux/blob/v6.12/arch/arm/ker
 [trampoline code](https://codebrowser.dev/linux/linux/arch/arm/kernel/sigreturn_codes.S.html)
 and [Android libunwindstack](https://android.googlesource.com/platform/system/core/+/refs/heads/android11-tests-release/libunwindstack/RegsArm.cpp)
 define this bounded slice. Fixtures do not establish a real ARM32 crash, universal
-code capture, Thumb, older layouts, FDPIC, or coprocessor recovery.
+code capture, the Thumb variants beyond the bounded slice below, older layouts,
+FDPIC, or coprocessor recovery.
+
+Extend this ARM32 fallback to a Thumb signal-return pointer tagged with bit 0:
+read the captured instruction at `PC & ~1` and recognize the little-endian
+two-instruction sequences `0xdf002777` and `0xdf0027ad` for non-RT and RT.
+The existing modern-frame markers, captured register layout, 32-bit bounds,
+CFI/EHABI precedence and ARM-state saved-CPSR requirements remain unchanged.
+Preserve the tagged trampoline address in its frame and continue from the exact
+word-aligned ARM-state PC saved by the interrupted context. Do not infer a
+Thumb trampoline from an untagged PC or claim recovery of interrupted Thumb
+state. Test both sequences from a serialized Minidump whose prior CFI produces a
+tagged return pointer, including a trampoline at an address congruent to two
+modulo four, missing or wrong instructions, frame markers, an interrupted Thumb
+CPSR and a caller requiring a recovered register. Verify the persisted event as
+well. Linux [tags the signal restorer pointer](https://github.com/torvalds/linux/blob/v6.12/arch/arm/kernel/signal.c)
+and [defines Thumb snippets](https://codebrowser.dev/linux/linux/arch/arm/kernel/sigreturn_codes.S.html);
+[Arm ELF](https://github.com/ARM-software/abi-aa/blob/main/aaelf32/aaelf32.rst#symbol-values)
+distinguishes the tag from the instruction address. This is a fixture-backed
+Thumb-handler-to-ARM slice, not a real ARM32 crash or general Thumb unwinding.
 
 For a 32-bit x86 Minidump context whose architecture and integer-valid flags
 are set, initialize DWARF registers 0–3 and 6–7 from EAX, ECX, EDX, EBX, ESI
