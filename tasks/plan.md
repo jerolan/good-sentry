@@ -62,6 +62,7 @@ Fresh uptime probes and Edge recovery pass locally; disabled cleanup and restart
 remain open.
 The remaining owned checks expire with uptime/logs disabled without other row
 changes; restart and separate recovery now have local evidence.
+Selected uptime provider/lifecycle race and cutoff mutation checks pass locally.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.

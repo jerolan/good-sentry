@@ -13596,3 +13596,16 @@ Los recorridos locales no sustituyen imagen candidata, auditoría ni CI finales.
 Siguiente acción concreta: comprobar el owner de retención de uptime y lifecycle
 con PostgreSQL aislado y race, ejecutar la mutación de cutoff y restaurar el
 código antes de registrar la evidencia.
+
+### Proveedor y cutoff de uptime, 2026-10-29
+
+Los owners seleccionados de uptime y lifecycle pasaron con race en PostgreSQL
+aislado: 19 casos y ninguna omisión. La inversión temporal del cutoff de
+finalización hizo fallar el owner correspondiente; el código se restauró
+exactamente y los owners volvieron a pasar. Vet de integración pasó y la base
+temporal se detuvo. Comprobante: test-results/closure-20261025/uptime-provider-race/.
+
+La candidata y los gates finales permanecen pendientes. Siguiente acción
+concreta: cotejar CLOSE-operacion-032 y sus dependencias de retención de releases
+contra los respaldos y controladores históricos, y preparar una copia nueva
+verificada antes de cualquier prueba de expiración.
