@@ -13777,3 +13777,16 @@ CLOSE-operacion-043 sigue abierto por el runtime original de uptime ausente y
 los gates de candidata final. Siguiente acción concreta: cotejar plan y matriz
 para seleccionar el primer criterio independiente sin evidencia vigente y con
 sus dependencias resueltas, sin extrapolar la excepción de los tres respaldos.
+
+### Selección de consumidor Grafana, 2026-10-29
+
+Se seleccionan CLOSE-lectores-004 a -007: Grafana 13.0.2 con datasource Sentry
+2.2.8, token de alcance propio, consulta de issues y serie de errores. El
+comprobante histórico demuestra revocación desde el owner HTTP, pero no el
+resultado del consumidor Grafana después de revocar; tampoco reemplaza la
+repetición sobre la candidata final. La prueba se preparará en un entorno
+propio y sus recibos excluirán credenciales y datos personales innecesarios.
+
+Siguiente acción concreta: inventariar imagen, plugin y controladores existentes,
+verificar sus versiones y preparar una instancia aislada con token propio antes
+de ejecutar las consultas y la revocación real desde Grafana.
