@@ -14562,3 +14562,14 @@ Siguiente acción concreta: reproducir con Minidumps y controles válidos las
 lecturas de punteros y expresiones CFI fuera del ancho de dirección en las rutas
 compartidas; contrastar una corrección que evite panic sin cambiar la semántica
 modular DWARF y verificar también la suma del puntero de marco.
+
+### Selección de lecturas nativas acotadas, 2026-10-29
+
+CLOSE-nativo-023 sigue abierto. El panic por suma de dirección desbordada se
+reprodujo en el lector genérico antes de acotar Thumb. Ese lector también se
+alcanza desde CFI de otras arquitecturas; esa extensión y la suma separada del
+puntero de marco aún necesitan reproducción específica.
+
+Siguiente acción concreta: construir owners independientes para una ruta CFI
+compartida de 32 bits y el recorrido por frame pointer, con rangos Memory64 y
+controles válidos; después fijar una corrección verificable en SPEC.

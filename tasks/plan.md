@@ -873,3 +873,10 @@ PC y no consultar un FDE posterior cuya semántica de retorno Thumb no esté
 probada. Probar ARM y Thumb restorers, PC congruente a dos módulo cuatro,
 registros recuperados, CFI/EHABI, límites y persistencia; mantener abiertas las
 variantes históricas y la evidencia de un crash real ARM32.
+
+### Lecturas nativas dentro del ancho de dirección, 2026-10-29
+
+Investigar la lectura compartida de punteros y expresiones CFI, y la suma del
+puntero de marco. Reproducir con Minidumps y rangos capturados, contrastar los
+límites de 32/64 bits y la semántica de DWARF antes de fijar el alcance;
+verificar controles válidos y mantener trazada cualquier limitación restante.
