@@ -28,7 +28,7 @@ func TestMCPCredentialInterfaceInBrowser(t *testing.T) {
 		t.Helper()
 		srv := httptest.NewUnstartedServer(nil)
 		base := "http://" + srv.Listener.Addr().String() + "/good"
-		cfg := config.Config{MCP: mcpEnabled, Logs: logsEnabled, Domain: base, Prefix: "/good", Secret: strings.Repeat("r", 64), MaxBodyBytes: 1 << 20}
+		cfg := config.Config{MCP: mcpEnabled, Logs: logsEnabled, Admin: true, Domain: base, Prefix: "/good", Secret: strings.Repeat("r", 64), MaxBodyBytes: 1 << 20}
 		srv.Config.Handler = New(cfg, f.db)
 		srv.Start()
 		t.Cleanup(srv.Close)

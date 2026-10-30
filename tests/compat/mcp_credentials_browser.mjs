@@ -4,7 +4,7 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE);
 const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_EXECUTABLE });
 const errors = [];
 
-async function visit(base, expectedLogScope, showGrant, revoke, width) {
+async function visit(base, expectedLogScope, showGrant, revoke, width, featureState) {
   const context = await browser.newContext({ viewport: { width, height: 900 } });
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
@@ -12,6 +12,7 @@ async function visit(base, expectedLogScope, showGrant, revoke, width) {
   try {
     await page.goto(`${base}/?view=api-tokens`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: 'Sign in to GoodSentry', exact: true }).waitFor();
+    assert.equal(await page.getByText(/MCP: (on|off)/).count(), 0);
     await page.getByLabel('Email', { exact: true }).fill('owner@resolution.test');
     await page.getByLabel('Password', { exact: true }).fill('resolution-http-password');
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -32,6 +33,11 @@ async function visit(base, expectedLogScope, showGrant, revoke, width) {
         await page.getByRole('row').filter({ hasText: 'OAuth Browser MCP client' }).getByText('Revoked', { exact: true }).waitFor();
       }
     }
+    if (featureState) {
+      await page.goto(`${base}/?view=admin`, { waitUntil: 'networkidle' });
+      await page.getByRole('heading', { name: 'Administration', level: 1, exact: true }).waitFor();
+      await page.getByText(`MCP: ${featureState}`, { exact: true }).waitFor();
+    }
   } finally {
     await context.close();
   }
@@ -39,10 +45,10 @@ async function visit(base, expectedLogScope, showGrant, revoke, width) {
 
 try {
   for (const width of [320, 768, 1024, 1440]) {
-    await visit(process.env.MCP_BROWSER_ENABLED, true, true, width === 1440, width);
+    await visit(process.env.MCP_BROWSER_ENABLED, true, true, width === 1440, width, width === 1440 ? 'on' : null);
   }
   await visit(process.env.MCP_BROWSER_NO_LOGS, false, false, false, 1024);
-  await visit(process.env.MCP_BROWSER_DISABLED, false, false, false, 1024);
+  await visit(process.env.MCP_BROWSER_DISABLED, false, false, false, 1024, 'off');
   assert.deepEqual(errors, []);
   console.log('MCP credential interface: enabled, disabled, grant metadata and revocation passed');
 } finally {

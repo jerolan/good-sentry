@@ -13262,3 +13262,17 @@ Estos controles no sustituyen todos los estados de interfaz ni la candidata y
 gates finales. Siguiente acción concreta: localizar el estado de activación MCP
 en la interfaz autenticada y comprobar su visibilidad en modos habilitado y
 deshabilitado con el owner de navegador y una base aislada.
+
+### Estado MCP en interfaz autenticada, 2026-10-29
+
+Chromium confirmó que el inicio de sesión no muestra el estado MCP y que la
+vista de administración autenticada muestra `MCP: on` o `MCP: off` según el
+servidor. El owner volvió a ejecutar las comprobaciones de credenciales y
+revocación en cuatro anchos con race, sin saltarse; vet de integración pasó y
+PostgreSQL aislado quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-feature-state-browser/.
+
+La aceptación integral y los gates finales siguen pendientes. Siguiente acción
+concreta: verificar en navegador que los scopes predeterminados de la creación
+de credenciales no se amplían al activar MCP y que `log:read` permanece sin
+seleccionar, en los modos habilitado y deshabilitado.

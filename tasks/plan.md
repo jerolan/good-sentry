@@ -33,6 +33,7 @@ Unknown clients and unregistered redirects fail locally in the HTTP owner.
 State length, control characters and preservation have local HTTP evidence.
 The official handler also checks consent-page headers and issued-secret absence.
 The MCP credential browser owner covers 320/768/1024/1440 widths locally.
+Authenticated administration reports MCP on/off in the real-browser owner.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
