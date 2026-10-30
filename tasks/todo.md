@@ -13690,3 +13690,19 @@ El runtime original de uptime y los gates finales siguen pendientes. Siguiente
 acción concreta: obtener y verificar `sentry-cli` Linux 3.8.0, preparar un build
 de mapas nuevo y crear proyectos y token propios con IDs persistidos antes de
 enviar tráfico real del SDK y subir mapas.
+
+### Cohorte de archivos y respaldo previo, 2026-10-29
+
+El CLI oficial Linux 3.8.0, con SHA-256 verificado, inyectó y subió un mapa
+nuevo. Node 11.7.0 envió un evento real con adjunto, datos opacos, traza y log;
+el frame se resolvió a la línea original 7. Edge comprobó descargas exactas,
+paginación, texto seguro y reintento en 320/768/1024/1440. Se guardaron
+identidades propias, comentario y mute/asignación. Un respaldo previo restaurado
+en otra base coincidió en las 4539 filas; las 4342 filas históricas siguen
+presentes. Checkpoint privado y volúmenes conservados; contenedores detenidos.
+Comprobante: test-results/closure-20261025/file-sdk-cli-pre-expiry/.
+
+El runtime original de uptime y los gates finales siguen pendientes. Siguiente
+acción concreta: envejecer solo el mapa, adjuntos y opacos propios seleccionados
+bajo el lock de retención; comprobar que el evento y la historia permanecen,
+que el mapa independiente sobrevive y que Edge muestra la ausencia real.
