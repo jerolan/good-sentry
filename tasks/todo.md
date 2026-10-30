@@ -13419,3 +13419,18 @@ test-results/closure-20261025/retention-final-expiry/.
 Siguiente acción concreta: reiniciar la instancia con logs habilitados y comparar
 todas las filas antes y después; verificar la traza y el log independientes y
 volver a contrastar por separado el respaldo previo a expiración restaurado.
+
+### Reinicio y recuperación separados de retención, 2026-10-29
+
+El reinicio de la aplicación conservó exactamente los hashes de 4433 filas en
+73 tablas, antes de un nuevo login de verificación. La traza de dos nodos y el
+log independiente volvieron a consultarse. El SHA-256 del dump pre-expiración
+coincidió con su recibo y una restauración adicional en otra base coincidió en
+los hashes de las 4422 filas de la referencia. Los snapshots privados están
+conservados y los contenedores detenidos. Comprobante:
+test-results/closure-20261025/retention-restart-recovery/.
+
+Los recorridos locales no sustituyen el cutoff mutation, los tests integrales,
+la candidata final ni publicación/CI. Siguiente acción concreta: ejecutar los
+owners de proveedor y lifecycle de retención con PostgreSQL aislado y race,
+incluida la mutación del cutoff, restaurar el código y registrar los resultados.
