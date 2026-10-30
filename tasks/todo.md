@@ -14973,3 +14973,25 @@ Siguiente acción concreta: preparar las vistas de releases con datos recuperado
 y con las releases vencidas para comprobar en navegador los estados presente,
 ausente y vacío a 320, 768, 1024 y 1440 píxeles; conservar las copias y registrar
 los resultados y cualquier diferencia antes de los gates finales.
+
+### Vistas de releases y datos retenidos, 2026-10-30
+
+En un navegador aislado se revisaron a 320, 768, 1024 y 1440 píxeles la release
+recuperada y su historial, y después las vistas de release ausente y lista vacía
+sobre la copia posterior a expiración. Se vieron también la política vinculada,
+el silencio, la traza y el mapa; la descarga del adjunto devolvió los bytes
+esperados. Ninguna vista desbordó el ancho del documento.
+
+El primer intento abrió la lista general porque la URL omitía la barra final del
+prefijo; se corrigió y el segundo pasó. Las dos sesiones de ese intento y la
+revisión esperada de la política pendiente quedaron contabilizadas. La copia
+posterior a expiración solo añadió una sesión; las demás filas de sus 73 tablas
+quedaron exactas. Los contenedores están detenidos. Las capturas permanecen
+privadas y sus hashes están en test-results/closure-20261025/release-browser/.
+
+La vista presente se comprobó sobre la copia anterior a expiración; aún falta
+acreditar una release que sobrevive después de una expiración parcial real.
+Siguiente acción concreta: preparar una copia aislada del respaldo previo a la
+primera expiración, vencer solo las tres releases propias seleccionadas y revisar
+la release de control que permanece a los cuatro anchos, sin alterar las copias
+conservadas; después completar los gates de integración y cierre pendientes.
