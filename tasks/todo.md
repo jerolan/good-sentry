@@ -13233,3 +13233,17 @@ owner de navegador separado. Los gates de imagen y CI finales permanecen abierto
 Siguiente acción concreta: ampliar el owner del handler oficial para comprobar
 cabeceras de la pantalla de consentimiento y ausencia de los access/refresh
 emitidos en una nueva lectura de esa pantalla, sin registrar los secretos.
+
+### Cabeceras y secretos del consentimiento oficial, 2026-10-29
+
+El handler MCP oficial obtuvo la pantalla con `no-store` y CSP que restringe el
+origen predeterminado y el enmarcado. Tras emitir acceso y refresh, una segunda
+lectura de la pantalla no contenía ninguno de esos valores; no se registraron
+secretos. Pasaron 24 casos OAuth seleccionados con race y vet de integración en
+PostgreSQL aislado, que quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-oauth-consent-headers/.
+
+La aceptación integral y los gates finales siguen pendientes. Siguiente acción
+concreta: revisar el owner de navegador de CLOSE-mcp-058 contra los tamaños y
+controles de interfaz exigidos, y ejecutar los que aún carecen de evidencia
+vigente en un navegador real y una base aislada.

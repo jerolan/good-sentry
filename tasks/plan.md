@@ -31,6 +31,7 @@ Removal of organization membership also rejects pending codes and refreshes loca
 Invalid OAuth scopes and a noncanonical resource have local HTTP evidence.
 Unknown clients and unregistered redirects fail locally in the HTTP owner.
 State length, control characters and preservation have local HTTP evidence.
+The official handler also checks consent-page headers and issued-secret absence.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.

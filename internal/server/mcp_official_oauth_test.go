@@ -72,6 +72,7 @@ func TestOfficialMCPAuthorizationCodeHandler(t *testing.T) {
 	redirect := base + "/oauth/callback"
 	var source *forcedExpirySource
 	var clientID string
+	var consentURL string
 	allowConsent := true
 	handler, err := auth.NewAuthorizationCodeHandler(&auth.AuthorizationCodeHandlerConfig{
 		RedirectURL: redirect,
@@ -100,6 +101,11 @@ func TestOfficialMCPAuthorizationCodeHandler(t *testing.T) {
 			if get.StatusCode != http.StatusOK {
 				return nil, fmt.Errorf("consent page status %d", get.StatusCode)
 			}
+			csp := get.Header.Get("Content-Security-Policy")
+			if get.Header.Get("Cache-Control") != "no-store" || !strings.Contains(csp, "default-src 'self'") || !strings.Contains(csp, "frame-ancestors 'none'") {
+				return nil, fmt.Errorf("consent page missing cache or CSP protections")
+			}
+			consentURL = args.URL
 			form := u.Query()
 			clientID = form.Get("client_id")
 			form.Set("csrf", f.csrf)
@@ -143,6 +149,18 @@ func TestOfficialMCPAuthorizationCodeHandler(t *testing.T) {
 		t.Fatalf("initial token source: %v", err)
 	}
 	oldAccess, oldRefresh := first.AccessToken, first.RefreshToken
+	consent, err := f.client.Get(consentURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	consentBody, err := io.ReadAll(consent.Body)
+	consent.Body.Close()
+	if err != nil || consent.StatusCode != http.StatusOK {
+		t.Fatalf("consent page reread status=%d error=%v", consent.StatusCode, err)
+	}
+	if oldAccess == "" || oldRefresh == "" || strings.Contains(string(consentBody), oldAccess) || strings.Contains(string(consentBody), oldRefresh) {
+		t.Fatal("consent page exposed an issued credential or credential missing")
+	}
 	if err := source.expire(); err != nil {
 		t.Fatal(err)
 	}
