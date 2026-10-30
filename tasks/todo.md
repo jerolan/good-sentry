@@ -13996,3 +13996,25 @@ dos niveles y reprocesado remoto permanecen abiertos.
 Siguiente acción concreta: preparar owners RED de captura y límites compartidos
 con servidores HTTP y PostgreSQL; implementar el slice y verificar regresiones
 Linux y nativas antes de registrar el resultado.
+
+### Captura con SymStore RSDS, 2026-10-29
+
+El cliente opcional recupera PDB RSDS sin comprimir desde fuentes configuradas,
+escapa el nombre por componente y verifica GUID y edad con el parser PDB. Los
+símbolos locales prevalecen; la clave inválida, el destino privado no autorizado,
+la redirección, el nombre ausente y NB10 no producen consultas indebidas. Los
+bytes remotos no se guardan. Ambas vías de captura y la identidad incorrecta
+fallaron antes del cambio y pasan con HTTP y PostgreSQL reales. Linux y Windows
+comparten plazo y límites de solicitudes, archivos y bytes, probados con
+controles positivos. Un PDB público de Microsoft verificado por digest pasó el
+lookup con identidad real y 2696 símbolos; no se redistribuye la muestra.
+
+Pasaron la suite unitaria, vet, Compose y las regresiones Linux/Windows y nativas
+con race, sin skips. Comprobante: test-results/closure-20261025/native-symstore-capture/.
+CLOSE-nativo-023/028 y sus aceptaciones dependientes siguen abiertas o
+invalidadas: otros perfiles y reprocesado remoto no están acreditados; la
+candidata, imagen y CI siguen pendientes.
+
+Siguiente acción concreta: cotejar el orden del plan y la matriz de evidencias
+para seleccionar el primer criterio exigible sin evidencia vigente y con
+dependencias resueltas, conservando las variantes y runtimes pendientes.

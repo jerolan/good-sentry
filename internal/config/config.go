@@ -36,6 +36,8 @@ type Config struct {
 	UptimeAllowPrivate                                           bool
 	DebugInfodURLs                                               []string
 	DebugInfodAllowPrivate                                       bool
+	SymStoreURLs                                                 []string
+	SymStoreAllowPrivate                                         bool
 	AlertWorkers, AlertMaxAttempts                               int
 	AlertTimeoutSeconds                                          int
 	WebhookAllowPrivate                                          bool
@@ -52,6 +54,20 @@ type Config struct {
 }
 
 func (c Config) AuthenticationDisabled() bool { return c.AuthMode == "disabled" }
+
+func symbolServerURLs(variable string) ([]string, error) {
+	sources := strings.Fields(os.Getenv(variable))
+	if len(sources) > 4 {
+		return nil, fmt.Errorf("%s permits at most four URLs", variable)
+	}
+	for _, source := range sources {
+		endpoint, err := url.Parse(source)
+		if len(source) > 2048 || err != nil || endpoint.Opaque != "" || (endpoint.Scheme != "http" && endpoint.Scheme != "https") || endpoint.Hostname() == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.ForceQuery || strings.Contains(source, "#") {
+			return nil, fmt.Errorf("%s must contain absolute HTTP(S) URLs without credentials, query or fragment", variable)
+		}
+	}
+	return sources, nil
+}
 
 // ValidateRuntimeAvailability rejects external services not supported by this
 // build. Parsing a flag is not permission to claim support.
@@ -87,15 +103,11 @@ func Load() (Config, error) {
 		return c, fmt.Errorf("GOODSENTRY_DOMAIN must be an absolute http or https URL without credentials, query or fragment")
 	}
 	c.Prefix = strings.TrimRight(u.Path, "/")
-	c.DebugInfodURLs = strings.Fields(os.Getenv("GOODSENTRY_DEBUGINFOD_URLS"))
-	if len(c.DebugInfodURLs) > 4 {
-		return c, fmt.Errorf("GOODSENTRY_DEBUGINFOD_URLS permits at most four URLs")
+	if c.DebugInfodURLs, err = symbolServerURLs("GOODSENTRY_DEBUGINFOD_URLS"); err != nil {
+		return c, err
 	}
-	for _, source := range c.DebugInfodURLs {
-		endpoint, endpointErr := url.Parse(source)
-		if len(source) > 2048 || endpointErr != nil || endpoint.Opaque != "" || (endpoint.Scheme != "http" && endpoint.Scheme != "https") || endpoint.Hostname() == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.ForceQuery || strings.Contains(source, "#") {
-			return c, fmt.Errorf("GOODSENTRY_DEBUGINFOD_URLS must contain absolute HTTP(S) URLs without credentials, query or fragment")
-		}
+	if c.SymStoreURLs, err = symbolServerURLs("GOODSENTRY_SYMSTORE_URLS"); err != nil {
+		return c, err
 	}
 	archiveFlag := firstSet("GOODSENTRY_ENABLE_ARCHIVE", "GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB")
 	c.ArchiveEnabled, err = strconv.ParseBool(archiveFlag)
@@ -147,6 +159,7 @@ func Load() (Config, error) {
 		{"GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS", "GLITCHTIP_UPTIME_ALLOW_PRIVATE_IPS", false, &c.UptimeAllowPrivate},
 		{"GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS", "", false, &c.WebhookAllowPrivate},
 		{"GOODSENTRY_DEBUGINFOD_ALLOW_PRIVATE_IPS", "", false, &c.DebugInfodAllowPrivate},
+		{"GOODSENTRY_SYMSTORE_ALLOW_PRIVATE_IPS", "", false, &c.SymStoreAllowPrivate},
 		{"GOODSENTRY_ENABLE_MCP", "GLITCHTIP_ENABLE_MCP", false, &c.MCP},
 		{"GOODSENTRY_ENABLE_ORGANIZATION_CREATION", "ENABLE_ORGANIZATION_CREATION", false, &c.OrganizationCreation},
 		{"ENABLE_OPENAPI", "", false, &c.OpenAPI}, {"ENABLE_ADMIN", "", false, &c.Admin},

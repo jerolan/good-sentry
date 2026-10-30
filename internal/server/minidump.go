@@ -164,7 +164,7 @@ func (s *Server) symbolizeCrash(ctx context.Context, projectID string, crash *na
 		files = append(files, native.DebugSymbolFile{Name: file.Name, DebugID: file.DebugID, Content: file.Content})
 	}
 	symbols, unwindTables := native.BuildSymbolTables(files)
-	remote := s.fetchDebuginfod(ctx, crash.Modules, files, symbols, unwindTables)
+	remote := s.fetchSymbolServers(ctx, crash.Modules, files, symbols, unwindTables)
 	if len(remote) != 0 {
 		files = append(files, remote...)
 		symbols, unwindTables = native.BuildSymbolTables(files)

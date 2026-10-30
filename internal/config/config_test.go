@@ -35,6 +35,12 @@ func TestDeploymentConfiguration(t *testing.T) {
 		{"debuginfod empty fragment", map[string]string{"GOODSENTRY_DEBUGINFOD_URLS": "https://symbols.example.test/#"}, "DEBUGINFOD_URLS"},
 		{"too many debuginfod sources", map[string]string{"GOODSENTRY_DEBUGINFOD_URLS": "https://a.test https://b.test https://c.test https://d.test https://e.test"}, "DEBUGINFOD_URLS"},
 		{"invalid debuginfod private policy", map[string]string{"GOODSENTRY_DEBUGINFOD_ALLOW_PRIVATE_IPS": "perhaps"}, "DEBUGINFOD_ALLOW_PRIVATE_IPS"},
+		{"invalid symstore scheme", map[string]string{"GOODSENTRY_SYMSTORE_URLS": "ftp://symbols.example.test"}, "SYMSTORE_URLS"},
+		{"symstore credentials", map[string]string{"GOODSENTRY_SYMSTORE_URLS": "https://user:pass@symbols.example.test"}, "SYMSTORE_URLS"},
+		{"symstore query", map[string]string{"GOODSENTRY_SYMSTORE_URLS": "https://symbols.example.test/?key=secret"}, "SYMSTORE_URLS"},
+		{"symstore empty fragment", map[string]string{"GOODSENTRY_SYMSTORE_URLS": "https://symbols.example.test/#"}, "SYMSTORE_URLS"},
+		{"too many symstore sources", map[string]string{"GOODSENTRY_SYMSTORE_URLS": "https://a.test https://b.test https://c.test https://d.test https://e.test"}, "SYMSTORE_URLS"},
+		{"invalid symstore private policy", map[string]string{"GOODSENTRY_SYMSTORE_ALLOW_PRIVATE_IPS": "perhaps"}, "SYMSTORE_ALLOW_PRIVATE_IPS"},
 		{"unsupported mail", map[string]string{"EMAIL_URL": "http://mail.example.test"}, "EMAIL_URL"},
 		{"mail header injection", map[string]string{"DEFAULT_FROM_EMAIL": "sender@example.test\r\nBcc: victim@example.test"}, "DEFAULT_FROM_EMAIL"},
 		{"expired upload lifetime", map[string]string{"ARTIFACT_CHUNK_TTL_HOURS": "0"}, "ARTIFACT_CHUNK_TTL_HOURS"},
@@ -92,6 +98,8 @@ func TestDeploymentConfiguration(t *testing.T) {
 			}
 			t.Setenv("GOODSENTRY_DEBUGINFOD_URLS", "")
 			t.Setenv("GOODSENTRY_DEBUGINFOD_ALLOW_PRIVATE_IPS", "")
+			t.Setenv("GOODSENTRY_SYMSTORE_URLS", "")
+			t.Setenv("GOODSENTRY_SYMSTORE_ALLOW_PRIVATE_IPS", "")
 			for k, v := range tc.env {
 				t.Setenv(k, v)
 			}
