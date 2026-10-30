@@ -13339,3 +13339,19 @@ No se acredita aún expiración, navegador, recuperación ni imagen/CI final.
 Siguiente acción concreta: adaptar los controladores históricos a rutas y
 archivos nuevos, iniciar esta copia con retención de errores de 90 días y crear
 solo fixtures propios mediante Node 11.7.0 para el recorrido retained/empty/recovered.
+
+### Fixtures propios de retención con SDK Node, 2026-10-29
+
+Una instancia nueva de la imagen local inició la copia con retención de errores
+de 90 días. El SDK oficial Node 11.7.0 envió seis envelopes aceptados y creó un
+proyecto propio con tres errores y adjuntos, dos spans y un log. El cotejo de
+columnas originales confirmó que las 4258 filas históricas siguen presentes. No
+se envejeció ni eliminó ningún fixture. Los informes privados del SDK y las
+credenciales quedan en `/tmp/goodsentry-closure-retention-20261029`; ambos
+contenedores nuevos están detenidos y los volúmenes conservados. Comprobante:
+test-results/closure-20261025/retention-sdk-seed/.
+
+Siguiente acción concreta: adaptar el controlador a esta base y proyecto,
+configurar estados y comentario de las dos incidencias propias, ejecutar la
+comprobación de navegador retained y guardar un respaldo separado antes de
+envejecer únicamente los recibos propios seleccionados.
