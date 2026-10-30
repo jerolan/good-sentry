@@ -991,6 +991,7 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 	pc, lookupPC := crash.RIP, crash.RIP
 	seen := map[uint64]bool{crash.RIP: true}
 	frames := make([]Frame, 0, 32)
+	amd64SignalRegisters := false
 	for len(frames) < 64 {
 		module := moduleFor(lookupPC, crash.Modules)
 		if module == nil {
@@ -1056,7 +1057,15 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 			break
 		}
 		nextSP := cfa
-		if nextSP <= registers[spRegister] {
+		if crash.Arch == "amd64" && (cie.signalFrame || amd64SignalRegisters) {
+			if _, explicit := rules.regs[spRegister]; explicit {
+				nextSP, ok = evaluateRegisterRule(spRegister, rules, cfa, registers, crash.stack, crash.PointerSize)
+				if !ok {
+					break
+				}
+			}
+		}
+		if nextSP <= registers[spRegister] && !(crash.Arch == "amd64" && cie.signalFrame && disjointCapturedRanges(crash.stack, registers[spRegister], nextSP)) {
 			break
 		}
 		seen[returnAddress] = true
@@ -1065,7 +1074,18 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		if !cie.signalFrame {
 			lookupPC--
 		}
-		if crash.Arch == "arm" || crash.Arch == "riscv64" {
+		if crash.Arch == "amd64" && (cie.signalFrame || amd64SignalRegisters) {
+			nextRegisters := make(map[uint32]uint64, 17)
+			for register := uint32(0); register < 16; register++ {
+				if value, ok := evaluateRegisterRule(register, rules, cfa, registers, crash.stack, crash.PointerSize); ok {
+					nextRegisters[register] = value
+				}
+			}
+			nextRegisters[pcRegister] = returnAddress
+			nextRegisters[spRegister] = nextSP
+			registers = nextRegisters
+			amd64SignalRegisters = true
+		} else if crash.Arch == "arm" || crash.Arch == "riscv64" {
 			nextRegisters := make(map[uint32]uint64, len(rules.regs)+2)
 			for register := range rules.regs {
 				if crash.Arch == "riscv64" && register > 31 && register != 64 {
@@ -1090,6 +1110,38 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		}
 	}
 	return frames
+}
+
+// A signal handler can use an alternate stack. Only allow a backwards switch
+// between disjoint captured ranges, with no single range containing both SPs.
+func disjointCapturedRanges(ranges []memoryRange, first, second uint64) bool {
+	contains := func(memory memoryRange, address uint64) bool {
+		return address >= memory.start && address-memory.start < uint64(len(memory.data))
+	}
+	var firstMaxStart, secondMaxStart uint64
+	firstFound, secondFound := false, false
+	for _, memory := range ranges {
+		firstIn, secondIn := contains(memory, first), contains(memory, second)
+		if firstIn && secondIn {
+			return false
+		}
+		if firstIn && (!firstFound || memory.start > firstMaxStart) {
+			firstMaxStart, firstFound = memory.start, true
+		}
+		if secondIn && (!secondFound || memory.start > secondMaxStart) {
+			secondMaxStart, secondFound = memory.start, true
+		}
+	}
+	if !firstFound || !secondFound {
+		return false
+	}
+	for _, memory := range ranges {
+		if contains(memory, first) && memory.start <= secondMaxStart && uint64(len(memory.data)) <= secondMaxStart-memory.start ||
+			contains(memory, second) && memory.start <= firstMaxStart && uint64(len(memory.data)) <= firstMaxStart-memory.start {
+			return true
+		}
+	}
+	return false
 }
 
 func unwindARM32EHABI(program []byte, registers map[uint32]uint64, memory []memoryRange) (map[uint32]uint64, uint64, uint64, bool) {

@@ -1793,7 +1793,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | implementada | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
-| [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | implementada | vigente | Comprobante 2026-10-26 abajo |
+| [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | implementada | invalidada | Señal AMD64 verificada localmente; falta aceptación integral e imagen final |
 | [CLOSE-nativo-013](../SPEC.md#close-nativo-013) | CFI extended dereference: Scalar CFI expressions support DW_OP_implicit_value with an unsigned-LEB128 byte len… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-014](../SPEC.md#close-nativo-014) | CFI extended dereference: Decode CFI ULEB128 and SLEB128 operands without truncation: accept only values repre… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -13885,3 +13885,25 @@ Siguiente acción concreta: añadir en el owner nativo una regresión que falle
 por el SP no creciente y por el registro general necesario al frame siguiente,
 incluidos controles de memoria ausente y frame ordinario; después corregir el
 unwinder y verificar sin ampliar otras plataformas.
+
+### Recuperación CFI de señal AMD64, 2026-10-29
+
+El unwinder recupera los registros enteros disponibles mediante reglas CFI de
+señal, respeta una regla explícita de RSP y permite el cambio no creciente solo
+entre regiones capturadas disjuntas. La regresión falló en la versión anterior;
+otro RED detectó una regla RSP explícita ilegible o distinta del CFA y se
+corrigió. Los controles cubren registros ausentes, rangos superpuestos y frame
+ordinario. El owner prueba PCs observables y no requiere seam de producción; la
+prueba previa solo cubría la convención del PC de retorno.
+
+Pasaron la suite unitaria completa, native con race y vet, y siete acciones
+HTTP/PostgreSQL nativas con race y sin skips. Una revisión independiente detectó
+el caso RSP y, tras corregirlo, no encontró otro fallo accionable. El probe real
+y el CFI de libc siguen siendo evidencia de formato, no aceptación integral.
+Comprobante: test-results/closure-20261025/native-linux-signal-cfi/.
+
+CLOSE-nativo-012 y las aceptaciones de ingestión/crash/candidata dependientes
+siguen invalidadas hasta sus gates integrales; otras plataformas de contexto de
+señal y servidores de símbolos Windows/Linux siguen pendientes. Siguiente
+acción concreta: investigar y precisar los protocolos de servidores Windows y
+Linux, su identidad, controles y pruebas en SPEC antes de implementarlos.
