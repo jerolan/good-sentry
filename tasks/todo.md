@@ -14635,3 +14635,24 @@ pendientes no se convierten en evidencia de cierre.
 Siguiente acción concreta: cotejar si la aceptación pendiente de releases puede
 arrancar su copia sin alterar el staging vencido ni depender del runtime
 histórico ausente; registrar las condiciones que requieran intervención.
+
+### Dependencias de aceptación de releases, 2026-10-29
+
+La revisión de código confirma que StartArtifactChunks arranca siempre y limpia
+inmediatamente los chunks con expires_at vencido. El TTL configurable no cambia
+la fecha ya guardada. Un lock externo interferiría con la limpieza y posiblemente
+con uploads; no se ha usado ni se considera una aceptación. Por tanto, el chunk
+vencido de 1201 bytes en la copia verificada de 4374 filas sigue impidiendo
+arrancar esa copia preservando todas sus filas. El runtime histórico original
+de 4374 filas sigue ausente; la autorización anterior de sustitución se limitó
+a los checkpoints 4258/4290/4305. No se alteraron datos ni se inició la copia.
+
+CLOSE-operacion-032 necesita una decisión que resuelva por separado el runtime
+original ausente y el destino del chunk vencido; la copia, identidad, bytes y
+hash del chunk están conservados. CLOSE-operacion-043 conserva la dependencia
+del runtime original de 4342 filas. La tarea nativa continúa abandonada por el
+usuario y sus requisitos siguen pendientes en el contrato. No se declara cierre.
+
+Siguiente acción concreta: solicitar la instrucción necesaria para reconciliar
+las obligaciones de cierre con la tarea nativa abandonada y las dependencias
+históricas, conservando las evidencias y sin tocar las copias protegidas.
