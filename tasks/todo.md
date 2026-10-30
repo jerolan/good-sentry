@@ -13203,3 +13203,16 @@ test-results/closure-20261025/mcp-oauth-client-redirect/.
 La aceptación integral y los gates finales siguen pendientes. Siguiente acción
 concreta: verificar el límite y los caracteres de `state` en autorización OAuth,
 incluyendo rechazo sin código y un valor válido que se conserve al redirigir.
+
+### Límites de state OAuth, 2026-10-29
+
+Se rechazaron sin emitir código un `state` de 513 caracteres y otro con un
+carácter de control. Un `state` de 512 caracteres emitió código y se conservó
+íntegro en la redirección. Pasaron 24 casos OAuth seleccionados con race y vet
+de integración en PostgreSQL aislado, que quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-oauth-state/.
+
+La aceptación integral y los gates finales siguen pendientes. Siguiente acción
+concreta: cotejar los controles pendientes de CLOSE-mcp-059 con sus owners y
+comprobantes actuales, y seleccionar el primer hueco exigible con dependencias
+resueltas antes de continuar la aceptación del contrato.

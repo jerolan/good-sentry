@@ -89,9 +89,23 @@ func TestOAuthCodeExchangeBindingAndVerifierAlphabet(t *testing.T) {
 		}
 		form.Set("client_id", id)
 		form.Set("redirect_uri", redirect)
+		for _, state := range []string{strings.Repeat("s", 513), "bad\nstate"} {
+			form.Set("state", state)
+			response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
+			callback, err := url.Parse(response.Header.Get("Location"))
+			if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("error") != "invalid_request" || callback.Query().Get("code") != "" {
+				t.Fatalf("invalid state accepted: status=%d error=%v", response.StatusCode, err)
+			}
+			var after int
+			if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM oauth_authorization_codes WHERE client_id=$1`, id).Scan(&after); err != nil || after != before {
+				t.Fatalf("invalid state created code: %v", err)
+			}
+		}
+		validState := strings.Repeat("s", 512)
+		form.Set("state", validState)
 		response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
 		callback, err := url.Parse(response.Header.Get("Location"))
-		if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("code") == "" {
+		if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("code") == "" || callback.Query().Get("state") != validState {
 			t.Fatalf("valid authorization status=%d error=%v", response.StatusCode, err)
 		}
 	})
