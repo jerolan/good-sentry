@@ -13403,3 +13403,19 @@ Siguiente acción concreta: iniciar otra instancia aislada con logs y uptime
 deshabilitados, envejecer únicamente los dos recibos propios restantes y probar
 la limpieza final, la conservación de la traza/log independientes y las filas
 históricas; después verificar reinicio y recuperación por separado.
+
+### Limpieza final con logs y uptime deshabilitados, 2026-10-29
+
+La instancia aislada con logs y uptime deshabilitados eliminó los dos recibos
+propios restantes tras envejecer solo sus fechas de recepción. El cotejo completo
+antes/después halló únicamente las eliminaciones de eventos y bytes asociados
+y los cambios de conteo previstos; las dos incidencias vacías siguen legibles,
+las rutas de evento devuelven 404, y la traza de dos spans y el log independiente
+siguen almacenados. Chromium comprobó la vista vacía final en 320/768/1440;
+las 4258 filas históricas permanecen. Los contenedores están detenidos y el
+checkpoint privado conservado. Comprobante:
+test-results/closure-20261025/retention-final-expiry/.
+
+Siguiente acción concreta: reiniciar la instancia con logs habilitados y comparar
+todas las filas antes y después; verificar la traza y el log independientes y
+volver a contrastar por separado el respaldo previo a expiración restaurado.

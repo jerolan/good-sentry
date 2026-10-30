@@ -44,6 +44,8 @@ Its retained browser view and separately restored pre-expiry backup are verified
 The first owned expiry and empty browser view now have local evidence; SDK
 recapture and recovered browser view pass locally; remaining cleanup, restart
 and final gates remain open.
+Final owned cleanup also passes with logs and uptime disabled; restart and
+separate recovery verification remain open.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
