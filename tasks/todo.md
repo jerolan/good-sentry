@@ -13830,3 +13830,17 @@ tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-ro
 Siguiente acción concreta: cotejar archivo y retención por tipo y backend, y
 seleccionar el primer subresultado con dependencias resueltas y evidencia no
 vigente, dejando abierta la decisión de símbolos.
+
+### Selección de contexto de señal Linux/amd64, 2026-10-29
+
+Se selecciona un incremento independiente de CLOSE-nativo-012/023: investigar
+la recuperación de registros del contexto de señal Linux/amd64, plataforma
+representativa ya aprobada. El marcador CIE `S` conserva el PC restaurado para
+buscar el siguiente FDE, pero SPEC no atribuye a ello recuperación de registros
+del contexto de señal. No se amplía con esta selección la cobertura de otras
+plataformas ni se alteran los punteros FDE indirectos aún no admitidos.
+
+Siguiente acción concreta: contrastar el formato de Linux/amd64 con fuentes
+primarias y con el unwinder y la memoria capturada existentes; identificar una
+muestra reproducible y precisar en SPEC un subcontrato verificable antes de
+planificar o implementar.
