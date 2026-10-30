@@ -14951,3 +14951,25 @@ Es evidencia parcial, no cierre de CLOSE-operacion-032. Siguiente acción concre
 preparar una aplicación aislada sobre la restauración previa a expiración y
 comprobar la recuperación de releases, mapa e incidencias sin alterar la copia de
 ejecución; después completar navegador y los gates finales pendientes.
+
+### Recuperación mediante aplicación aislada, 2026-10-30
+
+El respaldo conservado y sus 4575 filas restauradas coincidieron con el snapshot
+previo a expiración; la copia de ejecución también coincidió con su propio estado.
+Se clonó la restauración a una base nueva y se verificaron sus 73 tablas y
+secuencias. Una aplicación con volumen nuevo, autenticación y retenciones
+protectoras inició desde la misma imagen verificada.
+
+La aplicación recuperada mostró las cuatro releases originales, la compartida
+archivada con ambos proyectos, su commit y deploy, el mapa y las tres incidencias
+con sus políticas, asignaciones, comentarios y bytes de adjuntos. El cotejo
+completo contabilizó una sesión del usuario de prueba y el avance esperado de la
+próxima revisión de la incidencia pendiente, que sigue sin vincularse; el resto
+quedó exacto. El respaldo, su restauración de referencia y la copia de ejecución
+permanecen intactos. Los contenedores están detenidos. Comprobante:
+test-results/closure-20261025/release-recovery-app/.
+
+Siguiente acción concreta: preparar las vistas de releases con datos recuperados
+y con las releases vencidas para comprobar en navegador los estados presente,
+ausente y vacío a 320, 768, 1024 y 1440 píxeles; conservar las copias y registrar
+los resultados y cualquier diferencia antes de los gates finales.
