@@ -14799,3 +14799,25 @@ acción concreta: arrancar la misma copia con límites protectores y verificar p
 API y SDK la ausencia de las releases vencidas, los archivos y estados retenidos,
 la recreación de una identidad y el comportamiento de una captura duplicada;
 registrar cada intención antes de las mutaciones y comparar con el respaldo.
+
+### Lecturas después de la primera expiración, 2026-10-29
+
+La copia seguía igual en las 73 tablas antes del reinicio con retenciones
+protectoras. La API compatible devolvió 404 para las tres releases vencidas y
+los lectores propios de commits y deploys devolvieron 404. La release de control
+seguía visible pese a su fecha de usuario antigua. Las tres incidencias conservaron
+estado, asignaciones, comentarios y políticas; los tres adjuntos devolvieron sus
+bytes y la lista de mapas coincidió con la anterior.
+
+Después de las lecturas se cotejaron de nuevo todas las filas: solo se añadió la
+sesión de acceso y avanzó la próxima revisión de la incidencia propia pendiente,
+que sigue sin vincular release. El primer preflight contó esa incidencia propia
+como inesperada; al distinguirla no había otras revisiones vencidas. El primer
+intento de lectura no pudo acceder al endpoint local desde el entorno restringido
+y terminó antes de autenticarse; el acceso autorizado posterior pasó. Los
+contenedores están detenidos y los datos conservados. Comprobante:
+test-results/closure-20261025/release-after-first-expiry/.
+
+Siguiente acción concreta: adaptar la captura SDK para reintentar el evento propio
+ya guardado, comprobar que no recrea la release ni altera sus datos, y después
+probar la recreación de identidad y una captura nueva con el mapa conservado.
