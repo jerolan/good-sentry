@@ -13922,3 +13922,14 @@ Siguiente acción concreta: contrastar las fuentes primarias, las identidades y
 los puntos de captura/reprocesado; definir en SPEC un primer incremento
 verificable y sus controles de red y límites antes de plan y código. Mantener
 abiertas las variantes que no estén demostradas y los demás requisitos nativos.
+
+### Subcontrato de identidad para símbolos remotos, 2026-10-29
+
+SPEC precisa el prerequisito de CLOSE-nativo-023: conservar el build ID ELF
+completo o el nombre final PDB seguro con el Debug ID existente, y emitir y
+releer la metadata nativa tipada sin guardar directorios ni cambiar eventos
+anteriores. Esta decisión no implementa consultas ni cierra servidores.
+
+Siguiente acción concreta: preparar un owner RED que recorra Minidump,
+metadata generada/fusionada y relectura para BpEL, RSDS y NB10, con controles
+para nombres inválidos; implementar y verificar sin añadir red en esta fase.

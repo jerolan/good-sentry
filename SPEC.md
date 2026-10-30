@@ -1623,6 +1623,26 @@ For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S
 
 This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32, ARM64 and RISC-V64; uncommon CFI expressions and platform-specific signal-context register recovery outside the specified AMD64 ELF signal-frame slice; nested archive discovery beyond eight layers; and symbol-server resolution are not implemented. ZIP, TAR and gzip-compressed TAR dSYM/DIF uploads, Mach-O dSYM companion files whose zero-byte __TEXT segment still defines the executable address base, and their DWARF are consumed directly. It does not claim general crashpad/breakpad coverage. Keep the parent native-processing task open until those formats and real multi-architecture crash receipts pass. The unadjusted signal-frame return-address rule follows the `.cfi_signal_frame` behavior documented in the [Linux arm64 signal trampoline](https://github.com/torvalds/linux/blob/master/arch/arm64/kernel/vdso/sigreturn.S).
 
+As a prerequisite for the Windows and Linux symbol-server work, retain typed
+lookup identity from each valid Minidump CodeView record. For `BpEL`, keep the
+full GNU build ID as lowercase hexadecimal `code_id` and mark the generated
+image `elf`. For RSDS and NB10, keep the existing debug ID and, when present,
+the NUL-terminated UTF-8 PDB filename as `debug_file`, marking the generated
+image `pe`. Store only the final component after either slash convention; do
+not retain a directory from the PDB path. Omit the filename if the path lacks
+a terminator, exceeds 4096 bytes, is invalid UTF-8, or its final component is
+empty, `.` or `..`, contains a control character or colon, or exceeds 255 bytes.
+Omission must not change the existing debug ID or reject an otherwise accepted
+Minidump. Preserve these fields when reconstructing modules from saved event
+metadata, validating them again before any future network use. Existing events
+without them stay readable; no old event or raw dump is rewritten. Verify the
+parsed Minidump, generated and merged event, and reconstructed identity for
+both PDB formats and ELF, plus malformed names and the existing symbolication
+and reprocessing contracts. This prerequisite performs no network lookup and
+does not close the symbol-server requirement. The record formats follow
+[Microsoft's PDB locator definitions](https://github.com/microsoft/microsoft-pdb/blob/master/PDB/dbi/locator.h)
+and [Sentry's native debug-image fields](https://getsentry.github.io/relay/relay_event_schema/protocol/struct.NativeDebugImage.html).
+
 <a id="close-nativo-024"></a>
 
 Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the module symbol substream, including its four-byte CodeView signature; normalize parsed record offsets to that origin before validating nesting.

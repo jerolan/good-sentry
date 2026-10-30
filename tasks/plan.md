@@ -753,3 +753,12 @@ registro recuperado requerido por el siguiente frame; incluir controles de
 memoria ausente y frames ordinarios. Después implementar, ejecutar los owners y
 regresiones pertinentes, y registrar sus resultados. La cobertura de otras
 plataformas y la aceptación integral nativa siguen pendientes.
+
+### Identidad para servidores de símbolos, 2026-10-29
+
+Primero conservar del CodeView válido el build ID ELF completo o el nombre
+PDB seguro con su Debug ID, en el módulo y en la metadata generada/recuperada.
+Probar Minidumps, eventos generados y fusionados, relectura y nombres inválidos;
+conservar la identidad previa y los controles existentes. Este prerequisito
+no consulta servidores. Después precisar e implementar los clientes y su
+integración Windows/Linux con límites, aislamiento y comprobantes propios.
