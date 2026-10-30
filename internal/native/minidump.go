@@ -31,6 +31,7 @@ const (
 	streamException        = 6
 	streamMemory64         = 9
 	streamSystemInfo       = 7
+	minidumpOSLinux        = 0x8201
 	cpuArchX86             = 0
 	cpuArchARM             = 5
 	cpuArchAMD64           = 9
@@ -89,6 +90,7 @@ type Crash struct {
 	Frames            []Frame
 	registers         map[uint32]uint64
 	stack             []memoryRange
+	platformID        uint32
 }
 
 type memoryRange struct {
@@ -174,6 +176,10 @@ func ParseMinidump(data []byte) (Crash, error) {
 	for _, s := range streams {
 		if s.typ == streamSystemInfo && s.size >= 2 {
 			declaredArch = binary.LittleEndian.Uint16(data[s.rva:])
+			crash.platformID = 0
+			if s.size >= 24 {
+				crash.platformID = binary.LittleEndian.Uint32(data[s.rva+20:])
+			}
 		}
 	}
 	var ranges []memoryRange

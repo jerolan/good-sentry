@@ -14246,3 +14246,26 @@ PAC y otros trampolines siguen abiertos.
 Siguiente acción concreta: reproducir RED con Minidump serializado y contexto
 de señal, implementar el fallback y verificar recuperación, CFI, límites de
 memoria y pila, antes de acreditar exclusivamente este slice.
+
+### Trampolín de señal Linux ARM64 capturado, 2026-10-29
+
+Cuando el Minidump declara Linux y contiene las instrucciones del trampolín,
+el fallback recupera el contexto de señal documentado por Linux y LLVM. Respeta
+la prioridad CFI, recupera el PC exacto y registros disponibles, conserva el
+cuadro interrumpido aunque no exista CFI adicional, y limita los cambios de
+pila a rangos capturados. Los owners RED/GREEN cubren ausencia de memoria,
+instrucciones, plataforma, desbordamiento, solapamientos y PC repetido.
+
+Un RED HTTP/PostgreSQL demostró que un empate descartaba el PC recuperado. El
+evento ahora conserva la recuperación también ante una cadena previa más larga;
+un PC inválido mantiene la regla anterior. Pasaron la suite unitaria, native y
+pruebas focalizadas con race, vet y los owners HTTP/PostgreSQL con race sin
+skips. Comprobante: test-results/closure-20261025/native-linux-arm64-signal-fallback/.
+La revisión independiente verificó las restricciones y aclaró la selección
+histórica por longitud cuando no hay recuperación válida. Los fixtures no son un
+crash ARM64 real ni prueban captura universal de código, otros trampolines o PAC.
+CLOSE-nativo-012/023 y dependientes siguen abiertos hasta su aceptación integral.
+
+Siguiente acción concreta: revalidar CLOSE-nativo-007 sobre esta revisión con el
+transporte multipart y el crash Linux/amd64 representativo disponible, incluida
+la no retención del Minidump; registrar los comprobantes sin anticipar imagen o CI.

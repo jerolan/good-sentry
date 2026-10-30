@@ -170,7 +170,7 @@ func (s *Server) symbolizeCrash(ctx context.Context, projectID string, crash *na
 		files = append(files, remote...)
 		symbols, unwindTables = native.BuildSymbolTables(files)
 	}
-	if frames := native.UnwindCFI(crash, unwindTables); len(frames) > len(crash.Frames) {
+	if frames, recoveredSignal := native.UnwindCFIWithSignalRecovery(crash, unwindTables); recoveredSignal || len(frames) > len(crash.Frames) {
 		crash.Frames = frames
 	}
 	native.Symbolicate(crash, symbols)
