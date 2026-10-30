@@ -13609,3 +13609,20 @@ La candidata y los gates finales permanecen pendientes. Siguiente acción
 concreta: cotejar CLOSE-operacion-032 y sus dependencias de retención de releases
 contra los respaldos y controladores históricos, y preparar una copia nueva
 verificada antes de cualquier prueba de expiración.
+
+### Selección de retención de releases, 2026-10-29
+
+CLOSE-operacion-032 sigue invalidado y exige una copia nueva de la fuente de
+archivos de 4374 filas, imagen, fixtures propios, recuperación, navegador y CI.
+Los inventarios históricos de release baseline y archivos aceptados coinciden;
+los dumps tienen SHA-256 distintos, por lo que no se presume equivalencia sin
+restaurarlos y comparar filas. Los controladores históricos apuntan a nombres,
+puertos y rutas anteriores y no se ejecutarán sin adaptación. No se encuentra
+el runtime original de archivos entre los contenedores presentes; la decisión
+de SPEC sobre los tres checkpoints de retención de errores no extiende por sí
+sola la sustitución a este runtime de 4374 filas. Se conserva esa dependencia
+abierta sin inferir preservación ni reducir el criterio.
+
+Siguiente acción concreta: restaurar `release-retention-acceptance/baseline.dump`
+en una base y volumen nuevos, comparar todas sus filas con el inventario de
+4374 y comprobar las edades de releases antes de iniciar cualquier imagen.
