@@ -15028,3 +15028,21 @@ La selección no ejecutó las comprobaciones retiradas de informes nativos y no
 se presenta como suite completa. Siguiente acción concreta: identificar y ejecutar
 los gates generales restantes que no dependan de esas comprobaciones, con sus
 exclusiones trazadas; contrastar después la candidata, la imagen y CI exactos.
+
+### Componentes generales con integración y race, 2026-10-30
+
+En la revisión 5936d5ea pasaron vet y una selección de integración/race para
+correo, artefactos, configuración, eventos, notificaciones, OTLP, protocolo,
+orden de releases, archivo de spans y uptime: 873 acciones de prueba y 145
+pruebas principales en 11 paquetes, sin fallos; el paquete de red no tiene
+archivos de prueba. PostgreSQL se ejecutó en una base nueva y aislada.
+
+La prueba mixta de configuración se ejecutó aparte: pasaron 60 acciones generales
+y no se ejecutaron los casos de servidores de símbolos. Tampoco se ejecutó la
+autenticación específica de minidump. La base quedó detenida. Comprobante:
+test-results/closure-20261025/general-non-crash-checks/. Esto no acredita la
+suite completa ni los gates de candidata y CI.
+
+Siguiente acción concreta: seleccionar las pruebas generales restantes de Store,
+servidor y jobs que no ejecuten la tarea abandonada de informes nativos; ejecutar
+esa selección sobre otra base desechable y registrar expresamente sus exclusiones.
