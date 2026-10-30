@@ -35,6 +35,8 @@ The official handler also checks consent-page headers and issued-secret absence.
 The MCP credential browser owner covers 320/768/1024/1440 widths locally.
 Authenticated administration reports MCP on/off in the real-browser owner.
 Credential scope defaults stay unchanged in enabled and disabled browser modes.
+Error-retention revalidation now has a separately restored working baseline;
+its migration, owned fixtures, browser, recovery and final gates remain open.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.

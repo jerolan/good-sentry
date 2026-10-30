@@ -13305,3 +13305,20 @@ disponibles; no se modificarán las bases, volúmenes o runtimes existentes.
 Siguiente acción concreta: restaurar `baseline.dump` en una base nueva aislada,
 contrastar sus 4258 filas contra el snapshot y preparar la ejecución retenido,
 vacío y recuperado sobre una imagen y volumen nuevos con fixtures propios.
+
+### Base operativa aislada de retención, 2026-10-29
+
+Se restauró `baseline.dump` en la base nueva
+`closure_retention_baseline_working`, contenedor
+`goodsentry-closure-retention-20261029` y volumen propio
+`goodsentry-closure-retention-20261029-data`. Los hashes de todas las filas
+coinciden con el snapshot: 4258 filas, 38 tablas, 530 eventos, 28 batches y
+23 migraciones. El contenedor quedó detenido conservando su volumen; ninguna
+aplicación se inició contra esta copia ni se alteró un runtime anterior.
+Comprobante y procedimiento: test-results/closure-20261025/retention-baseline-working/.
+
+Este punto de partida no acredita migración, expiración, navegador, recuperación
+ni gates finales. Siguiente acción concreta: construir una imagen nueva desde la
+revisión identificada, iniciar solo la copia y un volumen de uploads nuevo,
+comprobar migraciones y filas históricas, y preparar fixtures propios para el
+recorrido real de retención y navegador.
