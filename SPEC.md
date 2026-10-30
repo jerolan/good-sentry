@@ -1643,6 +1643,33 @@ does not close the symbol-server requirement. The record formats follow
 [Microsoft's PDB locator definitions](https://github.com/microsoft/microsoft-pdb/blob/master/PDB/dbi/locator.h)
 and [Sentry's native debug-image fields](https://getsentry.github.io/relay/relay_event_schema/protocol/struct.NativeDebugImage.html).
 
+The first Linux server slice supports the public debuginfod `GET
+/buildid/{full-lowercase-hex-build-id}/debuginfo` protocol for authenticated
+Minidump captures. An operator opts in with up to four space-separated absolute
+HTTP(S) base URLs in `GOODSENTRY_DEBUGINFOD_URLS`; the empty default makes no
+requests. Reject credentials, queries, fragments and invalid URLs at startup.
+`GOODSENTRY_DEBUGINFOD_ALLOW_PRIVATE_IPS` defaults to false and is an explicit
+operator choice for private servers. No remote address comes from the dump.
+Use the existing DNS-pinning outbound policy, no environment proxy, no redirects,
+and a five-second total deadline for each capture. Deduplicate build IDs and
+attempt at most 25 HTTP requests. The combined locally loaded and remotely read
+bytes stay within the existing 64 MiB symbol budget, with at most 25 accepted
+files. Stop fetching when either budget is exhausted; at most one extra byte
+may be read solely to detect and reject an oversized response. Treat a missing,
+failed, malformed or wrong-identity response as
+unavailable and preserve ordinary ingestion with any local symbols. Read only
+ELF responses whose embedded GNU build ID exactly matches the requested full
+ID; a build ID is an identity, not a cryptographic content signature. Do not
+persist fetched bytes or weaken project-key admission or the discard of raw
+Minidumps. Only explicitly typed ELF modules with a full CodeView build ID can
+trigger this slice. Existing matching project symbols take precedence. Test real
+HTTP requests, exact/missing/mismatched ELF identities, opt-in and destination
+policy, budgets, timeouts and both Minidump ingestion routes with PostgreSQL.
+The [elfutils debuginfod service](https://sourceware.org/elfutils/Debuginfod.html)
+documents build-ID lookup over HTTP; its [client example](https://sourceware.org/pipermail/elfutils-devel/2020q4/003103.html)
+shows the request path. Other Linux source layouts, remote reprocessing and
+Windows symbol servers remain open after this slice.
+
 <a id="close-nativo-024"></a>
 
 Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the module symbol substream, including its four-byte CodeView signature; normalize parsed record offsets to that origin before validating nesting.

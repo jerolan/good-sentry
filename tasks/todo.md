@@ -13952,3 +13952,16 @@ test-results/closure-20261025/native-symbol-identity/.
 Siguiente acción concreta: precisar en SPEC el primer cliente debuginfod Linux,
 su límite de recursos, configuración y aislamiento; preparar un servidor HTTP
 independiente con archivos ELF reales e identidad distinta antes de implementarlo.
+
+### Subcontrato debuginfod para captura Linux, 2026-10-29
+
+SPEC precisa un primer cliente opcional por build ID ELF completo, con fuentes
+configuradas por el operador, límites de tiempo/solicitudes/bytes, política de
+red y comprobación de identidad. Los errores remotos conservan la ingestión y
+los bytes descargados no se guardan. El slice no acredita otros layouts Linux,
+reprocesado remoto ni servidores Windows.
+
+Siguiente acción concreta: preparar owners RED del servidor HTTP y de captura
+real para identidad, límites y política de destino; implementar configuración
+y resolución solo después de observar el fallo, y ejecutar las regresiones
+nativas y PostgreSQL correspondientes.

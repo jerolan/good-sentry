@@ -762,3 +762,12 @@ Probar Minidumps, eventos generados y fusionados, relectura y nombres inválidos
 conservar la identidad previa y los controles existentes. Este prerequisito
 no consulta servidores. Después precisar e implementar los clientes y su
 integración Windows/Linux con límites, aislamiento y comprobantes propios.
+
+### Primer cliente debuginfod Linux, 2026-10-29
+
+Implementar el slice de captura definido en CLOSE-nativo-023: configuración
+explícita, consulta acotada sin proxy ni redirecciones, validación exacta del
+ELF y reutilización del presupuesto junto con archivos locales. Verificar con
+servidor HTTP independiente y los dos transportes reales de Minidump sobre
+PostgreSQL, incluyendo identidad incorrecta y destino privado. No cerrar aún
+reprocesado remoto, otras disposiciones Linux ni Windows.
