@@ -13907,3 +13907,18 @@ siguen invalidadas hasta sus gates integrales; otras plataformas de contexto de
 señal y servidores de símbolos Windows/Linux siguen pendientes. Siguiente
 acción concreta: investigar y precisar los protocolos de servidores Windows y
 Linux, su identidad, controles y pruebas en SPEC antes de implementarlos.
+
+### Selección de servidores de símbolos, 2026-10-29
+
+CLOSE-nativo-023/028 exige Windows y Linux conforme a la decisión explícita
+integrada en SPEC. La investigación inicial identifica SymStore HTTP para PDB
+y debuginfod para ELF como protocolos reales de ambas plataformas, sin inferir
+que agoten todas sus variantes. SymStore requiere nombre PDB y GUID/firma con
+edad; el modelo Minidump actual no conserva el nombre CodeView. Debuginfod usa
+el build ID completo, que no es una suma criptográfica de los bytes. No existe
+lookup remoto en el producto ni aceptación de esta familia.
+
+Siguiente acción concreta: contrastar las fuentes primarias, las identidades y
+los puntos de captura/reprocesado; definir en SPEC un primer incremento
+verificable y sus controles de red y límites antes de plan y código. Mantener
+abiertas las variantes que no estén demostradas y los demás requisitos nativos.
