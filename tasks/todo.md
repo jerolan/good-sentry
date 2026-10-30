@@ -14602,3 +14602,17 @@ completados ni se convierten en excepciones de cierre.
 Siguiente acción concreta: no reanudar esta tarea sin una nueva instrucción del
 usuario. Si posteriormente se reanuda el cierre del producto, revisar el alcance
 vigente y las dependencias antes de seleccionar otra tarea.
+
+### Selección de conexión Sentry Wizard, 2026-10-29
+
+Con la tarea de informes nativos abandonada por el usuario, se selecciona el
+subresultado independiente CLOSE-lectores-001. El comprobante de servidor es de
+00de7c3 y desde entonces cambiaron el registro de rutas y dependencias de la
+aplicación; la aceptación del cliente oficial y navegador sigue siendo
+histórica y la candidata final no está identificada. La base PostgreSQL de
+pruebas aislada está disponible y no se usarán los runtimes preservados.
+
+Siguiente acción concreta: comparar las rutas y dependencias del handoff con
+00de7c3, repetir sus owners HTTP y de almacenamiento PostgreSQL con race, junto al
+owner de aislamiento criptográfico, y registrar resultado, revisión y límites
+sin declararlo aceptación integral.
