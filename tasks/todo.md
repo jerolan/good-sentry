@@ -14212,3 +14212,24 @@ hasta la candidata final.
 Siguiente acción concreta: reproducir y corregir en x86 y AMD64 la pérdida de
 registros recuperados por CFI cuando faltan flags enteros iniciales; conservar
 los controles de pila y señal y registrar la evidencia de ambas arquitecturas.
+
+### Propagación CFI x86 y AMD64 sin flags iniciales, 2026-10-29
+
+Las reglas CFI ordinarias pueden recuperar registros aunque el Minidump inicial
+no declare enteros válidos. En ambas arquitecturas esos valores ahora llegan al
+caller solo si la regla y la memoria están disponibles. El owner con Minidumps
+serializados y CFI ELF falló antes en x86 y AMD64, y pasó después; los controles
+de regla y memoria ausentes se detienen sin inventar valores. Una revisión
+independiente no encontró defectos y verificó que los límites de pila y señal
+se mantienen.
+
+Pasaron la suite unitaria, native y pruebas focalizadas con race, vet y los
+owners HTTP/PostgreSQL con race y sin skips. Comprobante:
+test-results/closure-20261025/native-x86-recovered-context/. Son fixtures y no
+prueban un crash real. CLOSE-nativo-012 y sus aceptaciones dependientes siguen
+invalidados hasta la candidata final.
+
+Siguiente acción concreta: investigar para CLOSE-nativo-012/023 el trampolín
+de señal Linux ARM64 y la disponibilidad de una muestra verificable, con fuentes
+Linux primarias; no extrapolar los fixtures a un crash real. Si falta evidencia
+para implementarlo, registrar la dependencia y seleccionar trabajo independiente.
