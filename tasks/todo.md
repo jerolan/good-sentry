@@ -14698,3 +14698,22 @@ Siguiente acción concreta: conservar la base verificada como referencia, crear
 una copia de ejecución nueva, repetir el preflight y arrancar solo esa copia
 con autenticación y retenciones de 3650 días, uptime y archivo deshabilitados;
 contabilizar el chunk autorizado y comparar todas las columnas originales.
+
+### Imagen aislada y limpieza autorizada de releases, 2026-10-29
+
+Se creó una segunda base de ejecución desde la referencia verificada, sin
+modificar esta última. El preflight volvió a encontrar 4374 filas y el único
+chunk vencido autorizado; los demás candidatos de retención permanecían a cero.
+La imagen 799a0dc inició con autenticación, retenciones de 3650 días, archivo y
+uptime deshabilitados y un volumen nuevo. Readiness respondió 200 y se aplicaron
+79 migraciones. El cotejo de las 38 tablas y columnas originales encontró
+una sola fila histórica ausente, idéntica al chunk conservado, y 52 nuevos
+recibos de migración. Los monitores históricos no se ejecutaron. Los contenedores
+están detenidos y las bases, volúmenes y archivo privado conservados. Comprobante:
+test-results/closure-20261025/release-authorized-image-start/.
+
+Esto no acredita expiración de releases, SDK/CLI, navegador, recuperación,
+reinicio ni candidata/CI final. Siguiente acción concreta: adaptar copias de
+los controladores históricos para crear únicamente proyecto, releases y
+fixtures propios en la instancia aislada; registrar cada identidad y conservar
+un respaldo previo antes de envejecer cualquier recibo.
