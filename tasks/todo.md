@@ -14861,3 +14861,22 @@ Siguiente acción concreta: subir a la API el mapa propio ya retenido para recre
 la release compartida, verificar identidad y bytes del mapa sin duplicación, y
 comprobar que la incidencia pendiente pueda vincular legítimamente esa release
 nueva conservando el snapshot de su base.
+
+### Recreación compartida desde el mapa retenido, 2026-10-29
+
+El mapa propio se volvió a subir con sus bytes y selectores conservados. La API
+reconoció el mismo archivo sin crear otro y la versión compartida recuperó una
+identidad nueva. La incidencia pendiente no tenía candidatas antes de la subida;
+el mantenimiento vinculó después esa release elegible y registró la actividad,
+conservando intacto el snapshot de su versión base original.
+
+El cotejo completo contabilizó la nueva release, su enlace, una sesión de acceso,
+la actividad y los campos de vinculación de la política. Las demás filas, incluido
+el mapa y sus bytes, permanecieron exactas. Una segunda comparación tras detener
+la aplicación no encontró cambios en las 73 tablas. Contenedores detenidos y
+datos conservados. Comprobante: test-results/closure-20261025/release-map-recreation/.
+
+Siguiente acción concreta: asociar el segundo proyecto mediante CLI y enviar una
+captura nueva a la release compartida con ID reservado; verificar el mapeo con el
+mapa retenido, la resolución histórica, el estado de la política vinculada y la
+conservación del resto de los datos.
