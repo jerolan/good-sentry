@@ -27,6 +27,7 @@ Concurrent refresh rotation and expiry, and forged foreign organization/project
 consent, now have local race and mutation evidence; final candidate gates remain.
 Consent now rejects multiple organization selections; see todo.md for RED/GREEN.
 Local HTTP evidence also rejects stale codes and refreshes after a generation change.
+Removal of organization membership also rejects pending codes and refreshes locally.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.

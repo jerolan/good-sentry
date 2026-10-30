@@ -13161,3 +13161,19 @@ La aceptación integral y los gates finales siguen pendientes. Siguiente acción
 concreta: comprobar que retirar la membresía después del consentimiento impide
 canjear un código pendiente y renovar un refresh ya emitido, sin crear nuevas
 credenciales, con HTTP y PostgreSQL aislados.
+
+### Retirada de membresía y grants OAuth, 2026-10-29
+
+Al retirar la membresía tras emitir un código pendiente y un refresh separado,
+ambos intercambios se rechazaron sin crear credenciales. La clave foránea de la
+membresía elimina en cascada los accesos y sus refreshes; la prueba compara las
+filas después de esa limpieza. El primer intento comparó antes y después de la
+eliminación y falló por esa diferencia, sin demostrar un defecto del producto.
+La membresía se restaura para el siguiente caso. Pasaron 18 casos OAuth con
+race y vet de integración; PostgreSQL aislado quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-oauth-membership/.
+
+La aceptación integral y los gates finales siguen pendientes. Siguiente acción
+concreta: verificar por HTTP que solicitudes OAuth con scopes no soportados o
+recurso distinto del MCP canónico se rechazan sin emitir códigos, incluyendo
+`log:read` con logs deshabilitados y un flujo válido como control.
