@@ -14269,3 +14269,22 @@ CLOSE-nativo-012/023 y dependientes siguen abiertos hasta su aceptación integra
 Siguiente acción concreta: revalidar CLOSE-nativo-007 sobre esta revisión con el
 transporte multipart y el crash Linux/amd64 representativo disponible, incluida
 la no retención del Minidump; registrar los comprobantes sin anticipar imagen o CI.
+
+### Revalidación local de captura nativa, 2026-10-29
+
+En la revisión f190603, el demo oficial sentry-native 0.17.4 y Crashpad
+coincidieron con los hashes de la compilación anterior. El owner con race subió
+y ejecutó el mismo ELF y comprobó identidad, función, archivo, línea, issue y
+ausencia de Minidump en attachments y envelope_items. También pasaron con race
+los owners HTTP/PostgreSQL de multipart, envelope nativo y las identidades ELF,
+PDB y SymCache, sin skips. Comprobante:
+test-results/closure-20261025/native-sdk-f190603/.
+
+Esta evidencia renueva localmente CLOSE-nativo-007/011/026/027, sin sustituir
+la aceptación de candidata, imagen o CI; los perfiles históricos pendientes
+de CLOSE-nativo-004 no quedan resueltos. El owner multipart y el de envelope
+verifican ausencia de adjuntos, mientras que el crash real comprueba además
+envelope_items; no se atribuyen a cada owner controles que no ejecuta.
+
+Siguiente acción concreta: cotejar el plan y la matriz tras estas revalidaciones
+y seleccionar el primer resultado exigible independiente con dependencias resueltas.
