@@ -1804,7 +1804,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | implementada | invalidada | UUID0/metadata/CFI verificados localmente; falta candidata/imagen/CI integral; historial conservado |
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
-| [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | parcial | invalidada | Identidad local preparada; consultas Windows/Linux y demás pendientes siguen abiertos |
+| [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | parcial | invalidada | Captura debuginfod ELF y SymStore RSDS verificada localmente; otros perfiles y aceptación integral siguen abiertos |
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
@@ -2204,7 +2204,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-038](../SPEC.md#close-alertas-038) | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-039](../SPEC.md#close-alertas-039) | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payloa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
-| [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | parcial | invalidada | Servidores de símbolos Windows/Linux pendientes; decisión 2026-10-29 abajo |
+| [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | parcial | invalidada | Primeras consultas Windows/Linux verificadas; otras variantes y regresión integral pendientes |
 | [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -14018,3 +14018,15 @@ candidata, imagen y CI siguen pendientes.
 Siguiente acción concreta: cotejar el orden del plan y la matriz de evidencias
 para seleccionar el primer criterio exigible sin evidencia vigente y con
 dependencias resueltas, conservando las variantes y runtimes pendientes.
+
+### Selección de reprocesado remoto, 2026-10-29
+
+Se seleccionan CLOSE-nativo-003/023: las fuentes Windows y Linux están
+verificadas para captura y el reprocesado remoto quedó expresamente abierto.
+Los perfiles de selector no directo y página MBCS siguen sin muestra o página
+original discriminante; las dependencias de los runtimes de 4342 y 4374 filas
+siguen abiertas. No se extrapolan los comprobantes de captura al worker.
+
+Siguiente acción concreta: precisar la lectura, consulta externa y aplicación
+del lote conservando generación, cursor, aislamiento, atomicidad y límites;
+después preparar un owner RED con PostgreSQL y servidores HTTP reales.
