@@ -14160,3 +14160,22 @@ es sintético y usa flags cero. SPEC precisa el alcance y conserva ese caso.
 Siguiente acción concreta: preparar RED desde un Minidump y CFI ELF AMD64,
 con callers que requieran registros recuperados y controles de flags, memoria
 y XSTATE; implementar y verificar las regresiones sin alegar un crash real.
+
+### Registros iniciales de Minidump AMD64, 2026-10-29
+
+El parser conserva los 14 registros generales AMD64 cuando los flags los
+declaran válidos, y CFI propaga solo reglas recuperables. Los Minidumps sin
+flags mantienen RIP/RSP/RBP y los controles de pila y señal anteriores. El
+owner RED desde bytes Minidump y CFI ELF falló antes y pasó después; cubre el
+mapeo de cada registro, caller dependiente de R12 recuperado, XSTATE, ausencia
+de flag, memoria y reglas. Una revisión independiente no halló fallos.
+
+Pasaron la suite unitaria, native y owners focalizados con race, vet y los
+owners HTTP/PostgreSQL nativos con race y sin skips. Comprobante:
+test-results/closure-20261025/native-amd64-integer-context/. Son fixtures y no
+acreditan un crash real adicional. CLOSE-nativo-012 y dependientes continúan
+invalidados hasta la aceptación integral de la candidata.
+
+Siguiente acción concreta: cotejar el plan y la matriz para seleccionar el
+primer criterio exigible sin evidencia vigente y con dependencias resueltas;
+mantener abiertos los perfiles nativos y runtimes históricos pendientes.

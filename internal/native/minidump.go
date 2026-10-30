@@ -329,6 +329,13 @@ func ParseMinidump(data []byte) (Crash, error) {
 		crash.RSP = binary.LittleEndian.Uint64(rawContext[152:])
 		crash.RBP = binary.LittleEndian.Uint64(rawContext[160:])
 		crash.RIP = binary.LittleEndian.Uint64(rawContext[248:])
+		if binary.LittleEndian.Uint32(rawContext[48:])&0x00100002 == 0x00100002 {
+			// AMD64 DWARF numbers RDX before RCX, unlike Minidump storage.
+			crash.registers = make(map[uint32]uint64, 14)
+			for register, offset := range map[uint32]int{0: 120, 1: 136, 2: 128, 3: 144, 4: 168, 5: 176, 8: 184, 9: 192, 10: 200, 11: 208, 12: 216, 13: 224, 14: 232, 15: 240} {
+				crash.registers[register] = binary.LittleEndian.Uint64(rawContext[offset:])
+			}
+		}
 	case declaredArch == cpuArchX86 && len(rawContext) >= x86ContextSize && len(rawContext) <= x86ContextSize+maxMinidumpXState:
 		if len(rawContext) > x86ContextSize && binary.LittleEndian.Uint32(rawContext)&minidumpContextXState == 0 {
 			return Crash{}, errors.New("extended x86 minidump context lacks XSTATE flag")

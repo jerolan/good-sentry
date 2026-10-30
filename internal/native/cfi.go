@@ -979,7 +979,7 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		return nil
 	}
 	registers := map[uint32]uint64{pcRegister: crash.RIP, spRegister: crash.RSP, fpRegister: crash.RBP}
-	if crash.Arch == "x86" {
+	if crash.Arch == "x86" || crash.Arch == "amd64" {
 		for register, value := range crash.registers {
 			registers[register] = value
 		}
@@ -998,7 +998,7 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 	frames := make([]Frame, 0, 32)
 	x86SignalRegisters := false
 	x86Architecture := crash.Arch == "amd64" || crash.Arch == "x86"
-	x86ContextRegisters := crash.Arch == "x86" && len(crash.registers) != 0
+	x86ContextRegisters := x86Architecture && len(crash.registers) != 0
 	for len(frames) < 64 {
 		module := moduleFor(lookupPC, crash.Modules)
 		if module == nil {
