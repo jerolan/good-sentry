@@ -37,6 +37,8 @@ Authenticated administration reports MCP on/off in the real-browser owner.
 Credential scope defaults stay unchanged in enabled and disabled browser modes.
 Error-retention revalidation now has a separately restored working baseline;
 its migration, owned fixtures, browser, recovery and final gates remain open.
+The local image migration preserved every original projected row; fixture and
+retention execution remain open, as do final image/publication gates.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.

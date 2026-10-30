@@ -13322,3 +13322,20 @@ ni gates finales. Siguiente acción concreta: construir una imagen nueva desde l
 revisión identificada, iniciar solo la copia y un volumen de uploads nuevo,
 comprobar migraciones y filas históricas, y preparar fixtures propios para el
 recorrido real de retención y navegador.
+
+### Imagen y migración de la copia de retención, 2026-10-29
+
+La imagen no-root se construyó desde el archivo Git limpio de `218e9e43` e
+inició únicamente con la base y el volumen de uploads nuevos. La ruta correcta
+`/observe/readyz` respondió 200 y se aplicaron 79 migraciones. Una restauración
+separada del mismo dump permitió comparar la proyección de columnas originales:
+las 4258 filas siguen presentes. Antes del arranque no había eventos ni logs
+anteriores a 90 días ni chunks vencidos; esta comprobación usó retenciones de
+3650 días. El primer sondeo usó una ruta incorrecta y recibió 404. Los
+contenedores nuevos están detenidos y sus volúmenes conservados. Comprobante:
+test-results/closure-20261025/retention-image-migration/.
+
+No se acredita aún expiración, navegador, recuperación ni imagen/CI final.
+Siguiente acción concreta: adaptar los controladores históricos a rutas y
+archivos nuevos, iniciar esta copia con retención de errores de 90 días y crear
+solo fixtures propios mediante Node 11.7.0 para el recorrido retained/empty/recovered.
