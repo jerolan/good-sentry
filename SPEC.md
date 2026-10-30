@@ -1855,9 +1855,11 @@ of sign-extended addresses, big-endian dumps, general MIPS CFI or real MIPS cras
 For the supported MIPS32EL and MIPS64EL contexts, additionally allow one caller
 to be recovered using a matching little-endian MIPS ELF32/ELF64 CFI table from
 the crashing PC. Use the captured GPRs with r0 fixed at zero, SP=r29 and the
-CIE's return column; evaluate the CFA and return rule using the context pointer
-width and captured memory. The caller SP may equal the initial SP for a leaf
-frame or increase; a decreasing SP, unavailable CFA/return address, zero or
+CIE's return column; accept a register-plus-offset CFA and an explicit
+same-value, register, offset or value-offset return rule, checking signed
+address arithmetic at the context pointer width and reading only captured
+memory. Expression rules remain open for MIPS. The caller SP may equal the
+initial SP for a leaf frame or increase; a decreasing SP, unavailable CFA/return address, zero or
 repeated PC stops. Emit the captured caller PC without adjusting it or evaluating
 another caller FDE; retain the existing initial-PC-only result when recovery is
 unavailable. Match ELF class to the Minidump architecture, reject big-endian,

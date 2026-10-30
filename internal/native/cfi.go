@@ -68,6 +68,7 @@ type cfiCFARule struct {
 	offset   int64
 	expr     []byte
 	useExpr  bool
+	defined  bool
 }
 
 type cfiRegisterRule struct {
@@ -276,6 +277,25 @@ func ParseObjectUnwind(name string, data []byte) (string, *UnwindTable) {
 		}
 		if file.Class == elf.ELFCLASS64 && file.Data == elf.ELFDATA2LSB && file.Machine == elf.EM_RISCV && table != nil {
 			table.architecture = "riscv64"
+		}
+		if file.Machine == elf.EM_MIPS {
+			if file.Data != elf.ELFDATA2LSB || table == nil {
+				return key, nil
+			}
+			var flags uint32
+			switch file.Class {
+			case elf.ELFCLASS32:
+				flags = binary.LittleEndian.Uint32(data[36:])
+				table.architecture = "mips32el"
+			case elf.ELFCLASS64:
+				flags = binary.LittleEndian.Uint32(data[48:])
+				table.architecture = "mips64el"
+			default:
+				return key, nil
+			}
+			if flags&0x06000000 != 0 { // microMIPS or MIPS16 instruction sets
+				return key, nil
+			}
 		}
 		if table != nil {
 			table.normalize(base)
@@ -768,7 +788,11 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			location += uint64(low) * cie.codeAlign
 			continue
 		case 0x80:
-			state.regs[uint32(low)] = cfiRegisterRule{kind: cfiRuleOffset, value: int64(cursor.uleb()) * cie.dataAlign}
+			value, err := readCFIUnsignedFactoredOffset(&cursor, cie.dataAlign, false)
+			if err != nil {
+				return state, err
+			}
+			state.regs[uint32(low)] = cfiRegisterRule{kind: cfiRuleOffset, value: value}
 			continue
 		case 0xc0:
 			if rule, ok := initial.regs[uint32(low)]; ok {
@@ -790,7 +814,11 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			location += uint64(cursor.u32()) * cie.codeAlign
 		case 0x05:
 			register := cursor.register()
-			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: int64(cursor.uleb()) * cie.dataAlign}
+			value, err := readCFIUnsignedFactoredOffset(&cursor, cie.dataAlign, false)
+			if err != nil {
+				return state, err
+			}
+			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: value}
 		case 0x06:
 			register := cursor.register()
 			if rule, ok := initial.regs[register]; ok {
@@ -814,19 +842,28 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			state = remembered[len(remembered)-1]
 			remembered = remembered[:len(remembered)-1]
 		case 0x0c:
-			state.cfa = cfiCFARule{register: cursor.register(), offset: int64(cursor.uleb())}
+			register := cursor.register()
+			offset, err := readCFIUnsignedOffset(&cursor)
+			if err != nil {
+				return state, err
+			}
+			state.cfa = cfiCFARule{register: register, offset: offset, defined: true}
 		case 0x0d:
 			state.cfa.register = cursor.register()
 			state.cfa.useExpr = false
 		case 0x0e:
-			state.cfa.offset = int64(cursor.uleb())
+			offset, err := readCFIUnsignedOffset(&cursor)
+			if err != nil {
+				return state, err
+			}
+			state.cfa.offset = offset
 			state.cfa.useExpr = false
 		case 0x0f:
 			length := int(cursor.uleb())
 			if !cursor.need(length) {
 				return state, cursor.err
 			}
-			state.cfa = cfiCFARule{expr: append([]byte(nil), cursor.data[cursor.off:cursor.off+length]...), useExpr: true}
+			state.cfa = cfiCFARule{expr: append([]byte(nil), cursor.data[cursor.off:cursor.off+length]...), useExpr: true, defined: true}
 			cursor.off += length
 		case 0x10:
 			register := cursor.register()
@@ -849,7 +886,7 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			if err != nil {
 				return state, err
 			}
-			state.cfa = cfiCFARule{register: register, offset: offset}
+			state.cfa = cfiCFARule{register: register, offset: offset, defined: true}
 		case 0x13:
 			offset, err := readCFISignedFactoredOffset(&cursor, cie.dataAlign)
 			if err != nil {
@@ -859,7 +896,11 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			state.cfa.useExpr = false
 		case 0x14:
 			register := cursor.register()
-			state.regs[register] = cfiRegisterRule{kind: cfiRuleValueOffset, value: int64(cursor.uleb()) * cie.dataAlign}
+			value, err := readCFIUnsignedFactoredOffset(&cursor, cie.dataAlign, false)
+			if err != nil {
+				return state, err
+			}
+			state.regs[register] = cfiRegisterRule{kind: cfiRuleValueOffset, value: value}
 		case 0x15:
 			register := cursor.register()
 			value, err := readCFISignedFactoredOffset(&cursor, cie.dataAlign)
@@ -879,7 +920,11 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 			_ = cursor.uleb()
 		case 0x2f:
 			register := cursor.register()
-			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: -int64(cursor.uleb()) * cie.dataAlign}
+			value, err := readCFIUnsignedFactoredOffset(&cursor, cie.dataAlign, true)
+			if err != nil {
+				return state, err
+			}
+			state.regs[register] = cfiRegisterRule{kind: cfiRuleOffset, value: value}
 		default:
 			return state, errors.New("unsupported CFI opcode")
 		}
@@ -888,6 +933,46 @@ func applyCFIInstructions(instructions []byte, initial cfiState, cie cfiCIE, tar
 		}
 	}
 	return state, nil
+}
+
+func readCFIUnsignedOffset(cursor *cfiCursor) (int64, error) {
+	value := cursor.uleb()
+	if cursor.err != nil {
+		return 0, cursor.err
+	}
+	if value > 1<<63-1 {
+		return 0, errors.New("CFI offset overflows int64")
+	}
+	return int64(value), nil
+}
+
+func readCFIUnsignedFactoredOffset(cursor *cfiCursor, dataAlign int64, negate bool) (int64, error) {
+	factor := cursor.uleb()
+	if cursor.err != nil {
+		return 0, cursor.err
+	}
+	negative := (dataAlign < 0) != negate
+	var magnitude uint64
+	if dataAlign < 0 {
+		magnitude = uint64(-(dataAlign + 1)) + 1
+	} else {
+		magnitude = uint64(dataAlign)
+	}
+	limit := uint64(1<<63 - 1)
+	if negative {
+		limit++
+	}
+	if magnitude != 0 && factor > limit/magnitude {
+		return 0, errors.New("CFI factored offset overflows int64")
+	}
+	product := factor * magnitude
+	if negative && product == 1<<63 {
+		return minSignedCFIValue, nil
+	}
+	if negative {
+		return -int64(product), nil
+	}
+	return int64(product), nil
 }
 
 func readCFISignedFactoredOffset(cursor *cfiCursor, dataAlign int64) (int64, error) {
@@ -962,7 +1047,11 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 // UnwindCFIWithSignalRecovery reports whether a captured Linux signal context
 // contributed a restored PC to the returned frames.
 func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool) {
-	if crash == nil || len(crash.stack) == 0 || crash.RIP == 0 {
+	if crash == nil || crash.RIP == 0 {
+		return nil, false
+	}
+	mipsArchitecture := crash.Arch == "mips32el" || crash.Arch == "mips64el"
+	if len(crash.stack) == 0 && !mipsArchitecture {
 		return nil, false
 	}
 	pcRegister, spRegister, fpRegister := uint32(16), uint32(7), uint32(6)
@@ -981,6 +1070,11 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 			return nil, false
 		}
 		spRegister, fpRegister = 2, 8
+	case "mips32el", "mips64el":
+		if len(crash.registers) != 32 || (crash.Arch == "mips32el" && crash.PointerSize != 4) || (crash.Arch == "mips64el" && crash.PointerSize != 8) {
+			return nil, false
+		}
+		spRegister, fpRegister = 29, 30
 	case "amd64":
 	default:
 		return nil, false
@@ -991,12 +1085,12 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 			registers[register] = value
 		}
 	}
-	if crash.Arch == "arm" || crash.Arch == "riscv64" {
+	if crash.Arch == "arm" || crash.Arch == "riscv64" || mipsArchitecture {
 		registers = make(map[uint32]uint64, len(crash.registers))
 		for register, value := range crash.registers {
 			registers[register] = value
 		}
-		if crash.Arch == "riscv64" {
+		if crash.Arch == "riscv64" || mipsArchitecture {
 			registers[0] = 0
 		}
 	}
@@ -1021,7 +1115,7 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 		var ehabi *arm32EHABIFDE
 		found := false
 		for _, table := range candidates {
-			if table == nil || (crash.Arch == "arm" && table.architecture != "arm") || (crash.Arch == "riscv64" && table.architecture != "riscv64") || (table.architecture != "" && table.architecture != crash.Arch) {
+			if table == nil || (crash.Arch == "arm" && table.architecture != "arm") || (crash.Arch == "riscv64" && table.architecture != "riscv64") || (mipsArchitecture && table.architecture != crash.Arch) || (table.architecture != "" && table.architecture != crash.Arch) {
 				continue
 			}
 			if rules, cie, found = table.rulesAt(lookupPC - module.Base); found {
@@ -1090,7 +1184,13 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 			registers = nextRegisters
 			continue
 		}
-		cfa, ok := evaluateCFA(rules, registers, crash.stack, crash.PointerSize)
+		var cfa uint64
+		var ok bool
+		if mipsArchitecture {
+			cfa, ok = evaluateMIPSCFA(rules, registers, crash.PointerSize)
+		} else {
+			cfa, ok = evaluateCFA(rules, registers, crash.stack, crash.PointerSize)
+		}
 		if !ok {
 			if restoredSignalPC {
 				frames = append(frames, frame)
@@ -1099,10 +1199,15 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 		}
 		frames = append(frames, frame)
 		restoredSignalPC = false
-		if crash.Arch == "riscv64" && cie.returnReg > 31 && cie.returnReg != 64 {
+		if (crash.Arch == "riscv64" && cie.returnReg > 31 && cie.returnReg != 64) || (mipsArchitecture && cie.returnReg > 31) {
 			break
 		}
-		returnAddress, ok := evaluateRegisterRule(cie.returnReg, rules, cfa, registers, crash.stack, crash.PointerSize)
+		var returnAddress uint64
+		if mipsArchitecture {
+			returnAddress, ok = evaluateMIPSReturn(cie.returnReg, rules, cfa, registers, crash.stack, crash.PointerSize)
+		} else {
+			returnAddress, ok = evaluateRegisterRule(cie.returnReg, rules, cfa, registers, crash.stack, crash.PointerSize)
+		}
 		if !ok || returnAddress == 0 || seen[returnAddress] {
 			break
 		}
@@ -1115,7 +1220,18 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 				}
 			}
 		}
-		if nextSP <= registers[spRegister] && !(x86Architecture && cie.signalFrame && disjointCapturedRanges(crash.stack, registers[spRegister], nextSP)) {
+		if nextSP <= registers[spRegister] && !(mipsArchitecture && nextSP == registers[spRegister]) && !(x86Architecture && cie.signalFrame && disjointCapturedRanges(crash.stack, registers[spRegister], nextSP)) {
+			break
+		}
+		if mipsArchitecture {
+			if crash.PointerSize == 4 && (returnAddress > 0xffffffff || nextSP > 0xffffffff) {
+				break
+			}
+			caller := Frame{Instruction: returnAddress}
+			if callerModule := moduleFor(returnAddress, crash.Modules); callerModule != nil {
+				caller.Module = callerModule.Name
+			}
+			frames = append(frames, caller)
 			break
 		}
 		seen[returnAddress] = true
@@ -1171,6 +1287,74 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 		}
 	}
 	return frames, recoveredSignal
+}
+
+func mipsAddressOffset(base uint64, offset int64, pointerSize int) (uint64, bool) {
+	max := ^uint64(0)
+	if pointerSize == 4 {
+		max = 0xffffffff
+	} else if pointerSize != 8 {
+		return 0, false
+	}
+	if base > max {
+		return 0, false
+	}
+	if offset >= 0 {
+		delta := uint64(offset)
+		if delta > max-base {
+			return 0, false
+		}
+		return base + delta, true
+	}
+	delta := uint64(-(offset + 1)) + 1
+	if delta > base {
+		return 0, false
+	}
+	return base - delta, true
+}
+
+func evaluateMIPSCFA(rules cfiState, registers map[uint32]uint64, pointerSize int) (uint64, bool) {
+	if !rules.cfa.defined || rules.cfa.useExpr || rules.cfa.register > 31 {
+		return 0, false
+	}
+	base, ok := registers[rules.cfa.register]
+	if !ok {
+		return 0, false
+	}
+	return mipsAddressOffset(base, rules.cfa.offset, pointerSize)
+}
+
+func evaluateMIPSReturn(register uint32, rules cfiState, cfa uint64, registers map[uint32]uint64, ranges []memoryRange, pointerSize int) (uint64, bool) {
+	rule, ok := rules.regs[register]
+	if !ok {
+		return 0, false
+	}
+	switch rule.kind {
+	case cfiRuleSame:
+		value, ok := registers[register]
+		return value, ok
+	case cfiRuleRegister:
+		value, ok := registers[rule.reg]
+		return value, ok
+	case cfiRuleOffset, cfiRuleValueOffset:
+		address, ok := mipsAddressOffset(cfa, rule.value, pointerSize)
+		if !ok {
+			return 0, false
+		}
+		if rule.kind == cfiRuleValueOffset {
+			return address, true
+		}
+		max := ^uint64(0)
+		if pointerSize == 4 {
+			max = 0xffffffff
+		}
+		if address > max-uint64(pointerSize-1) {
+			return 0, false
+		}
+		return readCFIValue(ranges, address, pointerSize, pointerSize)
+	default:
+		return 0, false
+	}
 }
 
 func isLinuxSignalTrampoline(ranges []memoryRange, pc, sp uint64, arch string) bool {

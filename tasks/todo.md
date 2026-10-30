@@ -14495,3 +14495,29 @@ transición CFI, sin ajustar ni consultar el PC de retorno como otro FDE.
 Siguiente acción concreta: conservar el oráculo generado y su procedencia,
 escribir RED para ambos anchos y SP igual/creciente, y verificar recuperación,
 memoria, identidades, incompatibilidad de arquitecturas y evento persistido.
+
+### Primera transición CFI MIPS acotada, 2026-10-29
+
+CLOSE-nativo-023 recupera una llamada para los contextos MIPS32EL y MIPS64EL
+admitidos, a partir de CFI ELF compatible y memoria capturada. Los FDE del
+oráculo compilado por Go y contrastado con readelf cubren una función hoja y
+una con retorno guardado en pila; la recuperación no consulta un segundo FDE.
+El owner HTTP verifica el evento persistido y la ausencia del dump.
+
+La revisión reprodujo y corrigió una regla CFA ausente y desbordamientos tanto
+al decodificar offsets como al calcular direcciones. Las pruebas incluyen
+controles válidos y límites para ambos anchos. Pasaron la suite unitaria,
+native y owners focalizados con race, vet, los owners HTTP/PostgreSQL con race
+y el crash real Linux/amd64 del SDK fijado, sin skips. Comprobante y procedencia:
+test-results/closure-20261025/native-mips-cfi-first-transition/.
+
+Este incremento invalida la evidencia de candidata, CI e imagen de revisiones
+anteriores para el cierre integral. Los comprobantes locales anteriores siguen
+siendo históricos; no acreditan la revisión final. Siguen abiertos los callers
+posteriores, delay slots, instrucciones comprimidas, señales y expresiones
+MIPS, direcciones O32 sign-extended y crashes reales MIPS. No se declara
+compatibilidad general ni cierre de CLOSE-nativo-023.
+
+Siguiente acción concreta: contrastar con fuentes primarias la representación
+PC/CPSR.T y búsqueda CFI/EHABI para un contexto ARM32 interrumpido en Thumb;
+si hay evidencia suficiente, seleccionar y especificar un slice verificable.
