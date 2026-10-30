@@ -14821,3 +14821,23 @@ test-results/closure-20261025/release-after-first-expiry/.
 Siguiente acción concreta: adaptar la captura SDK para reintentar el evento propio
 ya guardado, comprobar que no recrea la release ni altera sus datos, y después
 probar la recreación de identidad y una captura nueva con el mapa conservado.
+
+### Reenvío SDK de evento retenido, 2026-10-29
+
+Tras contrastar la copia completa, se reconstruyó el sobre original del evento
+propio, incluido su adjunto y profile, y se verificó su identidad con el sobre
+guardado. El transporte de Node SDK 11.7.0 lo envió una sola vez y recibió 200;
+la intención y el resultado se conservaron antes y después del envío. No se
+generaron sobres adicionales de sesión, span o log.
+
+La comparación de las 73 tablas no encontró filas añadidas ni alteradas, salvo
+el avance esperado de la próxima revisión de la incidencia propia pendiente, que
+sigue sin release vinculada. El duplicado no recreó la release vencida ni cambió
+evento, archivos o historial. Los contenedores están detenidos y se conservan
+las instantáneas y bases. Comprobante:
+test-results/closure-20261025/release-sdk-duplicate/.
+
+Siguiente acción concreta: recrear la identidad de release propia subiendo el
+mapa retenido mediante la API, comprobar que sus bytes e identidad permanecen,
+y enviar una captura nueva con ID reservado para verificar el mapeo y la
+continuidad de la política y del historial.
