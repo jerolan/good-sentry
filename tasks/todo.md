@@ -13355,3 +13355,20 @@ Siguiente acción concreta: adaptar el controlador a esta base y proyecto,
 configurar estados y comentario de las dos incidencias propias, ejecutar la
 comprobación de navegador retained y guardar un respaldo separado antes de
 envejecer únicamente los recibos propios seleccionados.
+
+### Estado retained y respaldo previo a expiración, 2026-10-29
+
+Las dos incidencias propias recibieron sus estados, asignación y comentario.
+Chromium comprobó el evento retenido y la confirmación de borrado en
+320/768/1440 sin errores de página ni red. Un dump nuevo anterior a expiración
+se restauró en `closure_retention_pre_expiry_20261029`: sus 4422 filas de
+73 tablas, incluidos 533 eventos y 79 migraciones, tienen hashes idénticos.
+El primer controlador no encontró la biblioteca Python de PostgreSQL y terminó
+antes de modificar datos; se adaptó para usar el contenedor aislado. Los
+contenedores quedaron detenidos y el checkpoint privado, respaldo y capturas se
+conservan en `.tmp/closure-retention-20261029` con acceso restringido.
+Comprobante: test-results/closure-20261025/retention-pre-expiry/.
+
+Siguiente acción concreta: reanudar la instancia aislada, envejecer solo los dos
+recibos propios seleccionados, esperar la limpieza real y comprobar el estado
+empty y los datos históricos/independientes antes del recapture del SDK.
