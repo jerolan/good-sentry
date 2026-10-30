@@ -14301,3 +14301,25 @@ otras codificaciones de trampolín ni estado vectorial.
 Siguiente acción concreta: escribir RED desde Minidumps serializados y CFI
 RISC-V64, incluyendo señal marcada sin retorno y precedencia explícita, y
 verificar después recuperación, memoria, pila y selección del evento.
+
+### Trampolín de señal Linux RISC-V64 capturado, 2026-10-29
+
+El fallback reconoce las dos instrucciones y recupera desde memoria capturada
+el PC y los registros enteros Linux, manteniendo x0 en cero y el PC separado de
+x16. Se aplica sin CFI o con marcador de señal sin regla de retorno; reglas
+explícitas, incluida undefined, y CFI ordinaria conservan precedencia. Los
+owners basados en Minidumps serializados cubren x1–x31, PC exacto, memoria y
+rangos de pila, límites y selección de evento. El owner final falló en una copia
+aislada con el código anterior y pasó tras la implementación.
+
+Pasaron la suite unitaria, native y owners focalizados con race, vet, los
+owners HTTP/PostgreSQL con race y el crash real Linux/amd64 del SDK fijado,
+sin skips. Comprobante:
+test-results/closure-20261025/native-linux-riscv64-signal-fallback/. La revisión
+independiente no encontró otro defecto. Son fixtures sintéticos: no prueban un
+crash real RISC-V, captura universal de código, otras codificaciones ni estado
+vectorial. Los criterios nativos y la candidata siguen pendientes de auditoría.
+
+Siguiente acción concreta: investigar para CLOSE-nativo-012/023 el trampolín de
+señal Linux ARM32 y su contexto mediante fuentes primarias; documentar si existe
+una prueba discriminante y sus dependencias antes de especificar el incremento.

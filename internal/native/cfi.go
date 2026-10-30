@@ -959,8 +959,8 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 	return frames
 }
 
-// UnwindCFIWithSignalRecovery reports whether a captured Linux ARM64 signal
-// context contributed a restored PC to the returned frames.
+// UnwindCFIWithSignalRecovery reports whether a captured Linux signal context
+// contributed a restored PC to the returned frames.
 func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool) {
 	if crash == nil || len(crash.stack) == 0 || crash.RIP == 0 {
 		return nil, false
@@ -1038,29 +1038,34 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 				}
 			}
 		}
-		if !found {
-			if crash.Arch == "arm64" && crash.platformID == minidumpOSLinux && isLinuxARM64SignalTrampoline(crash.stack, pc) {
-				frame := Frame{Instruction: pc}
-				if signalModule := moduleFor(pc, crash.Modules); signalModule != nil {
-					frame.Module = signalModule.Name
-				}
-				frames = append(frames, frame)
-				nextRegisters, ok := recoverLinuxARM64SignalContext(crash.stack, registers[spRegister])
-				if !ok {
-					break
-				}
-				returnAddress, nextSP := nextRegisters[pcRegister], nextRegisters[spRegister]
-				if returnAddress == 0 || seen[returnAddress] || (nextSP <= registers[spRegister] && !disjointCapturedRanges(crash.stack, registers[spRegister], nextSP)) {
-					break
-				}
-				seen[returnAddress] = true
-				pc, lookupPC, registers = returnAddress, returnAddress, nextRegisters
-				restoredSignalPC = true
-				if len(frames) < 64 {
-					recoveredSignal = true
-				}
-				continue
+		signalFallback := !found
+		if found && crash.Arch == "riscv64" && cie.signalFrame {
+			_, hasReturnRule := rules.regs[cie.returnReg]
+			signalFallback = !hasReturnRule
+		}
+		if signalFallback && crash.platformID == minidumpOSLinux && isLinuxSignalTrampoline(crash.stack, pc, crash.Arch) {
+			frame := Frame{Instruction: pc}
+			if signalModule := moduleFor(pc, crash.Modules); signalModule != nil {
+				frame.Module = signalModule.Name
 			}
+			frames = append(frames, frame)
+			nextRegisters, returnAddress, ok := recoverLinuxSignalContext(crash.stack, registers[spRegister], crash.Arch)
+			if !ok {
+				break
+			}
+			nextSP := nextRegisters[spRegister]
+			if returnAddress == 0 || seen[returnAddress] || (nextSP <= registers[spRegister] && !disjointCapturedRanges(crash.stack, registers[spRegister], nextSP)) {
+				break
+			}
+			seen[returnAddress] = true
+			pc, lookupPC, registers = returnAddress, returnAddress, nextRegisters
+			restoredSignalPC = true
+			if len(frames) < 64 {
+				recoveredSignal = true
+			}
+			continue
+		}
+		if !found {
 			if restoredSignalPC {
 				frame := Frame{Instruction: pc}
 				if module != nil {
@@ -1168,23 +1173,52 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 	return frames, recoveredSignal
 }
 
-func isLinuxARM64SignalTrampoline(ranges []memoryRange, pc uint64) bool {
+func isLinuxSignalTrampoline(ranges []memoryRange, pc uint64, arch string) bool {
 	if pc > ^uint64(0)-7 {
 		return false
 	}
 	first, firstOK := readCFIValue(ranges, pc, 4, 8)
 	second, secondOK := readCFIValue(ranges, pc+4, 4, 8)
-	return firstOK && secondOK && first == 0xd2801168 && second == 0xd4000001
+	if !firstOK || !secondOK {
+		return false
+	}
+	switch arch {
+	case "arm64":
+		return first == 0xd2801168 && second == 0xd4000001
+	case "riscv64":
+		return first == 0x08b00893 && second == 0x00000073
+	default:
+		return false
+	}
 }
 
-func recoverLinuxARM64SignalContext(ranges []memoryRange, sp uint64) (map[uint32]uint64, bool) {
+func recoverLinuxSignalContext(ranges []memoryRange, sp uint64, arch string) (map[uint32]uint64, uint64, bool) {
+	if arch == "riscv64" {
+		if sp > ^uint64(0)-559 {
+			return nil, 0, false
+		}
+		savedPC, pcOK := readCFIValue(ranges, sp+304, 8, 8)
+		savedSP, spOK := readCFIValue(ranges, sp+320, 8, 8)
+		if !pcOK || !spOK {
+			return nil, 0, false
+		}
+		registers := make(map[uint32]uint64, 32)
+		registers[0] = 0
+		for reg := uint32(1); reg <= 31; reg++ {
+			if value, ok := readCFIValue(ranges, sp+304+uint64(reg)*8, 8, 8); ok {
+				registers[reg] = value
+			}
+		}
+		registers[2] = savedSP
+		return registers, savedPC, true
+	}
 	if sp > ^uint64(0)-575 {
-		return nil, false
+		return nil, 0, false
 	}
 	savedSP, spOK := readCFIValue(ranges, sp+560, 8, 8)
 	savedPC, pcOK := readCFIValue(ranges, sp+568, 8, 8)
 	if !spOK || !pcOK {
-		return nil, false
+		return nil, 0, false
 	}
 	registers := make(map[uint32]uint64, 33)
 	for reg := uint32(0); reg <= 30; reg++ {
@@ -1193,7 +1227,7 @@ func recoverLinuxARM64SignalContext(ranges []memoryRange, sp uint64) (map[uint32
 		}
 	}
 	registers[31], registers[32] = savedSP, savedPC
-	return registers, true
+	return registers, savedPC, true
 }
 
 // A signal handler can use an alternate stack. Only allow a backwards switch
