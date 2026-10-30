@@ -14533,3 +14533,32 @@ retornos posteriores ni una captura real. Las fuentes y límites están en SPEC.
 Siguiente acción concreta: reproducir el rechazo actual con Minidumps de señal
 RT/no RT y restorers ARM/Thumb, implementar la recuperación y comprobar el PC,
 el caller acotado y el evento persistido sin retener el dump.
+
+### Contexto Thumb interrumpido acotado, 2026-10-29
+
+CLOSE-nativo-023 recupera el PC par exacto de un contexto Thumb interrumpido en
+los layouts Linux modernos, consulta CFI/EHABI en ese PC y emite como máximo un
+caller. CFI acepta reglas acotadas con aritmética y lecturas de 32 bits
+verificadas; las expresiones en este contexto siguen abiertas. Los owners
+cubren restorers ARM/Thumb, RT/no RT, límites de FDE/EHABI, CANTUNWIND,
+registros, estados inválidos y el máximo de 64 frames. El owner HTTP comprueba
+persistencia y ausencia del dump.
+
+La revisión reprodujo y corrigió dos lecturas fuera de 32 bits y un panic por
+una suma desbordada en la ruta nueva. Pasaron la suite unitaria, native y owners
+focalizados con race, vet, HTTP/PostgreSQL con race y el crash real Linux/amd64
+del SDK fijado, sin skips. Comprobante:
+test-results/closure-20261025/native-arm32-interrupted-thumb/. La revisión de
+candidata, CI e imagen anteriores queda invalidada para cierre. Los fixtures no
+acreditan un crash real ARM32 ni unwinding Thumb general; CLOSE-nativo-023 sigue
+abierto.
+
+La investigación posterior trazó el lector genérico usado por otras
+arquitecturas: el panic quedó reproducido en la ruta Thumb anterior; su alcance
+en otros caminos se deduce del código y requiere prueba propia. La suma del
+puntero de marco es un riesgo separado que también requiere reproducción.
+
+Siguiente acción concreta: reproducir con Minidumps y controles válidos las
+lecturas de punteros y expresiones CFI fuera del ancho de dirección en las rutas
+compartidas; contrastar una corrección que evite panic sin cambiar la semántica
+modular DWARF y verificar también la suma del puntero de marco.

@@ -76,7 +76,7 @@ func TestLinuxARM32SignalFallbackFromMinidump(t *testing.T) {
 		{"missing marker", "missing marker", false, false, 0x9000, nil},
 		{"invalid signal", "signal", true, false, 0x9000, nil},
 		{"historical RT pointer", "old rt", true, false, 0x9000, nil},
-		{"thumb CPSR", "thumb", false, false, 0x9000, []uint64{tramp}},
+		{"thumb CPSR", "thumb", false, false, 0x9000, []uint64{tramp, base + 0x1100, base + 0x1220}},
 		{"Jazelle CPSR", "jazelle", false, false, 0x9000, []uint64{tramp}},
 		{"big endian CPSR", "big endian", false, false, 0x9000, []uint64{tramp}},
 		{"unaligned saved PC", "unaligned saved", false, false, 0x9000, []uint64{tramp}},

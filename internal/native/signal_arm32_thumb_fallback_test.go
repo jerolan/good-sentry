@@ -25,7 +25,7 @@ func TestLinuxARM32ThumbSignalRestorerFromMinidump(t *testing.T) {
 		{"wrong opcode", "wrong", false, []uint64{handler}},
 		{"untagged return pointer", "untagged", false, []uint64{handler}},
 		{"invalid frame marker", "marker", false, []uint64{handler}},
-		{"interrupted Thumb CPSR", "cpsr", false, []uint64{handler, 0x60001003}},
+		{"interrupted Thumb CPSR", "cpsr", false, []uint64{handler, 0x60001003, base + 0x1100, base + 0x1220}},
 		{"trampoline DWARF takes precedence", "dwarf", false, []uint64{handler, base + 0x1083}},
 		{"trampoline EHABI CANTUNWIND takes precedence", "ehabi", false, []uint64{handler, base + 0x1083}},
 	} {

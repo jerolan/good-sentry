@@ -1359,12 +1359,12 @@ FDPIC, or coprocessor recovery.
 Extend this ARM32 fallback to a Thumb signal-return pointer tagged with bit 0:
 read the captured instruction at `PC & ~1` and recognize the little-endian
 two-instruction sequences `0xdf002777` and `0xdf0027ad` for non-RT and RT.
-The existing modern-frame markers, captured register layout, 32-bit bounds,
-CFI/EHABI precedence and ARM-state saved-CPSR requirements remain unchanged.
-Preserve the tagged trampoline address in its frame and continue from the exact
-word-aligned ARM-state PC saved by the interrupted context. Do not infer a
-Thumb trampoline from an untagged PC or claim recovery of interrupted Thumb
-state. Test both sequences from a serialized Minidump whose prior CFI produces a
+The existing modern-frame markers, captured register layout, 32-bit bounds and
+CFI/EHABI precedence remain unchanged. For ARM-state interrupted contexts,
+preserve the tagged trampoline address in its frame and continue from the exact
+word-aligned saved PC. Do not infer a Thumb trampoline from an untagged PC.
+Interrupted Thumb state is covered by the separate bounded slice below. Test
+both sequences from a serialized Minidump whose prior CFI produces a
 tagged return pointer, including a trampoline at an address congruent to two
 modulo four, missing or wrong instructions, frame markers, an interrupted Thumb
 CPSR and a caller requiring a recovered register. Verify the persisted event as
@@ -1378,9 +1378,13 @@ Extend the modern Linux ARM32 signal fallback to a saved little-endian Thumb
 context with CPSR.T set, CPSR.J and CPSR.E clear, and an even saved PC. Preserve
 the saved PC as the exact interrupted instruction address, including addresses
 congruent to two modulo four; do not set a Thumb function-pointer tag or subtract
-from it before CFI/EHABI lookup. Recover at most one caller using the CFI/EHABI
-at that PC and emit its captured return value without evaluating a later FDE;
-when no rule applies, preserve the interrupted PC. Apply the existing modern
+from it before CFI/EHABI lookup. Recover at most one caller using EHABI or a
+CFI register-plus-offset CFA and an explicit same-value, register, offset or
+value-offset return rule at that PC.
+Check address arithmetic and each read against the 32-bit address space; CFI
+expression rules for this restored Thumb context remain open. Emit the captured
+return value without evaluating a later FDE; when no rule applies, preserve the
+interrupted PC. Apply the existing modern
 frame markers, bounds, CFI/EHABI precedence and other ARM-state behavior. Reject
 odd saved PCs in this bounded slice without claiming this is a universal validity
 rule. Verify both signal layouts and ARM/Thumb restorers, exact-PC rule boundaries,

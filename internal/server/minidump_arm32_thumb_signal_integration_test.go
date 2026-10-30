@@ -39,7 +39,7 @@ func arm32ThumbSignalMinidump(t *testing.T, mode string) []byte {
 		binary.LittleEndian.PutUint32(data[code:], 0xdf002778)
 	}
 	if mode == "invalid CPSR" {
-		binary.LittleEndian.PutUint32(data[stack+8+32+16*4:], 0x30)
+		binary.LittleEndian.PutUint32(data[stack+8+32+16*4:], 0x01000010)
 	}
 	return data
 }

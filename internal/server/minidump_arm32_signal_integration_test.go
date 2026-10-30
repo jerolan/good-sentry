@@ -47,8 +47,8 @@ func arm32SignalTieMinidump(t *testing.T, mode string) []byte {
 		binary.LittleEndian.PutUint32(data[stack+32+15*4:], 0)
 	}
 	if mode == "invalid CPSR" {
-		binary.LittleEndian.PutUint32(data[stack+32+16*4:], 0x30)
-	} // Thumb bit
+		binary.LittleEndian.PutUint32(data[stack+32+16*4:], 0x01000010)
+	} // Jazelle bit
 	binary.LittleEndian.PutUint64(data[memory+16:], 0x6001000)
 	binary.LittleEndian.PutUint64(data[memory+32:], 0x6002000)
 	for _, off := range []uint64{code, code + 8} {
