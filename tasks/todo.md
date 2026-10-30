@@ -14735,3 +14735,24 @@ No se han envejecido recibos ni se acredita expiración o aceptación final.
 Siguiente acción concreta: preparar un mapa nuevo y subirlo con el CLI Linux
 3.8.0 ya verificado; enviar capturas propias con Node y registrar sus IDs,
 incidencias, traza y log antes de crear un respaldo pre-expiración separado.
+
+### Mapa y capturas SDK propias de releases, 2026-10-29
+
+El CLI Linux oficial 3.8.0, con SHA-256 contrastado, inyectó y subió un mapa
+nuevo al release compartido. Como el CLI no acepta el prefijo de la URL, se usó
+un peer local de dominio raíz sobre la misma copia, manteniendo el peer con
+prefijo detenido; después se volvió a este último. La API confirmó el mapa,
+release, distribución e identidad de depuración.
+
+Node 11.7.0 envió tres errores con IDs propios guardados antes del envío; nueve
+sobres fueron aceptados. Los tres eventos pertenecen a incidencias distintas y
+resuelven la línea original 7. Se verificaron tres adjuntos, siete elementos
+opacos, dos spans y un log. La comparación conservó las 4506 filas anteriores;
+los añadidos están contabilizados. Informes e identidades permanecen privados,
+y los contenedores están detenidos. Comprobante:
+test-results/closure-20261025/release-sdk-cli-seed/.
+
+No se han envejecido receipts ni se acredita expiración o aceptación final.
+Siguiente acción concreta: configurar y registrar en las tres incidencias propias
+las políticas de resolución, próxima release, mute, asignación y comentarios;
+verificar sus estados y preparar un respaldo separado anterior a expiración.
