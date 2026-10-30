@@ -13247,3 +13247,18 @@ La aceptación integral y los gates finales siguen pendientes. Siguiente acción
 concreta: revisar el owner de navegador de CLOSE-mcp-058 contra los tamaños y
 controles de interfaz exigidos, y ejecutar los que aún carecen de evidencia
 vigente en un navegador real y una base aislada.
+
+### Credenciales MCP en cuatro anchos, 2026-10-29
+
+Chromium real verificó en 320/768/1024/1440 el scope de logs, nombre, scope,
+proyecto y estado del grant, ausencia de etiquetas de secretos y ausencia de
+desbordamiento horizontal de página. La revocación a 1440 invalidó el acceso y
+el refresh por HTTP. Los modos con logs o MCP deshabilitados omitieron log:read
+a 1024. No hubo errores de página; el owner Go corrió con race sin saltarse en
+PostgreSQL aislado, que quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-credentials-viewports/.
+
+Estos controles no sustituyen todos los estados de interfaz ni la candidata y
+gates finales. Siguiente acción concreta: localizar el estado de activación MCP
+en la interfaz autenticada y comprobar su visibilidad en modos habilitado y
+deshabilitado con el owner de navegador y una base aislada.
