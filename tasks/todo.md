@@ -14616,3 +14616,22 @@ Siguiente acción concreta: comparar las rutas y dependencias del handoff con
 00de7c3, repetir sus owners HTTP y de almacenamiento PostgreSQL con race, junto al
 owner de aislamiento criptográfico, y registrar resultado, revisión y límites
 sin declararlo aceptación integral.
+
+### Servidor Sentry Wizard en revisión actual, 2026-10-29
+
+Sobre f92f296, dos owners HTTP, tres owners de almacenamiento y el owner de
+separación criptográfica pasaron con race, sin skips, usando esquemas temporales
+en PostgreSQL aislado. Cubren intercambio, DSN, acceso, caducidad, eliminación,
+permisos, migración y reapertura; no sustituyen el cliente oficial ni navegador
+real. Los archivos propios de Wizard no cambiaron desde 00de7c3; se añadieron
+migraciones de archivo y cambios MCP en rutas y OAuth. Comprobante:
+test-results/closure-20261025/wizard-current/.
+
+CLOSE-lectores-001 sigue invalidado para aceptación integral: falta repetir el
+cliente y navegador sobre una candidata y su imagen, con CI correspondiente.
+La tarea de informes nativos permanece abandonada por el usuario y sus
+pendientes no se convierten en evidencia de cierre.
+
+Siguiente acción concreta: cotejar si la aceptación pendiente de releases puede
+arrancar su copia sin alterar el staging vencido ni depender del runtime
+histórico ausente; registrar las condiciones que requieran intervención.
