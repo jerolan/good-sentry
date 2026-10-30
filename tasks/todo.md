@@ -14369,3 +14369,23 @@ layouts antiguos, FDPIC ni un crash real ARM32.
 Siguiente acción concreta: escribir RED con un caller CFI que entregue el
 puntero Thumb etiquetado, ambos formatos de señal y PC restaurado ARM exacto;
 verificar controles de bytes, estado, precedencia y evento persistido.
+
+### Retorno Thumb etiquetado a contexto ARM, 2026-10-29
+
+El fallback reconoce los trampolines RT y no RT desde el puntero Thumb
+etiquetado, lee las instrucciones en su dirección real y restaura únicamente
+un contexto ARM moderno. Los owners RED/GREEN parten de un handler con CFI,
+prueban dirección alineada a dos bytes, registro recuperado, controles de código,
+estado y precedencia, y comprueban el evento persistido. La revisión independiente
+no encontró defectos. La recuperación de código interrumpido en Thumb sigue abierta.
+
+Pasaron la suite unitaria, native y owners focalizados con race, vet, los
+owners HTTP/PostgreSQL con race y el crash real Linux/amd64 del SDK fijado,
+sin skips. Comprobante:
+test-results/closure-20261025/native-linux-arm32-thumb-return/. Los fixtures no
+prueban un crash real ARM32 ni soporte general de Thumb; la candidata sigue
+pendiente de auditoría integral.
+
+Siguiente acción concreta: investigar el contexto MIPS64EL de CLOSE-nativo-023
+con fuentes primarias de Minidump y ABI, y determinar un incremento verificable
+antes de fijar su contrato; no asumir un crash real ni cerrar perfiles pendientes.

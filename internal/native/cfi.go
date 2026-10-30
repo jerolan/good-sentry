@@ -1177,31 +1177,38 @@ func isLinuxSignalTrampoline(ranges []memoryRange, pc, sp uint64, arch string) b
 	if pc > ^uint64(0)-7 {
 		return false
 	}
-	if arch == "arm" && (pc > 0xfffffff8 || pc&3 != 0) {
-		return false
-	}
-	first, firstOK := readCFIValue(ranges, pc, 4, 8)
-	second, secondOK := readCFIValue(ranges, pc+4, 4, 8)
-	if !firstOK || !secondOK {
-		return false
-	}
-	switch arch {
-	case "arm64":
-		return first == 0xd2801168 && second == 0xd4000001
-	case "riscv64":
-		return first == 0x08b00893 && second == 0x00000073
-	case "arm":
-		nr := uint64(0)
-		switch first {
-		case 0xe3a07077:
-			nr = 119
-		case 0xe3a070ad:
-			nr = 173
-		default:
+	if arch == "arm" {
+		address := pc &^ 1
+		if address > 0xfffffffc || (pc&1 == 0 && (pc&3 != 0 || pc > 0xfffffff8)) {
 			return false
 		}
-		if second != 0xef000000 && second != 0xef900000|nr {
+		first, firstOK := readCFIValue(ranges, address, 4, 4)
+		if !firstOK {
 			return false
+		}
+		nr := uint64(0)
+		if pc&1 != 0 {
+			switch first {
+			case 0xdf002777:
+				nr = 119
+			case 0xdf0027ad:
+				nr = 173
+			default:
+				return false
+			}
+		} else {
+			switch first {
+			case 0xe3a07077:
+				nr = 119
+			case 0xe3a070ad:
+				nr = 173
+			default:
+				return false
+			}
+			second, secondOK := readCFIValue(ranges, pc+4, 4, 4)
+			if !secondOK || (second != 0xef000000 && second != 0xef900000|nr) {
+				return false
+			}
 		}
 		limit := uint64(99)
 		if nr == 173 {
@@ -1218,6 +1225,17 @@ func isLinuxSignalTrampoline(ranges []memoryRange, pc, sp uint64, arch string) b
 			return marker == 0x5ac3c35a
 		}
 		return marker >= 1 && marker <= 64 && marker != sp+8
+	}
+	first, firstOK := readCFIValue(ranges, pc, 4, 8)
+	second, secondOK := readCFIValue(ranges, pc+4, 4, 8)
+	if !firstOK || !secondOK {
+		return false
+	}
+	switch arch {
+	case "arm64":
+		return first == 0xd2801168 && second == 0xd4000001
+	case "riscv64":
+		return first == 0x08b00893 && second == 0x00000073
 	default:
 		return false
 	}
@@ -1225,12 +1243,12 @@ func isLinuxSignalTrampoline(ranges []memoryRange, pc, sp uint64, arch string) b
 
 func recoverLinuxSignalContext(ranges []memoryRange, sp, pc uint64, arch string) (map[uint32]uint64, uint64, bool) {
 	if arch == "arm" {
-		first, ok := readCFIValue(ranges, pc, 4, 4)
+		first, ok := readCFIValue(ranges, pc&^1, 4, 4)
 		if !ok {
 			return nil, 0, false
 		}
 		offset := uint64(32)
-		if first == 0xe3a070ad {
+		if first == 0xe3a070ad || first == 0xdf0027ad {
 			offset = 160
 		}
 		if sp > 0xffffffff-(offset+67) {
