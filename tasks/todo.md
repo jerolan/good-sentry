@@ -13483,3 +13483,20 @@ Se selecciona CLOSE-uptime-010 y su aceptación 012, aún invalidados; 006–009
 011 figuran vigentes. Siguiente acción concreta: restaurar el respaldo aceptado
 de 4305 filas en una base y volumen nuevos, cotejar hashes y confirmar que los
 dos monitores originales estén pausados antes de iniciar una imagen aislada.
+
+### Base operativa aislada de uptime, 2026-10-29
+
+Se restauró el `accepted.dump` autorizado en la base nueva
+`closure_uptime_baseline_working`, contenedor
+`goodsentry-closure-uptime-db-20261029` y volumen propio. Todos los hashes
+coinciden: 4305 filas, 38 tablas, 530 eventos, 28 batches y 24 migraciones.
+Los dos monitores originales están deshabilitados y sus siete checks figuran
+en el snapshot contrastado. No se inició una aplicación; el contenedor quedó
+detenido con su volumen conservado. Comprobante:
+test-results/closure-20261025/uptime-baseline-working/.
+
+No se acredita aún scheduler, expiración, navegador, recuperación ni gates
+finales. Siguiente acción concreta: revisar las edades y controles de limpieza
+de esta copia, iniciar una imagen aislada con límites que preserven los datos
+originales y comparar las filas proyectadas tras las migraciones antes de
+crear monitores o ejecutar probes propios.

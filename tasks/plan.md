@@ -51,6 +51,8 @@ Full local integration/race passed at 3e98316 with the dedicated native SDK
 demo skipped in that run; the crash has a separate receipt. Final gates remain.
 Microsoft Edge now verifies retained, empty and recovered error-retention views
 on a separately restored checkpoint. Continue uptime retention revalidation.
+The uptime working baseline is independently restored and its original monitors
+are paused; migration and owned scheduler/browser fixtures remain open.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
