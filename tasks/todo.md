@@ -14421,3 +14421,14 @@ aceptación integral y la candidata siguen abiertas.
 Siguiente acción concreta: contrastar e implementar por separado el layout
 Breakpad MIPS64 de 600 bytes y su EPC en 312, con SystemInfo y flags N64 del
 writer, pruebas de rechazo y evento persistido; no atribuirle el layout Crashpad.
+
+### Selección de contexto Breakpad MIPS64EL, 2026-10-29
+
+El writer y lector de Breakpad distinguen N64 mediante SystemInfo y flags,
+aunque comparten una estructura con MIPS32. El layout de 600 bytes sitúa EPC
+en 312; el padding de 32 bits no forma parte de los flags. SPEC delimita esta
+variante y conserva abiertos otros escritores históricos y big-endian.
+
+Siguiente acción concreta: escribir RED con ambos layouts y valores de PC
+discriminantes, controles de flags/padding y transporte persistido; implementar
+sin inferir callers y registrar regresiones.

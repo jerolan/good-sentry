@@ -845,3 +845,9 @@ interrumpido en Thumb y no inferir soporte general de ese modo.
 Incorporar el lector acotado de CLOSE-nativo-023 para el layout de 640 bytes;
 verificar identificación, registros y transporte sin inferir callers. Mantener
 abiertos Breakpad MIPS, MIPS32, big-endian, CFI y crash real MIPS.
+
+### Contexto Breakpad MIPS64EL, 2026-10-29
+
+Leer por separado el formato de 600 bytes de CLOSE-nativo-023, con flags N64
+y EPC en 312. Probar ambos layouts simultáneamente y el evento persistido;
+mantener MIPS32, big-endian, CFI y crash real MIPS abiertos.

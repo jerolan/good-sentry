@@ -1814,11 +1814,26 @@ caller from FP, SP or LR in this slice. Reject an invalid flag, context size or
 architecture pair. The [Crashpad layout and flags](https://chromium.googlesource.com/crashpad/crashpad/+/6278690abe6ef0dda047e67dc1d0c49ce7af3811/minidump/minidump_context.h)
 and [Breakpad architecture identifiers](https://raw.githubusercontent.com/google/breakpad/main/src/google_breakpad/common/minidump_format.h)
 define the representation; Breakpad's separate 600-byte MIPS layout is not
-this format and remains open, as do MIPS32, big-endian dumps, MIPS CFI and
-platform signal recovery. Verify serialized Minidumps, flags, size and
+this format and is specified below. MIPS32, big-endian dumps, MIPS CFI and
+platform signal recovery remain open. Verify serialized Minidumps, flags, size and
 architecture rejection, nonzero inputs for register zero, captured stack that
 could otherwise invent callers, and HTTP persistence without raw dump retention.
 Fixtures do not establish a real MIPS64 crash or general MIPS support.
+
+Also accept Breakpad's distinct little-endian MIPS64 layout when SystemInfo is
+`0x8004`, the context is exactly 600 bytes and its 32-bit flags contain
+`0x00080002` with only optional `0x4` and `0x8` bits. The following padding
+word is not part of the flags. Read the general registers at offset 8 and the
+saved PC at offset 312; preserve the same register-zero and single-PC behavior
+as the Crashpad MIPS64EL subset. Reject other sizes, flags or architecture pairs,
+including MIPS32 flags under MIPS64 SystemInfo. Verify both formats in the same
+suite with discriminating values at offsets 312 and 336, padding, malformed
+contexts, and authenticated HTTP persistence without raw-dump retention.
+Breakpad's [context reader](https://chromium.googlesource.com/breakpad/breakpad/+/master/src/processor/minidump.cc)
+and Linux [context writer](https://github.com/google/breakpad/blob/main/src/client/linux/dump_writer_common/thread_info.cc)
+distinguish the shared layout from the CPU architecture. This does not establish
+big-endian support, MIPS32, MIPS CFI, historical writers with different flags,
+or a real MIPS crash.
 
 As a prerequisite for the Windows and Linux symbol-server work, retain typed
 lookup identity from each valid Minidump CodeView record. For `BpEL`, keep the
