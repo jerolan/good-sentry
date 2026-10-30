@@ -14995,3 +14995,23 @@ Siguiente acción concreta: preparar una copia aislada del respaldo previo a la
 primera expiración, vencer solo las tres releases propias seleccionadas y revisar
 la release de control que permanece a los cuatro anchos, sin alterar las copias
 conservadas; después completar los gates de integración y cierre pendientes.
+
+### Vista de release superviviente tras expiración parcial, 2026-10-30
+
+Se clonó el respaldo restaurado en otra base y se contrastaron sus 4575 filas y
+secuencias. En esa copia se envejecieron bajo el lock solo las tres releases
+propias seleccionadas. La limpieza automática retiró esas releases y sus enlaces,
+commit y deploy; el control permaneció y el resto de las 73 tablas quedó exacto,
+salvo la revisión esperada de la incidencia pendiente.
+
+El navegador mostró la release conservada en la lista y el detalle después de la
+expiración real, y no mostró las tres vencidas. Ambas vistas se comprobaron a
+320, 768, 1024 y 1440 píxeles. La sesión de acceso quedó contabilizada; las
+copias de referencia y ejecución conservaron sus filas exactas. Los contenedores
+están detenidos. Capturas privadas y comprobante:
+test-results/closure-20261025/release-survivor-browser/.
+
+Siguiente acción concreta: contrastar los gates de integración PostgreSQL, vet y
+race exigibles con la candidata actual y las exclusiones nativas ordenadas por el
+usuario; ejecutar lo autorizado en una base desechable y registrar resultados,
+sin presentar como realizadas las comprobaciones de informes nativos retiradas.
