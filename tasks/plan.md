@@ -23,7 +23,8 @@ The OAuth consent owner now verifies mandatory 2FA before code issuance and a
 successful official MCP call after enrollment; final MCP acceptance stays open.
 OAuth code exchange now validates the approved verifier alphabet and has local
 binding, rejected-attempt, expiry and observed concurrent single-use evidence.
-Concurrent refresh rotation remains to be verified before final candidate gates.
+Concurrent refresh rotation and expiry now have local race and mutation evidence;
+foreign organization/project consent and final candidate gates remain to verify.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.

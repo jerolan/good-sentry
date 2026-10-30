@@ -224,4 +224,169 @@ func TestOAuthCodeExchangeBindingAndVerifierAlphabet(t *testing.T) {
 			t.Fatalf("expired exchange changed token counts: %v", err)
 		}
 	})
+	t.Run("concurrent refresh", func(t *testing.T) {
+		code := authorize(verifier)
+		exchange := url.Values{"grant_type": {"authorization_code"}, "client_id": {id}, "redirect_uri": {redirect}, "code": {code}, "code_verifier": {verifier}}
+		response, body := oauthForm(t, client, base+"/oauth/token", exchange)
+		var initial struct {
+			Access  string `json:"access_token"`
+			Refresh string `json:"refresh_token"`
+		}
+		if response.StatusCode != http.StatusOK || json.Unmarshal(body, &initial) != nil || initial.Access == "" || initial.Refresh == "" {
+			t.Fatal("initial OAuth grant failed")
+		}
+		wrongClient := url.Values{"grant_type": {"refresh_token"}, "client_id": {otherID}, "refresh_token": {initial.Refresh}}
+		response, _ = oauthForm(t, client, base+"/oauth/token", wrongClient)
+		if response.StatusCode != http.StatusBadRequest {
+			t.Fatalf("foreign refresh client status=%d", response.StatusCode)
+		}
+		var accessBefore, refreshBefore int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&accessBefore, &refreshBefore); err != nil {
+			t.Fatal(err)
+		}
+		tx, err := f.sql.Begin(f.ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(context.Background())
+		server := &Server{cfg: cfg}
+		var lockedID int64
+		if err := tx.QueryRow(f.ctx, `SELECT a.id FROM api_tokens a JOIN oauth_refresh_tokens r ON r.access_token_id=a.id WHERE r.secret_hash=$1 FOR UPDATE OF a`, server.hash(initial.Refresh)).Scan(&lockedID); err != nil {
+			t.Fatal(err)
+		}
+		values := url.Values{"grant_type": {"refresh_token"}, "client_id": {id}, "refresh_token": {initial.Refresh}}
+		type result struct {
+			status int
+			body   []byte
+			err    error
+		}
+		const workers = 8
+		results := make(chan result, workers)
+		start := make(chan struct{})
+		var ready, finished sync.WaitGroup
+		ready.Add(workers)
+		finished.Add(workers)
+		for range workers {
+			go func() {
+				defer finished.Done()
+				ready.Done()
+				<-start
+				req, err := http.NewRequestWithContext(f.ctx, http.MethodPost, base+"/oauth/token", strings.NewReader(values.Encode()))
+				if err != nil {
+					results <- result{err: err}
+					return
+				}
+				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+				res, err := http.DefaultClient.Do(req)
+				if err != nil {
+					results <- result{err: err}
+					return
+				}
+				body, err := io.ReadAll(res.Body)
+				res.Body.Close()
+				results <- result{status: res.StatusCode, body: body, err: err}
+			}()
+		}
+		ready.Wait()
+		close(start)
+		defer func() { _ = tx.Rollback(context.Background()); finished.Wait() }()
+		deadline, cancel := context.WithTimeout(f.ctx, 10*time.Second)
+		defer cancel()
+		ticker := time.NewTicker(10 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			if _, err := tx.Exec(f.ctx, `SELECT pg_stat_clear_snapshot()`); err != nil {
+				t.Fatal(err)
+			}
+			var waiting int
+			if err := tx.QueryRow(f.ctx, `SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%SELECT revoked_at FROM api_tokens%FOR UPDATE%'`).Scan(&waiting); err != nil {
+				t.Fatal(err)
+			}
+			if waiting >= 2 {
+				break
+			}
+			select {
+			case <-deadline.Done():
+				t.Fatal("concurrent refresh requests did not reach the access-token lock")
+			case <-ticker.C:
+			}
+		}
+		if err := tx.Commit(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		statuses := map[int]int{}
+		var rotated struct {
+			Access  string `json:"access_token"`
+			Refresh string `json:"refresh_token"`
+		}
+		for range workers {
+			result := <-results
+			if result.err != nil {
+				t.Fatal(result.err)
+			}
+			statuses[result.status]++
+			if result.status == http.StatusOK && json.Unmarshal(result.body, &rotated) != nil {
+				t.Fatal("invalid rotated token response")
+			}
+		}
+		if statuses[http.StatusOK] != 1 || statuses[http.StatusBadRequest] != workers-1 || len(statuses) != 2 {
+			t.Fatalf("concurrent refresh statuses=%v", statuses)
+		}
+		if rotated.Access == "" || rotated.Refresh == "" || rotated.Access == initial.Access || rotated.Refresh == initial.Refresh {
+			t.Fatal("refresh did not rotate both credentials")
+		}
+		var accessAfter, refreshAfter int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&accessAfter, &refreshAfter); err != nil || accessAfter != accessBefore+1 || refreshAfter != refreshBefore+1 {
+			t.Fatalf("refresh token counts=%d/%d to %d/%d: %v", accessBefore, refreshBefore, accessAfter, refreshAfter, err)
+		}
+		req, err := http.NewRequest(http.MethodPost, base+"/mcp", strings.NewReader("{}"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Authorization", "Bearer "+initial.Access)
+		response, err = http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		response.Body.Close()
+		if response.StatusCode != http.StatusUnauthorized {
+			t.Fatalf("old access survived refresh: %d", response.StatusCode)
+		}
+		response, _ = oauthForm(t, client, base+"/oauth/token", values)
+		if response.StatusCode != http.StatusBadRequest {
+			t.Fatalf("refresh replay status=%d", response.StatusCode)
+		}
+	})
+	t.Run("expired refresh", func(t *testing.T) {
+		code := authorize(verifier)
+		exchange := url.Values{"grant_type": {"authorization_code"}, "client_id": {id}, "redirect_uri": {redirect}, "code": {code}, "code_verifier": {verifier}}
+		response, body := oauthForm(t, client, base+"/oauth/token", exchange)
+		var initial struct {
+			Access  string `json:"access_token"`
+			Refresh string `json:"refresh_token"`
+		}
+		if response.StatusCode != http.StatusOK || json.Unmarshal(body, &initial) != nil || initial.Access == "" || initial.Refresh == "" {
+			t.Fatal("initial OAuth grant failed")
+		}
+		server := &Server{cfg: cfg}
+		result, err := f.sql.Exec(f.ctx, `UPDATE oauth_refresh_tokens SET expires_at=clock_timestamp()-interval '1 second' WHERE secret_hash=$1`, server.hash(initial.Refresh))
+		if err != nil || result.RowsAffected() != 1 {
+			t.Fatalf("expire refresh setup: %v", err)
+		}
+		var accessBefore, refreshBefore int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&accessBefore, &refreshBefore); err != nil {
+			t.Fatal(err)
+		}
+		response, _ = oauthForm(t, client, base+"/oauth/token", url.Values{"grant_type": {"refresh_token"}, "client_id": {id}, "refresh_token": {initial.Refresh}})
+		if response.StatusCode != http.StatusBadRequest {
+			t.Fatalf("expired refresh accepted: %d", response.StatusCode)
+		}
+		var accessAfter, refreshAfter int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&accessAfter, &refreshAfter); err != nil || accessAfter != accessBefore || refreshAfter != refreshBefore {
+			t.Fatalf("expired refresh changed token counts: %v", err)
+		}
+		if _, err := f.db.AuthenticateAPIToken(f.ctx, server.hash(initial.Access)); err != nil {
+			t.Fatalf("expired refresh revoked still-valid access: %v", err)
+		}
+	})
 }

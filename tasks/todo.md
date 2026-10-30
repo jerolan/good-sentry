@@ -13097,3 +13097,20 @@ incluso ante fallo. Se conserva ese intento sin atribuirlo al producto.
 Siguiente acción concreta: verificar la rotación concurrente del mismo refresh
 con bloqueo observado, una sola pareja nueva, revocación del acceso previo y
 rechazo de reutilización; mantener la aceptación integral y final pendientes.
+
+### Rotación concurrente de refresh OAuth, 2026-10-29
+
+Un cliente distinto no pudo consumir el refresh. Una transacción independiente
+retuvo el acceso anterior mientras ocho solicitudes HTTP intentaron renovarlo;
+PostgreSQL confirmó al menos dos esperando el bloqueo. Solo una emitió una pareja
+nueva; el acceso anterior y la reutilización del refresh fueron rechazados. Un
+refresh vencido no emitió credenciales ni revocó el acceso todavía válido.
+La eliminación temporal de las comprobaciones de revocación permitió detectar
+rotaciones repetidas; se restauró el producto. Los owners OAuth seleccionados
+pasaron con race, vet de integración pasó y la base aislada quedó detenida.
+Comprobante: test-results/closure-20261025/mcp-refresh-concurrency/.
+
+MCP055/059/077 siguen pendientes de la candidata y los gates integrales.
+Siguiente acción concreta: comprobar por HTTP que el consentimiento manipulado
+con un proyecto de otra organización no emite código ni credenciales, y que
+una selección legítima sigue funcionando.
