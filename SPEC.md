@@ -1800,7 +1800,25 @@ For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S
 
 <a id="close-nativo-023"></a>
 
-This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32, ARM64 and RISC-V64; uncommon CFI expressions and platform-specific signal-context register recovery outside the specified Linux AMD64, x86 and bounded ARM32/ARM64/RISC-V64 slices; nested archive discovery beyond eight layers; and symbol-server resolution are not implemented. ZIP, TAR and gzip-compressed TAR dSYM/DIF uploads, Mach-O dSYM companion files whose zero-byte __TEXT segment still defines the executable address base, and their DWARF are consumed directly. It does not claim general crashpad/breakpad coverage. Keep the parent native-processing task open until those formats and real multi-architecture crash receipts pass. The unadjusted signal-frame return-address rule follows the `.cfi_signal_frame` behavior documented in the [Linux arm64 signal trampoline](https://github.com/torvalds/linux/blob/master/arch/arm64/kernel/vdso/sigreturn.S).
+This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32, ARM64 and RISC-V64 except the bounded MIPS64EL subset below; uncommon CFI expressions and platform-specific signal-context register recovery outside the specified Linux AMD64, x86 and bounded ARM32/ARM64/RISC-V64 slices; nested archive discovery beyond eight layers; and symbol-server resolution are not implemented. ZIP, TAR and gzip-compressed TAR dSYM/DIF uploads, Mach-O dSYM companion files whose zero-byte __TEXT segment still defines the executable address base, and their DWARF are consumed directly. It does not claim general crashpad/breakpad coverage. Keep the parent native-processing task open until those formats and real multi-architecture crash receipts pass. The unadjusted signal-frame return-address rule follows the `.cfi_signal_frame` behavior documented in the [Linux arm64 signal trampoline](https://github.com/torvalds/linux/blob/master/arch/arm64/kernel/vdso/sigreturn.S).
+
+As an initial additional CPU context, accept the little-endian Crashpad
+MIPS64EL Minidump layout only when SystemInfo architecture is `0x8004`, the
+context is exactly 640 bytes and the 64-bit flags contain `0x00080002` with
+only the optional floating-point and DSP bits `0x4` and `0x8`. Read the 32
+64-bit general registers at offset 8, treating register zero as zero, and the
+saved PC at offset 336; SP, FP and LR are registers 29, 30 and 31. Floating
+point, DSP and other saved fields are ignored. Emit the captured PC and resolve
+its module/symbol through existing authenticated debug files, but do not infer a
+caller from FP, SP or LR in this slice. Reject an invalid flag, context size or
+architecture pair. The [Crashpad layout and flags](https://chromium.googlesource.com/crashpad/crashpad/+/6278690abe6ef0dda047e67dc1d0c49ce7af3811/minidump/minidump_context.h)
+and [Breakpad architecture identifiers](https://raw.githubusercontent.com/google/breakpad/main/src/google_breakpad/common/minidump_format.h)
+define the representation; Breakpad's separate 600-byte MIPS layout is not
+this format and remains open, as do MIPS32, big-endian dumps, MIPS CFI and
+platform signal recovery. Verify serialized Minidumps, flags, size and
+architecture rejection, nonzero inputs for register zero, captured stack that
+could otherwise invent callers, and HTTP persistence without raw dump retention.
+Fixtures do not establish a real MIPS64 crash or general MIPS support.
 
 As a prerequisite for the Windows and Linux symbol-server work, retain typed
 lookup identity from each valid Minidump CodeView record. For `BpEL`, keep the

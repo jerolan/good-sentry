@@ -14389,3 +14389,15 @@ pendiente de auditoría integral.
 Siguiente acción concreta: investigar el contexto MIPS64EL de CLOSE-nativo-023
 con fuentes primarias de Minidump y ABI, y determinar un incremento verificable
 antes de fijar su contrato; no asumir un crash real ni cerrar perfiles pendientes.
+
+### Selección de contexto Crashpad MIPS64EL, 2026-10-29
+
+Las fuentes describen dos layouts distintos: Crashpad de 640 bytes, EPC en
+336, y Breakpad de 600 bytes, EPC en 312. Un cotejo de `sizeof` y offsets con
+estructuras C reprodujo esas medidas; no existe runtime MIPS local. SPEC delimita
+el primero con flags enteros válidos y conserva abierto el segundo. La ABI no
+justifica reutilizar la cadena de FP genérica ni adivinar retornos desde SP/LR.
+
+Siguiente acción concreta: preparar RED con Minidumps serializados de 640 bytes,
+flags y rechazo de pares inválidos, comprobando solo el PC capturado y el evento
+persistido; mantener MIPS CFI y los demás formatos fuera de este incremento.

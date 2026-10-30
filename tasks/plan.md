@@ -839,3 +839,9 @@ Cubrir el retorno Thumb etiquetado que restaura un contexto ARM moderno, con
 ambas secuencias de kernel, memoria capturada y un caller dependiente del
 registro restaurado. Conservar como pendiente la reconstrucción de un contexto
 interrumpido en Thumb y no inferir soporte general de ese modo.
+
+### Contexto Crashpad MIPS64EL, 2026-10-29
+
+Incorporar el lector acotado de CLOSE-nativo-023 para el layout de 640 bytes;
+verificar identificación, registros y transporte sin inferir callers. Mantener
+abiertos Breakpad MIPS, MIPS32, big-endian, CFI y crash real MIPS.
