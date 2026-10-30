@@ -14590,3 +14590,15 @@ CLOSE-nativo-023. La corrección omitida no se retomará sin nueva instrucción.
 
 Siguiente acción concreta: seleccionar el primer criterio exigible independiente
 con dependencias resueltas, según el orden del plan y la matriz de cierre.
+
+### Tarea de procesamiento nativo abandonada, 2026-10-29
+
+Por instrucción expresa del usuario, se abandona la tarea en curso de mejorar
+el procesamiento de informes de fallos nativos. Se detiene también la
+investigación de las lecturas compartidas. Los incrementos y comprobantes ya
+registrados se conservan; los requisitos y fallos pendientes no se consideran
+completados ni se convierten en excepciones de cierre.
+
+Siguiente acción concreta: no reanudar esta tarea sin una nueva instrucción del
+usuario. Si posteriormente se reanuda el cierre del producto, revisar el alcance
+vigente y las dependencias antes de seleccionar otra tarea.
