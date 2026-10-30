@@ -13550,3 +13550,20 @@ Comprobante: test-results/closure-20261025/uptime-first-expiry/.
 Siguiente acción concreta: reanudar los probes propios, generar checks frescos
 HTTP/TCP y heartbeat mediante el scheduler y sus APIs, verificar la recuperación
 de estados y entregas y comprobar la vista recuperada con Edge.
+
+### Checks frescos tras expiración de uptime, 2026-10-29
+
+Cinco checks nuevos recuperaron HTTP/TCP desde el estado down y ejercitaron
+heartbeat sin transición y después down/up. Las entregas e intentos previos
+permanecieron exactos; `last_triggered` de la regla propia avanzó y sus demás
+campos no cambiaron. Ocho entregas quedaron enviadas. El primer verificador
+exigió por error que toda la regla permaneciera idéntica; el único campo
+distinto era `last_triggered`. Se corrigió el cotejo y se reanudaron los mismos
+checks guardados sin duplicarlos. Edge verificó la vista recuperada en
+320/768/1440 y se inspeccionó la captura móvil. Las 4305 filas originales
+permanecen; contenedores detenidos y checkpoint privado conservado. Comprobante:
+test-results/closure-20261025/uptime-fresh-recovery/.
+
+Siguiente acción concreta: iniciar otra instancia aislada con uptime y logs
+deshabilitados, envejecer solo los seis checks propios restantes y comprobar
+que la limpieza continúa sin alterar monitores, alertas ni filas históricas.
