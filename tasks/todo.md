@@ -14928,3 +14928,26 @@ Siguiente acción concreta: preparar la fase de última release sobre esta copia
 identificar sus releases propias y los efectos esperados, volver a contrastar el
 respaldo y las edades, y envejecer únicamente las identidades autorizadas antes
 de probar expiración y recuperación.
+
+### Última expiración de releases propias, 2026-10-29
+
+La copia actual coincidía con su snapshot y el respaldo restaurado con el suyo;
+no había releases históricas candidatas a 365 días ni archivos a 730 días. Se
+identificaron cuatro releases propias actuales y cinco enlaces de proyecto. Con
+la aplicación detenida y el lock de retención se envejecieron solo esos cuatro
+receipts; ninguna otra fila cambió.
+
+La imagen aislada, con logs y uptime desactivados, eliminó las cuatro releases
+y sus cinco enlaces. Las demás filas de las 73 tablas, incluidas políticas,
+mapas, adjuntos, telemetría e historial, permanecieron exactas. Las listas de
+ambos proyectos quedaron vacías y los lectores devolvieron 404 para las cuatro
+releases; incidencias, mapa y adjuntos siguieron accesibles. Las lecturas añadieron
+solo una sesión. La instancia habilitada anterior se reinició con la misma imagen,
+configuración y montajes, respondió readiness 200 y conservó todas las filas.
+Contenedores detenidos y datos conservados. Comprobante:
+test-results/closure-20261025/release-last-expiry/.
+
+Es evidencia parcial, no cierre de CLOSE-operacion-032. Siguiente acción concreta:
+preparar una aplicación aislada sobre la restauración previa a expiración y
+comprobar la recuperación de releases, mapa e incidencias sin alterar la copia de
+ejecución; después completar navegador y los gates finales pendientes.
