@@ -14910,3 +14910,21 @@ test-results/closure-20261025/release-shared-fresh-capture/.
 Siguiente acción concreta: enviar una captura nueva para la incidencia silenciada
 y verificar su progreso, mapeo y conservación; después preparar la fase de última
 release con otro snapshot y protecciones de antigüedad.
+
+### Captura nueva de la incidencia silenciada, 2026-10-29
+
+Una captura Node SDK con ID reservado entró en la incidencia silenciada, se
+mapeó a la línea 7 y conservó los bytes del adjunto. Recreó su release vencida
+con identidad y enlace nuevos. La API confirmó que la incidencia continúa
+silenciada y quedan 99 ocurrencias para levantar el silencio.
+
+El cotejo de las 73 tablas contabilizó la release, enlace, evento, adjunto,
+profile, sesión SDK y sesión de acceso nuevos, así como el progreso de la
+incidencia propia. Su política de silencio y todas las demás filas permanecieron
+exactas. Los contenedores están detenidos y la copia conservada. Comprobante:
+test-results/closure-20261025/release-muted-fresh-capture/.
+
+Siguiente acción concreta: preparar la fase de última release sobre esta copia,
+identificar sus releases propias y los efectos esperados, volver a contrastar el
+respaldo y las edades, y envejecer únicamente las identidades autorizadas antes
+de probar expiración y recuperación.
