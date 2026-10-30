@@ -13145,3 +13145,19 @@ El cambio invalida la evidencia dependiente de OAuth hasta la candidata y sus
 gates integrales. Siguiente acción concreta: comprobar con HTTP y PostgreSQL que
 un cambio de generación de autenticación invalida tanto un código OAuth sin
 canjear como un refresh previamente emitido, sin crear credenciales nuevas.
+
+### Generación de autenticación y grants OAuth, 2026-10-29
+
+Tras obtener un código sin canjear y un refresh separado, la prueba avanzó la
+generación de autenticación. Ambos intercambios fueron rechazados sin crear
+credenciales. Los owners previos no cubrían esta transición OAuth. Al quitar
+temporalmente las dos comprobaciones de generación, falló la aserción del código
+con generación anterior; se restauró el producto y pasaron 17 casos con race y
+vet de integración. Una primera mutación impedía preparar el grant válido y no
+se cuenta como control. PostgreSQL aislado quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-oauth-generation/.
+
+La aceptación integral y los gates finales siguen pendientes. Siguiente acción
+concreta: comprobar que retirar la membresía después del consentimiento impide
+canjear un código pendiente y renovar un refresh ya emitido, sin crear nuevas
+credenciales, con HTTP y PostgreSQL aislados.

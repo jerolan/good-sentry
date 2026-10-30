@@ -451,4 +451,37 @@ func TestOAuthCodeExchangeBindingAndVerifierAlphabet(t *testing.T) {
 			t.Fatalf("expired refresh revoked still-valid access: %v", err)
 		}
 	})
+	t.Run("authentication generation invalidates grants", func(t *testing.T) {
+		pendingCode := authorize(verifier)
+		issuedCode := authorize(verifier)
+		exchange := func(code string) url.Values {
+			return url.Values{"grant_type": {"authorization_code"}, "client_id": {id}, "redirect_uri": {redirect}, "code": {code}, "code_verifier": {verifier}}
+		}
+		response, body := oauthForm(t, client, base+"/oauth/token", exchange(issuedCode))
+		var issued struct {
+			Refresh string `json:"refresh_token"`
+		}
+		if response.StatusCode != http.StatusOK || json.Unmarshal(body, &issued) != nil || issued.Refresh == "" {
+			t.Fatal("initial grant failed")
+		}
+		var beforeAccess, beforeRefresh int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&beforeAccess, &beforeRefresh); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.sql.Exec(f.ctx, `UPDATE users SET auth_generation=auth_generation+1 WHERE id=$1::bigint`, f.owner.ID); err != nil {
+			t.Fatal(err)
+		}
+		response, _ = oauthForm(t, client, base+"/oauth/token", exchange(pendingCode))
+		if response.StatusCode != http.StatusBadRequest {
+			t.Fatalf("stale authorization code status=%d", response.StatusCode)
+		}
+		response, _ = oauthForm(t, client, base+"/oauth/token", url.Values{"grant_type": {"refresh_token"}, "client_id": {id}, "refresh_token": {issued.Refresh}})
+		if response.StatusCode != http.StatusBadRequest {
+			t.Fatalf("stale refresh status=%d", response.StatusCode)
+		}
+		var afterAccess, afterRefresh int
+		if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&afterAccess, &afterRefresh); err != nil || afterAccess != beforeAccess || afterRefresh != beforeRefresh {
+			t.Fatalf("stale grants created credentials: %v", err)
+		}
+	})
 }
