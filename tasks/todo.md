@@ -13372,3 +13372,19 @@ Comprobante: test-results/closure-20261025/retention-pre-expiry/.
 Siguiente acción concreta: reanudar la instancia aislada, envejecer solo los dos
 recibos propios seleccionados, esperar la limpieza real y comprobar el estado
 empty y los datos históricos/independientes antes del recapture del SDK.
+
+### Primera expiración propia de retención, 2026-10-29
+
+Solo los dos recibos seleccionados del proyecto nuevo se envejecieron 91 días;
+el worker real de retención de 90 días los eliminó. La incidencia mixta conservó
+un evento y la vacía mantuvo comentario, asignación y estado; las rutas de
+eventos vencidos devolvieron 404, quedó un adjunto y siguieron accesibles la
+traza independiente de dos spans y el log. Chromium verificó la vista vacía,
+texto seguro y controles en 320/768/1440. El cotejo volvió a encontrar las
+4258 filas históricas. Los contenedores nuevos están detenidos y los datos y
+capturas privados conservados. Comprobante:
+test-results/closure-20261025/retention-first-expiry/.
+
+Siguiente acción concreta: reanudar la copia y usar Node 11.7.0 para recapturar
+el ID vencido en su grupo original y reintentar el ID retenido, comprobar el
+conteo y la vista recuperada en navegador, sin modificar los datos históricos.
