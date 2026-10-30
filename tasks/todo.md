@@ -14432,3 +14432,22 @@ variante y conserva abiertos otros escritores históricos y big-endian.
 Siguiente acción concreta: escribir RED con ambos layouts y valores de PC
 discriminantes, controles de flags/padding y transporte persistido; implementar
 sin inferir callers y registrar regresiones.
+
+### Contexto Breakpad MIPS64EL, 2026-10-29
+
+El lector distingue el layout Breakpad de 600 bytes, flags de 32 bits y EPC en
+312 del layout Crashpad de 640 bytes y EPC en 336. Los owners RED/GREEN cubren
+valores de PC opuestos, padding, flags, arquitectura, símbolos y rechazo; el
+owner HTTP comprueba el evento y que el dump no se conserve. La revisión
+independiente no encontró defectos ni cambios en la ausencia de callers inferidos.
+
+Pasaron la suite unitaria, native y owners focalizados con race, vet, los
+owners HTTP/PostgreSQL con race y el crash real Linux/amd64 del SDK fijado,
+sin skips. Comprobante:
+test-results/closure-20261025/native-mips64-breakpad-context/. Los fixtures no
+acreditan MIPS32, CFI, big-endian, otros writers históricos ni un crash real
+MIPS. La candidata y la aceptación integral siguen pendientes.
+
+Siguiente acción concreta: contrastar el contexto MIPS32EL O32 y la
+representación de direcciones con fuentes primarias; si procede, especificar
+un subconjunto verificable sin atribuir compatibilidad general ni inferir callers.

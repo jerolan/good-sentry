@@ -77,7 +77,7 @@ func TestMIPS64ELMinidumpRejectsInvalidContext(t *testing.T) {
 		arch  uint16
 		flags uint64
 	}{
-		{"breakpad separate layout", 600, 0x8004, 0x80002},
+		{"truncated breakpad layout", 599, 0x8004, 0x80002},
 		{"short", 639, 0x8004, 0x80002},
 		{"long", 641, 0x8004, 0x80002},
 		{"wrong system architecture", 640, cpuArchAMD64, 0x80002},

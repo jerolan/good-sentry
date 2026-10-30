@@ -47,6 +47,7 @@ const (
 	maxMinidumpXState      = 16384
 	minidumpContextXState  = 0x40
 	mips64ContextSize      = 640
+	mips64BreakpadSize     = 600
 	mips64IntegerFlags     = 0x80002
 	// Crashpad's native struct size includes four bytes of tail alignment.
 	riscv64ContextSize = 528
@@ -362,8 +363,13 @@ func ParseMinidump(data []byte) (Crash, error) {
 			}
 		}
 	default:
-		if declaredArch == cpuArchMIPS64 && len(rawContext) == mips64ContextSize {
-			flags := binary.LittleEndian.Uint64(rawContext)
+		if declaredArch == cpuArchMIPS64 && (len(rawContext) == mips64ContextSize || len(rawContext) == mips64BreakpadSize) {
+			flags := uint64(binary.LittleEndian.Uint32(rawContext))
+			pcOffset := 312
+			if len(rawContext) == mips64ContextSize {
+				flags = binary.LittleEndian.Uint64(rawContext)
+				pcOffset = 336
+			}
 			if flags&^uint64(0x0c) != mips64IntegerFlags {
 				return Crash{}, errors.New("invalid MIPS64EL minidump context flags")
 			}
@@ -374,7 +380,7 @@ func ParseMinidump(data []byte) (Crash, error) {
 				crash.registers[register] = binary.LittleEndian.Uint64(rawContext[8+register*8:])
 			}
 			crash.RSP, crash.RBP, crash.LR = crash.registers[29], crash.registers[30], crash.registers[31]
-			crash.RIP = binary.LittleEndian.Uint64(rawContext[336:])
+			crash.RIP = binary.LittleEndian.Uint64(rawContext[pcOffset:])
 		} else if declaredArch == cpuArchRISCV64 && len(rawContext) == riscv64ContextSize {
 			flags := binary.LittleEndian.Uint32(rawContext)
 			version := binary.LittleEndian.Uint32(rawContext[4:])
@@ -418,6 +424,9 @@ func ParseMinidump(data []byte) (Crash, error) {
 			}
 		} else if declaredArch == cpuArchARM64 && len(rawContext) >= 272 {
 			if len(rawContext) == mips64ContextSize && binary.LittleEndian.Uint64(rawContext)&^uint64(0x0c) == mips64IntegerFlags {
+				return Crash{}, errors.New("MIPS64EL minidump context conflicts with SystemInfo architecture")
+			}
+			if len(rawContext) == mips64BreakpadSize && binary.LittleEndian.Uint32(rawContext)&^uint32(0x0c) == mips64IntegerFlags {
 				return Crash{}, errors.New("MIPS64EL minidump context conflicts with SystemInfo architecture")
 			}
 			if len(rawContext) >= 4 && binary.LittleEndian.Uint32(rawContext)&0xffffff00 == 0x80000000 {
