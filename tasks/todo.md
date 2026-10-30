@@ -14521,3 +14521,15 @@ compatibilidad general ni cierre de CLOSE-nativo-023.
 Siguiente acción concreta: contrastar con fuentes primarias la representación
 PC/CPSR.T y búsqueda CFI/EHABI para un contexto ARM32 interrumpido en Thumb;
 si hay evidencia suficiente, seleccionar y especificar un slice verificable.
+
+### Selección de contexto Thumb interrumpido, 2026-10-29
+
+CLOSE-nativo-023 sigue abierto. Linux guarda por separado PC y CPSR y define
+Thumb mediante CPSR.T; Arm distingue la etiqueta de función de la dirección de
+instrucción. La evidencia resuelve la selección de un slice conservador con PC
+par, lookup exacto y una sola transición CFI/EHABI, sin afirmar la semántica de
+retornos posteriores ni una captura real. Las fuentes y límites están en SPEC.
+
+Siguiente acción concreta: reproducir el rechazo actual con Minidumps de señal
+RT/no RT y restorers ARM/Thumb, implementar la recuperación y comprobar el PC,
+el caller acotado y el evento persistido sin retener el dump.

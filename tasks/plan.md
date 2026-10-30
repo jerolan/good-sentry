@@ -864,3 +864,12 @@ Cubrir un único caller para MIPS32EL/MIPS64EL con CFI ELF y registros
 capturados, incluyendo una función hoja con SP igual. Contrastar con FDE
 generados por Go e inspeccionados con readelf; no inferir el ajuste de delay
 slot ni evaluar FDE de callers posteriores en este incremento.
+
+### Contexto Thumb interrumpido por señal Linux ARM32, 2026-10-29
+
+Extender la recuperación moderna para CPSR.T activo, con PC par conservado y
+consulta CFI/EHABI en el PC exacto. Recuperar como máximo un caller desde ese
+PC y no consultar un FDE posterior cuya semántica de retorno Thumb no esté
+probada. Probar ARM y Thumb restorers, PC congruente a dos módulo cuatro,
+registros recuperados, CFI/EHABI, límites y persistencia; mantener abiertas las
+variantes históricas y la evidencia de un crash real ARM32.

@@ -1374,6 +1374,25 @@ and [defines Thumb snippets](https://codebrowser.dev/linux/linux/arch/arm/kernel
 distinguishes the tag from the instruction address. This is a fixture-backed
 Thumb-handler-to-ARM slice, not a real ARM32 crash or general Thumb unwinding.
 
+Extend the modern Linux ARM32 signal fallback to a saved little-endian Thumb
+context with CPSR.T set, CPSR.J and CPSR.E clear, and an even saved PC. Preserve
+the saved PC as the exact interrupted instruction address, including addresses
+congruent to two modulo four; do not set a Thumb function-pointer tag or subtract
+from it before CFI/EHABI lookup. Recover at most one caller using the CFI/EHABI
+at that PC and emit its captured return value without evaluating a later FDE;
+when no rule applies, preserve the interrupted PC. Apply the existing modern
+frame markers, bounds, CFI/EHABI precedence and other ARM-state behavior. Reject
+odd saved PCs in this bounded slice without claiming this is a universal validity
+rule. Verify both signal layouts and ARM/Thumb restorers, exact-PC rule boundaries,
+restored registers, invalid CPSR/PC and persisted HTTP events without retaining
+the dump. Linux [saves PC and CPSR separately](https://codebrowser.dev/linux/linux/arch/arm/kernel/signal.c.html#273)
+and [uses CPSR.T for Thumb state](https://codebrowser.dev/linux/linux/arch/arm/include/asm/ptrace.h.html#31);
+[Arm ELF](https://github.com/ARM-software/abi-aa/blob/main/aaelf32/aaelf32.rst#symbol-values)
+and [EHABI](https://github.com/ARM-software/abi-aa/blob/main/ehabi32/ehabi32.rst#811-terminology)
+distinguish tagged function/return pointers. This synthetic slice does not prove
+real Thumb crashes, historical layouts, FDPIC, Jazelle, big-endian state, later
+return-address adjustment or general Thumb unwinding.
+
 For a 32-bit x86 Minidump context whose architecture and integer-valid flags
 are set, initialize DWARF registers 0–3 and 6–7 from EAX, ECX, EDX, EBX, ESI
 and EDI, in addition to the existing ESP, EBP and EIP. Carry only integer
