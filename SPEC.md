@@ -1330,6 +1330,31 @@ intentionally omits its commented CFI, and [LLVM libunwind's Linux fallback](htt
 documents recognition and layout. These fixtures do not establish a real ARM64
 crash, capture of code bytes by every SDK, other signal trampolines, or PAC.
 
+For Linux ARM32 Minidumps, support the modern ARM-state signal-return layout
+when captured code at an aligned exact PC has `mov r7,#119` or `mov r7,#173`
+(`0xe3a07077` or `0xe3a070ad`), followed by either EABI `svc 0`
+(`0xef000000`) or the Linux OABI-compatible `svc` encoding with the matching
+syscall number. Attempt this fallback only when no DWARF or EHABI entry applies;
+an explicit EHABI `CANTUNWIND` remains authoritative. For the non-RT form,
+require the modern frame marker `0x5ac3c35a` at SP and read r0–r15 from SP+32.
+For RT, require a signal number 1–64 at SP, reject the historical pointer form
+identified by SP+8, and read r0–r15 from SP+160. Saved r13 is SP, r15 is PC,
+and CPSR immediately follows r15. Require captured SP, PC and CPSR, an ARM-state
+CPSR and word-aligned saved PC; missing other registers stay unavailable. Reject
+32-bit address overflow, zero or repeated PC and unsafe stack changes; permit a
+non-increasing SP only between disjoint captured ranges. Continue at the exact
+saved PC, preserve it without later unwind data, and use the same event-selection
+rule as the ARM64 fallback. Verify both frame forms, offsets and every register,
+CFI/EHABI precedence, missing bytes, historical markers, ARM/Thumb controls,
+stack bounds, exact PC and persisted event selection with serialized Minidumps.
+Linux's [signal setup](https://github.com/torvalds/linux/blob/v6.12/arch/arm/kernel/signal.c),
+[frame layout](https://github.com/torvalds/linux/blob/v6.12/arch/arm/kernel/signal.h),
+[register order](https://github.com/torvalds/linux/blob/v6.12/arch/arm/include/uapi/asm/sigcontext.h),
+[trampoline code](https://codebrowser.dev/linux/linux/arch/arm/kernel/sigreturn_codes.S.html)
+and [Android libunwindstack](https://android.googlesource.com/platform/system/core/+/refs/heads/android11-tests-release/libunwindstack/RegsArm.cpp)
+define this bounded slice. Fixtures do not establish a real ARM32 crash, universal
+code capture, Thumb, older layouts, FDPIC, or coprocessor recovery.
+
 For a 32-bit x86 Minidump context whose architecture and integer-valid flags
 are set, initialize DWARF registers 0–3 and 6–7 from EAX, ECX, EDX, EBX, ESI
 and EDI, in addition to the existing ESP, EBP and EIP. Carry only integer

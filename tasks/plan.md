@@ -825,3 +825,10 @@ Aplicar CLOSE-nativo-017 con instrucciones y contexto capturados. Probar el
 fallback sin CFI y con marcador de señal sin regla de retorno, la precedencia
 de reglas explícitas, memoria y pila, PC exacto y selección del evento. No
 afirmar crash real, otras codificaciones ni recuperación vectorial.
+
+### Trampolín de señal Linux ARM32 moderno, 2026-10-29
+
+Cubrir el subconjunto ARM de CLOSE-nativo-012 con ambos frames modernos,
+instrucciones y contexto capturados, distinguiendo CFI/EHABI y marcadores
+históricos. Probar registros, límites y evento persistido; mantener Thumb,
+FDPIC, layouts antiguos y crash real ARM32 fuera de esta evidencia.

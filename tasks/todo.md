@@ -14323,3 +14323,15 @@ vectorial. Los criterios nativos y la candidata siguen pendientes de auditoría.
 Siguiente acción concreta: investigar para CLOSE-nativo-012/023 el trampolín de
 señal Linux ARM32 y su contexto mediante fuentes primarias; documentar si existe
 una prueba discriminante y sus dependencias antes de especificar el incremento.
+
+### Selección de señal Linux ARM32 moderna, 2026-10-29
+
+Linux y libunwindstack documentan trampolines y contextos modernos RT y no RT,
+además de variantes antiguas, Thumb y FDPIC. No hay captura real ARM32 local.
+SPEC fija un primer fallback acotado a modo ARM, códigos y memoria capturados,
+marcadores modernos y precedencia CFI/EHABI; rechaza datos ambiguos. Thumb,
+layouts antiguos, FDPIC y coprocessor siguen abiertos.
+
+Siguiente acción concreta: escribir RED con Minidumps serializados para ambos
+frames ARM, memoria, marcadores, registros y precedencia; implementar y probar
+el evento persistido sin alegar un crash real ARM32.
