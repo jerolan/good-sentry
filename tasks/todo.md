@@ -14894,3 +14894,19 @@ test-results/closure-20261025/release-cli-reassociation/.
 Siguiente acción concreta: enviar una captura nueva a la release compartida con
 ID reservado y verificar el mapeo con el mapa retenido, la resolución histórica,
 la política vinculada y la conservación del resto de los datos.
+
+### Captura nueva en la release compartida, 2026-10-29
+
+Una captura Node SDK con ID reservado entró en la incidencia original y se
+mapeó a la línea 7 con el mapa retenido. El adjunto nuevo coincidió en bytes. La
+incidencia seleccionada siguió resuelta con su snapshot histórico intacto y la
+política de próxima release permaneció vinculada a la release compartida nueva.
+
+El cotejo de las 73 tablas contabilizó el evento, adjunto, profile y sesión
+nuevos y los incrementos de la incidencia propia; todas las demás filas quedaron
+exactas. Contenedores detenidos y datos conservados. Comprobante:
+test-results/closure-20261025/release-shared-fresh-capture/.
+
+Siguiente acción concreta: enviar una captura nueva para la incidencia silenciada
+y verificar su progreso, mapeo y conservación; después preparar la fase de última
+release con otro snapshot y protecciones de antigüedad.
