@@ -13674,3 +13674,19 @@ aceptación de expiración, navegador, recuperación o gates finales. Siguiente
 acción concreta: revisar las edades de todas las clases de limpieza, arrancar
 una imagen nueva con límites que preserven la copia y comparar sus filas
 proyectadas tras migración antes de crear fixtures propios.
+
+### Imagen y migración de la copia de archivos, 2026-10-29
+
+La imagen no-root construida desde `4e820554` inició solo la copia y el volumen
+nuevos; readiness respondió 200 y se aplicaron 79 migraciones. Las 4342 filas
+originales siguen presentes al comparar sus columnas originales. Antes del
+inicio no había archivos originales fuera de la retención de 90 días, releases
+fuera de 365 días ni chunks vencidos. No se crearon fixtures propios. Los
+contenedores están detenidos y la configuración privada conservada en
+`.tmp/closure-file-20261029`. Comprobante:
+test-results/closure-20261025/file-image-migration/.
+
+El runtime original de uptime y los gates finales siguen pendientes. Siguiente
+acción concreta: obtener y verificar `sentry-cli` Linux 3.8.0, preparar un build
+de mapas nuevo y crear proyectos y token propios con IDs persistidos antes de
+enviar tráfico real del SDK y subir mapas.

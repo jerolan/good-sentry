@@ -67,6 +67,8 @@ The release-retention working copy matches all 4374 historical row hashes;
 the original file runtime preservation requirement remains unresolved.
 The file-retention working copy matches all 4342 historical row hashes; its
 original uptime runtime preservation requirement also remains unresolved.
+The isolated file-retention image preserves those rows after migration; SDK,
+CLI, expiry and browser evidence remain open.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
