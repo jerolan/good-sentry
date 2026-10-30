@@ -13742,3 +13742,25 @@ Siguen abiertos el runtime original de uptime y los gates finales. Siguiente
 acción concreta: preparar la última expiración de archivos propios y comprobar
 la limpieza con logs y uptime deshabilitados, conservando eventos, historia y
 el respaldo independiente.
+
+### Última expiración y reinicio de archivos, 2026-10-29
+
+Con logs y uptime deshabilitados, el worker retiró exclusivamente dos mapas,
+tres adjuntos y siete elementos opacos propios; todas las demás filas de 73
+tablas coincidieron. Las listas nativas quedaron vacías, los tres eventos
+compatibles siguieron legibles y los endpoints deshabilitados respondieron 404.
+Edge comprobó la vista vacía y la historia en cuatro tamaños. Su primer login
+usó el puerto distinto del peer como Origin y recibió 403; el reintento con el
+origen configurado pasó sin alterar la cohorte.
+
+El candidato original reinició con imagen, configuración, volúmenes y 4515
+filas exactos; la traza independiente siguió accesible y las 4342 filas
+históricas permanecen. Se conserva el respaldo restaurado previo y los
+contenedores propios están detenidos. Comprobante:
+test-results/closure-20261025/file-final-expiry/.
+
+La preservación del runtime original de uptime y los gates de candidata final
+siguen pendientes: estas pruebas locales no cierran CLOSE-operacion-043.
+Siguiente acción concreta: volver a ejecutar los owners reales de retención de
+archivos y su lifecycle sobre PostgreSQL aislado, y registrar cualquier fallo
+antes de pasar al siguiente criterio elegible.
