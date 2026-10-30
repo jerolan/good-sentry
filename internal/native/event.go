@@ -27,6 +27,18 @@ func BuildEvent(crash Crash, fields map[string]string, now time.Time) (json.RawM
 	images := make([]map[string]any, 0, len(crash.Modules))
 	for _, module := range crash.Modules {
 		image := map[string]any{"type": "symbolic", "image_addr": fmt.Sprintf("0x%x", module.Base), "image_size": module.Size}
+		switch module.DebugFormat {
+		case "pe":
+			image["type"] = "pe"
+			if name := safePDBFilename(module.DebugFile); name != "" {
+				image["debug_file"] = name
+			}
+		case "elf":
+			image["type"] = "elf"
+			if codeID := safeELFCodeID(module.CodeID); codeID != "" {
+				image["code_id"] = codeID
+			}
+		}
 		if module.Name != "" {
 			image["code_file"] = module.Name
 		}

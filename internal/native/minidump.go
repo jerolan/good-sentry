@@ -12,7 +12,9 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 	"unicode/utf16"
+	"unicode/utf8"
 )
 
 const (
@@ -50,11 +52,14 @@ const (
 )
 
 type Module struct {
-	Name      string
-	Base      uint64
-	Size      uint32
-	Timestamp uint32
-	DebugID   string
+	Name        string
+	Base        uint64
+	Size        uint32
+	Timestamp   uint32
+	DebugID     string
+	DebugFormat string
+	DebugFile   string
+	CodeID      string
 }
 
 type Frame struct {
@@ -288,12 +293,25 @@ func ParseMinidump(data []byte) (Crash, error) {
 		if name == "" {
 			name = "unknown"
 		}
-		debugID := ""
+		module := Module{Name: name, Base: entry.base, Size: uint32(entry.size), Timestamp: uint32(entry.stamp)}
 		if entry.cvSize >= 4 && entry.cvRVA+entry.cvSize <= uint64(len(data)) {
 			cv := data[entry.cvRVA : entry.cvRVA+entry.cvSize]
-			debugID = codeViewDebugID(cv)
+			module.DebugID = codeViewDebugID(cv)
+			if module.DebugID != "" {
+				switch binary.LittleEndian.Uint32(cv[:4]) {
+				case 0x53445352: // RSDS
+					module.DebugFormat = "pe"
+					module.DebugFile = codeViewPDBFilename(cv[24:])
+				case 0x3031424e: // NB10
+					module.DebugFormat = "pe"
+					module.DebugFile = codeViewPDBFilename(cv[16:])
+				case 0x4270454c: // BpEL
+					module.DebugFormat = "elf"
+					module.CodeID = module.DebugID
+				}
+			}
 		}
-		crash.Modules = append(crash.Modules, Module{Name: name, Base: entry.base, Size: uint32(entry.size), Timestamp: uint32(entry.stamp), DebugID: debugID})
+		crash.Modules = append(crash.Modules, module)
 	}
 	rawContext := exceptionContext
 	if len(rawContext) == 0 {
@@ -416,6 +434,40 @@ func codeViewDebugID(cv []byte) string {
 	default:
 		return ""
 	}
+}
+
+func codeViewPDBFilename(path []byte) string {
+	end := bytes.IndexByte(path, 0)
+	if end < 0 {
+		return ""
+	}
+	return safePDBFilename(string(path[:end]))
+}
+
+func safePDBFilename(path string) string {
+	if len(path) == 0 || len(path) > 4096 || !utf8.ValidString(path) {
+		return ""
+	}
+	name := path[strings.LastIndexAny(path, `/\`)+1:]
+	if len(name) == 0 || len(name) > 255 || name == "." || name == ".." || strings.ContainsRune(name, ':') {
+		return ""
+	}
+	for _, r := range name {
+		if unicode.IsControl(r) {
+			return ""
+		}
+	}
+	return name
+}
+
+func safeELFCodeID(id string) string {
+	if len(id) == 0 || len(id) > 128 || len(id)%2 != 0 {
+		return ""
+	}
+	if _, err := hex.DecodeString(id); err != nil {
+		return ""
+	}
+	return strings.ToLower(id)
 }
 
 func readQword(ranges []memoryRange, addr uint64) (uint64, bool) {

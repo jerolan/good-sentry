@@ -109,10 +109,13 @@ func nativeEventModules(raw json.RawMessage) []Module {
 	modules := make([]Module, 0, len(images))
 	for _, rawImage := range images {
 		var image struct {
-			Name    string          `json:"code_file"`
-			DebugID string          `json:"debug_id"`
-			Base    json.RawMessage `json:"image_addr"`
-			Size    json.RawMessage `json:"image_size"`
+			Name      string          `json:"code_file"`
+			DebugID   string          `json:"debug_id"`
+			Type      json.RawMessage `json:"type"`
+			DebugFile json.RawMessage `json:"debug_file"`
+			CodeID    json.RawMessage `json:"code_id"`
+			Base      json.RawMessage `json:"image_addr"`
+			Size      json.RawMessage `json:"image_size"`
 		}
 		if json.Unmarshal(rawImage, &image) != nil || image.Name == "" {
 			continue
@@ -122,7 +125,22 @@ func nativeEventModules(raw json.RawMessage) []Module {
 		if !baseOK || !sizeOK || size == 0 || size > uint64(^uint32(0)) || base > ^uint64(0)-size {
 			continue
 		}
-		modules = append(modules, Module{Name: image.Name, Base: base, Size: uint32(size), DebugID: image.DebugID})
+		module := Module{Name: image.Name, Base: base, Size: uint32(size), DebugID: image.DebugID}
+		var imageType string
+		_ = json.Unmarshal(image.Type, &imageType)
+		switch imageType {
+		case "pe":
+			module.DebugFormat = "pe"
+			var path string
+			_ = json.Unmarshal(image.DebugFile, &path)
+			module.DebugFile = safePDBFilename(path)
+		case "elf":
+			module.DebugFormat = "elf"
+			var codeID string
+			_ = json.Unmarshal(image.CodeID, &codeID)
+			module.CodeID = safeELFCodeID(codeID)
+		}
+		modules = append(modules, module)
 	}
 	return modules
 }

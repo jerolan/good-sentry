@@ -1804,7 +1804,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-020](../SPEC.md#close-nativo-020) | CFI extended dereference: For classic MSF 7 PDBs whose DBI ArePrivateSymbolsStripped flag is set, scan the DBI… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-021](../SPEC.md#close-nativo-021) | CFI extended dereference: SymCache debug files are accepted in little-endian SYMC versions 7, 8 and 9, using t… | implementada | invalidada | UUID0/metadata/CFI verificados localmente; falta candidata/imagen/CI integral; historial conservado |
 | [CLOSE-nativo-022](../SPEC.md#close-nativo-022) | CFI extended dereference: For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S_INL… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
-| [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | registrada (limitación) | vigente | Mantener la tarea padre abierta; continuar CLOSE-nativo-024 |
+| [CLOSE-nativo-023](../SPEC.md#close-nativo-023) | CFI extended dereference: This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32… | parcial | invalidada | Identidad local preparada; consultas Windows/Linux y demás pendientes siguen abiertos |
 | [CLOSE-nativo-024](../SPEC.md#close-nativo-024) | CFI extended dereference: Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the m… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-025](../SPEC.md#close-nativo-025) | CFI extended dereference: The official Sentry Native 0.17.4 Crashpad backend sends Minidump requests with sent… | implementada | invalidada | EC, MSF2/ST y primer C11 ASCII verificados localmente; falta candidata/CI integral; historial conservado |
 | [CLOSE-nativo-026](../SPEC.md#close-nativo-026) | CFI extended dereference: The repository's repeatable native SDK demonstration pins official sentry-native 0.1… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
@@ -13933,3 +13933,22 @@ anteriores. Esta decisión no implementa consultas ni cierra servidores.
 Siguiente acción concreta: preparar un owner RED que recorra Minidump,
 metadata generada/fusionada y relectura para BpEL, RSDS y NB10, con controles
 para nombres inválidos; implementar y verificar sin añadir red en esta fase.
+
+### Identidad nativa para búsqueda remota, 2026-10-29
+
+Los CodeView válidos conservan el build ID ELF completo o el nombre final PDB
+con el Debug ID existente. La metadata generada usa `elf`/`code_id` o
+`pe`/`debug_file`, sobrevive a la fusión y se reconstruye sin conservar la ruta
+del directorio. Nombres inválidos no rechazan el dump ni cambian su Debug ID.
+El owner falló antes del cambio; una revisión detectó un segundo RED en eventos
+antiguos con campos opcionales malformados, ahora reparado sin perder la imagen.
+
+Pasaron la suite unitaria completa, native con race y vet, y 18 acciones
+HTTP/PostgreSQL de ingestión, reprocesado y simbolicación con race y sin skips.
+El cambio invalida las aceptaciones nativas dependientes y la candidata final;
+no realiza consultas de red ni cierra servidores Windows/Linux. Comprobante:
+test-results/closure-20261025/native-symbol-identity/.
+
+Siguiente acción concreta: precisar en SPEC el primer cliente debuginfod Linux,
+su límite de recursos, configuración y aislamiento; preparar un servidor HTTP
+independiente con archivos ELF reales e identidad distinta antes de implementarlo.
