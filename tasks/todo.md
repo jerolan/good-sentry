@@ -13567,3 +13567,17 @@ test-results/closure-20261025/uptime-fresh-recovery/.
 Siguiente acción concreta: iniciar otra instancia aislada con uptime y logs
 deshabilitados, envejecer solo los seis checks propios restantes y comprobar
 que la limpieza continúa sin alterar monitores, alertas ni filas históricas.
+
+### Limpieza de uptime con funciones deshabilitadas, 2026-10-29
+
+La instancia aislada con uptime y logs deshabilitados devolvió 404 en lecturas
+de gestión y el 405 existente en heartbeat. El worker eliminó los seis checks
+propios restantes tras envejecer sus dos relojes; el advisory lock se observó
+durante la preparación. El cotejo completo antes/después mostró solo esas seis
+filas eliminadas; todos los demás hashes y las 4305 filas originales siguen
+presentes. Contenedores detenidos y volúmenes conservados. Comprobante:
+test-results/closure-20261025/uptime-disabled-expiry/.
+
+Siguiente acción concreta: reiniciar la imagen con uptime habilitado y comparar
+todas las filas antes y después, comprobar la disponibilidad de los monitores y
+restaurar otra copia del respaldo pre-expiración para contrastar sus hashes.
