@@ -979,6 +979,11 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		return nil
 	}
 	registers := map[uint32]uint64{pcRegister: crash.RIP, spRegister: crash.RSP, fpRegister: crash.RBP}
+	if crash.Arch == "x86" {
+		for register, value := range crash.registers {
+			registers[register] = value
+		}
+	}
 	if crash.Arch == "arm" || crash.Arch == "riscv64" {
 		registers = make(map[uint32]uint64, len(crash.registers))
 		for register, value := range crash.registers {
@@ -993,6 +998,7 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 	frames := make([]Frame, 0, 32)
 	x86SignalRegisters := false
 	x86Architecture := crash.Arch == "amd64" || crash.Arch == "x86"
+	x86ContextRegisters := crash.Arch == "x86" && len(crash.registers) != 0
 	for len(frames) < 64 {
 		module := moduleFor(lookupPC, crash.Modules)
 		if module == nil {
@@ -1075,7 +1081,7 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		if !cie.signalFrame {
 			lookupPC--
 		}
-		if x86Architecture && (cie.signalFrame || x86SignalRegisters) {
+		if x86Architecture && (cie.signalFrame || x86SignalRegisters || x86ContextRegisters) {
 			generalRegisters := uint32(16)
 			if crash.Arch == "x86" {
 				generalRegisters = 8
@@ -1089,7 +1095,9 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 			nextRegisters[pcRegister] = returnAddress
 			nextRegisters[spRegister] = nextSP
 			registers = nextRegisters
-			x86SignalRegisters = true
+			if cie.signalFrame {
+				x86SignalRegisters = true
+			}
 		} else if crash.Arch == "arm" || crash.Arch == "riscv64" {
 			nextRegisters := make(map[uint32]uint64, len(rules.regs)+2)
 			for register := range rules.regs {

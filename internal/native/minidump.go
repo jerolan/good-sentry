@@ -337,6 +337,14 @@ func ParseMinidump(data []byte) (Crash, error) {
 		crash.RBP = uint64(binary.LittleEndian.Uint32(rawContext[180:]))
 		crash.RIP = uint64(binary.LittleEndian.Uint32(rawContext[184:]))
 		crash.RSP = uint64(binary.LittleEndian.Uint32(rawContext[196:]))
+		if binary.LittleEndian.Uint32(rawContext)&0x00010002 == 0x00010002 {
+			// Minidump stores EDI, ESI, EBX, EDX, ECX, EAX; CFI uses
+			// DWARF's EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI order.
+			crash.registers = make(map[uint32]uint64, 6)
+			for register, offset := range map[uint32]int{0: 176, 1: 172, 2: 168, 3: 164, 6: 160, 7: 156} {
+				crash.registers[register] = uint64(binary.LittleEndian.Uint32(rawContext[offset:]))
+			}
+		}
 	default:
 		if declaredArch == cpuArchRISCV64 && len(rawContext) == riscv64ContextSize {
 			flags := binary.LittleEndian.Uint32(rawContext)

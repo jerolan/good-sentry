@@ -14129,3 +14129,23 @@ comportamiento previo cuando faltan flags.
 Siguiente acción concreta: preparar RED que parta de bytes Minidump y CFI ELF,
 con un segundo frame dependiente de un registro recuperado y controles de
 validez/memoria; implementar y verificar sin inferir un SDK x86 real.
+
+### Registros iniciales de Minidump x86, 2026-10-29
+
+Los seis enteros x86 se leen solo cuando el contexto declara la arquitectura y
+el flag integer; CFI los usa y propaga únicamente reglas recuperables. Los
+contextos históricos sin flag mantienen ESP/EBP/EIP, y las restricciones de
+pila y señal no cambian. El owner basado en bytes Minidump y ELF falló antes
+del cambio y pasó con flags, XSTATE, memoria ausente y varios frames. Una
+revisión añadió un control de regla ausente: forzar la conservación del valor
+viejo hizo fallar la prueba y el código se restauró.
+
+Pasaron la suite unitaria, native y owners focalizados con race, vet y los
+owners HTTP/PostgreSQL nativos con race y sin skips. Comprobante:
+test-results/closure-20261025/native-x86-integer-context/. La evidencia usa
+fixtures, no acredita un crash real x86. CLOSE-nativo-012 y las aceptaciones
+dependientes permanecen invalidadas hasta la candidata final.
+
+Siguiente acción concreta: cotejar el orden del plan y la matriz para elegir el
+primer criterio exigible sin evidencia vigente y con dependencias resueltas;
+mantener abiertos los perfiles nativos y runtimes históricos pendientes.
