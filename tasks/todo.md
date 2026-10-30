@@ -13447,3 +13447,20 @@ La aceptación final y los controles integrales siguen pendientes. Siguiente
 acción concreta: ejecutar la suite de integración completa y race contra una
 base nueva aislada, sin tocar las bases y volúmenes de retención preservados;
 registrar cualquier fallo o prueba omitida antes de evaluar la candidata.
+
+### Suite local completa de integración y race, 2026-10-29
+
+En `3e9831653fe9b92c46c58fcd88438191c3166634`, la suite completa con PostgreSQL
+aislado pasó en 16 paquetes y 3222 casos/subcasos, sin fallos. Se omitió
+`TestNativeSDKDemoCrashSymbolicates` porque el binario de su workflow dedicado
+no estaba configurado; el crash real tiene comprobante separado en
+`native-sdk-current/`, sin atribuirlo a esta ejecución. El owner Chromium MCP
+sí corrió. Vet de integración y build pasaron; la base temporal se detuvo.
+Comprobante: test-results/closure-20261025/full-integration-3e98316/.
+
+La candidata y el CI finales, los perfiles nativos no resueltos y el requisito
+de navegador Edge de retención siguen pendientes. Las verificaciones locales con
+Chromium no sustituyen ese requisito. Siguiente acción concreta: localizar o
+preparar Microsoft Edge aislado y repetir con él las vistas retained, empty y
+recovered de retención sobre una copia y fixtures propios, preservando los
+checkpoints existentes.
