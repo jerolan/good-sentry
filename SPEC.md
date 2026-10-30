@@ -1394,7 +1394,29 @@ Add RISC-V64 minidump support for Breakpad architecture `0x8006` and Crashpad `M
 
 <a id="close-nativo-017"></a>
 
-RISC-V64 ELF CFI accepts little-endian ELF64 `EM_RISCV` `.eh_frame` or `.debug_frame` and matches only `riscv64` tables. Map DWARF registers 0-31 to x0-x31 and register 64 to the alternate frame-return column. Keep the active PC separate from DWARF registers, honor each CIE's declared return-address column, and carry recovered integer-register rules into caller frames. Floating-point, vector and CSR registers are not propagated; a CFA or return-address rule that requires unavailable non-integer state stops unwinding. Platform-specific signal-context recovery remains unsupported. The layout and architecture values follow [Crashpad's RISC-V context](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/minidump/minidump_context.h), [Crashpad's minidump architecture extension](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/minidump/minidump_extensions.h), [Crashpad's context writer](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/third_party/crashpad/crashpad/minidump/minidump_context_writer.cc), [Breakpad's context reader](https://chromium.googlesource.com/breakpad/breakpad/+/HEAD/src/processor/minidump.cc) and the [RISC-V ELF psABI](https://github.com/riscv-non-isa/riscv-elf-psabi-doc/blob/master/riscv-cc.adoc) and [DWARF register mapping](https://github.com/riscv-non-isa/riscv-elf-psabi-doc/blob/master/riscv-dwarf.adoc).
+RISC-V64 ELF CFI accepts little-endian ELF64 `EM_RISCV` `.eh_frame` or `.debug_frame` and matches only `riscv64` tables. Map DWARF registers 0-31 to x0-x31 and register 64 to the alternate frame-return column. Keep the active PC separate from DWARF registers, honor each CIE's declared return-address column, and carry recovered integer-register rules into caller frames. Floating-point, vector and CSR registers are not propagated; a CFA or return-address rule that requires unavailable non-integer state stops unwinding. Platform-specific signal recovery remains open except for the bounded Linux fallback below. The layout and architecture values follow [Crashpad's RISC-V context](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/minidump/minidump_context.h), [Crashpad's minidump architecture extension](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/minidump/minidump_extensions.h), [Crashpad's context writer](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/third_party/crashpad/crashpad/minidump/minidump_context_writer.cc), [Breakpad's context reader](https://chromium.googlesource.com/breakpad/breakpad/+/HEAD/src/processor/minidump.cc) and the [RISC-V ELF psABI](https://github.com/riscv-non-isa/riscv-elf-psabi-doc/blob/master/riscv-cc.adoc) and [DWARF register mapping](https://github.com/riscv-non-isa/riscv-dwarf.adoc).
+
+For Linux RISC-V64 Minidumps, recognize the signal-return fallback only if the
+PlatformId is Linux and captured memory at the exact PC contains both
+little-endian instructions `0x08b00893` and `0x00000073`. Apply it when CFI is
+absent or when a signal-marked CFI entry has no return-address rule; a CFI entry
+with an explicit return rule remains authoritative. The captured signal context
+starts at SP+304, with saved PC there and x1–x31 at SP+304+8*n; x2 is saved SP
+and x0 remains zero. Missing individual registers stay unavailable; missing PC
+or x2, overflow, zero or repeated PC, and unsafe stack transitions stop. Permit
+a non-increasing SP only between disjoint captured ranges. Continue from the
+saved PC without subtraction and retain it even when later CFI cannot continue;
+the same ingestion selection rule as the ARM64 fallback applies. Preserve frame
+limits and CFI precedence in all other cases. Verify serialized Minidumps,
+captured instruction/context bytes, missing and malformed data, exact-PC CFI,
+x0, a caller dependent on a restored register, stack bounds, an empty
+signal-marked CFI entry, an explicit CFI return rule, and persisted event
+selection. [Linux signal setup](https://github.com/torvalds/linux/blob/v6.12/arch/riscv/kernel/signal.c),
+[register ordering](https://github.com/torvalds/linux/blob/v6.12/arch/riscv/include/uapi/asm/ptrace.h),
+the [signal-marked trampoline](https://codebrowser.dev/linux/linux/arch/riscv/kernel/vdso/rt_sigreturn.S.html),
+and [LLVM's fallback](https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/libunwind/src/UnwindCursor.hpp#L2594-L2639)
+define this bounded slice. Fixtures do not establish a real RISC-V crash,
+universal executable-byte capture, other trampoline encodings, or vector state.
 
 <a id="close-nativo-018"></a>
 

@@ -818,3 +818,10 @@ Implementar el fallback acotado de CLOSE-nativo-012/023 con PlatformId Linux,
 instrucciones y contexto capturados, conforme al layout documentado por Linux
 y LLVM. Probar precedencia CFI, recuperación, pila y ausencia de memoria con
 Minidumps serializados. No afirmar un crash real, captura universal ni PAC.
+
+### Trampolín de señal Linux RISC-V64, 2026-10-29
+
+Aplicar CLOSE-nativo-017 con instrucciones y contexto capturados. Probar el
+fallback sin CFI y con marcador de señal sin regla de retorno, la precedencia
+de reglas explícitas, memoria y pila, PC exacto y selección del evento. No
+afirmar crash real, otras codificaciones ni recuperación vectorial.

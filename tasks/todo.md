@@ -14288,3 +14288,16 @@ envelope_items; no se atribuyen a cada owner controles que no ejecuta.
 
 Siguiente acción concreta: cotejar el plan y la matriz tras estas revalidaciones
 y seleccionar el primer resultado exigible independiente con dependencias resueltas.
+
+### Selección de señal Linux RISC-V64, 2026-10-29
+
+CLOSE-nativo-017 conserva abierta la recuperación de señal. Linux describe el
+orden del contexto y LLVM una secuencia y offsets concretos; el trampolín Linux
+puede contener un marcador CFI sin regla de retorno. SPEC fija el fallback para
+ese caso o ausencia de CFI, sin desplazar una regla de retorno explícita. No se
+encontró runtime ni captura RISC-V local; los fixtures no probarán crash real,
+otras codificaciones de trampolín ni estado vectorial.
+
+Siguiente acción concreta: escribir RED desde Minidumps serializados y CFI
+RISC-V64, incluyendo señal marcada sin retorno y precedencia explícita, y
+verificar después recuperación, memoria, pila y selección del evento.
