@@ -14190,3 +14190,25 @@ el comportamiento histórico con flags cero y deja señal ARM64/PAC abiertos.
 Siguiente acción concreta: preparar RED desde Minidumps de ambos formatos con
 CFI ELF que use X19 y X30 y requiera un registro recuperado en el caller;
 verificar flags y valores ausentes antes de implementar.
+
+### Registros iniciales de Minidump ARM64, 2026-10-29
+
+Los contextos modernos aportan X0–X28 con flag integer válido y X30 con flag
+control; los legacy aportan sus registros declarados. CFI propaga solamente
+registros recuperados por reglas, también cuando faltan flags iniciales, sin
+cambiar el comportamiento histórico de FP/SP/PC. El owner basado en bytes
+Minidump y CFI ELF falló antes del cambio. La revisión independiente detectó
+la pérdida de un registro recuperado sin flags iniciales; un segundo RED la
+reprodujo y la corrección pasó. Los controles abarcan mapeo, formatos, flags,
+memoria, reglas ausentes, varios frames y CFI Mach-O.
+
+Pasaron la suite unitaria, native y pruebas focalizadas con race, vet y los
+owners HTTP/PostgreSQL nativos con race y sin skips. Comprobante:
+test-results/closure-20261025/native-arm64-integer-context/. Los fixtures no
+acreditan un crash real ARM64 ni cobertura de señales o autenticación de
+punteros. CLOSE-nativo-012 y las aceptaciones dependientes siguen invalidados
+hasta la candidata final.
+
+Siguiente acción concreta: reproducir y corregir en x86 y AMD64 la pérdida de
+registros recuperados por CFI cuando faltan flags enteros iniciales; conservar
+los controles de pila y señal y registrar la evidencia de ambas arquitecturas.

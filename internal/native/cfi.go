@@ -979,7 +979,7 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 		return nil
 	}
 	registers := map[uint32]uint64{pcRegister: crash.RIP, spRegister: crash.RSP, fpRegister: crash.RBP}
-	if crash.Arch == "x86" || crash.Arch == "amd64" {
+	if crash.Arch == "x86" || crash.Arch == "amd64" || crash.Arch == "arm64" {
 		for register, value := range crash.registers {
 			registers[register] = value
 		}
@@ -1098,6 +1098,16 @@ func UnwindCFI(crash *Crash, tables UnwindSet) []Frame {
 			if cie.signalFrame {
 				x86SignalRegisters = true
 			}
+		} else if crash.Arch == "arm64" {
+			nextRegisters := make(map[uint32]uint64, 33)
+			for register := uint32(0); register <= 30; register++ {
+				if value, ok := evaluateRegisterRule(register, rules, cfa, registers, crash.stack, crash.PointerSize); ok {
+					nextRegisters[register] = value
+				}
+			}
+			nextRegisters[pcRegister] = returnAddress
+			nextRegisters[spRegister] = nextSP
+			registers = nextRegisters
 		} else if crash.Arch == "arm" || crash.Arch == "riscv64" {
 			nextRegisters := make(map[uint32]uint64, len(rules.regs)+2)
 			for register := range rules.regs {

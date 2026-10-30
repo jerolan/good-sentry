@@ -390,6 +390,10 @@ func ParseMinidump(data []byte) (Crash, error) {
 			crash.RBP = binary.LittleEndian.Uint64(rawContext[240:])
 			crash.RSP = binary.LittleEndian.Uint64(rawContext[256:])
 			crash.RIP = binary.LittleEndian.Uint64(rawContext[264:])
+			crash.registers = make(map[uint32]uint64, 31)
+			for register := uint32(0); register <= 30; register++ {
+				crash.registers[register] = binary.LittleEndian.Uint64(rawContext[8+register*8:])
+			}
 		} else if declaredArch == cpuArchARM64 && len(rawContext) >= 272 {
 			if len(rawContext) >= 4 && binary.LittleEndian.Uint32(rawContext)&0xffffff00 == 0x80000000 {
 				return Crash{}, errors.New("legacy ARM64 minidump context conflicts with SystemInfo architecture")
@@ -398,6 +402,19 @@ func ParseMinidump(data []byte) (Crash, error) {
 			crash.RBP = binary.LittleEndian.Uint64(rawContext[240:])
 			crash.RSP = binary.LittleEndian.Uint64(rawContext[256:])
 			crash.RIP = binary.LittleEndian.Uint64(rawContext[264:])
+			flags := binary.LittleEndian.Uint32(rawContext)
+			if flags&0x00400002 == 0x00400002 {
+				crash.registers = make(map[uint32]uint64, 30)
+				for register := uint32(0); register <= 28; register++ {
+					crash.registers[register] = binary.LittleEndian.Uint64(rawContext[8+register*8:])
+				}
+			}
+			if flags&0x00400001 == 0x00400001 {
+				if crash.registers == nil {
+					crash.registers = make(map[uint32]uint64, 1)
+				}
+				crash.registers[30] = binary.LittleEndian.Uint64(rawContext[248:])
+			}
 		} else {
 			return Crash{}, fmt.Errorf("unsupported minidump context size %d (declared architecture %d)", len(rawContext), declaredArch)
 		}
