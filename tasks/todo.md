@@ -13534,3 +13534,19 @@ Siguiente acción concreta: reanudar la copia, envejecer solo siete checks propi
 cambiando ambos relojes y mantener un check con inicio antiguo y completado
 vigente; comprobar la limpieza real, la preservación de monitores/alertas y la
 respuesta paginada vacía antes de verificar la vista en Edge.
+
+### Primera expiración propia de uptime, 2026-10-29
+
+Con el advisory lock observado se envejecieron ambos relojes de siete checks
+propios más allá de los 3650 días configurados. El worker real eliminó esos
+siete; conservó otro con inicio antiguo y finalización vigente. Todos los demás
+hashes y los estados de los cuatro monitores coincidieron; los historiales
+vacíos devolvieron `data=[]`, `hasMore=false` y `pageSize=25`, también con
+filtro de transición. Edge comprobó las vistas vacía, nunca comprobada y
+filtrada en 320/768/1440; se inspeccionó la captura móvil. Las 4305 filas
+originales permanecen. Contenedores detenidos y checkpoint privado conservado.
+Comprobante: test-results/closure-20261025/uptime-first-expiry/.
+
+Siguiente acción concreta: reanudar los probes propios, generar checks frescos
+HTTP/TCP y heartbeat mediante el scheduler y sus APIs, verificar la recuperación
+de estados y entregas y comprobar la vista recuperada con Edge.

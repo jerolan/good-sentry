@@ -56,6 +56,8 @@ are paused; migration and owned scheduler/browser fixtures remain open.
 The isolated uptime image preserves all 4305 original projected rows after migration.
 Eight owned uptime checks, retained browser states and an exact pre-expiry
 backup now have local evidence; expiry, recovery and final gates remain open.
+The first uptime expiry and empty Edge view pass locally; fresh recovery and
+disabled-feature cleanup remain open.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
