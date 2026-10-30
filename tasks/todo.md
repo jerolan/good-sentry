@@ -13177,3 +13177,17 @@ La aceptación integral y los gates finales siguen pendientes. Siguiente acción
 concreta: verificar por HTTP que solicitudes OAuth con scopes no soportados o
 recurso distinto del MCP canónico se rechazan sin emitir códigos, incluyendo
 `log:read` con logs deshabilitados y un flujo válido como control.
+
+### Scopes y recurso OAuth, 2026-10-29
+
+El consentimiento HTTP rechazó un scope desconocido, `log:read` con logs
+deshabilitados y un recurso distinto de la URI MCP canónica, sin crear códigos.
+El mismo formulario con un scope habilitado y la URI canónica emitió código.
+Los casos negativos no estaban cubiertos por el flujo positivo previo. Pasaron
+22 casos seleccionados con race y vet de integración en PostgreSQL aislado,
+que quedó detenido. Comprobante: test-results/closure-20261025/mcp-oauth-scope-resource/.
+
+La aceptación integral y los gates finales siguen pendientes. Siguiente acción
+concreta: verificar por HTTP que una autorización con cliente desconocido o URI
+de redirección no registrada falla localmente sin redirigir ni emitir código;
+mantener el cliente y la redirección válidos como control.

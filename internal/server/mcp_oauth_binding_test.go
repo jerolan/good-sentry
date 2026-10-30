@@ -41,6 +41,41 @@ func TestOAuthCodeExchangeBindingAndVerifierAlphabet(t *testing.T) {
 		return value.ID
 	}
 	id, otherID := register("binding client"), register("other binding client")
+	t.Run("invalid resource and scope", func(t *testing.T) {
+		verifier := strings.Repeat("a", 43)
+		digest := sha256.Sum256([]byte(verifier))
+		form := url.Values{"client_id": {id}, "redirect_uri": {redirect}, "response_type": {"code"}, "state": {"invalid"}, "scope": {"org:read"}, "resource": {cfg.Domain + "/mcp"}, "code_challenge": {base64.RawURLEncoding.EncodeToString(digest[:])}, "code_challenge_method": {"S256"}, "csrf": {f.csrf}, "organization": {f.org.Slug}, "project": {f.project.ID}, "decision": {"approve"}}
+		var before int
+		if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM oauth_authorization_codes WHERE client_id=$1`, id).Scan(&before); err != nil {
+			t.Fatal(err)
+		}
+		for _, tc := range []struct{ name, scope, resource, problem string }{
+			{"unknown scope", "org:read unknown:read", cfg.Domain + "/mcp", "invalid_scope"},
+			{"disabled log scope", "org:read log:read", cfg.Domain + "/mcp", "invalid_scope"},
+			{"foreign resource", "org:read", cfg.Domain + "/other", "invalid_request"},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				form.Set("scope", tc.scope)
+				form.Set("resource", tc.resource)
+				response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
+				callback, err := url.Parse(response.Header.Get("Location"))
+				if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("error") != tc.problem || callback.Query().Get("code") != "" {
+					t.Fatalf("invalid authorization status=%d error=%v", response.StatusCode, err)
+				}
+				var after int
+				if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM oauth_authorization_codes WHERE client_id=$1`, id).Scan(&after); err != nil || after != before {
+					t.Fatalf("invalid authorization created code: %v", err)
+				}
+			})
+		}
+		form.Set("scope", "org:read")
+		form.Set("resource", cfg.Domain+"/mcp")
+		response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
+		callback, err := url.Parse(response.Header.Get("Location"))
+		if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("code") == "" {
+			t.Fatalf("valid authorization status=%d error=%v", response.StatusCode, err)
+		}
+	})
 	t.Run("foreign organization and project consent", func(t *testing.T) {
 		var foreignOrg, foreignProject string
 		if err := f.sql.QueryRow(f.ctx, `INSERT INTO organizations(slug,name) VALUES('oauth-foreign','OAuth foreign') RETURNING id::text`).Scan(&foreignOrg); err != nil {
