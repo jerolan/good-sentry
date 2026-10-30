@@ -13642,3 +13642,19 @@ expiración, navegador, recuperación o gates finales. Siguiente acción concret
 verificar las edades de todas las clases de limpieza en la copia y preparar una
 imagen aislada con lifetimes que preserven las filas originales antes de crear
 fixtures propios; mantener explícitamente abierta la dependencia del runtime.
+
+### Dependencia de staging y selección de archivos, 2026-10-29
+
+En la copia verificada de 4374 filas hay un chunk de staging ya vencido; el
+worker `StartArtifactChunks` intenta limpiarlo al arrancar. Se conservaron su
+identidad y sus 1201 bytes en `.tmp/closure-release-20261029`, SHA-256
+`c8cf3cdab126d5486e71122f2022e85f6d9de12369f83254c3cec8d8a4337020`.
+No se inició la aplicación ni se alteraron fechas o filas. El contrato de
+releases exige preservar ese baseline y no autoriza inferir una excepción para
+este chunk ni para el runtime original ausente; ambos puntos siguen abiertos.
+
+Se avanza al criterio independiente CLOSE-operacion-043. Existe el dump del
+checkpoint uptime de 4342 filas y su inventario; la preservación del runtime
+original exigida por archivos tampoco se presume. Siguiente acción concreta:
+restaurar el dump en otra base y volumen nuevos, cotejar todas sus filas y
+comprobar si hay staging vencido antes de iniciar una imagen.
