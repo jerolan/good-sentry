@@ -1319,6 +1319,18 @@ and LLVM's [x86 DWARF register definitions](https://llvm.googlesource.com/llvm.g
 define the two representations. This fixture does not establish a real x86 SDK
 crash or support for additional architectures.
 
+For an AMD64 Minidump context whose architecture and integer-valid flags are
+set, initialize the DWARF general registers from the saved RAX, RDX, RCX, RBX,
+RSI, RDI and R8–R15 fields in addition to the existing RBP, RSP and RIP. Carry
+only integer registers recoverable by CFI rules into subsequent frames; do not
+retain an unavailable value. Contexts without those flags keep their historical
+RBP/RSP/RIP behavior, and ordinary-frame stack restrictions and signal recovery
+remain unchanged. Verify serialized Minidump bytes through AMD64 ELF CFI, a
+caller dependent on a recovered general register, flag and captured-memory
+controls, and XSTATE regression. The [Crashpad context and flags](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/minidump/minidump_context.h)
+and [x86-64 psABI DWARF register mapping](https://gitlab.com/x86-psABIs/x86-64-ABI/-/blob/master/x86-64-ABI/low-level-sys-info.tex)
+define the representations; owned fixtures alone do not prove a real crash.
+
 
 <a id="close-nativo-013"></a>
 

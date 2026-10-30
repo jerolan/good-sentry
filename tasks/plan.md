@@ -800,3 +800,8 @@ Conectar los enteros válidos del contexto x86 al CFI de CLOSE-nativo-012 y
 propagar solo reglas recuperables. Probar con bytes Minidump, CFI ELF, flags,
 memoria ausente y regresiones de señal y XSTATE; conservar el comportamiento
 histórico de contextos sin flag integer.
+
+### Registros iniciales de Minidump AMD64, 2026-10-29
+
+Aplicar el mismo principio al contexto AMD64 válido, con el mapeo DWARF de su
+ABI propio y sin alterar los controles de señal ni contextos históricos.

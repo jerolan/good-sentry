@@ -14149,3 +14149,14 @@ dependientes permanecen invalidadas hasta la candidata final.
 Siguiente acción concreta: cotejar el orden del plan y la matriz para elegir el
 primer criterio exigible sin evidencia vigente y con dependencias resueltas;
 mantener abiertos los perfiles nativos y runtimes históricos pendientes.
+
+### Selección de registros iniciales AMD64, 2026-10-29
+
+El cotejo independiente confirma la misma ausencia en AMD64: el Minidump
+declara válidos registros generales que el CFI no recibe al comenzar. Crashpad
+y el psABI fijan flags, offsets y mapeo, distintos de x86. El fixture existente
+es sintético y usa flags cero. SPEC precisa el alcance y conserva ese caso.
+
+Siguiente acción concreta: preparar RED desde un Minidump y CFI ELF AMD64,
+con callers que requieran registros recuperados y controles de flags, memoria
+y XSTATE; implementar y verificar las regresiones sin alegar un crash real.
