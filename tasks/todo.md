@@ -14880,3 +14880,17 @@ Siguiente acción concreta: asociar el segundo proyecto mediante CLI y enviar un
 captura nueva a la release compartida con ID reservado; verificar el mapeo con el
 mapa retenido, la resolución histórica, el estado de la política vinculada y la
 conservación del resto de los datos.
+
+### Asociación CLI de la release recreada, 2026-10-29
+
+El CLI Linux 3.8.0 verificado asoció el segundo proyecto propio a la release
+compartida recreada, conservando el primer enlace. El primer cotejo esperaba solo
+el enlace y falló: el comando también estableció la fecha de inicio de esa misma
+release, que antes estaba vacía. El cotejo corregido comprobó ese cambio y el
+nuevo enlace; todas las demás filas de las 73 tablas permanecieron exactas. No se
+repitió la mutación. Contenedores detenidos y copia conservada. Comprobante:
+test-results/closure-20261025/release-cli-reassociation/.
+
+Siguiente acción concreta: enviar una captura nueva a la release compartida con
+ID reservado y verificar el mapeo con el mapa retenido, la resolución histórica,
+la política vinculada y la conservación del resto de los datos.
