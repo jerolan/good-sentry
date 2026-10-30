@@ -793,3 +793,10 @@ mantener abiertos los formatos y gates no demostrados.
 Implementar el slice de CLOSE-nativo-012 desde las reglas del vDSO y el probe
 real de contexto. Probar restauración de registros y cambio de pila dentro de
 memoria capturada, con controles de rechazo; no extrapolar a otros sistemas.
+
+### Registros iniciales de Minidump x86, 2026-10-29
+
+Conectar los enteros válidos del contexto x86 al CFI de CLOSE-nativo-012 y
+propagar solo reglas recuperables. Probar con bytes Minidump, CFI ELF, flags,
+memoria ausente y regresiones de señal y XSTATE; conservar el comportamiento
+histórico de contextos sin flag integer.

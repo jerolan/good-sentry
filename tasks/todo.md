@@ -14116,3 +14116,16 @@ gates integrales; no se extrapola la evidencia a otras plataformas o kernels.
 Siguiente acción concreta: cotejar plan y matriz para seleccionar el primer
 criterio exigible sin evidencia vigente y con dependencias resueltas; conservar
 abiertos perfiles nativos y runtimes históricos pendientes.
+
+### Selección de registros iniciales x86, 2026-10-29
+
+El cotejo de CLOSE-nativo-012 muestra que el parser conserva ESP/EBP/EIP pero
+omite los seis registros enteros generales aun cuando el Minidump los declara
+válidos; una regla CFI que usa EBX como CFA no puede arrancar. Crashpad y LLVM
+definen los flags y el mapeo. El fixture x86 histórico usa flags cero y no es
+evidencia de un crash real. SPEC precisa este subresultado y conserva ese
+comportamiento previo cuando faltan flags.
+
+Siguiente acción concreta: preparar RED que parta de bytes Minidump y CFI ELF,
+con un segundo frame dependiente de un registro recuperado y controles de
+validez/memoria; implementar y verificar sin inferir un SDK x86 real.

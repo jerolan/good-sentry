@@ -1304,6 +1304,21 @@ This is local Linux/x86 evidence, not acceptance of other signal ABIs. Linux's
 and [vDSO signal trampoline](https://code.googlesource.com/linux/torvalds/linux/+/68ff4a3ccda9f98c74f23c70c8c7c581f9eee931/arch/x86/entry/vdso/vdso32/sigreturn.S)
 document the corresponding context and trampoline roles.
 
+For a 32-bit x86 Minidump context whose architecture and integer-valid flags
+are set, initialize DWARF registers 0–3 and 6–7 from EAX, ECX, EDX, EBX, ESI
+and EDI, in addition to the existing ESP, EBP and EIP. Carry only integer
+registers recoverable by CFI rules into subsequent frames; an unavailable rule
+does not invent or preserve a value. A context without those validity flags
+retains the existing ESP/EBP/EIP behavior and does not claim the other values.
+Do not change ordinary-frame stack-transition restrictions or x86 signal-frame
+handling. Verify actual Minidump parsing through x86 ELF CFI, a later frame
+depending on a recovered general register, absent integer-valid flags,
+unavailable captured memory and the existing XSTATE controls. Crashpad's
+[x86 Minidump context and flags](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/minidump/minidump_context.h)
+and LLVM's [x86 DWARF register definitions](https://llvm.googlesource.com/llvm.git/+/refs/heads/master/lib/Target/X86/X86RegisterInfo.td)
+define the two representations. This fixture does not establish a real x86 SDK
+crash or support for additional architectures.
+
 
 <a id="close-nativo-013"></a>
 
