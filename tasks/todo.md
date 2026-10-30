@@ -14401,3 +14401,23 @@ justifica reutilizar la cadena de FP genérica ni adivinar retornos desde SP/LR.
 Siguiente acción concreta: preparar RED con Minidumps serializados de 640 bytes,
 flags y rechazo de pares inválidos, comprobando solo el PC capturado y el evento
 persistido; mantener MIPS CFI y los demás formatos fuera de este incremento.
+
+### Contexto Crashpad MIPS64EL, 2026-10-29
+
+El lector acepta el layout acotado de 640 bytes con arquitectura y flags
+válidos, fuerza r0 a cero y expone el PC capturado sin inventar callers. El
+owner RED/GREEN prueba registros, tamaños, flags, conflictos de arquitectura y
+simbolización; el owner HTTP comprueba el evento y la ausencia del dump retenido.
+La revisión independiente confirmó offsets y límites. El cotejo de layouts C
+se ejecutó en el host y no es una medición de un runtime MIPS.
+
+Pasaron la suite unitaria, native y owners focalizados con race, vet, los
+owners HTTP/PostgreSQL con race y el crash real Linux/amd64 del SDK fijado,
+sin skips. Comprobante:
+test-results/closure-20261025/native-mips64-crashpad-context/. Son fixtures y
+no prueban un crash MIPS real, el layout Breakpad, big-endian ni MIPS CFI; la
+aceptación integral y la candidata siguen abiertas.
+
+Siguiente acción concreta: contrastar e implementar por separado el layout
+Breakpad MIPS64 de 600 bytes y su EPC en 312, con SystemInfo y flags N64 del
+writer, pruebas de rechazo y evento persistido; no atribuirle el layout Crashpad.
