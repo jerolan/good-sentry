@@ -14756,3 +14756,23 @@ No se han envejecido receipts ni se acredita expiración o aceptación final.
 Siguiente acción concreta: configurar y registrar en las tres incidencias propias
 las políticas de resolución, próxima release, mute, asignación y comentarios;
 verificar sus estados y preparar un respaldo separado anterior a expiración.
+
+### Políticas propias y respaldo previo de releases, 2026-10-29
+
+Las tres incidencias propias quedaron asignadas y comentadas: resolución por el
+release compartido, próxima release pendiente desde su baseline y mute por 100
+ocurrencias. Se verificaron por PostgreSQL. Sus timestamps del productor son
+antiguos y los recibos del servidor son recientes; no se envejeció ningún
+recibo. La primera lectura de asignación usó el campo legado y falló; se corrigió
+para consultar `issue_assignments` sin repetir mutaciones. Las 4506 filas previas
+siguen presentes.
+
+Con la aplicación detenida se creó un dump privado y se restauró en otra base
+nueva: coinciden las 4575 filas de 73 tablas y los valores de las secuencias.
+Los contenedores quedaron detenidos y se conserva la copia de recuperación.
+Comprobante: test-results/closure-20261025/release-policies/.
+
+Siguiente acción concreta: verificar que ninguna release o archivo histórico
+vence con lifetimes de 365 y 730 días, preparar una instancia aislada con esos
+límites y envejecer bajo el lock solo las tres identidades de release propias;
+comparar cascadas, datos y políticas con el respaldo antes de probar recuperación.
