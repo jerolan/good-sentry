@@ -13984,3 +13984,15 @@ servidores Windows. La candidata, imagen y CI deben renovarse al final.
 Siguiente acción concreta: contrastar SymStore RSDS con fuentes primarias y
 fixtures PDB, fijar su primer slice seguro en SPEC y preparar su owner RED de
 captura, sin inferir soporte de NB10 u otras variantes.
+
+### Subcontrato SymStore RSDS, 2026-10-29
+
+SPEC precisa el primer slice Windows, la construcción por componentes de la
+ruta, verificación de GUID y edad, configuración separada y presupuestos
+compartidos con debuginfod. La muestra pública kernel32 y los fixtures PDB
+propios aportan controles independientes. NB10, compresión, punteros, fuentes de
+dos niveles y reprocesado remoto permanecen abiertos.
+
+Siguiente acción concreta: preparar owners RED de captura y límites compartidos
+con servidores HTTP y PostgreSQL; implementar el slice y verificar regresiones
+Linux y nativas antes de registrar el resultado.

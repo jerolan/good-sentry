@@ -771,3 +771,11 @@ ELF y reutilización del presupuesto junto con archivos locales. Verificar con
 servidor HTTP independiente y los dos transportes reales de Minidump sobre
 PostgreSQL, incluyendo identidad incorrecta y destino privado. No cerrar aún
 reprocesado remoto, otras disposiciones Linux ni Windows.
+
+### Primer cliente SymStore Windows, 2026-10-29
+
+Implementar el slice RSDS de captura especificado en CLOSE-nativo-023. Compartir
+el plazo y los presupuestos con debuginfod, conservar prioridad local y verificar
+la identidad real del PDB. Probar ambas rutas de captura, nombres escapados,
+fuentes privadas y controles conjuntos con HTTP y PostgreSQL. Mantener abiertas
+las variantes no demostradas y el reprocesado remoto.

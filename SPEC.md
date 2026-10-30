@@ -1670,6 +1670,36 @@ documents build-ID lookup over HTTP; its [client example](https://sourceware.org
 shows the request path. Other Linux source layouts, remote reprocessing and
 Windows symbol servers remain open after this slice.
 
+The first Windows server slice supports the uncompressed SymStore HTTP path
+`/{debug-name}/{GUID-and-age}/{debug-name}` for authenticated Minidump captures
+with an RSDS PDB identity. Preserve the PDB basename's case, encode it as one
+URL path component, and format the canonical GUID and hexadecimal age without
+padding in uppercase. Only a safe PDB basename and a complete 32-hex-digit GUID
+plus 1–8 hex-digit age can trigger a lookup; NB10 and missing or unsafe names
+cannot. Opt in with up to four space-separated absolute HTTP(S) base URLs in
+`GOODSENTRY_SYMSTORE_URLS`; the empty default makes no requests. Reject the same
+URL forms as debuginfod and use an independent, false-by-default
+`GOODSENTRY_SYMSTORE_ALLOW_PRIVATE_IPS` choice. The configured base is the only
+network authority; the name never controls the host, query, fragment or a path
+outside that base. Do not follow redirects, file pointers or compressed PDBs.
+
+Both server types share one five-second deadline and the same combined 25 HTTP
+request, 25 accepted-file and 64 MiB local-plus-remote read budgets for each
+capture. Local matching symbols take precedence. Admit only an uncompressed PDB
+which the bounded PDB parser can read and whose embedded RSDS GUID and image
+age match the requested identity. The PDB Info age can be newer than its DBI
+image age; preserve the parser's existing identity rules rather than comparing
+the Info age alone. Failed or unavailable remote symbols never reject capture;
+do not persist downloaded bytes. Deduplicate equivalent requests, including
+repeated modules, and test safe URL encoding, exact and mismatched identities,
+private destinations, both capture routes and the shared cross-protocol limits.
+The [Symbolicator SymStore layout](https://github.com/getsentry/symbolicator/blob/master/docs/advanced/symbol-server-compatibility.md)
+and [Microsoft's SymStore description](https://learn.microsoft.com/en-us/windows/win32/debug/using-symstore)
+define the name/signature/age lookup; Microsoft's public kernel32 sample already
+recorded in the PDB age evidence supplies an independent real PDB oracle. NB10,
+compressed files, pointer files, two-tier stores, other source layouts and remote
+reprocessing remain open after this slice.
+
 <a id="close-nativo-024"></a>
 
 Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the module symbol substream, including its four-byte CodeView signature; normalize parsed record offsets to that origin before validating nesting.
