@@ -13844,3 +13844,19 @@ Siguiente acción concreta: contrastar el formato de Linux/amd64 con fuentes
 primarias y con el unwinder y la memoria capturada existentes; identificar una
 muestra reproducible y precisar en SPEC un subcontrato verificable antes de
 planificar o implementar.
+
+### Investigación de señal Linux/amd64, 2026-10-29
+
+Un programa C propio instaló un handler real en pila alternativa y observó un
+contexto con PC y pila interrumpidos. Los offsets locales de RSP/RIP (160/168)
+coinciden con el CFI de señal de libc; este contiene reglas para los demás
+registros enteros. El unwinder actual de AMD64 conserva PC/SP/FP y exige que
+SP crezca, mientras la prueba existente solo acredita el ajuste de búsqueda
+del PC. El programa investiga el formato, no acredita el producto. Se guardó
+la identidad de libc, el CFI y el probe en:
+test-results/closure-20261025/native-linux-signal-research/.
+
+Siguiente acción concreta: especificar un incremento acotado para recuperar
+registros mediante las reglas CFI y cruzar pilas capturadas en señal AMD64;
+preparar una regresión RED contra el unwinder, sin atribuir cobertura de otras
+plataformas ni modificar la decisión pendiente sobre servidores.
