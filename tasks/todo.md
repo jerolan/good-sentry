@@ -14677,3 +14677,24 @@ Siguiente acción concreta: verificar los hashes de la copia 4374 y del chunk
 conservado, revisar edades y construir una imagen aislada para releases; al
 arrancar contabilizar exclusivamente esa limpieza autorizada antes de crear
 fixtures propios.
+
+### Preflight autorizado de releases, 2026-10-29
+
+La copia aislada coincide con los hashes de las 4374 filas y con el respaldo;
+el único chunk vencido coincide en identidad, fechas y 1201 bytes con el
+archivo conservado. No hay candidatos de retención a 3650 días ni entregas de
+alerta pendientes. Tres monitores históricos están habilitados y vencidos: la
+instancia de prueba deberá mantener uptime desactivado para no ejecutarlos.
+Las migraciones agregan columnas y datos derivados, de modo que la comparación
+posterior debe usar la proyección de columnas originales. Comprobante:
+test-results/closure-20261025/release-authorized-preflight/.
+
+Se construyó sin arrancar una imagen local linux/amd64 desde 799a0dc; digest
+sha256:8c385fa1ac833db000ad85e68f34b2825758376678387573f9d23da0787ff277.
+El contexto provino del árbol Git y excluyó el archivo ajeno sin seguimiento.
+La construcción no acredita expiración, UI, recuperación ni CI final.
+
+Siguiente acción concreta: conservar la base verificada como referencia, crear
+una copia de ejecución nueva, repetir el preflight y arrancar solo esa copia
+con autenticación y retenciones de 3650 días, uptime y archivo deshabilitados;
+contabilizar el chunk autorizado y comparar todas las columnas originales.
