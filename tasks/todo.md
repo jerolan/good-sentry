@@ -13500,3 +13500,20 @@ finales. Siguiente acción concreta: revisar las edades y controles de limpieza
 de esta copia, iniciar una imagen aislada con límites que preserven los datos
 originales y comparar las filas proyectadas tras las migraciones antes de
 crear monitores o ejecutar probes propios.
+
+### Imagen y migración de la copia de uptime, 2026-10-29
+
+La imagen no-root construida desde `e146e519` inició solo la copia y el volumen
+nuevos; readiness respondió 200 y aplicó 79 migraciones. Las 4305 filas
+originales siguen presentes al comparar sus columnas originales, y ambos
+monitores permanecen deshabilitados. Antes del inicio, los relojes de eventos,
+logs, spans, checks, archivos y releases quedaban dentro de los 3650 días
+configurados y no había chunks vencidos. No se crearon monitores ni probes.
+Los contenedores están detenidos y la configuración privada conservada en
+`.tmp/closure-uptime-20261029`. Comprobante:
+test-results/closure-20261025/uptime-image-migration/.
+
+Siguiente acción concreta: preparar un servidor de probes privado y adaptar el
+controlador para registrar cada ID propio inmediatamente; crear monitores HTTP,
+TCP y heartbeat y observar sus primeros checks reales sin modificar los dos
+monitores originales.

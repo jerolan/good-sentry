@@ -53,6 +53,7 @@ Microsoft Edge now verifies retained, empty and recovered error-retention views
 on a separately restored checkpoint. Continue uptime retention revalidation.
 The uptime working baseline is independently restored and its original monitors
 are paused; migration and owned scheduler/browser fixtures remain open.
+The isolated uptime image preserves all 4305 original projected rows after migration.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
