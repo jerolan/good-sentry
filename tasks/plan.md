@@ -805,3 +805,9 @@ histórico de contextos sin flag integer.
 
 Aplicar el mismo principio al contexto AMD64 válido, con el mapeo DWARF de su
 ABI propio y sin alterar los controles de señal ni contextos históricos.
+
+### Registros iniciales de Minidump ARM64, 2026-10-29
+
+Conectar los registros válidos de los formatos moderno y legacy al CFI ARM64,
+incluido X30 con regla explícita, y propagar solo reglas recuperables. Mantener
+flags históricos, límites de pila y tratamiento de señal sin cambios.

@@ -1331,6 +1331,24 @@ controls, and XSTATE regression. The [Crashpad context and flags](https://chromi
 and [x86-64 psABI DWARF register mapping](https://gitlab.com/x86-psABIs/x86-64-ABI/-/blob/master/x86-64-ABI/low-level-sys-info.tex)
 define the representations; owned fixtures alone do not prove a real crash.
 
+For ARM64 Minidumps, carry valid integer context registers into ELF and Mach-O
+CFI: the modern format marks X0–X28 valid with its architecture and integer
+flags and X30 valid with its architecture and control flags. Both accepted
+legacy Breakpad integer-valid contexts provide X0–X30. The existing FP, SP and
+PC behavior remains for historical modern contexts without these flags; do not
+infer the other registers. Use DWARF X0–X30 register numbers and propagate
+only values recovered by explicit CFI rules. A `same_value` return rule may
+use a valid X30; do not add a new frame-pointer fallback from LR in this slice.
+Preserve ordinary stack bounds and leave ARM64 signal recovery and pointer
+authentication open. Verify both context formats through serialized Minidumps
+and ARM64 ELF CFI, initial and recovered X19, valid X30, absent flags and rules,
+memory bounds and the existing legacy context regressions. The [Crashpad ARM64
+context](https://chromium.googlesource.com/crashpad/crashpad/+/refs/heads/main/minidump/minidump_context.h),
+[Breakpad legacy context](https://github.com/google/breakpad/blob/main/src/google_breakpad/common/minidump_cpu_arm64.h)
+and [Arm DWARF64 ABI](https://github.com/ARM-software/abi-aa/blob/main/aadwarf64/aadwarf64.rst)
+define the formats and register numbers. Fixtures do not establish a real ARM64
+SDK crash.
+
 
 <a id="close-nativo-013"></a>
 

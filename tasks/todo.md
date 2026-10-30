@@ -14179,3 +14179,14 @@ invalidados hasta la aceptación integral de la candidata.
 Siguiente acción concreta: cotejar el plan y la matriz para seleccionar el
 primer criterio exigible sin evidencia vigente y con dependencias resueltas;
 mantener abiertos los perfiles nativos y runtimes históricos pendientes.
+
+### Selección de registros iniciales ARM64, 2026-10-29
+
+El cotejo del parser y CFI muestra que ARM64 omite X0–X28 y X30 válidos en
+contextos modernos y legacy, por lo que no puede evaluar ciertas reglas de CFA
+o retorno. Crashpad, Breakpad y Arm definen los formatos y flags. SPEC conserva
+el comportamiento histórico con flags cero y deja señal ARM64/PAC abiertos.
+
+Siguiente acción concreta: preparar RED desde Minidumps de ambos formatos con
+CFI ELF que use X19 y X30 y requiera un registro recuperado en el caller;
+verificar flags y valores ausentes antes de implementar.
