@@ -13388,3 +13388,18 @@ test-results/closure-20261025/retention-first-expiry/.
 Siguiente acción concreta: reanudar la copia y usar Node 11.7.0 para recapturar
 el ID vencido en su grupo original y reintentar el ID retenido, comprobar el
 conteo y la vista recuperada en navegador, sin modificar los datos históricos.
+
+### Recaptura de evento vencido, 2026-10-29
+
+Node 11.7.0 recapturó el ID vencido en la misma incidencia y reintentó el ID
+retenido sin duplicar su conteo. El mute avanzó una vez, `first_seen` permaneció
+único y quedaron dos adjuntos propios. Chromium verificó la vista recuperada en
+320/768/1440; el cotejo volvió a encontrar las 4258 filas históricas. Los
+informes y capturas privados se conservan en el checkpoint restringido y los
+contenedores nuevos están detenidos. Comprobante:
+test-results/closure-20261025/retention-recapture/.
+
+Siguiente acción concreta: iniciar otra instancia aislada con logs y uptime
+deshabilitados, envejecer únicamente los dos recibos propios restantes y probar
+la limpieza final, la conservación de la traza/log independientes y las filas
+históricas; después verificar reinicio y recuperación por separado.
