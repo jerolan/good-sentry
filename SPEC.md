@@ -1284,7 +1284,7 @@ ordinary-frame controls. The representative Linux/amd64 signal probe and the
 [signal frame](https://github.com/torvalds/linux/blob/master/arch/x86/include/asm/sigframe.h),
 and [glibc trampoline CFI](https://codebrowser.dev/glibc/glibc/sysdeps/unix/sysv/linux/x86_64/libc_sigaction.c.html)
 define this slice. Other platforms' signal-context recovery remains open except
-for the bounded Linux/x86, Linux/ARM64 and Linux/RISC-V64 slices below.
+for the bounded Linux/x86, Linux/ARM32, Linux/ARM64 and Linux/RISC-V64 slices below.
 
 For Linux/x86 ELF CFI marked as a signal frame, recover the available 32-bit
 integer registers using the frame's CIE/FDE rules before evaluating the next
@@ -1340,7 +1340,7 @@ require the modern frame marker `0x5ac3c35a` at SP and read r0–r15 from SP+32.
 For RT, require a signal number 1–64 at SP, reject the historical pointer form
 identified by SP+8, and read r0–r15 from SP+160. Saved r13 is SP, r15 is PC,
 and CPSR immediately follows r15. Require captured SP, PC and CPSR, an ARM-state
-CPSR and word-aligned saved PC; missing other registers stay unavailable. Reject
+little-endian CPSR and word-aligned saved PC; missing other registers stay unavailable. Reject
 32-bit address overflow, zero or repeated PC and unsafe stack changes; permit a
 non-increasing SP only between disjoint captured ranges. Continue at the exact
 saved PC, preserve it without later unwind data, and use the same event-selection
@@ -1781,7 +1781,7 @@ For classic MSF 7 PDB inline call sites, read module S_INLINESITE (0x114d) and S
 
 <a id="close-nativo-023"></a>
 
-This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32, ARM64 and RISC-V64; uncommon CFI expressions and platform-specific signal-context register recovery outside the specified Linux AMD64, x86 and bounded ARM64/RISC-V64 slices; nested archive discovery beyond eight layers; and symbol-server resolution are not implemented. ZIP, TAR and gzip-compressed TAR dSYM/DIF uploads, Mach-O dSYM companion files whose zero-byte __TEXT segment still defines the executable address base, and their DWARF are consumed directly. It does not claim general crashpad/breakpad coverage. Keep the parent native-processing task open until those formats and real multi-architecture crash receipts pass. The unadjusted signal-frame return-address rule follows the `.cfi_signal_frame` behavior documented in the [Linux arm64 signal trampoline](https://github.com/torvalds/linux/blob/master/arch/arm64/kernel/vdso/sigreturn.S).
+This native slice remains incomplete: Minidump CPU contexts beyond AMD64, x86, ARM32, ARM64 and RISC-V64; uncommon CFI expressions and platform-specific signal-context register recovery outside the specified Linux AMD64, x86 and bounded ARM32/ARM64/RISC-V64 slices; nested archive discovery beyond eight layers; and symbol-server resolution are not implemented. ZIP, TAR and gzip-compressed TAR dSYM/DIF uploads, Mach-O dSYM companion files whose zero-byte __TEXT segment still defines the executable address base, and their DWARF are consumed directly. It does not claim general crashpad/breakpad coverage. Keep the parent native-processing task open until those formats and real multi-architecture crash receipts pass. The unadjusted signal-frame return-address rule follows the `.cfi_signal_frame` behavior documented in the [Linux arm64 signal trampoline](https://github.com/torvalds/linux/blob/master/arch/arm64/kernel/vdso/sigreturn.S).
 
 As a prerequisite for the Windows and Linux symbol-server work, retain typed
 lookup identity from each valid Minidump CodeView record. For `BpEL`, keep the

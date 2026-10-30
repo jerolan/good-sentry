@@ -1043,13 +1043,13 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 			_, hasReturnRule := rules.regs[cie.returnReg]
 			signalFallback = !hasReturnRule
 		}
-		if signalFallback && crash.platformID == minidumpOSLinux && isLinuxSignalTrampoline(crash.stack, pc, crash.Arch) {
+		if signalFallback && crash.platformID == minidumpOSLinux && isLinuxSignalTrampoline(crash.stack, pc, registers[spRegister], crash.Arch) {
 			frame := Frame{Instruction: pc}
 			if signalModule := moduleFor(pc, crash.Modules); signalModule != nil {
 				frame.Module = signalModule.Name
 			}
 			frames = append(frames, frame)
-			nextRegisters, returnAddress, ok := recoverLinuxSignalContext(crash.stack, registers[spRegister], crash.Arch)
+			nextRegisters, returnAddress, ok := recoverLinuxSignalContext(crash.stack, registers[spRegister], pc, crash.Arch)
 			if !ok {
 				break
 			}
@@ -1173,8 +1173,11 @@ func UnwindCFIWithSignalRecovery(crash *Crash, tables UnwindSet) ([]Frame, bool)
 	return frames, recoveredSignal
 }
 
-func isLinuxSignalTrampoline(ranges []memoryRange, pc uint64, arch string) bool {
+func isLinuxSignalTrampoline(ranges []memoryRange, pc, sp uint64, arch string) bool {
 	if pc > ^uint64(0)-7 {
+		return false
+	}
+	if arch == "arm" && (pc > 0xfffffff8 || pc&3 != 0) {
 		return false
 	}
 	first, firstOK := readCFIValue(ranges, pc, 4, 8)
@@ -1187,12 +1190,68 @@ func isLinuxSignalTrampoline(ranges []memoryRange, pc uint64, arch string) bool 
 		return first == 0xd2801168 && second == 0xd4000001
 	case "riscv64":
 		return first == 0x08b00893 && second == 0x00000073
+	case "arm":
+		nr := uint64(0)
+		switch first {
+		case 0xe3a07077:
+			nr = 119
+		case 0xe3a070ad:
+			nr = 173
+		default:
+			return false
+		}
+		if second != 0xef000000 && second != 0xef900000|nr {
+			return false
+		}
+		limit := uint64(99)
+		if nr == 173 {
+			limit = 227
+		}
+		if sp > 0xffffffff-limit {
+			return false
+		}
+		marker, ok := readCFIValue(ranges, sp, 4, 4)
+		if !ok {
+			return false
+		}
+		if nr == 119 {
+			return marker == 0x5ac3c35a
+		}
+		return marker >= 1 && marker <= 64 && marker != sp+8
 	default:
 		return false
 	}
 }
 
-func recoverLinuxSignalContext(ranges []memoryRange, sp uint64, arch string) (map[uint32]uint64, uint64, bool) {
+func recoverLinuxSignalContext(ranges []memoryRange, sp, pc uint64, arch string) (map[uint32]uint64, uint64, bool) {
+	if arch == "arm" {
+		first, ok := readCFIValue(ranges, pc, 4, 4)
+		if !ok {
+			return nil, 0, false
+		}
+		offset := uint64(32)
+		if first == 0xe3a070ad {
+			offset = 160
+		}
+		if sp > 0xffffffff-(offset+67) {
+			return nil, 0, false
+		}
+		savedSP, spOK := readCFIValue(ranges, sp+offset+13*4, 4, 4)
+		savedPC, pcOK := readCFIValue(ranges, sp+offset+15*4, 4, 4)
+		cpsr, cpsrOK := readCFIValue(ranges, sp+offset+16*4, 4, 4)
+		// T, J and E indicate Thumb, Jazelle or big-endian state.
+		if !spOK || !pcOK || !cpsrOK || cpsr&0x01000220 != 0 || savedPC&3 != 0 {
+			return nil, 0, false
+		}
+		registers := make(map[uint32]uint64, 16)
+		for reg := uint32(0); reg <= 15; reg++ {
+			if value, ok := readCFIValue(ranges, sp+offset+uint64(reg)*4, 4, 4); ok {
+				registers[reg] = value
+			}
+		}
+		registers[13], registers[15] = savedSP, savedPC
+		return registers, savedPC, true
+	}
 	if arch == "riscv64" {
 		if sp > ^uint64(0)-559 {
 			return nil, 0, false

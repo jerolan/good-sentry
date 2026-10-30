@@ -14335,3 +14335,24 @@ layouts antiguos, FDPIC y coprocessor siguen abiertos.
 Siguiente acción concreta: escribir RED con Minidumps serializados para ambos
 frames ARM, memoria, marcadores, registros y precedencia; implementar y probar
 el evento persistido sin alegar un crash real ARM32.
+
+### Trampolín de señal Linux ARM32 moderno, 2026-10-29
+
+El fallback acotado recupera frames RT y no RT en modo ARM desde instrucciones
+y memoria capturadas, con prioridad CFI/EHABI y límites de pila. Los owners
+serializados cubren los registros, las dos formas, marcadores, datos ausentes,
+PC exacto y el evento persistido. La revisión detectó que faltaba exigir el
+marcador y excluir otros estados CPSR; dos RED los reprodujeron y la corrección
+pasó los controles. Los formatos antiguos, Thumb, FDPIC y coprocessor no quedan
+acreditados por este slice.
+
+Pasaron la suite unitaria, native y pruebas focalizadas con race, vet, los
+owners HTTP/PostgreSQL con race y el crash real Linux/amd64 del SDK fijado,
+sin skips. Comprobante:
+test-results/closure-20261025/native-linux-arm32-signal-fallback/. Son fixtures
+sintéticos para ARM32 y no prueban un crash real ni captura universal de código;
+los criterios nativos y la candidata siguen pendientes de auditoría integral.
+
+Siguiente acción concreta: investigar el estado Thumb ARM32 en Minidump y en
+la búsqueda CFI/EHABI, usando fuentes primarias y un oráculo discriminante antes
+de especificar su fallback; conservar abiertas las demás variantes.
