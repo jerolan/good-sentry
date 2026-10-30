@@ -2204,7 +2204,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-alertas-038](../SPEC.md#close-alertas-038) | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-alertas-039](../SPEC.md#close-alertas-039) | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payloa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-027](../SPEC.md#close-nativo-027) | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry… | implementada (local) | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
-| [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-nativo-028](../SPEC.md#close-nativo-028) | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archi… | parcial | invalidada | Servidores de símbolos Windows/Linux pendientes; decisión 2026-10-29 abajo |
 | [CLOSE-identidad-104](../SPEC.md#close-identidad-104) | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de s… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-105](../SPEC.md#close-identidad-105) | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus co… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-106](../SPEC.md#close-identidad-106) | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos ac… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -13860,3 +13860,16 @@ Siguiente acción concreta: especificar un incremento acotado para recuperar
 registros mediante las reglas CFI y cruzar pilas capturadas en señal AMD64;
 preparar una regresión RED contra el unwinder, sin atribuir cobertura de otras
 plataformas ni modificar la decisión pendiente sobre servidores.
+
+### Resolución del alcance de servidores de símbolos, 2026-10-29
+
+El usuario indicó expresamente Windows y Linux. La decisión se integró en
+SPEC.md bajo el contrato de cierre y en CLOSE-nativo-028, conservando el ID y
+el historial. Queda resuelta la pregunta por plataforma; protocolos concretos,
+identidad de archivos, límites de red, implementación y pruebas siguen
+pendientes. La respuesta no acredita funcionalidad ni habilita afirmar soporte
+general. La selección de señal Linux/amd64 continúa como unidad independiente.
+
+Siguiente acción concreta: precisar en SPEC el subcontrato de señal ya
+investigado y preparar su regresión; después, precisar las fuentes y el
+comportamiento de los servidores Windows y Linux antes de implementarlos.

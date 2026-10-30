@@ -3170,6 +3170,16 @@ reinicio, recuperación, imagen y CI. Esta decisión no acredita por sí sola
 ningún resultado ni autoriza a alterar un runtime existente. No se atribuye
 preservación a bytes de volúmenes que no estén respaldados y comprobados.
 
+#### Decisión del 29 de octubre de 2026: servidores de símbolos
+
+Por instrucción expresa del usuario, la resolución mediante servidores de
+símbolos exigible para este cierre abarca Windows y Linux. Esta decisión
+resuelve el alcance por plataforma de CLOSE-nativo-023 y CLOSE-nativo-028;
+no afirma que la función esté implementada ni que sus pruebas hayan pasado.
+Los protocolos concretos, la identidad de los archivos, las condiciones de
+red y los comprobantes se precisarán antes de su implementación, sin atribuir
+soporte general a un solo protocolo ni reducir los demás contratos nativos.
+
 El cierre abarca todos los requisitos aprobados de esta especificación y los
 resultados de [WF-0004](tasks/wayfinder/0004-contrato-compatibilidad.md), con las
 resoluciones finales de [WF-0005](tasks/wayfinder/0005-sacrificios.md) y
@@ -3315,7 +3325,7 @@ histórica conservada no acredita por sí misma ninguno de los estados nuevos.
 | <a id="close-alertas-038"></a>CLOSE-alertas-038 | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas HTTP/SMTP locales reales; reintentos y recuperación tras fallo/reinicio. No reducirlo al éxito de una petición. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |
 | <a id="close-alertas-039"></a>CLOSE-alertas-039 | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payload/intentos y reintentos ante fallos. Conservar recibo sin secretos; el ejecutor elegirá receptor y entorno, el consumidor mapea el destino. No acredita un canal específico. [Acuerdo](tasks/wayfinder/0006-evidencia-externa.md#webhook-genérico). |
 | <a id="close-nativo-027"></a>CLOSE-nativo-027 | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry_demo_crash, main.c y línea positiva; descartar los bytes del dump. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-round-4). |
-| <a id="close-nativo-028"></a>CLOSE-nativo-028 | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archivos y servidores de símbolos cuando sean exigibles. No exigir otro crash real por combinación. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-round-4). |
+| <a id="close-nativo-028"></a>CLOSE-nativo-028 | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archivos y resolución mediante servidores de símbolos para Windows y Linux. No exigir otro crash real por combinación. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-round-4). |
 | <a id="close-identidad-104"></a>CLOSE-identidad-104 | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de sus contratos actuales, sin excluir los demás requisitos aprobados. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |
 | <a id="close-identidad-105"></a>CLOSE-identidad-105 | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus contratos actuales, sin excluir los demás requisitos aprobados. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |
 | <a id="close-identidad-106"></a>CLOSE-identidad-106 | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos actuales, sin excluir los demás requisitos aprobados. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |

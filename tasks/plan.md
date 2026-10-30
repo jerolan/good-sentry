@@ -735,3 +735,12 @@ fuentes Java y recibos externos se interpretan según las excepciones canónicas
 no son exclusiones adicionales ni permiten eliminar funciones o controles.
 Cada incremento futuro actualiza evidencia, invalidaciones y siguiente acción,
 con commit atómico propio en main, preservando concurrencia y autorizaciones.
+
+### Resolución de servidores de símbolos, 2026-10-29
+
+La decisión incorporada en SPEC exige resolución mediante servidores de
+símbolos para Windows y Linux. Precisar protocolos, identidad, límites de red
+y aceptación sobre fuentes primarias antes de implementarlos; no atribuir
+cobertura general a un protocolo ni cerrar nativo por esta decisión. Conservar
+el incremento independiente de señal Linux/amd64 ya seleccionado y, después,
+ordenar los subresultados de servidores con sus dependencias y comprobantes.
