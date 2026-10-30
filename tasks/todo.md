@@ -13581,3 +13581,18 @@ test-results/closure-20261025/uptime-disabled-expiry/.
 Siguiente acción concreta: reiniciar la imagen con uptime habilitado y comparar
 todas las filas antes y después, comprobar la disponibilidad de los monitores y
 restaurar otra copia del respaldo pre-expiración para contrastar sus hashes.
+
+### Reinicio y recuperación separados de uptime, 2026-10-29
+
+Tras la limpieza con funciones deshabilitadas, reiniciar la aplicación habilitada
+conservó exactamente 4471 filas en 73 tablas antes del login de verificación.
+Los cuatro monitores siguieron legibles con historiales vacíos paginados. El
+hash del respaldo pre-expiración coincidió con su recibo; una restauración
+adicional en otra base coincidió en los hashes de las 4465 filas de referencia.
+Snapshots privados y volúmenes conservados; contenedores detenidos. Comprobante:
+test-results/closure-20261025/uptime-restart-recovery/.
+
+Los recorridos locales no sustituyen imagen candidata, auditoría ni CI finales.
+Siguiente acción concreta: comprobar el owner de retención de uptime y lifecycle
+con PostgreSQL aislado y race, ejecutar la mutación de cutoff y restaurar el
+código antes de registrar la evidencia.
