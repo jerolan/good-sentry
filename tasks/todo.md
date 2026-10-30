@@ -14067,3 +14067,19 @@ no se acreditan NB10 remoto, fuentes comprimidas ni otros perfiles pendientes.
 Siguiente acción concreta: cotejar el plan y la matriz para seleccionar el
 primer criterio exigible con dependencias resueltas y evidencia no vigente,
 conservando explícitamente los perfiles nativos y runtimes históricos abiertos.
+
+### Selección de señal Linux/x86, 2026-10-29
+
+Se selecciona un subresultado independiente de CLOSE-nativo-012/023. El host
+puede ejecutar un ELF i386 estático fuera del filtro ordinario del entorno; el
+primer intento bajo ese filtro terminó por SIGSYS. El vDSO de un proceso real
+de 32 bits contiene dos FDE de señal `zRS` con reglas para registros y CFA;
+se conservan instrucciones, mapas, identidad y salida de readelf en
+test-results/closure-20261025/native-linux-i386-signal-research/. Esto acredita
+un formato local, no la recuperación del producto.
+
+La búsqueda paralela de SymStore NB10 no encontró todavía una fuente primaria
+que fije su índice textual; el PDB histórico disponible necesita además su PE
+asociado para simbolicar. Esas dependencias permanecen abiertas, sin adivinar.
+Siguiente acción concreta: contrastar el CFI i386 con un contexto real de
+señal y pila alternativa, precisar el subcontrato y preparar un owner RED.
