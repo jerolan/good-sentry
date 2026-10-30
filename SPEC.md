@@ -1283,7 +1283,26 @@ ordinary-frame controls. The representative Linux/amd64 signal probe and the
 [Linux signal context](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/sigcontext.h),
 [signal frame](https://github.com/torvalds/linux/blob/master/arch/x86/include/asm/sigframe.h),
 and [glibc trampoline CFI](https://codebrowser.dev/glibc/glibc/sysdeps/unix/sysv/linux/x86_64/libc_sigaction.c.html)
-define this slice. Other platforms' signal-context recovery remains open.
+define this slice. Other platforms' signal-context recovery remains open except
+for the bounded Linux/x86 slice below.
+
+For Linux/x86 ELF CFI marked as a signal frame, recover the available 32-bit
+integer registers using the frame's CIE/FDE rules before evaluating the next
+frame. Honor a described ESP rule; otherwise use the CFA. Allow a non-increasing
+ESP only when the signal frame transitions between disjoint captured ranges;
+ordinary frames and overlapping or missing ranges retain the existing stop
+behavior. Propagate recovered integer registers to later CFI, preserve exact
+signal-PC lookup and the existing loop/frame bounds, and never invent missing
+values. The observed 32-bit Linux vDSO `rt_sigreturn` FDE recovers CFA from
+`*(ESP+188)` and EIP from `*(ESP+216)` at its signal-restorer entry; a real
+alternate-stack probe matched these slots to the interrupted context. The CFI
+rules remain authoritative, not these offsets hardcoded in the unwinder. Test
+the observed rule form, a later frame needing a recovered general register,
+both stack directions, missing captured memory and ordinary-frame controls.
+This is local Linux/x86 evidence, not acceptance of other signal ABIs. Linux's
+[x86 signal context](https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/sigcontext.h)
+and [vDSO signal trampoline](https://code.googlesource.com/linux/torvalds/linux/+/68ff4a3ccda9f98c74f23c70c8c7c581f9eee931/arch/x86/entry/vdso/vdso32/sigreturn.S)
+document the corresponding context and trampoline roles.
 
 
 <a id="close-nativo-013"></a>

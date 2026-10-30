@@ -787,3 +787,9 @@ solo presupuesto por lote y cancelación que revierte cursor y datos. La espera
 de red mantiene los bloqueos actuales por el plazo acotado; probar reenqueue y
 progreso de otro proyecto con PostgreSQL real. Revalidar los owners existentes y
 mantener abiertos los formatos y gates no demostrados.
+
+### Contexto de señal Linux/x86, 2026-10-29
+
+Implementar el slice de CLOSE-nativo-012 desde las reglas del vDSO y el probe
+real de contexto. Probar restauración de registros y cambio de pila dentro de
+memoria capturada, con controles de rechazo; no extrapolar a otros sistemas.

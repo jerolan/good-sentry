@@ -14083,3 +14083,15 @@ que fije su índice textual; el PDB histórico disponible necesita además su PE
 asociado para simbolicar. Esas dependencias permanecen abiertas, sin adivinar.
 Siguiente acción concreta: contrastar el CFI i386 con un contexto real de
 señal y pila alternativa, precisar el subcontrato y preparar un owner RED.
+
+### Subcontrato de señal Linux/x86, 2026-10-29
+
+Un proceso i386 real ejecutó un handler en pila alternativa: los slots CFA y
+EIP del FDE del vDSO coinciden con el ESP y EIP interrumpidos. Se conservaron
+fuente y salida del probe, sin redistribuir el vDSO. SPEC precisa recuperar los
+registros por CFI y limitar los cambios de pila a rangos capturados disjuntos;
+no se afirma cobertura de otros sistemas o arquitecturas.
+
+Siguiente acción concreta: escribir un owner RED con el CFI observado y un
+caller que dependa de un registro recuperado; implementar y verificar las
+regresiones y límites antes de acreditar el slice.
