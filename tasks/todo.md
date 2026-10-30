@@ -13289,3 +13289,19 @@ La aceptación integral y los gates finales siguen pendientes. Siguiente acción
 concreta: cotejar el requisito nativo004 de mapas de segmentos no directos con
 las muestras y oráculos ya conservados, para identificar una comparación
 independiente ejecutable antes de implementar ese perfil.
+
+### Selección de retención tras cotejo nativo, 2026-10-29
+
+El PDB OMAP conservado no contiene selectores no directos y la fuente de
+Microsoft usa la página ANSI del lector sin identificar la original del
+productor. Las investigaciones previas no aportan otra muestra discriminante;
+no se deduce una traducción ni se declara cumplido native004. Los demás
+subresultados nativos locales están registrados y dependen de candidata/CI.
+
+Se selecciona CLOSE-operacion-019 y sus dependencias de retención 020–023,
+independientes de esos perfiles nativos. La autorización del usuario para
+copias verificadas está integrada en SPEC. Los dumps y hashes históricos están
+disponibles; no se modificarán las bases, volúmenes o runtimes existentes.
+Siguiente acción concreta: restaurar `baseline.dump` en una base nueva aislada,
+contrastar sus 4258 filas contra el snapshot y preparar la ejecución retenido,
+vacío y recuperado sobre una imagen y volumen nuevos con fixtures propios.
