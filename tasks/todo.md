@@ -13706,3 +13706,22 @@ El runtime original de uptime y los gates finales siguen pendientes. Siguiente
 acción concreta: envejecer solo el mapa, adjuntos y opacos propios seleccionados
 bajo el lock de retención; comprobar que el evento y la historia permanecen,
 que el mapa independiente sobrevive y que Edge muestra la ausencia real.
+
+### Primera expiración de archivos, 2026-10-29
+
+El worker retiró el mapa propio, 28 adjuntos y cuatro elementos opacos
+seleccionados. Frente al respaldo independiente de 4539 filas, solo faltan
+esos 33 archivos y hay cuatro sesiones adicionales; las demás filas coinciden.
+Las 4342 filas originales siguen presentes, el mapa independiente permanece,
+las descargas vencidas devuelven 404 y el evento compatible sigue accesible.
+Edge comprobó la descarga que caducó en pantalla, las páginas vacías, la
+historia del issue y cuatro tamaños sin errores de página. Dos errores de los
+controladores interrumpieron el registro tras aplicar partes de la prueba; se
+inspeccionó el estado y se verificó sin repetir las mutaciones. Contenedores
+propios detenidos y volúmenes conservados. Comprobante:
+test-results/closure-20261025/file-first-expiry/.
+
+El runtime original de uptime, la recuperación y los gates finales siguen
+pendientes. Siguiente acción concreta: reanudar la misma cohorte con el SDK y
+el CLI, demostrar la recuperación de los archivos y de la simbolización y
+verificar que la historia y las filas históricas permanecen.
