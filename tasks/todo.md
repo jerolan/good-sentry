@@ -14717,3 +14717,21 @@ reinicio ni candidata/CI final. Siguiente acción concreta: adaptar copias de
 los controladores históricos para crear únicamente proyecto, releases y
 fixtures propios en la instancia aislada; registrar cada identidad y conservar
 un respaldo previo antes de envejecer cualquier recibo.
+
+### Proyectos y releases propios de aceptación, 2026-10-29
+
+En la copia aislada se creó una sesión y dos proyectos nuevos, un token limitado
+a ellos y cuatro releases de nombres únicos. El release compartido y archivado
+asocia ambos proyectos y tiene commit y deploy propios; su fecha de usuario es
+futura y la del control retenido es antigua. Cada intención e identidad quedó
+registrada en un archivo privado antes de continuar. El cotejo de las 4506 filas
+previas en 73 tablas no encontró ninguna modificada; las filas nuevas están
+contabilizadas. La primera consulta de readiness llegó durante el arranque y
+recibió una conexión cerrada; la siguiente devolvió 200. Los contenedores están
+detenidos y los datos conservados. Comprobante:
+test-results/closure-20261025/release-cohort-setup/.
+
+No se han envejecido recibos ni se acredita expiración o aceptación final.
+Siguiente acción concreta: preparar un mapa nuevo y subirlo con el CLI Linux
+3.8.0 ya verificado; enviar capturas propias con Node y registrar sus IDs,
+incidencias, traza y log antes de crear un respaldo pre-expiración separado.
