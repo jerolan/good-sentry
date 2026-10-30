@@ -18,6 +18,9 @@ async function visit(base, expectedLogScope, showGrant, revoke, width, featureSt
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.getByRole('heading', { name: 'API tokens', level: 1, exact: true }).waitFor();
     assert.equal(await page.getByRole('checkbox', { name: 'log:read', exact: true }).count(), expectedLogScope ? 1 : 0);
+    const defaults = await page.getByRole('form', { name: 'Create API token' }).locator('input[name="scopes"]:checked').evaluateAll(inputs => inputs.map(input => input.value).sort());
+    assert.deepEqual(defaults, ['org:read', 'project:read']);
+    if (expectedLogScope) assert.equal(await page.getByRole('checkbox', { name: 'log:read', exact: true }).isChecked(), false);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, `page overflows at ${width}px`);
     if (showGrant) {
       const row = page.getByRole('row').filter({ hasText: 'OAuth Browser MCP client' });

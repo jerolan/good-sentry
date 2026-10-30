@@ -13276,3 +13276,16 @@ La aceptación integral y los gates finales siguen pendientes. Siguiente acción
 concreta: verificar en navegador que los scopes predeterminados de la creación
 de credenciales no se amplían al activar MCP y que `log:read` permanece sin
 seleccionar, en los modos habilitado y deshabilitado.
+
+### Scopes predeterminados de credenciales, 2026-10-29
+
+Chromium comprobó que solo `org:read` y `project:read` aparecen seleccionados
+por defecto con MCP habilitado, con logs deshabilitados y con MCP deshabilitado.
+`log:read` permanece sin seleccionar cuando se ofrece. El owner completo corrió
+con race sin saltarse y PostgreSQL aislado quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-credential-defaults/.
+
+La aceptación integral y los gates finales siguen pendientes. Siguiente acción
+concreta: cotejar el requisito nativo004 de mapas de segmentos no directos con
+las muestras y oráculos ya conservados, para identificar una comparación
+independiente ejecutable antes de implementar ese perfil.
