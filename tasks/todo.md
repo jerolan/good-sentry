@@ -14776,3 +14776,26 @@ Siguiente acción concreta: verificar que ninguna release o archivo histórico
 vence con lifetimes de 365 y 730 días, preparar una instancia aislada con esos
 límites y envejecer bajo el lock solo las tres identidades de release propias;
 comparar cascadas, datos y políticas con el respaldo antes de probar recuperación.
+
+### Primera expiración aislada de releases, 2026-10-29
+
+La copia de ejecución coincidió con el respaldo restaurado en las 4575 filas de
+73 tablas y las secuencias. No había releases históricas candidatas a 365 días ni
+archivos candidatos a 730 días. Con la aplicación detenida y el lock de retención,
+se envejecieron solo los receipts de tres releases propias; el cotejo completo
+confirmó que ninguna otra fila cambió y que el control retenido seguía intacto.
+
+La imagen aislada respondió readiness 200 y su limpieza automática retiró tres
+releases, cuatro asociaciones de proyecto, un commit, un deploy y sus dos enlaces
+de proyecto. El cotejo posterior de las 73 tablas no encontró otras diferencias,
+salvo el avance esperado de la próxima revisión de una incidencia pendiente;
+esta continúa sin release vinculada y su historial no cambió. Mapas, adjuntos,
+eventos, spans, logs y demás datos permanecen exactos. Se conservan respaldo,
+instantáneas y volúmenes; los contenedores están detenidos. Comprobante:
+test-results/closure-20261025/release-first-expiry/.
+
+Es evidencia parcial de CLOSE-operacion-032, no aceptación final. Siguiente
+acción concreta: arrancar la misma copia con límites protectores y verificar por
+API y SDK la ausencia de las releases vencidas, los archivos y estados retenidos,
+la recreación de una identidad y el comportamiento de una captura duplicada;
+registrar cada intención antes de las mutaciones y comparar con el respaldo.
