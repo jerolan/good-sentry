@@ -13216,3 +13216,20 @@ La aceptación integral y los gates finales siguen pendientes. Siguiente acción
 concreta: cotejar los controles pendientes de CLOSE-mcp-059 con sus owners y
 comprobantes actuales, y seleccionar el primer hueco exigible con dependencias
 resueltas antes de continuar la aceptación del contrato.
+
+### Cotejo local de aceptación OAuth, 2026-10-29
+
+El owner oficial cubre descubrimiento, registro, consentimiento, herramienta,
+refresh y revocación; los incrementos posteriores añaden negativos de cliente,
+redirección, scope, recurso, PKCE, organización/proyecto, membresía, generación,
+2FA y concurrencia. El respaldo real de versión 42 y la migración hasta 044
+conservan su comprobante histórico en `acceptance-mcp-oauth-20261020/`; no se
+atribuye esa ejecución a la candidata actual. Las pruebas existentes comprueban
+no-store del token y los metadatos, pero el owner oficial no comprueba
+explícitamente CSP y no-store de la pantalla de consentimiento ni que ésta
+omita los secretos de credenciales emitidas. La UI de credenciales tiene un
+owner de navegador separado. Los gates de imagen y CI finales permanecen abiertos.
+
+Siguiente acción concreta: ampliar el owner del handler oficial para comprobar
+cabeceras de la pantalla de consentimiento y ausencia de los access/refresh
+emitidos en una nueva lectura de esa pantalla, sin registrar los secretos.
