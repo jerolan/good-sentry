@@ -13517,3 +13517,20 @@ Siguiente acción concreta: preparar un servidor de probes privado y adaptar el
 controlador para registrar cada ID propio inmediatamente; crear monitores HTTP,
 TCP y heartbeat y observar sus primeros checks reales sin modificar los dos
 monitores originales.
+
+### Probes reales y respaldo previo de uptime, 2026-10-29
+
+En el proyecto nuevo se crearon monitores HTTP, TCP, heartbeat y uno nunca
+comprobado. El scheduler produjo ocho checks reales: HTTP respetó el umbral de
+dos fallos, TCP detectó la negativa del listener y heartbeat pasó up/down/up;
+cuatro entregas de transición quedaron enviadas. Cada identidad y resultado se
+guardó inmediatamente en el checkpoint privado. Edge verificó los estados nunca
+comprobado y retenido en 320/768/1440; se inspeccionó la captura móvil. Las
+4305 filas originales siguen presentes y un respaldo previo, restaurado en otra
+base, coincidió en las 4465 filas. Los contenedores quedaron detenidos y los
+volúmenes conservados. Comprobante: test-results/closure-20261025/uptime-real-probes/.
+
+Siguiente acción concreta: reanudar la copia, envejecer solo siete checks propios
+cambiando ambos relojes y mantener un check con inicio antiguo y completado
+vigente; comprobar la limpieza real, la preservación de monitores/alertas y la
+respuesta paginada vacía antes de verificar la vista en Edge.
