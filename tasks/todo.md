@@ -13658,3 +13658,19 @@ checkpoint uptime de 4342 filas y su inventario; la preservación del runtime
 original exigida por archivos tampoco se presume. Siguiente acción concreta:
 restaurar el dump en otra base y volumen nuevos, cotejar todas sus filas y
 comprobar si hay staging vencido antes de iniciar una imagen.
+
+### Base operativa aislada de archivos, 2026-10-29
+
+Se restauró el dump aceptado de uptime en la base nueva
+`closure_file_baseline_working`, contenedor
+`goodsentry-closure-file-db-20261029` y volumen propio. Todos los hashes
+coinciden: 4342 filas, 38 tablas, 530 eventos, 28 batches y 25 migraciones.
+No hay chunks de staging. No se inició una aplicación; el contenedor quedó
+detenido con su volumen conservado. Comprobante:
+test-results/closure-20261025/file-baseline-working/.
+
+La copia no acredita la preservación del runtime original de uptime ni la
+aceptación de expiración, navegador, recuperación o gates finales. Siguiente
+acción concreta: revisar las edades de todas las clases de limpieza, arrancar
+una imagen nueva con límites que preserven la copia y comparar sus filas
+proyectadas tras migración antes de crear fixtures propios.
