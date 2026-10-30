@@ -13790,3 +13790,20 @@ propio y sus recibos excluirán credenciales y datos personales innecesarios.
 Siguiente acción concreta: inventariar imagen, plugin y controladores existentes,
 verificar sus versiones y preparar una instancia aislada con token propio antes
 de ejecutar las consultas y la revocación real desde Grafana.
+
+### Consumidor Grafana y revocación, 2026-10-29
+
+Grafana 13.0.2 y datasource Sentry 2.2.8 se conectaron a una instancia nueva con
+un token limitado a uno de dos proyectos ficticios. El health encontró un
+proyecto, la consulta devolvió el issue con tres ocurrencias y la serie de
+error sumó tres. Los intentos de consultar el proyecto de control recibieron
+404 del upstream. Tras revocar el token (204), las mismas consultas y el health
+de Grafana recibieron 401 del upstream; el recibo distingue el 400 externo de
+Grafana del error del plugin. Credenciales excluidas, servicios aislados
+detenidos y volúmenes conservados. Comprobante:
+test-results/closure-20261025/grafana-consumer-current/.
+
+La prueba local no sustituye la repetición sobre candidata final ni CI
+concordante. Siguiente acción concreta: contrastar el plan y la matriz para
+seleccionar el primer criterio independiente restante con dependencias
+resueltas, conservando abiertos los runtimes históricos no autorizados.
