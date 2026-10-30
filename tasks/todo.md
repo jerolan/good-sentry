@@ -15015,3 +15015,16 @@ Siguiente acción concreta: contrastar los gates de integración PostgreSQL, vet
 race exigibles con la candidata actual y las exclusiones nativas ordenadas por el
 usuario; ejecutar lo autorizado en una base desechable y registrar resultados,
 sin presentar como realizadas las comprobaciones de informes nativos retiradas.
+
+### Owners de releases y lifecycle con race, 2026-10-30
+
+En la revisión 0c341b62 pasó vet de integración para Store, servidor y jobs.
+Contra PostgreSQL 18 nuevo y aislado pasaron con race los owners de releases,
+su contrato HTTP y el ciclo común de retención: 22 pruebas principales y 39
+acciones aprobadas en tres paquetes, sin fallos ni skips. La base desechable
+quedó detenida. Comprobante: test-results/closure-20261025/release-focused-checks/.
+
+La selección no ejecutó las comprobaciones retiradas de informes nativos y no
+se presenta como suite completa. Siguiente acción concreta: identificar y ejecutar
+los gates generales restantes que no dependan de esas comprobaciones, con sus
+exclusiones trazadas; contrastar después la candidata, la imagen y CI exactos.
