@@ -13434,3 +13434,16 @@ Los recorridos locales no sustituyen el cutoff mutation, los tests integrales,
 la candidata final ni publicación/CI. Siguiente acción concreta: ejecutar los
 owners de proveedor y lifecycle de retención con PostgreSQL aislado y race,
 incluida la mutación del cutoff, restaurar el código y registrar los resultados.
+
+### Proveedor, lifecycle y mutación de cutoff, 2026-10-29
+
+Los owners seleccionados de retención de eventos y lifecycle pasaron con race
+en PostgreSQL aislado: 25 casos y ninguna omisión. La inversión temporal del
+cutoff hizo fallar el owner de recuento; el código se restauró exactamente y los
+owners volvieron a pasar. Vet de integración pasó y la base temporal se detuvo.
+Comprobante: test-results/closure-20261025/retention-provider-race/.
+
+La aceptación final y los controles integrales siguen pendientes. Siguiente
+acción concreta: ejecutar la suite de integración completa y race contra una
+base nueva aislada, sin tocar las bases y volúmenes de retención preservados;
+registrar cualquier fallo o prueba omitida antes de evaluar la candidata.
