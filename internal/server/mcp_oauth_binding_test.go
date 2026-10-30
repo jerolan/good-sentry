@@ -41,6 +41,57 @@ func TestOAuthCodeExchangeBindingAndVerifierAlphabet(t *testing.T) {
 		return value.ID
 	}
 	id, otherID := register("binding client"), register("other binding client")
+	t.Run("foreign organization and project consent", func(t *testing.T) {
+		var foreignOrg, foreignProject string
+		if err := f.sql.QueryRow(f.ctx, `INSERT INTO organizations(slug,name) VALUES('oauth-foreign','OAuth foreign') RETURNING id::text`).Scan(&foreignOrg); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.sql.QueryRow(f.ctx, `INSERT INTO projects(organization_id,name,slug,platform) VALUES($1::bigint,'OAuth foreign','oauth-foreign','go') RETURNING id::text`, foreignOrg).Scan(&foreignProject); err != nil {
+			t.Fatal(err)
+		}
+		verifier := strings.Repeat("a", 43)
+		digest := sha256.Sum256([]byte(verifier))
+		form := url.Values{"client_id": {id}, "redirect_uri": {redirect}, "response_type": {"code"}, "state": {"foreign"}, "scope": {"org:read"}, "code_challenge": {base64.RawURLEncoding.EncodeToString(digest[:])}, "code_challenge_method": {"S256"}, "csrf": {f.csrf}, "organization": {"oauth-foreign"}, "project": {foreignProject}, "decision": {"approve"}}
+		var beforeCodes, beforeAccess, beforeRefresh int
+		counts := func() (int, int, int) {
+			t.Helper()
+			var codes, access, refresh int
+			if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM oauth_authorization_codes WHERE client_id=$1), (SELECT count(*) FROM api_tokens WHERE name='OAuth binding client'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, id).Scan(&codes, &access, &refresh); err != nil {
+				t.Fatal(err)
+			}
+			return codes, access, refresh
+		}
+		beforeCodes, beforeAccess, beforeRefresh = counts()
+		reject := func() {
+			t.Helper()
+			response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
+			callback, err := url.Parse(response.Header.Get("Location"))
+			if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("error") != "access_denied" || callback.Query().Get("code") != "" {
+				t.Fatalf("forged consent status=%d error=%v", response.StatusCode, err)
+			}
+			codes, access, refresh := counts()
+			if codes != beforeCodes || access != beforeAccess || refresh != beforeRefresh {
+				t.Fatal("forged consent created a code or credentials")
+			}
+		}
+		reject() // No membership in the submitted organization.
+		if _, err := f.sql.Exec(f.ctx, `INSERT INTO memberships(user_id,organization_id,role) VALUES($1::bigint,$2::bigint,'owner')`, f.owner.ID, foreignOrg); err != nil {
+			t.Fatal(err)
+		}
+		form.Set("organization", f.org.Slug)
+		reject() // A project from a different organization, even though the user owns both.
+		form.Set("project", f.project.ID)
+		response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
+		callback, err := url.Parse(response.Header.Get("Location"))
+		if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("code") == "" {
+			t.Fatalf("legitimate consent rejected: status=%d error=%v", response.StatusCode, err)
+		}
+		tokenForm := url.Values{"grant_type": {"authorization_code"}, "client_id": {id}, "redirect_uri": {redirect}, "code": {callback.Query().Get("code")}, "code_verifier": {verifier}}
+		response, _ = oauthForm(t, client, base+"/oauth/token", tokenForm)
+		if response.StatusCode != http.StatusOK {
+			t.Fatalf("legitimate exchange rejected: %d", response.StatusCode)
+		}
+	})
 	authorize := func(verifier string) string {
 		t.Helper()
 		digest := sha256.Sum256([]byte(verifier))

@@ -13114,3 +13114,19 @@ MCP055/059/077 siguen pendientes de la candidata y los gates integrales.
 Siguiente acción concreta: comprobar por HTTP que el consentimiento manipulado
 con un proyecto de otra organización no emite código ni credenciales, y que
 una selección legítima sigue funcionando.
+
+### Aislamiento del consentimiento OAuth, 2026-10-29
+
+HTTP y PostgreSQL rechazaron una organización sin membresía y un proyecto de
+otra organización aun cuando el usuario pertenece a ambas, sin crear códigos ni
+credenciales. Una selección legítima posterior obtuvo y canjeó su código. El
+owner existente no enviaba formularios entre organizaciones; el nuevo verifica
+el resultado público sin añadir puntos de prueba al producto. Al retirar
+temporalmente el filtro de organización del proyecto, el owner falló; se
+restauró el código y pasaron 16 pruebas seleccionadas con race y vet. La base
+aislada quedó detenida. Comprobante: test-results/closure-20261025/mcp-consent-isolation/.
+
+La aceptación MCP integral y la candidata final siguen pendientes. Siguiente
+acción concreta: comprobar que el consentimiento exige exactamente una
+organización cuando el formulario contiene selecciones duplicadas, sin emitir
+un código ambiguo y conservando la selección válida.
