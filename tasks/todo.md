@@ -14462,3 +14462,23 @@ representables en 32 bits, conserva los demás registros y no infiere callers.
 Siguiente acción concreta: escribir RED con Minidumps O32 serializados, flags,
 padding, registros y direcciones altas, compararlos con MIPS64 y comprobar el
 evento persistido; mantener abiertos sign-extension, CFI y crash real MIPS.
+
+### Contexto MIPS32EL O32 acotado, 2026-10-29
+
+El lector acepta el formato O32 definido, mantiene los registros no usados
+como direcciones, fuerza r0 a cero y rechaza PC/SP/FP/LR fuera de 32 bits sin
+inferir callers. Los owners RED/GREEN verifican flags, padding, registros,
+conflictos de arquitectura y símbolos; el owner HTTP comprueba el evento y
+la ausencia del dump. La revisión independiente no encontró defectos.
+
+Pasaron la suite unitaria, native y owners focalizados con race, vet, los
+owners HTTP/PostgreSQL con race y el crash real Linux/amd64 del SDK fijado,
+sin skips. Comprobante: test-results/closure-20261025/native-mips32-o32-context/.
+Una búsqueda de fixtures oficiales y locales no encontró una captura O32 que
+determine la normalización de PC/SP con extensión de signo; se requiere tal
+muestra o una fuente normativa inequívoca. No se afirma soporte general de
+MIPS32, MIPS CFI, big-endian ni un crash real MIPS.
+
+Siguiente acción concreta: investigar si el compilador Go cruzado disponible
+produce ELF y CFI MIPS contrastables con readelf, como oráculo independiente
+para un slice CFI; no extrapolar delay slots ni direcciones sign-extended.

@@ -33,6 +33,7 @@ const (
 	streamSystemInfo       = 7
 	minidumpOSLinux        = 0x8201
 	cpuArchX86             = 0
+	cpuArchMIPS32          = 1
 	cpuArchARM             = 5
 	cpuArchAMD64           = 9
 	cpuArchARM64           = 12
@@ -49,6 +50,7 @@ const (
 	mips64ContextSize      = 640
 	mips64BreakpadSize     = 600
 	mips64IntegerFlags     = 0x80002
+	mips32IntegerFlags     = 0x40002
 	// Crashpad's native struct size includes four bytes of tail alignment.
 	riscv64ContextSize = 528
 	riscv64ContextV1   = 1
@@ -363,7 +365,23 @@ func ParseMinidump(data []byte) (Crash, error) {
 			}
 		}
 	default:
-		if declaredArch == cpuArchMIPS64 && (len(rawContext) == mips64ContextSize || len(rawContext) == mips64BreakpadSize) {
+		if declaredArch == cpuArchMIPS32 && len(rawContext) == mips64BreakpadSize {
+			flags := binary.LittleEndian.Uint32(rawContext)
+			if flags&^uint32(0x0c) != mips32IntegerFlags {
+				return Crash{}, errors.New("invalid MIPS32EL minidump context flags")
+			}
+			crash.Arch, crash.PointerSize = "mips32el", 4
+			crash.registers = make(map[uint32]uint64, 32)
+			crash.registers[0] = 0
+			for register := uint32(1); register <= 31; register++ {
+				crash.registers[register] = binary.LittleEndian.Uint64(rawContext[8+register*8:])
+			}
+			crash.RSP, crash.RBP, crash.LR = crash.registers[29], crash.registers[30], crash.registers[31]
+			crash.RIP = binary.LittleEndian.Uint64(rawContext[312:])
+			if crash.RIP > 0xffffffff || crash.RSP > 0xffffffff || crash.RBP > 0xffffffff || crash.LR > 0xffffffff {
+				return Crash{}, errors.New("MIPS32EL minidump address exceeds 32 bits")
+			}
+		} else if declaredArch == cpuArchMIPS64 && (len(rawContext) == mips64ContextSize || len(rawContext) == mips64BreakpadSize) {
 			flags := uint64(binary.LittleEndian.Uint32(rawContext))
 			pcOffset := 312
 			if len(rawContext) == mips64ContextSize {
@@ -428,6 +446,9 @@ func ParseMinidump(data []byte) (Crash, error) {
 			}
 			if len(rawContext) == mips64BreakpadSize && binary.LittleEndian.Uint32(rawContext)&^uint32(0x0c) == mips64IntegerFlags {
 				return Crash{}, errors.New("MIPS64EL minidump context conflicts with SystemInfo architecture")
+			}
+			if len(rawContext) == mips64BreakpadSize && binary.LittleEndian.Uint32(rawContext)&^uint32(0x0c) == mips32IntegerFlags {
+				return Crash{}, errors.New("MIPS32EL minidump context conflicts with SystemInfo architecture")
 			}
 			if len(rawContext) >= 4 && binary.LittleEndian.Uint32(rawContext)&0xffffff00 == 0x80000000 {
 				return Crash{}, errors.New("legacy ARM64 minidump context conflicts with SystemInfo architecture")
@@ -556,7 +577,7 @@ func moduleFor(addr uint64, modules []Module) *Module {
 }
 
 func unwind(crash Crash, ranges []memoryRange) []Frame {
-	if crash.Arch == "mips64el" {
+	if crash.Arch == "mips64el" || crash.Arch == "mips32el" {
 		if crash.RIP == 0 {
 			return nil
 		}
