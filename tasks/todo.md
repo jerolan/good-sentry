@@ -1793,7 +1793,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-nativo-009](../SPEC.md#close-nativo-009) | CFI extended dereference: When a full 168-byte-or-larger Exception stream contains its ThreadContext location… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-010](../SPEC.md#close-nativo-010) | CFI extended dereference: Legacy Breakpad ARM64 Minidumps use processor architecture 0x8003 and a distinct 796… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-011](../SPEC.md#close-nativo-011) | CFI extended dereference: The standard Sentry envelope route also accepts native SDK crash events containing e… | implementada | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
-| [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | implementada | invalidada | Señal AMD64 verificada localmente; falta aceptación integral e imagen final |
+| [CLOSE-nativo-012](../SPEC.md#close-nativo-012) | CFI extended dereference: Basic stack reconstruction starts at the crashing AMD64/x86/ARM32/ARM64/RISC-V64 con… | implementada | invalidada | Señal Linux AMD64 y x86 verificadas localmente; falta aceptación integral e imagen final |
 | [CLOSE-nativo-013](../SPEC.md#close-nativo-013) | CFI extended dereference: Scalar CFI expressions support DW_OP_implicit_value with an unsigned-LEB128 byte len… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-014](../SPEC.md#close-nativo-014) | CFI extended dereference: Decode CFI ULEB128 and SLEB128 operands without truncation: accept only values repre… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-015](../SPEC.md#close-nativo-015) | CFI extended dereference: For CIE P augmentation, consume the personality field according to its supported bas… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -14095,3 +14095,24 @@ no se afirma cobertura de otros sistemas o arquitecturas.
 Siguiente acción concreta: escribir un owner RED con el CFI observado y un
 caller que dependa de un registro recuperado; implementar y verificar las
 regresiones y límites antes de acreditar el slice.
+
+### Recuperación CFI de señal Linux/x86, 2026-10-29
+
+El unwinder recupera registros de señal x86 mediante las reglas CFI, respeta
+ESP explícito y permite un cambio no creciente de pila solo entre rangos
+capturados disjuntos. El owner reprodujo el CFI del vDSO y falló antes del
+cambio; los controles cubren registros y memoria ausentes, solapamiento y
+frames ordinarios. Una revisión detectó que el control de ESP explícito no era
+discriminante: se reforzó y una mutación que ignora la regla lo hizo fallar.
+
+La lectura del vDSO real del host recuperó tres PCs usando el mismo FDE del
+probe, sin redistribuir el binario. Pasaron la suite unitaria, native con race,
+los owners de señal de ambas arquitecturas, vet y los owners HTTP/PostgreSQL
+nativos con race y sin skips. Comprobante:
+test-results/closure-20261025/native-linux-i386-signal-cfi/.
+
+CLOSE-nativo-012 y sus aceptaciones dependientes siguen invalidados hasta los
+gates integrales; no se extrapola la evidencia a otras plataformas o kernels.
+Siguiente acción concreta: cotejar plan y matriz para seleccionar el primer
+criterio exigible sin evidencia vigente y con dependencias resueltas; conservar
+abiertos perfiles nativos y runtimes históricos pendientes.
