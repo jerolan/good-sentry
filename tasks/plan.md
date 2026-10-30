@@ -811,3 +811,10 @@ ABI propio y sin alterar los controles de señal ni contextos históricos.
 Conectar los registros válidos de los formatos moderno y legacy al CFI ARM64,
 incluido X30 con regla explícita, y propagar solo reglas recuperables. Mantener
 flags históricos, límites de pila y tratamiento de señal sin cambios.
+
+### Trampolín de señal Linux ARM64, 2026-10-29
+
+Implementar el fallback acotado de CLOSE-nativo-012/023 con PlatformId Linux,
+instrucciones y contexto capturados, conforme al layout documentado por Linux
+y LLVM. Probar precedencia CFI, recuperación, pila y ausencia de memoria con
+Minidumps serializados. No afirmar un crash real, captura universal ni PAC.

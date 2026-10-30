@@ -1304,6 +1304,27 @@ This is local Linux/x86 evidence, not acceptance of other signal ABIs. Linux's
 and [vDSO signal trampoline](https://code.googlesource.com/linux/torvalds/linux/+/68ff4a3ccda9f98c74f23c70c8c7c581f9eee931/arch/x86/entry/vdso/vdso32/sigreturn.S)
 document the corresponding context and trampoline roles.
 
+For Linux ARM64 Minidumps with a Linux PlatformId, when no CFI applies to the
+current frame, recognize the `rt_sigreturn` fallback only if captured memory at
+the exact current PC contains both little-endian instructions `0xd2801168` and
+`0xd4000001`. Recover X0–X30, SP and PC from the captured Linux signal context:
+the context begins at SP+304, X0 at SP+312, saved SP at SP+560 and saved PC at
+SP+568. A missing general-register slot stays unavailable; missing saved SP or
+PC, arithmetic overflow, zero or repeated PC, and unsafe stack transitions
+stop unwinding. As for the x86 signal slices, a non-increasing saved SP is
+accepted only between disjoint captured ranges. Continue from the restored PC
+without subtracting one, using recovered registers for later CFI. A captured
+trampoline with no module can still appear as an unsymbolicated frame. Do not
+recognize a truncated or different instruction sequence, other PlatformIds, or
+infer pointer-authentication masks. Preserve CFI precedence, ordinary-frame
+stack bounds and the existing frame limit. Verify serialized Minidumps with
+captured code and signal memory, a caller dependent on a recovered register,
+both stack directions, absent bytes, wrong platform/instructions, repeated PC,
+overlap and CFI precedence. Linux's [trampoline](https://github.com/torvalds/linux/blob/v6.12/arch/arm64/kernel/vdso/sigreturn.S)
+intentionally omits its commented CFI, and [LLVM libunwind's Linux fallback](https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/libunwind/src/UnwindCursor.hpp#L2529-L2590)
+documents recognition and layout. These fixtures do not establish a real ARM64
+crash, capture of code bytes by every SDK, other signal trampolines, or PAC.
+
 For a 32-bit x86 Minidump context whose architecture and integer-valid flags
 are set, initialize DWARF registers 0–3 and 6–7 from EAX, ECX, EDX, EBX, ESI
 and EDI, in addition to the existing ESP, EBP and EIP. Carry only integer

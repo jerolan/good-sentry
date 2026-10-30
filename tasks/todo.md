@@ -14233,3 +14233,16 @@ Siguiente acción concreta: investigar para CLOSE-nativo-012/023 el trampolín
 de señal Linux ARM64 y la disponibilidad de una muestra verificable, con fuentes
 Linux primarias; no extrapolar los fixtures a un crash real. Si falta evidencia
 para implementarlo, registrar la dependencia y seleccionar trabajo independiente.
+
+### Selección de trampolín de señal Linux ARM64, 2026-10-29
+
+Linux v6.12 deja comentadas las directivas CFI del trampolín; LLVM libunwind
+reconoce dos instrucciones y recupera el contexto desde el SP. Las fuentes
+primarias permiten un owner sintético independiente del código y SPEC delimita
+el fallback a PlatformId Linux y bytes capturados. No hay ejecución ARM64,
+vDSO o captura de señal local; no se afirma un crash real ni captura universal.
+PAC y otros trampolines siguen abiertos.
+
+Siguiente acción concreta: reproducir RED con Minidump serializado y contexto
+de señal, implementar el fallback y verificar recuperación, CFI, límites de
+memoria y pila, antes de acreditar exclusivamente este slice.
