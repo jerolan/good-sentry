@@ -13464,3 +13464,22 @@ Chromium no sustituyen ese requisito. Siguiente acción concreta: localizar o
 preparar Microsoft Edge aislado y repetir con él las vistas retained, empty y
 recovered de retención sobre una copia y fixtures propios, preservando los
 checkpoints existentes.
+
+### Vistas de retención en Microsoft Edge, 2026-10-29
+
+Se extrajo Edge 156.0.4314.56 del paquete Linux oficial de Microsoft y se
+contrastó su SHA-256 con el repositorio. Una copia nueva del respaldo previo a
+expiración coincidió en las 4422 filas. Edge comprobó retained, empty y recovered
+en 320/768/1440, incluidos texto seguro, confirmación de borrado, comentario y
+triage. El worker venció únicamente dos recibos propios y Node 11.7.0 recapturó
+el ID vencido sin duplicar el retenido. La revisión visual de las capturas
+móviles no mostró desbordamiento y las 4258 filas históricas siguen presentes.
+La restauración interrumpida se confirmó completa mediante su proceso original;
+los contenedores nuevos quedaron detenidos con volúmenes y evidencia privada
+conservados. Comprobante: test-results/closure-20261025/retention-edge-browser/.
+
+La imagen candidata, los checks finales y el CI público siguen pendientes.
+Se selecciona CLOSE-uptime-010 y su aceptación 012, aún invalidados; 006–009 y
+011 figuran vigentes. Siguiente acción concreta: restaurar el respaldo aceptado
+de 4305 filas en una base y volumen nuevos, cotejar hashes y confirmar que los
+dos monitores originales estén pausados antes de iniciar una imagen aislada.

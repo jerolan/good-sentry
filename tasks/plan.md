@@ -49,6 +49,8 @@ separate recovery verification now pass locally; final gates remain open.
 The selected retention provider/lifecycle race and cutoff mutation checks pass.
 Full local integration/race passed at 3e98316 with the dedicated native SDK
 demo skipped in that run; the crash has a separate receipt. Final gates remain.
+Microsoft Edge now verifies retained, empty and recovered error-retention views
+on a separately restored checkpoint. Continue uptime retention revalidation.
 The current-source native SDK 0.17.4 Linux/amd64 crash was rerun with the exact
 ELF, source-line and issue checks and no retained dump; see todo.md. Final image
 and public CI evidence are still required.
