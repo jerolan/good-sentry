@@ -13807,3 +13807,26 @@ La prueba local no sustituye la repetición sobre candidata final ni CI
 concordante. Siguiente acción concreta: contrastar el plan y la matriz para
 seleccionar el primer criterio independiente restante con dependencias
 resueltas, conservando abiertos los runtimes históricos no autorizados.
+
+### Dependencia de alcance de servidores de símbolos, 2026-10-29
+
+CLOSE-nativo-023/028 conserva la resolución por servidor de símbolos como
+pendiente y no hay excepción expresa. El contrato no identifica protocolos,
+configuración ni fuentes exigibles: el registro histórico de 028 contiene una
+afirmación anterior de no exigibilidad y otro cotejo posterior mantiene el
+pendiente. No se interpreta una de esas notas como autorización para recortar
+alcance. El código solo usa archivos del proyecto y carece de lookup remoto;
+el nombre PDB del registro CodeView tampoco se conserva en Module. La política
+de red existente no se aplica automáticamente a un futuro cliente.
+
+Dependencia de decisión: el usuario debe precisar qué servidores de símbolos
+cubrir. Se solicitó esa instrucción; responsable: usuario. Condición de
+reanudación: integrar la respuesta en SPEC antes de plan/tareas y diseñar las
+reglas de identidad y verificación sin atribuir cobertura no probada. Mientras
+se espera, continuar por el primer criterio independiente elegible. Fuentes:
+SPEC.md#close-nativo-023, SPEC.md#close-nativo-028,
+tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-round-4.
+
+Siguiente acción concreta: cotejar archivo y retención por tipo y backend, y
+seleccionar el primer subresultado con dependencias resueltas y evidencia no
+vigente, dejando abierta la decisión de símbolos.
