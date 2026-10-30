@@ -341,6 +341,10 @@ func (s *Server) oauthAuthorizeDecision(w http.ResponseWriter, r *http.Request) 
 		s.redirectOAuthError(w, request, "access_denied")
 		return
 	}
+	if len(r.PostForm["organization"]) != 1 {
+		s.redirectOAuthError(w, request, "invalid_request")
+		return
+	}
 	org, err := s.db.Organization(r.Context(), session.User.ID, r.PostForm.Get("organization"))
 	if err != nil {
 		s.redirectOAuthError(w, request, "access_denied")

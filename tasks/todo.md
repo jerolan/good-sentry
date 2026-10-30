@@ -13130,3 +13130,18 @@ La aceptación MCP integral y la candidata final siguen pendientes. Siguiente
 acción concreta: comprobar que el consentimiento exige exactamente una
 organización cuando el formulario contiene selecciones duplicadas, sin emitir
 un código ambiguo y conservando la selección válida.
+
+### Una sola organización en consentimiento OAuth, 2026-10-29
+
+El RED confirmó que un formulario con dos organizaciones emitía un código
+usando la primera, aunque el contrato exige exactamente una. El servidor ahora
+rechaza la selección ambigua con `invalid_request`, sin emitir código ni filas
+de credenciales; el mismo formulario con una sola organización válida obtiene
+y canjea el código. Los 16 casos seleccionados pasaron con race sobre HTTP y
+PostgreSQL aislado; vet de integración y build pasaron y la base quedó detenida.
+Comprobante: test-results/closure-20261025/mcp-consent-single-organization/.
+
+El cambio invalida la evidencia dependiente de OAuth hasta la candidata y sus
+gates integrales. Siguiente acción concreta: comprobar con HTTP y PostgreSQL que
+un cambio de generación de autenticación invalida tanto un código OAuth sin
+canjear como un refresh previamente emitido, sin crear credenciales nuevas.

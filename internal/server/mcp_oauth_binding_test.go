@@ -81,8 +81,19 @@ func TestOAuthCodeExchangeBindingAndVerifierAlphabet(t *testing.T) {
 		form.Set("organization", f.org.Slug)
 		reject() // A project from a different organization, even though the user owns both.
 		form.Set("project", f.project.ID)
+		form["organization"] = []string{f.org.Slug, "oauth-foreign"}
 		response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
 		callback, err := url.Parse(response.Header.Get("Location"))
+		if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("error") != "invalid_request" || callback.Query().Get("code") != "" {
+			t.Fatalf("ambiguous organization status=%d error=%v", response.StatusCode, err)
+		}
+		codes, access, refresh := counts()
+		if codes != beforeCodes || access != beforeAccess || refresh != beforeRefresh {
+			t.Fatal("ambiguous consent created a code or credentials")
+		}
+		form.Set("organization", f.org.Slug)
+		response, _ = oauthForm(t, client, base+"/oauth/authorize", form)
+		callback, err = url.Parse(response.Header.Get("Location"))
 		if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("code") == "" {
 			t.Fatalf("legitimate consent rejected: status=%d error=%v", response.StatusCode, err)
 		}
