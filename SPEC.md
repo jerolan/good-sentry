@@ -1723,6 +1723,16 @@ recorded in the PDB age evidence supplies an independent real PDB oracle. NB10,
 compressed files, pointer files, two-tier stores, other source layouts and remote
 reprocessing remain open after this slice.
 
+An ELF image may carry the full GNU build ID in `code_id` alongside the
+different Breakpad/Sentry `debug_id` derived from its first 16 bytes. Use the
+verified full code ID as an additional ELF symbol-table lookup key; do not
+assume the two representations are identical. A local symbol table matching
+the module's supported filename fallback or its debug ID also takes precedence
+over a remote lookup. [Symbolicator's identifier definitions](https://github.com/getsentry/symbolicator/blob/master/docs/advanced/symbol-server-compatibility.md)
+document the lossy ELF debug-ID conversion. Preserve the existing name and
+debug-ID paths for historical events and test both controls through ingestion
+or reprocessing before accepting the change.
+
 <a id="close-nativo-024"></a>
 
 Classic PDB symbol-scope Parent/End pointers are offsets from the beginning of the module symbol substream, including its four-byte CodeView signature; normalize parsed record offsets to that origin before validating nesting.

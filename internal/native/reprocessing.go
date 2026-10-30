@@ -97,6 +97,19 @@ func ResymbolicateEvent(data []byte, symbols SymbolSet) ([]byte, bool, error) {
 	return updated, true, nil
 }
 
+// ReprocessingModules returns the typed native images already present in an
+// event. It does not infer missing identities or modify the event.
+func ReprocessingModules(data []byte) []Module {
+	var event struct {
+		Platform  string          `json:"platform"`
+		DebugMeta json.RawMessage `json:"debug_meta"`
+	}
+	if json.Unmarshal(data, &event) != nil || event.Platform != "native" {
+		return nil
+	}
+	return nativeEventModules(event.DebugMeta)
+}
+
 func nativeEventModules(raw json.RawMessage) []Module {
 	var meta map[string]json.RawMessage
 	if json.Unmarshal(raw, &meta) != nil {

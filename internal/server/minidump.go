@@ -14,6 +14,7 @@ import (
 	"goodsentry/internal/native"
 	"goodsentry/internal/protocol"
 	"goodsentry/internal/store"
+	"goodsentry/internal/symbolserver"
 )
 
 func (s *Server) registerMinidumpRoutes(mux *routeMux) {
@@ -164,7 +165,7 @@ func (s *Server) symbolizeCrash(ctx context.Context, projectID string, crash *na
 		files = append(files, native.DebugSymbolFile{Name: file.Name, DebugID: file.DebugID, Content: file.Content})
 	}
 	symbols, unwindTables := native.BuildSymbolTables(files)
-	remote := s.fetchSymbolServers(ctx, crash.Modules, files, symbols, unwindTables)
+	remote := symbolserver.New(s.cfg).Fetch(ctx, crash.Modules, files, symbols, unwindTables)
 	if len(remote) != 0 {
 		files = append(files, remote...)
 		symbols, unwindTables = native.BuildSymbolTables(files)

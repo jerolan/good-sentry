@@ -1784,7 +1784,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-sourcemaps-025](../SPEC.md#close-sourcemaps-025) | JavaScript artifacts: Source content follows the selected mapping's source record, including indexed sections… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-001](../SPEC.md#close-nativo-001) | CFI extended dereference: Support DWARF DW_OP_xderef (0x18) and DW_OP_xderef_size (0x95) in CFI expressions. T… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-002](../SPEC.md#close-nativo-002) | CFI extended dereference: Additive042 stores project-scoped debug files with a UUID identity, SHA-1 content id… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | invalidada | NB10/PDB2 en curso; conservar recibo histórico y revalidar identidad/captura/SymCache/reprocessing afectados |
+| [CLOSE-nativo-003](../SPEC.md#close-nativo-003) | CFI extended dereference: The compatible POST /api/0/projects/{org}/{project}/reprocessing/ keeps Sentry CLI's… | implementada | invalidada | Reprocesado local y remoto verificado en fuentes acotadas; falta aceptación integral sobre candidata e imagen |
 | [CLOSE-nativo-004](../SPEC.md#close-nativo-004) | CFI extended dereference: Chunk negotiation advertises debug_files before artifact_bundles, a 64MiB maximum fi… | parcial | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-nativo-005](../SPEC.md#close-nativo-005) | CFI extended dereference: Textual Breakpad symbol files accept the optional m marker on FUNC and PUBLIC record… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-nativo-006](../SPEC.md#close-nativo-006) | CFI extended dereference: For ELF and Mach-O DWARF, derive source mappings from each compilation unit's line t… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -14043,3 +14043,27 @@ lote sin alterar frames y pueden reintentarse mediante una nueva solicitud.
 Siguiente acción concreta: preparar owners RED para lookup de ambos formatos y
 concurrencia/cancelación, extraer el resolver común y conectar el worker con su
 configuración; ejecutar las regresiones y conservar el comprobante.
+
+### Reprocesado remoto de eventos nativos, 2026-10-29
+
+El worker usa las fuentes configuradas para imágenes ELF y PDB RSDS existentes,
+con presupuesto compartido por lote y prioridad de símbolos locales. Ausencia,
+identidad incorrecta y fallo remoto conservan el evento; una solicitud posterior
+permite reintentar. Una revisión halló dos defectos adicionales: el debug ID
+ELF de Sentry puede diferir del build ID completo y un símbolo local por nombre
+debe impedir la consulta remota. Ambos owners fallaron antes de la corrección y
+pasan con las identidades y prioridad verificadas.
+
+Los owners reales cubren límite conjunto de solicitudes, aislamiento entre
+proyectos, cancelación durante la consulta, reenqueue bloqueado, avance de otro
+proyecto, rollback ante fallo diferido de PostgreSQL y recuperación al reabrir
+la base. No se agregan frames ni se guardan archivos remotos. Pasaron las suites
+unitaria y nativa con race, los owners HTTP/PostgreSQL y de cola con race, build
+y vet; el error de commit registrado fue inyectado por la prueba de rollback.
+Comprobante: test-results/closure-20261025/native-remote-reprocessing/.
+
+CLOSE-nativo-003/023/028 siguen invalidados para aceptación integral y candidata;
+no se acreditan NB10 remoto, fuentes comprimidas ni otros perfiles pendientes.
+Siguiente acción concreta: cotejar el plan y la matriz para seleccionar el
+primer criterio exigible con dependencias resueltas y evidencia no vigente,
+conservando explícitamente los perfiles nativos y runtimes históricos abiertos.

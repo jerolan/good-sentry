@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	"goodsentry/internal/config"
 	"goodsentry/internal/jobs"
 	"goodsentry/internal/native"
 	"goodsentry/internal/store"
@@ -383,7 +384,7 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 	if err := f.sql.QueryRow(f.ctx, `SELECT count(*),min(cursor_event_id),max(through_event_id) FROM project_native_reprocessing WHERE project_id=$1::bigint`, f.project.ID).Scan(&queuedNow, &queueCursor, &queueThrough); err != nil || queuedNow != 1 || queueCursor != 0 || queueThrough <= 0 {
 		t.Fatalf("reprocessing did not commit a queue row before responding: rows=%d cursor=%d through=%d err=%v", queuedNow, queueCursor, queueThrough, err)
 	}
-	stop := jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour)
+	stop := jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour, config.Config{})
 	deadline := time.Now().Add(5 * time.Second)
 	completed := false
 	for time.Now().Before(deadline) {
@@ -418,7 +419,7 @@ func TestNativeMinidumpProjectReprocessingUsesLateProjectSymbols(t *testing.T) {
 	if err := f.sql.QueryRow(f.ctx, `SELECT count(*),min(cursor_event_id),max(through_event_id) FROM project_native_reprocessing WHERE project_id=$1::bigint`, f.project.ID).Scan(&queued, &cursor, &through); err != nil || queued != 1 || cursor != 0 {
 		t.Fatalf("repeated requests did not coalesce: rows=%d cursor=%d through=%d err=%v", queued, cursor, through, err)
 	}
-	stop = jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour)
+	stop = jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour, config.Config{})
 	deadline = time.Now().Add(5 * time.Second)
 	var updated []byte
 	for time.Now().Before(deadline) {

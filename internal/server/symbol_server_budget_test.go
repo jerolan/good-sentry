@@ -7,13 +7,36 @@ import (
 	"net/http/httptest"
 	"os"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"goodsentry/internal/config"
 	"goodsentry/internal/native"
+	"goodsentry/internal/symbolserver"
 	"goodsentry/internal/testfixture/nativepdb"
 )
+
+func TestSymbolServersRespectLocalNameMatch(t *testing.T) {
+	var requests atomic.Int32
+	remote := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		http.NotFound(w, r)
+	}))
+	defer remote.Close()
+	resolver := symbolserver.New(config.Config{DebugInfodURLs: []string{remote.URL}, DebugInfodAllowPrivate: true})
+	module := native.Module{Name: "/app/fixture", DebugFormat: "elf", CodeID: budgetELFID}
+	resolver.Fetch(context.Background(), []native.Module{module}, nil, nil, nil)
+	if requests.Load() != 1 {
+		t.Fatalf("control requested %d times, want 1", requests.Load())
+	}
+	local := []native.DebugSymbolFile{{Name: "fixture.sym", Content: []byte("MODULE Linux x86_64 ignored fixture\nFUNC 1000 20 0 LocalFunction\n")}}
+	symbols, unwind := native.BuildSymbolTables(local)
+	resolver.Fetch(context.Background(), []native.Module{module}, local, symbols, unwind)
+	if requests.Load() != 1 {
+		t.Fatalf("matching local symbols should avoid a remote lookup; requests=%d", requests.Load())
+	}
+}
 
 const budgetELFID = "66cac678cd058872052ee3111f0b1f6ed8b3a1a9"
 const budgetPDBID = "5A9832E5287241C1838ED98914E9B7FF1"
@@ -39,13 +62,13 @@ func TestSymbolServersShareRequestBudget(t *testing.T) {
 	linux, windows := server(0), server(1)
 	defer linux.Close()
 	defer windows.Close()
-	s := &Server{cfg: config.Config{DebugInfodURLs: []string{linux.URL}, DebugInfodAllowPrivate: true, SymStoreURLs: []string{windows.URL}, SymStoreAllowPrivate: true}}
+	s := symbolserver.New(config.Config{DebugInfodURLs: []string{linux.URL}, DebugInfodAllowPrivate: true, SymStoreURLs: []string{windows.URL}, SymStoreAllowPrivate: true})
 	var modules []native.Module
 	for i := 0; i < 15; i++ {
 		modules = append(modules, native.Module{DebugFormat: "elf", CodeID: fmt.Sprintf("%040x", i+1)})
 		modules = append(modules, native.Module{DebugFormat: "pe", DebugID: fmt.Sprintf("%032X1", i+1), DebugFile: "crash.pdb"})
 	}
-	s.fetchSymbolServers(context.Background(), modules, nil, nil, nil)
+	s.Fetch(context.Background(), modules, nil, nil, nil)
 	mu.Lock()
 	defer mu.Unlock()
 	if counts[0] == 0 || counts[1] == 0 || counts[0]+counts[1] != 25 {
@@ -72,14 +95,14 @@ func TestSymbolServersShareFileBudget(t *testing.T) {
 	linux, windows := server(0, elfBytes), server(1, pdbBytes)
 	defer linux.Close()
 	defer windows.Close()
-	s := &Server{cfg: config.Config{DebugInfodURLs: []string{linux.URL}, DebugInfodAllowPrivate: true, SymStoreURLs: []string{windows.URL}, SymStoreAllowPrivate: true}}
-	if got := s.fetchSymbolServers(context.Background(), budgetModules(), make([]native.DebugSymbolFile, 23), nil, nil); len(got) != 2 {
+	s := symbolserver.New(config.Config{DebugInfodURLs: []string{linux.URL}, DebugInfodAllowPrivate: true, SymStoreURLs: []string{windows.URL}, SymStoreAllowPrivate: true})
+	if got := s.Fetch(context.Background(), budgetModules(), make([]native.DebugSymbolFile, 23), nil, nil); len(got) != 2 {
 		t.Fatalf("two free slots must accept both valid identities; got %d files", len(got))
 	}
 	mu.Lock()
 	counts = [2]int{}
 	mu.Unlock()
-	if got := s.fetchSymbolServers(context.Background(), budgetModules(), make([]native.DebugSymbolFile, 24), nil, nil); len(got) != 1 {
+	if got := s.Fetch(context.Background(), budgetModules(), make([]native.DebugSymbolFile, 24), nil, nil); len(got) != 1 {
 		t.Fatalf("one free slot must accept one file; got %d", len(got))
 	}
 	mu.Lock()
@@ -99,15 +122,15 @@ func TestSymbolServersShareByteBudget(t *testing.T) {
 	defer linux.Close()
 	windows := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write(pdbBytes) }))
 	defer windows.Close()
-	s := &Server{cfg: config.Config{DebugInfodURLs: []string{linux.URL}, DebugInfodAllowPrivate: true, SymStoreURLs: []string{windows.URL}, SymStoreAllowPrivate: true}}
+	s := symbolserver.New(config.Config{DebugInfodURLs: []string{linux.URL}, DebugInfodAllowPrivate: true, SymStoreURLs: []string{windows.URL}, SymStoreAllowPrivate: true})
 	localSize := (64 << 20) - len(elfBytes) - len(pdbBytes)
 	local := []native.DebugSymbolFile{{Content: make([]byte, localSize+1)}}
 	local[0].Content = local[0].Content[:localSize]
-	if got := s.fetchSymbolServers(context.Background(), budgetModules(), local, nil, nil); len(got) != 2 {
+	if got := s.Fetch(context.Background(), budgetModules(), local, nil, nil); len(got) != 2 {
 		t.Fatalf("both files fit exactly: got %d", len(got))
 	}
 	local[0].Content = local[0].Content[:localSize+1]
-	if got := s.fetchSymbolServers(context.Background(), budgetModules(), local, nil, nil); len(got) != 1 || got[0].DebugID != budgetELFID {
+	if got := s.Fetch(context.Background(), budgetModules(), local, nil, nil); len(got) != 1 || got[0].DebugID != budgetELFID {
 		t.Fatalf("shared byte budget should reject the second file: got %d", len(got))
 	}
 }
@@ -135,9 +158,9 @@ func TestSymbolServersShareDeadline(t *testing.T) {
 	linux, windows := server(0), server(1)
 	defer linux.Close()
 	defer windows.Close()
-	s := &Server{cfg: config.Config{DebugInfodURLs: []string{linux.URL}, DebugInfodAllowPrivate: true, SymStoreURLs: []string{windows.URL}, SymStoreAllowPrivate: true}}
+	s := symbolserver.New(config.Config{DebugInfodURLs: []string{linux.URL}, DebugInfodAllowPrivate: true, SymStoreURLs: []string{windows.URL}, SymStoreAllowPrivate: true})
 	start := time.Now()
-	s.fetchSymbolServers(context.Background(), budgetModules(), nil, nil, nil)
+	s.Fetch(context.Background(), budgetModules(), nil, nil, nil)
 	elapsed := time.Since(start)
 	mu.Lock()
 	defer mu.Unlock()

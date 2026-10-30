@@ -690,6 +690,9 @@ func moduleKey(name string) string {
 	return strings.ToLower(filepath.Base(name))
 }
 
+// ModuleSymbolKey is the filename key used for unidentified local symbols.
+func ModuleSymbolKey(name string) string { return moduleKey(name) }
+
 func Symbolicate(crash *Crash, symbols SymbolSet) {
 	for i := range crash.Frames {
 		frame := &crash.Frames[i]
@@ -702,6 +705,9 @@ func Symbolicate(crash *Crash, symbols SymbolSet) {
 		funcs := symbols[moduleKey(frame.Module)]
 		if module.DebugID != "" {
 			funcs = append(funcs, symbols[DebugKey(module.DebugID)]...)
+		}
+		if module.DebugFormat == "elf" && module.CodeID != "" && DebugKey(module.CodeID) != DebugKey(module.DebugID) {
+			funcs = append(funcs, symbols[DebugKey(module.CodeID)]...)
 		}
 		best := -1
 		for j := range funcs {

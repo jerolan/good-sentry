@@ -80,7 +80,7 @@ func run() error {
 	defer stopTransactionSpans()
 	stopIssueMaintenance := jobs.StartIssueMaintenance(ctx, db, time.Duration(cfg.IssueMaintenanceIntervalSeconds)*time.Second)
 	defer stopIssueMaintenance()
-	stopNativeReprocessing := jobs.StartNativeReprocessing(ctx, db, time.Duration(cfg.RetentionIntervalSeconds)*time.Second)
+	stopNativeReprocessing := jobs.StartNativeReprocessing(ctx, db, time.Duration(cfg.RetentionIntervalSeconds)*time.Second, cfg)
 	defer stopNativeReprocessing()
 	var stopLogRetention func()
 	if archiveOptions != nil && archiveOptions.Backend == "local" {

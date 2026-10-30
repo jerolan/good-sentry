@@ -1,4 +1,4 @@
-package server
+package symbolserver
 
 import (
 	"bytes"
@@ -14,13 +14,18 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"goodsentry/internal/config"
 	"goodsentry/internal/native"
 	"goodsentry/internal/nettarget"
 )
 
-// fetchSymbolServers uses only operator-configured sources and never persists
+// Fetch uses only operator-configured sources and never persists
 // the returned files. Local files and both protocols share one resource budget.
-func (s *Server) fetchSymbolServers(ctx context.Context, modules []native.Module, local []native.DebugSymbolFile, symbols native.SymbolSet, unwind native.UnwindSet) []native.DebugSymbolFile {
+type Resolver struct{ cfg config.Config }
+
+func New(cfg config.Config) *Resolver { return &Resolver{cfg: cfg} }
+
+func (s *Resolver) Fetch(ctx context.Context, modules []native.Module, local []native.DebugSymbolFile, symbols native.SymbolSet, unwind native.UnwindSet) []native.DebugSymbolFile {
 	if (len(s.cfg.DebugInfodURLs) == 0 && len(s.cfg.SymStoreURLs) == 0) || len(local) >= 25 {
 		return nil
 	}
@@ -80,6 +85,14 @@ func (s *Server) fetchSymbolServers(ctx context.Context, modules []native.Module
 			continue
 		}
 		seen[seenKey] = true
+		nameKey := native.ModuleSymbolKey(module.Name)
+		if len(symbols[nameKey]) != 0 || len(unwind[nameKey]) != 0 {
+			continue
+		}
+		debugKey := native.DebugKey(module.DebugID)
+		if debugKey != "" && (len(symbols[debugKey]) != 0 || len(unwind[debugKey]) != 0) {
+			continue
+		}
 		key := native.DebugKey(id)
 		if _, ok := symbols[key]; ok {
 			continue

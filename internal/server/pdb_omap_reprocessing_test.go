@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"goodsentry/internal/config"
 	"goodsentry/internal/jobs"
 	"goodsentry/internal/store"
 	"goodsentry/internal/testfixture/nativepdb"
@@ -71,7 +72,7 @@ func TestNativeReprocessingUsesLateOMAPPDB(t *testing.T) {
 	run := func() {
 		t.Helper()
 		f.request(t, f.client, http.MethodPost, path, "", http.Header{"X-CSRF-Token": {f.csrf}}, http.StatusOK)
-		stop := jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour)
+		stop := jobs.StartNativeReprocessing(f.ctx, f.db, time.Hour, config.Config{})
 		defer stop()
 		deadline := time.Now().Add(5 * time.Second)
 		for time.Now().Before(deadline) {

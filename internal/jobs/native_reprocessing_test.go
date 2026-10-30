@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"goodsentry/internal/config"
 	"goodsentry/internal/jobs"
 	"goodsentry/internal/store"
 )
@@ -46,7 +47,7 @@ func TestNativeReprocessingWorkerResumesAfterDatabaseReopen(t *testing.T) {
 	}
 	f.db = reopened
 	t.Cleanup(reopened.Close)
-	stop := jobs.StartNativeReprocessing(f.ctx, reopened, time.Hour)
+	stop := jobs.StartNativeReprocessing(f.ctx, reopened, time.Hour, config.Config{})
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
 		var queued, events int
