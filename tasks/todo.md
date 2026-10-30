@@ -14841,3 +14841,23 @@ Siguiente acción concreta: recrear la identidad de release propia subiendo el
 mapa retenido mediante la API, comprobar que sus bytes e identidad permanecen,
 y enviar una captura nueva con ID reservado para verificar el mapeo y la
 continuidad de la política y del historial.
+
+### Recreación de la versión base, 2026-10-29
+
+Antes de la captura no había otra release candidata para la incidencia propia
+pendiente. Una captura Node SDK con ID reservado recreó la versión base vencida
+con nueva identidad y receipt, quedó en la misma incidencia y se mapeó a la línea
+original 7 con el mapa conservado. La incidencia aumentó su conteo en uno y su
+política siguió pendiente con el snapshot original de la base; no tomó la misma
+versión recreada como siguiente release. El adjunto nuevo coincide en bytes.
+
+El cotejo de 73 tablas contabilizó la release, su enlace, evento, adjunto,
+profile y sesión nuevos, además de los cambios esperados de la incidencia propia
+y su próxima revisión. Las demás filas permanecieron exactas. Los contenedores
+están detenidos y las instantáneas se conservan. Comprobante:
+test-results/closure-20261025/release-baseline-recreation/.
+
+Siguiente acción concreta: subir a la API el mapa propio ya retenido para recrear
+la release compartida, verificar identidad y bytes del mapa sin duplicación, y
+comprobar que la incidencia pendiente pueda vincular legítimamente esa release
+nueva conservando el snapshot de su base.
