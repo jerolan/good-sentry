@@ -13725,3 +13725,20 @@ El runtime original de uptime, la recuperación y los gates finales siguen
 pendientes. Siguiente acción concreta: reanudar la misma cohorte con el SDK y
 el CLI, demostrar la recuperación de los archivos y de la simbolización y
 verificar que la historia y las filas históricas permanecen.
+
+### Recuperación de archivos con SDK y CLI, 2026-10-29
+
+Tras la expiración, una captura nueva quedó sin mapa y la captura original
+conservó su frame simbolizado. El reintento de la misma identidad recreó un
+adjunto y tres elementos opacos sin cambiar ninguna otra fila de 73 tablas. El
+CLI volvió a subir el mismo build y checksum como una nueva generación; una
+tercera captura se simbolizó a la línea 7. Las tres comparten issue y las dos
+filas anteriores siguen exactas. Edge verificó bytes recuperados e historia en
+cuatro tamaños. Persisten las 4342 filas históricas. Checkpoint privado y
+volúmenes conservados, contenedores propios detenidos. Comprobante:
+test-results/closure-20261025/file-sdk-cli-recovery/.
+
+Siguen abiertos el runtime original de uptime y los gates finales. Siguiente
+acción concreta: preparar la última expiración de archivos propios y comprobar
+la limpieza con logs y uptime deshabilitados, conservando eventos, historia y
+el respaldo independiente.
