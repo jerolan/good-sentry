@@ -34,6 +34,8 @@ type Config struct {
 	RetentionIntervalSeconds                                     int
 	MonitorWorkers                                               int
 	UptimeAllowPrivate                                           bool
+	DebugInfodURLs                                               []string
+	DebugInfodAllowPrivate                                       bool
 	AlertWorkers, AlertMaxAttempts                               int
 	AlertTimeoutSeconds                                          int
 	WebhookAllowPrivate                                          bool
@@ -85,6 +87,16 @@ func Load() (Config, error) {
 		return c, fmt.Errorf("GOODSENTRY_DOMAIN must be an absolute http or https URL without credentials, query or fragment")
 	}
 	c.Prefix = strings.TrimRight(u.Path, "/")
+	c.DebugInfodURLs = strings.Fields(os.Getenv("GOODSENTRY_DEBUGINFOD_URLS"))
+	if len(c.DebugInfodURLs) > 4 {
+		return c, fmt.Errorf("GOODSENTRY_DEBUGINFOD_URLS permits at most four URLs")
+	}
+	for _, source := range c.DebugInfodURLs {
+		endpoint, endpointErr := url.Parse(source)
+		if len(source) > 2048 || endpointErr != nil || endpoint.Opaque != "" || (endpoint.Scheme != "http" && endpoint.Scheme != "https") || endpoint.Hostname() == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.ForceQuery || strings.Contains(source, "#") {
+			return c, fmt.Errorf("GOODSENTRY_DEBUGINFOD_URLS must contain absolute HTTP(S) URLs without credentials, query or fragment")
+		}
+	}
 	archiveFlag := firstSet("GOODSENTRY_ENABLE_ARCHIVE", "GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB")
 	c.ArchiveEnabled, err = strconv.ParseBool(archiveFlag)
 	if err != nil {
@@ -134,6 +146,7 @@ func Load() (Config, error) {
 		{"GOODSENTRY_ENABLE_UPTIME", "GLITCHTIP_ENABLE_UPTIME", true, &c.Uptime},
 		{"GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS", "GLITCHTIP_UPTIME_ALLOW_PRIVATE_IPS", false, &c.UptimeAllowPrivate},
 		{"GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS", "", false, &c.WebhookAllowPrivate},
+		{"GOODSENTRY_DEBUGINFOD_ALLOW_PRIVATE_IPS", "", false, &c.DebugInfodAllowPrivate},
 		{"GOODSENTRY_ENABLE_MCP", "GLITCHTIP_ENABLE_MCP", false, &c.MCP},
 		{"GOODSENTRY_ENABLE_ORGANIZATION_CREATION", "ENABLE_ORGANIZATION_CREATION", false, &c.OrganizationCreation},
 		{"ENABLE_OPENAPI", "", false, &c.OpenAPI}, {"ENABLE_ADMIN", "", false, &c.Admin},

@@ -28,6 +28,13 @@ func TestDeploymentConfiguration(t *testing.T) {
 		{"no alert attempts", map[string]string{"ALERT_MAX_ATTEMPTS": "0"}, "ALERT_MAX_ATTEMPTS"},
 		{"unbounded delivery timeout", map[string]string{"ALERT_DELIVERY_TIMEOUT_SECONDS": "61"}, "ALERT_DELIVERY_TIMEOUT_SECONDS"},
 		{"bad webhook policy", map[string]string{"GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS": "perhaps"}, "ALLOW_PRIVATE_IPS"},
+		{"invalid debuginfod scheme", map[string]string{"GOODSENTRY_DEBUGINFOD_URLS": "ftp://symbols.example.test"}, "DEBUGINFOD_URLS"},
+		{"debuginfod credentials", map[string]string{"GOODSENTRY_DEBUGINFOD_URLS": "https://user:pass@symbols.example.test"}, "DEBUGINFOD_URLS"},
+		{"debuginfod query", map[string]string{"GOODSENTRY_DEBUGINFOD_URLS": "https://symbols.example.test/?key=secret"}, "DEBUGINFOD_URLS"},
+		{"debuginfod fragment", map[string]string{"GOODSENTRY_DEBUGINFOD_URLS": "https://symbols.example.test/#anchor"}, "DEBUGINFOD_URLS"},
+		{"debuginfod empty fragment", map[string]string{"GOODSENTRY_DEBUGINFOD_URLS": "https://symbols.example.test/#"}, "DEBUGINFOD_URLS"},
+		{"too many debuginfod sources", map[string]string{"GOODSENTRY_DEBUGINFOD_URLS": "https://a.test https://b.test https://c.test https://d.test https://e.test"}, "DEBUGINFOD_URLS"},
+		{"invalid debuginfod private policy", map[string]string{"GOODSENTRY_DEBUGINFOD_ALLOW_PRIVATE_IPS": "perhaps"}, "DEBUGINFOD_ALLOW_PRIVATE_IPS"},
 		{"unsupported mail", map[string]string{"EMAIL_URL": "http://mail.example.test"}, "EMAIL_URL"},
 		{"mail header injection", map[string]string{"DEFAULT_FROM_EMAIL": "sender@example.test\r\nBcc: victim@example.test"}, "DEFAULT_FROM_EMAIL"},
 		{"expired upload lifetime", map[string]string{"ARTIFACT_CHUNK_TTL_HOURS": "0"}, "ARTIFACT_CHUNK_TTL_HOURS"},
@@ -83,6 +90,8 @@ func TestDeploymentConfiguration(t *testing.T) {
 			for _, key := range []string{"GOODSENTRY_ENABLE_ARCHIVE", "GOODSENTRY_ENABLE_DUCKDB", "GLITCHTIP_ENABLE_DUCKDB", "GOODSENTRY_ARCHIVE_BACKEND", "GOODSENTRY_ARCHIVE_DIR", "GOODSENTRY_ARCHIVE_AFTER_DAYS", "GOODSENTRY_ARCHIVE_S3_BUCKET", "GOODSENTRY_ARCHIVE_S3_REGION", "GOODSENTRY_ARCHIVE_S3_ENDPOINT", "GOODSENTRY_ARCHIVE_S3_PREFIX", "AWS_REGION"} {
 				t.Setenv(key, "")
 			}
+			t.Setenv("GOODSENTRY_DEBUGINFOD_URLS", "")
+			t.Setenv("GOODSENTRY_DEBUGINFOD_ALLOW_PRIVATE_IPS", "")
 			for k, v := range tc.env {
 				t.Setenv(k, v)
 			}

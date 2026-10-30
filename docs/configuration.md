@@ -66,9 +66,13 @@ For the supplied local database connection, use a URL-safe `POSTGRES_PASSWORD` s
 | `ALERT_MAX_ATTEMPTS` | `5` | Maximum delivery attempts, from 1 to 20. |
 | `ALERT_DELIVERY_TIMEOUT_SECONDS` | `10` | Delivery timeout, from 1 to 60 seconds. |
 | `GOODSENTRY_UPTIME_ALLOW_PRIVATE_IPS` | `false` | Allow monitors to reach your private network. |
+| `GOODSENTRY_DEBUGINFOD_URLS` | Empty | Up to four space-separated HTTP(S) debuginfod base URLs for Linux Minidump symbols. |
+| `GOODSENTRY_DEBUGINFOD_ALLOW_PRIVATE_IPS` | `false` | Allow configured debuginfod servers on private networks. |
 | `GOODSENTRY_WEBHOOK_ALLOW_PRIVATE_IPS` | `false` | Allow webhooks to reach your private network. |
 
 The process also accepts `MAX_BODY_BYTES`, defaulting to 32 MiB for compressed and expanded request bodies. `GLITCHTIP_DOMAIN` and supported `GLITCHTIP_ENABLE_*` aliases ease migration; `GOODSENTRY_*` names take precedence. `SERVER_ROLE` is `all_in_one`. Leave `VALKEY_URL` empty. Valkey is not supported and a nonempty `VALKEY_URL` fails startup. The mail transport is shared by alerts and account password recovery; use `consolemail://` only for local development.
+
+For Linux Minidumps with a complete ELF build ID, configured debuginfod sources can supply missing debug information during capture. GoodSentry uses project-uploaded symbols first, validates the downloaded ELF build ID and does not retain the downloaded file. Server URLs cannot contain credentials, queries or fragments. Requests use a five-second capture deadline, do not follow redirects or environment proxies, and share the symbol file and size limits with local uploads. An unavailable server leaves capture enabled. These settings do not enable Windows symbol servers or remote reprocessing of saved events.
 
 ### Cold span storage
 

@@ -13965,3 +13965,22 @@ Siguiente acción concreta: preparar owners RED del servidor HTTP y de captura
 real para identidad, límites y política de destino; implementar configuración
 y resolución solo después de observar el fallo, y ejecutar las regresiones
 nativas y PostgreSQL correspondientes.
+
+### Captura con debuginfod Linux, 2026-10-29
+
+El cliente opcional usa solo servidores configurados, valida el build ID ELF y
+prioriza símbolos cargados por el proyecto. Limita consultas, archivos, bytes y
+tiempo; impide redirecciones y proxy y aplica la política de destinos. No guarda
+los archivos recibidos. El owner de ambas rutas falló antes del cambio y pasó
+con HTTP y PostgreSQL reales, identidad distinta, clave inválida y prioridad
+local. Otros controles comprueban fuente omitida, red privada, redirección,
+identidad ausente, deduplicación y los presupuestos compartidos. Pasaron la
+suite unitaria, vet y las regresiones nativas HTTP con race y sin skips.
+Comprobante: test-results/closure-20261025/native-debuginfod-capture/.
+
+CLOSE-nativo-023/028 y las aceptaciones dependientes siguen abiertas o
+invalidadas: no se acreditan otras disposiciones Linux, reprocesado remoto ni
+servidores Windows. La candidata, imagen y CI deben renovarse al final.
+Siguiente acción concreta: contrastar SymStore RSDS con fuentes primarias y
+fixtures PDB, fijar su primer slice seguro en SPEC y preparar su owner RED de
+captura, sin inferir soporte de NB10 u otras variantes.
