@@ -14030,3 +14030,16 @@ siguen abiertas. No se extrapolan los comprobantes de captura al worker.
 Siguiente acción concreta: precisar la lectura, consulta externa y aplicación
 del lote conservando generación, cursor, aislamiento, atomicidad y límites;
 después preparar un owner RED con PostgreSQL y servidores HTTP reales.
+
+### Subcontrato de reprocesado remoto, 2026-10-29
+
+SPEC conserva el bloqueo y la transacción de la cola existente durante una
+consulta remota de hasta cinco segundos por lote. Ambos protocolos y los archivos
+locales comparten límites; cancelación revierte datos y cursor. Se documenta la
+espera posible para operaciones del mismo proyecto y se exige comprobar el avance
+de otro proyecto con SKIP LOCKED. Las fuentes fallidas permiten completar el
+lote sin alterar frames y pueden reintentarse mediante una nueva solicitud.
+
+Siguiente acción concreta: preparar owners RED para lookup de ambos formatos y
+concurrencia/cancelación, extraer el resolver común y conectar el worker con su
+configuración; ejecutar las regresiones y conservar el comprobante.

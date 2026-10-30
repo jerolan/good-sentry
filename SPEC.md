@@ -1119,6 +1119,29 @@ Additive042 stores project-scoped debug files with a UUID identity, SHA-1 conten
 
 The compatible `POST /api/0/projects/{org}/{project}/reprocessing/` keeps Sentry CLI's empty `200` response and durably queues work before responding. Store at most one queue row per project. Each accepted request snapshots the greatest row ID for that project's native error events and restarts its cursor at the beginning; repeated requests coalesce and include the newest snapshot. A startup and idle worker locks one project queue row at a time with `SKIP LOCKED`, then processes at most 10 stored error events per transaction whose platform is `native` and whose row ID is within that snapshot. It loads only that project's debug files under the existing 25-file/64MiB symbol budget. Use each event's existing `debug_meta.images` and stack-frame `package`/`instruction_addr` to match uploaded objects. Fill an existing frame's missing function and available source filename/line only when a matching object resolves it; never add frames or unwind because raw Minidumps are not retained. Preserve all other event JSON, event IDs, timestamps, issue ownership/grouping, counts and notifications. Commit changed event JSON and cursor together; a failed transaction leaves both available for retry. Delete completed queue rows, and cascade pending work when its project is deleted.
 
+For remote reprocessing of this batch, apply the configured debuginfod ELF and
+uncompressed SymStore RSDS sources specified under native023 to valid typed
+images in the selected events. Resolve at most25 requests and25 accepted files,
+and at most64MiB of local plus remotely read bytes for the entire batch, under
+one five-second network deadline shared by both protocols. Project-uploaded
+symbols take precedence. Reload the project's local symbol set for each batch
+when remote lookup is enabled so it participates in the same budget; no remote
+bytes are persisted or reused across projects. Absent, unreachable, malformed
+or mismatched remote files leave frames unchanged and permit ordinary cursor
+progress; explicit worker cancellation or database failure rolls back event
+updates and cursor. A later user-requested reprocessing pass can retry sources.
+
+Keep the existing queue and event row locks during the bounded network lookup;
+consequently a same-project reenqueue or row mutation can wait for up to the
+lookup deadline plus local database work. Other unlocked projects remain
+eligible through `SKIP LOCKED`. Passing the worker context to every lookup and
+checking cancellation before applying updates is mandatory. Do not add frames,
+rewrite existing symbols, expose paths from the dump in server authority, or
+weaken project authorization. Verify both protocols and local precedence with
+real HTTP/PostgreSQL, source failures and cancellation, shared batch budgets,
+same-project reenqueue while a lookup waits, another project proceeding, atomic
+rollback, restart and preservation of every non-symbol event field.
+
 <a id="close-nativo-004"></a>
 
 Chunk negotiation advertises `debug_files` before `artifact_bundles`, a 64MiB maximum file, bounded SHA-1 chunks, the configured request limit, gzip and concurrency2. `POST /api/0/projects/{org}/{project}/files/difs/assemble/` follows the official CLI state contract: missing chunks return200 with `state:not_found` and the exact missing SHA-1 list; the CLI uploads missing gzip parts; a subsequent all-present request verifies the complete SHA-1, saves the original bytes and returns `state:ok` with the stored compatible debug-file DTO. Invalid metadata, cross-project grants, expired/missing chunks and mismatches fail without a partial file. The actual SHA-256-pinned `sentry-cli 3.8.0` completes negotiation, chunk upload and assembly for a textual Breakpad `.sym`; the compatible dSYM multipart route remains available. Stored textual Breakpad, ELF, Mach-O, dSYM companion and bounded ZIP archive formats are consumed by Minidump symbolication. Add bounded TAR and gzip-compressed TAR containers to this consumer: process at most256 logical entries and128MiB of expanded archive bytes in memory, read only regular files as independent candidate objects, and never extract paths or follow links. Require the standard two zero end blocks and zero-only trailing padding; reject malformed/truncated archives and invalid gzip checksums without returning partial symbols. Permit at most eight archive layers, including ZIP, TAR and gzip-compressed TAR. This GoodSentry bound expands compatibility while keeping recursive parsing bounded; share entry and expanded-byte budgets across layers and charge both each nested container member and its expanded descendants. Reject an archive deeper than eight layers or a malformed nested archive as a whole without returning partial symbols. Classic PDB/MSF 7 procedure, C13 source-line, stripped-public and inline records are consumed; legacy/Portable PDB and complete native unwinding remain required. The bounded readers use the Go 1.27 standard-library contracts for [archive/zip](https://pkg.go.dev/archive/zip), [archive/tar](https://pkg.go.dev/archive/tar) and [compress/gzip](https://pkg.go.dev/compress/gzip).

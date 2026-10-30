@@ -779,3 +779,11 @@ el plazo y los presupuestos con debuginfod, conservar prioridad local y verifica
 la identidad real del PDB. Probar ambas rutas de captura, nombres escapados,
 fuentes privadas y controles conjuntos con HTTP y PostgreSQL. Mantener abiertas
 las variantes no demostradas y el reprocesado remoto.
+
+### Reprocesado remoto por lote, 2026-10-29
+
+Aplicar las fuentes verificadas al worker conforme a CLOSE-nativo-003, con un
+solo presupuesto por lote y cancelación que revierte cursor y datos. La espera
+de red mantiene los bloqueos actuales por el plazo acotado; probar reenqueue y
+progreso de otro proyecto con PostgreSQL real. Revalidar los owners existentes y
+mantener abiertos los formatos y gates no demostrados.
