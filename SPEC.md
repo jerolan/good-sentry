@@ -2241,6 +2241,10 @@ Test authoring gate: the Store owner protects actual metadata/cascade removal, s
 
 <a id="close-operacion-032"></a>
 
+La [decisión posterior de copias verificadas](#closure-decisions-20261029)
+modifica exclusivamente la preservación de los runtimes ausentes y la limpieza
+del chunk expresamente identificado; los demás requisitos siguen vigentes.
+
 Acceptance requires full native PostgreSQL integration/vet and Linux race, a fresh one-application image and new logical copy of the exact accepted4374-row/533-event/28-batch/27-migration/38-table files18114 source with a new volume. Never run release expiry or upgrade an accepted original. Create only owned shared/single-project releases, metadata/commits/deploys, preserved source maps and SDK/CLI event/span/history fixtures; age only owned release receipts, including shorter-release/retained-file and last-release phases. Verify native and compatible absence, mapped capture with retained files, historical and active/pending resolution snapshot behavior, fresh identity recreation and retained duplicate behavior, independent telemetry, disabled-feature cleanup, missing/empty/surviving UI at320/768/1024/1440, separate pre-expiry backup restoration and exact restart. Preserve the new source's image/configuration/mounts/process state, four stopped owned peers and all older checkpoints. Compare every public Git blob and six Pages files and inspect successful matching CI/logs before closing releases. Cold archival, native symbols, compatible attachment management and every other unchecked full-goal capability remain required.
 
 <a id="close-operacion-033"></a>
@@ -2286,6 +2290,10 @@ Run StartFileRetention unconditionally through the existing in-process retention
 The real PostgreSQL owning tests must cover independent file/event clocks and current retained-byte reads; mixed source-map selectors/alias coalescing; first-receipt retry/conflict and fresh post-expiry generation; retained event/group/history/release/alerts exactness; standalone opaque orphans; at least601 receipts per class across bounded passes; busy maintainers and locked rows; exact frozen cutoff while blocked; capture/standalone-item and debug-only/native/bundle upload ordering on both sides of cleanup; fresh same-hash rows after waiting; repeatable-read capture snapshot survival; declared late failure and cancellation after earlier deletions; and026 migration/defaults/reopen with every prior row/receipt preserved. Use existing Store/HTTP owners and observed PostgreSQL blockers, without test-only production clocks, exports or injected stores. Extend the shared real lifecycle matrix for this distinct callback.
 
 <a id="close-operacion-043"></a>
+
+La [decisión posterior de copias verificadas](#closure-decisions-20261029)
+modifica exclusivamente la preservación de los runtimes ausentes y la limpieza
+del chunk expresamente identificado; los demás requisitos siguen vigentes.
 
 Acceptance requires full native integration/vet and Linux race, a fresh actual application image and a new logical backup copy of the accepted4342-row/530-event/28-batch/25-migration uptime18106 database plus a new upload volume. Preserve its original process/image/configuration/mounts and every earlier baseline. Use actual SDK event/attachment/opaque traffic and source-map uploads/CLI bundles, then age only owned receipt fixtures for shorter-file/retained-event and last-file expiry. Verify native attachment metadata/bytes and native/compatible event reads, source-map list and capture-time symbolication before/after/fresh upload, unchanged persisted historical frames/grouping/release/alert state, actual empty/surviving UI at320/768/1440, disabled-feature cleanup, exact restart and a separately restored pre-expiry backup. Inspect final image/source assets, exact public tree and successful matching CI before closing files. Release retention and full GlitchTip parity remain independently required.
 
@@ -3547,10 +3555,44 @@ reinicio, recuperación, imagen y CI. Esta decisión no acredita por sí sola
 ningún resultado ni autoriza a alterar un runtime existente. No se atribuye
 preservación a bytes de volúmenes que no estén respaldados y comprobados.
 
+<a id="closure-decisions-20261029"></a>
+
+#### Decisiones posteriores del 29 de octubre de 2026
+
+Por instrucción expresa del usuario se retiran de las exigencias de este cierre
+los requisitos pendientes de procesamiento de informes de fallos nativos y sus
+comprobaciones específicas pendientes. Esta decisión prevalece sobre las
+obligaciones anteriores de nuevos formatos, arquitecturas, servidores de símbolos,
+crash real y aceptación nativa aún no acreditadas. Los criterios afectados y la
+excepción CLOSE-nativo-029 se trazan abajo; no se convierten en pruebas aprobadas.
+Se conservan las capacidades ya implementadas, los datos y los comprobantes
+históricos. No se elimina ningún requisito de mapas JavaScript, API propia,
+PostgreSQL, retención, seguridad o de otros dominios por llamarse «nativo».
+No se exige repetir comprobaciones específicas de informes nativos omitidas;
+la vigencia histórica de un comprobante no acredita una candidata posterior ni
+crea una nueva obligación de revalidación nativa. En CLOSE-nativo-004 la
+retirada se limita a informes nativos: la negociación compartida, las cargas
+de mapas y artefactos JavaScript y sus permisos siguen exigibles por sus
+criterios propios.
+
+Por otra instrucción expresa del usuario, las copias verificadas de los backups
+con 4.374 y 4.342 filas sustituyen la obligación de preservar los runtimes
+históricos ausentes de esos dos checkpoints. Cada copia usada se identifica y
+compara con sus respaldos e inventarios; no se afirma que los runtimes perdidos
+existan ni se altera ninguno que esté presente. Para la copia de 4.374 filas se
+permite que la limpieza normal retire el único chunk de staging ya vencido,
+siempre que antes se conserven y verifiquen sus bytes, identidad, fecha y
+comprobante, y se contabilice expresamente la eliminación al comparar filas.
+Esta autorización no incluye otros chunks o filas ni permite borrar el respaldo
+original. Permanecen las pruebas funcionales, la conservación de datos
+recuperables, la migración, el aislamiento, la recuperación, imagen y CI de los
+criterios de retención. Esta decisión no acredita por sí misma esas pruebas.
+
 #### Decisión del 29 de octubre de 2026: servidores de símbolos
 
-Por instrucción expresa del usuario, la resolución mediante servidores de
-símbolos exigible para este cierre abarca Windows y Linux. Esta decisión
+Esta decisión histórica queda limitada por la decisión posterior sobre requisitos
+nativos pendientes. Por instrucción expresa del usuario, la resolución mediante
+servidores de símbolos abarcaba Windows y Linux. Esta decisión
 resuelve el alcance por plataforma de CLOSE-nativo-023 y CLOSE-nativo-028;
 no afirma que la función esté implementada ni que sus pruebas hayan pasado.
 Los protocolos concretos, la identidad de los archivos, las condiciones de
@@ -3573,9 +3615,8 @@ controles y capacidades existentes, además de sus verificaciones particulares.
 El límite histórico del incremento de archivo de spans no excluye el archivo
 de errores, logs y transacciones del cierre. Sus criterios diferenciados abajo
 son exigibles en almacenamiento local y compatible S3. El cierre no impone DuckDB.
-La exigencia histórica de recibos reales por cada arquitectura nativa queda
-sustituida por el crash Linux/amd64 representativo aprobado, conservando las
-regresiones de formatos/arquitecturas y los demás contratos nativos.
+La obligación histórica de nuevos recibos y regresiones de informes nativos
+queda limitada por la decisión posterior y la excepción CLOSE-nativo-029.
 Los pendientes históricos de repositorios automáticos, WebAuthn, muestreo global,
 fuentes Java y recibos externos se reconcilian únicamente mediante las excepciones
 expresas de esta sección. No se eliminan funciones ni controles existentes.
@@ -3588,7 +3629,7 @@ expresas de esta sección. No se eliminan funciones ni controles existentes.
 | sentry-sdk Python | 2.72.0 |
 | Sentry Node y Browser | 11.7.0, cada uno |
 | sentry-cli | 3.8.0 |
-| sentry-native con Crashpad | 0.17.4, crash real Linux/amd64 |
+| sentry-native con Crashpad | 0.17.4, comprobante histórico; nuevos gates nativos retirados según CLOSE-nativo-029 |
 | Exportador Python OTLP protobuf/HTTP | 1.45.1 |
 | Exportador Python OTLP JSON/HTTP | 0.66b1 |
 | Cliente oficial MCP Go modelcontextprotocol/go-sdk | v1.8.0 |
@@ -3701,8 +3742,8 @@ histórica conservada no acredita por sí misma ninguno de los estados nuevos.
 | <a id="close-alertas-037"></a>CLOSE-alertas-037 | Regla de frecuencia de errores: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas HTTP/SMTP locales reales; reintentos y recuperación tras fallo/reinicio. No reducirlo al éxito de una petición. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |
 | <a id="close-alertas-038"></a>CLOSE-alertas-038 | Regla de transición de uptime: destinatarios, entorno, umbral, cooldown, trabajo durable, historial y entregas HTTP/SMTP locales reales; reintentos y recuperación tras fallo/reinicio. No reducirlo al éxito de una petición. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |
 | <a id="close-alertas-039"></a>CLOSE-alertas-039 | Webhook genérico: alerta recibida por receptor HTTP independiente con JSON correcto, correlación alerta/payload/intentos y reintentos ante fallos. Conservar recibo sin secretos; el ejecutor elegirá receptor y entorno, el consumidor mapea el destino. No acredita un canal específico. [Acuerdo](tasks/wayfinder/0006-evidencia-externa.md#webhook-genérico). |
-| <a id="close-nativo-027"></a>CLOSE-nativo-027 | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: símbolos del mismo ELF/DWARF, issue con goodsentry_demo_crash, main.c y línea positiva; descartar los bytes del dump. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-round-4). |
-| <a id="close-nativo-028"></a>CLOSE-nativo-028 | Conservar regresiones de formatos/arquitecturas soportados y los demás contratos nativos, incluidos CFI, archivos y resolución mediante servidores de símbolos para Windows y Linux. No exigir otro crash real por combinación. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-round-4). |
+| <a id="close-nativo-027"></a>CLOSE-nativo-027 | Crash real Linux/amd64 con sentry-native 0.17.4 y Crashpad: comprobante histórico, con aceptación pendiente retirada del cierre por CLOSE-nativo-029. [Acuerdo histórico](tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-round-4). |
+| <a id="close-nativo-028"></a>CLOSE-nativo-028 | Regresiones de formatos y arquitecturas y resolución de símbolos: conservar capacidades y comprobantes históricos; verificaciones pendientes retiradas del cierre por CLOSE-nativo-029. [Acuerdo histórico](tasks/wayfinder/0004-contrato-compatibilidad.md#native-acceptance-approved-in-round-4). |
 | <a id="close-identidad-104"></a>CLOSE-identidad-104 | API y navegador: comprobar modos abierto y autenticado, alta/login/logout, con los resultados y controles de sus contratos actuales, sin excluir los demás requisitos aprobados. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |
 | <a id="close-identidad-105"></a>CLOSE-identidad-105 | API y navegador: comprobar recuperación de contraseña y correo local, con los resultados y controles de sus contratos actuales, sin excluir los demás requisitos aprobados. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |
 | <a id="close-identidad-106"></a>CLOSE-identidad-106 | API y navegador: comprobar TOTP, recuperación y require2FA, con los resultados y controles de sus contratos actuales, sin excluir los demás requisitos aprobados. [Acuerdo](tasks/wayfinder/0004-contrato-compatibilidad.md#alerts-administration-and-operation-approved-in-rounds-13-to-15). |
@@ -3765,6 +3806,7 @@ No anuncian compatibilidad o proveedores verificados.
 | <a id="close-alertas-040"></a>CLOSE-alertas-040 | Recibos reales de canales específicos de alertas. Conservar proveedores, controles y pruebas locales; webhook genérico sigue exigible y no acredita esos canales. [Decisión](tasks/wayfinder/0006-evidencia-externa.md#excepciones-expresas-para-este-cierre). |
 | <a id="close-identidad-112"></a>CLOSE-identidad-112 | Recibos reales del proveedor de correo. Conservar SMTP local, recuperación, invitaciones y controles contratados. [Decisión](tasks/wayfinder/0006-evidencia-externa.md#excepciones-expresas-para-este-cierre). |
 | <a id="close-identidad-113"></a>CLOSE-identidad-113 | Recibos reales de inicio de sesión externo. Conservar OAuth/OIDC, proveedores sociales, capacidades y controles locales. [Decisión](tasks/wayfinder/0006-evidencia-externa.md#excepciones-expresas-para-este-cierre). |
+| <a id="close-nativo-029"></a>CLOSE-nativo-029 | Retirar del cierre solo los subresultados y comprobaciones pendientes de informes de fallos nativos de 003, 004, 007, 011, 012 y 018–028. Conservar lo implementado y los comprobantes; negociación compartida, mapas/artefactos JavaScript, permisos y demás dominios siguen exigibles. No afirmar verificado lo retirado. [Decisión expresa del usuario](#closure-decisions-20261029), 29 de octubre de 2026. |
 
 ### Reglas del registro y de ejecución futura
 
@@ -3795,16 +3837,16 @@ transacciones y spans, almacenamiento local y compatible S3, consultas,
 filtros/permisos, reinicio y vencimiento. La evidencia de spans no demuestra
 por sí sola archivo de errores o logs. No se impone DuckDB.
 
-La prueba nativa real exigida usa Linux/amd64, sentry-native 0.17.4 y Crashpad,
-símbolos del mismo ELF/DWARF, función goodsentry_demo_crash, main.c y línea
-positiva, con descarte de los bytes del dump. Se conservan las regresiones
-de formatos y arquitecturas soportados; no se exige otro crash real por cada
-combinación. Otros contratos nativos siguen exigibles si no fueron aplazados.
+El crash real Linux/amd64 de sentry-native 0.17.4 y las regresiones nativas
+tienen comprobantes históricos. Los requisitos y comprobaciones específicos
+aún pendientes de informes nativos quedan retirados de este cierre por
+CLOSE-nativo-029; las capacidades ya implementadas se conservan.
 
 Las excepciones aprobadas son enriquecimiento automático con fuentes Java,
 conexión automática con repositorios, WebAuthn como segundo factor y muestreo
 global de eventos por organización; también los comprobantes reales de GitLab,
-canales de alertas, correo y proveedores de inicio de sesión. Conservar sus
+canales de alertas, correo y proveedores de inicio de sesión, y los requisitos
+pendientes de informes nativos de CLOSE-nativo-029. Conservar sus
 funciones y controles existentes y describir sus límites. No exigir versiones
 o accesos para una prueba aplazada ni anunciarla como verificada.
 

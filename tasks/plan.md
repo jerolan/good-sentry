@@ -705,8 +705,9 @@ esos restores como referencias y envejecer exclusivamente fixtures nuevos.
 5. Cubrir tipos de uptime con scheduler real, transiciones y recuperación.
    Después, reglas y entrega HTTP/SMTP locales y webhook genérico independiente
    con correlación e intentos. Los recibos de proveedores aplazados no bloquean.
-6. Cubrir contratos nativos y crash Linux/amd64 representativo. Mantener formatos,
-   arquitecturas y regresiones sin exigir otro crash real por cada combinación.
+6. Conservar las capacidades de informes nativos ya implementadas. Los requisitos
+   y comprobaciones pendientes de esa tarea se retiraron de este cierre por
+   decisión del usuario y se trazan en CLOSE-nativo-029.
 7. Cubrir las 17 herramientas MCP por cliente Go oficial y el ciclo OAuth/token.
    Cubrir API/lectores y Grafana fijado con recibo real, alcance y revocación.
    La comprobación real GitLab está aplazada expresamente.
@@ -735,6 +736,10 @@ fuentes Java y recibos externos se interpretan según las excepciones canónicas
 no son exclusiones adicionales ni permiten eliminar funciones o controles.
 Cada incremento futuro actualiza evidencia, invalidaciones y siguiente acción,
 con commit atómico propio en main, preservando concurrencia y autorizaciones.
+
+Los planes de informes nativos que siguen son históricos: la decisión posterior
+del usuario retiró sus requisitos pendientes del cierre. No reanudar esa tarea
+sin una nueva instrucción. Se preservan las implementaciones y comprobantes.
 
 ### Resolución de servidores de símbolos, 2026-10-29
 
@@ -880,3 +885,14 @@ Investigar la lectura compartida de punteros y expresiones CFI, y la suma del
 puntero de marco. Reproducir con Minidumps y rangos capturados, contrastar los
 límites de 32/64 bits y la semántica de DWARF antes de fijar el alcance;
 verificar controles válidos y mantener trazada cualquier limitación restante.
+
+### Decisiones de alcance y retención, 2026-10-29
+
+Retirar las obligaciones pendientes de informes de fallos nativos según
+CLOSE-nativo-029 y conservar las capacidades ya implementadas. Para retención
+de releases y archivos usar copias verificadas de los respaldos 4374/4342,
+sin afirmar preservados los runtimes ausentes. La copia 4374 puede limpiar el
+único chunk vencido cuyos bytes e identidad se conservan y verifican;
+contabilizar esa eliminación al comparar filas. Todos los demás controles de
+retención permanecen. Siguiente: comprobar fuente, chunk y edades, construir
+imagen aislada y arrancar solo la copia autorizada de releases.
