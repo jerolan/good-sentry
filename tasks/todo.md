@@ -13626,3 +13626,19 @@ abierta sin inferir preservación ni reducir el criterio.
 Siguiente acción concreta: restaurar `release-retention-acceptance/baseline.dump`
 en una base y volumen nuevos, comparar todas sus filas con el inventario de
 4374 y comprobar las edades de releases antes de iniciar cualquier imagen.
+
+### Base operativa aislada de releases, 2026-10-29
+
+Se restauró el dump de release baseline en la base nueva
+`closure_release_baseline_working`, contenedor
+`goodsentry-closure-release-db-20261029` y volumen propio. Todos los hashes
+coinciden con el inventario: 4374 filas, 38 tablas, 533 eventos, 28 batches y
+27 migraciones. Ninguna de las 82 releases es anterior a 365 días. No se
+inició una aplicación; el contenedor quedó detenido y su volumen conservado.
+Comprobante: test-results/closure-20261025/release-baseline-working/.
+
+La restauración no acredita el runtime original de archivos, ni la aceptación de
+expiración, navegador, recuperación o gates finales. Siguiente acción concreta:
+verificar las edades de todas las clases de limpieza en la copia y preparar una
+imagen aislada con lifetimes que preserven las filas originales antes de crear
+fixtures propios; mantener explícitamente abierta la dependencia del runtime.
