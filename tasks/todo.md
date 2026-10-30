@@ -14451,3 +14451,14 @@ MIPS. La candidata y la aceptación integral siguen pendientes.
 Siguiente acción concreta: contrastar el contexto MIPS32EL O32 y la
 representación de direcciones con fuentes primarias; si procede, especificar
 un subconjunto verificable sin atribuir compatibilidad general ni inferir callers.
+
+### Selección de contexto MIPS32EL O32, 2026-10-29
+
+Crashpad y Breakpad definen el layout compartido de 600 bytes con registros
+de 64 bits y flags O32; no se ha demostrado una normalización universal de
+direcciones sign-extended. SPEC limita el primer lector a PC/SP/FP/LR
+representables en 32 bits, conserva los demás registros y no infiere callers.
+
+Siguiente acción concreta: escribir RED con Minidumps O32 serializados, flags,
+padding, registros y direcciones altas, compararlos con MIPS64 y comprobar el
+evento persistido; mantener abiertos sign-extension, CFI y crash real MIPS.

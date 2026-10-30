@@ -1832,8 +1832,25 @@ contexts, and authenticated HTTP persistence without raw-dump retention.
 Breakpad's [context reader](https://chromium.googlesource.com/breakpad/breakpad/+/master/src/processor/minidump.cc)
 and Linux [context writer](https://github.com/google/breakpad/blob/main/src/client/linux/dump_writer_common/thread_info.cc)
 distinguish the shared layout from the CPU architecture. This does not establish
-big-endian support, MIPS32, MIPS CFI, historical writers with different flags,
+big-endian support, general MIPS32, MIPS CFI, historical writers with different flags,
 or a real MIPS crash.
+
+For the initial little-endian MIPS32 O32 context subset, accept the shared
+600-byte Breakpad/Crashpad layout only when SystemInfo architecture is `1`
+and its 32-bit flags contain `0x00040002` with only optional `0x4` and `0x8`
+bits. Ignore the following padding word. Read the same 64-bit register slots
+at offset 8 and saved PC at offset 312, force register zero to zero, and
+require PC and registers 29–31 to be representable as unsigned 32-bit addresses.
+Other integer registers remain their captured 64-bit values. Set pointer size
+to four and emit only the captured PC; do not infer callers from SP, FP or LR.
+Reject invalid sizes, flags, architecture pairs or unrepresentable addresses.
+Verify serialized Minidumps, all allowed flags and padding, high-bit address
+rejection, high-bit non-address registers, zero register and authenticated HTTP
+persistence without raw-dump retention. [Breakpad's Linux writer](https://github.com/google/breakpad/blob/main/src/client/linux/dump_writer_common/thread_info.cc),
+[SystemInfo writer](https://github.com/google/breakpad/blob/main/src/client/linux/minidump_writer/minidump_writer.cc),
+and [Crashpad's context layout](https://chromium.googlesource.com/crashpad/crashpad/+/6278690abe6ef0dda047e67dc1d0c49ce7af3811/minidump/minidump_context.h)
+define the representation. This bounded subset does not determine the handling
+of sign-extended addresses, big-endian dumps, MIPS CFI or real MIPS crashes.
 
 As a prerequisite for the Windows and Linux symbol-server work, retain typed
 lookup identity from each valid Minidump CodeView record. For `BpEL`, keep the
