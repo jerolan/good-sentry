@@ -744,3 +744,12 @@ y aceptación sobre fuentes primarias antes de implementarlos; no atribuir
 cobertura general a un protocolo ni cerrar nativo por esta decisión. Conservar
 el incremento independiente de señal Linux/amd64 ya seleccionado y, después,
 ordenar los subresultados de servidores con sus dependencias y comprobantes.
+
+### Contexto de señal Linux/amd64, 2026-10-29
+
+Ejecutar el subcontrato de CLOSE-nativo-012: primero una regresión RED de CFI
+con reglas equivalentes al trampoline real, cambio entre regiones capturadas y
+registro recuperado requerido por el siguiente frame; incluir controles de
+memoria ausente y frames ordinarios. Después implementar, ejecutar los owners y
+regresiones pertinentes, y registrar sus resultados. La cobertura de otras
+plataformas y la aceptación integral nativa siguen pendientes.

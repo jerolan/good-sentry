@@ -13873,3 +13873,15 @@ general. La selección de señal Linux/amd64 continúa como unidad independiente
 Siguiente acción concreta: precisar en SPEC el subcontrato de señal ya
 investigado y preparar su regresión; después, precisar las fuentes y el
 comportamiento de los servidores Windows y Linux antes de implementarlos.
+
+### Subcontrato de señal Linux/amd64, 2026-10-29
+
+SPEC precisa el incremento: recuperar registros por las reglas CFI del frame de
+señal, admitir el cambio de pila únicamente entre regiones capturadas disjuntas,
+y conservar límites, fallos y controles de frames ordinarios. La investigación
+real sustenta el formato; aún no se afirma implementación ni aceptación.
+
+Siguiente acción concreta: añadir en el owner nativo una regresión que falle
+por el SP no creciente y por el registro general necesario al frame siguiente,
+incluidos controles de memoria ausente y frame ordinario; después corregir el
+unwinder y verificar sin ampliar otras plataformas.
