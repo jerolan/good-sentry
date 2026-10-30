@@ -14573,3 +14573,20 @@ puntero de marco aún necesitan reproducción específica.
 Siguiente acción concreta: construir owners independientes para una ruta CFI
 compartida de 32 bits y el recorrido por frame pointer, con rangos Memory64 y
 controles válidos; después fijar una corrección verificable en SPEC.
+
+### Lecturas nativas compartidas omitidas por instrucción, 2026-10-29
+
+El usuario indicó omitir esta corrección por las limitaciones que percibe en
+OpenAI. No se modifica el producto ni se afirma que el problema esté resuelto.
+Las reproducciones de CFI ARM32 y frame pointer x86 produjeron callers falsos
+fuera del espacio de 32 bits; el control de overflow AMD64 pasó. El panic del
+lector genérico se reprodujo antes en la investigación Thumb. Evidencia y
+pruebas conservadas como texto, sin incorporarlas a la suite:
+test-results/closure-20261025/native-shared-pointer-deferred/.
+
+Esta instrucción no se ha registrado como una nueva excepción de cierre en
+SPEC: los fallos conocidos siguen pendientes en la auditoría y no acreditan
+CLOSE-nativo-023. La corrección omitida no se retomará sin nueva instrucción.
+
+Siguiente acción concreta: seleccionar el primer criterio exigible independiente
+con dependencias resueltas, según el orden del plan y la matriz de cierre.
