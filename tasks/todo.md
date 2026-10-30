@@ -13764,3 +13764,16 @@ siguen pendientes: estas pruebas locales no cierran CLOSE-operacion-043.
 Siguiente acción concreta: volver a ejecutar los owners reales de retención de
 archivos y su lifecycle sobre PostgreSQL aislado, y registrar cualquier fallo
 antes de pasar al siguiente criterio elegible.
+
+### Owners de retención de archivos, 2026-10-29
+
+Los owners reales de almacenamiento, lifecycle de archivos y HTTP de adjuntos
+pasaron con race sobre PostgreSQL 18 aislado: 36 acciones de prueba aprobadas,
+sin skips ni fallos. Vet de integración pasó para los tres paquetes. La base
+desechable quedó detenida. Comprobante:
+test-results/closure-20261025/file-provider-race/.
+
+CLOSE-operacion-043 sigue abierto por el runtime original de uptime ausente y
+los gates de candidata final. Siguiente acción concreta: cotejar plan y matriz
+para seleccionar el primer criterio independiente sin evidencia vigente y con
+sus dependencias resueltas, sin extrapolar la excepción de los tres respaldos.
