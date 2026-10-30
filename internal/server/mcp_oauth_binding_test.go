@@ -70,6 +70,25 @@ func TestOAuthCodeExchangeBindingAndVerifierAlphabet(t *testing.T) {
 		}
 		form.Set("scope", "org:read")
 		form.Set("resource", cfg.Domain+"/mcp")
+		for _, tc := range []struct{ name, clientID, redirectURI string }{
+			{"unknown client", "unknown-client", redirect},
+			{"unregistered redirect", id, redirect + "-other"},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				form.Set("client_id", tc.clientID)
+				form.Set("redirect_uri", tc.redirectURI)
+				response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
+				if response.StatusCode != http.StatusBadRequest || response.Header.Get("Location") != "" {
+					t.Fatalf("untrusted client or redirect status=%d", response.StatusCode)
+				}
+				var after int
+				if err := f.sql.QueryRow(f.ctx, `SELECT count(*) FROM oauth_authorization_codes WHERE client_id=$1`, id).Scan(&after); err != nil || after != before {
+					t.Fatalf("untrusted authorization created code: %v", err)
+				}
+			})
+		}
+		form.Set("client_id", id)
+		form.Set("redirect_uri", redirect)
 		response, _ := oauthForm(t, client, base+"/oauth/authorize", form)
 		callback, err := url.Parse(response.Header.Get("Location"))
 		if err != nil || response.StatusCode != http.StatusSeeOther || callback.Query().Get("code") == "" {

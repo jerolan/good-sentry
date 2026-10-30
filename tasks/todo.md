@@ -13191,3 +13191,15 @@ La aceptación integral y los gates finales siguen pendientes. Siguiente acción
 concreta: verificar por HTTP que una autorización con cliente desconocido o URI
 de redirección no registrada falla localmente sin redirigir ni emitir código;
 mantener el cliente y la redirección válidos como control.
+
+### Cliente y redirección OAuth no registrados, 2026-10-29
+
+Un cliente desconocido y una redirección distinta de la registrada recibieron
+400 local, sin cabecera Location ni código. El cliente y la redirección exactos
+obtuvieron código como control. Pasaron 24 casos OAuth seleccionados con race y
+vet de integración en PostgreSQL aislado, que quedó detenido. Comprobante:
+test-results/closure-20261025/mcp-oauth-client-redirect/.
+
+La aceptación integral y los gates finales siguen pendientes. Siguiente acción
+concreta: verificar el límite y los caracteres de `state` en autorización OAuth,
+incluyendo rechazo sin código y un valor válido que se conserve al redirigir.
