@@ -38,6 +38,7 @@ concurrency:
 
 jobs:
   crashpad-symbolication:
+    if: ${{ false }} # CLOSE-nativo-029: pending native crash checks were withdrawn.
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     services:

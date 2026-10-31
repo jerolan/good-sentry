@@ -2,6 +2,13 @@
 
 Design authority: ../SPEC.md. Ordering: plan.md. An unchecked item is incomplete, including its verification. User approved the module map and authorized execution on 2026-10-14. Product name: GoodSentry.
 
+The publication candidate omits `test-results` from its tree. Historical
+references below identify evidence retained in the original local archive;
+those paths are not present in this candidate. Its commit correspondence and
+the original history are retained locally. The earlier remote history still
+contains its previously published results. Omission does not itself validate a
+claim or make an older result current.
+
 ## Foundation and first durable SDK event
 
 - [x] Prepare native Go and a working PostgreSQL/container verification environment in WSL.
@@ -16196,3 +16203,32 @@ El main original y el remoto permanecen intactos. La historia remota ya
 contiene resultados y no se reescribirá. Siguiente acción concreta: preparar en
 un repositorio local separado la serie trazable sin test-results, conservar la
 correspondencia entre commits y adaptar sus workflows antes de verificarla.
+
+### Alternativa local de publicación y CI, 2026-10-30
+
+La serie alternativa reproduce 265 commits desde `8e95a6d` hasta `0b6e789`;
+cada árbol coincide con su original fuera de `test-results`. La relación entre
+ambos historiales y el bundle con la serie original se conservaron localmente.
+El remoto anterior conserva sus resultados históricos; este árbol no incluye
+los comprobantes privados. La serie no se ha enviado.
+
+Los workflows usan una selección explícita de pruebas que excluye los checks
+de informes nativos retirados por CLOSE-nativo-029. El demo nativo queda
+deshabilitado; las pruebas generales de adjuntos y límites usan fixtures y
+endpoints generales. El inventario exige clasificar cambios de paquetes o
+tests principales; las modificaciones dentro de tests requieren revisión.
+
+Con Go 1.27.2 y PostgreSQL 18 desechable, la selección pasó con `-race` y
+`integration` en 16 paquetes, incluidos servidor y almacenamiento. El log
+privado tiene SHA-256
+`498d423183ad90a4e5148fd5e0baba9843dfdcf7586d9d7fe17de857b192183f`.
+Pasaron formato, YAML y `go vet -tags=integration ./...`. Después se endureció
+solo el preflight del inventario para incluir tags de integración y nombres
+Unicode; se comprobó tanto la selección actual como el rechazo previo a
+ejecución de un nombre desconocido. Los comandos de pruebas no cambiaron.
+La base temporal quedó detenida. Este resultado no acredita skips, CI remoto,
+imagen publicada ni aceptación final.
+
+Siguiente acción concreta: revisar la alternativa y sus comprobantes privados,
+continuar los criterios independientes pendientes y resolver la publicación
+solo mediante la autorización aplicable; no enviar esta serie por sí sola.

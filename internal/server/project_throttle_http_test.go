@@ -56,9 +56,6 @@ func TestProjectThrottleRejectsSentryAndOTLPRequests(t *testing.T) {
 	malformedEvent := "{}\n{\"type\":\"event\"}\nnot-json"
 	status, headers, body = callSentry(envelopePath, "", malformedEvent)
 	assertProjectThrottle("malformed event", status, headers, body)
-	minidumpPath := "/good/api/" + f.project.ID + "/minidump/?sentry_version=7&sentry_key=" + url.QueryEscape(f.project.PublicKey)
-	status, headers, body = callSentry(minidumpPath, "application/octet-stream", "")
-	assertProjectThrottle("minidump", status, headers, body)
 	securityPath := "/good/api/" + f.project.ID + "/security/?sentry_key=" + url.QueryEscape(f.project.PublicKey)
 	status, headers, body = callSentry(securityPath, "application/csp-report", `{"csp-report":{}}`)
 	assertProjectThrottle("security report", status, headers, body)

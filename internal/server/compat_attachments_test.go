@@ -35,7 +35,7 @@ func TestCompatibleAttachmentsHTTPContract(t *testing.T) {
 	payload := []byte{0, 255, 1, 254, 2, 0, 128, 42}
 	hostile := "..\\../wire-\"é.bin\r\nX-Injected: yes"
 	parts := []store.CaptureAttachment{
-		{Filename: hostile, ContentType: "text/html", Type: "event.minidump", Data: payload},
+		{Filename: hostile, ContentType: "text/html", Type: "event.custom", Data: payload},
 		{Filename: "SECOND.BIN", ContentType: "application/octet-stream", Data: []byte{}},
 		{Filename: "screenshot.png", ContentType: "image/png", Data: []byte{137, 80, 78, 71}},
 		{Filename: "SCREENSHOT.PNG", ContentType: "application/json", Type: "event.view_hierarchy", Data: []byte(`{"tree":true}`)},

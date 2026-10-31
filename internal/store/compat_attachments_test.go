@@ -25,7 +25,7 @@ func TestCompatibleAttachmentsIdentityMetadataFiltersAndRetries(t *testing.T) {
 	f := resolutionStore(t)
 	ev := groupEvent(t, 501, "compatible-attachments", "Attachment metadata", time.Now())
 	parts := CaptureItems{Attachments: []CaptureAttachment{
-		{Filename: "Crash.BIN", ContentType: "application/octet-stream", Type: "event.minidump", Data: []byte{0, 255, 10, 13, 128}},
+		{Filename: "proof.BIN", ContentType: "application/octet-stream", Type: "event.custom", Data: []byte{0, 255, 10, 13, 128}},
 		{Filename: "screenshot.png", ContentType: "image/png", Data: []byte{137, 80, 78, 71, 0, 255}},
 		{Filename: "SCREENSHOT.PNG", ContentType: "application/json", Type: "event.view_hierarchy", Data: []byte(`{"tree":true}`)},
 		{Filename: "empty.bin", ContentType: "application/octet-stream", Data: []byte{}},
@@ -71,7 +71,7 @@ func TestCompatibleAttachmentsIdentityMetadataFiltersAndRetries(t *testing.T) {
 	for _, filter := range []struct {
 		query string
 		names []string
-	}{{"cRaSh", []string{"Crash.BIN"}}, {"is:screenshot", []string{"screenshot.png"}}, {"does-not-exist", []string{}}, {".BIN", []string{"Crash.BIN", "empty.bin"}}} {
+	}{{"pRoOf", []string{"proof.BIN"}}, {"is:screenshot", []string{"screenshot.png"}}, {"does-not-exist", []string{}}, {".BIN", []string{"proof.BIN", "empty.bin"}}} {
 		found, err := f.db.CompatibleAttachments(f.ctx, f.access, f.project.Slug, ev.ID, AttachmentFilter{Query: filter.query, Limit: 100})
 		if err != nil || found == nil || len(found) != len(filter.names) {
 			t.Fatal("name/screenshot filter", filter.query, found, err)

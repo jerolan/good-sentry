@@ -58,7 +58,7 @@ jobs:
       - name: Vet
         run: go vet ./...
       - name: Run unit and PostgreSQL integration tests with race detection
-        run: go test -race -tags=integration ./...
+        run: python3 scripts/ci-non-native.py
   publish:
     needs: verify
     if: >-
