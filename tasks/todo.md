@@ -15561,3 +15561,23 @@ una ejecución aislada con datos y token propios.
 Siguiente acción concreta: preparar Grafana, PostgreSQL y GoodSentry aislados
 con la imagen 799a0dc, capturar eventos SDK propios y verificar consultas,
 aislamiento y revocación desde el consumidor, sin registrar credenciales.
+
+### Consumidor Grafana con imagen posterior, 2026-10-30
+
+Grafana 13.0.2 y datasource Sentry 2.2.8 consultaron la imagen 799a0dc sobre
+PostgreSQL aislado; el plugin conservado se montó de solo lectura. El SDK Node
+11.7.0 capturó tres eventos en el proyecto autorizado y uno en el excluido. El
+health encontró un proyecto, la consulta devolvió una incidencia con tres
+ocurrencias y la serie sumó tres; ambas consultas del excluido recibieron 404
+del upstream. Tras revocar el token (204), consultas y health recibieron 401
+del upstream; se conservan también los 400 externos de Grafana.
+
+El primer intento SDK apuntó a una ruta inexistente y no envió eventos; la
+instalación local correcta pasó. Los recibos se comprobaron sin token ni
+contraseña y los servicios quedaron detenidos. Comprobante:
+test-results/closure-20261025/grafana-image-current/. No acredita candidata/CI
+final ni ejecutó checks de informes nativos.
+
+Siguiente acción concreta: cotejar los criterios pendientes y sus
+invalidaciones con el código y la imagen actuales; identificar el primer
+subresultado independiente ejecutable antes de la auditoría y los gates públicos.
