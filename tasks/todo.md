@@ -16127,3 +16127,16 @@ su inventario están disponibles y el usuario autorizó usar copias verificadas.
 Siguiente acción concreta: restaurar dos copias nuevas del backup, contrastarlas
 con el inventario y preparar una aceptación aislada de retención con la imagen
 candidata; preservar los originales y no ejecutar pruebas de informes nativos.
+
+### Copias de retención de errores para candidata, 2026-10-30
+
+El backup pre-expiración pasó SHA-256 y se restauró en dos bases nuevas. Ambas
+coinciden con los hashes de las 4422 filas históricas de 73 tablas y tienen
+secuencias iguales. El preflight no encontró tareas vencidas entre las revisadas;
+la consulta de cola evita ejecutar trabajo ajeno, no verifica informes nativos.
+La base quedó detenida y no se inició la aplicación. Comprobante:
+test-results/closure-20261025/error-retention-candidate-current/prepare.json.
+
+Siguiente acción concreta: iniciar d2f341b solo sobre la copia de ejecución,
+expirar los dos recibos propios, comprobar la vista vacía y recapturar con el
+SDK; mantener la otra copia y el backup intactos.
