@@ -16184,3 +16184,15 @@ no se ejecutaron checks de informes nativos. El usuario autorizó preparar una
 serie local sin test-results y adaptar workflows para excluir esos checks,
 conservando la serie actual. Siguiente acción concreta: preservar la serie y
 preparar la alternativa verificable, sin publicar ni reescribir el remoto.
+
+### Respaldo de serie local antes de alternativa, 2026-10-30
+
+El usuario autorizó preparar la alternativa sin test-results y omitir los
+checks de informes nativos en los workflows. La serie local hasta eafba0d se
+conservó en `.tmp/closure-publication-option-20261030/original-main.bundle`;
+`git bundle verify` confirmó una historia completa y su SHA-256 es
+`6d1dc938d1f21d1bd32a85bb5198d200452b6540a17158916a9695992cc9cad3`.
+El main original y el remoto permanecen intactos. La historia remota ya
+contiene resultados y no se reescribirá. Siguiente acción concreta: preparar en
+un repositorio local separado la serie trazable sin test-results, conservar la
+correspondencia entre commits y adaptar sus workflows antes de verificarla.
