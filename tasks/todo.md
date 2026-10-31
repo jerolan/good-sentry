@@ -1862,7 +1862,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-009](../SPEC.md#close-uptime-009) | Uptime check retention: Preserve every monitor configuration and cached status, consecutive_failures, last_che… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-010](../SPEC.md#close-uptime-010) | Uptime check retention: Keep the current MonitorChecks authorization, completed_at/id ordering, transition-onl… | implementada (histórica) | vigente | Reconciliación 2026-10-30: criterion-uptime-mcp-20261030/; gates globales pendientes |
 | [CLOSE-uptime-011](../SPEC.md#close-uptime-011) | Uptime check retention: StartUptimeRetention runs unconditionally inside the one application process through t… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
+| [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | implementada | invalidada | Aceptación local en candidata d2f341b desde copia verificada; imagen y gates públicos finales pendientes |
 | [CLOSE-operacion-024](../SPEC.md#close-operacion-024) | File and release retention prerequisites: Completed-file and release retention remain required after the four… | implementada (prerrequisito) | vigente | Comprobante 2026-10-26 abajo; clases file/release siguen abiertas |
 | [CLOSE-operacion-025](../SPEC.md#close-operacion-025) | File and release retention prerequisites: First add typed Config.FileRetentionDays and Config.ReleaseRetention… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-026](../SPEC.md#close-operacion-026) | Release metadata retention: Release age is the first server receipt of its organization/version identity, rele… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1871,7 +1871,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-029](../SPEC.md#close-operacion-029) | Release metadata retention: Deleting release metadata cascades release_projects, release_commits, release_depl… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-030](../SPEC.md#close-operacion-030) | Release metadata retention: Activate StartReleaseRetention unconditionally through the shared in-process lifec… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-031](../SPEC.md#close-operacion-031) | Release metadata retention: Test authoring gate: the Store owner protects actual metadata/cascade removal, str… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-032](../SPEC.md#close-operacion-032) | Release metadata retention: Acceptance requires full native PostgreSQL integration/vet and Linux race, a fresh… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
+| [CLOSE-operacion-032](../SPEC.md#close-operacion-032) | Release metadata retention: Acceptance requires full native PostgreSQL integration/vet and Linux race, a fresh… | implementada | invalidada | Aceptación local en candidata d2f341b desde copia verificada; imagen y gates públicos finales pendientes |
 | [CLOSE-operacion-033](../SPEC.md#close-operacion-033) | Release metadata retention: Extend the existing deployment and telemetry-retention configuration owners, not a… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-034](../SPEC.md#close-operacion-034) | Release metadata retention: Before activating either cleanup class, primary must elaborate its complete owners… | implementada (contrato) | vigente | Comprobante 2026-10-26 abajo; proveedor de archivos sigue abierto |
 | [CLOSE-operacion-035](../SPEC.md#close-operacion-035) | Completed-file retention: This increment consumes Config.FileRetentionDays for the currently implemented durab… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -1882,7 +1882,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-040](../SPEC.md#close-operacion-040) | Completed-file retention: SourceMaps already preflights and reads bytes/aliases in one repeatable-read snapsho… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-041](../SPEC.md#close-operacion-041) | Completed-file retention: Run StartFileRetention unconditionally through the existing in-process retention lif… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-042](../SPEC.md#close-operacion-042) | Completed-file retention: The real PostgreSQL owning tests must cover independent file/event clocks and curren… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-043](../SPEC.md#close-operacion-043) | Completed-file retention: Acceptance requires full native integration/vet and Linux race, a fresh actual appli… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
+| [CLOSE-operacion-043](../SPEC.md#close-operacion-043) | Completed-file retention: Acceptance requires full native integration/vet and Linux race, a fresh actual appli… | implementada | invalidada | Aceptación local en candidata d2f341b desde copias verificadas; imagen y gates públicos finales pendientes |
 | [CLOSE-errores-156](../SPEC.md#close-errores-156) | Native event attachment access: Attachments are already admitted atomically with their parent SDK receipt, but… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-157](../SPEC.md#close-errores-157) | Native event attachment access: Add session-authenticated GET /api/v1/issues/{issue}/events/{event}/attachment… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-errores-158](../SPEC.md#close-errores-158) | Native event attachment access: Expose Store.IssueEventAttachments(ctx,userID,issueID,eventID,page) and Store.… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -16204,6 +16204,527 @@ contiene resultados y no se reescribirá. Siguiente acción concreta: preparar e
 un repositorio local separado la serie trazable sin test-results, conservar la
 correspondencia entre commits y adaptar sus workflows antes de verificarla.
 
+### Serie local alternativa preparada, 2026-10-30
+
+En `.tmp/closure-publication-option-20261030/alternative` se reprodujeron los
+265 commits desde `8e95a6d` hasta `0b6e789`, con los mismos mensajes y sin
+`test-results` en ninguno de sus árboles. Su punta inicial es `f6ad916`; la
+comparación de la punta con la original no muestra otras diferencias. La
+correspondencia completa está en `series-map.json`, SHA-256
+`a97317aefa03e98f571628b273301738d202091d7847c376b2696d7c0adefd31`.
+La alternativa usa objetos del repositorio original y no modifica sus refs;
+el bundle anterior conserva la serie original hasta eafba0d. Las referencias a
+comprobantes siguen apuntando al archivo privado conservado, no al árbol de la
+alternativa. Siguiente acción concreta: adaptar los workflows en esa copia,
+conservar las pruebas generales y verificar la selección antes de publicarla.
+
+### Alternativa local y selección CI verificadas, 2026-10-30
+
+La alternativa quedó en `2ce58ac`, con 265 commits reconstruidos desde el
+remoto más un commit de CI. Cada árbol reconstruido coincide con su original
+fuera de test-results; la punta no contiene test-results. Se conservaron los
+bundles autocontenidos de ambas series y la correspondencia privada. El remoto
+anterior conserva sus resultados históricos y no se ha modificado.
+
+CI e imagen usan una selección que omite informes nativos; el demo nativo está
+deshabilitado. Los controles generales de adjuntos y throttle permanecen con
+fixtures y endpoints generales. La selección pasó localmente en 16 paquetes con
+Go 1.27.2, PostgreSQL 18 desechable, race e integración; también pasaron vet de
+integración, formato y sintaxis YAML. El preflight endurecido se verificó por
+separado tras la suite; sus comandos de prueba no cambiaron. La base quedó
+detenida. Comprobante y límites:
+test-results/closure-20261025/publication-option-20261030/.
+
+No se ejecutaron checks de informes nativos ni se acredita CI remoto, skips,
+publicación o cierre. El paso de envío anterior fue rechazado por revisión
+automática, que no reconoció autorización explícita para ese envío concreto.
+Siguiente acción concreta: continuar el primer criterio independiente sin
+evidencia vigente y preparar cualquier envío solo con autorización aplicable.
+
+### Selección: vista retenida de errores en candidata, 2026-10-30
+
+En CLOSE-operacion-022 ya se verificaron con d2f341b las vistas vacía y
+recuperada. La vista inicialmente retenida se comprobó en una imagen anterior,
+por lo que falta su comprobante específico con esa candidata. El backup
+pre-expiración y una recuperación comparada siguen disponibles; CI y
+publicación continúan pendientes por separado.
+
+Siguiente acción concreta: restaurar otra base aislada desde el backup
+verificado, comparar sus filas, impedir tareas automáticas ajenas y comprobar
+la vista retenida con Edge en 320/768/1440; mantener intactas la copia de
+recuperación y el respaldo, y no ejecutar checks de informes nativos.
+
+### Vista retenida de errores en candidata, 2026-10-30
+
+Una tercera base restaurada desde el respaldo autorizado coincidió en las 4422
+filas de 73 tablas. Sin tareas automáticas vencidas, la imagen d2f341b sirvió
+la vista retenida; Edge comprobó payload, historial, controles y texto hostil
+literal a 320/768/1440. Solo se añadió una sesión de navegador; las dos bases
+anteriores y el respaldo siguieron intactos. Aplicación y base quedaron
+detenidas. Comprobante:
+test-results/closure-20261025/error-retention-candidate-current/retained.json.
+
+CLOSE-operacion-022 sigue invalidado por sus gates integrales y públicos.
+Siguiente acción concreta: seleccionar el siguiente criterio exigible con
+dependencias resueltas y evidencia local aún faltante; conservar la alternativa
+de publicación preparada y no ejecutar checks de informes nativos.
+
+### Selección: retención de uptime en candidata, 2026-10-30
+
+CLOSE-uptime-012 conserva evidencia integral local con la imagen 799a0dc, pero
+no con la candidata d2f341b. Existe el respaldo pre-expiración verificado y
+sus tablas de referencia; los runtimes históricos ausentes fueron sustituidos
+por copias verificadas según la decisión del usuario. Sus gates públicos siguen
+pendientes.
+
+Siguiente acción concreta: revisar el respaldo, los monitores propios y sus
+relojes antes de iniciar una copia aislada con d2f341b; planificar cualquier
+ajuste de horarios exclusivamente sobre fixtures propios y conservar los
+originales y la recuperación. No ejecutar checks de informes nativos.
+
+### Inspección de horarios de uptime, 2026-10-30
+
+El respaldo pre-expiración conservó su SHA-256 y la base de referencia leída
+sin escritura tiene 4465 filas, 73 tablas, 530 eventos y 79 migraciones. Los
+tres monitores habilitados propios tienen el siguiente probe vencido; los dos
+monitores ajenos están pausados. No se inició la aplicación y la base quedó
+detenida. Comprobante:
+test-results/closure-20261025/uptime-candidate-current/inspect.json.
+
+Siguiente acción concreta: restaurar una base nueva, comparar filas y
+secuencias, y posponer solo los tres horarios propios dentro de la copia antes
+de iniciar la candidata. Registrar esas tres diferencias y mantener la base de
+referencia y el respaldo intactos.
+
+### Copia de uptime preparada para candidata, 2026-10-30
+
+El respaldo se restauró en una base nueva y sus 4465 filas y secuencias
+coincidieron con la referencia. Se pospusieron dos horas solo los tres campos
+`next_check` de monitores propios habilitados; el resto de las 73 tablas, la
+referencia y el hash del respaldo permanecieron exactos. No se inició la
+aplicación y la base quedó detenida. Comprobante:
+test-results/closure-20261025/uptime-candidate-current/restore.json.
+
+Siguiente acción concreta: verificar nuevamente colas y horarios, iniciar la
+imagen d2f341b únicamente en esa copia y comprobar las vistas retenida y nunca
+comprobada con Edge, preservando las otras bases y sin checks de informes nativos.
+
+### Vistas iniciales de uptime en candidata, 2026-10-30
+
+El preflight confirmó que los monitores habilitados eran propios y estaban
+pospuestos, sin tareas automáticas vencidas. La imagen no-root d2f341b inició
+sobre la copia y conservó las 73 tablas; Edge comprobó las vistas retenida y
+nunca comprobada, sus controles y texto seguro a 320/768/1440. Solo se añadió
+una sesión. La referencia, recuperación y backup permanecieron intactos;
+aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/uptime-candidate-current/browser.json.
+
+Siguiente acción concreta: preparar la primera expiración limitada a los
+checks propios, verificar filas, vistas e historial y preservar la referencia;
+los gates de CI y publicación siguen pendientes.
+
+### Primera expiración de uptime en candidata, 2026-10-30
+
+La candidata eliminó siete checks propios bajo el lock de retención y conservó
+el control con inicio antiguo y finalización vigente. Las demás filas quedaron
+exactas y los cuatro estados de monitor permanecieron iguales. Edge comprobó
+las vistas vacía, filtrada y nunca comprobada a 320/768/1440. Se añadieron dos
+sesiones; referencia, recuperación y backup siguieron intactos. Aplicación y
+base quedaron detenidas. Comprobante:
+test-results/closure-20261025/uptime-candidate-current/first-expiry.json.
+
+Siguiente acción concreta: reanudar el probe propio y generar checks frescos
+HTTP/TCP y heartbeat, comparar estados y entregas y comprobar la vista
+recuperada; mantener las otras bases y el respaldo intactos.
+
+### Recuperación de uptime en candidata, 2026-10-30
+
+Cinco checks nuevos recuperaron HTTP/TCP desde down y ejercitaron heartbeat sin
+transición y después down/up. Las entregas e intentos previos siguieron
+presentes y ocho entregas quedaron enviadas. Se conservaron las 4305 filas
+históricas, la referencia, la recuperación y el backup. Edge comprobó la vista
+recuperada en 320/768/1440. Aplicación, probe y base quedaron detenidos.
+Comprobante: test-results/closure-20261025/uptime-candidate-current/fresh.json.
+
+Siguiente acción concreta: expirar los seis checks propios restantes con uptime
+y logs deshabilitados, comparar las demás filas, reiniciar la aplicación y
+verificar recuperación y backup. Los gates públicos siguen pendientes.
+
+### Diagnóstico previo a limpieza final de uptime, 2026-10-30
+
+El primer intento se detuvo en el control de puerto antes de crear recursos o
+la intención de limpieza. `ss` mostró que no había listeners; aplicaciones y
+base seguían detenidas. Al procesar la excepción, el nombre `inspect.py` de la
+inspección se confundió con el módulo estándar y ejecutó otra lectura de la
+referencia; la base volvió a detenerse. Se renombró el script y se ajustó el
+control para verificar el listener de la aplicación previa sin exigir bind.
+
+Siguiente acción concreta: reanudar la limpieza final con los controles
+corregidos, revisar las seis filas propias y conservar las demás copias.
+
+### Limpieza final de uptime en candidata, 2026-10-30
+
+Con uptime y logs deshabilitados, d2f341b eliminó los seis checks propios
+restantes bajo el lock; todas las demás filas coincidieron. El reinicio de la
+instancia habilitada conservó filas, imagen y configuración; cuatro monitores
+siguieron legibles con historial vacío. Se añadieron dos sesiones; referencia,
+recuperación y backup permanecieron intactos. Aplicaciones y base quedaron
+detenidas. Comprobante: test-results/closure-20261025/uptime-candidate-current/final.json.
+
+CLOSE-uptime-012 sigue invalidado por imagen y gates públicos finales.
+Siguiente acción concreta: cotejar el siguiente criterio de retención con la
+candidata y sus dependencias, manteniendo la alternativa local y sin ejecutar
+checks de informes nativos.
+
+### Selección: retención de releases en candidata, 2026-10-30
+
+CLOSE-operacion-032 conserva comprobantes funcionales e imagen 799a0dc; la
+candidata local d2f341b añadió cambios OAuth y aún no tiene esa aceptación de
+releases. La suite local general pasó en la alternativa preparada con las
+exclusiones documentadas, pero los gates de imagen exacta, CI y publicación
+siguen pendientes.
+
+Siguiente acción concreta: contrastar el backup, sus copias y los cambios de
+fuente aplicables; seleccionar una aceptación aislada de releases con d2f341b,
+proteger la referencia y no ejecutar checks de informes nativos.
+
+### Copia de releases preparada para candidata, 2026-10-30
+
+El backup pre-expiración conservó su SHA-256. Se clonó su restauración en una
+base nueva y coincidieron las 4575 filas de 73 tablas y las secuencias; la
+referencia y el backup siguieron intactos. La aplicación no se inició y la base
+quedó detenida. Comprobante:
+test-results/closure-20261025/release-candidate-current/clone.json.
+
+Siguiente acción concreta: comprobar candidatos automáticos, envejecer solo las
+tres releases propias en la copia e iniciar d2f341b para contrastar limpieza,
+release superviviente y navegador; preservar referencia y backup.
+
+### Tres releases propias preparadas para expiración, 2026-10-30
+
+El preflight no encontró candidatos automáticos ajenos entre los revisados.
+Bajo el lock se envejecieron solo las tres releases propias; la release de
+control, las otras filas, la referencia y el backup siguieron exactos. La
+aplicación no se inició y la base quedó detenida. Comprobante:
+test-results/closure-20261025/release-candidate-current/age.json.
+
+Siguiente acción concreta: iniciar d2f341b sobre la copia, contrastar la
+eliminación y la posible revisión de la incidencia propia, y verificar la release
+superviviente en Edge a 320/768/1024/1440.
+
+### Release superviviente en candidata, 2026-10-30
+
+La imagen d2f341b eliminó las tres releases propias, cuatro asociaciones, un
+commit, un deploy y dos enlaces de deploy; la release de control sobrevivió.
+La incidencia pendiente siguió sin vínculo y solo avanzó su revisión permitida.
+Las demás filas fueron exactas salvo una sesión. Edge comprobó lista y detalle
+de la superviviente y ausencia de las vencidas a 320/768/1024/1440. Referencia,
+ejecución anterior y backup siguieron intactos; aplicación y base quedaron
+detenidas. Comprobante:
+test-results/closure-20261025/release-candidate-current/survivor.json.
+
+CLOSE-operacion-032 sigue invalidado por aceptación y gates finales. Siguiente
+acción concreta: contrastar los subresultados de release aún pendientes sobre
+esta candidata, con sus copias protegidas y sin checks de informes nativos.
+
+### Espacio para continuar la aceptación, 2026-10-30
+
+Quedan aproximadamente 500 MiB libres. La base PostgreSQL creada únicamente
+para la suite desechable de CI está detenida; su log y hash se conservan en
+`.tmp/closure-publication-option-20261030/ci-run.log` y el comprobante de la
+suite. Se comprobó que el volumen de esa base solo pertenece a su contenedor.
+
+Siguiente acción concreta: retirar exclusivamente ese contenedor y volumen
+desechables, comprobar el espacio recuperado y continuar releases sin alterar
+respaldos, bases de aceptación, capturas ni el registro de CI.
+
+### Base desechable de CI retirada, 2026-10-30
+
+Se retiraron únicamente el contenedor y volumen creados para la suite local de
+CI. El espacio libre aumentó aproximadamente de 500 a 839 MiB. El log conservó
+SHA-256 `498d423183ad90a4e5148fd5e0baba9843dfdcf7586d9d7fe17de857b192183f`;
+las copias de aceptación y sus respaldos no se tocaron.
+
+Siguiente acción concreta: contrastar los subresultados de releases que faltan
+con d2f341b y seleccionar una copia protegida para la siguiente comprobación.
+
+### Reintento SDK tras expiración de release en candidata, 2026-10-30
+
+Node SDK 11.7.0 reenvió en d2f341b el envelope original del evento retenido y
+recibió 200. Las releases vencidas no reaparecieron y las filas solo reflejaron
+el posible avance de revisión de la incidencia propia. Referencia, ejecución
+anterior y backup siguieron intactos; aplicación y base quedaron detenidas.
+Comprobante: test-results/closure-20261025/release-candidate-current/replay.json.
+
+Siguiente acción concreta: seleccionar el siguiente subresultado local de
+releases aún sin evidencia en d2f341b y preservar las copias y el backup.
+
+### Recreación de baseline con SDK en candidata, 2026-10-30
+
+Node SDK 11.7.0 envió un evento fresco con la versión de baseline vencida.
+d2f341b creó una identidad nueva, conservó la incidencia y su resolución
+pendiente sin vincular, y mapeó el evento a la línea original 7 con el adjunto
+intacto. Las 73 tablas mostraron solo las filas y campos esperados. Referencia,
+ejecución anterior y backup siguieron intactos; aplicación y base quedaron
+detenidas. Comprobante:
+test-results/closure-20261025/release-candidate-current/recreate.json.
+
+Siguiente acción concreta: verificar con la candidata la recreación de la
+release compartida desde el mapa retenido y su vínculo de resolución pendiente;
+preservar las copias y no ejecutar checks de informes nativos.
+
+### Recreación compartida desde mapa retenido en candidata, 2026-10-30
+
+Al subir de nuevo los bytes del mapa, d2f341b confirmó el archivo existente,
+creó la release compartida con identidad nueva y vinculó la resolución
+pendiente sin alterar su baseline. Se registró la actividad y una sesión; las
+demás filas coincidieron. Referencia, ejecución anterior y backup siguieron
+intactos; aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/release-candidate-current/map-recreate.json.
+
+Siguiente acción concreta: comprobar en la candidata la reasociación de la
+release compartida con CLI y la captura fresca con el mapa retenido.
+
+### Reasociación CLI en candidata, 2026-10-30
+
+Una instancia raíz aislada de d2f341b permitió a sentry-cli 3.8.0 asociar la
+release compartida al segundo proyecto y conservar la asociación anterior. El
+CLI también estableció la fecha de inicio de esa release; las demás filas
+coincidieron. Referencia, ejecución anterior y backup siguieron intactos;
+aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/release-candidate-current/cli.json.
+
+Siguiente acción concreta: verificar una captura fresca en la release
+compartida recreada y el mapa retenido, conservando las copias protegidas.
+
+### Captura fresca de release compartida en candidata, 2026-10-30
+
+Node SDK 11.7.0 envió un evento fresco en la release recreada. El evento entró
+en su incidencia original, se mapeó a la línea 7 y conservó el adjunto. La
+resolución histórica y el vínculo de la política siguiente quedaron exactos;
+las demás filas solo cambiaron según la captura. Referencia, ejecución anterior
+y backup siguieron intactos; aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/release-candidate-current/shared-capture.json.
+
+Siguiente acción concreta: verificar continuidad de la incidencia silenciada
+con captura fresca y luego preparar la expiración final de releases propias.
+
+### Continuidad de incidencia silenciada en candidata, 2026-10-30
+
+Una captura fresca del SDK recreó la release de la incidencia silenciada.
+d2f341b conservó el silencio con 99 ocurrencias restantes, mapeó el evento a
+la línea 7 y conservó el adjunto. Las demás filas solo reflejaron la captura
+y una sesión. Referencia, ejecución anterior y backup siguieron intactos;
+aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/release-candidate-current/muted-capture.json.
+
+Siguiente acción concreta: preparar y verificar la expiración final de las
+cuatro releases propias con logs y uptime deshabilitados, sin alterar archivos
+retenidos ni otras copias.
+
+### Cuatro releases propias preparadas para última expiración, 2026-10-30
+
+Bajo el lock se envejecieron solo las cuatro identidades propias actuales,
+con cinco asociaciones. Los demás campos, la referencia, la ejecución anterior
+y el backup siguieron exactos. No se inició la aplicación y la base quedó
+detenida. Comprobante:
+test-results/closure-20261025/release-candidate-current/final-age.json.
+
+Siguiente acción concreta: iniciar una instancia de d2f341b con logs y uptime
+deshabilitados, comprobar la eliminación y las lecturas protegidas, y reiniciar
+la instancia habilitada comparando filas y configuración.
+
+### Última expiración de releases en candidata, 2026-10-30
+
+Con logs y uptime deshabilitados, d2f341b eliminó cuatro releases propias y
+cinco asociaciones; las demás filas coincidieron. Las lecturas confirmaron la
+ausencia de releases, mapa y adjuntos conservados y las tres políticas de
+incidencias. El reinicio habilitado conservó filas, imagen, configuración y
+montajes; se añadió una sesión. Referencia, ejecución anterior y backup siguieron
+intactos. Aplicaciones y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/release-candidate-current/final.json.
+
+CLOSE-operacion-032 sigue invalidado por aceptación y gates públicos finales.
+Siguiente acción concreta: cotejar los resultados de recuperación y vistas de
+release aún pendientes sobre la candidata, y preservar todas las copias.
+
+### Vistas de releases vencidas en candidata, 2026-10-30
+
+Edge comprobó las vistas de release ausente y lista vacía en d2f341b a
+320/768/1024/1440. También verificó resolución histórica, descarga de adjunto,
+política vinculada, silencio, traza y mapa. Solo se añadió una sesión; las otras
+filas y copias siguieron exactas. Aplicación y base quedaron detenidas.
+Comprobante: test-results/closure-20261025/release-candidate-current/expired-browser.json.
+
+Siguiente acción concreta: iniciar d2f341b sobre otra copia del respaldo
+pre-expiración y verificar recuperación y vista de release presente, conservando
+las bases anteriores y el backup.
+
+### Copia de recuperación de releases para candidata, 2026-10-30
+
+Una base nueva clonada de la restauración del respaldo coincidió en sus 4575
+filas y secuencias. Referencia y backup siguieron exactos; no se inició la
+aplicación y la base quedó detenida. Comprobante:
+test-results/closure-20261025/release-candidate-current/recovery-clone.json.
+
+Siguiente acción concreta: comprobar colas, iniciar d2f341b sobre esta copia y
+verificar releases, archivos, políticas y vista presente a cuatro tamaños.
+
+### Recuperación de releases en candidata, 2026-10-30
+
+d2f341b inició en la nueva copia y permitió leer las cuatro identidades,
+commit, deploy, mapa, tres políticas, comentarios y adjuntos restaurados. Edge
+comprobó release presente e historial a 320/768/1024/1440. Se añadieron dos
+sesiones y pudo avanzar solo la revisión de la incidencia pendiente. Referencia,
+ejecución anterior, copia final y backup siguieron intactos; aplicación y base
+quedaron detenidas. Comprobante:
+test-results/closure-20261025/release-candidate-current/recovery.json.
+
+CLOSE-operacion-032 sigue invalidado por gates de imagen exacta, CI y
+publicación. Siguiente acción concreta: cotejar el siguiente criterio exigible
+de retención de archivos frente a la candidata y preservar las copias.
+
+### Selección: retención de archivos en candidata, 2026-10-30
+
+CLOSE-operacion-043 conserva aceptación local con la imagen 799a0dc, pero la
+candidata d2f341b añadió cambios OAuth posteriores. El backup previo a
+expiración y sus restauraciones están conservados; imagen final, CI y
+publicación siguen pendientes.
+
+Siguiente acción concreta: verificar backup y restauración, preparar una copia
+nueva para d2f341b y cotejar sus 73 tablas y secuencias, sin alterar las bases
+existentes ni ejecutar checks de informes nativos.
+
+### Copias de archivos preparadas para candidata, 2026-10-30
+
+El respaldo se verificó y restauró en dos bases nuevas. Ambas coincidieron con
+las 4539 filas de 73 tablas y las secuencias de la referencia, incluidos 531
+eventos y 79 migraciones. Referencia y backup siguieron exactos; no se inició
+la aplicación y la base quedó detenida. Comprobante:
+test-results/closure-20261025/file-candidate-current/prepare.json.
+
+Siguiente acción concreta: revisar los candidatos automáticos e iniciar
+d2f341b en una copia para verificar lecturas, expiración limitada y protección
+de la copia de recuperación.
+
+### Lecturas iniciales de archivos en candidata, 2026-10-30
+
+Sin candidatos automáticos entre los revisados, d2f341b inició en una copia y
+conservó sus filas. Fueron legibles dos mapas, el frame histórico mapeado, 25
+adjuntos y los bytes del archivo seleccionado. Solo se añadió una sesión;
+referencia, recuperación y backup siguieron intactos. Aplicación y base quedaron
+detenidas. Comprobante: test-results/closure-20261025/file-candidate-current/initial.json.
+
+Siguiente acción concreta: envejecer solo la cohorte propia de archivos bajo
+el lock y comprobar eliminación, evento retenido y mapa superviviente.
+
+### Primera expiración de archivos en candidata, 2026-10-30
+
+Bajo el lock se envejecieron un mapa, 28 adjuntos y cuatro elementos opacos
+propios; d2f341b retiró esa cohorte. Las demás filas, el frame histórico y el
+mapa de control permanecieron exactos. Las descargas seleccionadas devolvieron
+404 y el evento compatible siguió legible. Se añadió una sesión; referencia,
+recuperación y backup siguieron intactos. Aplicación y base quedaron detenidas.
+Comprobante: test-results/closure-20261025/file-candidate-current/first-expiry.json.
+
+Siguiente acción concreta: verificar en esa copia el reintento y las capturas
+frescas con SDK y CLI, y comprobar la vista e historial en navegador.
+
+### Captura sin mapa en candidata, 2026-10-30
+
+Node SDK 11.7.0 capturó un evento fresco sin el mapa vencido; d2f341b conservó
+el frame sin mapear y añadió solo el evento, adjunto, dos elementos opacos y
+los campos previstos de la incidencia. Referencia, recuperación y backup
+siguieron intactos; aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/file-candidate-current/sdk-unmapped.json.
+
+Siguiente acción concreta: reintentar la identidad original y comprobar sus
+archivos recreados sin duplicar el evento; después subir el mapa con CLI.
+
+### Reintento de archivos en candidata, 2026-10-30
+
+El reintento del SDK recibió 200 y recreó un adjunto y tres elementos opacos
+sin duplicar el evento ni cambiar otras filas. Referencia, recuperación y backup
+siguieron intactos; aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/file-candidate-current/sdk-retry.json.
+
+Siguiente acción concreta: subir el build con sentry-cli, contrastar la nueva
+generación del mapa y verificar una captura fresca mapeada.
+
+### Nueva generación de mapa con CLI en candidata, 2026-10-30
+
+sentry-cli 3.8.0 subió el build a d2f341b. Se creó una generación nueva del
+mapa con el mismo checksum y las demás filas quedaron exactas. Referencia,
+recuperación y backup siguieron intactos; aplicación y base quedaron detenidas.
+Comprobante: test-results/closure-20261025/file-candidate-current/cli.json.
+
+Siguiente acción concreta: capturar un evento fresco con Node SDK y comprobar
+el frame mapeado, la misma incidencia y los eventos anteriores.
+
+### Captura mapeada de archivos en candidata, 2026-10-30
+
+El SDK capturó un evento fresco con el mapa nuevo. Los tres eventos pertenecen
+a la misma incidencia: el primero y el último se mapearon a la línea 7 y el
+intermedio quedó sin mapear. Los eventos anteriores permanecieron exactos.
+Referencia, recuperación y backup siguieron intactos; aplicación y base
+quedaron detenidas. Comprobantes:
+test-results/closure-20261025/file-candidate-current/sdk-recovered.json y
+test-results/closure-20261025/file-candidate-current/mapping-summary.json.
+
+Siguiente acción concreta: comprobar en Edge la descarga recuperada y el
+historial; después preparar la última expiración de archivos propios.
+
+### Descarga recuperada en candidata, 2026-10-30
+
+Edge comprobó la descarga exacta del adjunto recuperado y el historial a
+320/768/1024/1440, sin errores de página o red. Solo se añadió una sesión;
+referencia, recuperación y backup siguieron intactos. Aplicación y base
+quedaron detenidas. Comprobante:
+test-results/closure-20261025/file-candidate-current/recovered-browser.json.
+
+Siguiente acción concreta: verificar la cohorte restante y expirar solo sus
+mapas, adjuntos y elementos opacos con logs y uptime deshabilitados.
+
+### Última expiración de archivos en candidata, 2026-10-30
+
+Con logs y uptime deshabilitados, d2f341b eliminó dos mapas, tres adjuntos y
+siete elementos opacos propios bajo el lock. Las demás filas y tres eventos
+permanecieron legibles. Edge comprobó vista vacía e historial a
+320/768/1024/1440; el reinicio conservó filas, imagen y configuración, y la
+traza independiente mantuvo sus dos spans. Las 4342 filas históricas,
+referencia, recuperación y backup siguieron intactos. Se contabilizaron tres
+sesiones; aplicaciones y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/file-candidate-current/final.json.
+
+CLOSE-operacion-043 sigue invalidado por recuperación en la candidata y gates
+públicos. Siguiente acción concreta: verificar la copia de recuperación de
+archivos con d2f341b y después cotejar el siguiente criterio exigible.
+
+### Recuperación de archivos en candidata, 2026-10-30
+
+d2f341b inició en la segunda restauración. Las filas coincidieron al arrancar
+y fueron legibles dos mapas, el frame histórico, 25 adjuntos y los bytes
+seleccionados. Solo se añadió una sesión. Referencia, copia de ejecución final
+y backup siguieron intactos; aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/file-candidate-current/recovery.json.
+
+CLOSE-operacion-043 continúa invalidado por imagen y gates públicos finales.
+Siguiente acción concreta: cotejar el primer criterio exigible sin evidencia
+vigente y dependencias resueltas, conservando la alternativa local de publicación.
+
+### Cotejo de pendientes y alternativa local, 2026-10-30
+
+Los recorridos locales de errores, uptime, releases y archivos se repitieron
+en la imagen provisional d2f341b y quedaron documentados arriba. Permanecen
+invalidados los criterios que exigen candidata, árbol público e imagen/CI
+coincidentes; la auditoría final tampoco está cerrada. La alternativa local de
+publicación se preparó antes de estos últimos comprobantes, por lo que su
+registro todavía no los incluye.
+
+Siguiente acción concreta: integrar el registro actualizado en la alternativa,
+verificar de nuevo su árbol y su correspondencia con la fuente probada, y dejar
+una opción concreta revisable antes de resolver los gates externos.
+
 ### Alternativa local de publicación y CI, 2026-10-30
 
 La serie alternativa reproduce 265 commits desde `8e95a6d` hasta `0b6e789`;
@@ -16232,3 +16753,13 @@ imagen publicada ni aceptación final.
 Siguiente acción concreta: revisar la alternativa y sus comprobantes privados,
 continuar los criterios independientes pendientes y resolver la publicación
 solo mediante la autorización aplicable; no enviar esta serie por sí sola.
+
+### Registro integrado en la alternativa local, 2026-10-30
+
+El registro de main hasta `3259ffa9d34a9344cb0c14e44d2cecf24098dc27` se incorporó a esta alternativa sin
+incluir los comprobantes privados en el árbol. Las pruebas locales y sus límites
+se describen arriba; su evidencia original permanece en el archivo local. La
+alternativa conserva los workflows preparados y no se ha publicado.
+
+Siguiente acción concreta: verificar el árbol y la correspondencia con la
+fuente probada, y resolver los gates externos aplicables antes del cierre.
