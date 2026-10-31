@@ -15953,3 +15953,23 @@ Siguiente acción concreta: inventariar de forma local los archivos de evidencia
 que entran en el historial pendiente, sus tipos y cualquier indicio de secretos
 sin imprimirlos; documentar las diferencias con el contrato y el workflow antes
 de determinar la intervención necesaria, sin publicar ni reescribir historial.
+
+### Revisión previa de publicación y CI, 2026-10-30
+
+El main público consultado sigue en 8e95a6dd. La revisión local e564341 tenía
+249 commits pendientes y 1299 rutas nuevas bajo `test-results`; el árbol público
+ya contiene 2370 y SPEC.md:2843 los excluye del repositorio público. El cribado
+limitado identificó cinco expresiones de URL PostgreSQL con contraseña generada,
+no literales; no inspeccionó 44 binarios ni versiones históricas y no acredita
+ausencia de secretos. La evidencia y sus límites están en
+`test-results/closure-20261025/publication-preflight-20261030/`.
+
+El CI automático lanzaría tests de informes nativos retirados por el usuario y
+el push previo fue rechazado por revisión automática. No se ha enviado ni
+reescrito historial. Una eliminación en HEAD no elimina los blobs de commits
+anteriores ni los ya públicos. Esto impide cerrar los gates de publicación y CI
+sin resolver el alcance del CI y la contradicción del historial con SPEC.
+
+Siguiente acción concreta: preparar una imagen local de candidata identificada
+y verificar sus propiedades y fuentes, sin publicar ni lanzar el CI que ejecuta
+los checks omitidos; después registrar la intervención externa necesaria.
