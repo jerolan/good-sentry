@@ -15064,3 +15064,22 @@ presenta como suite completa. La base desechable quedó detenida.
 Siguiente acción concreta: clasificar los archivos mixtos excluidos para recuperar
 los checks generales de adjuntos y límites sin ejecutar comprobaciones de informes
 nativos; después contrastar la imagen vigente y los gates públicos exactos.
+
+### Casos generales de archivos mixtos, 2026-10-30
+
+En la revisión 919fb9fa pasaron con race siete pruebas principales de adjuntos,
+descargas, migración y límites generales, con 11 acciones aprobadas y sin skips,
+en PostgreSQL aislado. Se usaron copias temporales: dos fixtures de adjuntos
+emplearon un tipo genérico y se omitió solo la petición al endpoint de minidump
+en el caso mixto de límites. Los archivos originales de código y pruebas
+permanecieron intactos; no se afirma que las versiones originales completas
+hayan pasado ni que se ejecutaran checks de informes nativos.
+
+La primera preparación se detuvo por un conteo incorrecto de nombres antes de
+escribir copias; se inspeccionó el directorio vacío y se corrigió el conteo. La
+base quedó detenida. Comprobante y hashes:
+test-results/closure-20261025/mixed-general-checks/.
+
+Siguiente acción concreta: contrastar los resultados locales con la revisión de
+candidata y la imagen actuales, identificar cualquier invalidación restante y
+comprobar qué gates públicos de CI y publicación siguen sin evidencia exacta.
