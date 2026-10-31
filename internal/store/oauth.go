@@ -132,6 +132,16 @@ func (s *Store) CreateOAuthCode(ctx context.Context, input OAuthCodeInput) error
 	if err := oauthGrant(ctx, tx, input.UserID, formatInt(input.AuthGeneration), input.OrganizationID, input.AllProjects, input.ProjectIDs); err != nil {
 		return err
 	}
+	// Pin membership for issuance; refresh locks an access token first, and
+	// membership deletion cascades to those tokens.
+	var member int
+	err = tx.QueryRow(ctx, `SELECT 1 FROM memberships WHERE user_id=$1::bigint AND organization_id=$2::bigint FOR SHARE`, input.UserID, input.OrganizationID).Scan(&member)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrOAuthGrant
+	}
+	if err != nil {
+		return err
+	}
 	if _, err := tx.Exec(ctx, `INSERT INTO oauth_authorization_codes(code_hash,client_id,user_id,organization_id,project_ids,all_projects,scopes,redirect_uri,code_challenge,auth_generation,expires_at)
  VALUES($1,$2,$3::bigint,$4::bigint,$5,$6,$7,$8,$9,$10,$11)`, input.CodeHash, input.ClientID, input.UserID, input.OrganizationID,
 		input.ProjectIDs, input.AllProjects, input.Scopes, input.RedirectURI, input.Challenge, input.AuthGeneration, input.ExpiresAt); err != nil {

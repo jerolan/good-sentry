@@ -15823,3 +15823,20 @@ la condición de emisión.
 Siguiente acción concreta: reproducir la carrera con una eliminación y una
 emisión en transacciones reales, observar el bloqueo en PostgreSQL y verificar
 que la eliminación ganadora impida emitir el código; corregir solo si falla.
+
+### Concurrencia de membresía OAuth corregida, 2026-10-30
+
+Una eliminación de membresía sin confirmar permitía emitir código para un
+subconjunto o todos los proyectos. La emisión ahora bloquea y revalida la fila
+antes de guardar el código; la prueba observó la espera real en PostgreSQL y,
+tras confirmar la eliminación, no se emitió código en ninguno de los modos.
+El bloqueo se limita a la emisión para evitar invertir el orden de refresh y
+la cascada de tokens. Los owners Store, HTTP y cliente oficial pasaron con
+race; vet y compilación pasaron. Se conserva el primer fallo de arranque de
+PostgreSQL y la base quedó detenida. Comprobante:
+test-results/closure-20261025/mcp-membership-race-current/.
+
+054/055 y aceptación integral siguen abiertos hasta cotejar fuente e imagen;
+la imagen f7ab083 es anterior a este cambio. Siguiente acción concreta: crear
+una imagen desde esta revisión, repetir el cliente oficial y reconciliar 054;
+conservar pendientes CI y publicación, sin ejecutar pruebas de fallos nativos.
