@@ -15903,3 +15903,14 @@ test-results/closure-20261025/mcp-official-scopes-current/.
 Siguiente acción concreta: reconciliar CLOSE-mcp-050 con los owners de las 17
 tools, 2FA e interfaz, y mantener abierto CLOSE-mcp-059 por los gates de
 candidata, CI y publicación.
+
+### Selección: controles integrados MCP, 2026-10-30
+
+Se selecciona CLOSE-mcp-050 para contrastar sus 17 tools y controles de 2FA
+con el cambio posterior de emisión OAuth. La interfaz y los modos de cliente
+oficial ya tienen comprobantes en imagen; el conjunto anterior de tools y
+2FA pasó antes de la serialización de membresía.
+
+Siguiente acción concreta: repetir los owners MCP y el owner de 2FA con race
+en PostgreSQL aislado, sin incluir las pruebas de informes nativos; cotejar su
+alcance con la interfaz y los clientes oficiales de la imagen actual.
