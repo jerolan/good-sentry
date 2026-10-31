@@ -2053,7 +2053,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-errores-204](../SPEC.md#close-errores-204) | Native Feedback component: The reusable SDK owner is tests/compat/modern_feedback_sdk.mjs. GOODSENTRY_MODERN_F… | implementada | vigente | Comprobante 2026-10-26 abajo; SDK y navegador repetidos 2026-10-27 en b77a2cc |
 | [CLOSE-errores-205](../SPEC.md#close-errores-205) | Native Feedback component: The reusable modern browser owner is tests/compat/modern_feedback_browser.mjs. Its… | implementada | vigente | Comprobante 2026-10-26 abajo; navegador repetido 2026-10-27 en b77a2cc |
 | [CLOSE-errores-206](../SPEC.md#close-errores-206) | Native Feedback component: Acceptance owners are pure normalization for the public field/default/identity cont… | implementada | vigente | Comprobante 2026-10-27 abajo sobre imagen b77a2cc, copia restaurada y CI 40452038387 |
-| [CLOSE-lectores-001](../SPEC.md#close-lectores-001) | Integrations and compatibility limits: The official sentry-wizard flow is supported through GET /api/0/wizard/… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-lectores-001](../SPEC.md#close-lectores-001) | Integrations and compatibility limits: The official sentry-wizard flow is supported through GET /api/0/wizard/… | implementada | vigente | Reconciliación 2026-10-30: criterion-reconciliation-20261030/; gates globales pendientes |
 | [CLOSE-lectores-002](../SPEC.md#close-lectores-002) | Integrations and compatibility limits: Management API routes use /api/0 where compatible with published Sentry… | implementada | vigente | Comprobante 2026-10-26 abajo; matrices y SDKs frescos |
 | [CLOSE-lectores-003](../SPEC.md#close-lectores-003) | Integrations and compatibility limits: ENABLE_OPENAPI=true exposes GET /api/openapi.json as an OpenAPI 3.1 doc… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-identidad-097](../SPEC.md#close-identidad-097) | Instance user administration: Extend the opt-in ENABLE_ADMIN surface with account operations inspired by Glitc… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -2228,10 +2228,10 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-097](../SPEC.md#close-operacion-097) | Navegador real a 320px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
 | [CLOSE-operacion-098](../SPEC.md#close-operacion-098) | Navegador real a 768px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtros… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
 | [CLOSE-operacion-099](../SPEC.md#close-operacion-099) | Navegador real a 1440px: flujos aprobados, teclado, formularios, estados de carga/vacío/error/permisos, filtro… | implementada | vigente | Comprobante 2026-10-26 abajo; permisos de miembro desde 007 |
-| [CLOSE-lectores-004](../SPEC.md#close-lectores-004) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: conexión por token con alcance autorizado. Recibo real del… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
-| [CLOSE-lectores-005](../SPEC.md#close-lectores-005) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: consulta de issues. Recibo real del consumidor, revisión/v… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
-| [CLOSE-lectores-006](../SPEC.md#close-lectores-006) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: serie temporal de errores. Recibo real del consumidor, rev… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
-| [CLOSE-lectores-007](../SPEC.md#close-lectores-007) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: revocación del token impide acceso posterior. Recibo real… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-lectores-004](../SPEC.md#close-lectores-004) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: conexión por token con alcance autorizado. Recibo real del… | implementada | vigente | Reconciliación 2026-10-30: criterion-reconciliation-20261030/; gates globales pendientes |
+| [CLOSE-lectores-005](../SPEC.md#close-lectores-005) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: consulta de issues. Recibo real del consumidor, revisión/v… | implementada | vigente | Reconciliación 2026-10-30: criterion-reconciliation-20261030/; gates globales pendientes |
+| [CLOSE-lectores-006](../SPEC.md#close-lectores-006) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: serie temporal de errores. Recibo real del consumidor, rev… | implementada | vigente | Reconciliación 2026-10-30: criterion-reconciliation-20261030/; gates globales pendientes |
+| [CLOSE-lectores-007](../SPEC.md#close-lectores-007) | Grafana externo 13.0.2 con Sentry datasource 2.2.8: revocación del token impide acceso posterior. Recibo real… | implementada | vigente | Reconciliación 2026-10-30: criterion-reconciliation-20261030/; gates globales pendientes |
 | [CLOSE-mcp-060](../SPEC.md#close-mcp-060) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-061](../SPEC.md#close-mcp-061) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-062](../SPEC.md#close-mcp-062) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -15609,3 +15609,20 @@ Comprobante: test-results/closure-20261025/wizard-image-authorization/.
 Siguiente acción concreta: reconciliar la matriz por criterio con los nuevos
 recibos y el cotejo de código, promoviendo solo los subresultados completos y
 manteniendo abiertos los gates finales y las excepciones expresas.
+
+### Reconciliación de Wizard y Grafana, 2026-10-30
+
+CLOSE-lectores-001 y CLOSE-lectores-004–007 quedan vigentes para la fuente
+comparada: los owners y el cliente oficial de Wizard se complementan con el
+aislamiento de miembro y organización; Grafana aporta conexión, consultas,
+serie y rechazo tras revocación. La comparación de fuente de las revisiones
+probadas y los límites constan en
+test-results/closure-20261025/criterion-reconciliation-20261030/. Esto no
+acredita candidata, publicación ni CI final.
+
+El workflow CI actual invoca `go test -race -tags=integration ./...`; esa
+selección incluye pruebas de informes nativos que el usuario pidió omitir. No
+se ha disparado el workflow ni se han eliminado esas pruebas. Siguiente acción
+concreta: cotejar los criterios restantes y la política de publicación para
+identificar trabajo independiente; preservar esta dependencia para la decisión
+final sin ejecutar comprobaciones nativas.
