@@ -16115,3 +16115,15 @@ fuente de versión 43 es una fixture nueva, no el runtime histórico ausente.
 Siguiente acción concreta: cotejar el resto de criterios pendientes para
 identificar trabajo local independiente, respetando la decisión de publicación
 y CI aún solicitada y sin ejecutar checks de informes nativos.
+
+### Selección: retención de errores en candidata local, 2026-10-30
+
+CLOSE-operacion-020/022 siguen invalidados por aceptación integral y gates
+públicos. Sus dos etapas de expiración, recaptura y recuperación se verificaron
+en la imagen 799a0dc; la candidata d2f341b conserva el comportamiento de
+retención pero incorpora cambios OAuth posteriores. El backup pre-expiración y
+su inventario están disponibles y el usuario autorizó usar copias verificadas.
+
+Siguiente acción concreta: restaurar dos copias nuevas del backup, contrastarlas
+con el inventario y preparar una aceptación aislada de retención con la imagen
+candidata; preservar los originales y no ejecutar pruebas de informes nativos.
