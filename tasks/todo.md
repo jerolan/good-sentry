@@ -15083,3 +15083,27 @@ test-results/closure-20261025/mixed-general-checks/.
 Siguiente acción concreta: contrastar los resultados locales con la revisión de
 candidata y la imagen actuales, identificar cualquier invalidación restante y
 comprobar qué gates públicos de CI y publicación siguen sin evidencia exacta.
+
+### Cotejo de evidencia de releases y publicación, 2026-10-30
+
+La comparación de 799a0dc con 2b9856e encontró cambios solo en este registro
+y comprobantes. Los objetos Git de código, pruebas, dependencias y archivos de
+construcción de la imagen coinciden; la evidencia funcional y las selecciones
+locales de race/vet conservan ese alcance, con sus exclusiones documentadas.
+Esto no prueba una imagen construida desde el árbol completo de la candidata
+ni un CI de esa revisión. Comprobante:
+test-results/closure-20261025/release-evidence-reconciliation/.
+
+GitHub muestra main en 8e95a6dd y no encuentra 2b9856e; no hay CI coincidente
+acreditado. El rechazo automático anterior al push sigue registrado y no se ha
+eludido. Además, el árbol local y el remoto de seguimiento contienen archivos
+bajo test-results, aunque CLOSE-operacion-046 exige mantenerlos fuera del
+repositorio público. Hay que resolver esa contradicción y revisar el contenido
+antes de publicar; no se presume que todos esos archivos sean sensibles ni se
+elimina evidencia. El árbol público completo y los seis archivos Pages tampoco
+se acreditan con este cotejo. CLOSE-operacion-032 sigue abierto.
+
+Siguiente acción concreta: revisar la vigencia y dependencias de
+CLOSE-operacion-043 frente a la imagen actual y sus comprobantes anteriores;
+continuar el trabajo local independiente sin ejecutar los checks nativos
+abandonados ni modificar las copias protegidas.
