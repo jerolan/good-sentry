@@ -15796,3 +15796,18 @@ siguen abiertos; metadatos, registro y UI no cambian en este incremento.
 Siguiente acción concreta: construir una imagen de esta revisión y comprobar
 en ella la denegación, autorización de todos los proyectos y su refresh, sin
 ejecutar comprobaciones de informes nativos.
+
+### Todos los proyectos con imagen corregida, 2026-10-30
+
+La imagen no-root f7ab083 ejecutó el cliente MCP oficial con una base sintética.
+Denegar devolvió access_denied sin código; al aprobar todos los proyectos el
+cliente vio los dos proyectos propios, también tras renovar el token. El replay
+y el access anterior fueron rechazados y la revocación impidió otra llamada.
+Aplicación y base se detuvieron. Comprobante:
+test-results/closure-20261025/mcp-all-projects-image-current/.
+
+054/055 conservan pendientes el cotejo completo de sus condiciones y la
+aceptación integral; candidata definitiva y CI siguen abiertos. Siguiente
+acción concreta: contrastar los controles de expiración, revocación y vínculos
+restantes de 055 y los rechecks atómicos de 054 con sus owners, seleccionando
+el primer hueco exigible que aún tenga dependencias resueltas.
