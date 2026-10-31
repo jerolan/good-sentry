@@ -15266,3 +15266,26 @@ a expiración con retención de errores de 90 días, envejecer únicamente los d
 recibos propios y comprobar limpieza, vista vacía y referencia; después probar
 recaptura con SDK. No se han ejecutado checks de informes nativos ni se han
 cerrado los gates de candidata y CI.
+
+### Primera expiración de errores con imagen posterior, 2026-10-30
+
+Otra copia nueva coincidió con las 4422 filas del respaldo; no había candidatos
+previos al plazo de 90 días ni trabajos pendientes entre los revisados. La
+imagen 799a0dc inició con volumen propio y plazos protectores para las demás
+clases. Bajo el lock se envejecieron solo dos recibos propios y el worker retiró
+esos eventos y sus dos adjuntos. La comparación de 73 tablas encontró solo las
+eliminaciones y el recuento esperado de las dos incidencias; el resumen de la
+mixta corresponde al evento superviviente. Los endpoints vencidos devolvieron
+404 y el comentario, triage, dos spans y log independiente permanecieron.
+
+Edge comprobó la vista vacía y controles a 320/768/1440, sin errores ni
+desbordamiento. Se contabilizaron dos sesiones; referencia y recuperación
+separada permanecieron exactas. El primer intento se detuvo antes de envejecer
+recibos por una colisión de nombres de intención; se conservó el snapshot, se
+comprobó el estado y se corrigió el nombre. Contenedores detenidos. Comprobante:
+test-results/closure-20261025/error-current-expiry/.
+
+Siguiente acción concreta: recapturar con el SDK oficial la identidad vencida
+y reintentar la retenida en esta cohorte, comprobar conteo, historial y vista
+recuperada, y preservar las referencias. No se ejecutaron checks de informes
+nativos; candidata, imagen final y CI siguen pendientes.
