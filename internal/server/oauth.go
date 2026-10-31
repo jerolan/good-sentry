@@ -107,7 +107,7 @@ func validOAuthRedirect(raw string) bool {
 	if u.Scheme == "https" {
 		return true
 	}
-	return u.Scheme == "http" && (u.Hostname() == "127.0.0.1" || u.Hostname() == "::1" || u.Hostname() == "localhost")
+	return u.Scheme == "http" && (u.Hostname() == "127.0.0.1" || u.Hostname() == "::1")
 }
 
 func oauthParseForm(w http.ResponseWriter, r *http.Request) bool {

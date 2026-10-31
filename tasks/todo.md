@@ -15681,3 +15681,20 @@ comprobarse frente al cliente oficial antes de corregirla.
 Siguiente acción concreta: añadir un caso negativo en el owner HTTP existente,
 observar el fallo previo, limitar el redirect según el contrato y volver a
 ejecutar los owners MCP afectados y el cliente oficial, sin checks nativos.
+
+### Corrección de redirect OAuth, 2026-10-30
+
+El owner HTTP reprodujo la aceptación indebida de `http://localhost` con 201.
+Se limitó el registro a las direcciones de bucle exigidas; IPv6 y el cliente
+oficial con IPv4 siguieron pasando. Seis owners OAuth/admisión pasaron con race
+y PostgreSQL aislado, sin skips; vet y compilación pasaron. La primera
+compilación no pudo escribir la caché bajo el sandbox y se repitió con éxito.
+La base quedó detenida. Comprobante y hashes:
+test-results/closure-20261025/mcp-oauth-loopback-20261030/.
+
+El cambio no toca metadatos ni UI, por lo que 051 y 058 conservan su evidencia
+funcional previa con el contraste documentado; 052 y la aceptación integral MCP
+siguen invalidadas. La imagen 799a0dc es anterior a la corrección. Siguiente
+acción concreta: construir una imagen nueva de la revisión corregida y repetir
+el flujo del handler MCP oficial y el control de redirect con ella, sin iniciar
+comprobaciones de informes nativos.

@@ -92,6 +92,7 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 	}
 	for _, bad := range []string{
 		`{"client_name":"bad","redirect_uris":["http://attacker.example/callback"],"token_endpoint_auth_method":"none"}`,
+		`{"client_name":"bad","redirect_uris":["http://localhost:4567/callback"],"token_endpoint_auth_method":"none"}`,
 		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"client_secret_basic"}`,
 		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","unknown":true}`,
 		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","application_type":null}`,
@@ -108,6 +109,10 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 	res, _ = oauthJSON(t, f.client, base+"/oauth/register", `{"client_name":"Web client","redirect_uris":["https://client.example/callback"],"token_endpoint_auth_method":"none","application_type":"web"}`)
 	if res.StatusCode != http.StatusCreated {
 		t.Fatalf("valid web client registration=%d", res.StatusCode)
+	}
+	res, _ = oauthJSON(t, f.client, base+"/oauth/register", `{"client_name":"IPv6 client","redirect_uris":["http://[::1]:4567/callback"],"token_endpoint_auth_method":"none"}`)
+	if res.StatusCode != http.StatusCreated {
+		t.Fatalf("valid IPv6 loopback registration=%d", res.StatusCode)
 	}
 	verifier := strings.Repeat("a", 43)
 	digest := sha256.Sum256([]byte(verifier))
