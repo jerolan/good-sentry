@@ -16003,3 +16003,24 @@ Siguiente acción concreta: ejecutar la selección registrada en
 `core-non-crash-checks/enumerated.json`, más el nuevo owner de membresía, con
 race y PostgreSQL aislado; registrar cualquier skip o fallo y no ejecutar los
 checks de informes nativos que el usuario retiró.
+
+### Integración interrumpida por espacio y copia limpia, 2026-10-30
+
+La selección de Store se detuvo preventivamente al quedar menos de 1 GiB libre:
+227 de 378 tests principales habían pasado, sin fallos ni skips; 151 quedaron
+sin terminar. La base temporal propia creció durante la ejecución. Se retiró
+solo la copia temporal de caché npm creada para Wizard, conservando la caché
+original y los comprobantes. El resultado parcial y hash del log están en
+`test-results/closure-20261025/candidate-integration-current/interrupted.json`.
+
+Una copia limpia de 5ed4025 confirmó que `go list ./...` incluye nueve paquetes
+bajo `test-results` porque su `go.mod` local está ignorado y no está en Git.
+La compilación aislada del paquete de evidencia candidato falla por dos `main`
+y otras declaraciones duplicadas, sin ejecutar ninguna prueba. Comprobante:
+`test-results/closure-20261025/publication-preflight-20261030/`. Hay que corregir
+los programas de evidencia propios antes de cualquier CI, además de resolver la
+política de publicación y la exclusión de checks nativos.
+
+Siguiente acción concreta: liberar la base desechable propia y ejecutar los
+151 tests restantes de Store y las selecciones de servidor/jobs en lotes con
+bases nuevas, conservando el parcial y deteniendo las bases al terminar.
