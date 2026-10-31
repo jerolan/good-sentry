@@ -15878,3 +15878,15 @@ comparada: test-results/closure-20261025/mcp-token-lifetime-current/.
 Siguiente acción concreta: reconciliar CLOSE-mcp-050, 059 y 077 con los
 controles anteriores, el upgrade y la imagen, manteniendo abiertos la candidata
 y los gates públicos que todavía requieren intervención externa.
+
+### Selección: scopes del handler oficial MCP, 2026-10-30
+
+Se selecciona CLOSE-mcp-077. El cliente oficial ya cubrió descubrimiento,
+PKCE, proyectos, expiración forzada, rotación, rechazo y revocación en la
+imagen actual, pero su comprobante no enumera los scopes solicitados y
+persistidos por el propio handler. Los demás rechazos y plazos tienen owners
+HTTP separados.
+
+Siguiente acción concreta: usar el filtro público de scopes del SDK oficial en
+la imagen actual, comprobar la selección exacta en el consentimiento y la
+credencial persistida, y repetir renovación y revocación sin registrar secretos.
