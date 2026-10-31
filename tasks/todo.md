@@ -2122,7 +2122,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-048](../SPEC.md#close-mcp-048) | MCP performance investigation: Reuse native event/segment span unions, group sorting and latency definitions.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-049](../SPEC.md#close-mcp-049) | MCP performance investigation: Acceptance creates real transaction events with indexed child spans across sele… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-050](../SPEC.md#close-mcp-050) | MCP OAuth authorization: When MCP is selected, provide a same-origin OAuth2 authorization server for MCP clien… | implementada | invalidada | Handler oficial verificado localmente; conciliación de candidata y gates integrales pendiente |
-| [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | vigente | Metadata real y owners MCP: mcp-metadata-image-current/; gates integrales pendientes |
+| [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | invalidada | Registro aceptó wildcard HTTPS; reparar y revalidar; mcp-oauth-registration-boundaries/ |
 | [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | invalidada | Registro oficial y validaciones verificadas localmente; candidata/CI pendientes |
 | [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
@@ -15714,3 +15714,17 @@ CLOSE-mcp-052 mantiene pendiente el cotejo de límites y rechazos completos;
 cubrir en el endpoint real los límites de nombre, redirecciones y metadatos de
 registro, y comprobar que registrar clientes no emite credenciales, sin ejecutar
 checks de informes nativos.
+
+### Límites de registro OAuth encontrados, 2026-10-30
+
+En la imagen corregida se probaron 33 casos de registro. No cambiaron los
+recuentos de access, códigos ni refresh; 31 resultados coincidieron, pero una
+URI HTTPS con wildcard y otra sin host obtuvieron 201 en vez de 400. El
+comprobante negativo se conserva en
+test-results/closure-20261025/mcp-oauth-registration-boundaries/red.json;
+los contenedores quedaron detenidos. CLOSE-mcp-051 vuelve a invalidarse por la
+prohibición de wildcard; CLOSE-mcp-052 permanece invalidado.
+
+Siguiente acción concreta: extender el owner HTTP, rechazar wildcards y hosts
+vacíos, ejecutar los controles OAuth afectados y repetir la matriz sobre una
+nueva imagen de la fuente corregida.
