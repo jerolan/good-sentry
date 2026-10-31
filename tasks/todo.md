@@ -15698,3 +15698,19 @@ siguen invalidadas. La imagen 799a0dc es anterior a la corrección. Siguiente
 acción concreta: construir una imagen nueva de la revisión corregida y repetir
 el flujo del handler MCP oficial y el control de redirect con ella, sin iniciar
 comprobaciones de informes nativos.
+
+### OAuth sobre imagen corregida, 2026-10-30
+
+La imagen no-root construida desde ddb6620 rechazó localhost y HTTP remoto,
+aceptó IPv4/IPv6 locales y HTTPS, y el handler oficial completó autorización,
+tools, rotación y revocación con un proyecto seleccionado. Un primer build sin
+red no encontró sus módulos; el build habitual pasó. El primer arranque de la
+app coincidió con el reinicio de PostgreSQL y se repitió sobre la misma base
+propia antes de crear datos. Aplicación y base quedaron detenidas. Comprobante:
+test-results/closure-20261025/mcp-oauth-image-ddb6620/.
+
+CLOSE-mcp-052 mantiene pendiente el cotejo de límites y rechazos completos;
+059/077, candidata definitiva y CI siguen abiertos. Siguiente acción concreta:
+cubrir en el endpoint real los límites de nombre, redirecciones y metadatos de
+registro, y comprobar que registrar clientes no emite credenciales, sin ejecutar
+checks de informes nativos.
