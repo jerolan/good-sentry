@@ -15990,3 +15990,16 @@ anterior fue rechazado por revisión automática. Siguiente acción concreta:
 resolver con el usuario cómo reconciliar el historial de resultados con la
 política de publicación y cómo obtener CI sin ejecutar los checks abandonados;
 no enviar ni reescribir el historial mientras tanto.
+
+### Selección: integración local de la candidata, 2026-10-30
+
+La candidata provisional d2f341b incorpora correcciones OAuth posteriores a la
+última selección amplia de Store/servidor/jobs. Los owners afectados y la imagen
+y cliente oficial ya pasaron; para acotar regresiones antes de la intervención
+externa se repetirá la selección general anterior en la fuente actual, con el
+nuevo owner de concurrencia y el navegador configurado explícitamente.
+
+Siguiente acción concreta: ejecutar la selección registrada en
+`core-non-crash-checks/enumerated.json`, más el nuevo owner de membresía, con
+race y PostgreSQL aislado; registrar cualquier skip o fallo y no ejecutar los
+checks de informes nativos que el usuario retiró.
