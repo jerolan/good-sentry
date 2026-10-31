@@ -2126,7 +2126,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | vigente | Imagen y matriz OAuth 2026-10-30: mcp-oauth-registration-boundaries/; gates integrales pendientes |
 | [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | vigente | Imagen, consentimiento y concurrencia 2026-10-30: mcp-membership-image-current/ |
-| [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | implementada | vigente | Duración, hashes y revocación 2026-10-30: mcp-token-lifetime-current/ |
 | [CLOSE-mcp-056](../SPEC.md#close-mcp-056) | MCP OAuth authorization: Add additive044 storage for OAuth clients, hashed authorization codes and hashed refr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-057](../SPEC.md#close-mcp-057) | MCP OAuth authorization: MCP Bearer denial changes from bare WWW-Authenticate: Bearer to include canonical res… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | implementada | vigente | Reconciliación 2026-10-30: criterion-uptime-mcp-20261030/; gates globales pendientes |
@@ -15865,3 +15865,16 @@ desconocido tiene la misma respuesta sin revelar su existencia.
 
 Siguiente acción concreta: ampliar el owner HTTP existente con esos controles
 sobre PostgreSQL aislado, conservando confidenciales los valores emitidos.
+
+### Duración y revocación de tokens OAuth, 2026-10-30
+
+El owner HTTP verificó hashes, grants y plazos de access y refresh; revocación
+directa de ambos tipos, cliente ajeno y respuestas idénticas para revocación
+repetida o token desconocido. Los cuatro owners OAuth pasaron con race y vet;
+la base aislada quedó detenida. Los flujos oficiales en la imagen 7784c81
+complementan estos controles. CLOSE-mcp-055 queda vigente para la fuente
+comparada: test-results/closure-20261025/mcp-token-lifetime-current/.
+
+Siguiente acción concreta: reconciliar CLOSE-mcp-050, 059 y 077 con los
+controles anteriores, el upgrade y la imagen, manteniendo abiertos la candidata
+y los gates públicos que todavía requieren intervención externa.

@@ -216,13 +216,31 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 			t.Fatalf("all-project token returned %d projects", len(projects.Data))
 		}
 		refresh := url.Values{"grant_type": {"refresh_token"}, "client_id": {client.ClientID}, "refresh_token": {allToken.RefreshToken}}
+		previousAccess, previousRefresh := allToken.AccessToken, allToken.RefreshToken
 		refreshResponse, refreshBody := oauthForm(t, noRedirect, base+"/oauth/token", refresh)
-		if refreshResponse.StatusCode != http.StatusOK || json.Unmarshal(refreshBody, &allToken) != nil || allToken.AccessToken == "" {
+		if refreshResponse.StatusCode != http.StatusOK || json.Unmarshal(refreshBody, &allToken) != nil || allToken.AccessToken == "" || allToken.RefreshToken == "" || allToken.AccessToken == previousAccess || allToken.RefreshToken == previousRefresh {
 			t.Fatalf("all-project refresh status=%d", refreshResponse.StatusCode)
 		}
 		refreshedSession := mcpClient(t, f, srv, allToken.AccessToken, "2026-07-28")
 		if projects := mcpWorkspaceCall(t, f, refreshedSession, "list_projects", map[string]any{"organization": f.org.ID}); len(projects.Data) != 2 {
 			t.Fatalf("refreshed all-project token returned %d projects", len(projects.Data))
+		}
+		revoked, revokedBody := oauthForm(t, noRedirect, base+"/oauth/revoke", url.Values{"client_id": {client.ClientID}, "token": {allToken.RefreshToken}})
+		if revoked.StatusCode != http.StatusOK {
+			t.Fatalf("active OAuth refresh revocation status=%d", revoked.StatusCode)
+		}
+		for _, token := range []string{allToken.RefreshToken, "unknown-token"} {
+			repeated, repeatedBody := oauthForm(t, noRedirect, base+"/oauth/revoke", url.Values{"client_id": {client.ClientID}, "token": {token}})
+			if repeated.StatusCode != http.StatusOK || !bytes.Equal(repeatedBody, revokedBody) {
+				t.Fatal("repeated or unknown OAuth revocation differed")
+			}
+		}
+		if _, err := refreshedSession.ListTools(f.ctx, nil); err == nil || !strings.Contains(err.Error(), "Unauthorized") {
+			t.Fatalf("OAuth revocation did not revoke access: %v", err)
+		}
+		refresh.Set("refresh_token", allToken.RefreshToken)
+		if after, _ := oauthForm(t, noRedirect, base+"/oauth/token", refresh); after.StatusCode != http.StatusBadRequest {
+			t.Fatalf("OAuth revoked refresh status=%d", after.StatusCode)
 		}
 		form.Del("all_projects")
 		form.Set("project", f.project.ID)
@@ -251,9 +269,15 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 		RefreshToken string `json:"refresh_token"`
 		TokenType    string `json:"token_type"`
 		ExpiresIn    int    `json:"expires_in"`
+		Scope        string `json:"scope"`
 	}
-	if err := json.Unmarshal(body, &issued); err != nil || issued.AccessToken == "" || issued.RefreshToken == "" || issued.TokenType != "Bearer" || issued.ExpiresIn != 3600 {
+	if err := json.Unmarshal(body, &issued); err != nil || !strings.HasPrefix(issued.AccessToken, "gs_") || issued.RefreshToken == "" || issued.TokenType != "Bearer" || issued.ExpiresIn != 3600 || issued.Scope != scope {
 		t.Fatalf("token response: %s %v", body, err)
+	}
+	var storedTokens bool
+	hasher := &Server{cfg: cfg}
+	if err := f.sql.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM api_tokens a JOIN oauth_refresh_tokens r ON r.access_token_id=a.id WHERE a.secret_hash=$1 AND r.secret_hash=$2 AND a.user_id=$3::bigint AND a.organization_id=$4::bigint AND r.user_id=a.user_id AND r.organization_id=a.organization_id AND NOT a.all_projects AND NOT r.all_projects AND r.project_ids=ARRAY[$5::bigint] AND a.scopes=string_to_array($6,' ') AND r.scopes=a.scopes AND a.expires_at-a.created_at BETWEEN interval '59 minutes 55 seconds' AND interval '60 minutes 5 seconds' AND r.expires_at-r.created_at BETWEEN interval '29 days 23 hours 59 minutes 55 seconds' AND interval '30 days 5 seconds')`, hasher.hash(issued.AccessToken), hasher.hash(issued.RefreshToken), f.owner.ID, f.org.ID, f.project.ID, scope).Scan(&storedTokens); err != nil || !storedTokens {
+		t.Fatalf("OAuth tokens were not stored with their grants and lifetimes: %v", err)
 	}
 	clientSession := mcpClient(t, f, srv, issued.AccessToken, "2026-07-28")
 	_ = mcpWorkspaceCall(t, f, clientSession, "list_organizations", map[string]any{})
@@ -343,6 +367,36 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 	}
 	if _, err := secondSession.ListTools(f.ctx, nil); err == nil || !strings.Contains(err.Error(), "Unauthorized") {
 		t.Fatalf("revoked access token survived: %v", err)
+	}
+	thirdConsent, _ := oauthForm(t, noRedirect, base+"/oauth/authorize", form)
+	thirdCallback, err := url.Parse(thirdConsent.Header.Get("Location"))
+	if err != nil || thirdConsent.StatusCode != http.StatusSeeOther || thirdCallback.Query().Get("code") == "" {
+		t.Fatal("third OAuth consent failed")
+	}
+	thirdForm := url.Values{"grant_type": {"authorization_code"}, "client_id": {client.ClientID}, "redirect_uri": {redirect}, "code": {thirdCallback.Query().Get("code")}, "code_verifier": {verifier}}
+	thirdResponse, thirdBody := oauthForm(t, noRedirect, base+"/oauth/token", thirdForm)
+	var thirdIssued struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+	}
+	if thirdResponse.StatusCode != http.StatusOK || json.Unmarshal(thirdBody, &thirdIssued) != nil || thirdIssued.AccessToken == "" || thirdIssued.RefreshToken == "" {
+		t.Fatal("third OAuth exchange failed")
+	}
+	thirdSession := mcpClient(t, f, srv, thirdIssued.AccessToken, "2026-07-28")
+	foreignRevocation, _ := oauthForm(t, noRedirect, base+"/oauth/revoke", url.Values{"client_id": {"gso_" + strings.Repeat("0", 32)}, "token": {thirdIssued.AccessToken}})
+	if foreignRevocation.StatusCode != http.StatusOK {
+		t.Fatal("foreign client revocation disclosed token existence")
+	}
+	_ = mcpWorkspaceCall(t, f, thirdSession, "list_organizations", map[string]any{})
+	accessRevocation, _ := oauthForm(t, noRedirect, base+"/oauth/revoke", url.Values{"client_id": {client.ClientID}, "token": {thirdIssued.AccessToken}})
+	if accessRevocation.StatusCode != http.StatusOK {
+		t.Fatal("OAuth access revocation failed")
+	}
+	if _, err := thirdSession.ListTools(f.ctx, nil); err == nil || !strings.Contains(err.Error(), "Unauthorized") {
+		t.Fatalf("OAuth access survived direct revocation: %v", err)
+	}
+	if after, _ := oauthForm(t, noRedirect, base+"/oauth/token", url.Values{"grant_type": {"refresh_token"}, "client_id": {client.ClientID}, "refresh_token": {thirdIssued.RefreshToken}}); after.StatusCode != http.StatusBadRequest {
+		t.Fatalf("refresh survived direct access revocation: %d", after.StatusCode)
 	}
 	badPKCE := url.Values{"client_id": {client.ClientID}, "redirect_uri": {redirect}, "response_type": {"code"}, "resource": {publicBase + "/mcp"}, "scope": {"org:read"}, "code_challenge": {"short"}, "code_challenge_method": {"S256"}}
 	get, _ = noRedirect.Get(base + "/oauth/authorize?" + badPKCE.Encode())
