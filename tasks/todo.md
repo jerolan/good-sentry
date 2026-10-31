@@ -15444,3 +15444,16 @@ acreditan candidata ni CI final ni se ejecutaron checks de informes nativos.
 Siguiente acción concreta: cotejar los criterios MCP OAuth invalidados y su
 cliente oficial con la imagen actual; seleccionar el primer subresultado que
 aún necesite evidencia local independiente de los gates públicos.
+
+### Selección de cliente MCP oficial con imagen posterior, 2026-10-30
+
+CLOSE-mcp-050/051/052/054/055/059/077 conserva owners HTTP/PostgreSQL y del
+`AuthorizationCodeHandler` oficial, pero esos owners crearon el servidor dentro
+de la prueba. La ruta de imagen, cliente oficial y los gates finales deben
+conciliarse sobre una instancia real. Los owners anteriores y sus negativos se
+conservan; esta selección no atribuye a la imagen los resultados aún no
+repetidos. El código y dependencias de producto no cambiaron desde 799a0dc.
+
+Siguiente acción concreta: preparar una aplicación y PostgreSQL aislados con MCP
+y prefijo, ejecutar el handler oficial Go v1.8.0 con consentimiento de proyecto,
+llamadas MCP, refresh y revocación, y registrar alcance sin exponer credenciales.
