@@ -15249,3 +15249,20 @@ Siguiente acción concreta: revisar los candidatos de limpieza y trabajos
 automáticos de la copia, preparar un volumen nuevo e iniciar la imagen 799a0dc
 con retenciones protectoras; contrastar las filas y comprobar los eventos e
 incidencias recuperados sin ejecutar checks de informes nativos.
+
+### Vista retenida de errores con imagen posterior, 2026-10-30
+
+Se compararon otra vez las 73 tablas y no había candidatos entre las limpiezas
+y trabajos revisados, incluida la cola de procesamiento nativo. La imagen
+799a0dc inició con autenticación, volumen nuevo y retenciones protectoras;
+readiness respondió 200 y las 4422 filas permanecieron exactas. Edge comprobó
+el evento retenido y la confirmación de borrado en 320/768/1440 sin errores ni
+desbordamiento. Solo se añadió una sesión; el resto de filas coincidió con la
+referencia. Los contenedores quedaron detenidos y las capturas privadas se
+conservan por hash. Comprobante: test-results/closure-20261025/error-current-recovery/.
+
+Siguiente acción concreta: preparar otra copia aislada del respaldo anterior
+a expiración con retención de errores de 90 días, envejecer únicamente los dos
+recibos propios y comprobar limpieza, vista vacía y referencia; después probar
+recaptura con SDK. No se han ejecutado checks de informes nativos ni se han
+cerrado los gates de candidata y CI.
