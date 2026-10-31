@@ -15854,3 +15854,14 @@ aceptación integral, candidata y CI siguen abiertos.
 Siguiente acción concreta: cotejar expiración, rotación y revocación de 055 con
 sus condiciones completas; ejecutar el primer control funcional aún ausente
 sobre PostgreSQL aislado y mantener pendientes los gates públicos.
+
+### Selección: duración y revocación OAuth, 2026-10-30
+
+Se selecciona CLOSE-mcp-055. Los owners ya cubren PKCE, replay, concurrencia,
+expiración inducida y rotación, y el cliente oficial confirma la concesión.
+Falta constatar explícitamente que los hashes, scopes y plazos persistidos de
+ambos tokens coinciden con el contrato, y que revocar varias veces o un token
+desconocido tiene la misma respuesta sin revelar su existencia.
+
+Siguiente acción concreta: ampliar el owner HTTP existente con esos controles
+sobre PostgreSQL aislado, conservando confidenciales los valores emitidos.
