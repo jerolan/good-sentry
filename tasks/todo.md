@@ -2122,7 +2122,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-048](../SPEC.md#close-mcp-048) | MCP performance investigation: Reuse native event/segment span unions, group sorting and latency definitions.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-049](../SPEC.md#close-mcp-049) | MCP performance investigation: Acceptance creates real transaction events with indexed child spans across sele… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-050](../SPEC.md#close-mcp-050) | MCP OAuth authorization: When MCP is selected, provide a same-origin OAuth2 authorization server for MCP clien… | implementada | invalidada | Handler oficial verificado localmente; conciliación de candidata y gates integrales pendiente |
-| [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | invalidada | Alias RFC8414 y controles verificados localmente; candidata/CI pendientes |
+| [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | vigente | Metadata real y owners MCP: mcp-metadata-image-current/; gates integrales pendientes |
 | [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | invalidada | Registro oficial y validaciones verificadas localmente; candidata/CI pendientes |
 | [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
@@ -15664,3 +15664,20 @@ Siguiente acción concreta: iniciar únicamente esos contenedores de prueba,
 cotejar por HTTP real los documentos, métodos, scopes y modos deshabilitados
 sin credenciales, y detenerlos; registrar los resultados sin ejecutar tests de
 informes nativos ni afirmar la aceptación integral de MCP.
+
+### Metadatos y selección de registro OAuth, 2026-10-30
+
+CLOSE-mcp-051 queda vigente para la fuente comparada: documentos y alias se
+consultaron en la imagen posterior con logs y MCP activados/desactivados; los
+owners de admisión cubren el rechazo de token en query. Comprobante:
+test-results/closure-20261025/mcp-metadata-image-current/. El servidor, peers y
+base quedaron detenidos. La aceptación integral, candidata y CI siguen abiertos.
+
+Se selecciona CLOSE-mcp-052: el contrato permite redirect HTTP solo para las
+direcciones de bucle 127.0.0.1 y [::1], pero `validOAuthRedirect` también
+acepta `localhost`. La condición aún debe reproducirse en el endpoint real y
+comprobarse frente al cliente oficial antes de corregirla.
+
+Siguiente acción concreta: añadir un caso negativo en el owner HTTP existente,
+observar el fallo previo, limitar el redirect según el contrato y volver a
+ejecutar los owners MCP afectados y el cliente oficial, sin checks nativos.
