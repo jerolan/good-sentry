@@ -1853,7 +1853,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-uptime-007](../SPEC.md#close-uptime-007) | Uptime check retention: Use completed_at as the existing durable server completion clock. Both CompleteMonitor… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-008](../SPEC.md#close-uptime-008) | Uptime check retention: Store.CleanupMonitorChecks(ctx, days) returns a committed removed-check count and erro… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-009](../SPEC.md#close-uptime-009) | Uptime check retention: Preserve every monitor configuration and cached status, consecutive_failures, last_che… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-uptime-010](../SPEC.md#close-uptime-010) | Uptime check retention: Keep the current MonitorChecks authorization, completed_at/id ordering, transition-onl… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
+| [CLOSE-uptime-010](../SPEC.md#close-uptime-010) | Uptime check retention: Keep the current MonitorChecks authorization, completed_at/id ordering, transition-onl… | implementada (histórica) | vigente | Reconciliación 2026-10-30: criterion-uptime-mcp-20261030/; gates globales pendientes |
 | [CLOSE-uptime-011](../SPEC.md#close-uptime-011) | Uptime check retention: StartUptimeRetention runs unconditionally inside the one application process through t… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-012](../SPEC.md#close-uptime-012) | Uptime check retention: Actual acceptance uses a new logical-backup copy of the accepted4305-row/530-event/28-… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
 | [CLOSE-operacion-024](../SPEC.md#close-operacion-024) | File and release retention prerequisites: Completed-file and release retention remain required after the four… | implementada (prerrequisito) | vigente | Comprobante 2026-10-26 abajo; clases file/release siguen abiertas |
@@ -2129,7 +2129,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-mcp-056](../SPEC.md#close-mcp-056) | MCP OAuth authorization: Add additive044 storage for OAuth clients, hashed authorization codes and hashed refr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-057](../SPEC.md#close-mcp-057) | MCP OAuth authorization: MCP Bearer denial changes from bare WWW-Authenticate: Bearer to include canonical res… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | implementada | vigente | Reconciliación 2026-10-30: criterion-uptime-mcp-20261030/; gates globales pendientes |
 | [CLOSE-mcp-059](../SPEC.md#close-mcp-059) | MCP OAuth authorization: Acceptance runs real HTTP/PostgreSQL and the official Go MCP client/OAuth handler. It… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-operacion-058](../SPEC.md#close-operacion-058) | Commands and source layout: The external JavaScript artifact acceptance uses official sentry-cli3.8.0 and Node… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-059](../SPEC.md#close-operacion-059) | Commands and source layout: The issue-query SDK acceptance consumes a separate mode0600 fixture with the same… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -15626,3 +15626,16 @@ se ha disparado el workflow ni se han eliminado esas pruebas. Siguiente acción
 concreta: cotejar los criterios restantes y la política de publicación para
 identificar trabajo independiente; preservar esta dependencia para la decisión
 final sin ejecutar comprobaciones nativas.
+
+### Reconciliación de uptime y credenciales MCP, 2026-10-30
+
+CLOSE-uptime-010 y CLOSE-mcp-058 quedan vigentes para la fuente comparada: los
+owners de PostgreSQL y navegador se complementan con expiración y recuperación
+real de uptime, y la interfaz de credenciales se comprobó con estados y
+revocación en la imagen posterior. La comparación y los límites constan en
+test-results/closure-20261025/criterion-uptime-mcp-20261030/. Los gates de
+las clases y la auditoría final siguen abiertos.
+
+Siguiente acción concreta: revisar la vigencia de los demás criterios de
+retención y OAuth contra sus bloques completos y sus comprobantes, sin iniciar
+el CI que incluiría los checks nativos omitidos ni publicar datos de prueba.
