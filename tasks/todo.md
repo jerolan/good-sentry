@@ -15421,3 +15421,26 @@ instalar sin modificarla. Es preparación, no aceptación del flujo.
 Siguiente acción concreta: levantar PostgreSQL y aplicación aislados, crear una
 organización y proyecto propios y repetir handoff con navegador y cliente real;
 registrar el alcance y los gates de candidata/CI que sigan pendientes.
+
+### Cliente y navegador Wizard con imagen posterior, 2026-10-30
+
+Una instancia no-root de la imagen 799a0dc inició sobre PostgreSQL 18, red y
+volúmenes nuevos con una cuenta, organización y proyecto propios. Edge completó
+inicio de sesión y handoff a 390/1440; el token consultó releases, el DSN capturó
+un evento y la transferencia borrada devolvió 404. El cliente oficial
+`@sentry/wizard` 8.0.1 también completó handoff por navegador, seleccionó el
+proyecto y terminó con código 0. Generó `.sentryclirc` y script de mapas; su
+token autenticó una consulta y el hash consumido devolvió 404. La base quedó
+sin transferencias pendientes y los contenedores están detenidos.
+
+El fixture declaraba dependencias de SDK/CLI: no se afirma ejecución del script
+ni instalación de esas dependencias; los mapas reales tienen owners separados.
+El primer setup se reanudó tras corregir una clave de respuesta sin recrear la
+cuenta. Dos intentos del cliente alcanzaron el handoff pero se detuvieron en
+prompts del controlador; el tercero pasó, con transcripts privados conservados.
+Comprobante: test-results/closure-20261025/wizard-image-current/. No se
+acreditan candidata ni CI final ni se ejecutaron checks de informes nativos.
+
+Siguiente acción concreta: cotejar los criterios MCP OAuth invalidados y su
+cliente oficial con la imagen actual; seleccionar el primer subresultado que
+aún necesite evidencia local independiente de los gates públicos.
