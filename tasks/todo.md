@@ -15549,3 +15549,15 @@ de candidata/CI. Siguiente acción concreta: cotejar los recibos locales MCP y
 sus dependencias frente a la revisión actual, y seleccionar el siguiente
 criterio independiente sin evidencia vigente, incluido Grafana si corresponde.
 No se ejecutaron checks de informes nativos.
+
+### Selección de Grafana con imagen posterior, 2026-10-30
+
+CLOSE-lectores-004–007 cuenta con un consumidor Grafana 13.0.2 y plugin Sentry
+2.2.8 reales sobre 4e820554; desde esa imagen cambiaron arranque/configuración y
+procesamiento nativo. Se conserva el comprobante anterior, sin atribuirlo a la
+imagen posterior. Las imágenes y el volumen del plugin están disponibles para
+una ejecución aislada con datos y token propios.
+
+Siguiente acción concreta: preparar Grafana, PostgreSQL y GoodSentry aislados
+con la imagen 799a0dc, capturar eventos SDK propios y verificar consultas,
+aislamiento y revocación desde el consumidor, sin registrar credenciales.
