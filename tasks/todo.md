@@ -15475,3 +15475,26 @@ El consentimiento de este controlador fue HTTP; navegador, migración histórica
 No se ejecutaron checks de informes nativos. Siguiente acción concreta: cotejar
 la interfaz de credenciales MCP y su evidencia de navegador con la imagen
 actual, y repetir las vistas y revocación que aún requieran una instancia real.
+
+### Interfaz de credenciales MCP con imagen posterior, 2026-10-30
+
+Una concesión OAuth propia creada por el handler oficial se mostró en Edge con
+la imagen 799a0dc. En 320/768/1024/1440 se comprobaron el scope condicional,
+los valores predeterminados sin ampliación, metadata y ausencia de secretos;
+la revocación en pantalla produjo rechazo HTTP 401 del acceso y 400 del refresh.
+Se verificó además la ausencia de `log:read` con logs o MCP deshabilitados y el
+estado MCP on/off en administración, con instancias aisladas adicionales.
+La vista habilitada pasó los cuatro tamaños sin desbordamiento ni errores.
+
+El primer controlador confundió dos filas con el mismo nombre tras rotación y
+se detuvo antes de revocar. El segundo seleccionó la identidad correcta y revocó,
+pero no encontró administración porque estaba deshabilitada en esa instancia;
+se conservaron sus resultados y se comprobaron las vistas restantes con
+administración habilitada, sin repetir la revocación. Capturas y errores quedan
+privados; aplicaciones y base están detenidas. Comprobante:
+test-results/closure-20261025/mcp-image-credentials/.
+
+CLOSE-mcp-058 conserva abiertos upgrade, candidata y CI. Siguiente acción
+concreta: cotejar la prueba de upgrade de MCP desde la copia anterior a la
+migración 044 y determinar si puede repetirse con la imagen actual sin alterar
+los respaldos; preservar los controles de cliente oficial ya registrados.
