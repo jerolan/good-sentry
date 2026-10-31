@@ -15939,3 +15939,17 @@ Los gates de clase 020/022/023, candidata y CI siguen abiertos.
 Siguiente acción concreta: cotejar los restantes criterios invalidados y
 preparar la evaluación de publicación y CI sin incluir los checks nativos
 retirados por el usuario.
+
+### Selección: revisión previa de publicación, 2026-10-30
+
+Los criterios restantes de aceptación integral dependen de candidata, árbol
+público y CI. `SPEC.md:2843` excluye test-results y fixtures locales del
+repositorio público; el árbol local y el seguimiento remoto observado contienen
+resultados ya versionados. La revisión automática rechazó previamente el push
+a main y el workflow actual ejecutaría pruebas de informes nativos que el
+usuario pidió omitir. No se ha vuelto a intentar el envío.
+
+Siguiente acción concreta: inventariar de forma local los archivos de evidencia
+que entran en el historial pendiente, sus tipos y cualquier indicio de secretos
+sin imprimirlos; documentar las diferencias con el contrato y el workflow antes
+de determinar la intervención necesaria, sin publicar ni reescribir historial.
