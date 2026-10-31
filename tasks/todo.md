@@ -16086,3 +16086,16 @@ Siguiente acción concreta: restaurar ese dump en una instancia PostgreSQL y
 volumen nuevos, comparar filas y secuencias con el inventario, arrancar solo la
 copia con la candidata y verificar migración, token anterior, cliente MCP y
 reinicio, sin alterar las fuentes ni ejecutar pruebas de informes nativos.
+
+### Copias previas al upgrade MCP de candidata, 2026-10-30
+
+El backup de versión 43 pasó SHA-256 y se restauró en dos bases nuevas de un
+PostgreSQL aislado. Ambas coinciden con las 55 filas del inventario, 44 tablas,
+43 migraciones y sus secuencias; las tablas de tareas y probes revisadas están
+vacías. La fuente fue creada para la prueba previa y no se atribuye al runtime
+histórico ausente. Base detenida; comprobante:
+test-results/closure-20261025/mcp-upgrade-candidate-current/prepare.json.
+
+Siguiente acción concreta: iniciar la candidata d2f341b solo sobre una copia,
+comparar columnas antiguas y migraciones, verificar el token previo y cliente
+MCP y reiniciar con filas exactas; conservar intacta la copia de recuperación.
