@@ -1844,7 +1844,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-016](../SPEC.md#close-operacion-016) | Error-event retention: Delete envelope_items matching each pinned receipt's exact project_id,event_id, then it… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-017](../SPEC.md#close-operacion-017) | Error-event retention: Issue count and its first/last/title/environment/release reflect the surviving stored p… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-018](../SPEC.md#close-operacion-018) | Error-event retention: Preserve existing authorization and snapshot semantics. Native IssueDetail already retu… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | invalidada | Revalidación final de retención pendiente; contraste 2026-10-27 abajo |
+| [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | vigente | Reconciliación 2026-10-30: criterion-error-ui-20261030/; clase pendiente |
 | [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
 | [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
 | [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
@@ -15639,3 +15639,16 @@ las clases y la auditoría final siguen abiertos.
 Siguiente acción concreta: revisar la vigencia de los demás criterios de
 retención y OAuth contra sus bloques completos y sus comprobantes, sin iniciar
 el CI que incluiría los checks nativos omitidos ni publicar datos de prueba.
+
+### Reconciliación de la vista de errores, 2026-10-30
+
+CLOSE-operacion-019 queda vigente para la fuente comparada: las vistas
+retenida, vacía y recuperada se comprobaron en la imagen posterior y el
+ejercicio anterior de comentario y triaje se contrastó con sus dependencias
+sin cambios. Comprobante y límites:
+test-results/closure-20261025/criterion-error-ui-20261030/. Los criterios de
+aceptación 020–023 y sus gates siguen abiertos.
+
+Siguiente acción concreta: contrastar los subresultados pendientes de OAuth
+con sus owners y la fuente actual; conservar el conflicto del workflow CI con
+la instrucción de omitir informes nativos.
