@@ -16,6 +16,22 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
       const canManage = ['owner', 'manager', 'admin'].includes(state.organization.role);
       const operationError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
 
+      function lockControls() {
+        const controls = Array.from(main.querySelectorAll('button, input, select, textarea'), control => [control, control.disabled]);
+        controls.forEach(([control]) => { control.disabled = true; });
+        main.setAttribute('aria-busy', 'true');
+        return () => {
+          controls.forEach(([control, disabled]) => { control.disabled = disabled; });
+          main.removeAttribute('aria-busy');
+        };
+      }
+
+      async function mutate(path, options) {
+        const unlock = lockControls();
+        try { return await request(path, options); }
+        finally { unlock(); }
+      }
+
       if (!canManage) {
         main.replaceChildren(pageHeader('People and teams', 'Organization owners, managers and admins manage members and teams.'),
           node('section', { class: 'card panel' }, empty('Permission required', 'Ask an organization owner, manager or admin to manage people and teams.')));
@@ -67,7 +83,7 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
           const save = button('Save role', async () => {
             save.disabled = true;
             try {
-              await request(`/api/v1/organizations/${encodeURIComponent(org)}/members/${encodeURIComponent(member.id)}`, { method: 'PATCH', body: { role: role.value } });
+              await mutate(`/api/v1/organizations/${encodeURIComponent(org)}/members/${encodeURIComponent(member.id)}`, { method: 'PATCH', body: { role: role.value } });
               notify(`Updated ${memberLabel(member)}.`);
               await load();
             } catch (error) { formError(operationError, error); save.disabled = false; }
@@ -75,19 +91,26 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
           save.disabled = member.role === role.value;
           role.addEventListener('change', () => { save.disabled = member.role === role.value; });
           const actions = node('div', { class: 'actions' }, role, save);
-          actions.append(button('Remove', () => {
-            const warning = node('div', { class: 'form-stack' }, node('p', {}, `Remove ${memberLabel(member)} from this organization? Their organization tokens, assignments and team memberships will be removed.`), operationError);
+          const remove = button('Remove', () => {
+            operationError.textContent = '';
+            const original = Array.from(row.childNodes);
+            const warningError = node('div', { class: 'form-error', role: 'alert', tabindex: '-1' });
+            const warning = node('div', { class: 'form-stack' }, node('p', {}, `Remove ${memberLabel(member)} from this organization? Their organization tokens, assignments and team memberships will be removed.`), warningError);
             const confirm = button('Confirm removal', async () => {
               confirm.disabled = true;
+              cancel.disabled = true;
               try {
-                await request(`/api/v1/organizations/${encodeURIComponent(org)}/members/${encodeURIComponent(member.id)}`, { method: 'DELETE' });
+                await mutate(`/api/v1/organizations/${encodeURIComponent(org)}/members/${encodeURIComponent(member.id)}`, { method: 'DELETE' });
                 notify(`${memberLabel(member)} was removed.`);
                 await load();
-              } catch (error) { formError(operationError, error); confirm.disabled = false; }
+              } catch (error) { formError(warningError, error); confirm.disabled = false; cancel.disabled = false; }
             }, 'danger small');
-            warning.append(node('div', { class: 'actions' }, confirm, button('Cancel', () => load(), 'small')));
-            row.replaceChildren(warning);
-          }, 'danger small'));
+            const cancel = button('Cancel', () => { row.replaceChildren(...original); remove.focus(); }, 'small');
+            warning.append(node('div', { class: 'actions' }, confirm, cancel));
+            row.replaceChildren(node('td', { colspan: '3' }, warning));
+            cancel.focus();
+          }, 'danger small');
+          actions.append(remove);
           const row = node('tr', {}, node('td', {}, node('strong', {}, memberLabel(member)), node('div', { class: 'small muted' }, member.email)), node('td', {}, member.role), node('td', {}, actions));
           return row;
         });
@@ -104,7 +127,7 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
           event.preventDefault();
           inviteSubmit.disabled = true;
           try {
-            await request(`/api/v1/organizations/${encodeURIComponent(org)}/invitations`, { method: 'POST', body: { email: inviteEmail.input.value, role: inviteRole.value } });
+            await mutate(`/api/v1/organizations/${encodeURIComponent(org)}/invitations`, { method: 'POST', body: { email: inviteEmail.input.value, role: inviteRole.value } });
             notify('Invitation queued.');
             await load();
           } catch (error) { formError(inviteError, error); inviteSubmit.disabled = false; }
@@ -112,7 +135,7 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
         const invitationRows = invitations.map(invitation => node('tr', {}, node('td', {}, node('strong', {}, invitation.email), node('div', { class: 'small muted' }, `Expires ${new Date(invitation.expiresAt).toLocaleString()}`)), node('td', {}, invitation.role), node('td', {}, invitation.status),
           node('td', {}, button('Cancel', async () => {
             try {
-              await request(`/api/v1/organizations/${encodeURIComponent(org)}/invitations/${encodeURIComponent(invitation.id)}`, { method: 'DELETE' });
+              await mutate(`/api/v1/organizations/${encodeURIComponent(org)}/invitations/${encodeURIComponent(invitation.id)}`, { method: 'DELETE' });
               notify('Invitation canceled.');
               await load();
             } catch (error) { formError(operationError, error); }
@@ -128,7 +151,7 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
           event.preventDefault();
           create.disabled = true;
           try {
-            const team = await request(teamPath(org), { method: 'POST', body: { name: input.input.value } });
+            const team = await mutate(teamPath(org), { method: 'POST', body: { name: input.input.value } });
             selectedTeam = team.id;
             notify(`${team.name} was created.`);
             await load();
@@ -154,7 +177,7 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
         const saveName = button('Save name', async () => {
           saveName.disabled = true;
           try {
-            await request(teamPath(org, team.id), { method: 'PATCH', body: { name: rename.input.value } });
+            await mutate(teamPath(org, team.id), { method: 'PATCH', body: { name: rename.input.value } });
             notify('Team renamed.');
             await load();
           } catch (failure) { formError(error, failure); saveName.disabled = false; }
@@ -168,32 +191,61 @@ export function createPeopleUI({ state, node, request, button, field, pageHeader
           if (!add.value) return;
           addButton.disabled = true;
           try {
-            await request(`${teamPath(org, team.id)}/members/${encodeURIComponent(add.value)}`, { method: 'POST' });
+            await mutate(`${teamPath(org, team.id)}/members/${encodeURIComponent(add.value)}`, { method: 'POST' });
             notify('Team member added.');
             await load();
           } catch (failure) { formError(error, failure); addButton.disabled = false; }
         }, 'small');
         addButton.disabled = available.length === 0 || !mayChangeMembership;
-        const memberRows = detail.members.map(member => node('tr', {}, node('td', {}, node('strong', {}, memberLabel(member)), node('div', { class: 'small muted' }, member.email)),
-          node('td', {}, mayChangeMembership ? button('Remove', async () => {
-            try {
-              await request(`${teamPath(org, team.id)}/members/${encodeURIComponent(member.id)}`, { method: 'DELETE' });
-              notify('Team member removed.');
-              await load();
-            } catch (failure) { formError(error, failure); }
-          }, 'small danger') : node('span', { class: 'small muted' }, 'Only team members can change assignments.'))));
+        const memberRows = detail.members.map(member => {
+          const actions = node('td', {});
+          if (mayChangeMembership) {
+            const remove = button('Remove', () => {
+              operationError.textContent = '';
+              error.textContent = '';
+              const confirm = button('Confirm removal', async () => {
+                confirm.disabled = true;
+                cancel.disabled = true;
+                try {
+                  await mutate(`${teamPath(org, team.id)}/members/${encodeURIComponent(member.id)}`, { method: 'DELETE' });
+                  notify('Team member removed.');
+                  await load();
+                } catch (failure) { formError(error, failure); confirm.disabled = false; cancel.disabled = false; }
+              }, 'small danger');
+              const cancel = button('Cancel', () => { error.textContent = ''; row.replaceChildren(identity, actions); remove.focus(); }, 'small');
+              row.replaceChildren(node('td', { colspan: '2' }, node('div', { class: 'form-stack' },
+                node('p', {}, `Remove ${memberLabel(member)} (${member.email}) from this team? Team membership and team alert delivery may change; organization access and project data remain.`),
+                node('div', { class: 'actions' }, confirm, cancel))));
+              cancel.focus();
+            }, 'small danger');
+            actions.append(remove);
+          } else {
+            actions.append(node('span', { class: 'small muted' }, 'Only team members can change assignments.'));
+          }
+          const identity = node('td', {}, node('strong', {}, memberLabel(member)), node('div', { class: 'small muted' }, member.email));
+          const row = node('tr', {}, identity, actions);
+          return row;
+        });
         const editor = node('div', { class: 'form-stack people-team-detail' });
         const deleteTeam = button('Delete team', () => {
-          const warning = node('div', { class: 'form-stack' }, node('p', {}, 'Delete this team? Project associations are removed; project data is kept.'), error);
-          warning.append(node('div', { class: 'actions' }, button('Confirm deletion', async () => {
+          operationError.textContent = '';
+          const original = Array.from(editor.childNodes);
+          error.textContent = '';
+          const warning = node('div', { class: 'form-stack' }, node('p', {}, 'Delete this team? Team memberships and project associations are removed; project data is kept.'), error);
+          const confirm = button('Confirm deletion', async () => {
+            confirm.disabled = true;
+            cancel.disabled = true;
             try {
-              await request(teamPath(org, team.id), { method: 'DELETE' });
+              await mutate(teamPath(org, team.id), { method: 'DELETE' });
               selectedTeam = null;
               notify('Team deleted.');
               await load();
-            } catch (failure) { formError(error, failure); }
-          }, 'danger small'), button('Cancel', () => load(), 'small')));
+            } catch (failure) { formError(error, failure); confirm.disabled = false; cancel.disabled = false; }
+          }, 'danger small');
+          const cancel = button('Cancel', () => { error.textContent = ''; editor.replaceChildren(...original); deleteTeam.focus(); }, 'small');
+          warning.append(node('div', { class: 'actions' }, confirm, cancel));
           editor.replaceChildren(warning);
+          cancel.focus();
         }, 'danger small');
         deleteTeam.disabled = team.slug === 'default';
         editor.append(
