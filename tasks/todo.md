@@ -15308,3 +15308,24 @@ de informes nativos ni se acreditaron candidata o CI final.
 Siguiente acción concreta: preparar la limpieza de los dos recibos propios
 restantes con logs y uptime deshabilitados, verificar las 73 tablas, reiniciar
 la aplicación y contrastar la traza, el log y la recuperación separada.
+
+### Última expiración y reinicio de errores con imagen posterior, 2026-10-30
+
+Con logs y uptime deshabilitados, el worker de la imagen 799a0dc eliminó los
+dos recibos propios restantes y bytes dependientes; ambas incidencias quedaron
+vacías y las demás filas de 73 tablas exactas. Los endpoints deshabilitados y
+los eventos vencidos devolvieron 404; la traza de dos spans y el log se
+conservaron. Edge comprobó la vista vacía final y su historial en 320/768/1440.
+
+El contenedor original reinició con imagen, configuración y montajes iguales,
+readiness 200 y 4425 filas exactas. La traza y el log se leyeron tras el
+reinicio; se contabilizaron las sesiones de navegador y consulta, sin otras
+diferencias. Las 4258 filas históricas y la restauración separada permanecen
+conservadas. El primer arranque se detuvo antes de crear recursos por una clave
+de comprobante incorrecta; corregida la clave, pasó. Contenedores detenidos.
+Comprobante: test-results/closure-20261025/error-current-final-expiry/.
+
+CLOSE-operacion-019–023 mantiene abiertos los gates de candidata, publicación y
+CI; no se ejecutaron checks de informes nativos. Siguiente acción concreta:
+cotejar la aceptación de uptime 010/012 con la imagen actual y preparar una
+copia aislada verificable, preservando las referencias y monitores originales.
