@@ -15594,3 +15594,18 @@ Comprobante: test-results/closure-20261025/pages-current-comparison/.
 Siguiente acción concreta: reconciliar los criterios invalidados con los nuevos
 comprobantes, sin promover gates públicos o de candidata aún ausentes; localizar
 el siguiente subresultado independiente que requiera trabajo local.
+
+### Aislamiento de autorización Wizard, 2026-10-30
+
+En la instancia aislada 799a0dc se crearon una segunda organización sintética y
+un miembro de prueba. Crear el hash no añadió filas; el miembro recibió 403 y un
+bearer ligado a la primera organización recibió 404 al solicitar la segunda,
+sin crear credenciales ni transferencias. El bearer sí pudo solicitar su propia
+organización: el payload incluyó solo sus proyectos y un token all-projects con
+los tres scopes contratados, que consultó releases; tras borrar la transferencia
+el hash devolvió 404. No se registraron secretos; contenedores detenidos.
+Comprobante: test-results/closure-20261025/wizard-image-authorization/.
+
+Siguiente acción concreta: reconciliar la matriz por criterio con los nuevos
+recibos y el cotejo de código, promoviendo solo los subresultados completos y
+manteniendo abiertos los gates finales y las excepciones expresas.
