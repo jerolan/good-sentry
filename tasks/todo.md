@@ -15126,3 +15126,25 @@ Siguiente acción concreta: revisar sobre esa copia los candidatos de limpieza
 y trabajos automáticos, y preparar un volumen y una aplicación aislados con la
 imagen 799a0dc para comprobar recuperación sin alterar la copia de referencia;
 registrar cualquier diferencia. Los gates de imagen candidata y CI siguen abiertos.
+
+### Recuperación de archivos con imagen posterior, 2026-10-30
+
+La copia nueva volvió a coincidir con las 73 tablas de la referencia; no había
+candidatos de limpieza ni trabajos pendientes entre los revisados, incluida la
+cola de procesamiento nativo. Una aplicación no-root con volumen nuevo e imagen
+799a0dc inició con retenciones protectoras y readiness 200. No se ejecutaron
+comprobaciones de informes nativos. Después del arranque las 4539 filas seguían
+exactas; la aplicación recuperó dos mapas, el frame histórico original en la
+línea 7, 25 adjuntos en la primera página, los bytes exactos del adjunto SDK y
+el evento compatible. Las lecturas añadieron una sesión; las demás filas y la
+referencia permanecieron exactas. Contenedores detenidos y datos conservados.
+
+El primer intento se detuvo antes de crear recursos al encontrar dos redes en la
+base; seleccionar su red privada existente permitió el arranque. Comprobante:
+test-results/closure-20261025/file-current-recovery/. No acredita expiración
+con esa imagen ni gates de candidata/CI; CLOSE-operacion-043 sigue abierto.
+
+Siguiente acción concreta: preparar otra copia aislada del respaldo previo a
+expiración, comprobar sus candidatos y ejecutar sobre ella la primera expiración
+solo de archivos propios con la imagen 799a0dc; cotejar todas las filas con la
+referencia y conservar la copia de recuperación recién verificada.
