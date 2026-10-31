@@ -15527,3 +15527,25 @@ Comprobante: test-results/closure-20261025/mcp-upgrade-current/.
 Siguiente acción concreta: revisar candidatos automáticos de la copia restaurada,
 iniciar la imagen 799a0dc solo sobre ella, comparar todas las columnas y recibos
 anteriores a 044, validar el token heredado y comprobar reinicio y recuperación.
+
+### Upgrade MCP 043→079 con imagen posterior, 2026-10-30
+
+La copia restaurada de versión 43 se actualizó con la imagen 799a0dc y volumen
+nuevo, sin tocar la fuente. Sus 55 filas conservaron todas las columnas
+originales; las únicas filas nuevas en las 44 tablas anteriores fueron los 36
+recibos que llevan el esquema a 79. Las tres tablas OAuth existen. El token de
+ocho scopes conservó su proyección exacta: releases y proyecto permitido 200,
+proyecto excluido 404; el cliente MCP Go v1.8.0 conectó y solo vio el permitido.
+Discovery con prefijo respondió 200/no-store.
+
+El reinicio conservó exactamente 92 filas, imagen, configuración y montajes.
+Una tercera base restauró el backup y coincidió en 55 filas y secuencias con la
+fuente 43. Contenedores detenidos, datos y credenciales privados. Esta fuente
+se creó para la prueba y no se presenta como el runtime histórico ausente.
+Comprobante: test-results/closure-20261025/mcp-upgrade-current/.
+
+CLOSE-mcp-059 conserva pendientes la conciliación por subresultado y los gates
+de candidata/CI. Siguiente acción concreta: cotejar los recibos locales MCP y
+sus dependencias frente a la revisión actual, y seleccionar el siguiente
+criterio independiente sin evidencia vigente, incluido Grafana si corresponde.
+No se ejecutaron checks de informes nativos.
