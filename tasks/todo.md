@@ -15370,3 +15370,20 @@ Siguiente acción concreta: reanudar la cohorte aislada y sus probes propios,
 registrar checks frescos y entregas, verificar la recuperación en navegador y
 preservar las referencias. No se ejecutaron checks de informes nativos; gates de
 candidata y CI siguen abiertos.
+
+### Checks frescos de uptime con imagen posterior, 2026-10-30
+
+Con el servidor de probes propio y la misma imagen 799a0dc, cinco checks
+nuevos recuperaron HTTP/TCP desde down y ejercitaron heartbeat sin transición y
+luego down/up. Las entregas e intentos anteriores permanecieron y ocho entregas
+quedaron enviadas; solo avanzó el instante de última activación de la regla.
+Edge comprobó las vistas recuperadas en 320/768/1440 sin errores ni
+desbordamiento. Referencia, restauración separada y 4305 filas históricas
+permanecieron conservadas; el snapshot actual de 4477 filas queda privado para
+la siguiente fase. Contenedores detenidos. Comprobante:
+test-results/closure-20261025/uptime-current-fresh/.
+
+Siguiente acción concreta: vencer los seis checks propios restantes con uptime
+y logs deshabilitados, comparar todas las tablas y después comprobar reinicio y
+recuperación separada. No se ejecutaron checks de informes nativos; candidata y
+CI siguen pendientes.
