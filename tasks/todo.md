@@ -15766,3 +15766,33 @@ está acreditado directamente junto con la ausencia de emisión de código.
 Siguiente acción concreta: extender el owner HTTP existente para denegar un
 consentimiento válido, verificar `access_denied`, state y ausencia de código o
 credenciales y después aprobar la misma solicitud, usando PostgreSQL aislado.
+
+### Fallo de concesión OAuth para todos los proyectos, 2026-10-30
+
+El owner HTTP nuevo confirmó la denegación explícita, pero una aprobación de
+todos los proyectos devolvió `access_denied` en lugar de código; el resultado
+se conserva en `mcp-consent-denial-current/green-all-projects.log`. El servidor
+pasa una lista nil al almacenamiento, cuya columna de proyectos no admite
+NULL. Los proyectos seleccionados y el handler oficial anterior seguían pasando.
+CLOSE-mcp-054/055 continúan invalidados.
+
+Siguiente acción concreta: normalizar la lista vacía para concesiones de todos
+los proyectos, verificar código, intercambio y refresh con PostgreSQL aislado,
+y conservar la denegación y los controles de subconjunto existentes.
+
+### Corrección de concesión de todos los proyectos, 2026-10-30
+
+La denegación explícita conserva state/issuer y no emite credenciales; un
+overlay que anuló la rama hizo fallar el owner. La aprobación de todos los
+proyectos fallaba por NULL en el array; el proveedor ahora guarda un array
+vacío. Código, intercambio y refresh pasaron con un proyecto creado después
+del consentimiento; los controles de subconjunto y cliente oficial también
+pasaron. Cuatro owners HTTP y dos de Store pasaron con race; vet y compilación
+pasaron. La base quedó detenida. Comprobante:
+test-results/closure-20261025/mcp-consent-denial-current/.
+
+La imagen bd513a7 es anterior al cambio. 054/055 y la aceptación integral MCP
+siguen abiertos; metadatos, registro y UI no cambian en este incremento.
+Siguiente acción concreta: construir una imagen de esta revisión y comprobar
+en ella la denegación, autorización de todos los proyectos y su refresh, sin
+ejecutar comprobaciones de informes nativos.

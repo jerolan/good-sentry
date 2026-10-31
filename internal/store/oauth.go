@@ -114,6 +114,9 @@ func parseInt64(value string) int64 {
 }
 
 func (s *Store) CreateOAuthCode(ctx context.Context, input OAuthCodeInput) error {
+	if input.AllProjects && input.ProjectIDs == nil {
+		input.ProjectIDs = []int64{}
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return err

@@ -164,6 +164,69 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 		t.Fatalf("consent page: %d %s", get.StatusCode, consent)
 	}
 	form := url.Values{"client_id": {client.ClientID}, "redirect_uri": {redirect}, "response_type": {"code"}, "state": {state}, "resource": {publicBase + "/mcp"}, "scope": {scope}, "code_challenge": {challenge}, "code_challenge_method": {"S256"}, "csrf": {f.csrf}, "organization": {f.org.Slug}, "project": {f.project.ID}, "decision": {"approve"}}
+	{
+		var beforeCodes, beforeAccess, beforeRefresh int
+		counts := func(codes, access, refresh *int) {
+			t.Helper()
+			if err := f.sql.QueryRow(f.ctx, `SELECT (SELECT count(*) FROM oauth_authorization_codes WHERE client_id=$1), (SELECT count(*) FROM api_tokens WHERE name='OAuth MCP acceptance'), (SELECT count(*) FROM oauth_refresh_tokens WHERE client_id=$1)`, client.ClientID).Scan(codes, access, refresh); err != nil {
+				t.Fatal(err)
+			}
+		}
+		counts(&beforeCodes, &beforeAccess, &beforeRefresh)
+		form.Set("decision", "deny")
+		denied, _ := oauthForm(t, noRedirect, base+"/oauth/authorize", form)
+		callback, err := url.Parse(denied.Header.Get("Location"))
+		if err != nil || denied.StatusCode != http.StatusSeeOther || callback.Query().Get("error") != "access_denied" || callback.Query().Get("code") != "" || callback.Query().Get("state") != state || callback.Query().Get("iss") != publicBase {
+			t.Fatalf("denied consent status=%d error=%v", denied.StatusCode, err)
+		}
+		var afterCodes, afterAccess, afterRefresh int
+		counts(&afterCodes, &afterAccess, &afterRefresh)
+		if afterCodes != beforeCodes || afterAccess != beforeAccess || afterRefresh != beforeRefresh {
+			t.Fatal("denied consent created a code or credentials")
+		}
+		form.Set("decision", "approve")
+	}
+	{
+		form.Del("project")
+		form.Set("all_projects", "1")
+		allResponse, _ := oauthForm(t, noRedirect, base+"/oauth/authorize", form)
+		allCallback, err := url.Parse(allResponse.Header.Get("Location"))
+		if err != nil || allResponse.StatusCode != http.StatusSeeOther || allCallback.Query().Get("code") == "" {
+			t.Fatalf("all-project consent status=%d error=%v", allResponse.StatusCode, err)
+		}
+		var allProjects bool
+		hash := (&Server{cfg: cfg}).hash(allCallback.Query().Get("code"))
+		if err := f.sql.QueryRow(f.ctx, `SELECT all_projects AND cardinality(project_ids)=0 FROM oauth_authorization_codes WHERE code_hash=$1`, hash).Scan(&allProjects); err != nil || !allProjects {
+			t.Fatalf("all-project grant not stored: %v", err)
+		}
+		allTokenForm := url.Values{"grant_type": {"authorization_code"}, "client_id": {client.ClientID}, "redirect_uri": {redirect}, "code": {allCallback.Query().Get("code")}, "code_verifier": {verifier}}
+		allTokenResponse, allTokenBody := oauthForm(t, noRedirect, base+"/oauth/token", allTokenForm)
+		var allToken struct {
+			AccessToken  string `json:"access_token"`
+			RefreshToken string `json:"refresh_token"`
+		}
+		if allTokenResponse.StatusCode != http.StatusOK || json.Unmarshal(allTokenBody, &allToken) != nil || allToken.AccessToken == "" || allToken.RefreshToken == "" {
+			t.Fatalf("all-project exchange status=%d", allTokenResponse.StatusCode)
+		}
+		if _, err := f.db.CreateProject(f.ctx, f.owner.ID, f.org.Slug, "Created after consent", "go"); err != nil {
+			t.Fatal(err)
+		}
+		allSession := mcpClient(t, f, srv, allToken.AccessToken, "2026-07-28")
+		if projects := mcpWorkspaceCall(t, f, allSession, "list_projects", map[string]any{"organization": f.org.ID}); len(projects.Data) != 2 {
+			t.Fatalf("all-project token returned %d projects", len(projects.Data))
+		}
+		refresh := url.Values{"grant_type": {"refresh_token"}, "client_id": {client.ClientID}, "refresh_token": {allToken.RefreshToken}}
+		refreshResponse, refreshBody := oauthForm(t, noRedirect, base+"/oauth/token", refresh)
+		if refreshResponse.StatusCode != http.StatusOK || json.Unmarshal(refreshBody, &allToken) != nil || allToken.AccessToken == "" {
+			t.Fatalf("all-project refresh status=%d", refreshResponse.StatusCode)
+		}
+		refreshedSession := mcpClient(t, f, srv, allToken.AccessToken, "2026-07-28")
+		if projects := mcpWorkspaceCall(t, f, refreshedSession, "list_projects", map[string]any{"organization": f.org.ID}); len(projects.Data) != 2 {
+			t.Fatalf("refreshed all-project token returned %d projects", len(projects.Data))
+		}
+		form.Del("all_projects")
+		form.Set("project", f.project.ID)
+	}
 	res, body = oauthForm(t, noRedirect, base+"/oauth/authorize", form)
 	if res.StatusCode != http.StatusSeeOther {
 		t.Fatalf("consent: %d %s", res.StatusCode, body)
@@ -173,6 +236,11 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 		t.Fatalf("callback: %q %v", res.Header.Get("Location"), err)
 	}
 	code := callback.Query().Get("code")
+	var storedGrant bool
+	codeHash := (&Server{cfg: cfg}).hash(code)
+	if err := f.sql.QueryRow(f.ctx, `SELECT EXISTS(SELECT 1 FROM oauth_authorization_codes c JOIN users u ON u.id=c.user_id WHERE c.code_hash=$1 AND c.client_id=$2 AND c.organization_id=$3::bigint AND c.project_ids=ARRAY[$4::bigint] AND c.scopes=string_to_array($5,' ') AND c.redirect_uri=$6 AND c.code_challenge=$7 AND c.user_id=$8::bigint AND c.auth_generation=u.auth_generation AND NOT c.all_projects AND c.consumed_at IS NULL AND c.expires_at-c.created_at BETWEEN interval '9 minutes 55 seconds' AND interval '10 minutes 5 seconds')`, codeHash, client.ClientID, f.org.ID, f.project.ID, scope, redirect, challenge, f.owner.ID).Scan(&storedGrant); err != nil || !storedGrant || codeHash == code {
+		t.Fatalf("authorization code grant not stored with its bound values: %v", err)
+	}
 	tokenForm := url.Values{"grant_type": {"authorization_code"}, "client_id": {client.ClientID}, "redirect_uri": {redirect}, "code": {code}, "code_verifier": {verifier}}
 	res, body = oauthForm(t, noRedirect, base+"/oauth/token", tokenForm)
 	if res.StatusCode != http.StatusOK || res.Header.Get("Cache-Control") != "no-store" {
