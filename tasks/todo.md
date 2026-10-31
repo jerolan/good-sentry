@@ -1845,9 +1845,9 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-017](../SPEC.md#close-operacion-017) | Error-event retention: Issue count and its first/last/title/environment/release reflect the surviving stored p… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-018](../SPEC.md#close-operacion-018) | Error-event retention: Preserve existing authorization and snapshot semantics. Native IssueDetail already retu… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | vigente | Reconciliación 2026-10-30: criterion-error-ui-20261030/; clase pendiente |
-| [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
+| [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | invalidada | Aceptación local con candidata d2f341b desde copia verificada; gates integrales y públicos pendientes |
 | [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | vigente | Copia autorizada, SDK y expiración 2026-10-30: error-retention-criterion-021/ |
-| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
+| [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada | invalidada | Vistas comprobadas en candidata d2f341b desde copia verificada; gates integrales y públicos pendientes |
 | [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
 | [CLOSE-uptime-006](../SPEC.md#close-uptime-006) | Uptime check retention: The next required retention class owns monitor_checks, not monitors. Official installa… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-uptime-007](../SPEC.md#close-uptime-007) | Uptime check retention: Use completed_at as the existing durable server completion clock. Both CompleteMonitor… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -16167,3 +16167,20 @@ test-results/closure-20261025/error-retention-candidate-current/recapture.json.
 Siguiente acción concreta: eliminar los dos recibos propios restantes con logs
 y uptime deshabilitados, comparar las filas, reiniciar y verificar la traza y el
 log conservados sin tocar la copia de recuperación.
+
+### Limpieza final de errores en candidata, 2026-10-30
+
+Con logs y uptime deshabilitados, d2f341b eliminó los dos recibos propios
+restantes y sus adjuntos; las demás filas de 73 tablas coincidieron con el
+estado esperado. Las incidencias vacías siguieron legibles y Edge comprobó la
+vista y confirmación en 320/768/1440. El reinicio conservó filas, imagen y
+configuración; al reactivar logs en la aplicación original, la traza de dos
+nodos y el log independiente seguían disponibles. La copia de recuperación y
+el backup conservaron sus hashes; las aplicaciones y base quedaron detenidas.
+Comprobante: test-results/closure-20261025/error-retention-candidate-current/final.json.
+
+Los criterios 020/022 siguen invalidados por los gates integrales y públicos;
+no se ejecutaron checks de informes nativos. El usuario autorizó preparar una
+serie local sin test-results y adaptar workflows para excluir esos checks,
+conservando la serie actual. Siguiente acción concreta: preservar la serie y
+preparar la alternativa verificable, sin publicar ni reescribir el remoto.
