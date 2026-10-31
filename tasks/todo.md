@@ -2249,7 +2249,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-074](../SPEC.md#close-mcp-074) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-075](../SPEC.md#close-mcp-075) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-076](../SPEC.md#close-mcp-076) | Cliente oficial Go modelcontextprotocol/go-sdk v1.8.0 contra endpoint real por Streamable HTTP: descubrir e in… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-077](../SPEC.md#close-mcp-077) | Cliente oficial Go v1.8.0: autorización y ciclo OAuth/token completos del contrato vigente, incluyendo scopes,… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-mcp-077](../SPEC.md#close-mcp-077) | Cliente oficial Go v1.8.0: autorización y ciclo OAuth/token completos del contrato vigente, incluyendo scopes,… | implementada | vigente | Handler y scopes oficiales en imagen: mcp-official-scopes-current/; aceptación integral pendiente |
 | [CLOSE-operacion-100](../SPEC.md#close-operacion-100) | Auditoría por requisito sobre revisión candidata identificada e imagen vinculada, con todos los checks, invali… | implementada (parcial) | bloqueada | Auditoría registrada en operacion-100/audit.json; faltan imagen/CI/registro externos |
 | [CLOSE-sourcemaps-032](../SPEC.md#close-sourcemaps-032) | Enriquecimiento automático con fuentes Java; no exige SDK/JDK, bundles ni aceptación Java básica por inferenci… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
 | [CLOSE-sourcemaps-033](../SPEC.md#close-sourcemaps-033) | Conexión automática con repositorios y descubrimiento remoto de commits. Conservar releases, commits locales y… | por contrastar | aplazada por decisión expresa | Conservar límites y controles; ver decisión |
@@ -15890,3 +15890,16 @@ HTTP separados.
 Siguiente acción concreta: usar el filtro público de scopes del SDK oficial en
 la imagen actual, comprobar la selección exacta en el consentimiento y la
 credencial persistida, y repetir renovación y revocación sin registrar secretos.
+
+### Scopes del cliente MCP oficial, 2026-10-30
+
+El handler oficial solicitó y conservó exactamente los cinco scopes habilitados
+en la imagen 7784c81, con proyecto seleccionado, renovación, rechazo de replay
+y revocación. El primer controlador falló por asumir un orden de scopes que
+el SDK no garantiza; tras comparar el conjunto exacto pasó. Contenedores
+detenidos. CLOSE-mcp-077 queda vigente para la fuente comparada. Comprobante:
+test-results/closure-20261025/mcp-official-scopes-current/.
+
+Siguiente acción concreta: reconciliar CLOSE-mcp-050 con los owners de las 17
+tools, 2FA e interfaz, y mantener abierto CLOSE-mcp-059 por los gates de
+candidata, CI y publicación.
