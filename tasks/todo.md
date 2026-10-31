@@ -15289,3 +15289,22 @@ Siguiente acción concreta: recapturar con el SDK oficial la identidad vencida
 y reintentar la retenida en esta cohorte, comprobar conteo, historial y vista
 recuperada, y preservar las referencias. No se ejecutaron checks de informes
 nativos; candidata, imagen final y CI siguen pendientes.
+
+### Recaptura de errores con imagen posterior, 2026-10-30
+
+Tras cotejar la copia y reiniciar su aplicación, el SDK Node 11.7.0 recapturó
+la identidad vencida en su incidencia original y reintentó la retenida sin
+duplicar el conteo; cuatro envelopes recibieron HTTP 200. El mute avanzó una vez
+y `first_seen` siguió siendo único. En las 73 tablas se añadieron el evento,
+un adjunto exacto, dos elementos de sesión y cinco sesiones de acceso; la
+incidencia reflejó el evento recuperado y las demás filas quedaron exactas.
+Las 4258 filas históricas y las copias de referencia permanecieron conservadas.
+
+Edge verificó la vista recuperada en 320/768/1440 sin errores ni desbordamiento;
+contenedores detenidos y capturas privadas conservadas por hash. Comprobante:
+test-results/closure-20261025/error-current-recapture/. No se ejecutaron checks
+de informes nativos ni se acreditaron candidata o CI final.
+
+Siguiente acción concreta: preparar la limpieza de los dos recibos propios
+restantes con logs y uptime deshabilitados, verificar las 73 tablas, reiniciar
+la aplicación y contrastar la traza, el log y la recuperación separada.
