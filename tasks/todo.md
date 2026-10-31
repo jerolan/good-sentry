@@ -2125,7 +2125,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | vigente | Imagen y matriz OAuth 2026-10-30: mcp-oauth-registration-boundaries/; gates integrales pendientes |
 | [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | vigente | Imagen y matriz OAuth 2026-10-30: mcp-oauth-registration-boundaries/; gates integrales pendientes |
 | [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | vigente | Imagen, consentimiento y concurrencia 2026-10-30: mcp-membership-image-current/ |
 | [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-mcp-056](../SPEC.md#close-mcp-056) | MCP OAuth authorization: Add additive044 storage for OAuth clients, hashed authorization codes and hashed refr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-057](../SPEC.md#close-mcp-057) | MCP OAuth authorization: MCP Bearer denial changes from bare WWW-Authenticate: Bearer to include canonical res… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -15840,3 +15840,17 @@ test-results/closure-20261025/mcp-membership-race-current/.
 la imagen f7ab083 es anterior a este cambio. Siguiente acción concreta: crear
 una imagen desde esta revisión, repetir el cliente oficial y reconciliar 054;
 conservar pendientes CI y publicación, sin ejecutar pruebas de fallos nativos.
+
+### Consentimiento MCP reconciliado en imagen, 2026-10-30
+
+En la imagen 7784c81 el cliente oficial completó concesiones de un proyecto y
+de todos, denegación, refresh y revocación. El owner PostgreSQL comprobó la
+retirada concurrente de membresía, el owner HTTP los vínculos y duración del
+código, y los controles de aislamiento siguieron aplicables a la fuente
+comparada. CLOSE-mcp-054 queda vigente; comprobante:
+test-results/closure-20261025/mcp-membership-image-current/. 055, la
+aceptación integral, candidata y CI siguen abiertos.
+
+Siguiente acción concreta: cotejar expiración, rotación y revocación de 055 con
+sus condiciones completas; ejecutar el primer control funcional aún ausente
+sobre PostgreSQL aislado y mantener pendientes los gates públicos.
