@@ -15406,3 +15406,18 @@ CLOSE-uptime-010/012 conserva abiertos imagen candidata, publicación y CI; no
 se ejecutaron checks de informes nativos. Siguiente acción concreta: cotejar el
 siguiente criterio independiente del plan, empezando por el cliente oficial
 Sentry Wizard y la vigencia de sus comprobantes frente a la imagen actual.
+
+### Selección de Sentry Wizard con imagen posterior, 2026-10-30
+
+Se retoma CLOSE-lectores-001: sus owners HTTP, Store y criptografía pasaron en
+f92f296, pero cliente oficial y navegador son evidencia histórica. La imagen
+799a0dc conserva los mismos inputs de producto que la revisión actual, según
+el cotejo de releases. El tarball oficial `@sentry/wizard` 8.0.1 está en la
+caché local y sus dependencias pudieron prepararse sin red en un directorio
+temporal. El primer intento offline no obtuvo metadata válida y el segundo
+falló por la caché de usuario de solo lectura; copiar la caché a `/tmp` permitió
+instalar sin modificarla. Es preparación, no aceptación del flujo.
+
+Siguiente acción concreta: levantar PostgreSQL y aplicación aislados, crear una
+organización y proyecto propios y repetir handoff con navegador y cliente real;
+registrar el alcance y los gates de candidata/CI que sigan pendientes.
