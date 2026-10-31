@@ -2121,7 +2121,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-047](../SPEC.md#close-mcp-047) | MCP performance investigation: Add grant-contained Store providers over the existing event and span projection… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-048](../SPEC.md#close-mcp-048) | MCP performance investigation: Reuse native event/segment span unions, group sorting and latency definitions.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-049](../SPEC.md#close-mcp-049) | MCP performance investigation: Acceptance creates real transaction events with indexed child spans across sele… | implementada | vigente | Comprobante 2026-10-26 abajo |
-| [CLOSE-mcp-050](../SPEC.md#close-mcp-050) | MCP OAuth authorization: When MCP is selected, provide a same-origin OAuth2 authorization server for MCP clien… | implementada | invalidada | Handler oficial verificado localmente; conciliación de candidata y gates integrales pendiente |
+| [CLOSE-mcp-050](../SPEC.md#close-mcp-050) | MCP OAuth authorization: When MCP is selected, provide a same-origin OAuth2 authorization server for MCP clien… | implementada | vigente | Owners MCP y 2FA actuales: mcp-integrated-current/; aceptación integral pendiente |
 | [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | vigente | Imagen y matriz OAuth 2026-10-30: mcp-oauth-registration-boundaries/; gates integrales pendientes |
 | [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | vigente | Imagen y matriz OAuth 2026-10-30: mcp-oauth-registration-boundaries/; gates integrales pendientes |
 | [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -15914,3 +15914,16 @@ oficial ya tienen comprobantes en imagen; el conjunto anterior de tools y
 Siguiente acción concreta: repetir los owners MCP y el owner de 2FA con race
 en PostgreSQL aislado, sin incluir las pruebas de informes nativos; cotejar su
 alcance con la interfaz y los clientes oficiales de la imagen actual.
+
+### Controles integrados MCP, 2026-10-30
+
+Los owners de las 17 tools, transporte, OAuth oficial y 2FA pasaron con race
+sobre PostgreSQL aislado; vet pasó y la base quedó detenida. Junto con el
+cliente y la interfaz comprobados en imagen, CLOSE-mcp-050 queda vigente para
+la fuente comparada. Comprobante:
+test-results/closure-20261025/mcp-integrated-current/. Esto no acredita la
+suite completa, candidata, publicación ni CI de CLOSE-mcp-059.
+
+Siguiente acción concreta: cotejar los criterios restantes de retención y
+aceptación integral con sus gates pendientes y preparar una auditoría de
+publicación que respete la exclusión de pruebas nativas indicada por el usuario.
