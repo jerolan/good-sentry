@@ -15350,3 +15350,23 @@ Siguiente acción concreta: preparar una copia independiente con el mismo
 respaldo para vencer siete checks propios, proteger los monitores originales y
 verificar las lecturas y vista vacía; después comprobar probes frescos. No se
 han ejecutado checks de informes nativos ni se han cerrado imagen/CI final.
+
+### Primera expiración de uptime con imagen posterior, 2026-10-30
+
+Una copia independiente restauró y comparó las 4465 filas. El preflight aseguró
+que solo los tres monitores propios estaban habilitados y el próximo probe no
+era inminente. La imagen 799a0dc inició con volumen nuevo y el worker eliminó
+siete checks propios envejecidos bajo el lock; un check con inicio antiguo y
+finalización vigente sobrevivió y las demás filas de 73 tablas quedaron exactas.
+
+El primer verificador se detuvo al comparar las URL de heartbeat porque la copia
+usa otro puerto. Se compararon origen configurado, rutas y demás campos sin
+repetir la limpieza; los estados y paginación pasaron. Edge comprobó las vistas
+vacía y filtrada en 320/768/1440. Se contabilizaron tres sesiones posteriores;
+referencia y recuperación permanecieron exactas y los contenedores quedaron
+detenidos. Comprobante: test-results/closure-20261025/uptime-current-first-expiry/.
+
+Siguiente acción concreta: reanudar la cohorte aislada y sus probes propios,
+registrar checks frescos y entregas, verificar la recuperación en navegador y
+preservar las referencias. No se ejecutaron checks de informes nativos; gates de
+candidata y CI siguen abiertos.
