@@ -15756,3 +15756,13 @@ aceptación integral, imagen definitiva, publicación y CI siguen abiertos.
 Siguiente acción concreta: cotejar los bloques 054/055 y 059/077 completos
 con sus comprobantes y la revisión corregida, manteniendo separadas las
 comprobaciones pendientes de las retiradas por decisión del usuario.
+
+### Selección: denegación de consentimiento MCP, 2026-10-30
+
+Se selecciona CLOSE-mcp-054. Los owners cubren sesión, CSRF/origen, concesión
+válida y selección ajena o ambigua; el rechazo explícito del usuario todavía no
+está acreditado directamente junto con la ausencia de emisión de código.
+
+Siguiente acción concreta: extender el owner HTTP existente para denegar un
+consentimiento válido, verificar `access_denied`, state y ausencia de código o
+credenciales y después aprobar la misma solicitud, usando PostgreSQL aislado.
