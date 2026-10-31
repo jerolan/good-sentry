@@ -15728,3 +15728,16 @@ prohibición de wildcard; CLOSE-mcp-052 permanece invalidado.
 Siguiente acción concreta: extender el owner HTTP, rechazar wildcards y hosts
 vacíos, ejecutar los controles OAuth afectados y repetir la matriz sobre una
 nueva imagen de la fuente corregida.
+
+### Corrección de wildcard y host OAuth, 2026-10-30
+
+El owner HTTP reprodujo la aceptación indebida antes de la corrección. El
+registro ahora rechaza comodines y exige hostname; seis owners OAuth/admisión,
+incluido el handler oficial, pasaron con race y PostgreSQL aislado sin skips.
+Vet y compilación pasaron y la base quedó detenida. Comprobante:
+test-results/closure-20261025/mcp-oauth-registration-boundaries/.
+
+CLOSE-mcp-051/052 siguen invalidados hasta repetir la matriz con imagen nueva;
+la imagen ddb6620 contiene el defecto. Siguiente acción concreta: construir la
+imagen de la fuente corregida y repetir los 33 casos y el cliente oficial, sin
+ejecutar comprobaciones de informes nativos.

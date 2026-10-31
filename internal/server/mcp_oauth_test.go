@@ -93,6 +93,8 @@ func TestMCPOAuthAuthorizationCodeAndRefresh(t *testing.T) {
 	for _, bad := range []string{
 		`{"client_name":"bad","redirect_uris":["http://attacker.example/callback"],"token_endpoint_auth_method":"none"}`,
 		`{"client_name":"bad","redirect_uris":["http://localhost:4567/callback"],"token_endpoint_auth_method":"none"}`,
+		`{"client_name":"bad","redirect_uris":["https://*.example/callback"],"token_endpoint_auth_method":"none"}`,
+		`{"client_name":"bad","redirect_uris":["https://:443/callback"],"token_endpoint_auth_method":"none"}`,
 		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"client_secret_basic"}`,
 		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","unknown":true}`,
 		`{"client_name":"bad","redirect_uris":["` + redirect + `"],"token_endpoint_auth_method":"none","application_type":null}`,

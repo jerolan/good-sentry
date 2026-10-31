@@ -101,7 +101,7 @@ func (s *Server) oauthMetadata(w http.ResponseWriter, r *http.Request) {
 
 func validOAuthRedirect(raw string) bool {
 	u, err := url.Parse(raw)
-	if err != nil || !u.IsAbs() || u.Host == "" || u.User != nil || u.Fragment != "" || strings.Contains(raw, "#") {
+	if err != nil || !u.IsAbs() || u.Hostname() == "" || u.User != nil || u.Fragment != "" || strings.ContainsAny(raw, "#*") {
 		return false
 	}
 	if u.Scheme == "https" {
