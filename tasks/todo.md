@@ -15387,3 +15387,22 @@ Siguiente acción concreta: vencer los seis checks propios restantes con uptime
 y logs deshabilitados, comparar todas las tablas y después comprobar reinicio y
 recuperación separada. No se ejecutaron checks de informes nativos; candidata y
 CI siguen pendientes.
+
+### Última expiración y reinicio de uptime con imagen posterior, 2026-10-30
+
+Una instancia de la imagen 799a0dc con uptime y logs deshabilitados eliminó
+solo los seis checks propios restantes bajo el lock; las demás filas de 73
+tablas quedaron exactas. Gestión devolvió 404 y heartbeat el 405 existente.
+El contenedor original reinició con imagen, configuración y montajes iguales,
+readiness 200 y 4472 filas exactas. Los cuatro monitores y sus historiales
+vacíos paginados siguieron accesibles; se contabilizó una sesión adicional sin
+otras diferencias. Referencia, recuperación y 4305 filas históricas siguen
+conservadas; aplicaciones, probe y base están detenidos.
+
+El primer arranque se detuvo antes de crear recursos por un nombre de contenedor
+incorrecto; se corrigió. Comprobante:
+test-results/closure-20261025/uptime-current-final-expiry/.
+CLOSE-uptime-010/012 conserva abiertos imagen candidata, publicación y CI; no
+se ejecutaron checks de informes nativos. Siguiente acción concreta: cotejar el
+siguiente criterio independiente del plan, empezando por el cliente oficial
+Sentry Wizard y la vigencia de sus comprobantes frente a la imagen actual.
