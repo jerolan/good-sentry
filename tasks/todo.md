@@ -15498,3 +15498,18 @@ CLOSE-mcp-058 conserva abiertos upgrade, candidata y CI. Siguiente acción
 concreta: cotejar la prueba de upgrade de MCP desde la copia anterior a la
 migración 044 y determinar si puede repetirse con la imagen actual sin alterar
 los respaldos; preservar los controles de cliente oficial ya registrados.
+
+### Preparación de upgrade MCP OAuth, 2026-10-30
+
+Los contenedores históricos MCP no aparecen y no se localizó un dump MCP
+identificable bajo el workspace o `/tmp`; sus comprobantes históricos se
+conservan sin presumir que exista el runtime. La revisión 8e675cc incluye 043
+y no incluye 044. Se construyó desde `git archive` una imagen no-root nueva de
+esa versión; revisión y digest están en
+`test-results/closure-20261025/mcp-upgrade-current/old-image.json`. Esta imagen
+no se presenta como la histórica y todavía no acredita el upgrade.
+
+Siguiente acción concreta: iniciar esa imagen sobre PostgreSQL y volumen nuevos,
+crear una organización, proyecto y credencial propios, detenerla y conservar
+un respaldo lógico verificable de versión 43 antes de restaurar otra copia para
+la imagen actual. No alterar respaldos ni runtimes existentes.
