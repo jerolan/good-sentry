@@ -16024,3 +16024,19 @@ política de publicación y la exclusión de checks nativos.
 Siguiente acción concreta: liberar la base desechable propia y ejecutar los
 151 tests restantes de Store y las selecciones de servidor/jobs en lotes con
 bases nuevas, conservando el parcial y deteniendo las bases al terminar.
+
+### Integración local de la candidata completada, 2026-10-30
+
+La selección conservadora de Store, servidor y jobs pasó con race: 378, 150 y
+seis tests principales, respectivamente, sin fallos ni skips en los tramos
+completados; incluyó navegador MCP y el nuevo owner de concurrencia. Tras la
+interrupción preventiva por espacio, los 151 restantes de Store y las demás
+selecciones se ejecutaron en nueve lotes, recreando solo la base desechable
+propia. PostgreSQL quedó detenido. Comprobante:
+test-results/closure-20261025/candidate-integration-current/.
+
+No se afirma suite completa, CI remoto ni cierre: la selección excluye checks
+de informes nativos retirados y archivos mixtos con evidencia separada.
+Siguiente acción concreta: corregir las declaraciones duplicadas de los
+programas Go de evidencia que la copia limpia expuso, conservando su ejecución
+directa y el fallo anterior; después preparar el punto de decisión de publicación.
