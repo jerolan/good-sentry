@@ -15329,3 +15329,24 @@ CLOSE-operacion-019–023 mantiene abiertos los gates de candidata, publicación
 CI; no se ejecutaron checks de informes nativos. Siguiente acción concreta:
 cotejar la aceptación de uptime 010/012 con la imagen actual y preparar una
 copia aislada verificable, preservando las referencias y monitores originales.
+
+### Recuperación de uptime con imagen posterior, 2026-10-30
+
+El backup pre-expiración pasó SHA-256 y se restauró en una base nueva con 4465
+filas, 73 tablas y secuencias exactas frente a la referencia. El preflight no
+halló candidatos entre las tareas revisadas; los tres monitores habilitados eran
+propios y el siguiente probe distaba 1000 segundos. Los monitores originales
+seguían pausados. La imagen no-root 799a0dc inició con volumen nuevo y uptime
+habilitado; readiness 200 y todas las filas exactas tras arrancar.
+
+Edge verificó monitores retenidos y nunca comprobados y sus controles a
+320/768/1440 sin errores ni desbordamiento. Solo añadió una sesión; las demás
+filas coincidieron con la referencia. La aplicación se detuvo antes del próximo
+probe, seguida de la base. El primer arranque se detuvo antes de crear recursos
+por un nombre incorrecto de contenedor; se corrigió. Comprobante:
+test-results/closure-20261025/uptime-current-recovery/.
+
+Siguiente acción concreta: preparar una copia independiente con el mismo
+respaldo para vencer siete checks propios, proteger los monitores originales y
+verificar las lecturas y vista vacía; después comprobar probes frescos. No se
+han ejecutado checks de informes nativos ni se han cerrado imagen/CI final.
