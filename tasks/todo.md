@@ -15973,3 +15973,20 @@ sin resolver el alcance del CI y la contradicción del historial con SPEC.
 Siguiente acción concreta: preparar una imagen local de candidata identificada
 y verificar sus propiedades y fuentes, sin publicar ni lanzar el CI que ejecuta
 los checks omitidos; después registrar la intervención externa necesaria.
+
+### Candidata local provisional, 2026-10-30
+
+La imagen linux/amd64 de d2f341b se construyó desde árbol Git y se probó con
+los clientes MCP oficiales en modos seleccionado y todos los proyectos; ambos
+pasaron y los contenedores quedaron detenidos. Es no-root, estática, contiene
+la licencia y 150 certificados, y su binario coincide por hash con 7784c81.
+El archivo ajeno y `test-results` no entraron en el build. Comprobante:
+test-results/closure-20261025/candidate-d2f341b/.
+
+No se ha publicado ni hay CI coincidente o auditoría final. El workflow actual
+ejecutaría los checks nativos omitidos y los commits pendientes contienen
+`test-results`, que SPEC excluye del repositorio público. Además, el push
+anterior fue rechazado por revisión automática. Siguiente acción concreta:
+resolver con el usuario cómo reconciliar el historial de resultados con la
+política de publicación y cómo obtener CI sin ejecutar los checks abandonados;
+no enviar ni reescribir el historial mientras tanto.
