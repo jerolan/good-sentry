@@ -15235,3 +15235,17 @@ Siguiente acción concreta: verificar el hash de ese respaldo y restaurarlo en
 una base aislada nueva; contrastar todas las filas y secuencias con la
 restauración conservada y revisar las tareas automáticas antes de iniciar una
 aplicación con la imagen 799a0dc. No ejecutar comprobaciones de informes nativos.
+
+### Copia de retención de errores para imagen posterior, 2026-10-30
+
+El respaldo anterior a expiración pasó la verificación SHA-256 y se restauró en
+una base aislada nueva. Sus 4422 filas de 73 tablas, 533 eventos, 79 migraciones
+y secuencias coincidieron con la restauración de referencia. No se inició una
+aplicación; los peers anteriores y la base aislada quedaron detenidos. Los
+respaldos y volúmenes están conservados. Comprobante:
+test-results/closure-20261025/error-current-recovery/.
+
+Siguiente acción concreta: revisar los candidatos de limpieza y trabajos
+automáticos de la copia, preparar un volumen nuevo e iniciar la imagen 799a0dc
+con retenciones protectoras; contrastar las filas y comprobar los eventos e
+incidencias recuperados sin ejecutar checks de informes nativos.
