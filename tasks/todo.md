@@ -15107,3 +15107,22 @@ Siguiente acción concreta: revisar la vigencia y dependencias de
 CLOSE-operacion-043 frente a la imagen actual y sus comprobantes anteriores;
 continuar el trabajo local independiente sin ejecutar los checks nativos
 abandonados ni modificar las copias protegidas.
+
+### Copia de recuperación de archivos para imagen actual, 2026-10-30
+
+La aceptación de archivos usó la imagen 4e820554. Hasta 7b175cc cambiaron 55
+archivos de código y pruebas, principalmente de informes nativos, aunque también
+cambiaron el arranque y configuración. Se conserva la aceptación anterior como
+histórica; no se afirma que haya corrido en la imagen actual. Las selecciones
+recientes de owners generales conservan sus exclusiones explícitas.
+
+El backup anterior a la expiración de archivos se verificó por SHA-256 y se
+restauró en una base nueva; las 4539 filas de 73 tablas y las secuencias
+coinciden con la restauración conservada. No se inició ninguna aplicación y los
+peers estaban detenidos. La base aislada quedó detenida; backup y copias se
+conservan. Comprobante: test-results/closure-20261025/file-current-recovery/.
+
+Siguiente acción concreta: revisar sobre esa copia los candidatos de limpieza
+y trabajos automáticos, y preparar un volumen y una aplicación aislados con la
+imagen 799a0dc para comprobar recuperación sin alterar la copia de referencia;
+registrar cualquier diferencia. Los gates de imagen candidata y CI siguen abiertos.
