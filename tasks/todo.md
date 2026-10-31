@@ -15194,3 +15194,29 @@ informes nativos ni se acredita imagen candidata o CI final.
 Siguiente acción concreta: preparar y ejecutar en la misma copia la última
 expiración de archivos propios con funciones opcionales deshabilitadas; comparar
 las 73 tablas y comprobar el reinicio exacto, conservando la referencia.
+
+### Última expiración y reinicio de archivos con imagen posterior, 2026-10-30
+
+La copia conservaba las filas posteriores a SDK/CLI, salvo la sesión de navegador
+ya registrada. Sin candidatos previos a 90 días y con logs y uptime deshabilitados,
+el worker de la imagen 799a0dc retiró solo dos mapas, tres adjuntos y siete
+opacos propios. Las demás filas de las 73 tablas quedaron exactas; las listas
+de archivos quedaron vacías, tres eventos compatibles siguieron legibles y
+los endpoints deshabilitados devolvieron 404. Edge comprobó la vista vacía y
+el historial a 320/768/1024/1440 sin desbordamiento ni errores.
+
+El contenedor original reinició con imagen, configuración y montajes iguales,
+readiness 200 y 4511 filas exactas. La traza independiente conservó sus dos
+spans. Se contabilizaron las sesiones de navegador y lectura, sin otras
+diferencias; las 4342 filas históricas en sus columnas originales y la copia
+de recuperación siguen exactas. Los contenedores están detenidos. La primera
+comparación de filas arrastró en su reporte metadatos de una imagen antigua;
+se corrigió el controlador y se repitió, conservando el resultado correcto.
+Comprobante: test-results/closure-20261025/file-current-final-expiry/.
+
+CLOSE-operacion-043 conserva pendientes la candidata y su imagen exacta, el
+árbol público y CI; no se acredita cierre ni se ejecutaron checks de informes
+nativos. Siguiente acción concreta: contrastar este conjunto de evidencias con
+las dependencias y el orden del plan, y seleccionar el siguiente criterio
+independiente exigible que aún carezca de prueba vigente; mantener registrados
+los gates de publicación y CI rechazados o pendientes.
