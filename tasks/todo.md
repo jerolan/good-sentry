@@ -15652,3 +15652,15 @@ aceptación 020–023 y sus gates siguen abiertos.
 Siguiente acción concreta: contrastar los subresultados pendientes de OAuth
 con sus owners y la fuente actual; conservar el conflicto del workflow CI con
 la instrucción de omitir informes nativos.
+
+### Selección: metadatos OAuth MCP, 2026-10-30
+
+Se selecciona CLOSE-mcp-051. La prueba previa cubre alias, descubrimiento del
+cliente oficial y rechazos de bearer por query, pero no enumera todos los
+campos anunciados ni la respuesta no-store de cada endpoint en los modos de
+logs y MCP. Las instancias aisladas de MCP ya existen y están detenidas.
+
+Siguiente acción concreta: iniciar únicamente esos contenedores de prueba,
+cotejar por HTTP real los documentos, métodos, scopes y modos deshabilitados
+sin credenciales, y detenerlos; registrar los resultados sin ejecutar tests de
+informes nativos ni afirmar la aceptación integral de MCP.
