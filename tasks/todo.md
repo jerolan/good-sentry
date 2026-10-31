@@ -16154,3 +16154,16 @@ test-results/closure-20261025/error-retention-candidate-current/first.json.
 Siguiente acción concreta: recapturar con Node 11.7.0 la identidad vencida y
 reintentar la retenida, verificar mute, historial y filas, y comprobar la vista
 recuperada en la misma copia; conservar el backup y la recuperación.
+
+### Recaptura de errores en candidata, 2026-10-30
+
+Node SDK 11.7.0 envió cuatro envelopes aceptados: la identidad vencida volvió
+a su incidencia y el reintento retenido no duplicó conteo. El mute avanzó una
+vez y `first_seen` siguió siendo único. Las 73 tablas mostraron solo las filas
+esperadas; Edge comprobó la vista recuperada en 320/768/1440. Backup y copia de
+recuperación intactos; aplicación y base detenidas. Comprobante:
+test-results/closure-20261025/error-retention-candidate-current/recapture.json.
+
+Siguiente acción concreta: eliminar los dos recibos propios restantes con logs
+y uptime deshabilitados, comparar las filas, reiniciar y verificar la traza y el
+log conservados sin tocar la copia de recuperación.
