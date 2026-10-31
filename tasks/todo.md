@@ -16140,3 +16140,17 @@ test-results/closure-20261025/error-retention-candidate-current/prepare.json.
 Siguiente acción concreta: iniciar d2f341b solo sobre la copia de ejecución,
 expirar los dos recibos propios, comprobar la vista vacía y recapturar con el
 SDK; mantener la otra copia y el backup intactos.
+
+### Primera expiración de errores en candidata, 2026-10-30
+
+La imagen d2f341b eliminó dos recibos propios y sus adjuntos bajo el lock de
+retención; las 73 tablas coincidieron con los cambios esperados, la incidencia
+mixta se recontó y la vacía conservó historial. Eventos/raw vencidos dieron 404;
+la traza y el log independiente siguieron disponibles. Edge comprobó la vista
+vacía y confirmación en 320/768/1440. Backup y recuperación intactos; aplicación
+y base detenidas. Comprobante:
+test-results/closure-20261025/error-retention-candidate-current/first.json.
+
+Siguiente acción concreta: recapturar con Node 11.7.0 la identidad vencida y
+reintentar la retenida, verificar mute, historial y filas, y comprobar la vista
+recuperada en la misma copia; conservar el backup y la recuperación.
