@@ -15046,3 +15046,21 @@ suite completa ni los gates de candidata y CI.
 Siguiente acción concreta: seleccionar las pruebas generales restantes de Store,
 servidor y jobs que no ejecuten la tarea abandonada de informes nativos; ejecutar
 esa selección sobre otra base desechable y registrar expresamente sus exclusiones.
+
+### Selección general de Store, servidor y jobs, 2026-10-30
+
+En la revisión 3bff409 pasó vet de integración para los tres componentes. En
+PostgreSQL 18 aislado pasaron con race las 377 pruebas principales seleccionadas
+de Store y las seis de jobs. El servidor pasó 149 de 150 inicialmente; la prueba
+MCP restante se omitió por faltar las rutas del navegador y pasó al ejecutarla
+por separado con el navegador aislado. No hubo fallos de las pruebas ejecutadas.
+
+La selección excluyó de forma conservadora 32 archivos con comprobaciones de
+informes nativos, servidores de símbolos, archivos de depuración o casos mixtos.
+Incluyó la negociación compartida de artefactos JavaScript. Los nombres y límites
+de selección están en test-results/closure-20261025/core-non-crash-checks/; no se
+presenta como suite completa. La base desechable quedó detenida.
+
+Siguiente acción concreta: clasificar los archivos mixtos excluidos para recuperar
+los checks generales de adjuntos y límites sin ejecutar comprobaciones de informes
+nativos; después contrastar la imagen vigente y los gates públicos exactos.
