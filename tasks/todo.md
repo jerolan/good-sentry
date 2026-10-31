@@ -15457,3 +15457,21 @@ repetidos. El código y dependencias de producto no cambiaron desde 799a0dc.
 Siguiente acción concreta: preparar una aplicación y PostgreSQL aislados con MCP
 y prefijo, ejecutar el handler oficial Go v1.8.0 con consentimiento de proyecto,
 llamadas MCP, refresh y revocación, y registrar alcance sin exponer credenciales.
+
+### Cliente MCP OAuth oficial sobre imagen posterior, 2026-10-30
+
+Una instancia no-root de 799a0dc inició con PostgreSQL 18, MCP/logs habilitados,
+prefijo `/good` y dos proyectos propios. El `AuthorizationCodeHandler` oficial
+Go v1.8.0 completó descubrimiento, registro, PKCE y consentimiento de un solo
+proyecto; las herramientas listaron solo el alcance autorizado. La pantalla de
+consentimiento cumplió no-store/CSP y no expuso credenciales en otra lectura.
+El hook público del cliente forzó caducidad, renovó ambos tokens y se rechazaron
+el refresh repetido y el acceso anterior. Revocar desde la API impidió la
+siguiente llamada oficial. No se registraron secretos; contenedores detenidos.
+Comprobante: test-results/closure-20261025/mcp-image-current/.
+
+El consentimiento de este controlador fue HTTP; navegador, migración histórica
+044, negativos y gates de candidata/CI tienen evidencia separada o pendiente.
+No se ejecutaron checks de informes nativos. Siguiente acción concreta: cotejar
+la interfaz de credenciales MCP y su evidencia de navegador con la imagen
+actual, y repetir las vistas y revocación que aún requieran una instancia real.
