@@ -15148,3 +15148,27 @@ Siguiente acción concreta: preparar otra copia aislada del respaldo previo a
 expiración, comprobar sus candidatos y ejecutar sobre ella la primera expiración
 solo de archivos propios con la imagen 799a0dc; cotejar todas las filas con la
 referencia y conservar la copia de recuperación recién verificada.
+
+### Primera expiración de archivos con imagen posterior, 2026-10-30
+
+Otra base nueva restauró el respaldo previo y coincidió con sus 4539 filas de
+73 tablas y secuencias; la copia de recuperación permaneció detenida. El
+preflight comprobó que ningún archivo era candidato a la retención de 90 días,
+que las demás tareas revisadas no tenían candidatos y que la cola de
+procesamiento nativo estaba vacía. En un volumen nuevo inició la imagen 799a0dc
+con uptime y archivo deshabilitados y plazos protectores para otras clases.
+
+Bajo el lock de retención y en una transacción se envejecieron únicamente los
+recibos propios registrados. El worker retiró un mapa, 28 adjuntos y cuatro
+opacos; las demás filas de 73 tablas quedaron exactas salvo una sesión. El evento
+y su frame histórico siguieron iguales, otro mapa sobrevivió, las descargas
+vencidas devolvieron 404 y el evento compatible siguió legible. La referencia
+y la recuperación anterior permanecieron intactas, esta última con su sesión
+previamente contabilizada. No se ejecutaron checks de informes nativos. Los
+contenedores quedaron detenidos. Comprobante:
+test-results/closure-20261025/file-current-first-expiry/.
+
+Siguiente acción concreta: verificar la recreación de archivos y mapa mediante
+SDK/CLI en esta misma cohorte aislada con la imagen 799a0dc, preservando evento,
+frames históricos y referencia; después cubrir última expiración y reinicio.
+CLOSE-operacion-043 y los gates de candidata y CI siguen abiertos.
