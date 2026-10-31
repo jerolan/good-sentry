@@ -2122,8 +2122,8 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-048](../SPEC.md#close-mcp-048) | MCP performance investigation: Reuse native event/segment span unions, group sorting and latency definitions.… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-049](../SPEC.md#close-mcp-049) | MCP performance investigation: Acceptance creates real transaction events with indexed child spans across sele… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-050](../SPEC.md#close-mcp-050) | MCP OAuth authorization: When MCP is selected, provide a same-origin OAuth2 authorization server for MCP clien… | implementada | invalidada | Handler oficial verificado localmente; conciliación de candidata y gates integrales pendiente |
-| [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | invalidada | Registro aceptó wildcard HTTPS; reparar y revalidar; mcp-oauth-registration-boundaries/ |
-| [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | invalidada | Registro oficial y validaciones verificadas localmente; candidata/CI pendientes |
+| [CLOSE-mcp-051](../SPEC.md#close-mcp-051) | MCP OAuth authorization: Public RFC9728/RFC8414 metadata endpoints are prefix-aware and no-store: /.well-known… | implementada | vigente | Imagen y matriz OAuth 2026-10-30: mcp-oauth-registration-boundaries/; gates integrales pendientes |
+| [CLOSE-mcp-052](../SPEC.md#close-mcp-052) | MCP OAuth authorization: POST /oauth/register accepts a bounded JSON object: client_name1..100 valid character… | implementada | vigente | Imagen y matriz OAuth 2026-10-30: mcp-oauth-registration-boundaries/; gates integrales pendientes |
 | [CLOSE-mcp-053](../SPEC.md#close-mcp-053) | MCP OAuth authorization: GET /oauth/authorize validates response_type=code, registered client and exact redire… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-054](../SPEC.md#close-mcp-054) | MCP OAuth authorization: POST /oauth/authorize requires the current session, same-origin form, session CSRF, a… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
 | [CLOSE-mcp-055](../SPEC.md#close-mcp-055) | MCP OAuth authorization: POST /oauth/token accepts form encoding. Authorization-code exchange requires exact c… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
@@ -15741,3 +15741,18 @@ CLOSE-mcp-051/052 siguen invalidados hasta repetir la matriz con imagen nueva;
 la imagen ddb6620 contiene el defecto. Siguiente acción concreta: construir la
 imagen de la fuente corregida y repetir los 33 casos y el cliente oficial, sin
 ejecutar comprobaciones de informes nativos.
+
+### Registro OAuth en imagen corregida, 2026-10-30
+
+Los 33 casos de registro pasaron en la imagen bd513a7; los recuentos de tokens
+y códigos no cambiaron al registrar clientes. Wildcard y host vacío recibieron
+400; el handler oficial repitió autorización, tools, refresh y revocación. La
+base y aplicación quedaron detenidas. La comparación de fuente conserva el
+alcance de metadatos y de IPv4/IPv6/HTTPS de los comprobantes anteriores.
+CLOSE-mcp-051 y CLOSE-mcp-052 quedan vigentes para la fuente comparada:
+test-results/closure-20261025/mcp-oauth-registration-boundaries/. Los gates de
+aceptación integral, imagen definitiva, publicación y CI siguen abiertos.
+
+Siguiente acción concreta: cotejar los bloques 054/055 y 059/077 completos
+con sus comprobantes y la revisión corregida, manteniendo separadas las
+comprobaciones pendientes de las retiradas por decisión del usuario.
