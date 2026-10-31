@@ -15172,3 +15172,25 @@ Siguiente acción concreta: verificar la recreación de archivos y mapa mediante
 SDK/CLI en esta misma cohorte aislada con la imagen 799a0dc, preservando evento,
 frames históricos y referencia; después cubrir última expiración y reinicio.
 CLOSE-operacion-043 y los gates de candidata y CI siguen abiertos.
+
+### Recreación SDK/CLI de archivos con imagen posterior, 2026-10-30
+
+La copia vencida coincidió con la referencia salvo los 33 archivos retirados y
+una sesión ya registrada. Sobre su misma imagen 799a0dc, el SDK oficial Node
+11.7.0 capturó un evento sin mapa y reintentó la identidad original; el CLI
+3.8.0 subió el mismo build y otra captura volvió a obtener el frame original en
+la línea 7. Los tres eventos comparten incidencia y los dos anteriores quedaron
+exactos. El reintento recreó un adjunto y tres opacos sin otras diferencias en
+73 tablas; la subida creó una generación de mapa con el mismo checksum y ninguna
+otra fila cambió.
+
+Edge verificó los bytes descargados y el historial a 320/768/1024/1440, sin
+desbordamiento ni errores; solo añadió una sesión. Referencia y copia de
+recuperación permanecieron intactas. Los contenedores están detenidos y los
+reportes sensibles permanecen privados. Comprobante:
+test-results/closure-20261025/file-current-sdk-cli/. No se ejecutaron checks de
+informes nativos ni se acredita imagen candidata o CI final.
+
+Siguiente acción concreta: preparar y ejecutar en la misma copia la última
+expiración de archivos propios con funciones opcionales deshabilitadas; comparar
+las 73 tablas y comprobar el reinicio exacto, conservando la referencia.
