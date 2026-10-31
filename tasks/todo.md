@@ -15811,3 +15811,15 @@ aceptación integral; candidata definitiva y CI siguen abiertos. Siguiente
 acción concreta: contrastar los controles de expiración, revocación y vínculos
 restantes de 055 y los rechecks atómicos de 054 con sus owners, seleccionando
 el primer hueco exigible que aún tenga dependencias resueltas.
+
+### Selección: concurrencia de membresía OAuth, 2026-10-30
+
+CLOSE-mcp-054 exige revalidar atómicamente la membresía antes de emitir el
+código. El proveedor consulta `memberships` con `EXISTS` sin bloquear la fila;
+una eliminación concurrente podría confirmarse entre la lectura y la emisión.
+La pertenencia ya se revalida al intercambiar el código, pero eso no acredita
+la condición de emisión.
+
+Siguiente acción concreta: reproducir la carrera con una eliminación y una
+emisión en transacciones reales, observar el bloqueo en PostgreSQL y verificar
+que la eliminación ganadora impida emitir el código; corregir solo si falla.
