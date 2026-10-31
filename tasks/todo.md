@@ -1846,7 +1846,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-operacion-018](../SPEC.md#close-operacion-018) | Error-event retention: Preserve existing authorization and snapshot semantics. Native IssueDetail already retu… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-019](../SPEC.md#close-operacion-019) | Error-event retention: The issue UI derives retained-payload presence from the existing detail.events list, wi… | implementada (histórica) | vigente | Reconciliación 2026-10-30: criterion-error-ui-20261030/; clase pendiente |
 | [CLOSE-operacion-020](../SPEC.md#close-operacion-020) | Error-event retention: Run StartEventRetention unconditionally through the shared in-process retention lifecyc… | implementada | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
-| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
+| [CLOSE-operacion-021](../SPEC.md#close-operacion-021) | Error-event retention: Error-retention runtime acceptance on2026-10-17 uses final3802aaa459a9a93225b9b4a307849… | implementada (histórica) | vigente | Copia autorizada, SDK y expiración 2026-10-30: error-retention-criterion-021/ |
 | [CLOSE-operacion-022](../SPEC.md#close-operacion-022) | Error-event retention: Real Edge checks retained, empty and restored payload views at320/768/1440 with comment… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
 | [CLOSE-operacion-023](../SPEC.md#close-operacion-023) | Error-event retention: Error-event acceptance closes at functional8884b9d883946a9007767bf07a35e9807e1da182:316… | implementada (histórica) | invalidada | Decisión del27-Oct resuelve originales ausentes; repetir aceptación final desde copia verificada |
 | [CLOSE-uptime-006](../SPEC.md#close-uptime-006) | Uptime check retention: The next required retention class owns monitor_checks, not monitors. Official installa… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -15927,3 +15927,15 @@ suite completa, candidata, publicación ni CI de CLOSE-mcp-059.
 Siguiente acción concreta: cotejar los criterios restantes de retención y
 aceptación integral con sus gates pendientes y preparar una auditoría de
 publicación que respete la exclusión de pruebas nativas indicada por el usuario.
+
+### Reconciliación del runtime de retención de errores, 2026-10-30
+
+CLOSE-operacion-021 queda vigente para la fuente comparada: los seis envelopes
+del SDK, la copia autorizada, dos etapas de expiración, recaptura y datos
+independientes se contrastaron con los recibos y los cambios de código.
+Comprobante: test-results/closure-20261025/error-retention-criterion-021/.
+Los gates de clase 020/022/023, candidata y CI siguen abiertos.
+
+Siguiente acción concreta: cotejar los restantes criterios invalidados y
+preparar la evaluación de publicación y CI sin incluir los checks nativos
+retirados por el usuario.
