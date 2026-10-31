@@ -15513,3 +15513,17 @@ Siguiente acción concreta: iniciar esa imagen sobre PostgreSQL y volumen nuevos
 crear una organización, proyecto y credencial propios, detenerla y conservar
 un respaldo lógico verificable de versión 43 antes de restaurar otra copia para
 la imagen actual. No alterar respaldos ni runtimes existentes.
+
+### Respaldo MCP anterior a 044, 2026-10-30
+
+La imagen 8e675cc inició en PostgreSQL y volúmenes nuevos; se crearon dos
+proyectos y un token propio de ocho scopes limitado a uno. La API de releases
+aceptó el token, MCP devolvió 404 y la base quedó en 43 migraciones. La
+aplicación se detuvo y un backup lógico se restauró en otra base: 55 filas de
+44 tablas y secuencias exactas. La base quedó detenida y el token, respaldo y
+copias permanecen privados. Esta fuente es nueva, no el respaldo histórico.
+Comprobante: test-results/closure-20261025/mcp-upgrade-current/.
+
+Siguiente acción concreta: revisar candidatos automáticos de la copia restaurada,
+iniciar la imagen 799a0dc solo sobre ella, comparar todas las columnas y recibos
+anteriores a 044, validar el token heredado y comprobar reinicio y recuperación.
