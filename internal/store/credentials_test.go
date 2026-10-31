@@ -421,6 +421,163 @@ func TestCredentialIssuanceWaitsAndRechecksUnderRepeatableReadDefault(t *testing
 	}
 }
 
+func TestPasswordChangeWaitsForCredentialIssuerUnderRepeatableReadDefault(t *testing.T) {
+	for _, kind := range []string{"session", "api token"} {
+		t.Run(kind, func(t *testing.T) {
+			base, db, owner, org, project := telemetryStore(t)
+			ctx, cancel := context.WithTimeout(base, 15*time.Second)
+			defer cancel()
+
+			config, err := pgxpool.ParseConfig(db.pool.Config().ConnString())
+			if err != nil {
+				t.Fatal(err)
+			}
+			config.ConnConfig.RuntimeParams["default_transaction_isolation"] = "repeatable read"
+			pool, err := pgxpool.NewWithConfig(ctx, config)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(pool.Close)
+			strictDefault := &Store{pool: pool}
+
+			var other User
+			if err := db.pool.QueryRow(ctx, `INSERT INTO users(email,password_hash,name)
+ VALUES('other-issuer@example.test',$1,'Other') RETURNING id::text,auth_generation`, []byte("other-hash")).Scan(&other.ID, &other.AuthGeneration); err != nil {
+				t.Fatal(err)
+			}
+			if err := db.CreateSession(ctx, other.ID, other.AuthGeneration, "other-session", "other-csrf", time.Now().Add(time.Hour)); err != nil {
+				t.Fatal(err)
+			}
+
+			barrier, err := db.pool.Begin(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer barrier.Rollback(context.Background())
+			var barrierPID int
+			if err := barrier.QueryRow(ctx, `SELECT pg_backend_pid()`).Scan(&barrierPID); err != nil {
+				t.Fatal(err)
+			}
+			table, insertText := "sessions", "INSERT INTO sessions"
+			if kind == "api token" {
+				table, insertText = "api_tokens", "INSERT INTO api_tokens"
+			}
+			if _, err := barrier.Exec(ctx, "LOCK TABLE "+table+" IN SHARE MODE"); err != nil {
+				t.Fatal(err)
+			}
+
+			issuerResult := make(chan error, 1)
+			changeResult := make(chan error, 1)
+			issuerDone, changeStarted, changeDone := false, false, false
+			defer func() {
+				cancel()
+				_ = barrier.Rollback(context.Background())
+				if !issuerDone {
+					<-issuerResult
+				}
+				if changeStarted && !changeDone {
+					<-changeResult
+				}
+			}()
+			_, tokenHash, tokenPrefix := apiTokenCredentials("issuer-first-token")
+			projectID := apiTokenProjectID(t, project.ID)
+			go func() {
+				if kind == "session" {
+					issuerResult <- strictDefault.CreateSession(ctx, owner.ID, owner.AuthGeneration, "issuer-first-session", "issuer-csrf", time.Now().Add(time.Hour))
+					return
+				}
+				_, err := strictDefault.CreateAPIToken(ctx, owner.ID, owner.AuthGeneration, org.Slug, APITokenInput{
+					Name: "Issuer first", Scopes: []string{"project:read"}, ProjectIDs: []int64{projectID}, ExpiresInDays: 1,
+				}, tokenHash, tokenPrefix)
+				issuerResult <- err
+			}()
+
+			waitBlocked := func(blocker int, queryText string) int {
+				t.Helper()
+				ticker := time.NewTicker(5 * time.Millisecond)
+				defer ticker.Stop()
+				for {
+					var pid int
+					err := db.pool.QueryRow(ctx, `SELECT COALESCE((SELECT pid FROM pg_stat_activity
+ WHERE $1=ANY(pg_blocking_pids(pid)) AND strpos(query,$2)>0 LIMIT 1),0)`, blocker, queryText).Scan(&pid)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if pid != 0 {
+						return pid
+					}
+					select {
+					case <-ctx.Done():
+						t.Fatalf("did not observe %q blocked by backend %d: %v", queryText, blocker, ctx.Err())
+					case <-ticker.C:
+					}
+				}
+			}
+			issuerPID := waitBlocked(barrierPID, insertText)
+			changeStarted = true
+			go func() {
+				changeResult <- strictDefault.ChangePassword(ctx, owner.ID, owner.AuthGeneration, []byte("new-password-hash"))
+			}()
+			waitBlocked(issuerPID, "FOR UPDATE")
+			select {
+			case err := <-issuerResult:
+				issuerDone = true
+				t.Fatalf("issuer completed before barrier release: %v", err)
+			case err := <-changeResult:
+				changeDone = true
+				t.Fatalf("password change completed before issuer: %v", err)
+			default:
+			}
+			if err := barrier.Commit(ctx); err != nil {
+				t.Fatal(err)
+			}
+			err = <-issuerResult
+			issuerDone = true
+			if err != nil {
+				t.Fatalf("credential issuer failed: %v", err)
+			}
+			err = <-changeResult
+			changeDone = true
+			if err != nil {
+				t.Fatalf("password change failed: %v", err)
+			}
+			if kind == "session" {
+				if _, _, err := db.Session(ctx, "issuer-first-session"); !errors.Is(err, ErrNotFound) {
+					t.Fatalf("issuer-first session was not revoked: %v", err)
+				}
+			} else {
+				var revoked bool
+				if err := db.pool.QueryRow(ctx, `SELECT revoked_at IS NOT NULL FROM api_tokens WHERE secret_hash=$1`, tokenHash).Scan(&revoked); err != nil || !revoked {
+					t.Fatalf("issuer-first token row was not revoked: revoked=%v err=%v", revoked, err)
+				}
+				if _, err := db.AuthenticateAPIToken(ctx, tokenHash); !errors.Is(err, ErrNotFound) {
+					t.Fatalf("issuer-first token still authenticates: %v", err)
+				}
+			}
+			current, err := db.UserByID(ctx, owner.ID)
+			if err != nil || current.AuthGeneration != owner.AuthGeneration+1 {
+				t.Fatalf("generation after change=%d err=%v", current.AuthGeneration, err)
+			}
+			if _, _, err := db.Session(ctx, "other-session"); err != nil {
+				t.Fatalf("other user's session changed: %v", err)
+			}
+			if err := strictDefault.CreateSession(ctx, owner.ID, current.AuthGeneration, "fresh-session", "fresh-csrf", time.Now().Add(time.Hour)); err != nil {
+				t.Fatalf("new-generation session: %v", err)
+			}
+			if _, _, err := db.Session(ctx, "fresh-session"); err != nil {
+				t.Fatalf("new-generation session rejected: %v", err)
+			}
+			_, freshHash, freshPrefix := apiTokenCredentials("issuer-first-fresh-token")
+			if _, err := strictDefault.CreateAPIToken(ctx, owner.ID, current.AuthGeneration, org.Slug, APITokenInput{Name: "Fresh", Scopes: []string{"project:read"}, ExpiresInDays: 1}, freshHash, freshPrefix); err != nil {
+				t.Fatalf("new-generation token: %v", err)
+			}
+			if _, err := db.AuthenticateAPIToken(ctx, freshHash); err != nil {
+				t.Fatalf("new-generation token rejected: %v", err)
+			}
+		})
+	}
+}
+
 func TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure(t *testing.T) {
 	for _, tc := range []struct {
 		name    string

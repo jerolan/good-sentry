@@ -747,6 +747,7 @@
         "TestPasswordChangeGenerationOverflowRollsBackCredentials",
         "TestPasswordChangeRevokesEveryOwnedCredentialAtomically",
         "TestPasswordChangeRollbackAfterRevocationAndDeferredCommitFailure",
+        "TestPasswordChangeWaitsForCredentialIssuerUnderRepeatableReadDefault",
         "TestPasswordResetEnqueueDeliveryConsumptionAndRevocation",
         "TestPasswordResetMigration036PreservesPriorRowsAndReopens",
         "TestPasswordResetRetryExpiryAndStaleLease",
