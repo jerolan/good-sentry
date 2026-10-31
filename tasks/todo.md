@@ -2130,7 +2130,7 @@ vigentes, dos bloqueados por publicación y el resto pendiente.
 | [CLOSE-mcp-056](../SPEC.md#close-mcp-056) | MCP OAuth authorization: Add additive044 storage for OAuth clients, hashed authorization codes and hashed refr… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-057](../SPEC.md#close-mcp-057) | MCP OAuth authorization: MCP Bearer denial changes from bare WWW-Authenticate: Bearer to include canonical res… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-mcp-058](../SPEC.md#close-mcp-058) | MCP OAuth authorization: The existing native credential form exposes log:read only when MCP and logs are enabl… | implementada | vigente | Reconciliación 2026-10-30: criterion-uptime-mcp-20261030/; gates globales pendientes |
-| [CLOSE-mcp-059](../SPEC.md#close-mcp-059) | MCP OAuth authorization: Acceptance runs real HTTP/PostgreSQL and the official Go MCP client/OAuth handler. It… | implementada | invalidada | Cotejo final pendiente por subresultado; revisión factual 2026-10-27 abajo |
+| [CLOSE-mcp-059](../SPEC.md#close-mcp-059) | MCP OAuth authorization: Acceptance runs real HTTP/PostgreSQL and the official Go MCP client/OAuth handler. It… | implementada | invalidada | Upgrade local de candidata comprobado; publicación/CI pendientes: mcp-upgrade-candidate-current/ |
 | [CLOSE-operacion-058](../SPEC.md#close-operacion-058) | Commands and source layout: The external JavaScript artifact acceptance uses official sentry-cli3.8.0 and Node… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-059](../SPEC.md#close-operacion-059) | Commands and source layout: The issue-query SDK acceptance consumes a separate mode0600 fixture with the same… | implementada | vigente | Comprobante 2026-10-26 abajo |
 | [CLOSE-operacion-060](../SPEC.md#close-operacion-060) | Commands and source layout: The browser fixture additionally supplies disposable owner login credentials, the… | implementada | vigente | Comprobante 2026-10-26 abajo |
@@ -16099,3 +16099,19 @@ test-results/closure-20261025/mcp-upgrade-candidate-current/prepare.json.
 Siguiente acción concreta: iniciar la candidata d2f341b solo sobre una copia,
 comparar columnas antiguas y migraciones, verificar el token previo y cliente
 MCP y reiniciar con filas exactas; conservar intacta la copia de recuperación.
+
+### Upgrade MCP con candidata y recuperación, 2026-10-30
+
+La candidata d2f341b migró una copia propia de versión 43 a 79, conservó las
+55 filas originales y añadió únicamente 36 recibos de migración en las tablas
+anteriores. El token previo mantuvo scopes y proyecto, con 200/404 en los
+controles y acceso desde el cliente oficial; discovery conservó no-store. El
+reinicio preservó todas las filas y la configuración, y la copia independiente
+y el respaldo siguieron exactos. Los contenedores quedaron detenidos.
+Comprobante: test-results/closure-20261025/mcp-upgrade-candidate-current/.
+
+CLOSE-mcp-059 continúa invalidado por los gates integrales y públicos; esta
+fuente de versión 43 es una fixture nueva, no el runtime histórico ausente.
+Siguiente acción concreta: cotejar el resto de criterios pendientes para
+identificar trabajo local independiente, respetando la decisión de publicación
+y CI aún solicitada y sin ejecutar checks de informes nativos.
