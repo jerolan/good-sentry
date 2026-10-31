@@ -16073,3 +16073,16 @@ autorización explícita para ese envío concreto. Siguiente acción concreta:
 pedir al usuario cómo reconciliar esos puntos; al recibir la decisión, preparar
 la revisión correspondiente sin reescribir el historial remoto ni publicar
 hasta que exista la autorización aplicable.
+
+### Selección: upgrade MCP en candidata local, 2026-10-30
+
+CLOSE-mcp-059 sigue invalidado por sus gates integrales. El upgrade desde la
+imagen antigua y su backup de versión 43 se probó con 799a0dc; desde entonces
+cambió la emisión OAuth. La candidata local d2f341b ya está construida y el
+dump previo a 044 y su inventario siguen conservados. Este subresultado es
+independiente de la decisión pendiente sobre publicación y workflows.
+
+Siguiente acción concreta: restaurar ese dump en una instancia PostgreSQL y
+volumen nuevos, comparar filas y secuencias con el inventario, arrancar solo la
+copia con la candidata y verificar migración, token anterior, cliente MCP y
+reinicio, sin alterar las fuentes ni ejecutar pruebas de informes nativos.
