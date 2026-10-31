@@ -16040,3 +16040,17 @@ de informes nativos retirados y archivos mixtos con evidencia separada.
 Siguiente acción concreta: corregir las declaraciones duplicadas de los
 programas Go de evidencia que la copia limpia expuso, conservando su ejecución
 directa y el fallo anterior; después preparar el punto de decisión de publicación.
+
+### Aislamiento de programas Go de evidencia, 2026-10-30
+
+Los once programas propios de evidencia llevan ahora una restricción de build
+que evita incorporarlos a `go list ./...`; su contenido restante es idéntico y
+la compilación por nombre de archivo sigue funcionando. En una copia limpia se
+pasó de nueve paquetes de evidencia a ninguno; el fallo anterior se conserva.
+Comprobante: test-results/closure-20261025/evidence-go-build-isolation/.
+
+El workflow `native-demo.yml` también se dispararía por cambios en servidor o
+Store y ejecutaría un crash nativo; `image.yml` repite la suite general en
+activaciones directas. No se lanzó ninguno. Siguiente acción concreta: preparar
+una vista revisable de publicación sin resultados nuevos y pedir la decisión
+que reconcilie el historial ya público, el historial local y el CI con SPEC.
