@@ -15220,3 +15220,18 @@ nativos. Siguiente acción concreta: contrastar este conjunto de evidencias con
 las dependencias y el orden del plan, y seleccionar el siguiente criterio
 independiente exigible que aún carezca de prueba vigente; mantener registrados
 los gates de publicación y CI rechazados o pendientes.
+
+### Selección de revalidación de errores con imagen posterior, 2026-10-30
+
+Tras las verificaciones locales de releases y archivos, los gates públicos
+compartidos siguen abiertos. Por orden del plan se retoma CLOSE-operacion-019
+y sus dependencias 020–023: los recorridos retained/empty/recovered de Edge,
+SDK y recuperación están documentados para la imagen 218e9e43, anterior a los
+cambios de arranque/configuración y procesamiento nativo. El respaldo previo a
+expiración conserva 4422 filas con hash registrado. La excepción del usuario
+permite usar copias verificadas sin reclamar los runtimes históricos ausentes.
+
+Siguiente acción concreta: verificar el hash de ese respaldo y restaurarlo en
+una base aislada nueva; contrastar todas las filas y secuencias con la
+restauración conservada y revisar las tareas automáticas antes de iniciar una
+aplicación con la imagen 799a0dc. No ejecutar comprobaciones de informes nativos.
