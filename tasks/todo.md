@@ -16054,3 +16054,22 @@ Store y ejecutaría un crash nativo; `image.yml` repite la suite general en
 activaciones directas. No se lanzó ninguno. Siguiente acción concreta: preparar
 una vista revisable de publicación sin resultados nuevos y pedir la decisión
 que reconcilie el historial ya público, el historial local y el CI con SPEC.
+
+### Vista revisable de publicación, 2026-10-30
+
+Se preparó un árbol temporal sin `test-results` desde e85f4a7: excluye 3691
+rutas de evidencia, conserva los demás archivos exactos y retiraría del árbol
+visible las 2370 rutas de resultados ya rastreadas en el main remoto observado.
+La vista compiló y su binario coincide con la candidata d2f341b. No se creó
+commit ni rama y no se alteraron referencias ni remoto. El historial público
+anterior conservaría esos archivos y las tareas seguirían enlazando a evidencia
+local. El primer intento fallido de índice bare se conservó. Comprobante y
+diff por ruta: test-results/closure-20261025/publication-preview-20261030/.
+
+Permanecen sin resolver la política de historial/evidencia, los workflows que
+ejecutarían los checks nativos omitidos, la publicación y el CI coincidente.
+La revisión automática rechazó un intento anterior de push por no reconocer
+autorización explícita para ese envío concreto. Siguiente acción concreta:
+pedir al usuario cómo reconciliar esos puntos; al recibir la decisión, preparar
+la revisión correspondiente sin reescribir el historial remoto ni publicar
+hasta que exista la autorización aplicable.
