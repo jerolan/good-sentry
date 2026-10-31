@@ -15581,3 +15581,16 @@ final ni ejecutó checks de informes nativos.
 Siguiente acción concreta: cotejar los criterios pendientes y sus
 invalidaciones con el código y la imagen actuales; identificar el primer
 subresultado independiente ejecutable antes de la auditoría y los gates públicos.
+
+### Cotejo del sitio público, 2026-10-30
+
+Los 13 archivos de `site/` de la revisión 8e52f3d se leyeron por HTTPS y
+coincidieron byte a byte con los blobs Git locales; todos respondieron 200.
+El directorio no cambió frente a `main` remoto observado en 8e95a6dd. Esto
+cubre el cotejo de los seis archivos históricos y los demás archivos actuales,
+pero no demuestra publicación del árbol local completo ni CI coincidente.
+Comprobante: test-results/closure-20261025/pages-current-comparison/.
+
+Siguiente acción concreta: reconciliar los criterios invalidados con los nuevos
+comprobantes, sin promover gates públicos o de candidata aún ausentes; localizar
+el siguiente subresultado independiente que requiera trabajo local.
