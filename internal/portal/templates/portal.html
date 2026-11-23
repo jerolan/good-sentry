@@ -1,0 +1,356 @@
+{{define "projects"}}
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Projects · GoodSentry</title>
+      <link rel="stylesheet" href="/app.css">
+    </head>
+    <body>
+      <div class="layout">
+        <aside class="sidebar">
+          <a class="brand" href="/">
+            <span class="brand-mark">G</span>GoodSentry</a>
+          <div class="sidebar-label">WORKSPACE</div>
+          <nav aria-label="Main navigation">
+            <a class="nav-link active" aria-current="page" href="/">▦ <span>Projects</span>
+            </a>
+          </nav>
+        </aside>
+        <div class="workspace">
+          <header class="topbar">
+            <span>
+              <strong>Workspace</strong> / Projects</span>
+          </header>
+          <main class="content">
+            <div class="page-heading">
+              <div>
+                <h1>Projects</h1>
+                <p class="subtitle">Monitor application errors across your projects.</p>
+              </div>
+            </div>
+            <section class="card create-card" aria-labelledby="create-heading">
+              <h2 id="create-heading">Create a project</h2>
+              <p class="muted">Add a project to start collecting events.</p>
+              <form action="/projects" method="post" class="create-form">
+                <label for="name">Project name</label>
+                <div class="form-row">
+                  <input id="name" name="name" type="text" required placeholder="My application">
+                  <button type="submit">Create project</button>
+                </div>
+              </form>
+            </section>
+            <section class="card" aria-labelledby="projects-heading">
+              <div class="card-heading">
+                <h2 id="projects-heading">Your projects</h2>
+              </div>
+              {{if .Projects}}
+                <ul class="item-list">
+                  {{range .Projects}}
+                    <li>
+                      <a class="item-link" href="/projects/{{.ID}}">
+                        <span class="item-icon">▦</span>
+                        <span>
+                          <strong>{{.Name}}</strong>
+                          <small>View project and issues</small>
+                        </span>
+                        <span class="arrow" aria-hidden="true">→</span>
+                      </a>
+                    </li>
+                  {{end}}
+                </ul>
+              {{else}}
+                <div class="empty">
+                  <strong>No projects yet</strong>
+                  <p>Create a project above to get started.</p>
+                </div>
+              {{end}}
+            </section>
+          </main>
+        </div>
+      </div>
+    </body>
+  </html>
+{{end}}
+{{define "project"}}
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>{{.Project.Name}} · GoodSentry</title>
+      <link rel="stylesheet" href="/app.css">
+    </head>
+    <body>
+      <div class="layout">
+        <aside class="sidebar">
+          <a class="brand" href="/">
+            <span class="brand-mark">G</span>GoodSentry</a>
+          <div class="sidebar-label">WORKSPACE</div>
+          <nav aria-label="Main navigation">
+            <a class="nav-link active" href="/">▦ <span>Projects</span>
+            </a>
+          </nav>
+        </aside>
+        <div class="workspace">
+          <header class="topbar">
+            <span>
+              <a href="/">Projects</a> / <strong>{{.Project.Name}}</strong>
+            </span>
+          </header>
+          <main class="content">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">PROJECT</p>
+                <h1>{{.Project.Name}}</h1>
+                <p class="subtitle">Review errors reported by this application.</p>
+              </div>
+            </div>
+            <section class="card dsn-card" aria-labelledby="dsn-heading">
+              <h2 id="dsn-heading">Project DSN</h2>
+              <p class="muted">Use this DSN to configure your application SDK.</p>
+              <code class="dsn">{{.DSN}}</code>
+            </section>
+            <section class="card" aria-labelledby="webhook-heading">
+              <h2 id="webhook-heading">Webhook</h2>
+              <p class="muted">Send a notification for each new event. Leave blank to disable.</p>
+              <form action="/projects/{{.Project.ID}}/webhook" method="post" class="create-form">
+                <label for="webhook-url">Webhook URL</label>
+                <div class="form-row">
+                  <input id="webhook-url" name="url" type="url" maxlength="2048" value="{{.Project.WebhookURL}}" placeholder="https://example.com/webhook">
+                  <button type="submit">Save webhook</button>
+                </div>
+              </form>
+            </section>
+            <section class="card" aria-labelledby="issues-heading">
+              <div class="card-heading">
+                <div>
+                  <h2 id="issues-heading">Issues</h2>
+                  <p class="muted">Errors grouped by issue.</p>
+                </div>
+              </div>
+              {{if .Issues}}
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Issue</th>
+                        <th scope="col">Events</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {{$projectID := .Project.ID}}
+                      {{range .Issues}}
+                        <tr>
+                          <td>
+                            <a class="table-link" href="/projects/{{$projectID}}/issues/{{.ID}}">{{.Title}}</a>
+                        </td>
+                        <td>{{.Count}}</td>
+                      </tr>
+                    {{end}}
+                  </tbody>
+                </table>
+              </div>
+            {{else}}
+              <div class="empty">
+                <strong>No issues yet</strong>
+                <p>Issues will appear here when your application sends events.</p>
+              </div>
+            {{end}}
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
+{{end}}
+{{define "issue"}}
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>{{.Issue.Title}} · GoodSentry</title>
+      <link rel="stylesheet" href="/app.css">
+    </head>
+    <body>
+      <div class="layout">
+        <aside class="sidebar">
+          <a class="brand" href="/">
+            <span class="brand-mark">G</span>GoodSentry</a>
+          <div class="sidebar-label">WORKSPACE</div>
+          <nav aria-label="Main navigation">
+            <a class="nav-link active" href="/">▦ <span>Projects</span>
+            </a>
+          </nav>
+        </aside>
+        <div class="workspace">
+          <header class="topbar">
+            <span>
+              <a href="/">Projects</a> / <a href="/projects/{{.Project.ID}}">{{.Project.Name}}</a> / Issue</span>
+          </header>
+          <main class="content">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">ISSUE</p>
+                <h1>{{.Issue.Title}}</h1>
+                <p class="subtitle">{{.Issue.Count}} events · {{.Project.Name}}</p>
+              </div>
+            </div>
+            <section class="card" aria-labelledby="events-heading">
+              <div class="card-heading">
+                <div>
+                  <h2 id="events-heading">Events</h2>
+                  <p class="muted">Occurrences captured for this issue.</p>
+                </div>
+              </div>
+              {{if .Events}}
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Message</th>
+                        <th scope="col">Received</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {{$projectID := .Project.ID}}
+                      {{$issueID := .Issue.ID}}
+                      {{range .Events}}
+                        <tr>
+                          <td>
+                            <a class="table-link" href="/projects/{{$projectID}}/issues/{{$issueID}}/events/{{.ID}}">
+                            {{if .Message}}
+                              {{.Message}}
+                            {{else}}
+                              View event
+                            {{end}}
+                          </a>
+                          <small class="event-id">{{.ID}}</small>
+                        </td>
+                        <td>{{.ReceivedAt.Format "Jan 2, 2006 15:04 MST"}}</td>
+                      </tr>
+                    {{end}}
+                  </tbody>
+                </table>
+              </div>
+            {{else}}
+              <div class="empty">
+                <strong>No events yet</strong>
+                <p>Captured events will appear here.</p>
+              </div>
+            {{end}}
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
+{{end}}
+{{define "event"}}
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Event · GoodSentry</title>
+      <link rel="stylesheet" href="/app.css">
+    </head>
+    <body>
+      <div class="layout">
+        <aside class="sidebar">
+          <a class="brand" href="/">
+            <span class="brand-mark">G</span>GoodSentry</a>
+          <div class="sidebar-label">WORKSPACE</div>
+          <nav aria-label="Main navigation">
+            <a class="nav-link active" href="/">▦ <span>Projects</span>
+            </a>
+          </nav>
+        </aside>
+        <div class="workspace">
+          <header class="topbar">
+            <span>
+              <a href="/">Projects</a> / <a href="/projects/{{.Project.ID}}">{{.Project.Name}}</a> / <a href="/projects/{{.Project.ID}}/issues/{{.Issue.ID}}">Issue</a> / Event</span>
+          </header>
+          <main class="content">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">EVENT</p>
+                <h1>{{.Issue.Title}}</h1>
+                <p class="subtitle">Received {{.Event.ReceivedAt.Format "Jan 2, 2006 15:04 MST"}}</p>
+              </div>
+            </div>
+            <section class="card detail-card" aria-labelledby="event-heading">
+              <h2 id="event-heading">Event details</h2>
+              <dl class="details">
+                <div>
+                  <dt>Type</dt>
+                  <dd>
+                    {{if .Event.Type}}
+                      {{.Event.Type}}
+                    {{else}}
+                      —
+                    {{end}}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Event ID</dt>
+                  <dd class="break">{{.Event.ID}}</dd>
+                </div>
+                <div class="full">
+                  <dt>Message</dt>
+                  <dd class="message">
+                    {{if .Event.Message}}
+                      {{.Event.Message}}
+                    {{else}}
+                      No message provided.
+                    {{end}}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+            <section class="card" aria-labelledby="stack-heading">
+              <div class="card-heading">
+                <div>
+                  <h2 id="stack-heading">Stack trace</h2>
+                  <p class="muted">Frames captured with this event.</p>
+                </div>
+              </div>
+              {{if .Event.Frames}}
+                <ol class="frames">
+                  {{range .Event.Frames}}
+                    <li>
+                      <strong>
+                        {{if .Function}}
+                          {{.Function}}
+                        {{else}}
+                          Unknown function
+                        {{end}}
+                      </strong>
+                      <code>
+                        {{if .Filename}}
+                          {{.Filename}}
+                        {{else}}
+                          Unknown file
+                        {{end}}
+                        {{if .Line}}
+                          :{{.Line}}
+                        {{end}}
+                      </code>
+                    </li>
+                  {{end}}
+                </ol>
+              {{else}}
+                <div class="empty">
+                  <strong>No stack trace available</strong>
+                  <p>This event did not include any frames.</p>
+                </div>
+              {{end}}
+            </section>
+          </main>
+        </div>
+      </div>
+    </body>
+  </html>
+{{end}}
