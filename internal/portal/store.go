@@ -125,6 +125,11 @@ func (p *portal) event(ctx context.Context, projectID, issueID int64, id string)
 var errDuplicateEvent = errors.New("duplicate event")
 
 func (p *portal) saveEvent(ctx context.Context, projectID int64, item event) (int64, error) {
+	// Persist an absent stack as an empty JSON array.
+	if item.Frames == nil {
+		item.Frames = []frame{}
+	}
+
 	var top frame
 	if len(item.Frames) > 0 {
 		top = item.Frames[len(item.Frames)-1]
